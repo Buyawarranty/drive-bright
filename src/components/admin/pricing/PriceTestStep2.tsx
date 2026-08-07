@@ -11,6 +11,17 @@ import { formatGBP } from '@/lib/pricingMatrix';
 import { MANUAL_REFERRAL_MESSAGE } from './AgeBandPricingPreview';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
+import { getVisibleExcessOptions } from '@/lib/pricingMatrix';
+import { calculateAddOnPrice } from '@/lib/addOnsUtils';
+import {
+  JOURNEY_DURATIONS,
+  JOURNEY_EXCESS_OPTIONS,
+  JOURNEY_CLAIM_TIERS,
+  JOURNEY_LABOUR_OPTIONS,
+  JOURNEY_BONUS_MONTHS,
+  getJourneyAddOns,
+  periodForMonths,
+} from '@/lib/pricing/journeyOptions';
 
 /** Per-day figures are shown in whole pence (or whole pounds) — never pounds-with-pence. */
 const perDayLabel = (amount: number) =>
