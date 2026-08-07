@@ -1,3 +1,4 @@
+import { getVehicleAge } from '@/lib/vehicleAge';
 import React, { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -1148,9 +1149,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
           setAutoPreview({ loading: false, error: 'Could not identify vehicle automatically', data: null });
           return;
         }
-        const currentYear = new Date().getFullYear();
-        const vYear = parseInt(data.yearOfManufacture || data.year || '0', 10);
-        const ageYears = vYear > 0 ? currentYear - vYear : undefined;
+        const ageYears = getVehicleAge({
+          registrationDate: data.registrationDate,
+          manufactureDate: data.manufactureDate,
+          year: data.yearOfManufacture || data.year,
+        }).ageYears ?? undefined;
         setAutoPreview({
           loading: false,
           error: null,
@@ -1352,20 +1355,22 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         return;
       }
 
-      if (data.yearOfManufacture || data.year) {
-        const currentYear = new Date().getFullYear();
-        const vehicleYear = parseInt(data.yearOfManufacture || data.year, 10);
-        if (!isNaN(vehicleYear) && vehicleYear > 0) {
-          const vehicleAge = currentYear - vehicleYear;
-          if (vehicleAge > 15 && !ageOverrideEnabled) {
-            toast({
-              title: "Vehicle Too Old",
-              description: `This vehicle is ${vehicleAge} years old. We only cover vehicles up to 15 years old.`,
-              variant: "destructive",
-            });
-            setIsLookingUp(false);
-            return;
-          }
+      {
+        // Age is measured from first registration date where available, falling
+        // back to manufacture date and only then to the bare year.
+        const age = getVehicleAge({
+          registrationDate: data.registrationDate,
+          manufactureDate: data.manufactureDate,
+          year: data.yearOfManufacture || data.year,
+        });
+        if (age.ageYears !== null && age.ageYears > 15 && !ageOverrideEnabled) {
+          toast({
+            title: "Vehicle Too Old",
+            description: `This vehicle is ${age.ageYears.toFixed(1)} years old (from ${age.source === 'year_of_manufacture' ? 'year of manufacture' : 'first registration'}). We only cover vehicles up to 15 years old.`,
+            variant: "destructive",
+          });
+          setIsLookingUp(false);
+          return;
         }
       }
 
@@ -1378,6 +1383,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         transmission: data.transmission || '',
         year: data.yearOfManufacture || data.year || '',
         vehicleType: data.vehicleType || '',
+        registrationDate: data.registrationDate || undefined,
+        manufactureDate: data.manufactureDate || undefined,
       });
       
       setStep(2);
@@ -1484,20 +1491,22 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         return;
       }
 
-      if (data.yearOfManufacture || data.year) {
-        const currentYear = new Date().getFullYear();
-        const vehicleYear = parseInt(data.yearOfManufacture || data.year, 10);
-        if (!isNaN(vehicleYear) && vehicleYear > 0) {
-          const vehicleAge = currentYear - vehicleYear;
-          if (vehicleAge > 15 && !ageOverrideEnabled) {
-            toast({
-              title: "Vehicle Too Old",
-              description: `This vehicle is ${vehicleAge} years old. We only cover vehicles up to 15 years old.`,
-              variant: "destructive",
-            });
-            setIsQuickConfirming(false);
-            return;
-          }
+      {
+        // Age is measured from first registration date where available, falling
+        // back to manufacture date and only then to the bare year.
+        const age = getVehicleAge({
+          registrationDate: data.registrationDate,
+          manufactureDate: data.manufactureDate,
+          year: data.yearOfManufacture || data.year,
+        });
+        if (age.ageYears !== null && age.ageYears > 15 && !ageOverrideEnabled) {
+          toast({
+            title: "Vehicle Too Old",
+            description: `This vehicle is ${age.ageYears.toFixed(1)} years old (from ${age.source === 'year_of_manufacture' ? 'year of manufacture' : 'first registration'}). We only cover vehicles up to 15 years old.`,
+            variant: "destructive",
+          });
+          setIsQuickConfirming(false);
+          return;
         }
       }
 
@@ -1511,6 +1520,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         transmission: data.transmission || '',
         year: data.yearOfManufacture || data.year || '',
         vehicleType: data.vehicleType || '',
+        registrationDate: data.registrationDate || undefined,
+        manufactureDate: data.manufactureDate || undefined,
       });
       setEditableCustomerFirstName(customerFirstName || (customerName || '').trim().split(/\s+/)[0] || '');
       setEditableCustomerLastName(customerLastName || (customerName || '').trim().split(/\s+/).slice(1).join(' ') || '');
