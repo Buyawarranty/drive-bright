@@ -112,7 +112,7 @@ function buildCodeBaseModel(saved: ReturnType<typeof useSavedPricingModel>) {
 
 export default function CodebaseVsCurrentPanel() {
   const { versions, loading } = usePricingVersions();
-  const [claimLimit, setClaimLimit] = useState<number>(1250);
+  const [claimLimit, setClaimLimit] = useState<number>(2000);
   const [labourRate, setLabourRate] = useState<number>(70);
   const saved = useSavedPricingModel();
   const [step2Vehicle, setStep2Vehicle] = useState<ResolvedTestVehicle | null>(null);
