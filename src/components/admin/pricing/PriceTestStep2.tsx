@@ -274,9 +274,14 @@ export default function PriceTestStep2({
     }
   }, [claimLimits, claimLimit]);
 
-  const claimFactor = claimLimits.find(c => c.limit === claimLimit)?.factor ?? 1;
-  const labourFactor = labourRateFactors.find(l => l.rate === labour)?.factor ?? 1;
-  const excessFactor = excessFactors.find(e => e.excess === excess)?.factor ?? 1;
+  // Nearest configured factor so every journey option (claim limit, labour rate,
+  // excess) always prices, even if the editor is missing that exact row.
+  const claimFactor = nearestFactor(claimLimits, c => c.limit, claimLimit);
+  const labourFactor = nearestFactor(labourRateFactors, l => l.rate, labour);
+  const excessFactor = nearestFactor(excessFactors, e => e.excess, excess);
+  /** Chargeable add-on total for the selected term, priced exactly like Step 3/4. */
+  const addOnTotalFor = (months: number) =>
+    calculateAddOnPrice(addOns, periodForMonths(months), months);
 
   const referral =
     ageBand.oneYear === null ||
