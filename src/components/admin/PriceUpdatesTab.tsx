@@ -182,6 +182,51 @@ export default function PriceUpdatesTab() {
     setMatrix(cloneMatrix(v.admin_matrix));
   }
 
+  /** History: version opened in the quick-summary dialog. */
+  const [previewVersion, setPreviewVersion] = useState<PricingVersion | null>(null);
+
+  /** History: make a saved/archived version the live pricing again. */
+  async function handleRestoreVersion(v: PricingVersion) {
+    const { matrix: safeMatrix, invalid } = normalizeMatrixForPublish(
+      cloneMatrix(v.admin_matrix),
+      liveVersion?.admin_matrix || codeMatrix
+    );
+    if (invalid.length) {
+      toast.error(
+        `Cannot restore — ${invalid.length} price cell(s) are missing or zero: ${invalid
+          .slice(0, 3)
+          .join('; ')}${invalid.length > 3 ? '…' : ''}`
+      );
+      return;
+    }
+    const pct = effectiveDiscountPct(Number(v.step3_discount_pct));
+    if (
+      !window.confirm(
+        `Restore "${v.label}" as the live pricing?\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ${pct}%.`
+      )
+    )
+      return;
+    setBusy(true);
+    try {
+      await publishVersion(v.id);
+      applyLivePricingVersion({
+        status: 'live',
+        admin_matrix: safeMatrix,
+        step3_discount_pct: pct,
+        claim_limit_factors: (v as any).claim_limit_factors ?? null,
+        labour_rate_factors: (v as any).labour_rate_factors ?? null,
+        vehicle_factor_model: (v as any).vehicle_factor_model ?? null,
+      });
+      loadIntoEditor({ ...v, admin_matrix: safeMatrix, step3_discount_pct: pct } as PricingVersion);
+      setPreviewVersion(null);
+      toast.success(`"${v.label}" restored live — reload any open quote pages`);
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not restore this version');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   /**
    * The website (Step 3/4) price is always the Quotes & Orders price minus this
    * percentage. If nobody has set one, default to 10% so the customer journey is
