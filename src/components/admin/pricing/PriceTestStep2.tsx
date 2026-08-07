@@ -375,15 +375,27 @@ export default function PriceTestStep2({
   const ceilingBreach = !!(autoQuoteCeiling && calc && calc.annual > autoQuoteCeiling);
 
 
-  function excessAllowed(exValue: number) {
-    // Customer-value guardrail: never show an excess above 25% of the claim limit,
-    // and never pair a £500 excess with a £1,000 claim limit.
-    if (exValue > claimLimit * 0.25) return false;
-    if (exValue === 500 && claimLimit < 3000) return false;
-    // No £500 excess on one-year cover.
-    if (exValue === 500 && term.months === 12) return false;
-    return true;
-  }
+  /**
+   * Excess visibility uses the SAME rule as the live journey (pricingMatrix), so a
+   * combination that can never be sold is never priced in a test.
+   */
+  const visibleExcesses = useMemo(
+    () => getVisibleExcessOptions(term.period, claimLimit),
+    [term.period, claimLimit],
+  );
+
+  /** Add-ons exactly as Step 3/4 lists them for this term. */
+  const journeyAddOns = useMemo(
+    () => getJourneyAddOns(term.period, term.months),
+    [term.period, term.months],
+  );
+
+  // Keep the excess valid the way Step 3 does when the term or claim limit changes.
+  useEffect(() => {
+    if (!visibleExcesses.includes(excess)) {
+      setExcess(visibleExcesses.includes(150) ? 150 : visibleExcesses[0] ?? 100);
+    }
+  }, [visibleExcesses, excess]);
 
 
   function resetAll() {
