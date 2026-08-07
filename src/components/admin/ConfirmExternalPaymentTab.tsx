@@ -108,6 +108,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [assigneeId, setAssigneeId] = useState<string>('');
   const [currentAdminUserId, setCurrentAdminUserId] = useState<string>('');
+  const currentAdminId = useCurrentAdminId();
   
   // Policy configuration
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
