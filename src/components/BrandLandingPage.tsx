@@ -300,8 +300,8 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
         const now = new Date();
         let vehicleAgePrecise: number | null = null;
         
-        if (data.manufactureDate) {
-          const manufactureDate = new Date(data.manufactureDate);
+        if (data.registrationDate || data.manufactureDate) {
+          const manufactureDate = new Date(data.registrationDate || data.manufactureDate);
           if (!isNaN(manufactureDate.getTime())) {
             const ageInMs = now.getTime() - manufactureDate.getTime();
             const msPerYear = 365.25 * 24 * 60 * 60 * 1000;

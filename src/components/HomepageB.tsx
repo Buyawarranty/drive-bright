@@ -279,8 +279,8 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         let vehicleAgePrecise: number | null = null;
         
         // Try to use manufactureDate for precise age calculation (15 years and 1 day check)
-        if (data.manufactureDate) {
-          const manufactureDate = new Date(data.manufactureDate);
+        if (data.registrationDate || data.manufactureDate) {
+          const manufactureDate = new Date(data.registrationDate || data.manufactureDate);
           if (!isNaN(manufactureDate.getTime())) {
             const ageInMs = now.getTime() - manufactureDate.getTime();
             const msPerYear = 365.25 * 24 * 60 * 60 * 1000; // Account for leap years

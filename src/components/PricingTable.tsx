@@ -1,3 +1,4 @@
+import { getVehicleAge } from '@/lib/vehicleAge';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { getStoredFbclid, getSessionFbclid } from '@/utils/fbclidCapture';
@@ -339,30 +340,31 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
   // Check vehicle age validation
   const vehicleAgeError = useMemo(() => {
-    if (vehicleData?.year) {
-      const currentYear = new Date().getFullYear();
-      const vehicleYear = parseInt(vehicleData.year);
-      const vehicleAge = currentYear - vehicleYear;
-      
-      if (vehicleAge > 15) {
-        return 'We cannot offer warranties for vehicles over 15 years of age';
-      }
+    const { ageYears } = getVehicleAge({
+      registrationDate: (vehicleData as any)?.registrationDate,
+      manufactureDate: (vehicleData as any)?.manufactureDate,
+      year: vehicleData?.year,
+    });
+    if (ageYears !== null && ageYears > 15) {
+      return 'We cannot offer warranties for vehicles over 15 years of age';
     }
     return null;
-  }, [vehicleData?.year]);
+  }, [vehicleData?.year, (vehicleData as any)?.registrationDate, (vehicleData as any)?.manufactureDate]);
 
   // Calculate vehicle age for duration filtering
   const vehicleAge = useMemo(() => {
-    if (vehicleData?.year) {
-      const currentYear = new Date().getFullYear();
-      const vehicleYear = parseInt(vehicleData.year);
-      const age = currentYear - vehicleYear;
-      console.log('🚗 Vehicle Age Calculation:', { currentYear, vehicleYear, age, rawYear: vehicleData.year });
-      return age;
+    const age = getVehicleAge({
+      registrationDate: (vehicleData as any)?.registrationDate,
+      manufactureDate: (vehicleData as any)?.manufactureDate,
+      year: vehicleData?.year,
+    });
+    if (age.ageYears !== null) {
+      console.log('🚗 Vehicle Age Calculation:', { ageYears: age.ageYears, source: age.source, rawYear: vehicleData?.year });
+      return age.ageYears;
     }
-    console.log('🚗 No vehicle year provided, defaulting to age 0');
+    console.log('🚗 No vehicle date provided, defaulting to age 0');
     return 0;
-  }, [vehicleData?.year]);
+  }, [vehicleData?.year, (vehicleData as any)?.registrationDate, (vehicleData as any)?.manufactureDate]);
 
   // Calculate vehicle mileage for duration filtering
   const vehicleMileage = useMemo(() => {

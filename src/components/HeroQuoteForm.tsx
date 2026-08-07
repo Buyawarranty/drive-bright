@@ -163,8 +163,8 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
       let vehicleAgePrecise: number | null = null;
       
       // Try to use manufactureDate for precise age calculation (15 years and 1 day check)
-      if (data.manufactureDate) {
-        const manufactureDate = new Date(data.manufactureDate);
+      if (data.registrationDate || data.manufactureDate) {
+        const manufactureDate = new Date(data.registrationDate || data.manufactureDate);
         if (!isNaN(manufactureDate.getTime())) {
           const ageInMs = now.getTime() - manufactureDate.getTime();
           const msPerYear = 365.25 * 24 * 60 * 60 * 1000;
@@ -237,6 +237,8 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
         transmission: data.transmission,
         year: data.yearOfManufacture || data.year,
         vehicleType: data.vehicleType,
+        registrationDate: data.registrationDate || undefined,
+        manufactureDate: data.manufactureDate || undefined,
         blocked: data.blocked || false,
         blockReason: data.blockReason || '',
       };

@@ -1,3 +1,4 @@
+import { getVehicleAge } from '@/lib/vehicleAge';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -141,12 +142,13 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
 
   // Vehicle age/mileage calculations
   const vehicleAge = useMemo(() => {
-    if (vehicleData?.year) {
-      const currentYear = new Date().getFullYear();
-      return currentYear - parseInt(vehicleData.year);
-    }
-    return 0;
-  }, [vehicleData?.year]);
+    const { ageYears } = getVehicleAge({
+      registrationDate: (vehicleData as any)?.registrationDate,
+      manufactureDate: (vehicleData as any)?.manufactureDate,
+      year: vehicleData?.year,
+    });
+    return ageYears ?? 0;
+  }, [vehicleData?.year, (vehicleData as any)?.registrationDate, (vehicleData as any)?.manufactureDate]);
 
   const vehicleMileage = useMemo(() => {
     if (vehicleData?.mileage) {
