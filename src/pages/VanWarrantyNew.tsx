@@ -171,7 +171,7 @@ const VanWarrantyNew = () => {
                 Get Your Instant Van Warranty Quote
               </h2>
               <p className="text-lg text-muted-foreground">
-                From just 80p a day • Easy claims • Fast payouts<br />
+                From just 60p a day • Easy claims • Fast payouts<br />
                 Unlimited claims • Complete Cover • No excess
               </p>
             </div>

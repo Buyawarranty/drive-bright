@@ -160,7 +160,7 @@ const HomepageAlt: React.FC<HomepageAltProps> = ({ onRegistrationSubmit }) => {
               <div className="space-y-4">
                 <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight">
                   Protect your vehicle from just{' '}
-                  <span className="text-[#eb4b00]">80p a day</span>
+                  <span className="text-[#eb4b00]">60p a day</span>
                 </h1>
                 <p className="text-lg text-gray-600 leading-relaxed">
                   Fast, affordable cover tailored to your car, van, or motorbike. Get comprehensive warranty protection with simple online quotes and flexible options.
