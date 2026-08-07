@@ -111,6 +111,15 @@ function OptionTile({
   );
 }
 
+export interface PriceTestQuoteSnapshot {
+  /** True when this profile refers out instead of auto-quoting. */
+  referral: boolean;
+  /** One-year-equivalent price before term multipliers. */
+  annual: number | null;
+  /** Total price per cover term, floors and options applied. */
+  terms: { key: string; label: string; months: number; total: number }[];
+}
+
 export default function PriceTestStep2({
   liveModel,
   title,
@@ -119,6 +128,7 @@ export default function PriceTestStep2({
   vehicle,
   showRegLookup = true,
   autoQuoteCeiling = null,
+  onQuoteChange,
 }: {
   liveModel?: any;
   title?: string;
@@ -129,7 +139,10 @@ export default function PriceTestStep2({
   showRegLookup?: boolean;
   /** Highest one-year-equivalent price allowed to auto-quote; above it the quote refers out. */
   autoQuoteCeiling?: number | null;
+  /** Reports the priced terms so a parent can show an overall price difference. */
+  onQuoteChange?: (snapshot: PriceTestQuoteSnapshot) => void;
 } = {}) {
+
 
 
   // Always preview with the figures currently saved in the Price updates editor,
