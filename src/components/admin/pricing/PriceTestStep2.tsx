@@ -312,7 +312,8 @@ export default function PriceTestStep2({
         discount.kind === 'flat' ? Math.min(discount.value, total) : Math.round((total * discount.value) / 100);
       total -= discountAmount;
     }
-    if (transferCover) total += 19;
+    const addOnTotal = addOnTotalFor(term.months);
+    total += addOnTotal;
     total = Math.round(total);
     // Rule of thumb: never sell below £399 for one year (scaled by term multiplier).
     // Motorbikes sit at 50% of standard vehicle pricing, so the floor halves too.
