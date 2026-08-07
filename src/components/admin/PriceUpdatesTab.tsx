@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info, ArrowLeftRight, ChevronLeft, ChevronRight, Layers } from 'lucide-react';
 import Aug26PricingPanel from '@/components/admin/pricing/Aug26PricingPanel';
 import LiveVsAug26Panel from '@/components/admin/pricing/LiveVsAug26Panel';
+import AugHybridVsLivePanel from '@/components/admin/pricing/AugHybridVsLivePanel';
 import PricingEngineDraftPanel from '@/components/admin/pricing/PricingEngineDraftPanel';
 
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
@@ -71,6 +72,7 @@ const PERIOD_LABELS: Record<string, string> = {
 
 /** Top-level tabs — managers can reorder these left/right and the order sticks. */
 const TOP_TABS = [
+  { value: 'hybrid', label: 'Aug Hybrid test vs Live', icon: FlaskConical },
   { value: 'compare', label: 'Live vs Aug 2026', icon: GitCompare },
   { value: 'aug26', label: 'Aug 2026 pricing', icon: CalendarClock },
   { value: 'builder', label: 'Age-based builder (calculator)', icon: CalendarClock },
@@ -791,6 +793,10 @@ export default function PriceUpdatesTab() {
           })}
         </TabsList>
 
+
+        <TabsContent value="hybrid" className="space-y-6 mt-4">
+          <AugHybridVsLivePanel liveModel={liveEditorModel} />
+        </TabsContent>
 
         <TabsContent value="compare" className="space-y-6 mt-4">
           <LiveVsAug26Panel liveModel={liveEditorModel} />

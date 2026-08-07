@@ -113,6 +113,7 @@ export default function PriceTestStep2({
   badgeText,
   vehicle,
   showRegLookup = true,
+  autoQuoteCeiling = null,
 }: {
   liveModel?: any;
   title?: string;
@@ -121,7 +122,10 @@ export default function PriceTestStep2({
   /** Vehicle resolved elsewhere (e.g. one shared reg box driving both columns). */
   vehicle?: ResolvedTestVehicle | null;
   showRegLookup?: boolean;
+  /** Highest one-year-equivalent price allowed to auto-quote; above it the quote refers out. */
+  autoQuoteCeiling?: number | null;
 } = {}) {
+
 
   // Always preview with the figures currently saved in the Price updates editor,
   // so a new labour rate (e.g. £150/hr) or changed factor shows up here on save.
@@ -297,6 +301,10 @@ export default function PriceTestStep2({
     claimFactor, labourFactor, excessFactor, term, discount, transferCover, freeMonths,
   ]);
 
+  /** Auto-quote ceiling: a one-year-equivalent price above the cap refers out instead of
+   *  showing a number we know does not convert. */
+  const ceilingBreach = !!(autoQuoteCeiling && calc && calc.annual > autoQuoteCeiling);
+
 
   function excessAllowed(exValue: number) {
     // Customer-value guardrail: never show an excess above 25% of the claim limit,
@@ -458,6 +466,20 @@ export default function PriceTestStep2({
             </AlertDescription>
           </Alert>
         ) : null}
+
+        {ceilingBreach && calc ? (
+          <Alert className="border-amber-500/60 bg-amber-500/10">
+            <PhoneCall className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              <span className="font-semibold">
+                Over the auto-quote ceiling ({formatGBP(autoQuoteCeiling as number)} for one year).
+              </span>{' '}
+              One-year equivalent here is {formatGBP(Math.round(calc.annual))}, so this vehicle would go
+              to manual underwriting rather than show a price that historically does not convert.
+            </AlertDescription>
+          </Alert>
+        ) : null}
+
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Options column */}
