@@ -122,8 +122,11 @@ export const TREATMENT_OPTIONS = [
 export const PROPOSED_MODEL_FLOORS: ModelFloor[] = [
   { key: 'rr-autobiography', vehicle: 'Range Rover Autobiography', minOneYear: 899, treatment: 'Premium floor', covered: true },
   { key: 'rr-sport', vehicle: 'Range Rover Sport', minOneYear: 799, treatment: 'Premium floor', covered: true },
+  { key: 'rr-velar', vehicle: 'Range Rover Velar', minOneYear: 749, treatment: 'Premium floor', covered: true },
+  { key: 'rr-evoque', vehicle: 'Range Rover Evoque', minOneYear: 699, treatment: 'Premium floor', covered: true },
   { key: 'rr-discovery', vehicle: 'Range Rover Discovery', minOneYear: 699, treatment: 'Premium floor', covered: true },
   { key: 'tesla', vehicle: 'Tesla', minOneYear: 799, treatment: 'Premium EV floor', covered: true },
+
   { key: 'porsche-911', vehicle: 'Porsche 911', minOneYear: null, treatment: 'Not covered', covered: false },
   { key: 'audi-rs', vehicle: 'Audi RS', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
   { key: 'audi-r8', vehicle: 'Audi R8', minOneYear: null, treatment: 'Not covered — referral or exclusion', covered: false },
