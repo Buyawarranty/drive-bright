@@ -11,8 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 
-import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, Swords, ShieldCheck, Ban, Info } from 'lucide-react';
-import CompetitorComparisonPanel from '@/components/admin/pricing/CompetitorComparisonPanel';
+import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info } from 'lucide-react';
+import Aug26PricingPanel from '@/components/admin/pricing/Aug26PricingPanel';
 import PricingEngineDraftPanel from '@/components/admin/pricing/PricingEngineDraftPanel';
 
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
@@ -647,9 +647,9 @@ export default function PriceUpdatesTab() {
             <GitCompare className="h-4 w-4 mr-2" />
             Base pricing 7/26 vs Current price
           </TabsTrigger>
-          <TabsTrigger value="competitor" className="py-3 text-base font-semibold">
-            <Swords className="h-4 w-4 mr-2" />
-            BAW vs Best4.
+          <TabsTrigger value="aug26" className="py-3 text-base font-semibold">
+            <CalendarClock className="h-4 w-4 mr-2" />
+            Aug26 pricing
           </TabsTrigger>
           <TabsTrigger value="excluded" className="py-3 text-base font-semibold">
             <Ban className="h-4 w-4 mr-2" />
@@ -665,8 +665,8 @@ export default function PriceUpdatesTab() {
           <PricingEngineDraftPanel />
         </TabsContent>
 
-        <TabsContent value="competitor" className="space-y-4 mt-4">
-          <CompetitorComparisonPanel />
+        <TabsContent value="aug26" className="space-y-4 mt-4">
+          <Aug26PricingPanel />
         </TabsContent>
 
 
