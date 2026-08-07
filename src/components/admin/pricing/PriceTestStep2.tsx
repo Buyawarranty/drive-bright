@@ -271,7 +271,17 @@ export default function PriceTestStep2({
   const addOnTotalFor = (months: number) =>
     calculateAddOnPrice(addOns, periodForMonths(months), months);
 
+  /**
+   * Excluded vehicle matrix — the same one the live journey uses. An excluded
+   * make/model can never be priced, in a test or live, so there is no price to
+   * push and no override here.
+   */
+  const exclusionReason = activeVehicle
+    ? getExclusionReason(activeVehicle.make, activeVehicle.model)
+    : null;
+
   const referral =
+    !!exclusionReason ||
     ageBand.oneYear === null ||
     mileageBand.factor === null ||
     vehType.factor === null ||
