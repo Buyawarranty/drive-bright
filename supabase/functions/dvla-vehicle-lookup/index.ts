@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import { isVehicleExcluded } from '../_shared/vehicleExclusions.ts';
 
 // Vehicle validation logic
 const EXCLUDED_MAKES = [
@@ -111,6 +112,9 @@ function isHighPerformanceModel(make: string, model: string): boolean {
   const normalizedModel = model.trim().toUpperCase();
   const fullModelName = `${normalizedMake} ${normalizedModel}`;
   
+  // Shared excluded matrix: whole-make exclusions plus make + model performance variants
+  if (isVehicleExcluded(make, model)) return true;
+
   return HIGH_PERFORMANCE_MODELS.some(blockedModel => 
     blockedModel.toUpperCase() === fullModelName
   );
