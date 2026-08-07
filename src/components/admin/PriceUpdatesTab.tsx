@@ -41,6 +41,7 @@ import ClaimLimit5kAuthToggle from '@/components/admin/pricing/ClaimLimit5kAuthT
 import ExcludedVehiclesPanel from '@/components/admin/pricing/ExcludedVehiclesPanel';
 import VehicleRiskBandsPanel from '@/components/admin/pricing/VehicleRiskBandsPanel';
 import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
+import SectionPushLiveBar from '@/components/admin/pricing/SectionPushLiveBar';
 
 
 /** The real Quotes & Orders page, rendered read-only for beta testing before pushing prices live. */
@@ -850,19 +851,19 @@ export default function PriceUpdatesTab() {
 
 
         <TabsContent value="hybrid" className="space-y-6 mt-4">
-          <AugHybridVsLivePanel liveModel={liveEditorModel} />
+          <AugHybridVsLivePanel liveModel={liveEditorModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
         </TabsContent>
 
         <TabsContent value="codebase-live" className="space-y-6 mt-4">
-          <CodebaseVsLivePanel liveModel={liveEditorModel} />
+          <CodebaseVsLivePanel liveModel={liveEditorModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
         </TabsContent>
 
         <TabsContent value="codebase-hybrid" className="space-y-6 mt-4">
-          <CodebaseVsHybridPanel liveModel={liveEditorModel} />
+          <CodebaseVsHybridPanel liveModel={liveEditorModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
         </TabsContent>
 
         <TabsContent value="compare" className="space-y-6 mt-4">
-          <LiveVsAug26Panel liveModel={liveEditorModel} />
+          <LiveVsAug26Panel liveModel={liveEditorModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
           <AgeBandPricingPreview
             onBuildDraft={handleBuildDraftFromModel}
             onModelChange={setLiveEditorModel}
@@ -870,6 +871,20 @@ export default function PriceUpdatesTab() {
         </TabsContent>
 
         <TabsContent value="builder" className="space-y-6 mt-4">
+          <SectionPushLiveBar
+            sectionLabel="Age-based builder (calculator)"
+            liveLabel={liveVersion?.label ?? null}
+            busy={busy}
+            onPush={handlePushModelLive}
+            candidates={[
+              {
+                key: 'builder',
+                label: 'Age-based builder figures',
+                description: 'Publishes the bands and factors currently in the builder below.',
+                getModel: () => liveEditorModel ?? readSavedAgeBandModel(),
+              },
+            ]}
+          />
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription className="text-sm">
@@ -886,6 +901,20 @@ export default function PriceUpdatesTab() {
 
 
         <TabsContent value="aug26" className="space-y-6 mt-4">
+          <SectionPushLiveBar
+            sectionLabel="Aug 2026 pricing"
+            liveLabel={liveVersion?.label ?? null}
+            busy={busy}
+            onPush={handlePushModelLive}
+            candidates={[
+              {
+                key: 'aug26',
+                label: 'Aug 2026 builder figures',
+                description: 'Publishes the saved Aug 2026 figures.',
+                getModel: () => liveEditorModel ?? readSavedAgeBandModel(),
+              },
+            ]}
+          />
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription className="text-sm">
@@ -905,6 +934,13 @@ export default function PriceUpdatesTab() {
         </TabsContent>
 
         <TabsContent value="tools" className="space-y-4 mt-4">
+          <SectionPushLiveBar
+            sectionLabel="Excluded vehicles & tools"
+            liveLabel={liveVersion?.label ?? null}
+            busy={busy}
+            onPush={undefined}
+            candidates={[]}
+          />
           <Tabs defaultValue="riskbands" className="w-full">
             <TabsList className="flex flex-wrap gap-2 bg-muted/40 p-1">
               <TabsTrigger value="riskbands">
@@ -940,10 +976,17 @@ export default function PriceUpdatesTab() {
               changes a price.
             </AlertDescription>
           </Alert>
-          <CodebaseVsCurrentPanel />
+          <CodebaseVsCurrentPanel liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
         </TabsContent>
 
         <TabsContent value="previews" className="space-y-4 mt-4">
+          <SectionPushLiveBar
+            sectionLabel="Previews"
+            liveLabel={liveVersion?.label ?? null}
+            busy={busy}
+            onPush={undefined}
+            candidates={[]}
+          />
           <Tabs defaultValue="quotes-preview" className="w-full">
             <TabsList className="flex flex-wrap gap-2 bg-muted/40 p-1">
               <TabsTrigger value="quotes-preview">
@@ -1042,6 +1085,13 @@ export default function PriceUpdatesTab() {
 
 
         <TabsContent value="editor" className="space-y-6 mt-4">
+          <SectionPushLiveBar
+            sectionLabel="Price grid (this one goes live)"
+            liveLabel={liveVersion?.label ?? null}
+            busy={busy}
+            onPush={undefined}
+            candidates={[]}
+          />
 
 
 
