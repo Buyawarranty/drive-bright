@@ -278,7 +278,8 @@ export default function PriceTestStep2({
     if (belowMinimum) total = minSellable;
 
     // We only offer 12 monthly instalments today, regardless of the cover term.
-    const monthly = Math.round((total / 12) * 100) / 100;
+    // Whole pounds only — we never quote pence on an instalment.
+    const monthly = Math.round(total / 12);
     const payInFullTotal = Math.round(total * payInFullFactor);
     const days = term.months * 30.42 + freeMonths * 30.42;
     return {
@@ -630,7 +631,7 @@ export default function PriceTestStep2({
             <div className="rounded-lg border-2 p-4">
               <div className="text-sm font-semibold">Monthly · Bumper (12 instalments)</div>
               <div className="text-3xl font-bold">
-                {calc ? `£${calc.monthly.toFixed(2)}` : '—'}
+                {calc ? formatGBP(calc.monthly) : '—'}
                 <span className="text-sm font-normal text-muted-foreground">/month</span>
               </div>
               {calc ? (
@@ -698,7 +699,7 @@ export default function PriceTestStep2({
                     </div>
                   ) : null}
                   <div className="pt-1 font-semibold text-foreground">Term total: {formatGBP(calc.total)}</div>
-                  <div>÷ 12 instalments: £{calc.monthly.toFixed(2)}/month (only 12-payment plans available today)</div>
+                  <div>÷ 12 instalments: {formatGBP(calc.monthly)}/month (only 12-payment plans available today)</div>
 
 
                 </div>
