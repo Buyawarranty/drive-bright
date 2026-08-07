@@ -67,6 +67,29 @@ const PERIOD_LABELS: Record<string, string> = {
   '36months': '3 years',
 };
 
+/** Top-level tabs — managers can reorder these left/right and the order sticks. */
+const TOP_TABS = [
+  { value: 'compare', label: 'Live builder vs Aug26', icon: GitCompare },
+  { value: 'builder', label: 'Age-based builder (calculator)', icon: CalendarClock },
+  { value: 'editor', label: 'Price grid (this one goes live)', icon: FlaskConical },
+  { value: 'previews', label: 'Previews', icon: Rocket },
+  { value: 'tools', label: 'Excluded vehicles & tools', icon: Ban },
+] as const;
+
+const TAB_ORDER_STORAGE_KEY = 'bw:price-updates:tab-order';
+
+function readStoredTabOrder(): string[] {
+  const defaults = TOP_TABS.map(t => t.value as string);
+  try {
+    const saved = JSON.parse(localStorage.getItem(TAB_ORDER_STORAGE_KEY) || 'null');
+    if (!Array.isArray(saved)) return defaults;
+    const kept = saved.filter((v: unknown) => defaults.includes(v as string)) as string[];
+    return [...kept, ...defaults.filter(v => !kept.includes(v))];
+  } catch {
+    return defaults;
+  }
+}
+
 /** Internal matrix columns → the customer-facing AutoCare tiers they price. */
 const CLAIM_COLUMN_LABELS: Record<number, { title: string; sub: string }> = {
   750: { title: 'AutoCare Basic — £1,000', sub: 'Internal column 750' },
