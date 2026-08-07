@@ -437,7 +437,8 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const { skipAgeCheck } = body;
-    const rawInput = body.registrationNumber;
+    // Accept any of the aliases callers use across the app.
+    const rawInput = body.registrationNumber ?? body.registration ?? body.reg ?? body.regNumber;
 
     if (!rawInput) {
       throw new Error("Registration number is required");
