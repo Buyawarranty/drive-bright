@@ -15,6 +15,8 @@
  *    referral so an agent can confirm on 0330 229 5040.
  */
 
+import { getExclusionReason, EXCLUSION_MESSAGE } from '@/lib/vehicleExclusions';
+
 export const MAX_VEHICLE_AGE_YEARS = 15;
 export const MAX_VEHICLE_MILEAGE = 150000;
 export const REFERRAL_PHONE = '0330 229 5040';
@@ -29,6 +31,9 @@ export type BoundaryInput = {
   /** Fallback when no registration date is known. */
   yearOfManufacture?: string | number | null;
   mileage?: string | number | null;
+  /** Make and model — checked against the excluded vehicle matrix. */
+  make?: string | null;
+  model?: string | null;
   /** Quote date — defaults to now. Passed in for reproducible tests. */
   asOf?: Date;
 };
@@ -43,6 +48,13 @@ export type BoundaryResult = {
   ageSource: 'registration_date' | 'year_of_manufacture' | 'unknown';
   mileage: number | null;
   reasons: string[];
+  /**
+   * True when the excluded vehicle matrix bars this make/model. This is a hard
+   * stop that NO override (including admin skipAgeCheck) can unlock.
+   */
+  excluded: boolean;
+  /** e.g. "BMW M-Series" — why the matrix excluded it. */
+  exclusionReason?: string;
 };
 
 function parseMileage(value: BoundaryInput['mileage']): number | null {
