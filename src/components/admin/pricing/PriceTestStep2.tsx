@@ -36,27 +36,35 @@ const perDayLabel = (amount: number) =>
  * in the same layout agents already use.
  */
 
+/** Cover terms use the SAME labels, badges and perks the customer sees on Step 3. */
 function buildTerms(twoYearMult: number, threeYearMult: number) {
-  return [
-    { key: '12', label: '1-Year Cover', badge: 'POPULAR', months: 12, mult: 1.0 },
-    { key: '24', label: '2-Year Cover', badge: 'BEST VALUE', months: 24, mult: twoYearMult },
-    { key: '36', label: '3-Year Cover', badge: '', months: 36, mult: threeYearMult },
-  ];
+  return JOURNEY_DURATIONS.map(d => ({
+    key: d.key,
+    label: d.label,
+    badge: d.badge,
+    months: d.months,
+    perks: d.perks,
+    period: d.id,
+    mult: d.months === 24 ? twoYearMult : d.months === 36 ? threeYearMult : 1.0,
+  }));
 }
 
-const LABOUR_META: Record<number, { title: string; badge: string }> = {
-  50: { title: 'Local Garages', badge: 'BEST VALUE' },
-  70: { title: 'Independent Garages', badge: 'POPULAR' },
-  100: { title: 'Approved Garages', badge: '' },
-  150: { title: 'Specialist garages', badge: '' },
-};
+const LABOUR_META: Record<number, { title: string; badge: string }> = Object.fromEntries(
+  JOURNEY_LABOUR_OPTIONS.map(l => [l.rate, { title: l.title, badge: l.badge }]),
+);
 
-const CLAIM_META: Record<number, { title: string; badge: string }> = {
-  1000: { title: 'AutoCare Basic', badge: 'POPULAR' },
-  2000: { title: 'AutoCare Essential', badge: '' },
-  3000: { title: 'AutoCare Elite', badge: '' },
-  5000: { title: 'AutoCare Premium', badge: '' },
-};
+const CLAIM_META: Record<number, { title: string; badge: string }> = Object.fromEntries(
+  JOURNEY_CLAIM_TIERS.map(t => [t.value, { title: t.name, badge: t.badge }]),
+);
+
+/** Nearest configured factor, so a journey option is never left unpriced. */
+function nearestFactor<T extends { factor: number }>(list: T[], pick: (item: T) => number, value: number): number {
+  if (!list.length) return 1;
+  const exact = list.find(item => pick(item) === value);
+  if (exact) return exact.factor;
+  const sorted = [...list].sort((a, b) => Math.abs(pick(a) - value) - Math.abs(pick(b) - value));
+  return sorted[0]?.factor ?? 1;
+}
 
 /** Never sell below £399 for one year; 2/3 year floors follow the ×1.65 / ×2.35 multipliers. */
 const MIN_SELLABLE_BY_TERM: Record<number, number> = {
