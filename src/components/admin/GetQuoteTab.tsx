@@ -1246,6 +1246,97 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     return value.replace(/\s/g, '').toUpperCase();
   };
 
+  // ---- Step 2 inline vehicle change -------------------------------------
+  // Agents were getting stuck with the previous vehicle: "Edit" bounced them
+  // back to Step 1 and the old reg/vehicle could linger in derived state.
+  // This swaps the vehicle in place and hard-resets every vehicle-derived value.
+  const [isEditingVehicle, setIsEditingVehicle] = useState(false);
+  const [vehicleEditReg, setVehicleEditReg] = useState('');
+  const [isSwappingVehicle, setIsSwappingVehicle] = useState(false);
+
+  const applyNewVehicle = async () => {
+    const cleanReg = formatRegNumber(vehicleEditReg);
+    if (cleanReg.length < 5) {
+      toast({ title: 'Invalid registration', description: 'Please enter a valid registration number.', variant: 'destructive' });
+      return;
+    }
+    setIsSwappingVehicle(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+        body: { registrationNumber: cleanReg, skipAgeCheck: ageOverrideEnabled },
+      });
+
+      if (data?.blocked) {
+        toast({
+          title: 'Vehicle Not Eligible',
+          description: data.blockReason || `${data.make || ''} ${data.model || ''} is on our excluded vehicle list.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (data?.make) {
+        const age = getVehicleAge({
+          registrationDate: data.registrationDate,
+          manufactureDate: data.manufactureDate,
+          year: data.yearOfManufacture || data.year,
+        });
+        if (age.ageYears !== null && age.ageYears > 15 && !ageOverrideEnabled) {
+          toast({
+            title: 'Vehicle Too Old',
+            description: `This vehicle is ${age.ageYears.toFixed(1)} years old. We only cover vehicles up to 15 years old.`,
+            variant: 'destructive',
+          });
+          return;
+        }
+      } else if (error) {
+        console.warn('[GetQuote] Vehicle swap lookup failed', error);
+      }
+
+      // Reset every stale vehicle-derived value before writing the new vehicle.
+      setRegNumber(cleanReg);
+      setMileage('');
+      setSliderMileage(0);
+      setStep1AutoFilledMileage(null);
+      setStep1MileagePrefilledReg(null);
+      setAutoPreview({ loading: false, error: null, data: null });
+      setEditableRegNumber(cleanReg);
+      setEditableMileage('');
+      setMileagePrefilledFromMot(false);
+      setIsPriceOverridden(false);
+      setCustomMonthlyPrice('');
+      setCustomFullPrice('');
+      setQuotedPriceOverride('');
+
+      setVehicleData({
+        regNumber: cleanReg,
+        mileage: '',
+        make: data?.make || '',
+        model: data?.model || '',
+        fuelType: data?.fuelType || '',
+        transmission: data?.transmission || '',
+        year: data?.yearOfManufacture || data?.year || '',
+        vehicleType: data?.vehicleType || '',
+        registrationDate: data?.registrationDate || undefined,
+        manufactureDate: data?.manufactureDate || undefined,
+      });
+
+      setIsEditingVehicle(false);
+      toast({
+        title: 'Vehicle updated',
+        description: data?.make
+          ? `Now quoting ${cleanReg} — ${data.make} ${data.model || ''}`.trim()
+          : `Now quoting ${cleanReg}. Please check the vehicle details.`,
+      });
+    } catch (e: any) {
+      console.error('Vehicle swap failed', e);
+      toast({ title: 'Lookup failed', description: 'Could not update the vehicle. Please try again.', variant: 'destructive' });
+    } finally {
+      setIsSwappingVehicle(false);
+    }
+  };
+
+
   const handleMileageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, '');
     setMileage(value);
