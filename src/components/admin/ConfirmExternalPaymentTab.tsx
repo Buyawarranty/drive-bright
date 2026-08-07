@@ -221,6 +221,24 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     }),
   }) : { totalPrice: 0, monthlyPrice: 0 };
 
+  // ── Hard 30% discount ceiling ───────────────────────────────────────────────
+  // Confirming an outside payment must never be a back door around the discount
+  // cap enforced on Get a quote. Anything more than 30% below the quoted grid
+  // price is blocked unless the person confirming is Management.
+  const DISCOUNT_CEILING_PCT = 30;
+  const enteredAmount = parseFloat(paymentAmount);
+  const quotedTotal = currentPrice.totalPrice;
+  const discountPct =
+    quotedTotal > 0 && Number.isFinite(enteredAmount) && enteredAmount < quotedTotal
+      ? ((quotedTotal - enteredAmount) / quotedTotal) * 100
+      : 0;
+  const minAllowedAmount = quotedTotal > 0
+    ? Math.round(quotedTotal * (1 - DISCOUNT_CEILING_PCT / 100) * 100) / 100
+    : 0;
+  const overDiscountCeiling = discountPct > DISCOUNT_CEILING_PCT + 0.01;
+  const discountBlocked = overDiscountCeiling && !isManagementRole;
+
+
   const formatRegNumber = (value: string): string => {
     const clean = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
     if (clean.length <= 4) return clean;
