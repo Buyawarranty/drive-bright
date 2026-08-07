@@ -7195,14 +7195,18 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               </div>
                             </div>
                           </div>
-                          <a
-                            className="text-xs font-semibold text-amber-900 underline"
-                            href={`/admin-dashboard/?tab=customers&ctab=part-payments${customerEmail ? `&search=${encodeURIComponent(customerEmail)}` : ''}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
+                            type="button"
+                            className="text-xs font-semibold text-amber-900 underline text-left"
+                            onClick={() => {
+                              window.location.assign(
+                                `/admin-dashboard/?tab=customers&pp=outstanding${customerEmail ? `&search=${encodeURIComponent(customerEmail)}` : ''}`,
+                              );
+                            }}
                           >
                             Open Part Payments
-                          </a>
+                          </button>
+
                         </>
                       )}
                     </div>
