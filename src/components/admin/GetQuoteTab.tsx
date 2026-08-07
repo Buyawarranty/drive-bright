@@ -47,6 +47,9 @@ import {
   MAX_WEB_DISCOUNT_VS_GRID_PCT,
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
+import { MIN_BASE_PRICE_BY_PERIOD } from '@/lib/pricingMatrix';
+import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
+
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
 import { useFeatureEnabled } from '@/hooks/useFeatureFlags';
 import { useAuth } from '@/hooks/useAuth';
