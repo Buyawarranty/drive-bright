@@ -842,30 +842,35 @@ const PricingTable: React.FC<PricingTableProps> = ({
                                 paymentType === '24months' ? 2 : 3;
     const currentVehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, currentWarrantyYears);
     
-    console.log('💰 calculatePlanPrice Debug:', {
-      paymentType,
-      voluntaryExcess,
-      selectedClaimLimit,
-      vehicleData,
-      currentVehicleAdjustment
-    });
+    // Pricing internals are development-only: Step 3/4 is public, so nothing
+    // about grids, factors or floors is exposed on the live site.
+    if (import.meta.env.DEV) {
+      console.log('💰 calculatePlanPrice Debug:', {
+        paymentType,
+        voluntaryExcess,
+        selectedClaimLimit,
+        vehicleData,
+        currentVehicleAdjustment
+      });
+    }
     
     // Use centralized pricing matrix
     const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, paymentType);
     
-    console.log('Found price in exact table:', { basePrice, voluntaryExcess, selectedClaimLimit, paymentType });
-    
     // Apply vehicle adjustments (SUV/van, Range Rover, motorbike discount, etc.) to the base price
     const adjustedPrice = applyPriceAdjustment(basePrice, currentVehicleAdjustment);
     
-    console.log('🏍️ Motorbike/Vehicle adjustment applied:', { 
-      basePrice, 
-      adjustedPrice, 
-      adjustment: currentVehicleAdjustment,
-      vehicleType: vehicleData?.vehicleType,
-      isMotorbike: currentVehicleAdjustment.adjustmentType === 'motorbike_discount',
-      discountApplied: basePrice !== adjustedPrice
-    });
+    if (import.meta.env.DEV) {
+      console.log('🏍️ Motorbike/Vehicle adjustment applied:', { 
+        basePrice, 
+        adjustedPrice, 
+        adjustment: currentVehicleAdjustment,
+        vehicleType: vehicleData?.vehicleType,
+        isMotorbike: currentVehicleAdjustment.adjustmentType === 'motorbike_discount',
+        discountApplied: basePrice !== adjustedPrice
+      });
+    }
+
     
     // Apply minimum BASE price floor (acquisition + lead cost protection).
     // Floor is on base only so labour/boost/add-ons still charge extra on top.
