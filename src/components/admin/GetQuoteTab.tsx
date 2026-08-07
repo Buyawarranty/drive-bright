@@ -1029,6 +1029,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // Track if custom prices have been manually overridden
   const [isPriceOverridden, setIsPriceOverridden] = useState(false);
 
+  // Manager-only diagnostic: records whether this quote came from the published
+  // pricing model or fell back to the legacy grid (vehicle referred out).
+  const pricingTrace: { usedLegacy: boolean; reason: string } = { usedLegacy: false, reason: '' };
+
   // Calculate base price (before any custom overrides)
   const calculateBasePrice = () => {
     // Get duration months for add-on calculation
