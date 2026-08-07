@@ -24,6 +24,7 @@ import Aug26PricingPanel from '@/components/admin/pricing/Aug26PricingPanel';
 import LiveVsAug26Panel from '@/components/admin/pricing/LiveVsAug26Panel';
 import AugHybridVsLivePanel from '@/components/admin/pricing/AugHybridVsLivePanel';
 import CodebaseVsLivePanel from '@/components/admin/pricing/CodebaseVsLivePanel';
+import CodebaseVsHybridPanel from '@/components/admin/pricing/CodebaseVsHybridPanel';
 import PricingEngineDraftPanel from '@/components/admin/pricing/PricingEngineDraftPanel';
 
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
@@ -75,6 +76,7 @@ const PERIOD_LABELS: Record<string, string> = {
 const TOP_TABS = [
   { value: 'hybrid', label: 'Live Vs Test Hybrid Aug', icon: FlaskConical },
   { value: 'codebase-live', label: 'Code base vs Live', icon: GitCompare },
+  { value: 'codebase-hybrid', label: 'Code base vs Test Hybrid Aug', icon: FlaskConical },
   { value: 'compare', label: 'Live vs Aug 2026', icon: GitCompare },
   { value: 'aug26', label: 'Aug 2026 pricing', icon: CalendarClock },
   { value: 'builder', label: 'Age-based builder (calculator)', icon: CalendarClock },
@@ -802,6 +804,10 @@ export default function PriceUpdatesTab() {
 
         <TabsContent value="codebase-live" className="space-y-6 mt-4">
           <CodebaseVsLivePanel liveModel={liveEditorModel} />
+        </TabsContent>
+
+        <TabsContent value="codebase-hybrid" className="space-y-6 mt-4">
+          <CodebaseVsHybridPanel liveModel={liveEditorModel} />
         </TabsContent>
 
         <TabsContent value="compare" className="space-y-6 mt-4">
