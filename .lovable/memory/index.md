@@ -18,6 +18,8 @@ Updated: just now
 - SEO work = visual/structural/wording ONLY. Never touch pricing, APIs, integrations, or tracking tags. See mem://constraints/seo-work-visual-only
 - Price floor is shaped by excess + claim limit; never clamp grid cells cell-by-cell. See mem://pricing/floor-must-not-flatten-options
 
+- Pricing test panels must offer the exact Step 3/4 options from src/lib/pricing/journeyOptions.ts. See mem://pricing/sandbox-step3-parity
+
 
 ## Memories
 - [SEO work visual-only](mem://constraints/seo-work-visual-only) — During SEO work: layout/wording/padding only; never touch pricing logic, APIs, integrations, or tracking tags

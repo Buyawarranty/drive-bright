@@ -11,6 +11,17 @@ import { formatGBP } from '@/lib/pricingMatrix';
 import { MANUAL_REFERRAL_MESSAGE } from './AgeBandPricingPreview';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
+import { getVisibleExcessOptions } from '@/lib/pricingMatrix';
+import { calculateAddOnPrice } from '@/lib/addOnsUtils';
+import {
+  JOURNEY_DURATIONS,
+  JOURNEY_EXCESS_OPTIONS,
+  JOURNEY_CLAIM_TIERS,
+  JOURNEY_LABOUR_OPTIONS,
+  JOURNEY_BONUS_MONTHS,
+  getJourneyAddOns,
+  periodForMonths,
+} from '@/lib/pricing/journeyOptions';
 
 /** Per-day figures are shown in whole pence (or whole pounds) — never pounds-with-pence. */
 const perDayLabel = (amount: number) =>
@@ -25,27 +36,35 @@ const perDayLabel = (amount: number) =>
  * in the same layout agents already use.
  */
 
+/** Cover terms use the SAME labels, badges and perks the customer sees on Step 3. */
 function buildTerms(twoYearMult: number, threeYearMult: number) {
-  return [
-    { key: '12', label: '1-Year Cover', badge: 'POPULAR', months: 12, mult: 1.0 },
-    { key: '24', label: '2-Year Cover', badge: 'BEST VALUE', months: 24, mult: twoYearMult },
-    { key: '36', label: '3-Year Cover', badge: '', months: 36, mult: threeYearMult },
-  ];
+  return JOURNEY_DURATIONS.map(d => ({
+    key: d.key,
+    label: d.label,
+    badge: d.badge,
+    months: d.months,
+    perks: d.perks,
+    period: d.id,
+    mult: d.months === 24 ? twoYearMult : d.months === 36 ? threeYearMult : 1.0,
+  }));
 }
 
-const LABOUR_META: Record<number, { title: string; badge: string }> = {
-  50: { title: 'Local Garages', badge: 'BEST VALUE' },
-  70: { title: 'Independent Garages', badge: 'POPULAR' },
-  100: { title: 'Approved Garages', badge: '' },
-  150: { title: 'Specialist garages', badge: '' },
-};
+const LABOUR_META: Record<number, { title: string; badge: string }> = Object.fromEntries(
+  JOURNEY_LABOUR_OPTIONS.map(l => [l.rate, { title: l.title, badge: l.badge }]),
+);
 
-const CLAIM_META: Record<number, { title: string; badge: string }> = {
-  1000: { title: 'AutoCare Basic', badge: 'POPULAR' },
-  2000: { title: 'AutoCare Essential', badge: '' },
-  3000: { title: 'AutoCare Elite', badge: '' },
-  5000: { title: 'AutoCare Premium', badge: '' },
-};
+const CLAIM_META: Record<number, { title: string; badge: string }> = Object.fromEntries(
+  JOURNEY_CLAIM_TIERS.map(t => [t.value, { title: t.name, badge: t.badge }]),
+);
+
+/** Nearest configured factor, so a journey option is never left unpriced. */
+function nearestFactor<T extends { factor: number }>(list: T[], pick: (item: T) => number, value: number): number {
+  if (!list.length) return 1;
+  const exact = list.find(item => pick(item) === value);
+  if (exact) return exact.factor;
+  const sorted = [...list].sort((a, b) => Math.abs(pick(a) - value) - Math.abs(pick(b) - value));
+  return sorted[0]?.factor ?? 1;
+}
 
 /** Never sell below £399 for one year; 2/3 year floors follow the ×1.65 / ×2.35 multipliers. */
 const MIN_SELLABLE_BY_TERM: Record<number, number> = {
@@ -225,7 +244,8 @@ export default function PriceTestStep2({
   const [excess, setExcess] = useState(150);
   const [claimLimit, setClaimLimit] = useState(2000);
   const [freeMonths, setFreeMonths] = useState(0);
-  const [transferCover, setTransferCover] = useState(false);
+  /** Chargeable add-ons exactly as the customer journey offers them (transfer included). */
+  const [addOns, setAddOns] = useState<Record<string, boolean>>({});
   const [payInFull, setPayInFull] = useState(true);
   const [discount, setDiscount] = useState<{ label: string; kind: 'flat' | 'pct'; value: number } | null>(null);
 
@@ -237,26 +257,18 @@ export default function PriceTestStep2({
   const floor = modelFloors.find(f => f.key === floorKey) || null;
   const term = TERMS.find(t => t.key === termKey) ?? TERMS[0];
 
-  // Keep the selection valid when a rate/excess/limit is removed or renumbered in the editor.
-  useEffect(() => {
-    if (labourRateFactors.length && !labourRateFactors.some(l => l.rate === labour)) {
-      setLabour(labourRateFactors[0].rate);
-    }
-  }, [labourRateFactors, labour]);
-  useEffect(() => {
-    if (excessFactors.length && !excessFactors.some(e => e.excess === excess)) {
-      setExcess(excessFactors[0].excess);
-    }
-  }, [excessFactors, excess]);
-  useEffect(() => {
-    if (claimLimits.length && !claimLimits.some(c => c.limit === claimLimit)) {
-      setClaimLimit(claimLimits[0].limit);
-    }
-  }, [claimLimits, claimLimit]);
+  // The option lists are the CUSTOMER JOURNEY lists, not the editor's rows — a
+  // missing editor row is priced from the nearest factor instead of hiding the
+  // option, so nothing can go live unpriced.
 
-  const claimFactor = claimLimits.find(c => c.limit === claimLimit)?.factor ?? 1;
-  const labourFactor = labourRateFactors.find(l => l.rate === labour)?.factor ?? 1;
-  const excessFactor = excessFactors.find(e => e.excess === excess)?.factor ?? 1;
+  // Nearest configured factor so every journey option (claim limit, labour rate,
+  // excess) always prices, even if the editor is missing that exact row.
+  const claimFactor = nearestFactor(claimLimits, c => c.limit, claimLimit);
+  const labourFactor = nearestFactor(labourRateFactors, l => l.rate, labour);
+  const excessFactor = nearestFactor(excessFactors, e => e.excess, excess);
+  /** Chargeable add-on total for the selected term, priced exactly like Step 3/4. */
+  const addOnTotalFor = (months: number) =>
+    calculateAddOnPrice(addOns, periodForMonths(months), months);
 
   const referral =
     ageBand.oneYear === null ||
@@ -287,7 +299,8 @@ export default function PriceTestStep2({
         discount.kind === 'flat' ? Math.min(discount.value, total) : Math.round((total * discount.value) / 100);
       total -= discountAmount;
     }
-    if (transferCover) total += 19;
+    const addOnTotal = addOnTotalFor(term.months);
+    total += addOnTotal;
     total = Math.round(total);
     // Rule of thumb: never sell below £399 for one year (scaled by term multiplier).
     // Motorbikes sit at 50% of standard vehicle pricing, so the floor halves too.
@@ -308,6 +321,7 @@ export default function PriceTestStep2({
       monthly,
       minSellable,
       belowMinimum,
+      addOnTotal,
       payInFullTotal,
       payInFullSaving: total - payInFullTotal,
       discountAmount,
@@ -317,7 +331,7 @@ export default function PriceTestStep2({
     };
   }, [
     referral, ageBand, mileageBand, powertrain, vehType, risk, floor, motorbikeFactor,
-    claimFactor, labourFactor, excessFactor, term, discount, transferCover, freeMonths,
+    claimFactor, labourFactor, excessFactor, term, discount, addOns, freeMonths,
   ]);
 
   /** Every cover term priced with the same options — used for the overall price difference. */
@@ -329,12 +343,13 @@ export default function PriceTestStep2({
         total -=
           discount.kind === 'flat' ? Math.min(discount.value, total) : (total * discount.value) / 100;
       }
-      if (transferCover) total += 19;
+      total += addOnTotalFor(t.months);
       total = Math.round(total);
       const min = Math.round((MIN_SELLABLE_BY_TERM[t.months] ?? 399) * motorbikeFactor);
       return { key: t.key, label: t.label, months: t.months, total: Math.max(total, min) };
     });
-  }, [referral, calc, TERMS, discount, transferCover, motorbikeFactor]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [referral, calc, TERMS, discount, addOns, motorbikeFactor]);
 
   useEffect(() => {
     onQuoteChange?.({ referral, annual: calc ? calc.annual : null, terms: termTotals });
@@ -347,15 +362,27 @@ export default function PriceTestStep2({
   const ceilingBreach = !!(autoQuoteCeiling && calc && calc.annual > autoQuoteCeiling);
 
 
-  function excessAllowed(exValue: number) {
-    // Customer-value guardrail: never show an excess above 25% of the claim limit,
-    // and never pair a £500 excess with a £1,000 claim limit.
-    if (exValue > claimLimit * 0.25) return false;
-    if (exValue === 500 && claimLimit < 3000) return false;
-    // No £500 excess on one-year cover.
-    if (exValue === 500 && term.months === 12) return false;
-    return true;
-  }
+  /**
+   * Excess visibility uses the SAME rule as the live journey (pricingMatrix), so a
+   * combination that can never be sold is never priced in a test.
+   */
+  const visibleExcesses = useMemo(
+    () => getVisibleExcessOptions(term.period, claimLimit),
+    [term.period, claimLimit],
+  );
+
+  /** Add-ons exactly as Step 3/4 lists them for this term. */
+  const journeyAddOns = useMemo(
+    () => getJourneyAddOns(term.period, term.months),
+    [term.period, term.months],
+  );
+
+  // Keep the excess valid the way Step 3 does when the term or claim limit changes.
+  useEffect(() => {
+    if (!visibleExcesses.includes(excess)) {
+      setExcess(visibleExcesses.includes(150) ? 150 : visibleExcesses[0] ?? 100);
+    }
+  }, [visibleExcesses, excess]);
 
 
   function resetAll() {
@@ -364,7 +391,7 @@ export default function PriceTestStep2({
     setExcess(150);
     setClaimLimit(2000);
     setFreeMonths(0);
-    setTransferCover(false);
+    setAddOns({});
     setDiscount(null);
     setPayInFull(true);
   }
@@ -525,7 +552,7 @@ export default function PriceTestStep2({
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Options column */}
           <div className={`space-y-6 lg:col-span-2 ${referral ? 'pointer-events-none opacity-50' : ''}`}>
-            {/* Cover duration */}
+            {/* Cover duration — same three terms, labels and perks as Step 3 */}
             <div>
               <Label className="mb-2 block">Cover Duration</Label>
               <div className="grid grid-cols-3 gap-3">
@@ -535,104 +562,125 @@ export default function PriceTestStep2({
                     selected={termKey === t.key}
                     onClick={() => setTermKey(t.key)}
                     title={t.label}
-                    subtitle={`${t.mult.toFixed(2)}× one-year`}
+                    subtitle={t.perks[0]}
                     badge={t.badge}
+                    note={`${t.mult.toFixed(2)}× one-year`}
                   />
                 ))}
               </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {term.perks.join(' · ')} · always paid over 12 instalments
+              </p>
             </div>
 
-            {/* Labour rate */}
+            {/* Labour rate — the four rates the customer journey offers */}
             <div>
               <Label className="mb-2 block">Labour Rate</Label>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {labourRateFactors.map(l => (
+                {JOURNEY_LABOUR_OPTIONS.map(l => (
                   <OptionTile
-                    key={l.key}
+                    key={l.rate}
                     selected={labour === l.rate}
                     onClick={() => setLabour(l.rate)}
                     title={`£${l.rate}/hr`}
-                    subtitle={LABOUR_META[l.rate]?.title ?? l.uxPosition}
-                    badge={LABOUR_META[l.rate]?.badge ?? ''}
-                    note={`×${l.factor.toFixed(2)}`}
+                    subtitle={l.title}
+                    badge={l.badge}
+                    note={`×${nearestFactor(labourRateFactors, x => x.rate, l.rate).toFixed(2)}`}
                   />
                 ))}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">Higher rate = more garage choice</p>
             </div>
 
-            {/* Excess */}
+            {/* Excess — canonical Step 3 options, filtered by the live visibility rules */}
             <div>
               <Label className="mb-2 block">Excess Amount</Label>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {excessFactors.map(e => {
-                  const allowed = excessAllowed(e.excess);
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {JOURNEY_EXCESS_OPTIONS.map(e => {
+                  const allowed = visibleExcesses.includes(e.value);
                   return (
                     <OptionTile
-                      key={e.key}
-                      selected={excess === e.excess}
-                      onClick={() => allowed && setExcess(e.excess)}
+                      key={e.value}
+                      selected={excess === e.value}
+                      onClick={() => allowed && setExcess(e.value)}
                       disabled={!allowed}
-                      title={`£${e.excess}`}
-                      subtitle={allowed ? e.uxPosition : 'Not shown with this claim limit'}
-                      note={allowed ? `×${e.factor.toFixed(2)}` : undefined}
+                      title={e.label}
+                      subtitle={allowed ? e.description : 'Not shown with this claim limit / term'}
+                      note={allowed ? `×${nearestFactor(excessFactors, x => x.excess, e.value).toFixed(2)}` : undefined}
                     />
                   );
                 })}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                Lower excess = higher monthly cost. Excess is never shown above 25% of the claim limit.
+                Lower excess = higher monthly cost. Excess is never shown above 25% of the claim limit,
+                and £500 needs a £3,000+ claim limit on 2 or 3-year cover.
               </p>
             </div>
 
-            {/* Claim limit */}
+            {/* Claim limit — the four AutoCare tiers the customer sees */}
             <div>
               <Label className="mb-2 block">Claim Limit 🚗</Label>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {claimLimits.map(c => (
+                {JOURNEY_CLAIM_TIERS.map(c => (
                   <OptionTile
-                    key={c.key}
-                    selected={claimLimit === c.limit}
+                    key={c.value}
+                    selected={claimLimit === c.value}
                     onClick={() => {
-                      setClaimLimit(c.limit);
-                      if (excess > c.limit * 0.25 || (excess === 500 && c.limit < 3000)) setExcess(150);
+                      setClaimLimit(c.value);
+                      if (excess > c.value * 0.25 || (excess === 500 && c.value < 3000)) setExcess(150);
                     }}
-                    title={formatGBP(c.limit)}
-                    subtitle={CLAIM_META[c.limit]?.title}
-                    badge={CLAIM_META[c.limit]?.badge}
-                    note={`×${c.factor.toFixed(2)}`}
+                    title={formatGBP(c.value)}
+                    subtitle={c.name}
+                    badge={c.badge}
+                    note={`×${nearestFactor(claimLimits, x => x.limit, c.value).toFixed(2)}`}
                   />
                 ))}
               </div>
             </div>
 
-            {/* Add-ons */}
+            {/* Add-ons — every add-on the customer journey shows, priced the same way */}
             <div>
-              <Label className="mb-2 block">Optional Add-ons</Label>
+              <Label className="mb-2 block">Add-ons (Step 3/Step 4 parity)</Label>
               <div className="rounded-lg border p-3 text-sm">
-                <div className="font-medium">✓ Included free with 2-Year and 3-Year Cover:</div>
-                <div className="text-muted-foreground">Vehicle Recovery · Hire Car · European Cover</div>
-              </div>
-              <div className="mt-3 flex items-center justify-between rounded-lg border p-3">
-                <div>
-                  <div className="text-sm font-medium">Transfer Cover</div>
-                  <div className="text-xs text-muted-foreground">£19 one-off · transfer warranty to new owner</div>
+                <div className="font-medium">✓ Included free on every term:</div>
+                <div className="text-muted-foreground">
+                  {journeyAddOns.filter(a => a.isAutoIncluded).map(a => a.name).join(' · ')}
                 </div>
-                <Switch checked={transferCover} onCheckedChange={setTransferCover} />
               </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {journeyAddOns.filter(a => !a.isAutoIncluded).map(a => (
+                  <div key={a.key} className="flex items-center justify-between gap-2 rounded-lg border p-3">
+                    <div>
+                      <div className="text-sm font-medium">{a.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {a.oneTimePrice ? `£${a.oneTimePrice} one-off` : `£${a.monthlyPrice}/mo · £${a.monthlyPrice * term.months} over the term`}
+                      </div>
+                    </div>
+                    <Switch
+                      checked={!!addOns[a.key]}
+                      onCheckedChange={v => setAddOns(prev => ({ ...prev, [a.key]: v }))}
+                    />
+                  </div>
+                ))}
+              </div>
+              {calc?.addOnTotal ? (
+                <p className="mt-1 text-xs font-medium text-primary">
+                  Add-ons add {formatGBP(calc.addOnTotal)} to this term.
+                </p>
+              ) : null}
             </div>
 
             {/* Optional extended cover */}
             <div>
               <Label className="mb-2 block">Optional Extended Cover</Label>
-              <div className="grid grid-cols-3 gap-3">
-                {[0, 3, 6].map(m => (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {JOURNEY_BONUS_MONTHS.map(m => (
                   <OptionTile
                     key={m}
                     selected={freeMonths === m}
                     onClick={() => setFreeMonths(m)}
-                    title={m === 0 ? 'None' : `+ ${m} Months Free`}
-                    subtitle={m === 0 ? 'No bonus months' : 'Adds cover, no extra cost'}
+                    title={m === 0 ? 'None' : `+ ${m} month${m === 1 ? '' : 's'} free`}
+                    subtitle={m === 0 ? 'No bonus months' : m === 1 ? '+1 month per year' : 'Adds cover, no extra cost'}
                   />
                 ))}
               </div>
@@ -732,7 +780,7 @@ export default function PriceTestStep2({
                   <div>× Claim limit: ×{claimFactor.toFixed(2)} · × Labour: ×{labourFactor.toFixed(2)} · × Excess: ×{excessFactor.toFixed(2)}</div>
                   <div>One-year price: {formatGBP(Math.round(calc.annual))}</div>
                   <div>× Term {term.label}: ×{term.mult.toFixed(2)}</div>
-                  {transferCover ? <div>+ Transfer cover: £19</div> : null}
+                  {calc.addOnTotal ? <div>+ Add-ons: {formatGBP(calc.addOnTotal)}</div> : null}
                   {calc.belowMinimum ? (
                     <div className="text-destructive">
                       Raised to minimum sellable price {formatGBP(calc.minSellable)} ({term.label})
