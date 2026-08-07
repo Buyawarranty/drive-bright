@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { GitCompare, TrendingDown, TrendingUp, Minus } from 'lucide-react';
+import { GitCompare, TrendingDown, TrendingUp, Minus, Info } from 'lucide-react';
 import {
   usePricingVersions,
   buildCodeAdminMatrix,
@@ -20,6 +20,10 @@ import {
   getLabourRateOptions,
   getLiveLabourRateFactors,
 } from '@/lib/pricingMatrix';
+import PriceTestStep2 from './PriceTestStep2';
+import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
+import { useSavedPricingModel } from './useSavedPricingModel';
+
 
 /**
  * Read-only comparison: the pricing baked into the code base (July 2026 matrix)
@@ -63,10 +67,54 @@ const DiffBadge: React.FC<{ code: number; current: number }> = ({ code, current 
   );
 };
 
+/**
+ * Turn the hard-coded July 2026 matrix into the shape PriceTestStep2 expects, so
+ * the Step 2 replica on the left prices exactly like the original code base:
+ * one flat grid, no age / mileage / powertrain / model-risk differentiation.
+ */
+function buildCodeBaseModel(saved: ReturnType<typeof useSavedPricingModel>) {
+  const m: any = BASE_PRICING_MATRIX;
+  const ref = Number(m['12months'][150][1250]); // reference cell: 1 yr, £150 excess, £1,250 limit
+  return {
+    bands: saved.ageBands.map((b: any) => ({ ...b, oneYear: ref })),
+    mileageBands: saved.mileageBands.map((b: any) => ({ ...b, factor: 1 })),
+    powertrains: saved.powertrains.map((p: any) => ({ ...p, factor: 1 })),
+    vehicleTypes: saved.vehicleTypes.map((t: any) => ({
+      ...t,
+      factor: t.key === 'motorbike' ? 0.5 : 1,
+    })),
+    modelRisks: saved.modelRisks.map((r: any) => ({ ...r, factor: 1 })),
+    modelFloors: saved.modelFloors,
+    claimLimits: CLAIM_LIMITS.map(limit => ({
+      key: `cl-${limit}`,
+      limit,
+      factor: Number(m['12months'][150][limit]) / ref,
+    })),
+    labourRates: DEFAULT_LABOUR_RATE_OPTIONS.map(o => ({
+      key: `lr-${o.rate}`,
+      rate: o.rate,
+      factor: o.factor,
+      uxPosition: o.label ?? '',
+    })),
+    excessFactors: EXCESSES.map(excess => ({
+      key: `ex-${excess}`,
+      excess,
+      factor: Number(m['12months'][excess][1250]) / ref,
+    })),
+    twoYearMult: Number(m['24months'][150][1250]) / ref,
+    threeYearMult: Number(m['36months'][150][1250]) / ref,
+    payInFullFactor: saved.payInFullFactor,
+  };
+}
+
 export default function CodebaseVsCurrentPanel() {
   const { versions, loading } = usePricingVersions();
   const [claimLimit, setClaimLimit] = useState<number>(1250);
   const [labourRate, setLabourRate] = useState<number>(70);
+  const saved = useSavedPricingModel();
+  const [step2Vehicle, setStep2Vehicle] = useState<ResolvedTestVehicle | null>(null);
+  const codeBaseModel = useMemo(() => buildCodeBaseModel(saved), [saved]);
+
 
   const liveVersion = useMemo(() => versions.find(v => v.status === 'live') ?? null, [versions]);
 
@@ -318,6 +366,52 @@ export default function CodebaseVsCurrentPanel() {
           )}
         </CardContent>
       </Card>
+
+      <Card className="border-2">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <GitCompare className="h-4 w-4" />
+            Step 2 comparison — Quotes &amp; Orders
+          </CardTitle>
+          <CardDescription>
+            The same agent Step 2 quote screen twice: left priced with the original code-base grid
+            (July 2026, flat — no age, mileage, powertrain or model-risk differentiation), right
+            priced with the pricing model that is live today. Look up a reg to drive both columns.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              Read-only sandbox — nothing here saves a quote or changes live pricing. Any figure the
+              code base does not vary by vehicle (age band, mileage, powertrain, model risk) is held
+              at ×1.00 on the left, so a difference between the columns is exactly what the live
+              model adds or removes.
+            </AlertDescription>
+          </Alert>
+          <RegLookupBar onResolved={setStep2Vehicle} />
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <PriceTestStep2
+          liveModel={codeBaseModel}
+          vehicle={step2Vehicle}
+          showRegLookup={false}
+          title="Original code base 7/2026 — Step 2"
+          subtitle="Flat grid straight from the code base, no vehicle-specific factors."
+          badgeText="Code base"
+        />
+        <PriceTestStep2
+          vehicle={step2Vehicle}
+          showRegLookup={false}
+          title={`${liveVersion?.label ?? 'Current live'} — Step 2`}
+          subtitle="Priced with the pricing model currently live."
+          badgeText="Live"
+        />
+      </div>
+
+
 
       <Card>
         <CardHeader className="pb-2">
