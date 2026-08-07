@@ -7,6 +7,7 @@ import { GitCompare, Info, Loader2 } from 'lucide-react';
 import PriceTestStep2 from './PriceTestStep2';
 import PriceDiffBanner from './PriceDiffBanner';
 import type { PriceTestQuoteSnapshot } from './PriceTestStep2';
+import SectionPushLiveBar from './SectionPushLiveBar';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import { usePricingVersions } from '@/hooks/usePricingVersions';
@@ -90,7 +91,12 @@ function versionToModel(version: any | null, saved: ReturnType<typeof useSavedPr
   };
 }
 
-const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
+const LiveVsAug26Panel: React.FC<{
+  liveModel?: any;
+  liveLabel?: string | null;
+  busy?: boolean;
+  onPushModel?: (model: any, label: string, websiteDiscountPct?: number) => void | Promise<void>;
+}> = ({ liveModel, liveLabel, busy, onPushModel }) => {
   const saved = useSavedPricingModel();
   const { versions, loading } = usePricingVersions();
   const [versionId, setVersionId] = useState<string | null>(null);
@@ -113,6 +119,26 @@ const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
 
   return (
     <div className="space-y-4">
+      <SectionPushLiveBar
+        sectionLabel="Live vs Aug 2026"
+        liveLabel={liveLabel}
+        busy={busy}
+        onPush={onPushModel}
+        candidates={[
+          {
+            key: 'live',
+            label: 'Live builder figures (left)',
+            description: 'Republishes the current live builder figures unchanged.',
+            getModel: () => liveModel,
+          },
+          {
+            key: 'aug26',
+            label: 'Aug 2026 pricing (right)',
+            description: 'Publishes the selected Aug 2026 saved version.',
+            getModel: () => aug26Model,
+          },
+        ]}
+      />
       <Card className="border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl">

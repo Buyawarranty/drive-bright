@@ -18,6 +18,7 @@ import { buildCodeBaseClaimTiers } from '@/lib/pricing/codeBaseClaimTiers';
 import PriceTestStep2 from './PriceTestStep2';
 import PriceDiffBanner from './PriceDiffBanner';
 import type { PriceTestQuoteSnapshot } from './PriceTestStep2';
+import SectionPushLiveBar from './SectionPushLiveBar';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 
@@ -108,7 +109,12 @@ function liveBaseFrom(liveModel: any, saved: ReturnType<typeof useSavedPricingMo
   };
 }
 
-const CodebaseVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
+const CodebaseVsLivePanel: React.FC<{
+  liveModel?: any;
+  liveLabel?: string | null;
+  busy?: boolean;
+  onPushModel?: (model: any, label: string, websiteDiscountPct?: number) => void | Promise<void>;
+}> = ({ liveModel, liveLabel, busy, onPushModel }) => {
   const saved = useSavedPricingModel();
   const codeBase = useMemo(() => buildCodeBaseModel(saved), [saved]);
   const live = useMemo(() => liveBaseFrom(liveModel, saved), [liveModel, saved]);
@@ -163,6 +169,26 @@ const CodebaseVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
 
   return (
     <div className="space-y-4">
+      <SectionPushLiveBar
+        sectionLabel="Code base vs Live"
+        liveLabel={liveLabel}
+        busy={busy}
+        onPush={onPushModel}
+        candidates={[
+          {
+            key: 'codebase',
+            label: 'Code base pricing 7/2026 (left)',
+            description: 'Publishes the flat July 2026 code-base grid with the variables set above.',
+            getModel: () => testModel,
+          },
+          {
+            key: 'live',
+            label: 'Live pricing (right)',
+            description: 'Republishes the current live builder figures unchanged.',
+            getModel: () => liveModel,
+          },
+        ]}
+      />
       <Card className="border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl">

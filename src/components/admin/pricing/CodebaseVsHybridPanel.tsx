@@ -18,6 +18,7 @@ import { buildCodeBaseClaimTiers } from '@/lib/pricing/codeBaseClaimTiers';
 import PriceTestStep2 from './PriceTestStep2';
 import PriceDiffBanner from './PriceDiffBanner';
 import type { PriceTestQuoteSnapshot } from './PriceTestStep2';
+import SectionPushLiveBar from './SectionPushLiveBar';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 
@@ -100,7 +101,12 @@ function baseFrom(liveModel: any, saved: ReturnType<typeof useSavedPricingModel>
   };
 }
 
-const CodebaseVsHybridPanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
+const CodebaseVsHybridPanel: React.FC<{
+  liveModel?: any;
+  liveLabel?: string | null;
+  busy?: boolean;
+  onPushModel?: (model: any, label: string, websiteDiscountPct?: number) => void | Promise<void>;
+}> = ({ liveModel, liveLabel, busy, onPushModel }) => {
   const saved = useSavedPricingModel();
   const codeBaseModel = useMemo(() => buildCodeBaseModel(saved), [saved]);
   const base = useMemo(() => baseFrom(liveModel, saved), [liveModel, saved]);
@@ -149,6 +155,26 @@ const CodebaseVsHybridPanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => 
 
   return (
     <div className="space-y-4">
+      <SectionPushLiveBar
+        sectionLabel="Code base vs Test Hybrid Aug"
+        liveLabel={liveLabel}
+        busy={busy}
+        onPush={onPushModel}
+        candidates={[
+          {
+            key: 'codebase',
+            label: 'Code base pricing 7/2026 (left)',
+            description: 'Publishes the flat July 2026 code-base grid.',
+            getModel: () => codeBaseModel,
+          },
+          {
+            key: 'hybrid',
+            label: 'Aug hybrid test (right)',
+            description: 'Publishes the hybrid variables exactly as set above.',
+            getModel: () => hybridModel,
+          },
+        ]}
+      />
       <Card className="border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl">

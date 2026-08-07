@@ -12,6 +12,7 @@ import { formatGBP } from '@/lib/pricingMatrix';
 import PriceTestStep2 from './PriceTestStep2';
 import PriceDiffBanner from './PriceDiffBanner';
 import type { PriceTestQuoteSnapshot } from './PriceTestStep2';
+import SectionPushLiveBar from './SectionPushLiveBar';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 
@@ -67,7 +68,12 @@ const spread = (factor: number | null, amount: number) => {
   return Math.round((1 + (factor - 1) * amount) * 100) / 100;
 };
 
-const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
+const AugHybridVsLivePanel: React.FC<{
+  liveModel?: any;
+  liveLabel?: string | null;
+  busy?: boolean;
+  onPushModel?: (model: any, label: string, websiteDiscountPct?: number) => void | Promise<void>;
+}> = ({ liveModel, liveLabel, busy, onPushModel }) => {
   const saved = useSavedPricingModel();
   const base = useMemo(() => baseFrom(liveModel, saved), [liveModel, saved]);
 
@@ -115,6 +121,27 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
 
   return (
     <div className="space-y-4">
+      <SectionPushLiveBar
+        sectionLabel="Live Vs Test Hybrid Aug"
+        liveLabel={liveLabel}
+        busy={busy}
+        onPush={onPushModel}
+        candidates={[
+          {
+            key: 'live',
+            label: 'Live pricing (left)',
+            description: 'Republishes the current live builder figures unchanged.',
+            getModel: () => liveModel,
+          },
+          {
+            key: 'hybrid',
+            label: 'Aug hybrid test (right)',
+            description:
+              'Publishes the hybrid variables exactly as set above: reduced base, compressed risk/mileage spread and the multi-year discounts.',
+            getModel: () => hybridModel,
+          },
+        ]}
+      />
       <Card className="border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl">

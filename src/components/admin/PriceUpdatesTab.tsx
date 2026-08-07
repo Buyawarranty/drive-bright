@@ -41,6 +41,7 @@ import ClaimLimit5kAuthToggle from '@/components/admin/pricing/ClaimLimit5kAuthT
 import ExcludedVehiclesPanel from '@/components/admin/pricing/ExcludedVehiclesPanel';
 import VehicleRiskBandsPanel from '@/components/admin/pricing/VehicleRiskBandsPanel';
 import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
+import SectionPushLiveBar from '@/components/admin/pricing/SectionPushLiveBar';
 
 
 /** The real Quotes & Orders page, rendered read-only for beta testing before pushing prices live. */
@@ -449,11 +450,15 @@ export default function PriceUpdatesTab() {
     websiteDiscountPct: number,
     publish = false,
     claimLimitFactors?: { limit: number; factor: number }[] | null,
-    labourRateFactors?: { rate: number; factor: number; label?: string | null }[] | null
+    labourRateFactors?: { rate: number; factor: number; label?: string | null }[] | null,
+    opts?: { draftLabel?: string; skipConfirm?: boolean; vehicleFactorModel?: VehicleFactorModel | null }
   ) {
+    const vehicleFactors =
+      opts && 'vehicleFactorModel' in opts ? opts.vehicleFactorModel ?? null : currentVehicleFactorModel();
     websiteDiscountPct = effectiveDiscountPct(Number(websiteDiscountPct));
     if (
       publish &&
+      !opts?.skipConfirm &&
       !window.confirm(
         'Push this age-based model live?\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ' +
           websiteDiscountPct +
@@ -464,7 +469,7 @@ export default function PriceUpdatesTab() {
     }
     setBusy(true);
     try {
-      const draftLabel = `Age-based model ${new Date().toLocaleString('en-GB')}`;
+      const draftLabel = opts?.draftLabel || `Age-based model ${new Date().toLocaleString('en-GB')}`;
       const v = await createVersion(
         draftLabel,
         modelMatrix,
@@ -472,7 +477,7 @@ export default function PriceUpdatesTab() {
         'Generated from the proposed age-based pricing model.',
         claimLimitFactors ?? null,
         labourRateFactors ?? null,
-        currentVehicleFactorModel()
+        vehicleFactors
       );
       loadIntoEditor(v);
 
@@ -496,7 +501,7 @@ export default function PriceUpdatesTab() {
           step3_discount_pct: websiteDiscountPct,
           claim_limit_factors: claimLimitFactors ?? null,
           labour_rate_factors: labourRateFactors ?? null,
-          vehicle_factor_model: currentVehicleFactorModel(),
+          vehicle_factor_model: vehicleFactors,
         });
         await publishVersion(v.id);
         applyLivePricingVersion({
@@ -505,10 +510,10 @@ export default function PriceUpdatesTab() {
           step3_discount_pct: websiteDiscountPct,
           claim_limit_factors: claimLimitFactors ?? null,
           labour_rate_factors: labourRateFactors ?? null,
-          vehicle_factor_model: currentVehicleFactorModel(),
+          vehicle_factor_model: vehicleFactors,
         });
         setMatrix(safeMatrix);
-        toast.success('Age-based pricing published live — reload any open quote pages');
+        toast.success(`“${draftLabel}” is now live — reload any open quote pages`);
         return;
       }
 
@@ -520,8 +525,65 @@ export default function PriceUpdatesTab() {
     }
   }
 
+  /**
+   * Publish an arbitrary age-band style model straight from a comparison
+   * section, so a manager can push exactly the side they are looking at.
+   */
+  async function handlePushModelLive(model: any, label: string, websiteDiscountPct?: number) {
+    if (!model || !Array.isArray(model.bands) || !model.bands.length) {
+      toast.error('This model has no price bands yet — nothing to publish');
+      return;
+    }
+    const claim = (model.claimLimits || []).map((c: any) => ({
+      limit: Number(c.limit),
+      factor: Number(c.factor),
+    }));
+    const labour = (model.labourRates || []).map((l: any) => ({
+      rate: Number(l.rate),
+      factor: Number(l.factor),
+      label: l.uxPosition ?? l.label ?? null,
+    }));
+    const vehicleFactors: VehicleFactorModel = {
+      bands: model.bands.map((b: any) => ({ key: String(b.key), oneYear: b.oneYear ?? null })),
+      refBandKey: String(model.refBandKey ?? model.bands[0]?.key ?? ''),
+      mileageBands: (model.mileageBands || []).map((b: any) => ({
+        min: Number(b.min) || 0,
+        max: b.max === null || b.max === undefined ? null : Number(b.max),
+        factor: b.factor === null || b.factor === undefined ? null : Number(b.factor),
+      })),
+      powertrains: (model.powertrains || []).map((p: any) => ({ key: String(p.key), factor: Number(p.factor) })),
+      vehicleTypes: (model.vehicleTypes || []).map((t: any) => ({
+        key: String(t.key),
+        factor: t.factor === null || t.factor === undefined ? null : Number(t.factor),
+      })),
+    };
+    const discount = effectiveDiscountPct(
+      Number(websiteDiscountPct ?? model.websiteDiscountPct ?? discountPct ?? 10)
+    );
+    const modelForMatrix = {
+      ...model,
+      refBandKey: vehicleFactors.refBandKey,
+    } as AgeBandModel;
+    await handleBuildDraftFromModel(buildAdminMatrixFromModel(modelForMatrix), discount, true, claim, labour, {
+      draftLabel: `${label} — pushed ${new Date().toLocaleString('en-GB')}`,
+      skipConfirm: true,
+      vehicleFactorModel: vehicleFactors,
+    });
+  }
 
 
+
+
+
+  /** The age-band figures saved in this browser, used when no draft is selected. */
+  function readSavedAgeBandModel(): AgeBandModel | null {
+    try {
+      const saved = JSON.parse(localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY) || 'null');
+      return saved && Array.isArray(saved.bands) && saved.bands.length ? (saved as AgeBandModel) : null;
+    } catch {
+      return null;
+    }
+  }
 
   async function handlePublish() {
     if (!selectedId) {
@@ -799,19 +861,19 @@ export default function PriceUpdatesTab() {
 
 
         <TabsContent value="hybrid" className="space-y-6 mt-4">
-          <AugHybridVsLivePanel liveModel={liveEditorModel} />
+          <AugHybridVsLivePanel liveModel={liveEditorModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
         </TabsContent>
 
         <TabsContent value="codebase-live" className="space-y-6 mt-4">
-          <CodebaseVsLivePanel liveModel={liveEditorModel} />
+          <CodebaseVsLivePanel liveModel={liveEditorModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
         </TabsContent>
 
         <TabsContent value="codebase-hybrid" className="space-y-6 mt-4">
-          <CodebaseVsHybridPanel liveModel={liveEditorModel} />
+          <CodebaseVsHybridPanel liveModel={liveEditorModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
         </TabsContent>
 
         <TabsContent value="compare" className="space-y-6 mt-4">
-          <LiveVsAug26Panel liveModel={liveEditorModel} />
+          <LiveVsAug26Panel liveModel={liveEditorModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
           <AgeBandPricingPreview
             onBuildDraft={handleBuildDraftFromModel}
             onModelChange={setLiveEditorModel}
@@ -819,6 +881,20 @@ export default function PriceUpdatesTab() {
         </TabsContent>
 
         <TabsContent value="builder" className="space-y-6 mt-4">
+          <SectionPushLiveBar
+            sectionLabel="Age-based builder (calculator)"
+            liveLabel={liveVersion?.label ?? null}
+            busy={busy}
+            onPush={handlePushModelLive}
+            candidates={[
+              {
+                key: 'builder',
+                label: 'Age-based builder figures',
+                description: 'Publishes the bands and factors currently in the builder below.',
+                getModel: () => liveEditorModel ?? readSavedAgeBandModel(),
+              },
+            ]}
+          />
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription className="text-sm">
@@ -835,6 +911,20 @@ export default function PriceUpdatesTab() {
 
 
         <TabsContent value="aug26" className="space-y-6 mt-4">
+          <SectionPushLiveBar
+            sectionLabel="Aug 2026 pricing"
+            liveLabel={liveVersion?.label ?? null}
+            busy={busy}
+            onPush={handlePushModelLive}
+            candidates={[
+              {
+                key: 'aug26',
+                label: 'Aug 2026 builder figures',
+                description: 'Publishes the saved Aug 2026 figures.',
+                getModel: () => liveEditorModel ?? readSavedAgeBandModel(),
+              },
+            ]}
+          />
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription className="text-sm">
@@ -854,6 +944,13 @@ export default function PriceUpdatesTab() {
         </TabsContent>
 
         <TabsContent value="tools" className="space-y-4 mt-4">
+          <SectionPushLiveBar
+            sectionLabel="Excluded vehicles & tools"
+            liveLabel={liveVersion?.label ?? null}
+            busy={busy}
+            onPush={undefined}
+            candidates={[]}
+          />
           <Tabs defaultValue="riskbands" className="w-full">
             <TabsList className="flex flex-wrap gap-2 bg-muted/40 p-1">
               <TabsTrigger value="riskbands">
@@ -889,10 +986,17 @@ export default function PriceUpdatesTab() {
               changes a price.
             </AlertDescription>
           </Alert>
-          <CodebaseVsCurrentPanel />
+          <CodebaseVsCurrentPanel liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
         </TabsContent>
 
         <TabsContent value="previews" className="space-y-4 mt-4">
+          <SectionPushLiveBar
+            sectionLabel="Previews"
+            liveLabel={liveVersion?.label ?? null}
+            busy={busy}
+            onPush={undefined}
+            candidates={[]}
+          />
           <Tabs defaultValue="quotes-preview" className="w-full">
             <TabsList className="flex flex-wrap gap-2 bg-muted/40 p-1">
               <TabsTrigger value="quotes-preview">
@@ -991,6 +1095,16 @@ export default function PriceUpdatesTab() {
 
 
         <TabsContent value="editor" className="space-y-6 mt-4">
+          <SectionPushLiveBar
+            sectionLabel="Price grid (this one goes live)"
+            liveLabel={liveVersion?.label ?? null}
+            busy={busy}
+            candidates={[]}
+            directPush={{
+              label: label ? `this grid — ${label}` : 'this grid',
+              run: handlePublish,
+            }}
+          />
 
 
 
