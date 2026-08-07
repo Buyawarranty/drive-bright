@@ -3767,6 +3767,14 @@ Questions? Call 0330 229 5040`;
                       onSelectLead={handleLeadSelect} 
                       className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-300"
                     />
+                    <Button
+                      size="sm"
+                      onClick={() => setInvoiceDialogOpen(true)}
+                      className="gap-1 bg-orange-600 hover:bg-orange-700 text-white"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Create invoice
+                    </Button>
                     {savedQuotes.length > 0 && (
                       <Button
                         variant="outline"
