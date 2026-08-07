@@ -16,6 +16,8 @@ Updated: just now
 - Revenue metrics must exclude 'cancelled' or 'refunded' orders and prioritize `signup_date`.
 - Lead rotation NEVER catches an agent up: new starters, holiday returns and late starts rejoin at the back and take normal turns. Never order by assigned_today. See mem://admin/leads/late-start-agents
 - SEO work = visual/structural/wording ONLY. Never touch pricing, APIs, integrations, or tracking tags. See mem://constraints/seo-work-visual-only
+- Price floor is shaped by excess + claim limit; never clamp grid cells cell-by-cell. See mem://pricing/floor-must-not-flatten-options
+
 
 ## Memories
 - [SEO work visual-only](mem://constraints/seo-work-visual-only) — During SEO work: layout/wording/padding only; never touch pricing logic, APIs, integrations, or tracking tags
