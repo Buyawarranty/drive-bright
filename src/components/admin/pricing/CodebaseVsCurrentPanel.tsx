@@ -113,7 +113,15 @@ function buildCodeBaseModel(saved: ReturnType<typeof useSavedPricingModel>) {
   };
 }
 
-export default function CodebaseVsCurrentPanel() {
+export default function CodebaseVsCurrentPanel({
+  liveLabel,
+  busy,
+  onPushModel,
+}: {
+  liveLabel?: string | null;
+  busy?: boolean;
+  onPushModel?: (model: any, label: string, websiteDiscountPct?: number) => void | Promise<void>;
+} = {}) {
   const { versions, loading } = usePricingVersions();
   const [claimLimit, setClaimLimit] = useState<number>(2000);
   const [labourRate, setLabourRate] = useState<number>(70);
@@ -219,6 +227,20 @@ export default function CodebaseVsCurrentPanel() {
 
   return (
     <div className="space-y-4">
+      <SectionPushLiveBar
+        sectionLabel="Original codebase pricing vs Live"
+        liveLabel={liveLabel}
+        busy={busy}
+        onPush={onPushModel}
+        candidates={[
+          {
+            key: 'codebase',
+            label: 'Original code base pricing 7/2026 (left)',
+            description: 'Publishes the flat July 2026 code-base grid as live pricing.',
+            getModel: () => codeBaseModel,
+          },
+        ]}
+      />
       <Alert className="border-indigo-300 bg-indigo-50 dark:bg-indigo-950/30">
         <GitCompare className="h-4 w-4" />
         <AlertDescription className="text-sm">
