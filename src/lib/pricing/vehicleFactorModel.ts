@@ -45,6 +45,22 @@ export function getLiveVehicleFactorModel(): VehicleFactorModel | null {
   return LIVE_MODEL;
 }
 
+/**
+ * The vehicle the published grid was built for. Factors are applied NORMALISED
+ * against it (F_current / F_reference) so a grid generated for a car whose own
+ * factors were not all 1.00 is never charged those factors twice.
+ * With no reference vehicle set, behaviour is unchanged (divisor 1).
+ */
+let LIVE_REFERENCE_VEHICLE: VehicleFactorInput | null = null;
+
+export function setLiveVehicleReferenceVehicle(vehicle: VehicleFactorInput | null): void {
+  LIVE_REFERENCE_VEHICLE = vehicle && Object.keys(vehicle).length ? vehicle : null;
+}
+
+export function getLiveVehicleReferenceVehicle(): VehicleFactorInput | null {
+  return LIVE_REFERENCE_VEHICLE;
+}
+
 /** '1-3' → [1,3]; '12' → [12,12]; '15+' → [15,null]. */
 function bandRange(key: string): { min: number; max: number | null } {
   const k = String(key).trim();
@@ -94,7 +110,7 @@ function powertrainKey(fuelType?: string | null): string {
  * Motorbikes are intentionally NOT handled here — they are halved by the
  * isMotorbike flag in pricingMatrix so the floor halves with them.
  */
-export function getVehiclePriceFactor(input?: VehicleFactorInput | null): number {
+export function rawVehicleFactor(input?: VehicleFactorInput | null): number {
   const model = LIVE_MODEL;
   if (!model || !input) return 1;
 
@@ -158,4 +174,17 @@ export function getVehiclePriceFactor(input?: VehicleFactorInput | null): number
 
   if (!Number.isFinite(factor) || factor <= 0) return 1;
   return factor;
+}
+
+/**
+ * Normalised multiplier used by every live price read: the vehicle's raw factor
+ * divided by the reference vehicle's raw factor. Identical to the raw factor
+ * when no reference vehicle is published, so nothing moves until one is set.
+ */
+export function getVehiclePriceFactor(input?: VehicleFactorInput | null): number {
+  const current = rawVehicleFactor(input);
+  const ref = LIVE_REFERENCE_VEHICLE ? rawVehicleFactor(LIVE_REFERENCE_VEHICLE) : 1;
+  if (!Number.isFinite(ref) || ref <= 0) return current;
+  const normalised = current / ref;
+  return Number.isFinite(normalised) && normalised > 0 ? normalised : 1;
 }

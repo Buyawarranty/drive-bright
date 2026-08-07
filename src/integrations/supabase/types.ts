@@ -9140,14 +9140,22 @@ export type Database = {
         Row: {
           admin_matrix: Json
           claim_limit_factors: Json | null
+          config_checksum: string | null
           created_at: string
           created_by: string | null
+          effective_date: string | null
           id: string
           label: string
           labour_rate_factors: Json | null
+          model_version: number
           notes: string | null
+          price_caps: Json | null
+          price_floors: Json | null
           published_at: string | null
           published_by: string | null
+          reference_factors: Json | null
+          reference_vehicle: Json | null
+          rounding_rule: string | null
           status: string
           step3_discount_pct: number
           updated_at: string
@@ -9156,14 +9164,22 @@ export type Database = {
         Insert: {
           admin_matrix: Json
           claim_limit_factors?: Json | null
+          config_checksum?: string | null
           created_at?: string
           created_by?: string | null
+          effective_date?: string | null
           id?: string
           label?: string
           labour_rate_factors?: Json | null
+          model_version?: number
           notes?: string | null
+          price_caps?: Json | null
+          price_floors?: Json | null
           published_at?: string | null
           published_by?: string | null
+          reference_factors?: Json | null
+          reference_vehicle?: Json | null
+          rounding_rule?: string | null
           status?: string
           step3_discount_pct?: number
           updated_at?: string
@@ -9172,14 +9188,22 @@ export type Database = {
         Update: {
           admin_matrix?: Json
           claim_limit_factors?: Json | null
+          config_checksum?: string | null
           created_at?: string
           created_by?: string | null
+          effective_date?: string | null
           id?: string
           label?: string
           labour_rate_factors?: Json | null
+          model_version?: number
           notes?: string | null
+          price_caps?: Json | null
+          price_floors?: Json | null
           published_at?: string | null
           published_by?: string | null
+          reference_factors?: Json | null
+          reference_vehicle?: Json | null
+          rounding_rule?: string | null
           status?: string
           step3_discount_pct?: number
           updated_at?: string
