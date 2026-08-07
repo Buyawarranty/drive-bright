@@ -1618,6 +1618,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               ↓ Newest first
             </Button>
             <UnsubscribeQuickLink />
+            {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleWatiExport}
+                title="Export the leads currently shown (or ticked) as a WATI bulk-contact CSV, ready to upload and WhatsApp"
+                className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-green-300 bg-green-50 text-green-800 hover:bg-green-100 hover:border-green-400"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                Export for WATI (WhatsApp)
+              </Button>
+            )}
             {(() => {
               const inReminders = activeFilter === 'reminders' || (activeFilter as string) === 'due_today';
               const isDefault = sortOption === 'latest_submitted' || (inReminders && sortOption === 'reminder_soonest');
