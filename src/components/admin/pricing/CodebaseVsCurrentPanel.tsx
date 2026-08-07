@@ -85,11 +85,7 @@ function buildCodeBaseModel(saved: ReturnType<typeof useSavedPricingModel>) {
     })),
     modelRisks: saved.modelRisks.map((r: any) => ({ ...r, factor: 1 })),
     modelFloors: saved.modelFloors,
-    claimLimits: CLAIM_LIMITS.map(limit => ({
-      key: `cl-${limit}`,
-      limit,
-      factor: Number(m['12months'][150][limit]) / ref,
-    })),
+    claimLimits: buildCodeBaseClaimTiers(m, ref),
     labourRates: DEFAULT_LABOUR_RATE_OPTIONS.map(o => ({
       key: `lr-${o.rate}`,
       rate: o.rate,

@@ -13,7 +13,8 @@ import {
   BASE_PRICING_MATRIX,
   DEFAULT_LABOUR_RATE_OPTIONS,
 } from '@/lib/pricingMatrix';
-import { EXCESSES, CLAIM_LIMITS } from '@/hooks/usePricingVersions';
+import { EXCESSES } from '@/hooks/usePricingVersions';
+import { buildCodeBaseClaimTiers } from '@/lib/pricing/codeBaseClaimTiers';
 import PriceTestStep2 from './PriceTestStep2';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
@@ -68,11 +69,7 @@ function buildCodeBaseModel(saved: ReturnType<typeof useSavedPricingModel>) {
     })),
     modelRisks: saved.modelRisks.map((r: any) => ({ ...r, factor: 1 })),
     modelFloors: saved.modelFloors,
-    claimLimits: CLAIM_LIMITS.map(limit => ({
-      key: `cl-${limit}`,
-      limit,
-      factor: Number(m['12months'][150][limit]) / ref,
-    })),
+    claimLimits: buildCodeBaseClaimTiers(m, ref),
     labourRates: DEFAULT_LABOUR_RATE_OPTIONS.map(o => ({
       key: `lr-${o.rate}`,
       rate: o.rate,
