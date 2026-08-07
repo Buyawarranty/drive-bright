@@ -4086,12 +4086,15 @@ Buyawarranty.co.uk`,
 
   return (
     <div className="space-y-6">
-      {/* Part payment reminders (top-of-page banner) */}
+      {/* Part payments pending (top-of-page banner) */}
       <PartPaymentRemindersBanner
+        canMarkReceived={canConfirmPayments}
+        onShowPendingList={() => setFilterByPartPayment('outstanding')}
         onOpenCustomer={(id) => {
           setSearchTerm(id);
         }}
       />
+
 
       {/* Pending payment confirmation banner (managers only) */}
 
