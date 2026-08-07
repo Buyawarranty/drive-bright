@@ -10,6 +10,8 @@ import { FlaskConical, PhoneCall, Info, RotateCcw } from 'lucide-react';
 import { formatGBP } from '@/lib/pricingMatrix';
 import { MANUAL_REFERRAL_MESSAGE } from './AgeBandPricingPreview';
 import { useSavedPricingModel } from './useSavedPricingModel';
+import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
+
 
 /**
  * PRICE TESTING SANDBOX — a visual replica of Quotes & Orders "Step 2: Quote Details".
