@@ -45,7 +45,12 @@ export const PREMIUM_CLAIM_SURCHARGE = PREMIUM_STEP_SURCHARGE;
 export const PREMIUM_CLAIM_MONTHLY = PREMIUM_STEP_MONTHLY;
 
 /** Default vehicles excluded from £5000 claim limit (code fallback) */
-export const DEFAULT_CLAIM_5K_BLOCKED_MAKES = ['tesla', 'jaguar', 'land rover', 'porsche'];
+/**
+ * £5,000 cover is no longer blocked for any vehicle (management decision), so the
+ * default blocklist is intentionally empty. Model risk is priced instead — see
+ * src/lib/pricing/modelRiskRules.ts.
+ */
+export const DEFAULT_CLAIM_5K_BLOCKED_MAKES: string[] = [];
 const PREMIUM_VEHICLE_MAKES = DEFAULT_CLAIM_5K_BLOCKED_MAKES;
 
 /**
