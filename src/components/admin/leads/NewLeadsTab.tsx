@@ -37,6 +37,7 @@ import { LeadsPerAgentTab } from './LeadsPerAgentTab';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
 import ClaimRecontactBatchButton from './ClaimRecontactBatchButton';
 import UnsubscribeQuickLink from '@/components/admin/UnsubscribeQuickLink';
+import { buildWatiRows } from '@/lib/watiExport';
 
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck, MoreHorizontal, BarChart3, Network, ChevronDown, ChevronUp } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
