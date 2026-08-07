@@ -149,7 +149,7 @@ const AugHybridVsLivePanel: React.FC<{
             Live Vs Test Hybrid Aug
           </CardTitle>
           <CardDescription>
-            The rebalance proposal against live pricing in the same Step 2 screen. Left is exactly what
+            The August test model against live pricing in the same Step 2 screen. Left is exactly what
             agents sell today; right applies the hybrid variables below. Sandbox only — nothing saves a
             quote or changes live prices.
           </CardDescription>
@@ -158,7 +158,7 @@ const AugHybridVsLivePanel: React.FC<{
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription className="text-sm">
-              The proposal starts 20% below the August base and compresses its risk and mileage uplifts.
+              This test model starts 20% below the August base and compresses its risk and mileage uplifts.
               Multi-year terms are also cheaper than live. Anything over the ceiling refers out instead
               of displaying a high price that is difficult to convert.
             </AlertDescription>
@@ -170,7 +170,7 @@ const AugHybridVsLivePanel: React.FC<{
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <div className="text-sm font-semibold">Hybrid variables</div>
               <Button variant="outline" size="sm" onClick={() => setCfg(HYBRID_DEFAULTS)}>
-                <RotateCcw className="mr-2 h-4 w-4" /> Reset to proposal
+                <RotateCcw className="mr-2 h-4 w-4" /> Reset to default
               </Button>
             </div>
 
@@ -202,7 +202,7 @@ const AugHybridVsLivePanel: React.FC<{
                   onChange={e => set('baseReductionPct', Math.min(50, Math.max(0, Number(e.target.value) || 0)))}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Proposed reference {effectiveTarget ? formatGBP(effectiveTarget) : '—'} vs August {formatGBP(referenceLive)}
+                  Target reference {effectiveTarget ? formatGBP(effectiveTarget) : '—'} vs August {formatGBP(referenceLive)}
                 </p>
               </div>
 
@@ -216,7 +216,7 @@ const AugHybridVsLivePanel: React.FC<{
                   onChange={e => set('targetReference', Number(e.target.value) || 0)}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Whole age curve × {recentre.toFixed(3)} — blank uses the reduction
+                  Whole age curve scaled by {recentre.toFixed(3)} — blank uses the reduction
                 </p>
               </div>
 
