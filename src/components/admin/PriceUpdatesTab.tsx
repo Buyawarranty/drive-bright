@@ -1106,7 +1106,10 @@ export default function PriceUpdatesTab() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">History</CardTitle>
-          <CardDescription>Every saved and published pricing structure.</CardDescription>
+          <CardDescription>
+            Every saved and published pricing structure. Open one for a quick summary, then load it
+            into the editor or restore it live.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           {versions.length === 0 && (
@@ -1139,16 +1142,89 @@ export default function PriceUpdatesTab() {
                 >
                   {v.status === 'live' ? 'Live' : v.status === 'draft' ? 'Test draft' : 'Archived'}
                 </Badge>
-                {v.status !== 'live' && (
-                  <Button variant="outline" size="sm" onClick={() => loadIntoEditor(v)}>
-                    Open
-                  </Button>
-                )}
+                <Button variant="outline" size="sm" onClick={() => setPreviewVersion(v)}>
+                  Open
+                </Button>
               </div>
             </div>
           ))}
         </CardContent>
       </Card>
+
+      {/* Quick summary of a saved/published version — no full grid dump. */}
+      <Dialog open={!!previewVersion} onOpenChange={open => !open && setPreviewVersion(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-base">{previewVersion?.label}</DialogTitle>
+            <DialogDescription>
+              {previewVersion
+                ? `${
+                    previewVersion.status === 'live'
+                      ? 'Currently live'
+                      : previewVersion.status === 'draft'
+                        ? 'Test draft'
+                        : 'Archived'
+                  } · website is ${Number(previewVersion.step3_discount_pct)}% below these prices`
+                : ''}
+            </DialogDescription>
+          </DialogHeader>
+
+          {previewVersion && (
+            <div className="space-y-3">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-muted-foreground">
+                    <th className="py-1">Term</th>
+                    <th className="py-1">£0 excess</th>
+                    <th className="py-1">£150 excess</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PERIODS.map(p => {
+                    const cell = (ex: number) =>
+                      previewVersion.admin_matrix?.[p]?.[String(ex)]?.['2000'];
+                    return (
+                      <tr key={p} className="border-t">
+                        <td className="py-1.5 font-medium">{PERIOD_LABELS[p] || p}</td>
+                        <td className="py-1.5">{cell(0) ? formatGBP(cell(0)!) : '—'}</td>
+                        <td className="py-1.5">{cell(150) ? formatGBP(cell(150)!) : '—'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <p className="text-xs text-muted-foreground">
+                Showing the £2,000 claim limit as a reference. Load it into the editor to see every
+                cell.
+              </p>
+              {previewVersion.notes && (
+                <p className="text-xs text-muted-foreground">{previewVersion.notes}</p>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={busy}
+              onClick={() => {
+                if (previewVersion) loadIntoEditor(previewVersion);
+                setPreviewVersion(null);
+                toast.success('Loaded into the editor — nothing is live until you push it');
+              }}
+            >
+              Load into editor
+            </Button>
+            {previewVersion?.status !== 'live' && (
+              <Button size="sm" disabled={busy} onClick={() => handleRestoreVersion(previewVersion!)}>
+                <RotateCcw className="h-4 w-4 mr-1" /> Restore this pricing live
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
         </TabsContent>
       </Tabs>
     </div>
