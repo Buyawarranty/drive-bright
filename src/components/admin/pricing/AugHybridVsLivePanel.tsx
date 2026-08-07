@@ -18,9 +18,9 @@ import { useSavedPricingModel } from './useSavedPricingModel';
 
 /**
  * AUG HYBRID TEST vs LIVE
- * The rebalance proposal, side by side with what is live today, in the same
+ * The August test model, side by side with what is live today, in the same
  * Step 2 layout agents use. Every hybrid variable is adjustable here:
- *   - recentre the reference vehicle onto a target one-year price
+ *   - set a target one-year price for the reference vehicle
  *   - spread risk (mileage / model-risk deviation amplified or flattened)
  *   - flip the multi-year uplift into a visible discount vs buying single years
  *   - cap the auto-quote at a price we know converts, overflow goes to referral
@@ -91,7 +91,7 @@ const AugHybridVsLivePanel: React.FC<{
   const reducedReference = Math.round(referenceLive * (1 - cfg.baseReductionPct / 100));
   const effectiveTarget = cfg.targetReference > 0 ? cfg.targetReference : reducedReference;
   /** One scale factor moves the whole age curve so the reference vehicle lands on target. */
-  const recentre = referenceLive > 0 ? effectiveTarget / referenceLive : 1;
+  const targetScale = referenceLive > 0 ? effectiveTarget / referenceLive : 1;
   /** What live's flat multipliers imply as a discount off N × one year. */
   const liveTwoYearDiscountPct = Math.round((1 - base.twoYearMult / 2) * 1000) / 10;
   const liveThreeYearDiscountPct = Math.round((1 - base.threeYearMult / 3) * 1000) / 10;
@@ -101,7 +101,7 @@ const AugHybridVsLivePanel: React.FC<{
       ...base,
       bands: base.bands.map((b: any) => ({
         ...b,
-        oneYear: b.oneYear === null ? null : Math.round(b.oneYear * recentre),
+        oneYear: b.oneYear === null ? null : Math.round(b.oneYear * targetScale),
       })),
       mileageBands: base.mileageBands.map((b: any) => ({
         ...b,
@@ -114,7 +114,7 @@ const AugHybridVsLivePanel: React.FC<{
       twoYearMult: Math.round(2 * (1 - cfg.twoYearDiscountPct / 100) * 100) / 100,
       threeYearMult: Math.round(3 * (1 - cfg.threeYearDiscountPct / 100) * 100) / 100,
     }),
-    [base, recentre, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
+    [base, targetScale, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
   );
 
   const ceiling = cfg.ceilingOn ? cfg.ceiling : null;
@@ -149,7 +149,7 @@ const AugHybridVsLivePanel: React.FC<{
             Live Vs Test Hybrid Aug
           </CardTitle>
           <CardDescription>
-            The rebalance proposal against live pricing in the same Step 2 screen. Left is exactly what
+            The August test model against live pricing in the same Step 2 screen. Left is exactly what
             agents sell today; right applies the hybrid variables below. Sandbox only — nothing saves a
             quote or changes live prices.
           </CardDescription>
@@ -158,7 +158,7 @@ const AugHybridVsLivePanel: React.FC<{
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription className="text-sm">
-              The proposal starts 20% below the August base and compresses its risk and mileage uplifts.
+              This test model starts 20% below the August base and compresses its risk and mileage uplifts.
               Multi-year terms are also cheaper than live. Anything over the ceiling refers out instead
               of displaying a high price that is difficult to convert.
             </AlertDescription>
@@ -170,7 +170,7 @@ const AugHybridVsLivePanel: React.FC<{
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <div className="text-sm font-semibold">Hybrid variables</div>
               <Button variant="outline" size="sm" onClick={() => setCfg(HYBRID_DEFAULTS)}>
-                <RotateCcw className="mr-2 h-4 w-4" /> Reset to proposal
+                <RotateCcw className="mr-2 h-4 w-4" /> Reset to default
               </Button>
             </div>
 
@@ -202,7 +202,7 @@ const AugHybridVsLivePanel: React.FC<{
                   onChange={e => set('baseReductionPct', Math.min(50, Math.max(0, Number(e.target.value) || 0)))}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Proposed reference {effectiveTarget ? formatGBP(effectiveTarget) : '—'} vs August {formatGBP(referenceLive)}
+                  Target reference {effectiveTarget ? formatGBP(effectiveTarget) : '—'} vs August {formatGBP(referenceLive)}
                 </p>
               </div>
 
@@ -216,7 +216,7 @@ const AugHybridVsLivePanel: React.FC<{
                   onChange={e => set('targetReference', Number(e.target.value) || 0)}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Whole age curve × {recentre.toFixed(3)} — blank uses the reduction
+                  Whole age curve scaled by {targetScale.toFixed(3)} — blank uses the reduction
                 </p>
               </div>
 

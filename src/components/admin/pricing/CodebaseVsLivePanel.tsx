@@ -27,7 +27,7 @@ import { useSavedPricingModel } from './useSavedPricingModel';
  * The original July 2026 flat matrix baked into the code base, side by side with
  * live pricing, in the same Step 2 layout agents use — with the same adjustable
  * variables as the hybrid tab so the code-base side can be flexed too:
- *   - recentre the code-base reference onto a target one-year price
+ *   - set a target one-year price for the code-base reference
  *   - spread risk / mileage deviation (code base is flat, so this only bites
  *     once a spread above 0 reintroduces the live risk curve)
  *   - express multi-year terms as a discount off N × one year
@@ -131,7 +131,7 @@ const CodebaseVsLivePanel: React.FC<{
   const referenceCode = Number(referenceBand?.oneYear ?? 0);
   const reducedReference = Math.round(referenceCode * (1 - cfg.baseReductionPct / 100));
   const effectiveTarget = cfg.targetReference > 0 ? cfg.targetReference : reducedReference;
-  const recentre = referenceCode > 0 ? effectiveTarget / referenceCode : 1;
+  const targetScale = referenceCode > 0 ? effectiveTarget / referenceCode : 1;
 
   /** Code base multi-year terms implied as a discount off N × one year. */
   const codeTwoYearDiscountPct = Math.round((1 - codeBase.twoYearMult / 2) * 1000) / 10;
@@ -143,7 +143,7 @@ const CodebaseVsLivePanel: React.FC<{
       ...codeBase,
       bands: codeBase.bands.map((b: any) => ({
         ...b,
-        oneYear: b.oneYear === null ? null : Math.round(b.oneYear * recentre),
+        oneYear: b.oneYear === null ? null : Math.round(b.oneYear * targetScale),
       })),
       mileageBands: live.mileageBands.map((b: any) => ({
         ...b,
@@ -162,7 +162,7 @@ const CodebaseVsLivePanel: React.FC<{
           ? Math.round(3 * (1 - cfg.threeYearDiscountPct / 100) * 100) / 100
           : codeBase.threeYearMult,
     }),
-    [codeBase, live, recentre, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
+    [codeBase, live, targetScale, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
   );
 
   const ceiling = cfg.ceilingOn ? cfg.ceiling : null;
@@ -266,7 +266,7 @@ const CodebaseVsLivePanel: React.FC<{
                   onChange={e => set('targetReference', Number(e.target.value) || 0)}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Whole curve × {recentre.toFixed(3)} — blank uses the reduction
+                  Whole curve scaled by {targetScale.toFixed(3)} — blank uses the reduction
                 </p>
               </div>
 

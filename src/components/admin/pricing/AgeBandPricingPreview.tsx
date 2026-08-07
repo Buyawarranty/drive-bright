@@ -51,7 +51,7 @@ export type MileageBand = {
   customerLabel: string;
 };
 
-/** Mileage factors (Aug 2026 proposal) — applied on top of the age band base price. */
+/** Mileage factors (August 2026 test model) — applied on top of the age band base price. */
 export const PROPOSED_MILEAGE_BANDS: MileageBand[] = [
   { key: '0-40k', label: '0–40,000', min: 0, max: 40000, factor: 1.0, customerLabel: 'Lower mileage' },
   { key: '40-60k', label: '40,001–60,000', min: 40001, max: 60000, factor: 1.0, customerLabel: 'Lower mileage' },
@@ -69,7 +69,7 @@ export type PowertrainFactor = {
   treatment: string;
 };
 
-/** Powertrain factors (Aug 2026 proposal) — applied after age × mileage. */
+/** Powertrain factors (August 2026 test model) — applied after age × mileage. */
 export const PROPOSED_POWERTRAIN_FACTORS: PowertrainFactor[] = [
   { key: 'petrol', label: 'Petrol', factor: 1.0, treatment: 'Reference powertrain' },
   { key: 'diesel', label: 'Diesel', factor: 1.05, treatment: 'Modest uplift; mileage remains the stronger input' },

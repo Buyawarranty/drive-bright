@@ -25,8 +25,8 @@ import { useSavedPricingModel } from './useSavedPricingModel';
 /**
  * CODE BASE vs TEST HYBRID AUG
  * The original July 2026 flat matrix written into the code base, side by side
- * with the Aug rebalance proposal, in the Step 2 layout agents use. Every hybrid
- * variable is adjustable here (recentring, risk / mileage spread, multi-year
+ * with the August test model, in the Step 2 layout agents use. Every hybrid
+ * variable is adjustable here (target price, risk / mileage spread, multi-year
  * discounts, auto-quote ceiling). Sandbox only — nothing saves a quote or
  * changes live pricing.
  */
@@ -123,7 +123,7 @@ const CodebaseVsHybridPanel: React.FC<{
   const referenceLive = Number(referenceBand?.oneYear ?? 0);
   const reducedReference = Math.round(referenceLive * (1 - cfg.baseReductionPct / 100));
   const effectiveTarget = cfg.targetReference > 0 ? cfg.targetReference : reducedReference;
-  const recentre = referenceLive > 0 ? effectiveTarget / referenceLive : 1;
+  const targetScale = referenceLive > 0 ? effectiveTarget / referenceLive : 1;
 
   /** Code-base reference for context, and its implied multi-year discounts. */
   const codeReference = Number(codeBaseModel.bands[0]?.oneYear ?? 0);
@@ -135,7 +135,7 @@ const CodebaseVsHybridPanel: React.FC<{
       ...base,
       bands: base.bands.map((b: any) => ({
         ...b,
-        oneYear: b.oneYear === null ? null : Math.round(b.oneYear * recentre),
+        oneYear: b.oneYear === null ? null : Math.round(b.oneYear * targetScale),
       })),
       mileageBands: base.mileageBands.map((b: any) => ({
         ...b,
@@ -148,7 +148,7 @@ const CodebaseVsHybridPanel: React.FC<{
       twoYearMult: Math.round(2 * (1 - cfg.twoYearDiscountPct / 100) * 100) / 100,
       threeYearMult: Math.round(3 * (1 - cfg.threeYearDiscountPct / 100) * 100) / 100,
     }),
-    [base, recentre, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
+    [base, targetScale, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
   );
 
   const ceiling = cfg.ceilingOn ? cfg.ceiling : null;
@@ -182,7 +182,7 @@ const CodebaseVsHybridPanel: React.FC<{
             Code base vs Test Hybrid Aug
           </CardTitle>
           <CardDescription>
-            The original July 2026 code-base pricing against the Aug hybrid proposal in the same Step 2
+            The original July 2026 code-base pricing against the August test model in the same Step 2
             screen. Left is the flat code-base grid (no age, mileage, powertrain or model-risk
             differentiation); right applies the hybrid variables below. Sandbox only — nothing saves a
             quote or changes live prices.
@@ -205,7 +205,7 @@ const CodebaseVsHybridPanel: React.FC<{
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <div className="text-sm font-semibold">Hybrid variables</div>
               <Button variant="outline" size="sm" onClick={() => setCfg(HYBRID_DEFAULTS)}>
-                <RotateCcw className="mr-2 h-4 w-4" /> Reset to proposal
+                <RotateCcw className="mr-2 h-4 w-4" /> Reset to default
               </Button>
             </div>
 
@@ -238,7 +238,7 @@ const CodebaseVsHybridPanel: React.FC<{
                   onChange={e => set('baseReductionPct', Math.min(50, Math.max(0, Number(e.target.value) || 0)))}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Proposed reference {effectiveTarget ? formatGBP(effectiveTarget) : '—'}
+                  Target reference {effectiveTarget ? formatGBP(effectiveTarget) : '—'}
                 </p>
               </div>
 
@@ -252,7 +252,7 @@ const CodebaseVsHybridPanel: React.FC<{
                   onChange={e => set('targetReference', Number(e.target.value) || 0)}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Whole age curve × {recentre.toFixed(3)} — blank uses the reduction
+                  Whole age curve scaled by {targetScale.toFixed(3)} — blank uses the reduction
                 </p>
               </div>
 
