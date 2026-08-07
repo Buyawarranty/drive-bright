@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
-import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info } from 'lucide-react';
+import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info, ArrowLeftRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import Aug26PricingPanel from '@/components/admin/pricing/Aug26PricingPanel';
 import LiveVsAug26Panel from '@/components/admin/pricing/LiveVsAug26Panel';
 import PricingEngineDraftPanel from '@/components/admin/pricing/PricingEngineDraftPanel';
@@ -66,6 +66,29 @@ const PERIOD_LABELS: Record<string, string> = {
   '24months': '2 years',
   '36months': '3 years',
 };
+
+/** Top-level tabs — managers can reorder these left/right and the order sticks. */
+const TOP_TABS = [
+  { value: 'compare', label: 'Live builder vs Aug26', icon: GitCompare },
+  { value: 'builder', label: 'Age-based builder (calculator)', icon: CalendarClock },
+  { value: 'editor', label: 'Price grid (this one goes live)', icon: FlaskConical },
+  { value: 'previews', label: 'Previews', icon: Rocket },
+  { value: 'tools', label: 'Excluded vehicles & tools', icon: Ban },
+] as const;
+
+const TAB_ORDER_STORAGE_KEY = 'bw:price-updates:tab-order';
+
+function readStoredTabOrder(): string[] {
+  const defaults = TOP_TABS.map(t => t.value as string);
+  try {
+    const saved = JSON.parse(localStorage.getItem(TAB_ORDER_STORAGE_KEY) || 'null');
+    if (!Array.isArray(saved)) return defaults;
+    const kept = saved.filter((v: unknown) => defaults.includes(v as string)) as string[];
+    return [...kept, ...defaults.filter(v => !kept.includes(v))];
+  } catch {
+    return defaults;
+  }
+}
 
 /** Internal matrix columns → the customer-facing AutoCare tiers they price. */
 const CLAIM_COLUMN_LABELS: Record<number, { title: string; sub: string }> = {
@@ -164,6 +187,32 @@ export default function PriceUpdatesTab() {
   /** Preview tab: price the real Quotes & Orders page with the draft grid. */
   const [usePreviewDraftPrices, setUsePreviewDraftPrices] = useState(true);
 
+
+  // Tab order (persisted) so managers can arrange the tabs left/right.
+  const [tabOrder, setTabOrder] = useState<string[]>(() => readStoredTabOrder());
+  const [reorderMode, setReorderMode] = useState(false);
+
+  function persistTabOrder(next: string[]) {
+    setTabOrder(next);
+    try {
+      localStorage.setItem(TAB_ORDER_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      /* storage unavailable — order just won't persist */
+    }
+  }
+
+  function moveTab(index: number, delta: number) {
+    const target = index + delta;
+    if (target < 0 || target >= tabOrder.length) return;
+    const next = [...tabOrder];
+    [next[index], next[target]] = [next[target], next[index]];
+    persistTabOrder(next);
+  }
+
+  function resetTabOrder() {
+    persistTabOrder(TOP_TABS.map(t => t.value as string));
+    toast.success('Tab order reset');
+  }
 
   // Pick the first draft once loaded.
   useEffect(() => {
@@ -675,30 +724,67 @@ export default function PriceUpdatesTab() {
 
 
 
-      <Tabs defaultValue="compare" className="w-full">
+      <Tabs defaultValue={tabOrder[0] || 'compare'} className="w-full">
+
+        <div className="flex items-center justify-end gap-2 mb-2">
+          <Button
+            type="button"
+            size="sm"
+            variant={reorderMode ? 'default' : 'outline'}
+            onClick={() => setReorderMode(v => !v)}
+          >
+            <ArrowLeftRight className="h-4 w-4 mr-1" />
+            {reorderMode ? 'Done reordering' : 'Reorder tabs'}
+          </Button>
+          {reorderMode && (
+            <Button type="button" size="sm" variant="ghost" onClick={resetTabOrder}>
+              Reset order
+            </Button>
+          )}
+        </div>
 
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto gap-2 bg-muted/60 p-2">
-          <TabsTrigger value="compare" className="py-3 text-base font-semibold">
-            <GitCompare className="h-4 w-4 mr-2" />
-            Live builder vs Aug26
-          </TabsTrigger>
-          <TabsTrigger value="builder" className="py-3 text-base font-semibold">
-            <CalendarClock className="h-4 w-4 mr-2" />
-            Age-based builder (calculator)
-          </TabsTrigger>
-          <TabsTrigger value="editor" className="py-3 text-base font-semibold">
-            <FlaskConical className="h-4 w-4 mr-2" />
-            Price grid (this one goes live)
-          </TabsTrigger>
-          <TabsTrigger value="previews" className="py-3 text-base font-semibold">
-            <Rocket className="h-4 w-4 mr-2" />
-            Previews
-          </TabsTrigger>
-          <TabsTrigger value="tools" className="py-3 text-base font-semibold">
-            <Ban className="h-4 w-4 mr-2" />
-            Excluded vehicles &amp; tools
-          </TabsTrigger>
+          {tabOrder.map((value, i) => {
+            const tab = TOP_TABS.find(t => t.value === value);
+            if (!tab) return null;
+            const Icon = tab.icon;
+            return (
+              <div key={value} className="flex items-center gap-1">
+                {reorderMode && (
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 shrink-0"
+                    disabled={i === 0}
+                    onClick={() => moveTab(i, -1)}
+                    aria-label={`Move ${tab.label} left`}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                )}
+                <TabsTrigger value={value} className="flex-1 py-3 text-base font-semibold">
+                  <Icon className="h-4 w-4 mr-2" />
+                  {tab.label}
+                </TabsTrigger>
+                {reorderMode && (
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 shrink-0"
+                    disabled={i === tabOrder.length - 1}
+                    onClick={() => moveTab(i, 1)}
+                    aria-label={`Move ${tab.label} right`}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            );
+          })}
         </TabsList>
+
 
         <TabsContent value="compare" className="space-y-6 mt-4">
           <LiveVsAug26Panel liveModel={liveEditorModel} />
