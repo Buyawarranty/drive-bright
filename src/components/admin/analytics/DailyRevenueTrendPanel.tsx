@@ -53,7 +53,12 @@ export const DailyRevenueTrendPanel: React.FC<Props> = ({ customers, sourceFilte
       setDateRange({ from: subDays(new Date(), 13), to: new Date() });
       return;
     }
-    const to = range.to || range.from;
+    // First click of a new range: keep it open so the next click sets the end date
+    if (!range.to) {
+      setDateRange({ from: range.from, to: undefined });
+      return;
+    }
+    const to = range.to;
     if (differenceInCalendarDays(to, range.from) + 1 > MAX_DAYS) {
       toast.error(`Maximum ${MAX_DAYS} days — showing the last ${MAX_DAYS} days of that selection`);
       setDateRange({ from: subDays(to, MAX_DAYS - 1), to });
@@ -61,6 +66,7 @@ export const DailyRevenueTrendPanel: React.FC<Props> = ({ customers, sourceFilte
     }
     setDateRange({ from: range.from, to });
   };
+
 
   const { data, totals } = useMemo(() => {
     const from = startOfDay(dateRange?.from || subDays(new Date(), 13));
