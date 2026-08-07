@@ -175,7 +175,7 @@ const WarrantyTypes: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-gray-700 font-medium">From just 80p a day • Unlimited claims</span>
+                    <span className="text-gray-700 font-medium">From just 60p a day • Unlimited claims</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-500 flex-shrink-0" />

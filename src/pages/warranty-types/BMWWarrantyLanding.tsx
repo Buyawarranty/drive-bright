@@ -161,7 +161,7 @@ const bmwFAQs = [
   },
   {
     question: "How much does a BMW extended warranty cost in the UK?",
-    answer: "Extended BMW warranty prices typically start from £24 a month, depending on your BMW model, mileage, and chosen claim limit. We offer plans from just 80p a day with flexible monthly or annual payment options."
+    answer: "Extended BMW warranty prices typically start from £24 a month, depending on your BMW model, mileage, and chosen claim limit. We offer plans from just 60p a day with flexible monthly or annual payment options."
   },
   {
     question: "Can I buy a BMW extended warranty after my original warranty has expired?",
@@ -709,7 +709,7 @@ const BMWWarrantyLanding: React.FC = () => {
                 <div className="mb-4 md:mb-6 text-gray-700 text-xs sm:text-sm md:text-base space-y-1.5 md:space-y-2">
                   <div className="flex items-center justify-center lg:justify-start">
                     <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
-                    <span className="font-medium">From just 80p a day • Easy claims • Fast payouts</span>
+                    <span className="font-medium">From just 60p a day • Easy claims • Fast payouts</span>
                   </div>
                   <div className="flex items-center justify-center lg:justify-start">
                     <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />

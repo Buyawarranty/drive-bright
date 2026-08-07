@@ -153,7 +153,7 @@ const skodaFAQs = [
   },
   {
     question: "How much does a Škoda extended warranty cost in the UK?",
-    answer: "Extended Škoda warranty prices typically start from £22 a month, depending on your model, mileage, and chosen claim limit. We offer flexible monthly or annual payment options with plans from just 70p a day."
+    answer: "Extended Škoda warranty prices typically start from £22 a month, depending on your model, mileage, and chosen claim limit. We offer flexible monthly or annual payment options with plans from just 60p a day."
   },
   {
     question: "Can I buy a Škoda extended warranty after my manufacturer warranty has expired?",

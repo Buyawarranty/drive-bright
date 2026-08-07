@@ -151,7 +151,7 @@ const LexusWarrantyLanding: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4"><span className="text-gray-900">Protect your {brandName}</span><br /><span className="text-brand-orange">in 60 seconds.</span></h1>
                 <p className="text-base sm:text-lg md:text-xl text-gray-700 mb-4 md:mb-6">Dealer-level warranty. Fixed price. No surprise bills.</p>
                 <div className="mb-4 md:mb-6 text-gray-700 text-xs sm:text-sm md:text-base space-y-1.5">
-                  <div className="flex items-center justify-center lg:justify-start"><Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-2 flex-shrink-0" /><span className="font-medium">From just 80p a day • Easy claims • Fast payouts</span></div>
+                  <div className="flex items-center justify-center lg:justify-start"><Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-2 flex-shrink-0" /><span className="font-medium">From just 60p a day • Easy claims • Fast payouts</span></div>
                   <div className="flex items-center justify-center lg:justify-start"><Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-2 flex-shrink-0" /><span className="font-medium">Unlimited claims • Parts and Labour • No excess</span></div>
                 </div>
                 <div className="mx-auto lg:mx-0 space-y-4">
