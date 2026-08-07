@@ -46,9 +46,12 @@ import {
   getLabourRateOptions,
   getWebReferencePrice,
   MAX_WEB_DISCOUNT_VS_GRID_PCT,
+  MARKETING_SAVINGS,
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
 import { MIN_BASE_PRICE_BY_PERIOD } from '@/lib/pricingMatrix';
+import { priceFromPricingModel } from './pricing/modelQuoteEngine';
+
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
@@ -1039,8 +1042,50 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       adjustmentType: vehicleAdjustmentResult.adjustmentType
     });
     
+    // ── Price from the published pricing model (same maths as the Aug hybrid
+    // test Step 2) so Quotes & Orders and the pricing sandboxes never disagree.
+    const modelVehicleAge = (() => {
+      const manufacture = (vehicleData as any)?.manufactureDate || (vehicleData as any)?.registrationDate;
+      if (manufacture) {
+        const d = new Date(manufacture);
+        if (!isNaN(d.getTime())) return (Date.now() - d.getTime()) / (365.25 * 24 * 3600 * 1000);
+      }
+      const year = parseInt(String(vehicleData?.year || ''), 10);
+      if (year) return new Date().getFullYear() - year;
+      return null;
+    })();
+    const modelQuote = priceFromPricingModel(pricingModel, {
+      ageYears: modelVehicleAge,
+      mileage: vehicleMileage || null,
+      fuelType: vehicleData?.fuelType,
+      vehicleType: vehicleData?.vehicleType,
+      make: vehicleData?.make,
+      model: (vehicleData as any)?.model,
+    }, {
+      paymentPeriod: paymentType,
+      voluntaryExcess: excessAmount,
+      claimLimit: getDisplayClaimLimitValue(claimLimit),
+      labourRate: labourRate,
+    });
+    if (modelQuote && !modelQuote.referral && modelVehicleAge != null) {
+      const totalPrice = Math.ceil(modelQuote.totalPrice + addOnPrice);
+      const monthlyPrice = Math.ceil(totalPrice / 12);
+      const contractTotal = monthlyPrice * 12;
+      return {
+        totalPrice,
+        monthlyPrice,
+        payInFullPrice: includePayInFullDiscount
+          ? Math.ceil(contractTotal * 0.90)
+          : contractTotal,
+        wasPrice: totalPrice + (MARKETING_SAVINGS[paymentType] || 0),
+        savings: MARKETING_SAVINGS[paymentType] || 0,
+      };
+    }
+
      const effectiveClaimLimit = getBaseClaimLimit(claimLimit);
     const premiumSurcharge = getClaimLimitSurcharge(claimLimit, paymentType, excessAmount);
+    
+
     
     const result = calculateAdminQuoteWarrantyPrice({
       paymentPeriod: paymentType,
