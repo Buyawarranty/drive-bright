@@ -355,7 +355,7 @@ async function fetchDVLAFallback(registration: string): Promise<{ make?: string;
 // Final fallback: pull from previously-stored mot_history row so we never lose
 // make/model when DVSA + DVLA both transiently fail for a reg we've seen before.
 async function fetchMotHistoryFallback(registration: string): Promise<
-  { make?: string; model?: string; fuelType?: string; colour?: string; yearOfManufacture?: number; manufactureDate?: string } | null
+  { make?: string; model?: string; fuelType?: string; colour?: string; yearOfManufacture?: number; manufactureDate?: string; registrationDate?: string } | null
 > {
   try {
     const supabase = createClient(
@@ -389,11 +389,29 @@ async function fetchMotHistoryFallback(registration: string): Promise<
       colour: data.primary_colour || undefined,
       yearOfManufacture,
       manufactureDate: data.manufacture_date || undefined,
+      registrationDate: data.registration_date || undefined,
     };
   } catch (e) {
     console.error('mot_history fallback error:', e);
     return null;
   }
+}
+
+// Exact vehicle age in years. First registration date is the correct basis for
+// the 15-year boundary; manufacture date is the next best thing; a bare year is
+// treated as 1 January (worst case) and only used when no date is available.
+function exactVehicleAgeYears(opts: { registrationDate?: string | null; manufactureDate?: string | null; year?: number | null }): number | null {
+  const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  for (const value of [opts.registrationDate, opts.manufactureDate]) {
+    if (!value) continue;
+    const from = new Date(value);
+    if (!Number.isNaN(from.getTime())) return (now - from.getTime()) / MS_PER_YEAR;
+  }
+  if (opts.year && Number.isFinite(opts.year)) {
+    return (now - Date.UTC(opts.year, 0, 1)) / MS_PER_YEAR;
+  }
+  return null;
 }
 
 // Northern Ireland plates use a distinct format: 3 letters (with an I or Z
@@ -585,6 +603,7 @@ serve(async (req) => {
                 colour: cached.colour || null,
                 yearOfManufacture: cached.yearOfManufacture || null,
                 manufactureDate: cached.manufactureDate || null,
+                registrationDate: cached.registrationDate || null,
                 vehicleType: 'car',
                 source: 'mot_history_cache'
               }), {
@@ -657,8 +676,7 @@ serve(async (req) => {
         
         // Check vehicle age
         if (dvlaFallback.yearOfManufacture) {
-          const currentYear = new Date().getFullYear();
-          const vehicleAge = currentYear - dvlaFallback.yearOfManufacture;
+          const vehicleAge = exactVehicleAgeYears({ year: dvlaFallback.yearOfManufacture }) ?? 0;
           if (vehicleAge > 15 && !skipAgeCheck) {
             return new Response(JSON.stringify({
               found: false,
@@ -706,6 +724,7 @@ serve(async (req) => {
           colour: cachedFinal.colour || null,
           yearOfManufacture: cachedFinal.yearOfManufacture || null,
           manufactureDate: cachedFinal.manufactureDate || null,
+          registrationDate: cachedFinal.registrationDate || null,
           vehicleType: 'car',
           source: 'mot_history_cache'
         }), {
@@ -881,12 +900,18 @@ serve(async (req) => {
       });
     }
 
-    // Check vehicle age (must be 15 years or newer)
+    // Check vehicle age (must be 15 years or newer), measured from first
+    // registration date where available so we never age a car by up to a year.
     const currentYear = new Date().getFullYear();
-    const vehicleAge = yearOfManufacture ? currentYear - yearOfManufacture : 0;
-    
-    if (yearOfManufacture && vehicleAge > 15 && !skipAgeCheck) {
-      console.log(`Vehicle ${registrationNumber} is ${vehicleAge} years old - too old for warranty`);
+    const preciseAgeYears = exactVehicleAgeYears({
+      registrationDate: vehicleData.registrationDate,
+      manufactureDate: vehicleData.manufactureDate,
+      year: yearOfManufacture ?? null,
+    });
+    const vehicleAge = preciseAgeYears ?? 0;
+
+    if (preciseAgeYears !== null && vehicleAge > 15 && !skipAgeCheck) {
+      console.log(`Vehicle ${registrationNumber} is ${vehicleAge.toFixed(2)} years old - too old for warranty`);
       return new Response(JSON.stringify({
         found: false,
         error: "We cannot offer warranties for vehicles over 15 years of age"
@@ -948,8 +973,7 @@ serve(async (req) => {
     if (!(vehicleData.motTests && Array.isArray(vehicleData.motTests) && vehicleData.motTests.length > 0)) {
       // No MOT tests found - could be new vehicle
       if (yearOfManufacture) {
-        const currentYear = new Date().getFullYear();
-        const vehicleAge = currentYear - yearOfManufacture;
+        const vehicleAge = preciseAgeYears ?? (currentYear - yearOfManufacture);
         
         if (vehicleAge < 3) {
           // New vehicles don't need MOT for first 3 years
@@ -1037,6 +1061,7 @@ serve(async (req) => {
       transmission: null, // DVSA doesn't provide transmission data
       yearOfManufacture: yearOfManufacture,
       manufactureDate: vehicleData.manufactureDate || null, // Full manufacture date for precise age calculation
+      registrationDate: vehicleData.registrationDate || null, // First registration date — preferred basis for age
       colour: colour,
       engineCapacity: vehicleData.engineCapacity,
       vehicleType: vehicleType,
