@@ -1872,6 +1872,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       }
       
       console.log('✅ Quote saved to admin_sent_quotes');
+      auditPriceOverride('quotes_and_orders', displayedTotalPrice);
+
 
       // Update existing leads to "quote_sent" status
       // First, update sales_leads by email or vehicle_reg
