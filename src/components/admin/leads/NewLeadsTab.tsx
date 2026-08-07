@@ -267,6 +267,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [additionalFilters, setAdditionalFilters] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
+  const [leadNotesExportOpen, setLeadNotesExportOpen] = useState(false);
   // Managers (admin / super_admin / sales_manager) default to "today" so the
   // New Leads view always opens on the current day. Everyone else keeps
   // "all time" so agents see their full queue.
