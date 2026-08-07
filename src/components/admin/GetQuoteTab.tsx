@@ -1246,6 +1246,97 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     return value.replace(/\s/g, '').toUpperCase();
   };
 
+  // ---- Step 2 inline vehicle change -------------------------------------
+  // Agents were getting stuck with the previous vehicle: "Edit" bounced them
+  // back to Step 1 and the old reg/vehicle could linger in derived state.
+  // This swaps the vehicle in place and hard-resets every vehicle-derived value.
+  const [isEditingVehicle, setIsEditingVehicle] = useState(false);
+  const [vehicleEditReg, setVehicleEditReg] = useState('');
+  const [isSwappingVehicle, setIsSwappingVehicle] = useState(false);
+
+  const applyNewVehicle = async () => {
+    const cleanReg = formatRegNumber(vehicleEditReg);
+    if (cleanReg.length < 5) {
+      toast({ title: 'Invalid registration', description: 'Please enter a valid registration number.', variant: 'destructive' });
+      return;
+    }
+    setIsSwappingVehicle(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+        body: { registrationNumber: cleanReg, skipAgeCheck: ageOverrideEnabled },
+      });
+
+      if (data?.blocked) {
+        toast({
+          title: 'Vehicle Not Eligible',
+          description: data.blockReason || `${data.make || ''} ${data.model || ''} is on our excluded vehicle list.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (data?.make) {
+        const age = getVehicleAge({
+          registrationDate: data.registrationDate,
+          manufactureDate: data.manufactureDate,
+          year: data.yearOfManufacture || data.year,
+        });
+        if (age.ageYears !== null && age.ageYears > 15 && !ageOverrideEnabled) {
+          toast({
+            title: 'Vehicle Too Old',
+            description: `This vehicle is ${age.ageYears.toFixed(1)} years old. We only cover vehicles up to 15 years old.`,
+            variant: 'destructive',
+          });
+          return;
+        }
+      } else if (error) {
+        console.warn('[GetQuote] Vehicle swap lookup failed', error);
+      }
+
+      // Reset every stale vehicle-derived value before writing the new vehicle.
+      setRegNumber(cleanReg);
+      setMileage('');
+      setSliderMileage(0);
+      setStep1AutoFilledMileage(null);
+      setStep1MileagePrefilledReg(null);
+      setAutoPreview({ loading: false, error: null, data: null });
+      setEditableRegNumber(cleanReg);
+      setEditableMileage('');
+      setMileagePrefilledFromMot(false);
+      setIsPriceOverridden(false);
+      setCustomMonthlyPrice('');
+      setCustomFullPrice('');
+      setQuotedPriceOverride('');
+
+      setVehicleData({
+        regNumber: cleanReg,
+        mileage: '',
+        make: data?.make || '',
+        model: data?.model || '',
+        fuelType: data?.fuelType || '',
+        transmission: data?.transmission || '',
+        year: data?.yearOfManufacture || data?.year || '',
+        vehicleType: data?.vehicleType || '',
+        registrationDate: data?.registrationDate || undefined,
+        manufactureDate: data?.manufactureDate || undefined,
+      });
+
+      setIsEditingVehicle(false);
+      toast({
+        title: 'Vehicle updated',
+        description: data?.make
+          ? `Now quoting ${cleanReg} — ${data.make} ${data.model || ''}`.trim()
+          : `Now quoting ${cleanReg}. Please check the vehicle details.`,
+      });
+    } catch (e: any) {
+      console.error('Vehicle swap failed', e);
+      toast({ title: 'Lookup failed', description: 'Could not update the vehicle. Please try again.', variant: 'destructive' });
+    } finally {
+      setIsSwappingVehicle(false);
+    }
+  };
+
+
   const handleMileageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, '');
     setMileage(value);
@@ -3583,20 +3674,70 @@ Questions? Call 0330 229 5040`;
                       )}
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setVehicleData(null);
-                      setRegNumber('');
-                      setMileage('');
-                      setSliderMileage(0);
-                      setStep(1);
-                    }}
-                    className="flex-shrink-0 text-brand-orange hover:text-orange-700 font-semibold text-sm sm:text-base transition-colors"
-                  >
-                    Edit
-                  </button>
+                  <div className="flex flex-shrink-0 items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVehicleEditReg(vehicleData?.regNumber || regNumber || '');
+                        setIsEditingVehicle(true);
+                      }}
+                      className="text-brand-orange hover:text-orange-700 font-semibold text-sm sm:text-base transition-colors"
+                    >
+                      Change reg
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingVehicle(false);
+                        setVehicleData(null);
+                        setRegNumber('');
+                        setMileage('');
+                        setSliderMileage(0);
+                        setStep1AutoFilledMileage(null);
+                        setStep1MileagePrefilledReg(null);
+                        setAutoPreview({ loading: false, error: null, data: null });
+                        setStep(1);
+                      }}
+                      className="text-muted-foreground hover:text-foreground text-sm underline"
+                    >
+                      Start over
+                    </button>
+                  </div>
                 </div>
+
+                {isEditingVehicle && (
+                  <div className="rounded-xl border border-brand-orange/40 bg-orange-50/50 p-3 sm:p-4 space-y-3">
+                    <Label className="text-sm font-semibold text-gray-900">Enter the new registration</Label>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div className="flex items-stretch rounded-lg overflow-hidden border-2 border-black shadow-sm">
+                        <div className="bg-blue-600 text-white font-bold px-2.5 flex flex-col items-center justify-center min-w-[48px] text-[10px] leading-tight">
+                          <span>GB</span>
+                          <span>UK</span>
+                        </div>
+                        <input
+                          type="text"
+                          value={vehicleEditReg}
+                          onChange={(e) => setVehicleEditReg(formatRegNumber(e.target.value))}
+                          onKeyDown={(e) => { if (e.key === 'Enter') applyNewVehicle(); }}
+                          placeholder="NEW REG"
+                          maxLength={8}
+                          autoFocus
+                          className="bg-yellow-400 border-none outline-none text-xl sm:text-2xl text-black font-black placeholder:text-black/40 px-3 py-2 uppercase tracking-wider w-[190px]"
+                        />
+                      </div>
+                      <Button onClick={applyNewVehicle} disabled={isSwappingVehicle} className="bg-brand-orange hover:bg-orange-700 text-white">
+                        {isSwappingVehicle ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" />Updating…</>) : 'Update vehicle'}
+                      </Button>
+                      <Button variant="outline" onClick={() => setIsEditingVehicle(false)} disabled={isSwappingVehicle}>
+                        Cancel
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      This replaces the vehicle on this quote — make, model, year, mileage and pricing are all recalculated for the new registration.
+                    </p>
+                  </div>
+                )}
+
               </CardHeader>
 
               <CardContent className="space-y-6">
