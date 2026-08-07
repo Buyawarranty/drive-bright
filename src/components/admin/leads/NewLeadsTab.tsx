@@ -38,6 +38,7 @@ import { AdminNotificationBell, AdminNotification } from '@/components/admin/Adm
 import ClaimRecontactBatchButton from './ClaimRecontactBatchButton';
 import UnsubscribeQuickLink from '@/components/admin/UnsubscribeQuickLink';
 import { buildWatiRows } from '@/lib/watiExport';
+import { LeadNotesExportDialog } from '@/components/admin/leads/LeadNotesExportDialog';
 
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck, MoreHorizontal, BarChart3, Network, ChevronDown, ChevronUp } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
