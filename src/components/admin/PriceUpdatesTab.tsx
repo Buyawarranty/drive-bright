@@ -1,7 +1,6 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
-import { setLiveVehicleFactorModel, type VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
-import { setLiveClaimLimitFactors } from '@/lib/claimLimitTiers';
-import { setLiveLabourRateFactors } from '@/lib/pricingMatrix';
+import { type VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
+import { applyLivePricingVersion } from '@/lib/pricing/applyLivePricingVersion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -384,9 +383,14 @@ export default function PriceUpdatesTab() {
           vehicle_factor_model: currentVehicleFactorModel(),
         });
         await publishVersion(v.id);
-        setLiveClaimLimitFactors(claimLimitFactors ?? null);
-        setLiveLabourRateFactors(labourRateFactors ?? null);
-        setLiveVehicleFactorModel(currentVehicleFactorModel());
+        applyLivePricingVersion({
+          status: 'live',
+          admin_matrix: safeMatrix,
+          step3_discount_pct: websiteDiscountPct,
+          claim_limit_factors: claimLimitFactors ?? null,
+          labour_rate_factors: labourRateFactors ?? null,
+          vehicle_factor_model: currentVehicleFactorModel(),
+        });
         setMatrix(safeMatrix);
         toast.success('Age-based pricing published live — reload any open quote pages');
         return;
@@ -473,9 +477,14 @@ export default function PriceUpdatesTab() {
         vehicle_factor_model: currentVehicleFactorModel(),
       });
       await publishVersion(selectedId);
-      setLiveVehicleFactorModel(currentVehicleFactorModel());
-      setLiveClaimLimitFactors(factors);
-      setLiveLabourRateFactors(labourFactors);
+      applyLivePricingVersion({
+        status: 'live',
+        admin_matrix: safeMatrix,
+        step3_discount_pct: publishDiscountPct,
+        claim_limit_factors: factors,
+        labour_rate_factors: labourFactors,
+        vehicle_factor_model: currentVehicleFactorModel(),
+      });
       toast.success('Pricing published live — reload any open quote pages');
 
     } catch (e: any) {
