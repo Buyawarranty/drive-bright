@@ -26,11 +26,13 @@ import { useSavedPricingModel } from './useSavedPricingModel';
 
 const HYBRID_DEFAULTS = {
   referenceBandKey: '6-7',
-  targetReference: 599,
+  /** 0 = start from the live one-year base for that band (no recentring). */
+  targetReference: 0,
   riskSpread: 1.25,
   mileageSpread: 1.1,
-  twoYearDiscountPct: 8,
-  threeYearDiscountPct: 14,
+  /** Discount off N × the one-year price. Live is already ~17.5% / ~21.7%. */
+  twoYearDiscountPct: 20,
+  threeYearDiscountPct: 24,
   ceiling: 650,
   ceilingOn: true,
 };
@@ -69,8 +71,13 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
   const referenceBand =
     base.bands.find((b: any) => String(b.key) === cfg.referenceBandKey) ?? base.bands[0];
   const referenceLive = Number(referenceBand?.oneYear ?? 0);
+  /** Blank / 0 target means "leave the age curve where live has it". */
+  const effectiveTarget = cfg.targetReference > 0 ? cfg.targetReference : referenceLive;
   /** One scale factor moves the whole age curve so the reference vehicle lands on target. */
-  const recentre = referenceLive > 0 ? cfg.targetReference / referenceLive : 1;
+  const recentre = referenceLive > 0 ? effectiveTarget / referenceLive : 1;
+  /** What live's flat multipliers imply as a discount off N × one year. */
+  const liveTwoYearDiscountPct = Math.round((1 - base.twoYearMult / 2) * 1000) / 10;
+  const liveThreeYearDiscountPct = Math.round((1 - base.threeYearMult / 3) * 1000) / 10;
 
   const hybridModel = useMemo(
     () => ({
@@ -151,13 +158,15 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
                 <Input
                   type="number"
                   className="mt-1 h-9"
-                  value={cfg.targetReference}
+                  placeholder={referenceLive ? String(referenceLive) : 'Live base'}
+                  value={cfg.targetReference || ''}
                   onChange={e => set('targetReference', Number(e.target.value) || 0)}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Whole age curve × {recentre.toFixed(3)}
+                  Whole age curve × {recentre.toFixed(3)} — leave blank to match live
                 </p>
               </div>
+
 
               <div>
                 <Label className="text-xs">Auto-quote ceiling (one-year equivalent)</Label>
@@ -212,7 +221,7 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs">2-year discount %</Label>
+                  <Label className="text-xs">2-year discount % (off 2× one year)</Label>
                   <Input
                     type="number"
                     className="mt-1 h-9"
@@ -220,11 +229,12 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
                     onChange={e => set('twoYearDiscountPct', Number(e.target.value) || 0)}
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
-                    ×{hybridModel.twoYearMult.toFixed(2)} vs live ×{base.twoYearMult.toFixed(2)}
+                    ×{hybridModel.twoYearMult.toFixed(2)} vs live ×{base.twoYearMult.toFixed(2)} (live ={' '}
+                    {liveTwoYearDiscountPct}% off)
                   </p>
                 </div>
                 <div>
-                  <Label className="text-xs">3-year discount %</Label>
+                  <Label className="text-xs">3-year discount % (off 3× one year)</Label>
                   <Input
                     type="number"
                     className="mt-1 h-9"
@@ -232,15 +242,20 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
                     onChange={e => set('threeYearDiscountPct', Number(e.target.value) || 0)}
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
-                    ×{hybridModel.threeYearMult.toFixed(2)} vs live ×{base.threeYearMult.toFixed(2)}
+                    ×{hybridModel.threeYearMult.toFixed(2)} vs live ×{base.threeYearMult.toFixed(2)} (live ={' '}
+                    {liveThreeYearDiscountPct}% off)
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
-              <Badge variant="outline">Reference target {formatGBP(cfg.targetReference)}</Badge>
               <Badge variant="outline">
+                Reference target {effectiveTarget ? formatGBP(effectiveTarget) : '—'}
+                {cfg.targetReference > 0 ? '' : ' (live)'}
+              </Badge>
+              <Badge variant="outline">
+
                 {cfg.ceilingOn ? `Ceiling ${formatGBP(cfg.ceiling)}` : 'No ceiling'}
               </Badge>
               <Badge variant="outline">
