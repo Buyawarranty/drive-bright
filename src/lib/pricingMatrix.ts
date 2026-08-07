@@ -291,16 +291,18 @@ export function applyBasePriceFloor(
    * set in Admin → Price updates, it lifts the floor on BOTH the admin Quotes & Orders
    * page and the customer journey (Steps 3 → 4).
    */
-  vehicleName?: string | null
+  vehicleName?: string | null,
+  /** Selected claim limit, so the floor steps with the cover level too. */
+  claimLimit?: number
 ): number {
   const minBase = MIN_BASE_PRICE_BY_PERIOD[paymentPeriod] ?? 0;
-  const step = EXCESS_TIER_STEP_BY_PERIOD[paymentPeriod] ?? 0;
-  // £250 tier must stay above £500 tier; lower excess tiers use the absolute floor
-  // (which the matrix already exceeds, so they are unaffected in practice).
-  const rawFloor =
-    voluntaryExcess !== undefined && voluntaryExcess >= 250 && voluntaryExcess < 500
-      ? minBase + step
-      : minBase;
+  // Shape the floor by excess and claim limit so the customer always sees the
+  // price move when they change an option, even if the published grid is flat.
+  const rawFloor = Math.round(
+    minBase *
+      nearestMultiplier(EXCESS_FLOOR_MULTIPLIER, voluntaryExcess) *
+      nearestMultiplier(CLAIM_LIMIT_FLOOR_MULTIPLIER, claimLimit)
+  );
   const upliftedFloor = applyCustomerJourneyUplift(rawFloor, surface);
   const effectiveFloor = isMotorbike
     ? Math.ceil(upliftedFloor * MOTORBIKE_PRICE_MULTIPLIER)
@@ -309,6 +311,7 @@ export function applyBasePriceFloor(
   const ruleFloor = getVehicleRuleMinPrice(vehicleName, paymentPeriod) ?? 0;
   return Math.max(adjustedBasePrice, effectiveFloor, ruleFloor);
 }
+
 
 
 
