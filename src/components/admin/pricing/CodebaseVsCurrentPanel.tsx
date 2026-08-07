@@ -175,13 +175,16 @@ export default function CodebaseVsCurrentPanel() {
   const liveFactor = liveFactors[labourRate] ?? codeFactor;
 
   const rows = useMemo(() => {
+    const column = CODE_BASE_TIER_COLUMN[claimLimit] ?? claimLimit;
     return PERIODS.flatMap(period =>
       EXCESSES.map(excess => {
-        const codeGrid = Number(codeMatrix[period]?.[String(excess)]?.[String(claimLimit)] ?? 0);
-        const currentGrid = Number(
-          currentMatrix?.[period]?.[String(excess)]?.[String(claimLimit)] ?? codeGrid
-        );
-        const codeBase = Number((BASE_PRICING_MATRIX as any)[period]?.[excess]?.[claimLimit] ?? 0);
+        // £5,000 sits on top of the £3,000 column (£5/mo boost), so add its step.
+        const step = claimLimit === 5000 ? codeBasePremiumStep(period) : 0;
+        const codeGrid = Number(codeMatrix[period]?.[String(excess)]?.[String(column)] ?? 0) + step;
+        const currentGrid =
+          Number(currentMatrix?.[period]?.[String(excess)]?.[String(column)] ?? codeGrid - step) + step;
+        const codeBase = Number((BASE_PRICING_MATRIX as any)[period]?.[excess]?.[column] ?? 0) + step;
+
         const code = Math.round(codeGrid * codeFactor);
         const current = Math.round(currentGrid * liveFactor);
         return {
