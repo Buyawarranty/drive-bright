@@ -31,6 +31,7 @@ import { getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge } from '@/lib/claimLimitTiers';
 import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { useIsManagement } from '@/hooks/useIsManagement';
 
 interface VehicleData {
   regNumber: string;
@@ -89,6 +90,8 @@ interface ConfirmExternalPaymentTabProps {
 
 export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps> = ({ onPaymentConfirmed }) => {
   const { toast } = useToast();
+  const { isManagement } = useIsManagement();
+  const isManagementRole = isManagement === true;
   
   // Vehicle lookup state
   const [regNumber, setRegNumber] = useState('');
@@ -220,6 +223,24 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       vehicleType: (vehicleData as any)?.vehicleType,
     }),
   }) : { totalPrice: 0, monthlyPrice: 0 };
+
+  // ── Hard 30% discount ceiling ───────────────────────────────────────────────
+  // Confirming an outside payment must never be a back door around the discount
+  // cap enforced on Get a quote. Anything more than 30% below the quoted grid
+  // price is blocked unless the person confirming is Management.
+  const DISCOUNT_CEILING_PCT = 30;
+  const enteredAmount = parseFloat(paymentAmount);
+  const quotedTotal = currentPrice.totalPrice;
+  const discountPct =
+    quotedTotal > 0 && Number.isFinite(enteredAmount) && enteredAmount < quotedTotal
+      ? ((quotedTotal - enteredAmount) / quotedTotal) * 100
+      : 0;
+  const minAllowedAmount = quotedTotal > 0
+    ? Math.round(quotedTotal * (1 - DISCOUNT_CEILING_PCT / 100) * 100) / 100
+    : 0;
+  const overDiscountCeiling = discountPct > DISCOUNT_CEILING_PCT + 0.01;
+  const discountBlocked = overDiscountCeiling && !isManagementRole;
+
 
   const formatRegNumber = (value: string): string => {
     const clean = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
@@ -429,7 +450,15 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       return;
     }
 
-    
+    if (discountBlocked) {
+      toast({
+        title: `Discount over ${DISCOUNT_CEILING_PCT}% needs Management`,
+        description: `£${enteredAmount.toFixed(2)} is ${discountPct.toFixed(1)}% below the quoted £${quotedTotal}. The lowest you can confirm is £${minAllowedAmount.toFixed(2)}. Ask Management to authorise anything below that.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     // CRITICAL: Sales agent is compulsory for commission tracking
     if (!assigneeId) {
       toast({
@@ -446,6 +475,17 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const handleConfirmPayment = async () => {
     // Prevent double-click race condition
     if (isConfirming) return;
+
+    // Hard stop: never create a policy more than 30% below the quoted price
+    // unless Management are the ones confirming it.
+    if (discountBlocked) {
+      toast({
+        title: `Blocked — ${discountPct.toFixed(1)}% discount`,
+        description: `Discounts over ${DISCOUNT_CEILING_PCT}% must be authorised by Management. Minimum allowed here is £${minAllowedAmount.toFixed(2)}.`,
+        variant: "destructive",
+      });
+      return;
+    }
     setIsConfirming(true);
 
     // Check for duplicate warranty before proceeding
@@ -1055,9 +1095,25 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-500">Amount Received (£) *</Label>
-                        <Input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder={currentPrice.totalPrice.toString()} />
+                        <Input
+                          type="number"
+                          value={paymentAmount}
+                          onChange={(e) => setPaymentAmount(e.target.value)}
+                          placeholder={currentPrice.totalPrice.toString()}
+                          className={discountBlocked ? 'border-destructive ring-1 ring-destructive' : undefined}
+                        />
                         {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
                           <p className="text-xs text-destructive">⚠️ Differs from quoted price (£{currentPrice.totalPrice})</p>
+                        )}
+                        {discountBlocked && (
+                          <p className="text-xs font-semibold text-destructive">
+                            Blocked: that is {discountPct.toFixed(1)}% off. Discounts over {DISCOUNT_CEILING_PCT}% need Management authorisation — minimum £{minAllowedAmount.toFixed(2)}.
+                          </p>
+                        )}
+                        {overDiscountCeiling && isManagementRole && (
+                          <p className="text-xs font-semibold text-amber-600">
+                            Management override: {discountPct.toFixed(1)}% off (over the {DISCOUNT_CEILING_PCT}% ceiling). This will be logged.
+                          </p>
                         )}
                       </div>
                       <div className="space-y-1.5">
@@ -1163,7 +1219,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
                 <div className="flex justify-end gap-3">
                   <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>Cancel</Button>
-                  <Button onClick={handleProceedToPreview} size="lg">Review & Confirm <ArrowRight className="w-4 h-4 ml-2" /></Button>
+                  <Button onClick={handleProceedToPreview} size="lg" disabled={discountBlocked} title={discountBlocked ? `Discounts over ${DISCOUNT_CEILING_PCT}% need Management authorisation` : undefined}>Review & Confirm <ArrowRight className="w-4 h-4 ml-2" /></Button>
                 </div>
               </div>
 
@@ -1187,6 +1243,15 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                               onClick={() => {
                                 const base = parseFloat(paymentAmount) || currentPrice.totalPrice;
                                 const discounted = Math.round(base * 0.9 * 100) / 100;
+                                if (!isManagementRole && quotedTotal > 0 && discounted < minAllowedAmount) {
+                                  toast({
+                                    title: `${DISCOUNT_CEILING_PCT}% discount ceiling reached`,
+                                    description: `The lowest price you can confirm is £${minAllowedAmount.toFixed(2)}. Ask Management to authorise anything lower.`,
+                                    variant: 'destructive',
+                                  });
+                                  setPaymentAmount(minAllowedAmount.toString());
+                                  return;
+                                }
                                 setPaymentAmount(discounted.toString());
                               }}
                               className="text-xs px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 font-semibold"
@@ -1285,7 +1350,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
               <div className="flex justify-end gap-3">
                 <Button variant="outline" onClick={() => setExternalPaymentStep('details')}>Back</Button>
-                <Button onClick={handleConfirmPayment} disabled={isConfirming} size="lg" className="bg-indigo-500 hover:bg-indigo-400">
+                <Button onClick={handleConfirmPayment} disabled={isConfirming || discountBlocked} size="lg" className="bg-indigo-500 hover:bg-indigo-400">
                   {isConfirming ? (
                     <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating Policy...</>
                   ) : (
