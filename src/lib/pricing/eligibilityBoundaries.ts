@@ -96,7 +96,23 @@ export function evaluateBoundaries(input: BoundaryInput): BoundaryResult {
   const mileage = parseMileage(input.mileage);
   const reasons: string[] = [];
 
-  // Hard declines first — a clearly over-limit vehicle is never a referral.
+  // Excluded vehicle matrix FIRST — an excluded make/model can never be priced,
+  // whatever its age or mileage, and no override unlocks it.
+  const exclusionReason = getExclusionReason(input.make, input.model);
+  if (exclusionReason) {
+    return {
+      outcome: 'declined',
+      message: EXCLUSION_MESSAGE,
+      ageYears,
+      ageSource,
+      mileage,
+      reasons: [`Excluded vehicle: ${exclusionReason}`],
+      excluded: true,
+      exclusionReason,
+    };
+  }
+
+  // Hard declines next — a clearly over-limit vehicle is never a referral.
   if (ageYears !== null && ageYears > MAX_VEHICLE_AGE_YEARS) {
     reasons.push(`Age ${ageYears.toFixed(2)}y exceeds ${MAX_VEHICLE_AGE_YEARS}y`);
   }
@@ -111,14 +127,23 @@ export function evaluateBoundaries(input: BoundaryInput): BoundaryResult {
       ageSource,
       mileage,
       reasons,
+      excluded: false,
     };
   }
 
   if (ageYears === null) reasons.push('Vehicle age unknown');
   if (mileage === null) reasons.push('Mileage unknown');
   if (reasons.length > 0) {
-    return { outcome: 'referral', message: REFERRAL_MESSAGE, ageYears, ageSource, mileage, reasons };
+    return {
+      outcome: 'referral',
+      message: REFERRAL_MESSAGE,
+      ageYears,
+      ageSource,
+      mileage,
+      reasons,
+      excluded: false,
+    };
   }
 
-  return { outcome: 'eligible', ageYears, ageSource, mileage, reasons: [] };
+  return { outcome: 'eligible', ageYears, ageSource, mileage, reasons: [], excluded: false };
 }
