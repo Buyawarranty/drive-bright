@@ -91,7 +91,7 @@ function versionToModel(version: any | null, saved: ReturnType<typeof useSavedPr
 const LiveVsAug26Panel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
   const saved = useSavedPricingModel();
   const { versions, loading } = usePricingVersions();
-  const [versionId, setVersionId] = useState<string | null>(null);
+  const [vehicle, setVehicle] = useState<ResolvedTestVehicle | null>(null);
 
   const preferred = useMemo(
     () => versions.find(v => v.status === 'live') ?? versions[0] ?? null,
