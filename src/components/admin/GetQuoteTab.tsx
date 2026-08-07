@@ -209,6 +209,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const canOverrideAge = ['super_admin', 'admin', 'sales_manager', 'performance_manager', 'claims_manager'].includes(userRole || '');
   const tyreCoverEnabled = useFeatureEnabled('addon_tyre_cover', false);
   const [step, setStep] = useState(1);
+  // Invoice builder (available to every sales agent from Step 2)
+  const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
   const [regNumber, setRegNumber] = useState('');
   const [mileage, setMileage] = useState('');
   const [sliderMileage, setSliderMileage] = useState(0);
