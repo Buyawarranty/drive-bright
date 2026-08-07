@@ -5124,7 +5124,6 @@ Questions? Call 0330 229 5040`;
                         {web.discountPct}% below grid · unaffected by agent discounts
                       </div>
                     </div>
-                    </div>
                     <div className="text-center sm:text-left sm:px-4 text-sm">
                       <div className="font-semibold text-gray-900">Total £{gridTotal}</div>
                       {priceMatchMode && priceMatchCompetitorPrice && (
