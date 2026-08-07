@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 
 import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, Swords, ShieldCheck, Ban, Info } from 'lucide-react';
 import CompetitorComparisonPanel from '@/components/admin/pricing/CompetitorComparisonPanel';
+import PricingEngineDraftPanel from '@/components/admin/pricing/PricingEngineDraftPanel';
 
 import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
 import AgeBandPricingPreview, {
@@ -622,13 +623,17 @@ export default function PriceUpdatesTab() {
 
       <Tabs defaultValue="editor" className="w-full">
 
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 h-auto gap-2 bg-muted/60 p-2">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 h-auto gap-2 bg-muted/60 p-2">
           <TabsTrigger value="editor" className="py-3 text-base font-semibold">
             <FlaskConical className="h-4 w-4 mr-2" />
             Price grid (this one goes live)
           </TabsTrigger>
           <TabsTrigger value="quotes" className="py-3 text-base font-semibold">
             Age-based builder (calculator)
+          </TabsTrigger>
+          <TabsTrigger value="engine" className="py-3 text-base font-semibold">
+            <FlaskConical className="h-4 w-4 mr-2" />
+            Pricing engine (draft)
           </TabsTrigger>
           <TabsTrigger value="preview" className="py-3 text-base font-semibold">
             <Rocket className="h-4 w-4 mr-2" />
@@ -648,9 +653,14 @@ export default function PriceUpdatesTab() {
           </TabsTrigger>
         </TabsList>
 
+        <TabsContent value="engine" className="space-y-4 mt-4">
+          <PricingEngineDraftPanel />
+        </TabsContent>
+
         <TabsContent value="competitor" className="space-y-4 mt-4">
           <CompetitorComparisonPanel />
         </TabsContent>
+
 
         <TabsContent value="codevscurrent" className="space-y-4 mt-4">
           <CodebaseVsCurrentPanel />
