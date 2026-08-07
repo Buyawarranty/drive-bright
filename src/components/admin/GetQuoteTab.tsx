@@ -84,6 +84,8 @@ interface VehicleData {
   fuelType?: string;
   transmission?: string;
   year?: string;
+  registrationDate?: string;
+  manufactureDate?: string;
   vehicleType?: string;
 }
 
