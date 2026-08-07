@@ -46,6 +46,7 @@ interface VehicleData {
   blocked?: boolean;
   blockReason?: string;
   manufactureDate?: string; // Full manufacture date for precise age calculation
+  registrationDate?: string; // First registration date — preferred basis for age
   motMileage?: number;
   motDate?: string;
 }

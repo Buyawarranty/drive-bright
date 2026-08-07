@@ -48,6 +48,7 @@ interface VehicleData {
   blocked?: boolean;
   blockReason?: string;
   manufactureDate?: string; // Full manufacture date for precise age calculation
+  registrationDate?: string; // First registration date — preferred basis for age
   motMileage?: number;
   motDate?: string;
 }
@@ -463,6 +464,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         vehicleData.year = data.yearOfManufacture;
         vehicleData.vehicleType = data.vehicleType || 'car';
         vehicleData.manufactureDate = data.manufactureDate;
+        vehicleData.registrationDate = data.registrationDate;
         if (data.blocked) {
           vehicleData.blocked = true;
           vehicleData.blockReason = data.blockReason;
