@@ -13,6 +13,7 @@ import { useSavedPricingModel } from './useSavedPricingModel';
 import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
 import { getVisibleExcessOptions } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice } from '@/lib/addOnsUtils';
+import { getExclusionReason, EXCLUSION_MESSAGE } from '@/lib/vehicleExclusions';
 import {
   JOURNEY_DURATIONS,
   JOURNEY_EXCESS_OPTIONS,
