@@ -17,6 +17,10 @@ import { calculateQuotePrice } from '@/lib/pricing/quotePricingService';
 import type { PaymentPeriod, PricingSurface } from '@/lib/pricingMatrix';
 import { MAX_VEHICLE_AGE_YEARS, MAX_VEHICLE_MILEAGE } from '@/lib/pricing/eligibilityBoundaries';
 import PricingParityPanel from '@/components/admin/pricing/PricingParityPanel';
+import PriceMatrixExplorer from '@/components/admin/pricing/PriceMatrixExplorer';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import WebGapDraftPanel from '@/components/admin/pricing/WebGapDraftPanel';
 import ModelRiskDraftPanel from '@/components/admin/pricing/ModelRiskDraftPanel';
 
@@ -48,6 +52,39 @@ export default function PricingEngineDraftPanel() {
   const [boost, setBoost] = useState(false);
   const [surface, setSurface] = useState<PricingSurface>('admin');
   const [skipEligibility, setSkipEligibility] = useState(false);
+  const [reg, setReg] = useState('');
+  const [looking, setLooking] = useState(false);
+
+  const lookupReg = async () => {
+    const plate = reg.trim().toUpperCase().replace(/\s+/g, '');
+    if (!plate) return;
+    setLooking(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+        body: { registrationNumber: plate },
+      });
+      if (error) throw error;
+      if (!data?.found) {
+        toast.error('Vehicle not found for that registration');
+        return;
+      }
+      setMake(data.make || '');
+      setModel(data.model || '');
+      setFuelType(data.fuelType || '');
+      setVehicleType(data.vehicleType || 'Car');
+      setYear(String(data.yearOfManufacture ?? ''));
+      setRegistrationDate(
+        (data.registrationDate || data.manufactureDate || '').toString().slice(0, 10)
+      );
+      if (data.motMileage != null) setMileage(String(data.motMileage));
+      toast.success(`Loaded ${data.make} ${data.model}`);
+    } catch (e) {
+      console.error('[PricingEngineDraftPanel] reg lookup failed', e);
+      toast.error('Lookup failed — enter the vehicle manually');
+    } finally {
+      setLooking(false);
+    }
+  };
 
   const result = useMemo(
     () =>
@@ -128,6 +165,25 @@ export default function PricingEngineDraftPanel() {
             <CardTitle className="text-base">Vehicle</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1 sm:col-span-2">
+              <Label>Look up a real vehicle (optional)</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={reg}
+                  onChange={(e) => setReg(e.target.value.toUpperCase())}
+                  placeholder="e.g. LN18 XKO"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      void lookupReg();
+                    }
+                  }}
+                />
+                <Button type="button" variant="outline" onClick={() => void lookupReg()} disabled={looking}>
+                  {looking ? 'Looking…' : 'Look up'}
+                </Button>
+              </div>
+            </div>
             <div className="space-y-1">
               <Label>Make</Label>
               <Input value={make} onChange={(e) => setMake(e.target.value)} />
@@ -327,6 +383,32 @@ export default function PricingEngineDraftPanel() {
           </div>
         </CardContent>
       </Card>
+
+      <PriceMatrixExplorer
+        vehicle={{
+          make,
+          model,
+          fuelType,
+          vehicleType,
+          yearOfManufacture: year,
+          registrationDate: registrationDate || null,
+          mileage,
+        }}
+        labourRate={labourRate}
+        surface={surface}
+        boostAddon={boost}
+        skipEligibility={skipEligibility}
+        excessOptions={EXCESS_OPTIONS}
+        claimLimits={CLAIM_LIMITS}
+        activePeriod={period}
+        activeExcess={excess}
+        activeClaimLimit={claimLimit}
+        onSelect={(p, e, c) => {
+          setPeriod(p);
+          setExcess(e);
+          setClaimLimit(c);
+        }}
+      />
 
       <WebGapDraftPanel />
 
