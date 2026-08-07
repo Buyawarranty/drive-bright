@@ -104,7 +104,17 @@ function OptionTile({
   );
 }
 
-export default function PriceTestStep2({ liveModel }: { liveModel?: any } = {}) {
+export default function PriceTestStep2({
+  liveModel,
+  title,
+  subtitle,
+  badgeText,
+}: {
+  liveModel?: any;
+  title?: string;
+  subtitle?: string;
+  badgeText?: string;
+} = {}) {
   // Always preview with the figures currently saved in the Price updates editor,
   // so a new labour rate (e.g. £150/hr) or changed factor shows up here on save.
   const savedModel = useSavedPricingModel();
