@@ -171,8 +171,43 @@ export function usePricingVersions() {
     [load]
   );
 
+  /**
+   * Publishes a version — but only if it is complete.
+   *
+   * Every "Push live" path in the Price Updates section funnels through here, so
+   * a version missing a grid cell, a labour rate, a claim-limit column or the
+   * vehicle risk figures can never reach customers and silently fall back to
+   * older numbers. Blocking gaps throw with a plain-English list; the caller
+   * already surfaces the message in a toast. Pass `{ force: true }` only where a
+   * manager has explicitly acknowledged non-blocking warnings.
+   */
   const publishVersion = useCallback(
-    async (id: string) => {
+    async (id: string, opts?: { force?: boolean }) => {
+      if (!opts?.force) {
+        // Read the row we are about to publish (fresh, so a just-saved edit counts).
+        const { data: row } = await supabase
+          .from('pricing_matrix_versions')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
+        if (row) {
+          const report = runPreflightCheck({
+            adminMatrix: (row as any).admin_matrix,
+            labourRateFactors: (row as any).labour_rate_factors ?? null,
+            vehicleFactorModel: (row as any).vehicle_factor_model ?? null,
+            webDiscountPct: (row as any).step3_discount_pct ?? null,
+          });
+          if (report.blocked) {
+            const gaps = report.items
+              .filter(i => i.severity === 'block')
+              .map(i => `• ${i.label}: ${i.detail}${i.gaps?.length ? ` (${i.gaps.join(', ')})` : ''}`)
+              .join('\n');
+            throw new Error(
+              `Not published — this version is incomplete, so customers could be shown an unapproved price:\n${gaps}`
+            );
+          }
+        }
+      }
       const { error } = await supabase.rpc('publish_pricing_version', { _version_id: id });
       if (error) throw error;
       // Record who pushed it live so a historical price is always attributable.
@@ -187,6 +222,7 @@ export function usePricingVersions() {
     },
     [load]
   );
+
 
   const revertToCode = useCallback(async () => {
     const { error } = await supabase.rpc('revert_pricing_to_code_defaults');
