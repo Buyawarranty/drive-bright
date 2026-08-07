@@ -11,6 +11,11 @@
  */
 
 import { MAX_WEB_DISCOUNT_PCT } from './pricingVersionConfig';
+import {
+  EXCLUDED_MAKES,
+  EXCLUDED_MODEL_RULES,
+  getExclusionReason,
+} from '@/lib/vehicleExclusions';
 
 export const PREFLIGHT_TERMS = ['12months', '24months', '36months'] as const;
 export const PREFLIGHT_EXCESSES = [0, 50, 100, 150, 250, 500] as const;
