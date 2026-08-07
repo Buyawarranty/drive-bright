@@ -48,6 +48,7 @@ interface VehicleData {
   blocked?: boolean;
   blockReason?: string;
   manufactureDate?: string; // Full manufacture date for precise age calculation
+  registrationDate?: string; // First registration date — preferred basis for age
   motMileage?: number;
   motDate?: string;
 }
@@ -348,8 +349,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         let vehicleAgePrecise: number | null = null;
         
         // Try to use manufactureDate for precise age calculation (15 years and 1 day check)
-        if (data.manufactureDate) {
-          const manufactureDate = new Date(data.manufactureDate);
+        if (data.registrationDate || data.manufactureDate) {
+          const manufactureDate = new Date(data.registrationDate || data.manufactureDate);
           if (!isNaN(manufactureDate.getTime())) {
             const ageInMs = now.getTime() - manufactureDate.getTime();
             const msPerYear = 365.25 * 24 * 60 * 60 * 1000; // Account for leap years
@@ -463,6 +464,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         vehicleData.year = data.yearOfManufacture;
         vehicleData.vehicleType = data.vehicleType || 'car';
         vehicleData.manufactureDate = data.manufactureDate;
+        vehicleData.registrationDate = data.registrationDate;
         if (data.blocked) {
           vehicleData.blocked = true;
           vehicleData.blockReason = data.blockReason;

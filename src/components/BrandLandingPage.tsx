@@ -44,6 +44,7 @@ interface VehicleData {
   blocked?: boolean;
   blockReason?: string;
   manufactureDate?: string;
+  registrationDate?: string; // First registration date — preferred basis for age
 }
 
 interface BrandLandingPageProps {
@@ -300,8 +301,8 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
         const now = new Date();
         let vehicleAgePrecise: number | null = null;
         
-        if (data.manufactureDate) {
-          const manufactureDate = new Date(data.manufactureDate);
+        if (data.registrationDate || data.manufactureDate) {
+          const manufactureDate = new Date(data.registrationDate || data.manufactureDate);
           if (!isNaN(manufactureDate.getTime())) {
             const ageInMs = now.getTime() - manufactureDate.getTime();
             const msPerYear = 365.25 * 24 * 60 * 60 * 1000;
@@ -359,6 +360,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
         vehicleData.year = data.yearOfManufacture;
         vehicleData.vehicleType = data.vehicleType || 'car';
         vehicleData.manufactureDate = data.manufactureDate;
+        vehicleData.registrationDate = data.registrationDate;
         if (data.blocked) {
           vehicleData.blocked = true;
           vehicleData.blockReason = data.blockReason;

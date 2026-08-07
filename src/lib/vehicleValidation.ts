@@ -1,3 +1,4 @@
+import { getVehicleAge } from '@/lib/vehicleAge';
 import { hasLiveVehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
 // Vehicle validation and pricing adjustment utilities
 
@@ -15,6 +16,7 @@ export interface VehicleData {
   year?: string;
   mileage?: string | number;
   manufactureDate?: string; // Full manufacture date (ISO format) for precise age calculation
+  registrationDate?: string; // First registration date (ISO format) — preferred basis for age
 }
 
 export interface PriceAdjustment {
@@ -224,15 +226,19 @@ export function validateVehicleEligibility(vehicleData: VehicleData): { isValid:
   const now = new Date();
   let vehicleAgePrecise: number | null = null;
   
-  // Try to use manufactureDate for precise age calculation
-  if (vehicleData.manufactureDate) {
-    const manufactureDate = new Date(vehicleData.manufactureDate);
-    if (!isNaN(manufactureDate.getTime())) {
-      const ageInMs = now.getTime() - manufactureDate.getTime();
-      const msPerYear = 365.25 * 24 * 60 * 60 * 1000; // Account for leap years
-      vehicleAgePrecise = ageInMs / msPerYear;
-      
+  // Prefer first registration date, then manufacture date, for precise age
+  {
+    const age = getVehicleAge({
+      registrationDate: vehicleData.registrationDate,
+      manufactureDate: vehicleData.manufactureDate,
+      asOf: now,
+    });
+    if (age.ageYears !== null && age.source !== 'year_of_manufacture') {
+      vehicleAgePrecise = age.ageYears;
+
       console.log('🔍 Precise age calculation:', {
+        source: age.source,
+        registrationDate: vehicleData.registrationDate,
         manufactureDate: vehicleData.manufactureDate,
         vehicleAgePrecise: vehicleAgePrecise.toFixed(4),
         threshold: '> 15 years'
@@ -469,14 +475,16 @@ export function calculateVehiclePriceAdjustment(
   let vehicleAgeYears: number | null = null;
   const now = new Date();
   
-  // Try to use manufactureDate for precise age calculation (in years as decimal)
-  if (vehicleData.manufactureDate) {
-    const manufactureDate = new Date(vehicleData.manufactureDate);
-    if (!isNaN(manufactureDate.getTime())) {
-      const ageInMs = now.getTime() - manufactureDate.getTime();
-      const msPerYear = 365.25 * 24 * 60 * 60 * 1000; // Account for leap years
-      vehicleAgePrecise = ageInMs / msPerYear;
-      vehicleAgeYears = Math.floor(vehicleAgePrecise); // Full years for display
+  // Prefer first registration date, then manufacture date, for precise age
+  {
+    const age = getVehicleAge({
+      registrationDate: vehicleData.registrationDate,
+      manufactureDate: vehicleData.manufactureDate,
+      asOf: now,
+    });
+    if (age.ageYears !== null && age.source !== 'year_of_manufacture') {
+      vehicleAgePrecise = age.ageYears;
+      vehicleAgeYears = age.ageWholeYears; // Full years for display
     }
   }
   
