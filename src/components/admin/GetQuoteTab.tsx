@@ -145,17 +145,25 @@ const LABOUR_RATE_CHIP_COPY: Record<number, { label: string; description: string
   150: { label: 'Specialist garages', description: 'Designed for specialist repairers and higher-value vehicles.' },
 };
 
-const getLabourRateChips = () =>
-  getLabourRateOptions().map(o => {
-    const copy = LABOUR_RATE_CHIP_COPY[o.rate] || { label: `£${o.rate}/hr`, description: o.label || '' };
-    return {
-      rate: o.rate,
-      label: copy.label,
-      description: copy.description,
-      isBestValue: o.factor < 1,
-      isPopular: o.factor === 1,
-    };
-  });
+const getLabourRateChips = (modelRates?: { rate: number; factor: number; uxPosition?: string }[]) => {
+  const options =
+    modelRates && modelRates.length
+      ? modelRates.map(r => ({ rate: Number(r.rate), factor: Number(r.factor), label: r.uxPosition ?? null }))
+      : getLabourRateOptions();
+  return [...options]
+    .sort((a, b) => a.rate - b.rate)
+    .map(o => {
+      const copy = LABOUR_RATE_CHIP_COPY[o.rate] || { label: `£${o.rate}/hr`, description: o.label || '' };
+      return {
+        rate: o.rate,
+        label: copy.label,
+        description: copy.description,
+        isBestValue: o.factor < 1,
+        isPopular: o.factor === 1,
+      };
+    });
+};
+
 
 
 // Mileage dropdown options (10,000 to 140,000 in 1,000 increments)
