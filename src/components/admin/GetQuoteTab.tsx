@@ -33,6 +33,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
+import { QuoteInvoiceDialog } from './QuoteInvoiceDialog';
 import MileageSlider from '@/components/MileageSlider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -209,6 +210,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const canOverrideAge = ['super_admin', 'admin', 'sales_manager', 'performance_manager', 'claims_manager'].includes(userRole || '');
   const tyreCoverEnabled = useFeatureEnabled('addon_tyre_cover', false);
   const [step, setStep] = useState(1);
+  // Invoice builder (available to every sales agent from Step 2)
+  const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
   const [regNumber, setRegNumber] = useState('');
   const [mileage, setMileage] = useState('');
   const [sliderMileage, setSliderMileage] = useState(0);
@@ -3751,6 +3754,36 @@ Questions? Call 0330 229 5040`;
             </Card>
           )}
 
+          {/* Invoice builder — open to every sales agent from Step 2 */}
+          <QuoteInvoiceDialog
+            open={invoiceDialogOpen}
+            onOpenChange={setInvoiceDialogOpen}
+            source={{
+              customerName: customerName || [customerFirstName, customerLastName].filter(Boolean).join(' '),
+              customerEmail: customerEmail,
+              customerPhone: customerPhone,
+              address: [customerBuildingNumber, customerStreet, customerTown, customerCounty, customerPostcode]
+                .filter(Boolean)
+                .join(', '),
+              regNumber: vehicleData?.regNumber || regNumber,
+              vehicleMake: vehicleData?.make,
+              vehicleModel: vehicleData?.model,
+              vehicleYear: vehicleData?.year ? String(vehicleData.year) : undefined,
+              mileage,
+              planName: 'Platinum',
+              durationLabel:
+                paymentType === '36months' ? '3 years' : paymentType === '24months' ? '2 years' : '1 year',
+              claimLimit,
+              excessAmount,
+              labourRate,
+              totalPrice: displayedTotalPrice,
+              monthlyPrice: Number(currentPrice.monthlyPrice || 0),
+              addOns: Object.entries(selectedAddOns)
+                .filter(([, on]) => on)
+                .map(([key]) => key),
+            }}
+          />
+
           {/* Step 2: Quote Details */}
           {step === 2 && vehicleData && (
             <Card>
@@ -3765,6 +3798,14 @@ Questions? Call 0330 229 5040`;
                       onSelectLead={handleLeadSelect} 
                       className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-300"
                     />
+                    <Button
+                      size="sm"
+                      onClick={() => setInvoiceDialogOpen(true)}
+                      className="gap-1 bg-orange-600 hover:bg-orange-700 text-white"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Create invoice
+                    </Button>
                     {savedQuotes.length > 0 && (
                       <Button
                         variant="outline"
