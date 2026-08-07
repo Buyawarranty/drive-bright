@@ -226,6 +226,41 @@ export const EXCESS_TIER_STEP_BY_PERIOD: Record<PaymentPeriod, number> = {
 };
 
 /**
+ * The floor is SHAPED by the selected excess and claim limit, anchored on the
+ * £150 excess / £2,000 claim limit tier (= 1.00 = MIN_BASE_PRICE_BY_PERIOD).
+ * Without this, whenever the published grid sits at or below the floor every
+ * excess and claim limit collapses to the same price and Step 3 looks broken.
+ * Ratios come from the reference grid so the steps feel the same as the matrix.
+ */
+export const EXCESS_FLOOR_MULTIPLIER: Record<number, number> = {
+  0: 1.28,
+  50: 1.18,
+  100: 1.08,
+  150: 1.0,
+  250: 0.81,
+  500: 0.5,
+};
+
+export const CLAIM_LIMIT_FLOOR_MULTIPLIER: Record<number, number> = {
+  750: 0.89,
+  1000: 0.89,
+  1250: 1.0,
+  2000: 1.0,
+  3000: 1.13,
+  5000: 1.13,
+};
+
+/** Nearest defined multiplier so unusual values never fall back to a flat 1. */
+function nearestMultiplier(table: Record<number, number>, value?: number): number {
+  if (value === undefined || value === null || !Number.isFinite(value)) return 1;
+  const keys = Object.keys(table).map(Number);
+  const nearest = keys.reduce((best, k) =>
+    Math.abs(k - value) < Math.abs(best - value) ? k : best, keys[0]);
+  return table[nearest] ?? 1;
+}
+
+
+/**
  * Motorbikes are priced at 50% of the equivalent standard vehicle price.
  * This applies to the base matrix price AND to the minimum base price floor,
  * so the half price is never clawed back by the car floor.
