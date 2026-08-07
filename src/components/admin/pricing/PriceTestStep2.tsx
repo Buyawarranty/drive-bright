@@ -793,7 +793,7 @@ export default function PriceTestStep2({
                   <div>× Claim limit: ×{claimFactor.toFixed(2)} · × Labour: ×{labourFactor.toFixed(2)} · × Excess: ×{excessFactor.toFixed(2)}</div>
                   <div>One-year price: {formatGBP(Math.round(calc.annual))}</div>
                   <div>× Term {term.label}: ×{term.mult.toFixed(2)}</div>
-                  {transferCover ? <div>+ Transfer cover: £19</div> : null}
+                  {calc.addOnTotal ? <div>+ Add-ons: {formatGBP(calc.addOnTotal)}</div> : null}
                   {calc.belowMinimum ? (
                     <div className="text-destructive">
                       Raised to minimum sellable price {formatGBP(calc.minSellable)} ({term.label})
