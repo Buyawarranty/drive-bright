@@ -65,6 +65,8 @@ import BumperPaymentPanel from './BumperPaymentPanel';
 import { useAgentDiscountCap } from '@/hooks/useAgentDiscountCap';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import { useSavedPricingModel } from './pricing/useSavedPricingModel';
+
 
 
 
@@ -99,18 +101,36 @@ const termOptions = [
 
 
 
-const claimLimitOptions = [
-  { value: 750, label: '£1,000', description: 'AutoCare Basic' },
-  { value: 2000, label: '£2,000', description: 'AutoCare Essential', popular: true },
-  { value: 3000, label: '£3,000', description: 'AutoCare Elite' },
-  { value: 5000, label: '£5,000', description: 'AutoCare Premium' },
-];
+// Claim-limit chips. The customer-facing tier (£1,000 / £2,000 / £3,000 / £5,000)
+// comes from the published pricing model — the same list the Aug hybrid test
+// Step 2 shows — so agents never see a tier the pricing model no longer offers.
+// `value` is the internal grid column used by the pricing matrix.
+const CLAIM_TIER_TO_INTERNAL: Record<number, number> = {
+  1000: 750,
+  2000: 2000,
+  3000: 3000,
+  5000: 5000,
+};
 
-// All claim limit tiers (including £5,000 AutoCare Premium) are visible to
-// every agent regardless of vehicle make. Premium is disallowed for a small
-// list of makes at checkout — the inline warning under the chips explains
-// that — but agents still see the option so they can quote consistently.
-const getVisibleClaimLimits = (_vehicleMake?: string) => claimLimitOptions;
+const CLAIM_TIER_META: Record<number, { label: string; description: string; popular?: boolean }> = {
+  1000: { label: '£1,000', description: 'AutoCare Basic' },
+  2000: { label: '£2,000', description: 'AutoCare Essential', popular: true },
+  3000: { label: '£3,000', description: 'AutoCare Elite' },
+  5000: { label: '£5,000', description: 'AutoCare Premium' },
+};
+
+const buildClaimLimitOptions = (tiers: { limit: number }[]) =>
+  tiers
+    .map(t => Number(t.limit))
+    .filter(limit => CLAIM_TIER_TO_INTERNAL[limit] !== undefined)
+    .sort((a, b) => a - b)
+    .map(limit => ({
+      value: CLAIM_TIER_TO_INTERNAL[limit],
+      label: CLAIM_TIER_META[limit].label,
+      description: CLAIM_TIER_META[limit].description,
+      popular: CLAIM_TIER_META[limit].popular,
+    }));
+
 
 /**
  * Labour-rate options shown in Quotes & Orders. These come from the published
@@ -125,17 +145,25 @@ const LABOUR_RATE_CHIP_COPY: Record<number, { label: string; description: string
   150: { label: 'Specialist garages', description: 'Designed for specialist repairers and higher-value vehicles.' },
 };
 
-const getLabourRateChips = () =>
-  getLabourRateOptions().map(o => {
-    const copy = LABOUR_RATE_CHIP_COPY[o.rate] || { label: `£${o.rate}/hr`, description: o.label || '' };
-    return {
-      rate: o.rate,
-      label: copy.label,
-      description: copy.description,
-      isBestValue: o.factor < 1,
-      isPopular: o.factor === 1,
-    };
-  });
+const getLabourRateChips = (modelRates?: { rate: number; factor: number; uxPosition?: string }[]) => {
+  const options =
+    modelRates && modelRates.length
+      ? modelRates.map(r => ({ rate: Number(r.rate), factor: Number(r.factor), label: r.uxPosition ?? null }))
+      : getLabourRateOptions();
+  return [...options]
+    .sort((a, b) => a.rate - b.rate)
+    .map(o => {
+      const copy = LABOUR_RATE_CHIP_COPY[o.rate] || { label: `£${o.rate}/hr`, description: o.label || '' };
+      return {
+        rate: o.rate,
+        label: copy.label,
+        description: copy.description,
+        isBestValue: o.factor < 1,
+        isPopular: o.factor === 1,
+      };
+    });
+};
+
 
 
 // Mileage dropdown options (10,000 to 140,000 in 1,000 increments)
@@ -175,18 +203,39 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [selectedLeadOwner, setSelectedLeadOwner] = useState<string | null>(null);
   const matchedLeadOwner = useLeadOwner(customerEmail, customerPhone);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
-  const [excessAmount, setExcessAmount] = useState(100);
+  const [excessAmount, setExcessAmount] = useState(150);
   const [claimLimit, setClaimLimit] = useState(2000);
 
-  // Excess options are filtered by term + claim limit:
-  // - No £500 on 1-year cover
-  // - No £500 when claim limit < £3,000
-  const excessOptions = getVisibleExcessOptions(paymentType, claimLimit);
+  // Cover-option variables come from the published pricing model (Admin → Price
+  // updates), the same source the Aug hybrid test Step 2 uses, so both screens
+  // always offer identical excess amounts, claim-limit tiers and labour rates.
+  const pricingModel = useSavedPricingModel();
+  const claimLimitOptions = React.useMemo(
+    () => buildClaimLimitOptions(pricingModel.claimLimits),
+    [pricingModel.claimLimits]
+  );
+  // All claim limit tiers (including £5,000 AutoCare Premium) are visible to
+  // every agent regardless of vehicle make. Premium is disallowed for a small
+  // list of makes at checkout — the inline warning under the chips explains
+  // that — but agents still see the option so they can quote consistently.
+  const getVisibleClaimLimits = (_vehicleMake?: string) => claimLimitOptions;
+
+  // Excess options are the pricing model's excess list, filtered by term +
+  // claim limit (no £500 on 1-year cover, none above 25% of the claim limit).
+  const excessOptions = React.useMemo(
+    () =>
+      pricingModel.excessFactors
+        .map((e: { excess: number }) => Number(e.excess))
+        .filter((ex: number) => getVisibleExcessOptions(paymentType, claimLimit).includes(ex))
+        .sort((a: number, b: number) => a - b),
+    [pricingModel.excessFactors, paymentType, claimLimit]
+  );
   useEffect(() => {
-    if (!excessOptions.includes(excessAmount)) {
-      setExcessAmount(excessOptions.includes(150) ? 150 : excessOptions[0] ?? 100);
+    if (excessOptions.length && !excessOptions.includes(excessAmount)) {
+      setExcessAmount(excessOptions.includes(150) ? 150 : excessOptions[0]);
     }
   }, [excessOptions, excessAmount]);
+
   const [ageOverrideEnabled, setAgeOverrideEnabled] = useState(false);
   const [showAgeOverrideConfirm, setShowAgeOverrideConfirm] = useState(false);
   const [pendingAgeOverrideAction, setPendingAgeOverrideAction] = useState<'lookup' | 'quickConfirm' | null>(null);
@@ -3867,7 +3916,7 @@ Questions? Call 0330 229 5040`;
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Labour Rate</Label>
                   <div className="grid grid-cols-4 gap-2">
-                    {getLabourRateChips().map((option) => (
+                    {getLabourRateChips(pricingModel.labourRateFactors).map((option) => (
                       <button
                         key={option.rate}
                         onClick={() => setLabourRate(option.rate)}
@@ -6779,7 +6828,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               onChange={(e) => setLabourRate(parseInt(e.target.value))}
                               className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors text-sm"
                             >
-                              {getLabourRateChips().map(opt => (
+                              {getLabourRateChips(pricingModel.labourRateFactors).map(opt => (
                                 <option key={opt.rate} value={opt.rate}>£{opt.rate}/hr</option>
                               ))}
                             </select>
