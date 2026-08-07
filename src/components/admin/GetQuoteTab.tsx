@@ -3790,6 +3790,23 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
+                {/* Manager-only pricing source note */}
+                {isManagementRole && !isPriceOverridden && (
+                  pricingTrace.usedLegacy ? (
+                    <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                      <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5 text-amber-600" />
+                      <div>
+                        <span className="font-semibold">Using legacy pricing</span> — {pricingTrace.reason}. This quote does not follow the currently published pricing model.
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-800 w-fit">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      Priced from the published pricing model
+                    </div>
+                  )
+                )}
+
 
                 {/* Vehicle summary card */}
 
