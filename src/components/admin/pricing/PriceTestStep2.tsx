@@ -467,6 +467,20 @@ export default function PriceTestStep2({
           </Alert>
         ) : null}
 
+        {ceilingBreach && calc ? (
+          <Alert className="border-amber-500/60 bg-amber-500/10">
+            <PhoneCall className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              <span className="font-semibold">
+                Over the auto-quote ceiling ({formatGBP(autoQuoteCeiling as number)} for one year).
+              </span>{' '}
+              One-year equivalent here is {formatGBP(Math.round(calc.annual))}, so this vehicle would go
+              to manual underwriting rather than show a price that historically does not convert.
+            </AlertDescription>
+          </Alert>
+        ) : null}
+
+
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Options column */}
           <div className={`space-y-6 lg:col-span-2 ${referral ? 'pointer-events-none opacity-50' : ''}`}>
