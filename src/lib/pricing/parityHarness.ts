@@ -155,7 +155,6 @@ function liveSurfaceTotals(
     vehicleAdjustment: adjustment.isValid ? adjustment.adjustmentAmount : 0,
     make: vehicle.make ?? null,
 
-    make: vehicle.make ?? null,
     fuelType: vehicle.fuelType ?? null,
     isMotorbike: isMotorbikeAdjustment(adjustment),
     vehicleName: [vehicle.make, vehicle.model].filter(Boolean).join(' ') || null,
