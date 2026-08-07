@@ -189,15 +189,26 @@ export function getClaimLimitTierName(claimLimit: number): string {
   return tier?.name || `£${claimLimit.toLocaleString()}`;
 }
 
-/** Format claim limit for display (maps internal 750 → £1,000) */
+/**
+ * Legacy stored claim limits → the tier they were sold as.
+ * We never rewrite what is stored on old policies (that would re-value them),
+ * we only stop showing retired numbers on screen:
+ *   750  → £1,000 (old Basic column)
+ *   1250 → £2,000 (old Essential column)
+ */
+export const LEGACY_CLAIM_LIMIT_DISPLAY: Record<number, number> = {
+  750: 1000,
+  1250: 2000,
+};
+
+/** Format claim limit for display (maps retired 750 → £1,000, 1250 → £2,000) */
 export function getDisplayClaimLimit(claimLimit: number): string {
-  const tier = CLAIM_LIMIT_TIERS.find(t => t.value === claimLimit);
-  const displayVal = tier?.displayValue ?? claimLimit;
-  return `£${displayVal.toLocaleString()}`;
+  return `£${getDisplayClaimLimitValue(claimLimit).toLocaleString()}`;
 }
 
-/** Get display value number for a claim limit (maps 750 → 1000) */
+/** Get display value number for a claim limit (maps 750 → 1000, 1250 → 2000) */
 export function getDisplayClaimLimitValue(claimLimit: number): number {
   const tier = CLAIM_LIMIT_TIERS.find(t => t.value === claimLimit);
-  return tier?.displayValue ?? claimLimit;
+  return tier?.displayValue ?? LEGACY_CLAIM_LIMIT_DISPLAY[claimLimit] ?? claimLimit;
 }
+
