@@ -85,11 +85,25 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
     } catch {
       model = null;
     }
+    // Anything in the version that names a vehicle and gives it a price is
+    // checked against the excluded vehicle matrix before this can go live.
+    const pricedVehicles = [
+      ...(Array.isArray(model?.modelFloors) ? model.modelFloors : []),
+      ...(Array.isArray(model?.modelRisks) ? model.modelRisks : []),
+    ]
+      .filter((r: any) => r?.covered !== false)
+      .map((r: any) => {
+        const text = String(r?.vehicle ?? r?.label ?? r?.key ?? '').trim();
+        return { make: text, model: text, label: text };
+      })
+      .filter(v => v.label.length > 0);
+
     return runPreflightCheck({
       adminMatrix: extras?.adminMatrix,
       labourRateFactors: extras?.labourRateFactors ?? null,
       vehicleFactorModel: model,
       webDiscountPct: pending.websiteDiscountPct ?? gapValue,
+      pricedVehicles,
     });
   }, [pending, gapValue]);
 
