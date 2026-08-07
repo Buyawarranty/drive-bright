@@ -30,6 +30,8 @@ export interface SectionPushLiveBarProps {
   /** Label of whatever is live right now. */
   liveLabel?: string | null;
   candidates: PushCandidate[];
+  /** For sections that own their own publish flow (e.g. the price grid). */
+  directPush?: { label: string; run: () => void | Promise<void> };
   onPush?: (model: any, label: string, websiteDiscountPct?: number) => void | Promise<void>;
   busy?: boolean;
 }
@@ -43,6 +45,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
   sectionLabel,
   liveLabel,
   candidates,
+  directPush,
   onPush,
   busy,
 }) => {
@@ -70,12 +73,18 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              {onPush
+              {onPush || directPush
                 ? 'Pick the exact model you want customers and agents to use — the button names which side goes live.'
                 : 'Read-only comparison — publish from the section that owns the model.'}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            {directPush && (
+              <Button size="sm" disabled={busy} onClick={() => directPush.run()}>
+                <Rocket className="mr-1 h-4 w-4" />
+                Push live: {directPush.label}
+              </Button>
+            )}
             {candidates.map(c => (
               <Button
                 key={c.key}

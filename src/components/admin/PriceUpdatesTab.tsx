@@ -575,6 +575,16 @@ export default function PriceUpdatesTab() {
 
 
 
+  /** The age-band figures saved in this browser, used when no draft is selected. */
+  function readSavedAgeBandModel(): AgeBandModel | null {
+    try {
+      const saved = JSON.parse(localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY) || 'null');
+      return saved && Array.isArray(saved.bands) && saved.bands.length ? (saved as AgeBandModel) : null;
+    } catch {
+      return null;
+    }
+  }
+
   async function handlePublish() {
     if (!selectedId) {
       try {
@@ -1089,8 +1099,11 @@ export default function PriceUpdatesTab() {
             sectionLabel="Price grid (this one goes live)"
             liveLabel={liveVersion?.label ?? null}
             busy={busy}
-            onPush={undefined}
             candidates={[]}
+            directPush={{
+              label: label ? `this grid — ${label}` : 'this grid',
+              run: handlePublish,
+            }}
           />
 
 
