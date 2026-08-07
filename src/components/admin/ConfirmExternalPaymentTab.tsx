@@ -452,8 +452,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
     if (discountBlocked) {
       toast({
-        title: `Discount over ${DISCOUNT_CEILING_PCT}% needs Management`,
-        description: `£${enteredAmount.toFixed(2)} is ${discountPct.toFixed(1)}% below the quoted £${quotedTotal}. The lowest you can confirm is £${minAllowedAmount.toFixed(2)}. Ask Management to authorise anything below that.`,
+        title: `Blocked — contact management`,
+        description: `£${enteredAmount.toFixed(2)} is ${discountPct.toFixed(1)}% below the quoted £${quotedTotal}. You cannot confirm this payment — please contact management to authorise it. The lowest you can confirm yourself is £${minAllowedAmount.toFixed(2)}.`,
         variant: "destructive",
       });
       return;
@@ -480,8 +480,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     // unless Management are the ones confirming it.
     if (discountBlocked) {
       toast({
-        title: `Blocked — ${discountPct.toFixed(1)}% discount`,
-        description: `Discounts over ${DISCOUNT_CEILING_PCT}% must be authorised by Management. Minimum allowed here is £${minAllowedAmount.toFixed(2)}.`,
+        title: `Blocked — contact management`,
+        description: `${discountPct.toFixed(1)}% off exceeds the ${DISCOUNT_CEILING_PCT}% limit. You cannot confirm this payment — contact management to authorise it. Minimum allowed here is £${minAllowedAmount.toFixed(2)}.`,
         variant: "destructive",
       });
       return;
@@ -1107,9 +1107,11 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         )}
                         {discountBlocked && (
                           <p className="text-xs font-semibold text-destructive">
-                            Blocked: that is {discountPct.toFixed(1)}% off. Discounts over {DISCOUNT_CEILING_PCT}% need Management authorisation — minimum £{minAllowedAmount.toFixed(2)}.
+                            Blocked — that is {discountPct.toFixed(1)}% off. You cannot confirm this payment.
+                            Please contact management to authorise anything below £{minAllowedAmount.toFixed(2)} (max {DISCOUNT_CEILING_PCT}% off).
                           </p>
                         )}
+
                         {overDiscountCeiling && isManagementRole && (
                           <p className="text-xs font-semibold text-amber-600">
                             Management override: {discountPct.toFixed(1)}% off (over the {DISCOUNT_CEILING_PCT}% ceiling). This will be logged.
@@ -1219,7 +1221,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
                 <div className="flex justify-end gap-3">
                   <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>Cancel</Button>
-                  <Button onClick={handleProceedToPreview} size="lg" disabled={discountBlocked} title={discountBlocked ? `Discounts over ${DISCOUNT_CEILING_PCT}% need Management authorisation` : undefined}>Review & Confirm <ArrowRight className="w-4 h-4 ml-2" /></Button>
+                  <Button onClick={handleProceedToPreview} size="lg" disabled={discountBlocked} title={discountBlocked ? 'Blocked — contact management to authorise this discount' : undefined}>{discountBlocked ? 'Contact management to confirm' : <>Review & Confirm <ArrowRight className="w-4 h-4 ml-2" /></>}</Button>
                 </div>
               </div>
 
@@ -1246,7 +1248,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                                 if (!isManagementRole && quotedTotal > 0 && discounted < minAllowedAmount) {
                                   toast({
                                     title: `${DISCOUNT_CEILING_PCT}% discount ceiling reached`,
-                                    description: `The lowest price you can confirm is £${minAllowedAmount.toFixed(2)}. Ask Management to authorise anything lower.`,
+                                    description: `The lowest price you can confirm is £${minAllowedAmount.toFixed(2)}. Contact management to authorise anything lower.`,
                                     variant: 'destructive',
                                   });
                                   setPaymentAmount(minAllowedAmount.toString());
@@ -1348,16 +1350,26 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                 </div>
               </div>
 
+              {discountBlocked && (
+                <div className="p-4 rounded-lg border-2 border-destructive bg-destructive/10 text-sm font-semibold text-destructive">
+                  Cannot confirm this payment — £{enteredAmount.toFixed(2)} is {discountPct.toFixed(1)}% off the quoted £{quotedTotal}.
+                  Please contact management to authorise it. The lowest you can confirm yourself is £{minAllowedAmount.toFixed(2)}.
+                </div>
+              )}
+
               <div className="flex justify-end gap-3">
                 <Button variant="outline" onClick={() => setExternalPaymentStep('details')}>Back</Button>
-                <Button onClick={handleConfirmPayment} disabled={isConfirming || discountBlocked} size="lg" className="bg-indigo-500 hover:bg-indigo-400">
+                <Button onClick={handleConfirmPayment} disabled={isConfirming || discountBlocked} size="lg" className="bg-indigo-500 hover:bg-indigo-400" title={discountBlocked ? 'Blocked — contact management to authorise this discount' : undefined}>
                   {isConfirming ? (
                     <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating Policy...</>
+                  ) : discountBlocked ? (
+                    <>Contact management to confirm</>
                   ) : (
                     <><CheckCircle2 className="w-4 h-4 mr-2" />Confirm Payment</>
                   )}
                 </Button>
               </div>
+
             </div>
           )}
 
