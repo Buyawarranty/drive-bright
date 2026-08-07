@@ -113,6 +113,11 @@ function scoreFloor<T extends MatchableFloor>(
   // "Range Rover Sport" never fires on a "Ford Sport" vehicle.
   if (ruleTokens.length > 1 && !matchedTokens.includes(ruleTokens[0])) return null;
 
+  // ...and it must also match at least one model token, otherwise a rule like
+  // "Audi RS and R8" or "BMW M derivatives" would fire on every Audi / BMW.
+  if (ruleTokens.length > 1 && matchedTokens.length === 1) return null;
+
+
   const exact = matchedTokens.length === ruleTokens.length;
   const score = matchedTokens.length * 10 + (exact ? 5 : 0);
   return { floor, matchedTokens, score, exact };
