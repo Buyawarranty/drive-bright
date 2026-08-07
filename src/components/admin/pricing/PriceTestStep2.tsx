@@ -257,22 +257,9 @@ export default function PriceTestStep2({
   const floor = modelFloors.find(f => f.key === floorKey) || null;
   const term = TERMS.find(t => t.key === termKey) ?? TERMS[0];
 
-  // Keep the selection valid when a rate/excess/limit is removed or renumbered in the editor.
-  useEffect(() => {
-    if (labourRateFactors.length && !labourRateFactors.some(l => l.rate === labour)) {
-      setLabour(labourRateFactors[0].rate);
-    }
-  }, [labourRateFactors, labour]);
-  useEffect(() => {
-    if (excessFactors.length && !excessFactors.some(e => e.excess === excess)) {
-      setExcess(excessFactors[0].excess);
-    }
-  }, [excessFactors, excess]);
-  useEffect(() => {
-    if (claimLimits.length && !claimLimits.some(c => c.limit === claimLimit)) {
-      setClaimLimit(claimLimits[0].limit);
-    }
-  }, [claimLimits, claimLimit]);
+  // The option lists are the CUSTOMER JOURNEY lists, not the editor's rows — a
+  // missing editor row is priced from the nearest factor instead of hiding the
+  // option, so nothing can go live unpriced.
 
   // Nearest configured factor so every journey option (claim limit, labour rate,
   // excess) always prices, even if the editor is missing that exact row.
