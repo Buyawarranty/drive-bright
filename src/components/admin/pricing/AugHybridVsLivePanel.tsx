@@ -71,8 +71,13 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
   const referenceBand =
     base.bands.find((b: any) => String(b.key) === cfg.referenceBandKey) ?? base.bands[0];
   const referenceLive = Number(referenceBand?.oneYear ?? 0);
+  /** Blank / 0 target means "leave the age curve where live has it". */
+  const effectiveTarget = cfg.targetReference > 0 ? cfg.targetReference : referenceLive;
   /** One scale factor moves the whole age curve so the reference vehicle lands on target. */
-  const recentre = referenceLive > 0 ? cfg.targetReference / referenceLive : 1;
+  const recentre = referenceLive > 0 ? effectiveTarget / referenceLive : 1;
+  /** What live's flat multipliers imply as a discount off N × one year. */
+  const liveTwoYearDiscountPct = Math.round((1 - base.twoYearMult / 2) * 1000) / 10;
+  const liveThreeYearDiscountPct = Math.round((1 - base.threeYearMult / 3) * 1000) / 10;
 
   const hybridModel = useMemo(
     () => ({
