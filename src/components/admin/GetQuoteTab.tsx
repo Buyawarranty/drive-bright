@@ -4504,46 +4504,113 @@ Questions? Call 0330 229 5040`;
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="custom-monthly" className="text-sm font-medium text-gray-700">Monthly Price (£)</Label>
-                      <Input
-                        id="custom-monthly"
-                        type="text"
-                        inputMode="numeric"
-                        value={customMonthlyPrice}
-                        onChange={(e) => handleCustomMonthlyChange(e.target.value)}
-                        onFocus={(e) => e.target.select()}
-                        placeholder="0"
-                        className={cn(
-                          "text-lg font-semibold py-5",
-                          isPriceOverridden ? "border-amber-400 bg-amber-50/60" : "border-emerald-300 bg-emerald-50/40"
+                  {(() => {
+                    /** Live discount readout so agents never hand-calculate a percentage. */
+                    const pctOff = (custom: string, calculated: number) => {
+                      const entered = parseFloat(String(custom).replace(/[^0-9.]/g, ''));
+                      if (!Number.isFinite(entered) || entered <= 0 || !calculated) return null;
+                      return Math.round(((calculated - entered) / calculated) * 1000) / 10;
+                    };
+                    const monthlyPct = pctOff(customMonthlyPrice, basePrice.monthlyPrice);
+                    const totalPct = pctOff(customFullPrice, basePrice.totalPrice);
+                    const headline = totalPct ?? monthlyPct;
+                    const overCap = headline !== null && !priceMatchMode && headline > effectiveMaxDiscountPct;
+                    const chip = (pct: number | null) => {
+                      if (pct === null) return null;
+                      const isDiscount = pct > 0;
+                      const isUplift = pct < 0;
+                      return (
+                        <span
+                          className={cn(
+                            'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold',
+                            isDiscount
+                              ? overCap
+                                ? 'bg-red-100 text-red-800 border border-red-300'
+                                : 'bg-amber-100 text-amber-900 border border-amber-300'
+                              : isUplift
+                                ? 'bg-sky-100 text-sky-800 border border-sky-300'
+                                : 'bg-gray-100 text-gray-700 border border-gray-300'
+                          )}
+                        >
+                          {isDiscount ? `${pct}% off` : isUplift ? `${Math.abs(pct)}% above` : 'Same price'}
+                        </span>
+                      );
+                    };
+                    return (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <Label htmlFor="custom-monthly" className="text-sm font-medium text-gray-700">Monthly Price (£)</Label>
+                            <Input
+                              id="custom-monthly"
+                              type="text"
+                              inputMode="numeric"
+                              value={customMonthlyPrice}
+                              onChange={(e) => handleCustomMonthlyChange(e.target.value)}
+                              onFocus={(e) => e.target.select()}
+                              placeholder="0"
+                              className={cn(
+                                "text-lg font-semibold py-5",
+                                isPriceOverridden ? "border-amber-400 bg-amber-50/60" : "border-emerald-300 bg-emerald-50/40"
+                              )}
+                            />
+                            <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                              <span>Calculated: £{basePrice.monthlyPrice}</span>
+                              {isPriceOverridden && chip(monthlyPct)}
+                            </p>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label htmlFor="custom-full" className="text-sm font-medium text-gray-700">Total Price (£)</Label>
+                            <Input
+                              id="custom-full"
+                              type="text"
+                              inputMode="numeric"
+                              value={customFullPrice}
+                              onChange={(e) => handleCustomFullChange(e.target.value)}
+                              onFocus={(e) => e.target.select()}
+                              placeholder="0"
+                              className={cn(
+                                "text-lg font-semibold py-5",
+                                isPriceOverridden ? "border-amber-400 bg-amber-50/60" : "border-emerald-300 bg-emerald-50/40"
+                              )}
+                            />
+                            <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                              <span>Calculated: £{basePrice.totalPrice}</span>
+                              {isPriceOverridden && chip(totalPct)}
+                            </p>
+                          </div>
+                        </div>
+
+                        {isPriceOverridden && headline !== null && (
+                          <div
+                            className={cn(
+                              'rounded-lg border px-3 py-2 text-sm flex items-center justify-between gap-3 flex-wrap',
+                              headline > 0
+                                ? overCap
+                                  ? 'border-red-300 bg-red-50 text-red-900'
+                                  : 'border-amber-300 bg-amber-50 text-amber-900'
+                                : 'border-sky-300 bg-sky-50 text-sky-900'
+                            )}
+                          >
+                            <span className="font-semibold">
+                              {headline > 0
+                                ? `You are giving ${headline}% off`
+                                : headline < 0
+                                  ? `This is ${Math.abs(headline)}% above the calculated price`
+                                  : 'This matches the calculated price'}
+                            </span>
+                            <span className="text-xs">
+                              £{basePrice.totalPrice} calculated → £{(parseFloat(String(customFullPrice).replace(/[^0-9.]/g, '')) || basePrice.totalPrice)} total
+                              {!priceMatchMode && effectiveMaxDiscountPct < 100 && (
+                                <> · your cap {effectiveMaxDiscountPct}%{overCap ? ' — over cap' : ''}</>
+                              )}
+                            </span>
+                          </div>
                         )}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        {isPriceOverridden ? "Custom override" : `Calculated: £${basePrice.monthlyPrice}`}
-                      </p>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="custom-full" className="text-sm font-medium text-gray-700">Total Price (£)</Label>
-                      <Input
-                        id="custom-full"
-                        type="text"
-                        inputMode="numeric"
-                        value={customFullPrice}
-                        onChange={(e) => handleCustomFullChange(e.target.value)}
-                        onFocus={(e) => e.target.select()}
-                        placeholder="0"
-                        className={cn(
-                          "text-lg font-semibold py-5",
-                          isPriceOverridden ? "border-amber-400 bg-amber-50/60" : "border-emerald-300 bg-emerald-50/40"
-                        )}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        {isPriceOverridden ? "Custom override" : `Calculated: £${basePrice.totalPrice}`}
-                      </p>
-                    </div>
-                  </div>
+                      </>
+                    );
+                  })()}
+
 
                   <div className="space-y-2.5 pt-1">
                     <div className="flex items-center justify-between gap-3 flex-wrap">
