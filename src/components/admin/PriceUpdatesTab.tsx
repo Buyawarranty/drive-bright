@@ -9,6 +9,14 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
 import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info } from 'lucide-react';
@@ -172,6 +180,51 @@ export default function PriceUpdatesTab() {
       Number(v.step3_discount_pct) > 0 ? Number(v.step3_discount_pct) : 10
     );
     setMatrix(cloneMatrix(v.admin_matrix));
+  }
+
+  /** History: version opened in the quick-summary dialog. */
+  const [previewVersion, setPreviewVersion] = useState<PricingVersion | null>(null);
+
+  /** History: make a saved/archived version the live pricing again. */
+  async function handleRestoreVersion(v: PricingVersion) {
+    const { matrix: safeMatrix, invalid } = normalizeMatrixForPublish(
+      cloneMatrix(v.admin_matrix),
+      liveVersion?.admin_matrix || codeMatrix
+    );
+    if (invalid.length) {
+      toast.error(
+        `Cannot restore — ${invalid.length} price cell(s) are missing or zero: ${invalid
+          .slice(0, 3)
+          .join('; ')}${invalid.length > 3 ? '…' : ''}`
+      );
+      return;
+    }
+    const pct = effectiveDiscountPct(Number(v.step3_discount_pct));
+    if (
+      !window.confirm(
+        `Restore "${v.label}" as the live pricing?\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ${pct}%.`
+      )
+    )
+      return;
+    setBusy(true);
+    try {
+      await publishVersion(v.id);
+      applyLivePricingVersion({
+        status: 'live',
+        admin_matrix: safeMatrix,
+        step3_discount_pct: pct,
+        claim_limit_factors: (v as any).claim_limit_factors ?? null,
+        labour_rate_factors: (v as any).labour_rate_factors ?? null,
+        vehicle_factor_model: (v as any).vehicle_factor_model ?? null,
+      });
+      loadIntoEditor({ ...v, admin_matrix: safeMatrix, step3_discount_pct: pct } as PricingVersion);
+      setPreviewVersion(null);
+      toast.success(`"${v.label}" restored live — reload any open quote pages`);
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not restore this version');
+    } finally {
+      setBusy(false);
+    }
   }
 
   /**
@@ -1106,7 +1159,10 @@ export default function PriceUpdatesTab() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">History</CardTitle>
-          <CardDescription>Every saved and published pricing structure.</CardDescription>
+          <CardDescription>
+            Every saved and published pricing structure. Open one for a quick summary, then load it
+            into the editor or restore it live.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           {versions.length === 0 && (
@@ -1139,16 +1195,89 @@ export default function PriceUpdatesTab() {
                 >
                   {v.status === 'live' ? 'Live' : v.status === 'draft' ? 'Test draft' : 'Archived'}
                 </Badge>
-                {v.status !== 'live' && (
-                  <Button variant="outline" size="sm" onClick={() => loadIntoEditor(v)}>
-                    Open
-                  </Button>
-                )}
+                <Button variant="outline" size="sm" onClick={() => setPreviewVersion(v)}>
+                  Open
+                </Button>
               </div>
             </div>
           ))}
         </CardContent>
       </Card>
+
+      {/* Quick summary of a saved/published version — no full grid dump. */}
+      <Dialog open={!!previewVersion} onOpenChange={open => !open && setPreviewVersion(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-base">{previewVersion?.label}</DialogTitle>
+            <DialogDescription>
+              {previewVersion
+                ? `${
+                    previewVersion.status === 'live'
+                      ? 'Currently live'
+                      : previewVersion.status === 'draft'
+                        ? 'Test draft'
+                        : 'Archived'
+                  } · website is ${Number(previewVersion.step3_discount_pct)}% below these prices`
+                : ''}
+            </DialogDescription>
+          </DialogHeader>
+
+          {previewVersion && (
+            <div className="space-y-3">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-muted-foreground">
+                    <th className="py-1">Term</th>
+                    <th className="py-1">£0 excess</th>
+                    <th className="py-1">£150 excess</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PERIODS.map(p => {
+                    const cell = (ex: number) =>
+                      previewVersion.admin_matrix?.[p]?.[String(ex)]?.['2000'];
+                    return (
+                      <tr key={p} className="border-t">
+                        <td className="py-1.5 font-medium">{PERIOD_LABELS[p] || p}</td>
+                        <td className="py-1.5">{cell(0) ? formatGBP(cell(0)!) : '—'}</td>
+                        <td className="py-1.5">{cell(150) ? formatGBP(cell(150)!) : '—'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <p className="text-xs text-muted-foreground">
+                Showing the £2,000 claim limit as a reference. Load it into the editor to see every
+                cell.
+              </p>
+              {previewVersion.notes && (
+                <p className="text-xs text-muted-foreground">{previewVersion.notes}</p>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={busy}
+              onClick={() => {
+                if (previewVersion) loadIntoEditor(previewVersion);
+                setPreviewVersion(null);
+                toast.success('Loaded into the editor — nothing is live until you push it');
+              }}
+            >
+              Load into editor
+            </Button>
+            {previewVersion?.status !== 'live' && (
+              <Button size="sm" disabled={busy} onClick={() => handleRestoreVersion(previewVersion!)}>
+                <RotateCcw className="h-4 w-4 mr-1" /> Restore this pricing live
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
         </TabsContent>
       </Tabs>
     </div>
