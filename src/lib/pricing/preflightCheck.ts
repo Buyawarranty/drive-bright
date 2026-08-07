@@ -11,6 +11,11 @@
  */
 
 import { MAX_WEB_DISCOUNT_PCT } from './pricingVersionConfig';
+import {
+  EXCLUDED_MAKES,
+  EXCLUDED_MODEL_RULES,
+  getExclusionReason,
+} from '@/lib/vehicleExclusions';
 
 export const PREFLIGHT_TERMS = ['12months', '24months', '36months'] as const;
 export const PREFLIGHT_EXCESSES = [0, 50, 100, 150, 250, 500] as const;
@@ -45,9 +50,55 @@ export type PreflightInput = {
   vehicleFactorModel?: any | null;
   /** Step 3/4 gap being published, in percent. */
   webDiscountPct?: number | null;
+  /**
+   * Any vehicles the version prices explicitly (model floors, per-model risk
+   * rules, sample vehicles). Excluded makes/models must never carry a price.
+   */
+  pricedVehicles?: { make?: string | null; model?: string | null; label?: string | null }[] | null;
 };
 
 const MAX_LISTED_GAPS = 6;
+
+/**
+ * The excluded vehicle matrix applies to EVERY price we push live. It is code,
+ * not version data, so a push can never drop it — this check proves it is
+ * loaded and that nothing in the version puts a price on an excluded vehicle.
+ */
+function checkExclusions(priced: PreflightInput['pricedVehicles']): PreflightItem {
+  const ruleCount = EXCLUDED_MAKES.length + EXCLUDED_MODEL_RULES.length;
+  if (ruleCount === 0) {
+    return {
+      key: 'exclusions',
+      label: 'Excluded vehicles',
+      severity: 'block',
+      detail: 'The excluded vehicle matrix is empty — supercars and M/AMG/RS models would be quoted.',
+    };
+  }
+  const offenders = (Array.isArray(priced) ? priced : [])
+    .map(v => {
+      const reason = getExclusionReason(v?.make, v?.model);
+      if (!reason) return null;
+      const name = v?.label || [v?.make, v?.model].filter(Boolean).join(' ') || 'Unnamed vehicle';
+      return `${name} — excluded (${reason})`;
+    })
+    .filter(Boolean) as string[];
+
+  if (offenders.length) {
+    return {
+      key: 'exclusions',
+      label: 'Excluded vehicles',
+      severity: 'block',
+      detail: `${offenders.length} vehicle${offenders.length === 1 ? '' : 's'} in this push are on the excluded list.`,
+      gaps: offenders.slice(0, MAX_LISTED_GAPS),
+    };
+  }
+  return {
+    key: 'exclusions',
+    label: 'Excluded vehicles',
+    severity: 'ok',
+    detail: `${EXCLUDED_MAKES.length} excluded makes and ${EXCLUDED_MODEL_RULES.length} model rules apply to this price.`,
+  };
+}
 
 function num(value: unknown): number | null {
   const n = typeof value === 'number' ? value : Number(value);
@@ -218,6 +269,7 @@ export function runPreflightCheck(input: PreflightInput): PreflightReport {
       checkLabourRates(input.labourRateFactors),
       checkVehicleModel(input.vehicleFactorModel),
       checkWebGap(input.webDiscountPct),
+      checkExclusions(input.pricedVehicles),
     ];
   } catch {
     items = [

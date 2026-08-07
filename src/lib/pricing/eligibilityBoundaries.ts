@@ -15,6 +15,8 @@
  *    referral so an agent can confirm on 0330 229 5040.
  */
 
+import { getExclusionReason, EXCLUSION_MESSAGE } from '@/lib/vehicleExclusions';
+
 export const MAX_VEHICLE_AGE_YEARS = 15;
 export const MAX_VEHICLE_MILEAGE = 150000;
 export const REFERRAL_PHONE = '0330 229 5040';
@@ -29,6 +31,9 @@ export type BoundaryInput = {
   /** Fallback when no registration date is known. */
   yearOfManufacture?: string | number | null;
   mileage?: string | number | null;
+  /** Make and model — checked against the excluded vehicle matrix. */
+  make?: string | null;
+  model?: string | null;
   /** Quote date — defaults to now. Passed in for reproducible tests. */
   asOf?: Date;
 };
@@ -43,6 +48,13 @@ export type BoundaryResult = {
   ageSource: 'registration_date' | 'year_of_manufacture' | 'unknown';
   mileage: number | null;
   reasons: string[];
+  /**
+   * True when the excluded vehicle matrix bars this make/model. This is a hard
+   * stop that NO override (including admin skipAgeCheck) can unlock.
+   */
+  excluded: boolean;
+  /** e.g. "BMW M-Series" — why the matrix excluded it. */
+  exclusionReason?: string;
 };
 
 function parseMileage(value: BoundaryInput['mileage']): number | null {
@@ -84,7 +96,23 @@ export function evaluateBoundaries(input: BoundaryInput): BoundaryResult {
   const mileage = parseMileage(input.mileage);
   const reasons: string[] = [];
 
-  // Hard declines first — a clearly over-limit vehicle is never a referral.
+  // Excluded vehicle matrix FIRST — an excluded make/model can never be priced,
+  // whatever its age or mileage, and no override unlocks it.
+  const exclusionReason = getExclusionReason(input.make, input.model);
+  if (exclusionReason) {
+    return {
+      outcome: 'declined',
+      message: EXCLUSION_MESSAGE,
+      ageYears,
+      ageSource,
+      mileage,
+      reasons: [`Excluded vehicle: ${exclusionReason}`],
+      excluded: true,
+      exclusionReason,
+    };
+  }
+
+  // Hard declines next — a clearly over-limit vehicle is never a referral.
   if (ageYears !== null && ageYears > MAX_VEHICLE_AGE_YEARS) {
     reasons.push(`Age ${ageYears.toFixed(2)}y exceeds ${MAX_VEHICLE_AGE_YEARS}y`);
   }
@@ -99,14 +127,23 @@ export function evaluateBoundaries(input: BoundaryInput): BoundaryResult {
       ageSource,
       mileage,
       reasons,
+      excluded: false,
     };
   }
 
   if (ageYears === null) reasons.push('Vehicle age unknown');
   if (mileage === null) reasons.push('Mileage unknown');
   if (reasons.length > 0) {
-    return { outcome: 'referral', message: REFERRAL_MESSAGE, ageYears, ageSource, mileage, reasons };
+    return {
+      outcome: 'referral',
+      message: REFERRAL_MESSAGE,
+      ageYears,
+      ageSource,
+      mileage,
+      reasons,
+      excluded: false,
+    };
   }
 
-  return { outcome: 'eligible', ageYears, ageSource, mileage, reasons: [] };
+  return { outcome: 'eligible', ageYears, ageSource, mileage, reasons: [], excluded: false };
 }

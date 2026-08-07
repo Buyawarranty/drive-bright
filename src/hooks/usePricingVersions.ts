@@ -192,11 +192,25 @@ export function usePricingVersions() {
           .eq('id', id)
           .maybeSingle();
         if (row) {
+          const vfm = (row as any).vehicle_factor_model ?? null;
+          // Excluded vehicle matrix is enforced on every publish, not just from
+          // the push bar — a named vehicle with a price must not be on the list.
+          const pricedVehicles = [
+            ...(Array.isArray(vfm?.modelFloors) ? vfm.modelFloors : []),
+            ...(Array.isArray(vfm?.modelRisks) ? vfm.modelRisks : []),
+          ]
+            .filter((r: any) => r?.covered !== false)
+            .map((r: any) => {
+              const text = String(r?.vehicle ?? r?.label ?? r?.key ?? '').trim();
+              return { make: text, model: text, label: text };
+            })
+            .filter(v => v.label.length > 0);
           const report = runPreflightCheck({
             adminMatrix: (row as any).admin_matrix,
             labourRateFactors: (row as any).labour_rate_factors ?? null,
-            vehicleFactorModel: (row as any).vehicle_factor_model ?? null,
+            vehicleFactorModel: vfm,
             webDiscountPct: (row as any).step3_discount_pct ?? null,
+            pricedVehicles,
           });
           if (report.blocked) {
             const gaps = report.items

@@ -13,6 +13,7 @@ import { useSavedPricingModel } from './useSavedPricingModel';
 import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
 import { getVisibleExcessOptions } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice } from '@/lib/addOnsUtils';
+import { getExclusionReason, EXCLUSION_MESSAGE } from '@/lib/vehicleExclusions';
 import {
   JOURNEY_DURATIONS,
   JOURNEY_EXCESS_OPTIONS,
@@ -270,7 +271,17 @@ export default function PriceTestStep2({
   const addOnTotalFor = (months: number) =>
     calculateAddOnPrice(addOns, periodForMonths(months), months);
 
+  /**
+   * Excluded vehicle matrix — the same one the live journey uses. An excluded
+   * make/model can never be priced, in a test or live, so there is no price to
+   * push and no override here.
+   */
+  const exclusionReason = activeVehicle
+    ? getExclusionReason(activeVehicle.make, activeVehicle.model)
+    : null;
+
   const referral =
+    !!exclusionReason ||
     ageBand.oneYear === null ||
     mileageBand.factor === null ||
     vehType.factor === null ||
@@ -525,7 +536,17 @@ export default function PriceTestStep2({
           </Button>
         </div>
 
-        {referral ? (
+        {exclusionReason ? (
+          <Alert className="border-destructive/60 bg-destructive/10">
+            <PhoneCall className="h-4 w-4" />
+            <AlertDescription>
+              <span className="font-semibold">
+                Excluded vehicle — no price, in test or live ({exclusionReason}).
+              </span>{' '}
+              {EXCLUSION_MESSAGE}
+            </AlertDescription>
+          </Alert>
+        ) : referral ? (
           <Alert>
             <PhoneCall className="h-4 w-4" />
             <AlertDescription>
