@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import {
   BASE_PRICING_MATRIX,
@@ -6,6 +6,18 @@ import {
   type PricingMatrixShape,
 } from '@/lib/pricingMatrix';
 import type { VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
+import {
+  computeConfigChecksum,
+  CODE_PRICE_FLOORS,
+  CODE_ROUNDING_RULE,
+  NEUTRAL_REFERENCE_FACTORS,
+  type PricingVersionConfig,
+  type PriceCaps,
+  type PriceFloors,
+  type ReferenceFactors,
+  type ReferenceVehicle,
+  type RoundingRule,
+} from '@/lib/pricing/pricingVersionConfig';
 
 export interface PricingVersion {
   id: string;
@@ -21,6 +33,16 @@ export interface PricingVersion {
   created_at: string;
   updated_at: string;
   published_at: string | null;
+  /** Self-contained config so any historical quote is reproducible. */
+  reference_vehicle?: ReferenceVehicle | null;
+  reference_factors?: ReferenceFactors | null;
+  price_floors?: PriceFloors | null;
+  price_caps?: PriceCaps | null;
+  rounding_rule?: RoundingRule | null;
+  effective_date?: string | null;
+  model_version?: number | null;
+  config_checksum?: string | null;
+  published_by?: string | null;
 }
 
 export const PERIODS = ['12months', '24months', '36months'] as const;
@@ -51,6 +73,8 @@ export function buildCodeAdminMatrix(): PricingMatrixShape {
 export function usePricingVersions() {
   const [versions, setVersions] = useState<PricingVersion[]>([]);
   const [loading, setLoading] = useState(true);
+  const versionsRef = useRef<PricingVersion[]>([]);
+  versionsRef.current = versions;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -74,7 +98,8 @@ export function usePricingVersions() {
       notes?: string,
       claimLimitFactors?: { limit: number; factor: number }[] | null,
       labourRateFactors?: { rate: number; factor: number; label?: string | null }[] | null,
-      vehicleFactorModel?: VehicleFactorModel | null
+      vehicleFactorModel?: VehicleFactorModel | null,
+      config?: PricingVersionConfig | null
     ) => {
       const { data: authData } = await supabase.auth.getUser();
       const { data, error } = await supabase
@@ -89,6 +114,24 @@ export function usePricingVersions() {
           vehicle_factor_model: (vehicleFactorModel ?? null) as any,
           notes: notes ?? null,
           created_by: authData?.user?.id ?? null,
+          reference_vehicle: (config?.reference_vehicle ?? null) as any,
+          reference_factors: (config?.reference_factors ?? NEUTRAL_REFERENCE_FACTORS) as any,
+          price_floors: (config?.price_floors ?? CODE_PRICE_FLOORS) as any,
+          price_caps: (config?.price_caps ?? null) as any,
+          rounding_rule: config?.rounding_rule ?? CODE_ROUNDING_RULE,
+          effective_date: config?.effective_date ?? null,
+          config_checksum: computeConfigChecksum({
+            admin_matrix: adminMatrix,
+            step3_discount_pct: step3DiscountPct,
+            claim_limit_factors: claimLimitFactors ?? null,
+            labour_rate_factors: labourRateFactors ?? null,
+            vehicle_factor_model: vehicleFactorModel ?? null,
+            reference_vehicle: config?.reference_vehicle ?? null,
+            reference_factors: config?.reference_factors ?? NEUTRAL_REFERENCE_FACTORS,
+            price_floors: config?.price_floors ?? CODE_PRICE_FLOORS,
+            price_caps: config?.price_caps ?? null,
+            rounding_rule: config?.rounding_rule ?? CODE_ROUNDING_RULE,
+          }),
         })
         .select()
         .single();
@@ -100,10 +143,27 @@ export function usePricingVersions() {
   );
 
   const saveVersion = useCallback(
-    async (id: string, patch: Partial<Pick<PricingVersion, 'label' | 'admin_matrix' | 'step3_discount_pct' | 'notes' | 'claim_limit_factors' | 'labour_rate_factors' | 'vehicle_factor_model'>>) => {
+    async (id: string, patch: Partial<Pick<PricingVersion, 'label' | 'admin_matrix' | 'step3_discount_pct' | 'notes' | 'claim_limit_factors' | 'labour_rate_factors' | 'vehicle_factor_model' | 'reference_vehicle' | 'reference_factors' | 'price_floors' | 'price_caps' | 'rounding_rule' | 'effective_date'>>) => {
+      // Keep the checksum in step with whatever was just edited.
+      const existing = versionsRef.current.find(v => v.id === id);
+      const merged = { ...(existing ?? {}), ...patch } as PricingVersion;
       const { error } = await supabase
         .from('pricing_matrix_versions')
-        .update(patch as any)
+        .update({
+          ...(patch as any),
+          config_checksum: computeConfigChecksum({
+            admin_matrix: merged.admin_matrix,
+            step3_discount_pct: merged.step3_discount_pct,
+            claim_limit_factors: merged.claim_limit_factors ?? null,
+            labour_rate_factors: merged.labour_rate_factors ?? null,
+            vehicle_factor_model: merged.vehicle_factor_model ?? null,
+            reference_vehicle: merged.reference_vehicle ?? null,
+            reference_factors: merged.reference_factors ?? NEUTRAL_REFERENCE_FACTORS,
+            price_floors: merged.price_floors ?? CODE_PRICE_FLOORS,
+            price_caps: merged.price_caps ?? null,
+            rounding_rule: merged.rounding_rule ?? CODE_ROUNDING_RULE,
+          }),
+        })
         .eq('id', id);
       if (error) throw error;
       await load();
@@ -115,6 +175,14 @@ export function usePricingVersions() {
     async (id: string) => {
       const { error } = await supabase.rpc('publish_pricing_version', { _version_id: id });
       if (error) throw error;
+      // Record who pushed it live so a historical price is always attributable.
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData?.user?.id) {
+        await supabase
+          .from('pricing_matrix_versions')
+          .update({ published_by: authData.user.id } as any)
+          .eq('id', id);
+      }
       await load();
     },
     [load]
