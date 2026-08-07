@@ -221,7 +221,7 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs">2-year discount %</Label>
+                  <Label className="text-xs">2-year discount % (off 2× one year)</Label>
                   <Input
                     type="number"
                     className="mt-1 h-9"
@@ -229,11 +229,12 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
                     onChange={e => set('twoYearDiscountPct', Number(e.target.value) || 0)}
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
-                    ×{hybridModel.twoYearMult.toFixed(2)} vs live ×{base.twoYearMult.toFixed(2)}
+                    ×{hybridModel.twoYearMult.toFixed(2)} vs live ×{base.twoYearMult.toFixed(2)} (live ={' '}
+                    {liveTwoYearDiscountPct}% off)
                   </p>
                 </div>
                 <div>
-                  <Label className="text-xs">3-year discount %</Label>
+                  <Label className="text-xs">3-year discount % (off 3× one year)</Label>
                   <Input
                     type="number"
                     className="mt-1 h-9"
@@ -241,15 +242,20 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
                     onChange={e => set('threeYearDiscountPct', Number(e.target.value) || 0)}
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
-                    ×{hybridModel.threeYearMult.toFixed(2)} vs live ×{base.threeYearMult.toFixed(2)}
+                    ×{hybridModel.threeYearMult.toFixed(2)} vs live ×{base.threeYearMult.toFixed(2)} (live ={' '}
+                    {liveThreeYearDiscountPct}% off)
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
-              <Badge variant="outline">Reference target {formatGBP(cfg.targetReference)}</Badge>
               <Badge variant="outline">
+                Reference target {effectiveTarget ? formatGBP(effectiveTarget) : '—'}
+                {cfg.targetReference > 0 ? '' : ' (live)'}
+              </Badge>
+              <Badge variant="outline">
+
                 {cfg.ceilingOn ? `Ceiling ${formatGBP(cfg.ceiling)}` : 'No ceiling'}
               </Badge>
               <Badge variant="outline">
