@@ -812,6 +812,25 @@ export default function PriceUpdatesTab() {
         </TabsContent>
 
 
+        <TabsContent value="aug26" className="space-y-6 mt-4">
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              <strong>Aug 2026 pricing.</strong> This is the version we have been building — saved as
+              a draft, with every earlier version kept in the history below. Check it in the{' '}
+              <strong>Step 2 configuration</strong> replica underneath, then use{' '}
+              <strong>“Copy to new draft”</strong> and publish from{' '}
+              <strong>Price grid (this one goes live)</strong> when you want it live.
+            </AlertDescription>
+          </Alert>
+          <Aug26PricingPanel />
+          <PriceTestStep2
+            title="Step 2 configuration — Aug 2026 pricing"
+            subtitle="Same controls the agents see on Quotes & Orders, priced with the Aug 2026 settings."
+            badgeText="Aug26"
+          />
+        </TabsContent>
+
         <TabsContent value="tools" className="space-y-4 mt-4">
           <Tabs defaultValue="excluded" className="w-full">
             <TabsList className="flex flex-wrap gap-2 bg-muted/40 p-1">
@@ -820,9 +839,6 @@ export default function PriceUpdatesTab() {
               </TabsTrigger>
               <TabsTrigger value="engine">
                 <FlaskConical className="h-4 w-4 mr-2" /> Pricing engine (draft)
-              </TabsTrigger>
-              <TabsTrigger value="aug26">
-                <CalendarClock className="h-4 w-4 mr-2" /> Aug26 grid &amp; version history
               </TabsTrigger>
               <TabsTrigger value="codevscurrent">
                 <GitCompare className="h-4 w-4 mr-2" /> Base pricing 7/26 vs Current
@@ -834,14 +850,12 @@ export default function PriceUpdatesTab() {
             <TabsContent value="engine" className="mt-4">
               <PricingEngineDraftPanel />
             </TabsContent>
-            <TabsContent value="aug26" className="mt-4">
-              <Aug26PricingPanel />
-            </TabsContent>
             <TabsContent value="codevscurrent" className="mt-4">
               <CodebaseVsCurrentPanel />
             </TabsContent>
           </Tabs>
         </TabsContent>
+
 
         <TabsContent value="previews" className="space-y-4 mt-4">
           <Tabs defaultValue="quotes-preview" className="w-full">
