@@ -5114,15 +5114,16 @@ Questions? Call 0330 229 5040`;
 
                     <div
                       className="text-center sm:px-4"
-                      title={`Online website price for this exact cover: £${web.price}. That is ${web.discountPct}% below your grid price of £${gridTotal} (capped at ${MAX_WEB_DISCOUNT_VS_GRID_PCT}% — the web can never be cheaper than that). Use it to price match with confidence.`}
+                      title={`Online website price for this exact cover: £${web.price}. That is ${web.discountPct}% below the undiscounted grid price of £${undiscountedGridTotal} (capped at ${MAX_WEB_DISCOUNT_VS_GRID_PCT}%). Agent discounts on this page do not change the online price.`}
                     >
                       <div className="text-xs text-gray-500 font-medium uppercase tracking-wide flex items-center justify-center gap-1">
                         Web price <Info className="w-3 h-3 text-gray-400" />
                       </div>
                       <div className="text-2xl font-bold text-gray-700 leading-tight mt-0.5">£{web.price}</div>
                       <div className="text-xs text-gray-500 mt-0.5">
-                        {web.discountPct}% below grid · max {MAX_WEB_DISCOUNT_VS_GRID_PCT}%
+                        {web.discountPct}% below grid · unaffected by agent discounts
                       </div>
+                    </div>
                     </div>
                     <div className="text-center sm:text-left sm:px-4 text-sm">
                       <div className="font-semibold text-gray-900">Total £{gridTotal}</div>
