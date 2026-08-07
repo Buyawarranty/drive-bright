@@ -120,6 +120,27 @@ const AugHybridVsLivePanel: React.FC<{
 
   return (
     <div className="space-y-4">
+      <SectionPushLiveBar
+        sectionLabel="Live Vs Test Hybrid Aug"
+        liveLabel={liveLabel}
+        busy={busy}
+        onPush={onPushModel}
+        candidates={[
+          {
+            key: 'live',
+            label: 'Live pricing (left)',
+            description: 'Republishes the current live builder figures unchanged.',
+            getModel: () => liveModel,
+          },
+          {
+            key: 'hybrid',
+            label: 'Aug hybrid test (right)',
+            description:
+              'Publishes the hybrid variables exactly as set above: reduced base, compressed risk/mileage spread and the multi-year discounts.',
+            getModel: () => hybridModel,
+          },
+        ]}
+      />
       <Card className="border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl">
