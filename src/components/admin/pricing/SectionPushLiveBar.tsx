@@ -120,7 +120,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
               <Rocket className="mr-1 h-4 w-4" /> Yes, push {pending?.label} live
             </Button>
           </DialogFooter>
-        </DialogFooter>
+        </DialogContent>
       </Dialog>
     </>
   );
