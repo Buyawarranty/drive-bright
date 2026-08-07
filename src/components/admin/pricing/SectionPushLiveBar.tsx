@@ -25,9 +25,15 @@ export interface PushCandidate {
   description?: string;
   /** Age-band style model to publish. Return null if it isn't ready. */
   getModel: () => any | null;
+  /** Optional grid / labour rates published with this model, for the checks. */
+  getPreflightExtras?: () => {
+    adminMatrix?: unknown;
+    labourRateFactors?: { rate: number; factor: number | null }[] | null;
+  } | null;
   /** Website (Step 3/4) discount to publish with this model. */
   websiteDiscountPct?: number;
 }
+
 
 export interface SectionPushLiveBarProps {
   /** The section this bar belongs to, e.g. "Code base vs Test Hybrid Aug". */
