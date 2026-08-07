@@ -536,7 +536,17 @@ export default function PriceTestStep2({
           </Button>
         </div>
 
-        {referral ? (
+        {exclusionReason ? (
+          <Alert className="border-destructive/60 bg-destructive/10">
+            <PhoneCall className="h-4 w-4" />
+            <AlertDescription>
+              <span className="font-semibold">
+                Excluded vehicle — no price, in test or live ({exclusionReason}).
+              </span>{' '}
+              {EXCLUSION_MESSAGE}
+            </AlertDescription>
+          </Alert>
+        ) : referral ? (
           <Alert>
             <PhoneCall className="h-4 w-4" />
             <AlertDescription>
