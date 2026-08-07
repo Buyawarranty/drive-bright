@@ -1059,6 +1059,46 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const displayedPayInFullPrice = currentPrice.payInFullPrice || (includePayInFullDiscount ? Math.ceil(displayedTotalPrice * 0.9) : displayedTotalPrice);
   const displayedPayInFullSavings = Math.max(displayedTotalPrice - displayedPayInFullPrice, 0);
 
+  /**
+   * Audit-only record of a manual price override (no blocking, no price change).
+   * Managers review these in Admin → Discounts given → "Manual price overrides".
+   */
+  const auditPriceOverride = (context: 'quotes_and_orders' | 'quote_link' | 'confirm_payment', enteredTotal?: number) => {
+    if (!isPriceOverridden) return;
+    const total = Number(enteredTotal ?? displayedTotalPrice) || 0;
+    const matrixTotal = Math.ceil(Number(basePrice.monthlyPrice || 0) * 12) || Number(basePrice.totalPrice || 0);
+    if (!total || !matrixTotal) return;
+    const me = currentAdminId ? adminUsersMap.get(currentAdminId) : null;
+    logPriceOverride({
+      adminUserId: currentAdminId,
+      userId: user?.id || null,
+      agentName: me ? [me.first_name, me.last_name].filter(Boolean).join(' ') : (user?.email || null),
+      agentEmail: me?.email || user?.email || null,
+      context,
+      customerName: customerName || null,
+      customerEmail: customerEmail || null,
+      vehicleReg: vehicleData?.regNumber || null,
+      vehicleMake: vehicleData?.make || null,
+      vehicleModel: vehicleData?.model || null,
+      paymentType,
+      excessAmount,
+      claimLimit,
+      labourRate,
+      matrixTotal,
+      matrixMonthly: Number(basePrice.monthlyPrice || 0),
+      enteredTotal: total,
+      enteredMonthly: parseFloat(customMonthlyPrice) || Number(currentPrice.monthlyPrice || 0),
+      floorAmount: MIN_BASE_PRICE_BY_PERIOD[paymentType as PaymentPeriod] ?? null,
+      priceMatchMode,
+      priceMatchCompany: priceMatchMode
+        ? (priceMatchCompany === 'Other' ? (priceMatchOtherName || 'Other') : priceMatchCompany) || null
+        : null,
+      priceMatchPrice: priceMatchMode ? (priceMatchCompetitorPrice ?? null) : null,
+    });
+  };
+
+
+
 
   // Reset price override when any selection changes
   useEffect(() => {
