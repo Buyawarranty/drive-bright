@@ -170,6 +170,32 @@ export default function PriceTestStep2({
   const [typeKey, setTypeKey] = useState('car');
   const [riskKey, setRiskKey] = useState('normal');
   const [floorKey, setFloorKey] = useState('none');
+  const [ownVehicle, setOwnVehicle] = useState<ResolvedTestVehicle | null>(null);
+  const activeVehicle = vehicle ?? ownVehicle;
+
+  /** A looked-up reg drives the profile selects (age, mileage, powertrain, type, floor). */
+  function applyVehicle(v: ResolvedTestVehicle) {
+    const keys = mapVehicleToBandKeys(v, {
+      ageBands,
+      mileageBands,
+      powertrains,
+      vehicleTypes,
+      modelFloors,
+    });
+    if (keys.ageKey) setAgeKey(keys.ageKey);
+    if (keys.mileageKey) setMileageKey(keys.mileageKey);
+    if (keys.powertrainKey) setPowertrainKey(keys.powertrainKey);
+    if (keys.typeKey) setTypeKey(keys.typeKey);
+    setFloorKey(keys.floorKey ?? 'none');
+  }
+
+  // Follow a vehicle supplied by a parent (shared reg box).
+  useEffect(() => {
+    if (vehicle) applyVehicle(vehicle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vehicle?.reg, vehicle?.mileage, ageBands, mileageBands, powertrains, vehicleTypes, modelFloors]);
+
+
 
   // Cover options (mirrors agent Step 2)
   const [termKey, setTermKey] = useState<string>('24');
