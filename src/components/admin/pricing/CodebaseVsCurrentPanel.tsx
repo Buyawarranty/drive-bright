@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { GitCompare, TrendingDown, TrendingUp, Minus } from 'lucide-react';
+import { GitCompare, TrendingDown, TrendingUp, Minus, Info } from 'lucide-react';
 import {
   usePricingVersions,
   buildCodeAdminMatrix,
@@ -20,6 +20,10 @@ import {
   getLabourRateOptions,
   getLiveLabourRateFactors,
 } from '@/lib/pricingMatrix';
+import PriceTestStep2 from './PriceTestStep2';
+import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
+import { useSavedPricingModel } from './useSavedPricingModel';
+
 
 /**
  * Read-only comparison: the pricing baked into the code base (July 2026 matrix)
