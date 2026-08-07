@@ -64,6 +64,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
   busy,
 }) => {
   const [pending, setPending] = useState<PushCandidate | null>(null);
+  const [overrideWarnings, setOverrideWarnings] = useState(false);
   const [webGap, setWebGap] = useState(
     String(liveWebDiscountPct ?? CODE_WEB_DISCOUNT_PCT)
   );
@@ -73,8 +74,33 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
     MAX_WEB_DISCOUNT_PCT
   );
 
+  /** Completeness check for whatever is about to be published. */
+  const preflight = useMemo(() => {
+    if (!pending) return null;
+    let model: any = null;
+    let extras: { adminMatrix?: unknown; labourRateFactors?: any } | null = null;
+    try {
+      model = pending.getModel();
+      extras = pending.getPreflightExtras?.() ?? null;
+    } catch {
+      model = null;
+    }
+    return runPreflightCheck({
+      adminMatrix: extras?.adminMatrix,
+      labourRateFactors: extras?.labourRateFactors ?? null,
+      vehicleFactorModel: model,
+      webDiscountPct: pending.websiteDiscountPct ?? gapValue,
+    });
+  }, [pending, gapValue]);
+
+  const openPending = (c: PushCandidate) => {
+    setOverrideWarnings(false);
+    setPending(c);
+  };
+
   const confirmPush = async () => {
     if (!pending || !onPush) return;
+    if (preflight?.blocked) return;
     const model = pending.getModel();
     setPending(null);
     if (!model) return;
@@ -84,6 +110,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
   return (
     <>
       <div className="sticky top-0 z-20 rounded-lg border-2 border-primary/30 bg-background/95 p-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
