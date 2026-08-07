@@ -884,6 +884,7 @@ export default function PriceUpdatesTab() {
           <SectionPushLiveBar
             sectionLabel="Age-based builder (calculator)"
             liveLabel={liveVersion?.label ?? null}
+            liveWebDiscountPct={discountPct}
             busy={busy}
             onPush={handlePushModelLive}
             candidates={[
@@ -914,6 +915,7 @@ export default function PriceUpdatesTab() {
           <SectionPushLiveBar
             sectionLabel="Aug 2026 pricing"
             liveLabel={liveVersion?.label ?? null}
+            liveWebDiscountPct={discountPct}
             busy={busy}
             onPush={handlePushModelLive}
             candidates={[
