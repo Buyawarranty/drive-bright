@@ -9,9 +9,15 @@ import {
   buildCodeAdminMatrix,
   PERIODS,
   EXCESSES,
-  CLAIM_LIMITS,
+  
 } from '@/hooks/usePricingVersions';
-import { buildCodeBaseClaimTiers } from '@/lib/pricing/codeBaseClaimTiers';
+import {
+  buildCodeBaseClaimTiers,
+  CODE_BASE_PUBLISHED_TIERS,
+  CODE_BASE_TIER_COLUMN,
+  codeBasePremiumStep,
+} from '@/lib/pricing/codeBaseClaimTiers';
+
 import {
   applyCustomerJourneyUplift,
   deriveCustomerPriceFromAdmin,
@@ -106,7 +112,7 @@ function buildCodeBaseModel(saved: ReturnType<typeof useSavedPricingModel>) {
 
 export default function CodebaseVsCurrentPanel() {
   const { versions, loading } = usePricingVersions();
-  const [claimLimit, setClaimLimit] = useState<number>(1250);
+  const [claimLimit, setClaimLimit] = useState<number>(2000);
   const [labourRate, setLabourRate] = useState<number>(70);
   const saved = useSavedPricingModel();
   const [step2Vehicle, setStep2Vehicle] = useState<ResolvedTestVehicle | null>(null);
@@ -169,13 +175,16 @@ export default function CodebaseVsCurrentPanel() {
   const liveFactor = liveFactors[labourRate] ?? codeFactor;
 
   const rows = useMemo(() => {
+    const column = CODE_BASE_TIER_COLUMN[claimLimit] ?? claimLimit;
     return PERIODS.flatMap(period =>
       EXCESSES.map(excess => {
-        const codeGrid = Number(codeMatrix[period]?.[String(excess)]?.[String(claimLimit)] ?? 0);
-        const currentGrid = Number(
-          currentMatrix?.[period]?.[String(excess)]?.[String(claimLimit)] ?? codeGrid
-        );
-        const codeBase = Number((BASE_PRICING_MATRIX as any)[period]?.[excess]?.[claimLimit] ?? 0);
+        // £5,000 sits on top of the £3,000 column (£5/mo boost), so add its step.
+        const step = claimLimit === 5000 ? codeBasePremiumStep(period) : 0;
+        const codeGrid = Number(codeMatrix[period]?.[String(excess)]?.[String(column)] ?? 0) + step;
+        const currentGrid =
+          Number(currentMatrix?.[period]?.[String(excess)]?.[String(column)] ?? codeGrid - step) + step;
+        const codeBase = Number((BASE_PRICING_MATRIX as any)[period]?.[excess]?.[column] ?? 0) + step;
+
         const code = Math.round(codeGrid * codeFactor);
         const current = Math.round(currentGrid * liveFactor);
         return {
@@ -234,7 +243,7 @@ export default function CodebaseVsCurrentPanel() {
         <CardContent className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground w-24">Claim limit</span>
-            {CLAIM_LIMITS.map(limit => (
+            {CODE_BASE_PUBLISHED_TIERS.map(limit => (
               <Button
                 key={limit}
                 type="button"
@@ -245,6 +254,7 @@ export default function CodebaseVsCurrentPanel() {
                 {money(limit)}
               </Button>
             ))}
+
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground w-24">Labour rate</span>
