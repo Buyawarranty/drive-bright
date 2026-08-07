@@ -27,7 +27,7 @@ import { useSavedPricingModel } from './useSavedPricingModel';
  * The original July 2026 flat matrix baked into the code base, side by side with
  * live pricing, in the same Step 2 layout agents use — with the same adjustable
  * variables as the hybrid tab so the code-base side can be flexed too:
- *   - recentre the code-base reference onto a target one-year price
+ *   - set a target one-year price for the code-base reference
  *   - spread risk / mileage deviation (code base is flat, so this only bites
  *     once a spread above 0 reintroduces the live risk curve)
  *   - express multi-year terms as a discount off N × one year
@@ -266,7 +266,7 @@ const CodebaseVsLivePanel: React.FC<{
                   onChange={e => set('targetReference', Number(e.target.value) || 0)}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Whole curve × {recentre.toFixed(3)} — blank uses the reduction
+                  Whole curve scaled by {recentre.toFixed(3)} — blank uses the reduction
                 </p>
               </div>
 
