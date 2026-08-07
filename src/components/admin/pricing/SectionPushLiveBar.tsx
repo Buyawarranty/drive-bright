@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,8 +11,10 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Rocket, ArrowRight } from 'lucide-react';
+import { Rocket, ArrowRight, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 import { CODE_WEB_DISCOUNT_PCT, MAX_WEB_DISCOUNT_PCT } from '@/lib/pricing/pricingVersionConfig';
+import { runPreflightCheck, type PreflightItem } from '@/lib/pricing/preflightCheck';
+
 
 /** One model in this section that a manager is allowed to publish. */
 export interface PushCandidate {
@@ -23,9 +25,15 @@ export interface PushCandidate {
   description?: string;
   /** Age-band style model to publish. Return null if it isn't ready. */
   getModel: () => any | null;
+  /** Optional grid / labour rates published with this model, for the checks. */
+  getPreflightExtras?: () => {
+    adminMatrix?: unknown;
+    labourRateFactors?: { rate: number; factor: number | null }[] | null;
+  } | null;
   /** Website (Step 3/4) discount to publish with this model. */
   websiteDiscountPct?: number;
 }
+
 
 export interface SectionPushLiveBarProps {
   /** The section this bar belongs to, e.g. "Code base vs Test Hybrid Aug". */
@@ -56,6 +64,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
   busy,
 }) => {
   const [pending, setPending] = useState<PushCandidate | null>(null);
+  const [overrideWarnings, setOverrideWarnings] = useState(false);
   const [webGap, setWebGap] = useState(
     String(liveWebDiscountPct ?? CODE_WEB_DISCOUNT_PCT)
   );
@@ -65,8 +74,33 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
     MAX_WEB_DISCOUNT_PCT
   );
 
+  /** Completeness check for whatever is about to be published. */
+  const preflight = useMemo(() => {
+    if (!pending) return null;
+    let model: any = null;
+    let extras: { adminMatrix?: unknown; labourRateFactors?: any } | null = null;
+    try {
+      model = pending.getModel();
+      extras = pending.getPreflightExtras?.() ?? null;
+    } catch {
+      model = null;
+    }
+    return runPreflightCheck({
+      adminMatrix: extras?.adminMatrix,
+      labourRateFactors: extras?.labourRateFactors ?? null,
+      vehicleFactorModel: model,
+      webDiscountPct: pending.websiteDiscountPct ?? gapValue,
+    });
+  }, [pending, gapValue]);
+
+  const openPending = (c: PushCandidate) => {
+    setOverrideWarnings(false);
+    setPending(c);
+  };
+
   const confirmPush = async () => {
     if (!pending || !onPush) return;
+    if (preflight?.blocked) return;
     const model = pending.getModel();
     setPending(null);
     if (!model) return;
@@ -76,6 +110,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
   return (
     <>
       <div className="sticky top-0 z-20 rounded-lg border-2 border-primary/30 bg-background/95 p-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -124,7 +159,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
                 size="sm"
                 variant="default"
                 disabled={busy || !onPush}
-                onClick={() => setPending(c)}
+                onClick={() => openPending(c)}
               >
                 <Rocket className="mr-1 h-4 w-4" />
                 Push live: {c.label}
@@ -135,7 +170,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
       </div>
 
       <Dialog open={!!pending} onOpenChange={open => !open && setPending(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Push this model live?</DialogTitle>
             <DialogDescription asChild>
@@ -155,18 +190,87 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
               </div>
             </DialogDescription>
           </DialogHeader>
+
+          {preflight && (
+            <div className="space-y-2 rounded-lg border p-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-semibold">Before it goes live</span>
+                {preflight.blocked ? (
+                  <Badge variant="destructive">Not ready</Badge>
+                ) : preflight.hasWarnings ? (
+                  <Badge className="bg-amber-500 text-amber-950">Check these</Badge>
+                ) : (
+                  <Badge className="bg-emerald-600">All checks passed</Badge>
+                )}
+              </div>
+              <ul className="space-y-2">
+                {preflight.items.map(item => (
+                  <PreflightRow key={item.key} item={item} />
+                ))}
+              </ul>
+              {preflight.blocked && (
+                <p className="text-xs text-muted-foreground">
+                  Fill in the gaps above, then push live. This stops a customer being quoted a price
+                  you never approved.
+                </p>
+              )}
+              {!preflight.blocked && preflight.hasWarnings && !overrideWarnings && (
+                <Button size="sm" variant="outline" onClick={() => setOverrideWarnings(true)}>
+                  I've read these — let me publish
+                </Button>
+              )}
+            </div>
+          )}
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setPending(null)}>
               Cancel
             </Button>
-            <Button onClick={confirmPush} disabled={busy}>
+            <Button
+              onClick={confirmPush}
+              disabled={
+                busy ||
+                !!preflight?.blocked ||
+                (!!preflight?.hasWarnings && !overrideWarnings)
+              }
+            >
               <Rocket className="mr-1 h-4 w-4" /> Yes, push {pending?.label} live
             </Button>
           </DialogFooter>
+
         </DialogContent>
       </Dialog>
     </>
   );
 };
+
+/** One line of the completeness checklist. */
+const PreflightRow: React.FC<{ item: PreflightItem }> = ({ item }) => {
+  const Icon =
+    item.severity === 'ok' ? CheckCircle2 : item.severity === 'warn' ? AlertTriangle : XCircle;
+  const tone =
+    item.severity === 'ok'
+      ? 'text-emerald-600'
+      : item.severity === 'warn'
+        ? 'text-amber-600'
+        : 'text-destructive';
+  return (
+    <li className="flex gap-2 text-sm">
+      <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone}`} />
+      <div className="min-w-0">
+        <span className="font-medium">{item.label}</span>{' '}
+        <span className="text-muted-foreground">— {item.detail}</span>
+        {item.gaps?.length ? (
+          <ul className="mt-1 list-disc pl-4 text-xs text-muted-foreground">
+            {item.gaps.map(g => (
+              <li key={g}>{g}</li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+    </li>
+  );
+};
+
 
 export default SectionPushLiveBar;
