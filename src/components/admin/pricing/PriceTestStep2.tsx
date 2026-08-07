@@ -244,7 +244,8 @@ export default function PriceTestStep2({
   const [excess, setExcess] = useState(150);
   const [claimLimit, setClaimLimit] = useState(2000);
   const [freeMonths, setFreeMonths] = useState(0);
-  const [transferCover, setTransferCover] = useState(false);
+  /** Chargeable add-ons exactly as the customer journey offers them (transfer included). */
+  const [addOns, setAddOns] = useState<Record<string, boolean>>({});
   const [payInFull, setPayInFull] = useState(true);
   const [discount, setDiscount] = useState<{ label: string; kind: 'flat' | 'pct'; value: number } | null>(null);
 
