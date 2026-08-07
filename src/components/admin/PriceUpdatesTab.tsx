@@ -749,7 +749,7 @@ export default function PriceUpdatesTab() {
           )}
         </div>
 
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 h-auto gap-2 bg-muted/60 p-2">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-min h-auto gap-2 bg-muted/60 p-2">
           {tabOrder.map((value, i) => {
             const tab = TOP_TABS.find(t => t.value === value);
             if (!tab) return null;
@@ -847,9 +847,6 @@ export default function PriceUpdatesTab() {
               <TabsTrigger value="engine">
                 <FlaskConical className="h-4 w-4 mr-2" /> Pricing engine (draft)
               </TabsTrigger>
-              <TabsTrigger value="codevscurrent">
-                <GitCompare className="h-4 w-4 mr-2" /> Base pricing 7/26 vs Current
-              </TabsTrigger>
             </TabsList>
             <TabsContent value="riskbands" className="mt-4">
               <VehicleRiskBandsPanel />
@@ -860,13 +857,22 @@ export default function PriceUpdatesTab() {
             <TabsContent value="engine" className="mt-4">
               <PricingEngineDraftPanel />
             </TabsContent>
-            <TabsContent value="codevscurrent" className="mt-4">
-              <CodebaseVsCurrentPanel />
-            </TabsContent>
           </Tabs>
         </TabsContent>
 
 
+
+        <TabsContent value="original" className="space-y-4 mt-4">
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Original codebase pricing.</strong> The base pricing matrix that ships in the code
+              (7/2026), compared cell by cell with whatever is live right now. Read-only — nothing here
+              changes a price.
+            </AlertDescription>
+          </Alert>
+          <CodebaseVsCurrentPanel />
+        </TabsContent>
 
         <TabsContent value="previews" className="space-y-4 mt-4">
           <Tabs defaultValue="quotes-preview" className="w-full">
