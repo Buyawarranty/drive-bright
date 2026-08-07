@@ -1219,7 +1219,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
                 <div className="flex justify-end gap-3">
                   <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>Cancel</Button>
-                  <Button onClick={handleProceedToPreview} size="lg">Review & Confirm <ArrowRight className="w-4 h-4 ml-2" /></Button>
+                  <Button onClick={handleProceedToPreview} size="lg" disabled={discountBlocked} title={discountBlocked ? `Discounts over ${DISCOUNT_CEILING_PCT}% need Management authorisation` : undefined}>Review & Confirm <ArrowRight className="w-4 h-4 ml-2" /></Button>
                 </div>
               </div>
 
@@ -1350,7 +1350,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
               <div className="flex justify-end gap-3">
                 <Button variant="outline" onClick={() => setExternalPaymentStep('details')}>Back</Button>
-                <Button onClick={handleConfirmPayment} disabled={isConfirming} size="lg" className="bg-indigo-500 hover:bg-indigo-400">
+                <Button onClick={handleConfirmPayment} disabled={isConfirming || discountBlocked} size="lg" className="bg-indigo-500 hover:bg-indigo-400">
                   {isConfirming ? (
                     <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating Policy...</>
                   ) : (
