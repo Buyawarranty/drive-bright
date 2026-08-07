@@ -2,7 +2,7 @@
  * PHASE 4 — GRANULAR MODEL RISK RULES (DRAFT ONLY)
  * ---------------------------------------------------------------------------
  * Today "risk" is largely mapped at make level ("BMW = premium"), which prices a
- * 118d like an M5. This module holds model/trim level risk rules instead:
+ * 118d like a 520d. This module holds model/trim level risk rules instead:
  *
  *   make + model pattern  →  risk multiplier (and an optional 1-year floor)
  *
@@ -23,7 +23,7 @@ export type ModelRiskRule = {
   /** Make the rule applies to, e.g. "BMW". Required — rules are never global. */
   make: string;
   /**
-   * Model / trim text the rule applies to, e.g. "M3", "M5", "AMG", "RS".
+   * Model / trim text the rule applies to, e.g. "520", "Golf", "Range Rover Sport".
    * Empty means make-level, which is flagged as too broad (see `isTooBroad`).
    */
   model: string;
@@ -108,7 +108,7 @@ export type ModelRiskMatch = {
 
 /**
  * Best matching rule for a vehicle. Make must match; the most specific model
- * match wins, so "Golf R" beats "Golf" and "M5" beats a make-level BMW rule.
+ * match wins, so "Range Rover Sport" beats "Range Rover" and "520" beats a make-level BMW rule.
  */
 export function matchModelRiskRule(
   make: string | null | undefined,
