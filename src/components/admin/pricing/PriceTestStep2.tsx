@@ -334,6 +334,7 @@ export default function PriceTestStep2({
       monthly,
       minSellable,
       belowMinimum,
+      addOnTotal,
       payInFullTotal,
       payInFullSaving: total - payInFullTotal,
       discountAmount,
@@ -343,7 +344,7 @@ export default function PriceTestStep2({
     };
   }, [
     referral, ageBand, mileageBand, powertrain, vehType, risk, floor, motorbikeFactor,
-    claimFactor, labourFactor, excessFactor, term, discount, transferCover, freeMonths,
+    claimFactor, labourFactor, excessFactor, term, discount, addOns, freeMonths,
   ]);
 
   /** Every cover term priced with the same options — used for the overall price difference. */
