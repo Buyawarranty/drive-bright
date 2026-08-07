@@ -85,13 +85,14 @@ export function mapVehicleToBandKeys(
   // Model-specific floor / exclusion, using the same matcher as live pricing.
   try {
     const match = matchModelFloor(
-      { make: vehicle.make, model: vehicle.model },
+      `${vehicle.make} ${vehicle.model}`.trim(),
       model.modelFloors as any
     );
-    out.floorKey = (match as any)?.rule?.key ?? (match as any)?.key ?? 'none';
+    out.floorKey = match?.floor?.key ?? 'none';
   } catch {
     out.floorKey = 'none';
   }
+
 
   return out;
 }
