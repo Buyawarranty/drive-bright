@@ -9,7 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Rocket, ArrowRight } from 'lucide-react';
+import { CODE_WEB_DISCOUNT_PCT, MAX_WEB_DISCOUNT_PCT } from '@/lib/pricing/pricingVersionConfig';
 
 /** One model in this section that a manager is allowed to publish. */
 export interface PushCandidate {
@@ -33,6 +36,8 @@ export interface SectionPushLiveBarProps {
   /** For sections that own their own publish flow (e.g. the price grid). */
   directPush?: { label: string; run: () => void | Promise<void> };
   onPush?: (model: any, label: string, websiteDiscountPct?: number) => void | Promise<void>;
+  /** Website (Step 3/4) gap that is live right now, used as the starting value. */
+  liveWebDiscountPct?: number | null;
   busy?: boolean;
 }
 
@@ -47,16 +52,25 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
   candidates,
   directPush,
   onPush,
+  liveWebDiscountPct,
   busy,
 }) => {
   const [pending, setPending] = useState<PushCandidate | null>(null);
+  const [webGap, setWebGap] = useState(
+    String(liveWebDiscountPct ?? CODE_WEB_DISCOUNT_PCT)
+  );
+
+  const gapValue = Math.min(
+    Math.max(Number(webGap) || 0, 0),
+    MAX_WEB_DISCOUNT_PCT
+  );
 
   const confirmPush = async () => {
     if (!pending || !onPush) return;
     const model = pending.getModel();
     setPending(null);
     if (!model) return;
-    await onPush(model, `${sectionLabel} — ${pending.label}`, pending.websiteDiscountPct);
+    await onPush(model, `${sectionLabel} — ${pending.label}`, pending.websiteDiscountPct ?? gapValue);
   };
 
   return (
@@ -78,7 +92,26 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
                 : 'Read-only comparison — publish from the section that owns the model.'}
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-end gap-2">
+            {(onPush || directPush) && (
+              <div className="space-y-1">
+                <Label className="text-xs whitespace-nowrap">
+                  Step 3/4 vs Quotes &amp; Orders
+                </Label>
+                <div className="flex items-center gap-1">
+                  <Input
+                    className="h-8 w-20"
+                    type="number"
+                    min={0}
+                    max={MAX_WEB_DISCOUNT_PCT}
+                    step={0.5}
+                    value={webGap}
+                    onChange={e => setWebGap(e.target.value)}
+                  />
+                  <span className="text-xs text-muted-foreground">% cheaper</span>
+                </div>
+              </div>
+            )}
             {directPush && (
               <Button size="sm" disabled={busy} onClick={() => directPush.run()}>
                 <Rocket className="mr-1 h-4 w-4" />
@@ -115,7 +148,8 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
                 <p>
                   <strong>{sectionLabel}</strong> — publishing <strong>{pending?.label}</strong>. Quotes
                   &amp; Orders will price with this model immediately, and the customer journey (Step
-                  3/4) will use it minus the website discount, rounded to the nearest pound.
+                  3/4) will be <strong>{pending?.websiteDiscountPct ?? gapValue}% cheaper</strong>{' '}
+                  than the Quotes &amp; Orders price, rounded to the nearest pound.
                 </p>
                 {pending?.description && <p>{pending.description}</p>}
               </div>
