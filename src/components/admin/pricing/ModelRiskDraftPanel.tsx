@@ -21,6 +21,7 @@ import {
   type ModelRiskRule,
 } from '@/lib/pricing/modelRiskRules';
 import { calculateQuotePrice } from '@/lib/pricing/quotePricingService';
+import { isVehicleExcluded } from '@/lib/vehicleExclusions';
 import type { PaymentPeriod } from '@/lib/pricingMatrix';
 
 const money = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
@@ -33,12 +34,12 @@ const PERIODS: { value: PaymentPeriod; label: string }[] = [
 
 /** Vehicles used to show that the same make can now price very differently. */
 const SAMPLES: { make: string; model: string; fuelType: string; year: string; mileage: string }[] = [
-  { make: 'BMW', model: '118d M Sport', fuelType: 'Diesel', year: '2018', mileage: '62000' },
-  { make: 'BMW', model: 'M5 Competition', fuelType: 'Petrol', year: '2018', mileage: '48000' },
+  { make: 'BMW', model: '118d SE', fuelType: 'Diesel', year: '2018', mileage: '62000' },
+  { make: 'BMW', model: '520d SE', fuelType: 'Diesel', year: '2018', mileage: '78000' },
+  { make: 'BMW', model: 'X5 xDrive30d', fuelType: 'Diesel', year: '2016', mileage: '92000' },
   { make: 'Mercedes', model: 'A180 SE', fuelType: 'Petrol', year: '2019', mileage: '40000' },
-  { make: 'Mercedes', model: 'C63 AMG', fuelType: 'Petrol', year: '2017', mileage: '55000' },
+  { make: 'Mercedes', model: 'C220d Sport', fuelType: 'Diesel', year: '2017', mileage: '68000' },
   { make: 'Volkswagen', model: 'Golf Match TSI', fuelType: 'Petrol', year: '2019', mileage: '38000' },
-  { make: 'Volkswagen', model: 'Golf R', fuelType: 'Petrol', year: '2019', mileage: '42000' },
   { make: 'Land Rover', model: 'Range Rover Sport HSE', fuelType: 'Diesel', year: '2016', mileage: '88000' },
   { make: 'Ford', model: 'Fiesta Zetec', fuelType: 'Petrol', year: '2017', mileage: '54000' },
 ];
@@ -47,7 +48,7 @@ export default function ModelRiskDraftPanel() {
   const [rules, setRules] = useState<ModelRiskRule[]>(DEFAULT_MODEL_RISK_RULES);
   const [period, setPeriod] = useState<PaymentPeriod>('12months');
   const [testMake, setTestMake] = useState('BMW');
-  const [testModel, setTestModel] = useState('M5 Competition');
+  const [testModel, setTestModel] = useState('520d SE');
 
   useEffect(() => {
     setRules(loadDraftModelRiskRules());
@@ -114,6 +115,9 @@ export default function ModelRiskDraftPanel() {
   );
 
   const broadCount = rules.filter(r => r.enabled && isTooBroad(r)).length;
+  const excludedRules = rules.filter(
+    r => r.enabled && !isTooBroad(r) && isVehicleExcluded(r.make, r.model)
+  );
 
   return (
     <Card className="border-2 border-amber-300">
@@ -125,8 +129,9 @@ export default function ModelRiskDraftPanel() {
               Model risk rules (draft)
             </CardTitle>
             <CardDescription>
-              Risk priced by <strong>make + model</strong>, not by make alone — so an M5 and a 118d
-              no longer price the same. Draft only: these rules are stored on this device and are
+              Risk priced by <strong>make + model</strong>, not by make alone — so a 118d and a
+              520d no longer price the same. Vehicles we do not cover (M, AMG, RS, supercars) are
+              declined by the excluded vehicle matrix and are never priced here. Draft only: these rules are stored on this device and are
               not used by Quotes &amp; Orders or the customer journey.
             </CardDescription>
           </div>
@@ -150,6 +155,18 @@ export default function ModelRiskDraftPanel() {
             <AlertDescription>
               {broadCount} rule{broadCount > 1 ? 's' : ''} name only a make, which prices every
               model of that make the same. Add a model or trim to keep risk granular.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {excludedRules.length > 0 && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              {excludedRules.length} rule{excludedRules.length > 1 ? 's' : ''} target vehicles we do
+              not cover at all ({excludedRules.map(r => `${r.make} ${r.model}`).join(', ')}). These
+              are declined by the excluded vehicle matrix, so a risk factor would never be used —
+              remove them or switch them off.
             </AlertDescription>
           </Alert>
         )}
@@ -208,7 +225,7 @@ export default function ModelRiskDraftPanel() {
                       value={r.model}
                       onChange={e => update(r.id, { model: e.target.value })}
                       className={`h-8 w-40 ${isTooBroad(r) ? 'border-destructive' : ''}`}
-                      placeholder="M5"
+                      placeholder="520d"
                     />
                   </td>
                   <td className="p-2">
@@ -278,6 +295,12 @@ export default function ModelRiskDraftPanel() {
               <Input value={testModel} onChange={e => setTestModel(e.target.value)} className="h-9 w-56" />
             </div>
           </div>
+          {isVehicleExcluded(testMake, testModel) && (
+            <div className="text-sm font-medium text-destructive">
+              Not covered — this vehicle is declined by the excluded vehicle matrix, so no price is
+              ever quoted for it.
+            </div>
+          )}
           <div className="text-sm">
             {testOutcome.matched ? (
               <span>
