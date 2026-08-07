@@ -450,7 +450,15 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       return;
     }
 
-    
+    if (discountBlocked) {
+      toast({
+        title: `Discount over ${DISCOUNT_CEILING_PCT}% needs Management`,
+        description: `£${enteredAmount.toFixed(2)} is ${discountPct.toFixed(1)}% below the quoted £${quotedTotal}. The lowest you can confirm is £${minAllowedAmount.toFixed(2)}. Ask Management to authorise anything below that.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     // CRITICAL: Sales agent is compulsory for commission tracking
     if (!assigneeId) {
       toast({
@@ -467,6 +475,17 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const handleConfirmPayment = async () => {
     // Prevent double-click race condition
     if (isConfirming) return;
+
+    // Hard stop: never create a policy more than 30% below the quoted price
+    // unless Management are the ones confirming it.
+    if (discountBlocked) {
+      toast({
+        title: `Blocked — ${discountPct.toFixed(1)}% discount`,
+        description: `Discounts over ${DISCOUNT_CEILING_PCT}% must be authorised by Management. Minimum allowed here is £${minAllowedAmount.toFixed(2)}.`,
+        variant: "destructive",
+      });
+      return;
+    }
     setIsConfirming(true);
 
     // Check for duplicate warranty before proceeding
@@ -1076,9 +1095,25 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-500">Amount Received (£) *</Label>
-                        <Input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder={currentPrice.totalPrice.toString()} />
+                        <Input
+                          type="number"
+                          value={paymentAmount}
+                          onChange={(e) => setPaymentAmount(e.target.value)}
+                          placeholder={currentPrice.totalPrice.toString()}
+                          className={discountBlocked ? 'border-destructive ring-1 ring-destructive' : undefined}
+                        />
                         {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
                           <p className="text-xs text-destructive">⚠️ Differs from quoted price (£{currentPrice.totalPrice})</p>
+                        )}
+                        {discountBlocked && (
+                          <p className="text-xs font-semibold text-destructive">
+                            Blocked: that is {discountPct.toFixed(1)}% off. Discounts over {DISCOUNT_CEILING_PCT}% need Management authorisation — minimum £{minAllowedAmount.toFixed(2)}.
+                          </p>
+                        )}
+                        {overDiscountCeiling && isManagementRole && (
+                          <p className="text-xs font-semibold text-amber-600">
+                            Management override: {discountPct.toFixed(1)}% off (over the {DISCOUNT_CEILING_PCT}% ceiling). This will be logged.
+                          </p>
                         )}
                       </div>
                       <div className="space-y-1.5">
@@ -1208,6 +1243,15 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                               onClick={() => {
                                 const base = parseFloat(paymentAmount) || currentPrice.totalPrice;
                                 const discounted = Math.round(base * 0.9 * 100) / 100;
+                                if (!isManagementRole && quotedTotal > 0 && discounted < minAllowedAmount) {
+                                  toast({
+                                    title: `${DISCOUNT_CEILING_PCT}% discount ceiling reached`,
+                                    description: `The lowest price you can confirm is £${minAllowedAmount.toFixed(2)}. Ask Management to authorise anything lower.`,
+                                    variant: 'destructive',
+                                  });
+                                  setPaymentAmount(minAllowedAmount.toString());
+                                  return;
+                                }
                                 setPaymentAmount(discounted.toString());
                               }}
                               className="text-xs px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 font-semibold"
