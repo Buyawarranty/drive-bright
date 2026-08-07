@@ -166,7 +166,8 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
       voluntaryExcess,
       isMotorbikeAdjustment(vehicleAdjustment),
       'customer',
-      [vehicleData?.make, (vehicleData as any)?.model].filter(Boolean).join(' ')
+      [vehicleData?.make, (vehicleData as any)?.model].filter(Boolean).join(' '),
+      selectedClaimLimit
     );
 
     const durationMonths = durationId === '12months' ? 12 : durationId === '24months' ? 24 : 36;

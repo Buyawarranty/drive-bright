@@ -163,7 +163,8 @@ export function calculateQuotePrice(input: QuotePricingInput): QuotePriceResult 
     voluntaryExcess,
     isMotorbikeAdjustment(adjustment),
     surface,
-    vehicleName || null
+    vehicleName || null,
+    claimLimit
   );
 
   const labourUplift = Math.round(
