@@ -62,7 +62,7 @@ const InlineVehicleEdit: React.FC<InlineVehicleEditProps> = ({
       }
 
       const { data, error: dvlaError } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-        body: { registration: normalizedReg },
+        body: { registrationNumber: normalizedReg },
       });
 
       const baseVehicle: EditableVehicleData = {
