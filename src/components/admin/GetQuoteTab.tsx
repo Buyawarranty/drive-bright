@@ -4607,6 +4607,15 @@ Questions? Call 0330 229 5040`;
                             </span>
                           </div>
                         )}
+
+                        {isPriceOverridden && (
+                          <p className="text-xs text-muted-foreground">
+                            Your discount allowance is measured on the <strong>average across your sales</strong>, not
+                            this single sale — one deal above your usual level is fine as long as your average stays
+                            within your cap.
+                          </p>
+                        )}
+
                       </>
                     );
                   })()}
