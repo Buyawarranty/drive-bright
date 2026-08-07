@@ -15,6 +15,10 @@ import {
   applyCustomerJourneyUplift,
   deriveCustomerPriceFromAdmin,
   BASE_PRICING_MATRIX,
+  LABOUR_RATE_FACTOR,
+  DEFAULT_LABOUR_RATE_OPTIONS,
+  getLabourRateOptions,
+  getLiveLabourRateFactors,
 } from '@/lib/pricingMatrix';
 
 /**
