@@ -3,6 +3,8 @@ import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell'
 import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -456,6 +458,7 @@ export const CustomersTab = ({
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const currentAdminIdForConcessions = useCurrentAdminId();
   const [savingPassword, setSavingPassword] = useState(false);
 
   // ── Part payment plans (read-only summary used for row tags + filtering) ──────
@@ -2757,6 +2760,7 @@ export const CustomersTab = ({
         status: editingCustomer.status,
         voluntary_excess: editingCustomer.voluntary_excess,
         claim_limit: editingCustomer.claim_limit,
+        seasonal_bonus_months: (editingCustomer as any).seasonal_bonus_months ?? null,
         discount_code: editingCustomer.discount_code,
         original_amount: editingCustomer.original_amount,
         discount_amount: editingCustomer.discount_amount,
@@ -2869,6 +2873,7 @@ export const CustomersTab = ({
             customer_full_name: `${(editingCustomer.first_name || '').trim()} ${(editingCustomer.last_name || '').trim()}`.trim() || editingCustomer.name,
             voluntary_excess: editingCustomer.voluntary_excess,
             claim_limit: editingCustomer.claim_limit,
+            seasonal_bonus_months: (editingCustomer as any).seasonal_bonus_months ?? null,
             payment_type: editingCustomer.payment_type,
             payment_amount: editingCustomer.final_amount || null,
             mot_fee: editingCustomer.mot_fee,
