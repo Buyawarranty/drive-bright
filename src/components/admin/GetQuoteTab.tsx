@@ -4607,6 +4607,15 @@ Questions? Call 0330 229 5040`;
                             </span>
                           </div>
                         )}
+
+                        {isPriceOverridden && (
+                          <p className="text-xs text-muted-foreground">
+                            Your discount allowance is measured on the <strong>average across your sales</strong>, not
+                            this single sale — one deal above your usual level is fine as long as your average stays
+                            within your cap.
+                          </p>
+                        )}
+
                       </>
                     );
                   })()}
@@ -4632,7 +4641,11 @@ Questions? Call 0330 229 5040`;
                             </>
                           )}
                         </p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Your cap is judged on your average discount across sales, not each individual sale.
+                        </p>
                       </div>
+
                       <div className="flex items-center gap-2 shrink-0">
                         <Button
                           variant="default"
