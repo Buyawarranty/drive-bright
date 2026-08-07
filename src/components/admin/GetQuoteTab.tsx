@@ -99,18 +99,36 @@ const termOptions = [
 
 
 
-const claimLimitOptions = [
-  { value: 750, label: '£1,000', description: 'AutoCare Basic' },
-  { value: 2000, label: '£2,000', description: 'AutoCare Essential', popular: true },
-  { value: 3000, label: '£3,000', description: 'AutoCare Elite' },
-  { value: 5000, label: '£5,000', description: 'AutoCare Premium' },
-];
+// Claim-limit chips. The customer-facing tier (£1,000 / £2,000 / £3,000 / £5,000)
+// comes from the published pricing model — the same list the Aug hybrid test
+// Step 2 shows — so agents never see a tier the pricing model no longer offers.
+// `value` is the internal grid column used by the pricing matrix.
+const CLAIM_TIER_TO_INTERNAL: Record<number, number> = {
+  1000: 750,
+  2000: 2000,
+  3000: 3000,
+  5000: 5000,
+};
 
-// All claim limit tiers (including £5,000 AutoCare Premium) are visible to
-// every agent regardless of vehicle make. Premium is disallowed for a small
-// list of makes at checkout — the inline warning under the chips explains
-// that — but agents still see the option so they can quote consistently.
-const getVisibleClaimLimits = (_vehicleMake?: string) => claimLimitOptions;
+const CLAIM_TIER_META: Record<number, { label: string; description: string; popular?: boolean }> = {
+  1000: { label: '£1,000', description: 'AutoCare Basic' },
+  2000: { label: '£2,000', description: 'AutoCare Essential', popular: true },
+  3000: { label: '£3,000', description: 'AutoCare Elite' },
+  5000: { label: '£5,000', description: 'AutoCare Premium' },
+};
+
+const buildClaimLimitOptions = (tiers: { limit: number }[]) =>
+  tiers
+    .map(t => Number(t.limit))
+    .filter(limit => CLAIM_TIER_TO_INTERNAL[limit] !== undefined)
+    .sort((a, b) => a - b)
+    .map(limit => ({
+      value: CLAIM_TIER_TO_INTERNAL[limit],
+      label: CLAIM_TIER_META[limit].label,
+      description: CLAIM_TIER_META[limit].description,
+      popular: CLAIM_TIER_META[limit].popular,
+    }));
+
 
 /**
  * Labour-rate options shown in Quotes & Orders. These come from the published
