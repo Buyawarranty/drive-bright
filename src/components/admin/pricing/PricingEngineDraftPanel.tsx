@@ -17,6 +17,7 @@ import { calculateQuotePrice } from '@/lib/pricing/quotePricingService';
 import type { PaymentPeriod, PricingSurface } from '@/lib/pricingMatrix';
 import { MAX_VEHICLE_AGE_YEARS, MAX_VEHICLE_MILEAGE } from '@/lib/pricing/eligibilityBoundaries';
 import PricingParityPanel from '@/components/admin/pricing/PricingParityPanel';
+import WebGapDraftPanel from '@/components/admin/pricing/WebGapDraftPanel';
 
 const PERIODS: { value: PaymentPeriod; label: string }[] = [
   { value: '12months', label: '12 months' },
@@ -325,6 +326,8 @@ export default function PricingEngineDraftPanel() {
           </div>
         </CardContent>
       </Card>
+
+      <WebGapDraftPanel />
 
       <PricingParityPanel />
     </div>

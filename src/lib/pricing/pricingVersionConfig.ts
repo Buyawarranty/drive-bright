@@ -35,6 +35,13 @@ export type ReferenceFactors = {
 
 export type PricingVersionConfig = {
   reference_vehicle?: ReferenceVehicle | null;
+  /**
+   * How much cheaper the website (Step 3/4) price is than the admin Quotes &
+   * Orders grid price, in percent. Stored on the version so the gap can be
+   * tuned (e.g. 5% or 7%) without a code change, and so a historical quote can
+   * always be reproduced with the gap that was live at the time.
+   */
+  web_discount_pct?: number | null;
   reference_factors?: ReferenceFactors | null;
   price_floors?: PriceFloors | null;
   price_caps?: PriceCaps | null;
@@ -50,6 +57,12 @@ export const CODE_PRICE_FLOORS: PriceFloors = {
   '24months': 659,
   '36months': 938,
 };
+
+/** The web gap currently hardcoded in the pricing engine (10% below the grid). */
+export const CODE_WEB_DISCOUNT_PCT = 10;
+
+/** Hard ceiling on the web gap — the website may never undercut the grid by more. */
+export const MAX_WEB_DISCOUNT_PCT = 10;
 
 /** The engine rounds every contract total up to the whole pound. */
 export const CODE_ROUNDING_RULE: RoundingRule = 'ceil_pound';
@@ -70,6 +83,12 @@ export function resolvePriceFloors(config?: PricingVersionConfig | null): PriceF
     if (Number.isFinite(v) && v > 0) out[term] = v;
   });
   return out;
+}
+
+export function resolveWebDiscountPct(config?: PricingVersionConfig | null): number {
+  const raw = Number(config?.web_discount_pct);
+  if (!Number.isFinite(raw) || raw <= 0) return CODE_WEB_DISCOUNT_PCT;
+  return Math.min(raw, MAX_WEB_DISCOUNT_PCT);
 }
 
 export function resolveRoundingRule(config?: PricingVersionConfig | null): RoundingRule {
@@ -94,6 +113,7 @@ export function applyRounding(value: number, rule: RoundingRule = CODE_ROUNDING_
 export function computeConfigChecksum(input: {
   admin_matrix?: unknown;
   step3_discount_pct?: number | null;
+  web_discount_pct?: number | null;
   claim_limit_factors?: unknown;
   labour_rate_factors?: unknown;
   vehicle_factor_model?: VehicleFactorModel | null;
@@ -106,6 +126,7 @@ export function computeConfigChecksum(input: {
   const canonical = stableStringify({
     m: input.admin_matrix ?? null,
     d: input.step3_discount_pct ?? null,
+    w: input.web_discount_pct ?? null,
     c: input.claim_limit_factors ?? null,
     l: input.labour_rate_factors ?? null,
     v: input.vehicle_factor_model ?? null,
