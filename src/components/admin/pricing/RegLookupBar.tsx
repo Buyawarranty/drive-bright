@@ -122,7 +122,7 @@ const RegLookupBar: React.FC<{
           : normalizedReg;
 
       const [dvla, mot] = await Promise.all([
-        supabase.functions.invoke('dvla-vehicle-lookup', { body: { registration: normalizedReg } }),
+        supabase.functions.invoke('dvla-vehicle-lookup', { body: { registrationNumber: normalizedReg } }),
         supabase
           .from('mot_history')
           .select('mot_tests')
