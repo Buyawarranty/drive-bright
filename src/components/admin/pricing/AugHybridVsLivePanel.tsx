@@ -26,13 +26,16 @@ import { useSavedPricingModel } from './useSavedPricingModel';
 
 const HYBRID_DEFAULTS = {
   referenceBandKey: '6-7',
-  /** 0 = start from the live one-year base for that band (no recentring). */
+  /** Proposal starts below August pricing because the August level is not converting. */
+  baseReductionPct: 20,
+  /** Optional exact override; 0 uses the reduction above. */
   targetReference: 0,
-  riskSpread: 1.25,
-  mileageSpread: 1.1,
-  /** Discount off N × the one-year price. Live is already ~17.5% / ~21.7%. */
-  twoYearDiscountPct: 20,
-  threeYearDiscountPct: 24,
+  /** Compress, rather than amplify, the expensive end of the August risk curve. */
+  riskSpread: 0.75,
+  mileageSpread: 0.75,
+  /** Both defaults are materially cheaper than the live ×1.65 / ×2.35 terms. */
+  twoYearDiscountPct: 25,
+  threeYearDiscountPct: 30,
   ceiling: 650,
   ceilingOn: true,
 };
@@ -71,8 +74,9 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
   const referenceBand =
     base.bands.find((b: any) => String(b.key) === cfg.referenceBandKey) ?? base.bands[0];
   const referenceLive = Number(referenceBand?.oneYear ?? 0);
-  /** Blank / 0 target means "leave the age curve where live has it". */
-  const effectiveTarget = cfg.targetReference > 0 ? cfg.targetReference : referenceLive;
+  /** Exact target wins; otherwise apply the deliberate reduction to the August base. */
+  const reducedReference = Math.round(referenceLive * (1 - cfg.baseReductionPct / 100));
+  const effectiveTarget = cfg.targetReference > 0 ? cfg.targetReference : reducedReference;
   /** One scale factor moves the whole age curve so the reference vehicle lands on target. */
   const recentre = referenceLive > 0 ? effectiveTarget / referenceLive : 1;
   /** What live's flat multipliers imply as a discount off N × one year. */
@@ -120,9 +124,9 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription className="text-sm">
-              The hybrid keeps the risk model but recentres it on the July average so good cars fall
-              below the reference price and high-risk cars absorb the uplift up to the ceiling. Anything
-              over the ceiling refers out instead of showing a price that historically converts at 4.5%.
+              The proposal starts 20% below the August base and compresses its risk and mileage uplifts.
+              Multi-year terms are also cheaper than live. Anything over the ceiling refers out instead
+              of displaying a high price that is difficult to convert.
             </AlertDescription>
           </Alert>
 
@@ -154,16 +158,31 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
               </div>
 
               <div>
-                <Label className="text-xs">Target one-year price for that band</Label>
+                <Label className="text-xs">Reduction from August base (%)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={50}
+                  className="mt-1 h-9"
+                  value={cfg.baseReductionPct}
+                  onChange={e => set('baseReductionPct', Math.min(50, Math.max(0, Number(e.target.value) || 0)))}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Proposed reference {effectiveTarget ? formatGBP(effectiveTarget) : '—'} vs August {formatGBP(referenceLive)}
+                </p>
+              </div>
+
+              <div>
+                <Label className="text-xs">Exact one-year target (optional)</Label>
                 <Input
                   type="number"
                   className="mt-1 h-9"
-                  placeholder={referenceLive ? String(referenceLive) : 'Live base'}
+                  placeholder={reducedReference ? String(reducedReference) : 'Reduced base'}
                   value={cfg.targetReference || ''}
                   onChange={e => set('targetReference', Number(e.target.value) || 0)}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Whole age curve × {recentre.toFixed(3)} — leave blank to match live
+                  Whole age curve × {recentre.toFixed(3)} — blank uses the reduction
                 </p>
               </div>
 
@@ -252,7 +271,7 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge variant="outline">
                 Reference target {effectiveTarget ? formatGBP(effectiveTarget) : '—'}
-                {cfg.targetReference > 0 ? '' : ' (live)'}
+                {cfg.targetReference > 0 ? ' (exact)' : ` (${cfg.baseReductionPct}% below August)`}
               </Badge>
               <Badge variant="outline">
 
@@ -281,7 +300,7 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
           showRegLookup={false}
           autoQuoteCeiling={ceiling}
           title="Aug hybrid test — Step 2"
-          subtitle="Recentred age curve, adjusted risk spread, multi-year discount and auto-quote ceiling."
+          subtitle="Lower base, compressed risk uplifts, cheaper multi-year terms and an auto-quote ceiling."
           badgeText="Hybrid draft"
         />
       </div>
