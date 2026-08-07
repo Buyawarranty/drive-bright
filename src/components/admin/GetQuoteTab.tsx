@@ -46,9 +46,12 @@ import {
   getLabourRateOptions,
   getWebReferencePrice,
   MAX_WEB_DISCOUNT_VS_GRID_PCT,
+  MARKETING_SAVINGS,
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
 import { MIN_BASE_PRICE_BY_PERIOD } from '@/lib/pricingMatrix';
+import { priceFromPricingModel } from './pricing/modelQuoteEngine';
+
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
