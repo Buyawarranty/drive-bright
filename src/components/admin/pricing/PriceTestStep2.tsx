@@ -301,6 +301,10 @@ export default function PriceTestStep2({
     claimFactor, labourFactor, excessFactor, term, discount, transferCover, freeMonths,
   ]);
 
+  /** Auto-quote ceiling: a one-year-equivalent price above the cap refers out instead of
+   *  showing a number we know does not convert. */
+  const ceilingBreach = !!(autoQuoteCeiling && calc && calc.annual > autoQuoteCeiling);
+
 
   function excessAllowed(exValue: number) {
     // Customer-value guardrail: never show an excess above 25% of the claim limit,
