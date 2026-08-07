@@ -38,6 +38,7 @@ import { AdminNotificationBell, AdminNotification } from '@/components/admin/Adm
 import ClaimRecontactBatchButton from './ClaimRecontactBatchButton';
 import UnsubscribeQuickLink from '@/components/admin/UnsubscribeQuickLink';
 import { buildWatiRows } from '@/lib/watiExport';
+import { LeadNotesExportDialog } from '@/components/admin/leads/LeadNotesExportDialog';
 
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck, MoreHorizontal, BarChart3, Network, ChevronDown, ChevronUp } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
@@ -267,6 +268,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [additionalFilters, setAdditionalFilters] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
+  const [leadNotesExportOpen, setLeadNotesExportOpen] = useState(false);
   // Managers (admin / super_admin / sales_manager) default to "today" so the
   // New Leads view always opens on the current day. Everyone else keeps
   // "all time" so agents see their full queue.
@@ -1630,6 +1632,24 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 Export for WATI (WhatsApp)
               </Button>
             )}
+            {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLeadNotesExportOpen(true)}
+                title="Export leads with calls attempted and full note history for a chosen date range"
+                className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-purple-300 bg-purple-50 text-purple-800 hover:bg-purple-100 hover:border-purple-400"
+              >
+                <FileSpreadsheet className="h-3.5 w-3.5" />
+                Lead with notes
+              </Button>
+            )}
+            <LeadNotesExportDialog
+              open={leadNotesExportOpen}
+              onOpenChange={setLeadNotesExportOpen}
+              leads={(selectedLeads.size > 0 ? filteredLeads.filter(l => selectedLeads.has(l.id)) : filteredLeads) as any}
+              sourceHidden={sourceHidden}
+            />
             {(() => {
               const inReminders = activeFilter === 'reminders' || (activeFilter as string) === 'due_today';
               const isDefault = sortOption === 'latest_submitted' || (inReminders && sortOption === 'reminder_soonest');
