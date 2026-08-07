@@ -2,6 +2,8 @@ import { hasLiveVehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
 // Vehicle validation and pricing adjustment utilities
 
 import { isVehicleBlockedByRules, MANUAL_REFERRAL_MESSAGE } from '@/lib/pricing/vehicleRules';
+import { isVehicleExcluded } from '@/lib/vehicleExclusions';
+
 
 
 
