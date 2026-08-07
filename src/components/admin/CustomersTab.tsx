@@ -1067,7 +1067,12 @@ export const CustomersTab = ({
     if (urlSearch && urlSearch !== searchTerm) {
       setSearchTerm(urlSearch);
     }
+    const pp = searchParams.get('pp');
+    if (pp === 'outstanding' || pp === 'has' || pp === 'completed') {
+      setFilterByPartPayment(pp);
+    }
   }, [searchParams]);
+
 
   // Debounce search term to avoid filtering on every keystroke
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
