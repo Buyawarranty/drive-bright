@@ -1,5 +1,7 @@
 // High-performance models that are not covered by warranty
 // This list contains exact model names that should be blocked
+import { isVehicleExcluded } from '@/lib/vehicleExclusions';
+
 
 export const HIGH_PERFORMANCE_MODELS = [
   // BMW
@@ -177,26 +179,21 @@ export const HIGH_PERFORMANCE_MODELS = [
 ];
 
 /**
- * Check if a vehicle model is a high-performance model that cannot be covered
- * @param make - Vehicle make/brand
- * @param model - Vehicle model
- * @returns boolean indicating if the vehicle is blocked
+ * Check if a vehicle is on the excluded matrix (whole-make exclusions plus
+ * specific make + model performance variants). Falls back to the legacy exact
+ * name list above for anything the matrix does not recognise.
  */
 export const isHighPerformanceModel = (make: string, model: string): boolean => {
   if (!make || !model) return false;
-  
-  // Normalize the make and model for comparison
-  const normalizedMake = make.trim().toUpperCase();
-  const normalizedModel = model.trim().toUpperCase();
-  
-  // Construct the full model name as it appears in our list
-  const fullModelName = `${normalizedMake} ${normalizedModel}`;
-  
-  // Check if the full model name matches any in our high-performance list
-  return HIGH_PERFORMANCE_MODELS.some(blockedModel => 
+
+  if (isVehicleExcluded(make, model)) return true;
+
+  const fullModelName = `${make.trim().toUpperCase()} ${model.trim().toUpperCase()}`;
+  return HIGH_PERFORMANCE_MODELS.some(blockedModel =>
     blockedModel.toUpperCase() === fullModelName
   );
 };
+
 
 /**
  * Get the standard message for high-performance vehicles that cannot be covered
