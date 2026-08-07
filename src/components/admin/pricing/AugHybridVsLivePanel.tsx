@@ -158,13 +158,15 @@ const AugHybridVsLivePanel: React.FC<{ liveModel?: any }> = ({ liveModel }) => {
                 <Input
                   type="number"
                   className="mt-1 h-9"
-                  value={cfg.targetReference}
+                  placeholder={referenceLive ? String(referenceLive) : 'Live base'}
+                  value={cfg.targetReference || ''}
                   onChange={e => set('targetReference', Number(e.target.value) || 0)}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Whole age curve × {recentre.toFixed(3)}
+                  Whole age curve × {recentre.toFixed(3)} — leave blank to match live
                 </p>
               </div>
+
 
               <div>
                 <Label className="text-xs">Auto-quote ceiling (one-year equivalent)</Label>
