@@ -1093,6 +1093,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       labourRate: labourRate,
     });
     if (modelQuote && !modelQuote.referral && modelVehicleAge != null) {
+      pricingTrace.usedLegacy = false;
+      pricingTrace.reason = '';
       const totalPrice = Math.ceil(modelQuote.totalPrice + addOnPrice);
       const monthlyPrice = Math.ceil(totalPrice / 12);
       const contractTotal = monthlyPrice * 12;
@@ -1106,6 +1108,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         savings: MARKETING_SAVINGS[paymentType] || 0,
       };
     }
+    pricingTrace.usedLegacy = true;
+    pricingTrace.reason = modelVehicleAge == null
+      ? 'no vehicle age available (missing manufacture/registration date)'
+      : !modelQuote
+        ? 'no published pricing model available'
+        : (modelQuote as any).referralReason || 'vehicle referred out by the current model';
+
 
      const effectiveClaimLimit = getBaseClaimLimit(claimLimit);
     const premiumSurcharge = getClaimLimitSurcharge(claimLimit, paymentType, excessAmount);
