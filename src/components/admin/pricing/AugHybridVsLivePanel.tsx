@@ -18,9 +18,9 @@ import { useSavedPricingModel } from './useSavedPricingModel';
 
 /**
  * AUG HYBRID TEST vs LIVE
- * The rebalance proposal, side by side with what is live today, in the same
+ * The August test model, side by side with what is live today, in the same
  * Step 2 layout agents use. Every hybrid variable is adjustable here:
- *   - recentre the reference vehicle onto a target one-year price
+ *   - set a target one-year price for the reference vehicle
  *   - spread risk (mileage / model-risk deviation amplified or flattened)
  *   - flip the multi-year uplift into a visible discount vs buying single years
  *   - cap the auto-quote at a price we know converts, overflow goes to referral
