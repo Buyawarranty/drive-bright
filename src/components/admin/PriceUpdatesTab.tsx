@@ -75,9 +75,11 @@ const TOP_TABS = [
   { value: 'aug26', label: 'Aug 2026 pricing', icon: CalendarClock },
   { value: 'builder', label: 'Age-based builder (calculator)', icon: CalendarClock },
   { value: 'editor', label: 'Price grid (this one goes live)', icon: FlaskConical },
+  { value: 'original', label: 'Original codebase pricing vs Live', icon: GitCompare },
   { value: 'previews', label: 'Previews', icon: Rocket },
   { value: 'tools', label: 'Excluded vehicles & tools', icon: Ban },
 ] as const;
+
 
 
 const TAB_ORDER_STORAGE_KEY = 'bw:price-updates:tab-order';
