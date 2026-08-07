@@ -66,6 +66,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
   className,
 }) => {
   const [open, setOpen] = useState(false);
+  const [draftRange, setDraftRange] = useState<DateRange | undefined>();
 
   const activeQuick = getActiveQuickFilter(dateRange);
 
@@ -126,7 +127,13 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
 
   return (
     <div className={cn('', className)}>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover
+        open={open}
+        onOpenChange={(nextOpen) => {
+          setOpen(nextOpen);
+          if (nextOpen) setDraftRange(undefined);
+        }}
+      >
         <PopoverTrigger asChild>
           <Button
             variant="outline"
@@ -210,22 +217,21 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
             <Calendar
               mode="range"
               defaultMonth={dateRange?.from || subMonths(new Date(), 1)}
-              selected={dateRange}
+              selected={draftRange}
               onDayClick={(day, modifiers) => {
                 if (modifiers?.disabled) return;
-                const from = dateRange?.from;
-                const to = dateRange?.to;
-                // No start yet, or a complete range exists -> start a fresh range
-                if (!from || to) {
-                  onDateRangeChange({ from: day, to: undefined });
+                const from = draftRange?.from;
+                // The first click only starts a fresh draft selection. It does
+                // not inherit today's date (or either end of the applied range).
+                if (!from) {
+                  setDraftRange({ from: day, to: undefined });
                   return;
                 }
-                // Second click completes the range (handles clicking before the start)
-                if (day < from) {
-                  onDateRangeChange({ from: day, to: from });
-                } else {
-                  onDateRangeChange({ from, to: day });
-                }
+                const completedRange = day < from
+                  ? { from: day, to: from }
+                  : { from, to: day };
+                setDraftRange(completedRange);
+                onDateRangeChange(completedRange);
                 setOpen(false);
               }}
               onSelect={() => { /* handled in onDayClick */ }}
