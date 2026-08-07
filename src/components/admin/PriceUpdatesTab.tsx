@@ -745,7 +745,7 @@ export default function PriceUpdatesTab() {
           )}
         </div>
 
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto gap-2 bg-muted/60 p-2">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 h-auto gap-2 bg-muted/60 p-2">
           {tabOrder.map((value, i) => {
             const tab = TOP_TABS.find(t => t.value === value);
             if (!tab) return null;
