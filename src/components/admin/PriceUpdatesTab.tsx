@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
-import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info, ArrowLeftRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AlertTriangle, FlaskConical, RotateCcw, Save, Rocket, Trash2, Globe, GitCompare, CalendarClock, ShieldCheck, Ban, Info, ArrowLeftRight, ChevronLeft, ChevronRight, Layers } from 'lucide-react';
 import Aug26PricingPanel from '@/components/admin/pricing/Aug26PricingPanel';
 import LiveVsAug26Panel from '@/components/admin/pricing/LiveVsAug26Panel';
 import PricingEngineDraftPanel from '@/components/admin/pricing/PricingEngineDraftPanel';
@@ -36,6 +36,7 @@ import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
 import CodebaseVsCurrentPanel from '@/components/admin/pricing/CodebaseVsCurrentPanel';
 import ClaimLimit5kAuthToggle from '@/components/admin/pricing/ClaimLimit5kAuthToggle';
 import ExcludedVehiclesPanel from '@/components/admin/pricing/ExcludedVehiclesPanel';
+import VehicleRiskBandsPanel from '@/components/admin/pricing/VehicleRiskBandsPanel';
 import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
 
 
