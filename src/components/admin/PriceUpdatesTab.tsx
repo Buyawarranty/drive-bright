@@ -624,10 +624,14 @@ export default function PriceUpdatesTab() {
 
       <Tabs defaultValue="compare" className="w-full">
 
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto gap-2 bg-muted/60 p-2">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto gap-2 bg-muted/60 p-2">
           <TabsTrigger value="compare" className="py-3 text-base font-semibold">
             <GitCompare className="h-4 w-4 mr-2" />
             Live builder vs Aug26
+          </TabsTrigger>
+          <TabsTrigger value="builder" className="py-3 text-base font-semibold">
+            <CalendarClock className="h-4 w-4 mr-2" />
+            Age-based builder (calculator)
           </TabsTrigger>
           <TabsTrigger value="editor" className="py-3 text-base font-semibold">
             <FlaskConical className="h-4 w-4 mr-2" />
@@ -650,6 +654,22 @@ export default function PriceUpdatesTab() {
             onModelChange={setLiveEditorModel}
           />
         </TabsContent>
+
+        <TabsContent value="builder" className="space-y-6 mt-4">
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              <strong>The original age-based builder on its own.</strong> Same figures as the builder
+              under the comparison tab — edit the bands and factors here, then press{' '}
+              <strong>“Save &amp; push this model live”</strong> to send it to customers.
+            </AlertDescription>
+          </Alert>
+          <AgeBandPricingPreview
+            onBuildDraft={handleBuildDraftFromModel}
+            onModelChange={setLiveEditorModel}
+          />
+        </TabsContent>
+
 
         <TabsContent value="tools" className="space-y-4 mt-4">
           <Tabs defaultValue="excluded" className="w-full">
