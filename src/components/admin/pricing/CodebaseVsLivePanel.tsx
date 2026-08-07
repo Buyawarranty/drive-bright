@@ -131,7 +131,7 @@ const CodebaseVsLivePanel: React.FC<{
   const referenceCode = Number(referenceBand?.oneYear ?? 0);
   const reducedReference = Math.round(referenceCode * (1 - cfg.baseReductionPct / 100));
   const effectiveTarget = cfg.targetReference > 0 ? cfg.targetReference : reducedReference;
-  const recentre = referenceCode > 0 ? effectiveTarget / referenceCode : 1;
+  const targetScale = referenceCode > 0 ? effectiveTarget / referenceCode : 1;
 
   /** Code base multi-year terms implied as a discount off N × one year. */
   const codeTwoYearDiscountPct = Math.round((1 - codeBase.twoYearMult / 2) * 1000) / 10;

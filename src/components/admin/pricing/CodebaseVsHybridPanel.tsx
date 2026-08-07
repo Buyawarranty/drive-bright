@@ -123,7 +123,7 @@ const CodebaseVsHybridPanel: React.FC<{
   const referenceLive = Number(referenceBand?.oneYear ?? 0);
   const reducedReference = Math.round(referenceLive * (1 - cfg.baseReductionPct / 100));
   const effectiveTarget = cfg.targetReference > 0 ? cfg.targetReference : reducedReference;
-  const recentre = referenceLive > 0 ? effectiveTarget / referenceLive : 1;
+  const targetScale = referenceLive > 0 ? effectiveTarget / referenceLive : 1;
 
   /** Code-base reference for context, and its implied multi-year discounts. */
   const codeReference = Number(codeBaseModel.bands[0]?.oneYear ?? 0);
