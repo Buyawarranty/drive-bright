@@ -293,16 +293,17 @@ export default function PriceTestStep2({
           <div>
             <CardTitle className="flex items-center gap-2">
               <FlaskConical className="h-5 w-5" />
-              Price testing — Step 2 replica
+              {title ?? 'Price testing — Step 2 replica'}
             </CardTitle>
             <CardDescription>
-              Same layout as Quotes &amp; Orders Step 2, priced with the proposed age × mileage × factor
-              model. Practice only — nothing here saves a quote or changes live pricing.
+              {subtitle ??
+                'Same layout as Quotes & Orders Step 2, priced with the proposed age × mileage × factor model. Practice only — nothing here saves a quote or changes live pricing.'}
             </CardDescription>
           </div>
-          <Badge variant="secondary">Test environment</Badge>
+          <Badge variant="secondary">{badgeText ?? 'Test environment'}</Badge>
         </div>
       </CardHeader>
+
 
       <CardContent className="space-y-6">
         {/* Test vehicle profile */}
