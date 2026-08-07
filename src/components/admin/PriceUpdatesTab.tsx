@@ -675,30 +675,67 @@ export default function PriceUpdatesTab() {
 
 
 
-      <Tabs defaultValue="compare" className="w-full">
+      <Tabs defaultValue={tabOrder[0] || 'compare'} className="w-full">
+
+        <div className="flex items-center justify-end gap-2 mb-2">
+          <Button
+            type="button"
+            size="sm"
+            variant={reorderMode ? 'default' : 'outline'}
+            onClick={() => setReorderMode(v => !v)}
+          >
+            <ArrowLeftRight className="h-4 w-4 mr-1" />
+            {reorderMode ? 'Done reordering' : 'Reorder tabs'}
+          </Button>
+          {reorderMode && (
+            <Button type="button" size="sm" variant="ghost" onClick={resetTabOrder}>
+              Reset order
+            </Button>
+          )}
+        </div>
 
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto gap-2 bg-muted/60 p-2">
-          <TabsTrigger value="compare" className="py-3 text-base font-semibold">
-            <GitCompare className="h-4 w-4 mr-2" />
-            Live builder vs Aug26
-          </TabsTrigger>
-          <TabsTrigger value="builder" className="py-3 text-base font-semibold">
-            <CalendarClock className="h-4 w-4 mr-2" />
-            Age-based builder (calculator)
-          </TabsTrigger>
-          <TabsTrigger value="editor" className="py-3 text-base font-semibold">
-            <FlaskConical className="h-4 w-4 mr-2" />
-            Price grid (this one goes live)
-          </TabsTrigger>
-          <TabsTrigger value="previews" className="py-3 text-base font-semibold">
-            <Rocket className="h-4 w-4 mr-2" />
-            Previews
-          </TabsTrigger>
-          <TabsTrigger value="tools" className="py-3 text-base font-semibold">
-            <Ban className="h-4 w-4 mr-2" />
-            Excluded vehicles &amp; tools
-          </TabsTrigger>
+          {tabOrder.map((value, i) => {
+            const tab = TOP_TABS.find(t => t.value === value);
+            if (!tab) return null;
+            const Icon = tab.icon;
+            return (
+              <div key={value} className="flex items-center gap-1">
+                {reorderMode && (
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 shrink-0"
+                    disabled={i === 0}
+                    onClick={() => moveTab(i, -1)}
+                    aria-label={`Move ${tab.label} left`}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                )}
+                <TabsTrigger value={value} className="flex-1 py-3 text-base font-semibold">
+                  <Icon className="h-4 w-4 mr-2" />
+                  {tab.label}
+                </TabsTrigger>
+                {reorderMode && (
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 shrink-0"
+                    disabled={i === tabOrder.length - 1}
+                    onClick={() => moveTab(i, 1)}
+                    aria-label={`Move ${tab.label} right`}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            );
+          })}
         </TabsList>
+
 
         <TabsContent value="compare" className="space-y-6 mt-4">
           <LiveVsAug26Panel liveModel={liveEditorModel} />
