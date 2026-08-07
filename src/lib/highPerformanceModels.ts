@@ -1,5 +1,7 @@
 // High-performance models that are not covered by warranty
 // This list contains exact model names that should be blocked
+import { isVehicleExcluded } from '@/lib/vehicleExclusions';
+
 
 export const HIGH_PERFORMANCE_MODELS = [
   // BMW
