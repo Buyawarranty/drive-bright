@@ -12,6 +12,11 @@ import { MANUAL_REFERRAL_MESSAGE } from './AgeBandPricingPreview';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
 
+/** Per-day figures are shown in whole pence (or whole pounds) — never pounds-with-pence. */
+const perDayLabel = (amount: number) =>
+  amount < 1 ? `${Math.round(amount * 100)}p/day` : `£${Math.round(amount)}/day`;
+
+
 
 /**
  * PRICE TESTING SANDBOX — a visual replica of Quotes & Orders "Step 2: Quote Details".
