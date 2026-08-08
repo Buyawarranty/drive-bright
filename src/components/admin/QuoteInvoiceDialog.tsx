@@ -321,9 +321,10 @@ function buildInvoiceHtml(f: ReturnType<QuoteInvoiceDialogHydrate>): string {
     .row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
     .grand{font-size:18px;font-weight:bold;color:#f97316;border-top:2px solid #f97316;padding-top:10px;margin-top:10px}
     .footer{text-align:center;font-size:11px;color:#666;border-top:1px solid #e5e7eb;padding-top:18px}
+    .legal{font-size:10px;color:#777;line-height:1.6;margin-top:12px;text-align:center}
   </style></head><body>
   <div class="header">
-    <img src="${COMPANY.logoUrl}" alt="${COMPANY.name}" />
+    <img src="${COMPANY.logoAbsoluteUrl}" alt="${COMPANY.name}" />
     <div class="co"><strong>${COMPANY.name}</strong><br>${COMPANY.website}<br>${COMPANY.email}<br>${COMPANY.phone}</div>
   </div>
   <h1>INVOICE</h1>
@@ -346,12 +347,17 @@ function buildInvoiceHtml(f: ReturnType<QuoteInvoiceDialogHydrate>): string {
     </tr></tbody>
   </table>
   <div class="totals"><div>
-    <div class="row"><span>Subtotal</span><span>${amount}</span></div>
-    <div class="row"><span>VAT (0%)</span><span>£0</span></div>
-    <div class="row grand"><span>Total</span><span>${amount}</span></div>
+    <div class="row"><span>Subtotal (excl. VAT)</span><span>${gbp(net)}</span></div>
+    <div class="row"><span>VAT (20%)</span><span>${gbp(vat)}</span></div>
+    <div class="row grand"><span>Total (incl. VAT)</span><span>${amount}</span></div>
   </div></div>
   ${f.notes ? `<p style="font-size:12px;color:#555;margin-bottom:24px">${f.notes}</p>` : ''}
-  <div class="footer"><p><strong>${COMPANY.name}</strong></p><p>${COMPANY.website} · ${COMPANY.email} · ${COMPANY.phone}</p></div>
+  <div class="footer">
+    <p><strong>${COMPANY.name}</strong></p>
+    <p>${COMPANY.website} · ${COMPANY.email} · ${COMPANY.phone}</p>
+    <div class="legal"><p>${COMPANY.legalLine1}</p><p>${COMPANY.legalLine2}</p></div>
+  </div>
+
   </body></html>`;
 }
 
