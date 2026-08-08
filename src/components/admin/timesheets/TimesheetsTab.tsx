@@ -216,6 +216,10 @@ export function TimesheetsTab({ onNavigateToTab }: TimesheetsTabProps = {}) {
             <FileDown className="h-4 w-4" />
             Download PDF
           </Button>
+          <StaffInvoiceDialog
+            currentMonth={currentMonth}
+            defaultName={session?.user?.email?.split('@')[0] || ''}
+          />
           <Button variant="outline" size="sm" onClick={handleEmailToAccounts} disabled={sendingEmail} className="gap-2">
             <Mail className={`h-4 w-4 ${sendingEmail ? 'animate-pulse' : ''}`} />
             {sendingEmail ? 'Sending...' : 'Email to Accounts'}
