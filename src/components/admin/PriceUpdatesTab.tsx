@@ -1336,11 +1336,12 @@ export default function PriceUpdatesTab() {
                                           {formatGBP(Math.ceil(step3 / 12))}/mo
                                         </div>
                                         {belowFloor && (
-                                          <div className="text-xs text-destructive">
-                                            Below {formatGBP(minPrice)} Quotes &amp; Orders floor —
-                                            raise this cell
+                                          <div className="text-xs text-amber-600">
+                                            Reference-band cell below {formatGBP(minPrice)} — the
+                                            {' '}floor is applied per vehicle at quote time
                                           </div>
                                         )}
+
                                       </>
                                     )}
 
