@@ -186,6 +186,13 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   // two flows have different SLAs, timers and reporting. Default to New; the
   // manager must explicitly opt in to move recontact-pool leads.
   const [workstream, setWorkstream] = useState<Workstream>('new');
+  /**
+   * Annual leave / holiday rule: leads carrying an agent-written note are held
+   * back unless the manager confirms they checked with (or authorised) the
+   * agent. Calls and status changes alone never block a move.
+   */
+  const [authoriseNoted, setAuthoriseNoted] = useState(false);
+
 
   useEffect(() => {
     if (!open) return;
