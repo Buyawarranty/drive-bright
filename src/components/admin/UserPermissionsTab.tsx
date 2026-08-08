@@ -1246,11 +1246,18 @@ export const UserPermissionsTab = () => {
     setSavingPermsUserId(targetUser.id);
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('admin_users')
         .update({ permissions: nextPerms })
-        .eq('id', targetUser.id);
+        .eq('id', targetUser.id)
+        .select('id, permissions');
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('no rows updated — access blocked for your account');
+      }
+      const saved = (data[0] as any).permissions as Record<string, boolean>;
+      setUsers(prev => prev.map(u => u.id === targetUser.id ? { ...u, permissions: saved } : u));
+
     } catch (err: any) {
       // Rollback on failure
       setUsers(prev => prev.map(u => u.id === targetUser.id ? { ...u, permissions: targetUser.permissions } : u));
