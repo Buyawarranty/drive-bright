@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
+import { getDefaultVoluntaryExcess } from '@/lib/pricing/getDefaultVoluntaryExcess';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { 
   getBasePrice as getCentralizedBasePrice,
@@ -79,7 +80,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     previousPaymentType || '24months'
   );
   const [voluntaryExcess, setVoluntaryExcess] = useState<number | null>(
-    previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : 150
+    previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : getDefaultVoluntaryExcess(vehicleData)
   );
   const [selectedClaimLimit, setSelectedClaimLimit] = useState<number | null>(
     (() => {

@@ -31,6 +31,7 @@ import { cn } from '@/lib/utils';
 import AddOnProtectionPackages from '@/components/AddOnProtectionPackages';
 import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
+import { getDefaultVoluntaryExcess } from '@/lib/pricing/getDefaultVoluntaryExcess';
 import { 
   getBasePrice as getCentralizedBasePrice,
   DURATION_MONTHS,
@@ -147,9 +148,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const initialPaymentType = previousPaymentType || '24months';
   console.log('🎯 PricingTable mount - previousPaymentType:', previousPaymentType, 'initialPaymentType:', initialPaymentType);
   const [paymentType, setPaymentType] = useState<'12months' | '24months' | '36months' | null>(initialPaymentType);
-  // If previousVoluntaryExcess is explicitly set (including 0), use it; otherwise default to £150
+  // If previousVoluntaryExcess is explicitly set (including 0), use it; otherwise pick
+  // the default based on the vehicle's baseline warranty price.
   const [voluntaryExcess, setVoluntaryExcess] = useState<number | null>(
-    previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : 150
+    previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : getDefaultVoluntaryExcess(vehicleData)
   );
   const [selectedAddOns, setSelectedAddOns] = useState<{[planId: string]: {[addon: string]: boolean}}>(
     previousSelectedAddOns ? { 'platinum': previousSelectedAddOns } : {}
