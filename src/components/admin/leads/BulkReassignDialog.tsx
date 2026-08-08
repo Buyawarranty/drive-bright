@@ -527,7 +527,12 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
 
       if (mode === 'cherry_pick') {
         // Fetch lead → owner mapping for the selected leads so we call the RPC with the correct source
-        const ids = Array.from(selectedLeadIds);
+        const pickedIds = Array.from(selectedLeadIds);
+        const ids = authoriseNoted ? pickedIds : (await splitByNoteLock(pickedIds)).movable;
+        if (ids.length === 0) {
+          throw new Error('Every selected lead has an agent note — check with the agent and tick the authorisation box.');
+        }
+
         const { data: rows, error } = await supabase
           .from('sales_leads')
           .select('id, assigned_to')
