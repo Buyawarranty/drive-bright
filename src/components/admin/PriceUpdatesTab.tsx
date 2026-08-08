@@ -1376,8 +1376,8 @@ export default function PriceUpdatesTab() {
                                 );
                               })}
                               {(() => {
-                                const basic = matrix?.[period]?.[String(excess)]?.['750'] ?? 0;
-                                const essential = matrix?.[period]?.[String(excess)]?.['2000'] ?? 0;
+                                const basic = matrix?.[period]?.[String(excess)]?.['1000'] ?? 0;
+                                const essential = matrix?.[period]?.[String(excess)]?.['3000'] ?? 0;
                                 const elite = essential + (essential - basic);
                                 const premium =
                                   elite + (PREMIUM_STEP_SURCHARGE[period] || 0);
