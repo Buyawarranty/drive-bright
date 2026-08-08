@@ -15,6 +15,7 @@ import { AdditionalBonuses } from './AdditionalBonuses';
 import { CommissionClaimsSection } from './CommissionClaimsSection';
 import { StaffTimesheetSelector } from './StaffTimesheetSelector';
 import { UnwindsSection } from './UnwindsSection';
+import { StaffInvoiceDialog } from './StaffInvoiceDialog';
 
 import { WeekendShiftsCard } from './WeekendShiftsCard';
 
