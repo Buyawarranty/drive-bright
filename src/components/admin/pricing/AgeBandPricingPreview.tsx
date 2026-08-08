@@ -1357,111 +1357,50 @@ export default function AgeBandPricingPreview({
         </div>
 
         <div className="space-y-2">
-          <p className="text-sm font-semibold">Excess factors</p>
+          <p className="text-sm font-semibold">Excess pricing — flat £/mo differences</p>
           <p className="text-xs text-muted-foreground">
-            Applied once the customer picks a voluntary excess. £150 is the recommended best-balance
-            option at factor 1.00.
+            Excess is no longer a multiplier. Every surface (Step 3, Step 4 and Quotes &amp; Orders)
+            prices it as a flat monthly difference vs the £100 “Balanced” baseline, so the same choice
+            costs the same on every vehicle. 24 and 36 month columns are stored ready for when those
+            instalment plans launch — today all cover is billed over 12 instalments.
           </p>
           <div className="overflow-x-auto rounded-md border">
             <table className="w-full text-sm">
               <thead className="bg-muted/60">
                 <tr className="text-left">
                   <th className="p-3 font-semibold">Excess</th>
-                  <th className="p-3 font-semibold">Factor</th>
-                  <th className="p-3 font-semibold">Customer position</th>
-                  <th className="p-3 font-semibold">Example on £499 base</th>
+                  <th className="p-3 font-semibold">Customer label</th>
+                  <th className="p-3 font-semibold">12 mo</th>
+                  <th className="p-3 font-semibold">24 mo (future)</th>
+                  <th className="p-3 font-semibold">36 mo (future)</th>
+                  <th className="p-3 font-semibold">Available from</th>
                 </tr>
               </thead>
               <tbody>
-                {excessFactors.map(e => (
-                  <tr key={e.key} className="border-t">
-                    <td className="p-3 font-medium">
-                      £{e.excess}
-                      {e.optional && (
-                        <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
-                          OPTIONAL
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-2">
-                      <Input
-                        className="h-9 w-24"
-                        type="number"
-                        step="0.01"
-                        value={e.factor}
-                        onChange={ev => setExcessFactor(e.key, ev.target.value)}
-                      />
-                    </td>
-                    <td className="p-3 text-muted-foreground">{e.uxPosition}</td>
-                    <td className="p-3">£{Math.round(499 * e.factor).toLocaleString()}</td>
-                  </tr>
-                ))}
+                {JOURNEY_EXCESS_OPTIONS.map(e => {
+                  const fmt = (d: number) => (d === 0 ? 'baseline' : `${d > 0 ? '+' : '−'}£${Math.abs(d)}/mo`);
+                  return (
+                    <tr key={e.value} className="border-t">
+                      <td className="p-3 font-medium">£{e.value}</td>
+                      <td className="p-3 text-muted-foreground">{e.label}</td>
+                      <td className="p-3">{fmt(getExcessMonthlyDelta('12months', e.value))}</td>
+                      <td className="p-3 text-muted-foreground">{fmt(getExcessMonthlyDelta('24months', e.value))}</td>
+                      <td className="p-3 text-muted-foreground">{fmt(getExcessMonthlyDelta('36months', e.value))}</td>
+                      <td className="p-3 text-muted-foreground">
+                        {e.value >= 250 ? 'Warranties £500+' : 'All prices'}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
-
-          {/* 5.3b Customer-value guardrail — excess × claim-limit compatibility */}
-          <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/30">
-            <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">
-              Customer-value guardrail — excess vs claim limit
-            </p>
-            <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-500">
-              In the normal online journey, never show an excess above 25% of the selected claim
-              limit. The £500 excess is optional only — show it solely with £3,000 or £5,000 claim
-              limits, and never alongside £1,000.
-            </p>
-            <div className="mt-2 overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead className="bg-amber-100/60 dark:bg-amber-900/30">
-                  <tr className="text-left">
-                    <th className="p-2 font-semibold">Excess \ Claim limit</th>
-                    {claimLimits.map(c => (
-                      <th key={c.key} className="p-2 text-center font-semibold whitespace-nowrap">
-                        £{c.limit.toLocaleString()}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {excessFactors.map(e => (
-                    <tr key={e.key} className="border-t border-amber-100 dark:border-amber-900/40">
-                      <td className="p-2 font-medium whitespace-nowrap">
-                        £{e.excess}
-                        {e.optional && (
-                          <span className="ml-1 text-[10px] text-amber-600">opt.</span>
-                        )}
-                      </td>
-                      {claimLimits.map(c => {
-                        const ratio = e.excess / c.limit;
-                        const within25 = ratio <= 0.25;
-                        // £500 excess is only valid with £3,000 or £5,000 limits
-                        const optionalAllowed = !e.optional || c.limit >= 3000;
-                        const allowed = within25 && optionalAllowed;
-                        return (
-                          <td key={c.key} className="p-2 text-center">
-                            {allowed ? (
-                              <span className="inline-flex items-center rounded bg-green-100 px-1.5 py-0.5 text-[11px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                                Show
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center rounded bg-red-100 px-1.5 py-0.5 text-[11px] font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                                {e.optional && !optionalAllowed ? 'Not with this limit' : 'Hide (>25%)'}
-                              </span>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-500">
-              25% caps: £1,000 → max £250 · £2,000 → max £500 · £3,000 → max £750 · £5,000 → max £1,250.
-              The £500 excess is additionally restricted to £3,000 and £5,000 limits only.
-            </p>
-          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Availability is price-bracket driven: under £500 shows £0–£150 only; £500 and above adds
+            £250 and £500. Claim limit no longer restricts the excess ladder.
+          </p>
         </div>
+
 
         <div className="space-y-2">
           <p className="text-sm font-semibold">Combined 1 year price — age × mileage</p>
