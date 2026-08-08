@@ -50,6 +50,8 @@ import {
   MARKETING_SAVINGS,
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
+import { getExcessMonthlyDelta } from '@/lib/pricingMatrix';
+import { JOURNEY_EXCESS_OPTIONS } from '@/lib/pricing/journeyOptions';
 import { MIN_BASE_PRICE_BY_PERIOD } from '@/lib/pricingMatrix';
 import { priceFromPricingModel } from './pricing/modelQuoteEngine';
 
