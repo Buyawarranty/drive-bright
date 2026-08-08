@@ -30,12 +30,12 @@ export const JOURNEY_DURATIONS: {
 
 /** Voluntary excess options as shown on Step 3 (visibility rules live in pricingMatrix). */
 export const JOURNEY_EXCESS_OPTIONS: { value: number; label: string; description: string }[] = [
-  { value: 0, label: '£0', description: 'Nothing to pay' },
-  { value: 50, label: '£50', description: 'Lower monthly' },
+  { value: 0, label: '£0', description: 'No Excess' },
+  { value: 50, label: '£50', description: 'Low Excess' },
   { value: 100, label: '£100', description: 'Balanced' },
-  { value: 150, label: '£150', description: 'Best balance' },
-  { value: 250, label: '£250', description: 'Save more' },
-  { value: 500, label: '£500', description: 'Biggest saving' },
+  { value: 150, label: '£150', description: 'Best Value' },
+  { value: 250, label: '£250', description: 'Lower Monthly Cost' },
+  { value: 500, label: '£500', description: 'Maximum Saving' },
 ];
 
 /** Claim limit tiers, keyed by the value the customer sees (£1,000 … £5,000). */

@@ -24,10 +24,10 @@ interface ExcessOption {
 }
 
 const OPTIONS: ExcessOption[] = [
-  { value: 0, label: '£0', title: 'No excess', description: 'Nothing to pay at claim — highest premium' },
-  { value: 50, label: '£50', title: 'Low excess', description: 'Small contribution, modest saving' },
+  { value: 0, label: '£0', title: 'No Excess', description: 'Nothing to pay at claim — highest premium' },
+  { value: 50, label: '£50', title: 'Low Excess', description: 'Small contribution, modest saving' },
   { value: 100, label: '£100', title: 'Balanced', description: 'Moderate excess with steady savings' },
-  { value: 150, label: '£150', title: 'Best balance', description: 'Best balance of price vs claim cost', badge: { text: 'Recommended', tone: 'popular' } },
+  { value: 150, label: '£150', title: 'Best Value', description: 'Best balance of price vs claim cost', badge: { text: 'Recommended', tone: 'popular' } },
 ];
 
 const ExcessDetails: React.FC<ExcessDetailsProps> = ({

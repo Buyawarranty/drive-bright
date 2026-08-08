@@ -73,12 +73,12 @@ const REPAIR_OPTIONS: {
 ];
 
 const EXCESS_OPTIONS = [
-  { value: 0, label: '£0', sub: 'Nothing to pay' },
-  { value: 50, label: '£50', sub: 'Lower monthly' },
+  { value: 0, label: '£0', sub: 'No Excess' },
+  { value: 50, label: '£50', sub: 'Low Excess' },
   { value: 100, label: '£100', sub: 'Balanced' },
-  { value: 150, label: '£150', sub: 'Best balance', best: true },
-  { value: 250, label: '£250', sub: 'Save more' },
-  { value: 500, label: '£500', sub: 'Biggest saving' },
+  { value: 150, label: '£150', sub: 'Best Value', best: true },
+  { value: 250, label: '£250', sub: 'Lower Monthly Cost' },
+  { value: 500, label: '£500', sub: 'Maximum Saving' },
 ];
 
 const TERM_META: Record<PaymentType, { years: string; payments: string; badge?: string; badgeTone?: 'orange' | 'green' }> = {
