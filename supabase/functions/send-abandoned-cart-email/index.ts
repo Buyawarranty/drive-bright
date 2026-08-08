@@ -107,15 +107,20 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
     : 'there';
   const vehicleInfo = `${request.vehicleMake || ''} ${request.vehicleModel || ''}`.trim() || 'your vehicle';
   const vehicleReg = request.vehicleReg || '';
+  // Registration plate shown as a highlighted chip so the customer instantly recognises their car
+  const regTag = vehicleReg
+    ? ` (<span style="background-color:#FFF0B3;border-radius:3px;padding:1px 5px;font-weight:600;color:#1a1a1a;">${vehicleReg}</span>)`
+    : '';
+  const vehicleLine = `${vehicleInfo}${regTag}`;
   
   let subject = `${vehicleReg} - Your warranty quote from Buy A Warranty`;
   let heading = `Your Warranty Quote for ${vehicleInfo}`;
-  let intro = `You requested a warranty quote for your ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
+  let intro = `You requested a warranty quote for your ${vehicleLine}.`;
   let body = "We've saved your quote details. You can review and complete your application whenever you're ready.";
   let showPromo = false;
   let promoCode = '';
   let promoText = '';
-  let ctaText = 'View My Quote';
+  let ctaText = 'Continue with my quote';
   
   const stepAbandoned = request.stepAbandoned ?? 3;
   const isCheckoutStep = stepAbandoned >= 4;
@@ -125,18 +130,18 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
     case 'reminder_1h':
       subject = `${vehicleReg} – your warranty quote is saved`;
       heading = isCheckoutStep ? `You're one step from cover` : `Your Warranty Quote for ${vehicleInfo}`;
-      intro = `Thanks for getting a quote for your ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
+      intro = `Thanks for getting a quote for your ${vehicleLine}.`;
       body = isCheckoutStep
         ? "Your warranty is ready at checkout. Pick up exactly where you left off — it only takes a minute."
         : "We've saved your quote so you can pick up exactly where you left off whenever you're ready.";
-      ctaText = isCheckoutStep ? 'Complete My Purchase' : 'View My Quote';
+      ctaText = isCheckoutStep ? 'Complete my purchase' : 'Continue with my quote';
       break;
     case 'reminder_2d':
       subject = `${vehicleReg} – still thinking? Here's £25 off`;
       heading = `Still thinking it over?`;
-      intro = `Your warranty quote for ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''} is still saved.`;
-      body = "To help you decide, here's £25 off when you complete your purchase.";
-      ctaText = isCheckoutStep ? 'Complete My Purchase' : 'View My Quote';
+      intro = `Your warranty quote for ${vehicleLine} is still saved.`;
+      body = "To help you decide, here's £25 off — it's applied automatically when you carry on below. Cover starts the moment you're done, with unlimited claims up to your chosen limit and UK-based support if anything goes wrong.";
+      ctaText = isCheckoutStep ? 'Complete my purchase' : 'Continue with my quote';
       showPromo = true;
       promoCode = 'SAVE25GO';
       promoText = 'Save £25 with code';
@@ -144,9 +149,9 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
     case 'reminder_7d':
       subject = `${vehicleReg} – don't lose your saved quote`;
       heading = `Your quote is still here`;
-      intro = `It's been a week since you looked at warranty cover for your ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
-      body = "Your quote and £25 discount are both still valid. Tap below to carry on where you left off.";
-      ctaText = isCheckoutStep ? 'Complete My Purchase' : 'View My Quote';
+      intro = `A week ago you were looking at warranty cover for your ${vehicleLine} — your quote is still saved, exactly as you left it.`;
+      body = "Nothing has changed: same price, same cover, and your £25 discount is still yours. One tap takes you straight back to your saved selection, and cover can start today. The average garage bill for a modern engine or gearbox repair now runs into four figures — this is designed to take care of that for you.";
+      ctaText = isCheckoutStep ? 'Complete my purchase' : 'Continue with my quote';
       showPromo = true;
       promoCode = 'SAVE25GO';
       promoText = 'Save £25 with code';
@@ -154,9 +159,9 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
     case 'reminder_14d':
       subject = `${vehicleReg} – prices may change, your £25 off won't`;
       heading = `Lock in your warranty price`;
-      intro = `Repair costs keep rising, but your saved quote for ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''} is held at today's price.`;
-      body = "Secure your cover now and save £25 — your quote may not be available much longer.";
-      ctaText = isCheckoutStep ? 'Complete My Purchase' : 'View My Quote';
+      intro = `Repair costs keep rising, but your saved quote for ${vehicleLine} is held at today's price.`;
+      body = "Take your cover now and keep both today's price and your £25 discount. Fully protected in a couple of minutes, with a 14-day cooling-off period if you change your mind.";
+      ctaText = isCheckoutStep ? 'Complete my purchase' : 'Continue with my quote';
       showPromo = true;
       promoCode = 'SAVE25GO';
       promoText = 'Save £25 with code';
@@ -164,9 +169,9 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
     case 'reminder_18d':
       subject = `${vehicleReg} – your £25 discount is about to expire`;
       heading = `Almost gone`;
-      intro = `Your saved quote and £25 voucher for ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''} expire in a few days.`;
-      body = "Don't miss out — pick up exactly where you left off and apply your discount automatically.";
-      ctaText = isCheckoutStep ? 'Complete My Purchase' : 'View My Quote';
+      intro = `Your saved quote and £25 voucher for ${vehicleLine} expire in a few days.`;
+      body = "Carry on where you left off and your £25 is applied for you. It takes about a minute, and your cover can start straight away.";
+      ctaText = isCheckoutStep ? 'Complete my purchase' : 'Continue with my quote';
       showPromo = true;
       promoCode = 'SAVE25GO';
       promoText = 'Save £25 with code';
@@ -174,9 +179,9 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
     case 'reminder_21d':
       subject = `${vehicleReg} – last chance, your quote expires tonight`;
       heading = `Last chance`;
-      intro = `Final reminder for your saved warranty quote on ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
-      body = "Your £25 discount and your saved quote both expire tonight. Tap below to finish in under a minute.";
-      ctaText = isCheckoutStep ? 'Complete My Purchase' : 'View My Quote';
+      intro = `Final reminder for your saved warranty quote on ${vehicleLine}.`;
+      body = "Your saved quote and your £25 discount are both valid until midnight tonight. Tap below and you'll be covered in under a minute — with 14 days to change your mind.";
+      ctaText = isCheckoutStep ? 'Complete my purchase' : 'Continue with my quote';
       showPromo = true;
       promoCode = 'SAVE25GO';
       promoText = 'Last chance: Save £25 with code';
@@ -185,9 +190,9 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
     case 'checkout_abandoned':
       subject = `${vehicleReg} - Complete your warranty purchase`;
       heading = `You're Almost There!`;
-      intro = `You were just a step away from protecting your ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
+      intro = `You were just a step away from protecting your ${vehicleLine}.`;
       body = "Your warranty details are saved and ready. Complete your purchase now to get instant cover.";
-      ctaText = 'Complete My Purchase';
+      ctaText = 'Complete my purchase';
       showPromo = true;
       promoCode = 'SAVE25GO';
       promoText = 'Complete your purchase now and save £25 with code';
@@ -212,6 +217,11 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
     : continueUrl;
   // The main CTA must carry the promo too — most people tap the button, not the code chip.
   const ctaLink = promoLink;
+
+  const unsubBase = `${Deno.env.get('SUPABASE_URL')}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(request.email)}&token=${btoa(request.email.trim().toLowerCase() + '_baw_unsub_2024')}`;
+  const unsubscribeLink = `${unsubBase}&choice=off`;
+  // "Stop quote reminders" keeps them on essentials only (no quote/promo chasers)
+  const stopRemindersLink = `${unsubBase}&choice=essentials`;
 
 
   const html = `
@@ -264,32 +274,63 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
       </div>
 
       <!-- Benefits -->
-      <div style="background-color: #f8f9fa; border-radius: 8px; padding: 18px 20px; margin: 24px 0;">
-        <p style="color: #1a1a1a; font-size: 17px; font-weight: 600; margin: 0 0 10px 0;">Your Quote Includes:</p>
-        <p style="color: #484848; font-size: 15px; line-height: 1.6; margin: 4px 0;">• Comprehensive vehicle warranty coverage</p>
-        <p style="color: #484848; font-size: 15px; line-height: 1.6; margin: 4px 0;">• UK-based customer support</p>
-        <p style="color: #484848; font-size: 15px; line-height: 1.6; margin: 4px 0;">• Easy claims, fast payouts</p>
-        <p style="color: #484848; font-size: 15px; line-height: 1.6; margin: 4px 0;">• 14-day cooling off period</p>
+      <div style="background-color: #f8f9fa; border-radius: 10px; padding: 20px; margin: 24px 0;">
+        <p style="color: #1a1a1a; font-size: 17px; font-weight: 700; margin: 0 0 14px 0;">Your quote includes</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+          <tr>
+            <td width="25%" align="center" style="padding: 6px 8px; border-right: 1px solid #e6ebf1;">
+              <div style="font-size: 22px; line-height: 1; color: #0A2A66;">&#128737;</div>
+              <div style="color: #484848; font-size: 13px; line-height: 1.4; padding-top: 8px;">Comprehensive mechanical &amp; electrical cover</div>
+            </td>
+            <td width="25%" align="center" style="padding: 6px 8px; border-right: 1px solid #e6ebf1;">
+              <div style="font-size: 22px; line-height: 1; color: #0A2A66;">&#127911;</div>
+              <div style="color: #484848; font-size: 13px; line-height: 1.4; padding-top: 8px;">UK-based team, real people</div>
+            </td>
+            <td width="25%" align="center" style="padding: 6px 8px; border-right: 1px solid #e6ebf1;">
+              <div style="font-size: 22px; line-height: 1; color: #0A2A66;">&#128203;</div>
+              <div style="color: #484848; font-size: 13px; line-height: 1.4; padding-top: 8px;">Easy claims, fast payouts to your garage</div>
+            </td>
+            <td width="25%" align="center" style="padding: 6px 8px;">
+              <div style="font-size: 22px; line-height: 1; color: #0A2A66;">&#128197;</div>
+              <div style="color: #484848; font-size: 13px; line-height: 1.4; padding-top: 8px;">14-day cooling-off period</div>
+            </td>
+          </tr>
+        </table>
       </div>
 
       <hr style="border: none; border-top: 1px solid #e6ebf1; margin: 28px 0;" />
 
       <!-- Footer -->
       <p style="color: #8898aa; font-size: 14px; line-height: 1.5; margin: 12px 0;">
-        If you have any questions about your quote, please don't hesitate to contact us.
+        Any questions about your quote? Our UK team is happy to talk it through — no pressure, no jargon.
       </p>
       <p style="color: #8898aa; font-size: 14px; line-height: 1.5; margin: 12px 0 4px;">Best regards,</p>
       <p style="color: #8898aa; font-size: 14px; line-height: 1.5; margin: 0 0 12px;">The Buy A Warranty Team</p>
-      <p style="color: #8898aa; font-size: 14px; line-height: 1.5; margin: 4px 0;">
-        <a href="https://buyawarranty.co.uk" style="color: #0066cc; text-decoration: underline;">buyawarranty.co.uk</a>
-      </p>
-      <p style="color: #8898aa; font-size: 13px; line-height: 1.5; margin: 4px 0;">📧 support@buyawarranty.co.uk</p>
-      <p style="color: #8898aa; font-size: 13px; line-height: 1.5; margin: 4px 0 24px 0;">📞 0330 229 5040</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin: 8px 0 24px;">
+        <tr>
+          <td align="center" style="padding: 6px; border-right: 1px solid #e6ebf1; font-size: 13px;">
+            <a href="https://buyawarranty.co.uk" style="color: #0066cc; text-decoration: none;">&#127760;&nbsp; buyawarranty.co.uk</a>
+          </td>
+          <td align="center" style="padding: 6px; border-right: 1px solid #e6ebf1; font-size: 13px;">
+            <a href="mailto:support@buyawarranty.co.uk" style="color: #0066cc; text-decoration: none;">&#9993;&nbsp; support@buyawarranty.co.uk</a>
+          </td>
+          <td align="center" style="padding: 6px; font-size: 13px;">
+            <a href="tel:03302295040" style="color: #0066cc; text-decoration: none;">&#128222;&nbsp; 0330 229 5040</a>
+          </td>
+        </tr>
+      </table>
 
-      <div style="border-top: 1px solid #e6ebf1; padding-top: 16px; margin-top: 16px; text-align: center;">
-        <p style="color: #aab7c4; font-size: 11px; line-height: 1.5; margin: 0;">
-          You're receiving this email because you requested a warranty quote from Buy A Warranty.<br>
-          <a href="${Deno.env.get('SUPABASE_URL')}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(request.email)}&token=${btoa(request.email.trim().toLowerCase() + '_baw_unsub_2024')}" style="color: #aab7c4; text-decoration: underline;">Unsubscribe</a> from future emails.
+      <div style="background-color: #f1f5fb; border-radius: 10px; padding: 20px; margin: 8px 0 20px;">
+        <p style="color: #1a1a1a; font-size: 15px; font-weight: 700; margin: 0 0 6px 0;">No longer interested in your warranty quote?</p>
+        <p style="color: #6b7280; font-size: 13px; line-height: 1.5; margin: 0 0 12px 0;">That's okay. You can stop these quote reminders and still hear from us about your policy, or unsubscribe from all marketing emails.</p>
+        <a href="${stopRemindersLink}" style="color: #0066cc; font-size: 13px; font-weight: 600; text-decoration: underline;">Stop quote reminders</a>
+        <span style="color: #cbd5e1; padding: 0 10px;">|</span>
+        <a href="${unsubscribeLink}" style="color: #0066cc; font-size: 13px; font-weight: 600; text-decoration: underline;">Unsubscribe from marketing emails</a>
+      </div>
+
+      <div style="border-top: 1px solid #e6ebf1; padding-top: 16px; margin-top: 8px; text-align: center;">
+        <p style="color: #aab7c4; font-size: 11px; line-height: 1.5; margin: 0 0 16px;">
+          You received this email because you requested a warranty quote from Buy A Warranty.
         </p>
       </div>
     </div>
@@ -327,6 +368,20 @@ const handler = async (req: Request): Promise<Response> => {
     if (unsub && unsub.length > 0) {
       console.log(`Skipping email - recipient ${normalizedEmail} is unsubscribed`);
       return new Response(JSON.stringify({ success: true, message: "Recipient is unsubscribed" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Respect "Stop quote reminders" (essentials-only) — no quote chasers for these recipients
+    const { data: audience } = await supabase
+      .from('marketing_audience')
+      .select('frequency')
+      .eq('email', normalizedEmail)
+      .maybeSingle();
+    if (audience?.frequency === 'essentials') {
+      console.log(`Skipping email - ${normalizedEmail} opted out of quote reminders`);
+      return new Response(JSON.stringify({ success: true, message: "Recipient opted out of quote reminders" }), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
