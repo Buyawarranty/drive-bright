@@ -31,6 +31,9 @@ const PERIODS: { value: PaymentPeriod; label: string }[] = [
 ];
 
 const EXCESS_OPTIONS = [0, 50, 100, 150, 250, 500];
+import { formatClaimLimit } from '@/lib/claimLimitTiers';
+
+// 750 / 1250 / 2000 are internal grid columns for the £1,000 / £2,000 / £3,000 tiers.
 const CLAIM_LIMITS = [750, 1250, 2000];
 const LABOUR_RATES = [50, 70, 100, 150];
 
@@ -263,7 +266,7 @@ export default function PricingEngineDraftPanel() {
                 <SelectContent>
                   {CLAIM_LIMITS.map((c) => (
                     <SelectItem key={c} value={String(c)}>
-                      £{c.toLocaleString()}
+                      {formatClaimLimit(c)}
                     </SelectItem>
                   ))}
                 </SelectContent>
