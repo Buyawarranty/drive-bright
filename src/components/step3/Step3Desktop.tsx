@@ -8,6 +8,7 @@ import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getClaimLimitSurcharge, getClaimLi
 import {
   calculateLabourRateAdjustment,
   getExcessTotalAdjustment,
+  getExcessFactor,
   applyBasePriceFloor,
   getVisibleExcessOptions,
   getExcessBracketBasis,
