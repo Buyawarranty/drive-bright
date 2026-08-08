@@ -27,13 +27,24 @@ import { Download, FileText, Mail, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 
+import logoAsset from '@/assets/buyawarranty-logo.png.asset.json';
+
+const VAT_RATE = 0.2;
+
 const COMPANY = {
   name: 'Buy A Warranty',
   website: 'www.buyawarranty.co.uk',
   email: 'support@buyawarranty.co.uk',
   phone: '0330 229 5040',
-  logoUrl: 'https://buyawarranty.co.uk/lovable-uploads/e4a0c8c7-1d74-4e55-a556-1b513ba12cc8.png',
+  logoUrl: logoAsset.url,
+  /** Absolute URL so the logo also renders inside emailed invoices. */
+  logoAbsoluteUrl: `https://buyawarranty.co.uk${logoAsset.url}`,
+  legalLine1:
+    'Buyawarranty.co.uk is a trading name of Buy A Warranty Limited. Established 2016. Registered in the United Kingdom under Company number: 10314863.',
+  legalLine2:
+    'Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England. VAT registration number 519 1099 85.',
 };
+
 
 /** Everything the invoice needs, pulled straight from the Step 2 quote. */
 export interface QuoteInvoiceSource {
@@ -285,7 +296,11 @@ const Field: React.FC<{
 
 function buildInvoiceHtml(f: ReturnType<QuoteInvoiceDialogHydrate>): string {
   const ukDate = (d: string) => (d ? format(new Date(d), 'dd/MM/yyyy') : '');
-  const amount = gbp(Number(f.amount));
+  const gross = Math.round(Number(f.amount) || 0);
+  const net = Math.round(gross / (1 + VAT_RATE));
+  const vat = gross - net;
+  const amount = gbp(gross);
+
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${f.invoiceNumber}</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
@@ -306,9 +321,10 @@ function buildInvoiceHtml(f: ReturnType<QuoteInvoiceDialogHydrate>): string {
     .row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
     .grand{font-size:18px;font-weight:bold;color:#f97316;border-top:2px solid #f97316;padding-top:10px;margin-top:10px}
     .footer{text-align:center;font-size:11px;color:#666;border-top:1px solid #e5e7eb;padding-top:18px}
+    .legal{font-size:10px;color:#777;line-height:1.6;margin-top:12px;text-align:center}
   </style></head><body>
   <div class="header">
-    <img src="${COMPANY.logoUrl}" alt="${COMPANY.name}" />
+    <img src="${COMPANY.logoAbsoluteUrl}" alt="${COMPANY.name}" />
     <div class="co"><strong>${COMPANY.name}</strong><br>${COMPANY.website}<br>${COMPANY.email}<br>${COMPANY.phone}</div>
   </div>
   <h1>INVOICE</h1>
@@ -331,12 +347,17 @@ function buildInvoiceHtml(f: ReturnType<QuoteInvoiceDialogHydrate>): string {
     </tr></tbody>
   </table>
   <div class="totals"><div>
-    <div class="row"><span>Subtotal</span><span>${amount}</span></div>
-    <div class="row"><span>VAT (0%)</span><span>£0</span></div>
-    <div class="row grand"><span>Total</span><span>${amount}</span></div>
+    <div class="row"><span>Subtotal (excl. VAT)</span><span>${gbp(net)}</span></div>
+    <div class="row"><span>VAT (20%)</span><span>${gbp(vat)}</span></div>
+    <div class="row grand"><span>Total (incl. VAT)</span><span>${amount}</span></div>
   </div></div>
   ${f.notes ? `<p style="font-size:12px;color:#555;margin-bottom:24px">${f.notes}</p>` : ''}
-  <div class="footer"><p><strong>${COMPANY.name}</strong></p><p>${COMPANY.website} · ${COMPANY.email} · ${COMPANY.phone}</p></div>
+  <div class="footer">
+    <p><strong>${COMPANY.name}</strong></p>
+    <p>${COMPANY.website} · ${COMPANY.email} · ${COMPANY.phone}</p>
+    <div class="legal"><p>${COMPANY.legalLine1}</p><p>${COMPANY.legalLine2}</p></div>
+  </div>
+
   </body></html>`;
 }
 
