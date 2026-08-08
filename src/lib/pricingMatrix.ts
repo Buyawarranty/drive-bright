@@ -249,8 +249,18 @@ export const DEFAULT_LABOUR_RATE = 70;
 // Default excess is £100
 export const DEFAULT_EXCESS = 100;
 
-// Default claim limit is £1250
+/**
+ * Default wire value for the £2,000 (Essential) tier. It stays 1250 because that
+ * exact number is written on live records, Stripe metadata and saved quotes —
+ * rewriting it would re-value existing policies. Nothing user-facing shows it:
+ * toClaimLimitColumn() maps it to the £2,000 column and getDisplayClaimLimit()
+ * renders it as "£2,000".
+ */
 export const DEFAULT_CLAIM_LIMIT = 1250;
+
+/** The grid column the default tier is priced from. */
+export const DEFAULT_CLAIM_LIMIT_COLUMN = 2000;
+
 
 // Boost claim limit adds £5/month
 export const BOOST_CLAIM_LIMIT_MONTHLY = 5;
