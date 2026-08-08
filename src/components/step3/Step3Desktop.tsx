@@ -9,6 +9,7 @@ import {
   calculateLabourRateAdjustment,
   applyBasePriceFloor,
   getVisibleExcessOptions,
+  getExcessBracketBasis,
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
@@ -144,7 +145,11 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   // - No £500 when claim limit < £3,000
   // - No £500 when the warranty itself costs £500 or less
   const visibleExcessOptions = EXCESS_OPTIONS.filter((opt) =>
-    getVisibleExcessOptions(paymentType, selectedClaimLimit, totalPrice).includes(opt.value),
+    getVisibleExcessOptions(
+      paymentType,
+      selectedClaimLimit,
+      getExcessBracketBasis(paymentType, totalPrice, voluntaryExcess),
+    ).includes(opt.value),
   );
   useEffect(() => {
     if (voluntaryExcess !== null && !visibleExcessOptions.some((o) => o.value === voluntaryExcess)) {

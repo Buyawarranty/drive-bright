@@ -44,6 +44,7 @@ import {
   calculateAdminQuoteWarrantyPrice, 
   DURATION_MONTHS,
   getVisibleExcessOptions,
+  getExcessBracketBasis,
   getLabourRateOptions,
   getWebReferencePrice,
   MAX_WEB_DISCOUNT_VS_GRID_PCT,
@@ -1215,9 +1216,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // Feed the quote total back into the excess visibility brackets (£250 unlocks
   // from £300, £500 from £500) so Q&O matches Step 3 exactly.
   useEffect(() => {
-    const total = Number(currentPrice?.totalPrice || 0) || undefined;
+    // Bracket on the £100-baseline total (same helper as Step 3/4) so the tiers
+    // never flip just because a cheaper excess is currently selected.
+    const total = getExcessBracketBasis(paymentType, currentPrice?.totalPrice, excessAmount);
     setExcessPriceBasis(prev => (prev === total ? prev : total));
-  }, [currentPrice?.totalPrice]);
+  }, [currentPrice?.totalPrice, paymentType, excessAmount]);
 
 
 
