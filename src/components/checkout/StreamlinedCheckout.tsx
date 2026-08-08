@@ -1846,8 +1846,31 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }
       });
 
-      if (checkoutError) {
-        const errorMessage = checkoutError?.message || '';
+      // Read structured error body (edge function returns non-2xx for upstream outages)
+      let errorBody: any = checkoutData && (checkoutData as any).error ? checkoutData : null;
+      if (checkoutError && (checkoutError as any).context?.json) {
+        try { errorBody = await (checkoutError as any).context.json(); } catch { /* ignore */ }
+      }
+
+      if (errorBody?.code === 'bumper_unavailable' || errorBody?.retryable) {
+        struggleTracker.reportPaymentFailed('bumper', 'bumper_unavailable');
+        toast.error(
+          errorBody?.message ||
+            "Bumper isn't responding right now. Please try again in a few minutes, or choose pay in full.",
+          {
+            duration: 12000,
+            action: {
+              label: 'Pay in Full',
+              onClick: () => { setSelectedPayment('full'); selectedPaymentRef.current = 'full'; }
+            }
+          }
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      if (checkoutError || errorBody) {
+        const errorMessage = errorBody?.message || checkoutError?.message || '';
         struggleTracker.reportPaymentFailed('bumper', errorMessage);
         if (errorMessage.includes('is not available for Bumper') || errorMessage.includes('Monthly payments are not available')) {
           toast.error('Monthly payments unavailable. Please pay in full.', {
@@ -1861,6 +1884,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         setIsLoading(false);
         return;
       }
+
 
       if (checkoutData?.url) {
         // Save pending Bumper conversion data so /thank-you can fire purchase event

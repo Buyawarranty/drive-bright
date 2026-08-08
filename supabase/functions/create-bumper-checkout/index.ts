@@ -488,22 +488,71 @@ serve(async (req) => {
       monthlyAmount
     });
 
-    // Make request to Bumper API
-    const bumperResponse = await fetch(bumperApiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(bumperRequestData),
-    });
+    // Make request to Bumper API — retry on gateway timeouts / upstream 5xx
+    const MAX_ATTEMPTS = 3;
+    let bumperResponse: Response | null = null;
+    let responseText = "";
+    let lastTransientStatus = 0;
 
-    logStep("Bumper API response received", {
-      status: bumperResponse.status,
-      statusText: bumperResponse.statusText,
-      ok: bumperResponse.ok
-    });
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 20000);
+        bumperResponse = await fetch(bumperApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bumperRequestData),
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
 
-    const responseText = await bumperResponse.text();
+        logStep("Bumper API response received", {
+          attempt,
+          status: bumperResponse.status,
+          statusText: bumperResponse.statusText,
+          ok: bumperResponse.ok
+        });
+
+        responseText = await bumperResponse.text();
+
+        const isTransient = bumperResponse.status >= 500 || bumperResponse.status === 429;
+        if (isTransient && attempt < MAX_ATTEMPTS) {
+          lastTransientStatus = bumperResponse.status;
+          logStep("Bumper transient error — retrying", { attempt, status: bumperResponse.status });
+          await new Promise((r) => setTimeout(r, attempt * 1500));
+          continue;
+        }
+        if (isTransient) lastTransientStatus = bumperResponse.status;
+        break;
+      } catch (fetchErr) {
+        lastTransientStatus = 504;
+        logStep("Bumper request failed (network/timeout)", {
+          attempt,
+          error: fetchErr instanceof Error ? fetchErr.message : String(fetchErr)
+        });
+        if (attempt < MAX_ATTEMPTS) {
+          await new Promise((r) => setTimeout(r, attempt * 1500));
+          continue;
+        }
+        bumperResponse = null;
+      }
+    }
+
+    const UPSTREAM_DOWN_MESSAGE =
+      "Bumper (our monthly payment provider) isn't responding at the moment. Please try again in a few minutes, or choose pay in full to complete your cover now.";
+
+    if (!bumperResponse) {
+      return new Response(JSON.stringify({
+        error: true,
+        code: "bumper_unavailable",
+        retryable: true,
+        message: UPSTREAM_DOWN_MESSAGE
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 503,
+      });
+    }
+
     console.log("Raw Bumper API response:", responseText);
 
     let bumperData;
@@ -513,15 +562,28 @@ serve(async (req) => {
       logStep("Bumper API response", { status: bumperResponse.status, data: bumperData });
     } catch (parseError) {
       console.log("Failed to parse Bumper API response as JSON:", parseError);
-      
+
       logStep("Bumper API returned invalid JSON", { 
         status: bumperResponse.status,
         responseText: responseText.substring(0, 500) // Limit log size
       });
-      
-      // Let Bumper handle their own response format
+
+      // Gateway timeout / HTML error page from Bumper's edge — surface a friendly retryable error
+      if (lastTransientStatus || bumperResponse.status >= 500) {
+        return new Response(JSON.stringify({
+          error: true,
+          code: "bumper_unavailable",
+          retryable: true,
+          message: UPSTREAM_DOWN_MESSAGE
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 503,
+        });
+      }
+
       throw new Error(`Bumper API returned invalid response: ${responseText.substring(0, 100)}`);
     }
+
 
     if (!bumperResponse.ok) {
       logStep("Bumper API error", { 
@@ -529,7 +591,19 @@ serve(async (req) => {
         error: bumperData,
         statusText: bumperResponse.statusText
       });
-      
+
+      if (bumperResponse.status >= 500 || bumperResponse.status === 429) {
+        return new Response(JSON.stringify({
+          error: true,
+          code: "bumper_unavailable",
+          retryable: true,
+          message: UPSTREAM_DOWN_MESSAGE
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 503,
+        });
+      }
+
       // Let Bumper handle their own error response
       throw new Error(`Bumper API error: ${bumperResponse.status} - ${bumperData?.message || 'Unknown error'}`);
     }
