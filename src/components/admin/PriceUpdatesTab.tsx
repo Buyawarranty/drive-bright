@@ -418,7 +418,17 @@ export default function PriceUpdatesTab() {
         key: String(t.key),
         factor: t.factor === null || t.factor === undefined ? null : Number(t.factor),
       })),
+      // Full hybrid model figures so Quotes & Orders quotes exactly what was pushed live.
+      modelRisks: Array.isArray(m.modelRisks) ? m.modelRisks : undefined,
+      modelFloors: Array.isArray(m.modelFloors) ? m.modelFloors : undefined,
+      claimLimits: Array.isArray(m.claimLimits) ? m.claimLimits : undefined,
+      labourRates: Array.isArray(m.labourRates) ? m.labourRates : undefined,
+      excessFactors: Array.isArray(m.excessFactors) ? m.excessFactors : undefined,
+      twoYearMult: m.twoYearMult === undefined ? undefined : Number(m.twoYearMult),
+      threeYearMult: m.threeYearMult === undefined ? undefined : Number(m.threeYearMult),
+      payInFullFactor: m.payInFullFactor === undefined ? undefined : Number(m.payInFullFactor),
     };
+
   }
 
   async function handleSave() {
