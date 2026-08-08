@@ -569,13 +569,10 @@ export function getBasePrice(
       excessData?.[String(pricingClaimLimit)] ?? excessData?.[String(DEFAULT_CLAIM_LIMIT)];
     if (typeof adminPrice === 'number') {
       const adjusted = withFactor(adminPrice);
-      return surface === 'admin'
-        ? adjusted
-        : applyCustomerJourneyUplift(
-            deriveCustomerPriceFromAdmin(adjusted, LIVE_STEP3_DISCOUNT_PCT),
-            surface
-          );
+      // Customer surface = grid − live Step 3 discount, applied EXACTLY once.
+      return applyCustomerJourneyUplift(adjusted, surface);
     }
+
   }
 
   const periodData = BASE_PRICING_MATRIX[paymentPeriod] || BASE_PRICING_MATRIX['12months'];
