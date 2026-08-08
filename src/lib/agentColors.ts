@@ -13,35 +13,37 @@ const NAMED: Record<string, number> = {
   sammie: 6,
 };
 
+// Hues are deliberately spaced far apart so no two tags look alike.
 const SOLID = [
-  'bg-emerald-600', // isobel
-  'bg-blue-600',    // james
-  'bg-violet-600',  // ash
-  'bg-orange-600',  // freddie
-  'bg-teal-600',    // thomas
-  'bg-indigo-600',  // greg
-  'bg-rose-600',    // sammie
-  'bg-cyan-600',
-  'bg-amber-600',
-  'bg-pink-600',
+  'bg-emerald-600',  // isobel  — green
+  'bg-blue-600',     // james   — blue
+  'bg-fuchsia-600',  // ash     — magenta
+  'bg-orange-500',   // freddie — orange
+  'bg-cyan-500',      // thomas  — cyan
+  'bg-red-600',      // greg    — red
+  'bg-amber-500',    // sammie  — amber
+  'bg-violet-600',
   'bg-lime-600',
+  'bg-rose-600',
   'bg-sky-600',
+  'bg-slate-600',
 ];
 
 const BADGE = [
-  'bg-emerald-100 text-emerald-800 border-emerald-300',
-  'bg-blue-100 text-blue-800 border-blue-300',
-  'bg-violet-100 text-violet-800 border-violet-300',
-  'bg-orange-100 text-orange-800 border-orange-300',
-  'bg-teal-100 text-teal-800 border-teal-300',
-  'bg-indigo-100 text-indigo-800 border-indigo-300',
-  'bg-rose-100 text-rose-800 border-rose-300',
-  'bg-cyan-100 text-cyan-800 border-cyan-300',
-  'bg-amber-100 text-amber-800 border-amber-300',
-  'bg-pink-100 text-pink-800 border-pink-300',
-  'bg-lime-100 text-lime-800 border-lime-300',
-  'bg-sky-100 text-sky-800 border-sky-300',
+  'bg-emerald-200 text-emerald-900 border-emerald-400',
+  'bg-blue-200 text-blue-900 border-blue-400',
+  'bg-fuchsia-200 text-fuchsia-900 border-fuchsia-400',
+  'bg-orange-200 text-orange-900 border-orange-400',
+  'bg-cyan-200 text-cyan-900 border-cyan-400',
+  'bg-red-200 text-red-900 border-red-400',
+  'bg-amber-200 text-amber-900 border-amber-500',
+  'bg-violet-200 text-violet-900 border-violet-400',
+  'bg-lime-200 text-lime-900 border-lime-400',
+  'bg-rose-200 text-rose-900 border-rose-400',
+  'bg-sky-200 text-sky-900 border-sky-400',
+  'bg-slate-200 text-slate-900 border-slate-400',
 ];
+
 
 const indexFor = (firstName?: string | null, id?: string | null): number => {
   const key = (firstName || '').trim().toLowerCase();
