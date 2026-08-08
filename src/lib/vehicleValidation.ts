@@ -3,7 +3,7 @@ import { hasLiveVehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
 // Vehicle validation and pricing adjustment utilities
 
 import { isVehicleBlockedByRules, MANUAL_REFERRAL_MESSAGE } from '@/lib/pricing/vehicleRules';
-import { isVehicleExcluded } from '@/lib/vehicleExclusions';
+import { isVehicleExcluded, stripCosmeticTrims } from '@/lib/vehicleExclusions';
 
 
 
@@ -293,20 +293,22 @@ export function validateVehicleEligibility(vehicleData: VehicleData): { isValid:
     };
   }
 
-  // Check specific model exclusions
+  // Check specific model exclusions (cosmetic trims like "S line" / "AMG Line" stripped first)
   if (MODEL_EXCLUSIONS[make]) {
     const excludedModels = MODEL_EXCLUSIONS[make];
     const isExcluded = excludedModels.some(excludedModel => {
       // Normalize both model strings for comparison
-      const normalizedModel = model.replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+      const normalizedModel = stripCosmeticTrims(model).replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
       const normalizedExcludedModel = excludedModel.replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
-      
+      if (!normalizedModel || !normalizedExcludedModel) return false;
+
       // Check for exact match or if the model starts with the excluded model
       return normalizedModel === normalizedExcludedModel || 
              normalizedModel.startsWith(normalizedExcludedModel + ' ') ||
              normalizedModel.includes(' ' + normalizedExcludedModel + ' ') ||
              normalizedModel.includes(' ' + normalizedExcludedModel);
     });
+
     
     if (isExcluded) {
       return {

@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
-import { isVehicleExcluded } from '../_shared/vehicleExclusions.ts';
+import { isVehicleExcluded, stripCosmeticTrims } from '../_shared/vehicleExclusions.ts';
 
 // Vehicle validation logic
 const EXCLUDED_MAKES = [
@@ -152,7 +152,7 @@ function validateVehicleEligibility(vehicleData: any): { isValid: boolean; error
     const excludedModels = (MODEL_EXCLUSIONS as any)[make];
     const isExcluded = excludedModels.some((excludedModel: any) => {
       // Normalize both model strings for comparison
-      const normalizedModel = model.replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+      const normalizedModel = stripCosmeticTrims(model).replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
       const normalizedExcludedModel = excludedModel.replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
       
       // Check for exact match or if the model starts with the excluded model

@@ -223,6 +223,34 @@ const normalise = (value?: string | null): string =>
     .replace(/\s+/g, ' ')
     .trim();
 
+/**
+ * Cosmetic trim badges that look like performance names but are standard cars:
+ * Audi "S line", Mercedes "AMG Line" / "AMG Premium" and friends. These are
+ * stripped before exclusion matching so an A4 S line or A 200 AMG Line quotes
+ * normally, while a genuine RS 4 or C 63 stays excluded.
+ */
+const COSMETIC_TRIM_PATTERNS: RegExp[] = [
+  /\bs[\s-]?line\b/g,
+  /\bsport[\s-]?line\b/g,
+  /\bamg[\s-]?line\b/g,
+  /\bamg\s*(premium|premium\s*plus|plus|night|night\s*edition|sport|styling|advanced|executive|edition)\b/g,
+];
+
+/** Performance badges that mean an "AMG" mention is a real AMG, not a trim. */
+const REAL_AMG_BADGE = /\b(35|43|45|53|55|63|65|70|73)\b|\bgt\b|\bone\b|\bblack\s*series\b/;
+
+/** Remove cosmetic trim wording from an already-normalised model string. */
+export const stripCosmeticTrims = (model?: string | null): string => {
+  let out = normalise(model);
+  for (const p of COSMETIC_TRIM_PATTERNS) out = out.replace(p, ' ');
+  out = out.replace(/\s+/g, ' ').trim();
+  // A leftover bare "amg" with no performance badge is trim wording only.
+  if (/\bamg\b/.test(out) && !REAL_AMG_BADGE.test(out.replace(/\bamg\b/g, ' '))) {
+    out = out.replace(/\bamg\b/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  return out;
+};
+
 /** True when the whole brand is excluded. */
 export const isExcludedMake = (make?: string | null): boolean => {
   const m = normalise(make);
@@ -233,7 +261,7 @@ export const isExcludedMake = (make?: string | null): boolean => {
 /** True when this specific make + model combination is excluded. */
 export const isExcludedModel = (make?: string | null, model?: string | null): boolean => {
   const m = normalise(make);
-  const mod = normalise(model);
+  const mod = stripCosmeticTrims(model);
   if (!mod) return false;
 
   if (UNIVERSAL_MODEL_PATTERNS.some((p) => p.test(mod))) return true;
@@ -247,6 +275,7 @@ export const isExcludedModel = (make?: string | null, model?: string | null): bo
   });
 };
 
+
 /** Full matrix check: brand-level or make + model level. */
 export const isVehicleExcluded = (make?: string | null, model?: string | null): boolean =>
   isExcludedMake(make) || isExcludedModel(make, model);
@@ -255,7 +284,7 @@ export const isVehicleExcluded = (make?: string | null, model?: string | null): 
 export const getExclusionReason = (make?: string | null, model?: string | null): string | null => {
   if (isExcludedMake(make)) return `${(make || '').trim()} — make not covered`;
   const m = normalise(make);
-  const mod = normalise(model);
+  const mod = stripCosmeticTrims(model);
   const combined = `${m} ${mod}`.trim();
   const rule = EXCLUDED_MODEL_RULES.find(
     (r) =>

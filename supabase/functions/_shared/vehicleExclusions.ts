@@ -46,6 +46,25 @@ const UNIVERSAL_MODEL_PATTERNS: RegExp[] = [/\bkit\s*car\b/, /\breplica\b/, /\bg
 const normalise = (value?: string | null): string =>
   (value || '').toLowerCase().replace(/[^\w\s-]/g, ' ').replace(/\s+/g, ' ').trim();
 
+/** Cosmetic trims (Audi "S line", Mercedes "AMG Line") — standard cars, not performance models. */
+const COSMETIC_TRIM_PATTERNS: RegExp[] = [
+  /\bs[\s-]?line\b/g,
+  /\bsport[\s-]?line\b/g,
+  /\bamg[\s-]?line\b/g,
+  /\bamg\s*(premium|premium\s*plus|plus|night|night\s*edition|sport|styling|advanced|executive|edition)\b/g,
+];
+const REAL_AMG_BADGE = /\b(35|43|45|53|55|63|65|70|73)\b|\bgt\b|\bone\b|\bblack\s*series\b/;
+
+export const stripCosmeticTrims = (model?: string | null): string => {
+  let out = normalise(model);
+  for (const p of COSMETIC_TRIM_PATTERNS) out = out.replace(p, ' ');
+  out = out.replace(/\s+/g, ' ').trim();
+  if (/\bamg\b/.test(out) && !REAL_AMG_BADGE.test(out.replace(/\bamg\b/g, ' '))) {
+    out = out.replace(/\bamg\b/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  return out;
+};
+
 export const isExcludedMake = (make?: string | null): boolean => {
   const m = normalise(make);
   if (!m) return false;
@@ -54,7 +73,7 @@ export const isExcludedMake = (make?: string | null): boolean => {
 
 export const isExcludedModel = (make?: string | null, model?: string | null): boolean => {
   const m = normalise(make);
-  const mod = normalise(model);
+  const mod = stripCosmeticTrims(model);
   if (!mod) return false;
   if (UNIVERSAL_MODEL_PATTERNS.some((p) => p.test(mod))) return true;
   const combined = `${m} ${mod}`.trim();
@@ -64,6 +83,7 @@ export const isExcludedModel = (make?: string | null, model?: string | null): bo
     return rule.patterns.some((p) => p.test(mod) || p.test(combined));
   });
 };
+
 
 export const isVehicleExcluded = (make?: string | null, model?: string | null): boolean =>
   isExcludedMake(make) || isExcludedModel(make, model);
