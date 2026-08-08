@@ -20,37 +20,94 @@ import { getVehicleRuleMinPrice } from './pricing/vehicleRules';
 // Base pricing matrix - 3% INCREASE applied (Jun 2026), floored to whole numbers
 // Previous baseline was the May 2026 +12% matrix; all values multiplied by 1.03 and floored.
 // These are the base prices at £70/hr labour rate (DEFAULT)
+//
+// CLAIM-LIMIT COLUMNS ARE THE REAL COVER LEVELS: 1000 / 2000 / 3000.
+// The retired internal names (750 / 1250 / 2000) are gone from the grid — anything
+// still arriving with an old number is normalised by toClaimLimitColumn() below,
+// so every price is byte-identical to before the rename.
+//
 // NOTE: Admin Quotes & Orders pages apply an additional +10% markup on top via
 // calculateAdminQuoteWarrantyPrice (see below). Customer website Steps 1–4 use this
 // matrix unchanged.
 export const BASE_PRICING_MATRIX = {
   // +5% uplift applied (Jul 2026) to 12 months ONLY — 2yr/3yr unchanged.
   '12months': {
-    0: { 750: 486, 1250: 516, 2000: 613 },
-    50: { 750: 454, 1250: 475, 2000: 569 },
-    100: { 750: 402, 1250: 433, 2000: 529 },
-    150: { 750: 357, 1250: 402, 2000: 497 },
-    250: { 750: 277, 1250: 326, 2000: 417 },
-    500: { 750: 177, 1250: 200, 2000: 247 }
+    0: { 1000: 486, 2000: 516, 3000: 613 },
+    50: { 1000: 454, 2000: 475, 3000: 569 },
+    100: { 1000: 402, 2000: 433, 3000: 529 },
+    150: { 1000: 357, 2000: 402, 3000: 497 },
+    250: { 1000: 277, 2000: 326, 3000: 417 },
+    500: { 1000: 177, 2000: 200, 3000: 247 }
   },
   // +20% uplift applied (Jul 2026) to 2yr and 3yr only — 12 months unchanged.
   '24months': {
-    0: { 750: 1071, 1250: 1119, 2000: 1226 },
-    50: { 750: 988, 1250: 1047, 2000: 1142 },
-    100: { 750: 879, 1250: 939, 2000: 1047 },
-    150: { 750: 831, 1250: 879, 2000: 988 },
-    250: { 750: 650, 1250: 718, 2000: 829 },
-    500: { 750: 415, 1250: 469, 2000: 562 }
+    0: { 1000: 1071, 2000: 1119, 3000: 1226 },
+    50: { 1000: 988, 2000: 1047, 3000: 1142 },
+    100: { 1000: 879, 2000: 939, 3000: 1047 },
+    150: { 1000: 831, 2000: 879, 3000: 988 },
+    250: { 1000: 650, 2000: 718, 3000: 829 },
+    500: { 1000: 415, 2000: 469, 3000: 562 }
   },
   '36months': {
-    0: { 750: 1609, 1250: 1669, 2000: 1789 },
-    50: { 750: 1490, 1250: 1549, 2000: 1669 },
-    100: { 750: 1309, 1250: 1407, 2000: 1527 },
-    150: { 750: 1250, 1250: 1309, 2000: 1429 },
-    250: { 750: 1010, 1250: 1052, 2000: 1167 },
-    500: { 750: 802, 1250: 844, 2000: 960 }
+    0: { 1000: 1609, 2000: 1669, 3000: 1789 },
+    50: { 1000: 1490, 2000: 1549, 3000: 1669 },
+    100: { 1000: 1309, 2000: 1407, 3000: 1527 },
+    150: { 1000: 1250, 2000: 1309, 3000: 1429 },
+    250: { 1000: 1010, 2000: 1052, 3000: 1167 },
+    500: { 1000: 802, 2000: 844, 3000: 960 }
   }
 } as const;
+
+/** The only claim-limit columns the grid has, named after the cover they sell. */
+export const CLAIM_LIMIT_COLUMNS = [1000, 2000, 3000] as const;
+
+/** Retired internal column name → the cover level it always meant. */
+export const RETIRED_CLAIM_COLUMN_NAMES: Record<number, number> = {
+  750: 1000,
+  1250: 2000,
+};
+
+/** Canonical column → the retired key older saved grids used for it. */
+export const RETIRED_KEY_FOR_COLUMN: Record<number, number> = {
+  1000: 750,
+  2000: 1250,
+  3000: 2000,
+};
+
+/**
+ * Which grid column a claim limit is priced from. This preserves exactly the
+ * behaviour that was live before the rename:
+ *   £1,000 (or retired 750)      → the £1,000 column
+ *   retired 1250                 → the £2,000 column
+ *   £2,000 / £3,000 / £5,000     → the £3,000 column (£3,000 and £5,000 then add
+ *                                  their published step on top)
+ * The multi-year £2,000 promo is handled separately in getBasePrice().
+ */
+export function toClaimLimitColumn(claimLimit?: number | null): 1000 | 2000 | 3000 {
+  const raw = Number(claimLimit);
+  if (!Number.isFinite(raw)) return 2000;
+  const normalised = RETIRED_CLAIM_COLUMN_NAMES[raw] ?? raw;
+  if (normalised <= 1000) return 1000;
+  if (normalised === 2000) return 2000;
+  return 3000;
+}
+
+/**
+ * Read a grid cell by canonical column, falling back to the retired key so
+ * pricing versions saved before the rename keep working untouched.
+ */
+export function readClaimColumn(
+  cells: Record<string, number> | undefined,
+  column: number
+): number | undefined {
+  if (!cells) return undefined;
+  const direct = cells[String(column)];
+  if (typeof direct === 'number') return direct;
+  const legacyKey = RETIRED_KEY_FOR_COLUMN[column];
+  const legacy = legacyKey !== undefined ? cells[String(legacyKey)] : undefined;
+  return typeof legacy === 'number' ? legacy : undefined;
+}
+
 
 // Marketing savings display (NOT actual discounts - just for "Was £X" display)
 export const MARKETING_SAVINGS: Record<string, number> = {
