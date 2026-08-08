@@ -139,11 +139,12 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
     : [...CLAIM_LIMIT_TIERS];
 
-  // Filter excess options by term + claim limit:
+  // Filter excess options by term + claim limit + warranty price:
   // - No £500 on 1-year cover
   // - No £500 when claim limit < £3,000
+  // - No £500 when the warranty itself costs £500 or less
   const visibleExcessOptions = EXCESS_OPTIONS.filter((opt) =>
-    getVisibleExcessOptions(paymentType, selectedClaimLimit).includes(opt.value),
+    getVisibleExcessOptions(paymentType, selectedClaimLimit, totalPrice).includes(opt.value),
   );
   useEffect(() => {
     if (voluntaryExcess !== null && !visibleExcessOptions.some((o) => o.value === voluntaryExcess)) {
