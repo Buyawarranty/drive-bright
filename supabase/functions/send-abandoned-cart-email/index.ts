@@ -373,6 +373,20 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
+    // Respect "Stop quote reminders" (essentials-only) — no quote chasers for these recipients
+    const { data: audience } = await supabase
+      .from('marketing_audience')
+      .select('frequency')
+      .eq('email', normalizedEmail)
+      .maybeSingle();
+    if (audience?.frequency === 'essentials') {
+      console.log(`Skipping email - ${normalizedEmail} opted out of quote reminders`);
+      return new Response(JSON.stringify({ success: true, message: "Recipient opted out of quote reminders" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
 
     // Check if we've already sent this type of email for this specific cart
     const { data: recentEmails, error: checkError } = await supabase
