@@ -135,7 +135,11 @@ const AugHybridVsLivePanel: React.FC<{
             getModel: () => liveModel,
             getPreflightExtras: () => liveModel
               ? {
-                  adminMatrix: buildAdminMatrixFromModel(liveModel),
+                  adminMatrix: buildAdminMatrixFromModel({
+                    ...liveModel,
+                    refBandKey: liveModel.refBandKey ?? liveModel.bands?.[0]?.key ?? '',
+                    websiteDiscountPct: liveModel.websiteDiscountPct ?? 10,
+                  }),
                   labourRateFactors: liveModel.labourRates,
                 }
               : null,
@@ -147,7 +151,11 @@ const AugHybridVsLivePanel: React.FC<{
               'Publishes the hybrid variables exactly as set above: reduced base, compressed risk/mileage spread and the multi-year discounts.',
             getModel: () => hybridModel,
             getPreflightExtras: () => ({
-              adminMatrix: buildAdminMatrixFromModel(hybridModel),
+              adminMatrix: buildAdminMatrixFromModel({
+                ...hybridModel,
+                refBandKey: hybridModel.bands[0]?.key ?? '',
+                websiteDiscountPct: 10,
+              }),
               labourRateFactors: hybridModel.labourRates,
             }),
           },

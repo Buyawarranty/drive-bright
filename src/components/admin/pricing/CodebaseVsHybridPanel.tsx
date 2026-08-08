@@ -168,7 +168,11 @@ const CodebaseVsHybridPanel: React.FC<{
             description: 'Publishes the flat July 2026 code-base grid.',
             getModel: () => codeBaseModel,
             getPreflightExtras: () => ({
-              adminMatrix: buildAdminMatrixFromModel(codeBaseModel),
+              adminMatrix: buildAdminMatrixFromModel({
+                ...codeBaseModel,
+                refBandKey: codeBaseModel.bands[0]?.key ?? '',
+                websiteDiscountPct: 10,
+              }),
               labourRateFactors: codeBaseModel.labourRates,
             }),
           },
@@ -178,7 +182,11 @@ const CodebaseVsHybridPanel: React.FC<{
             description: 'Publishes the hybrid variables exactly as set above.',
             getModel: () => hybridModel,
             getPreflightExtras: () => ({
-              adminMatrix: buildAdminMatrixFromModel(hybridModel),
+              adminMatrix: buildAdminMatrixFromModel({
+                ...hybridModel,
+                refBandKey: hybridModel.bands[0]?.key ?? '',
+                websiteDiscountPct: 10,
+              }),
               labourRateFactors: hybridModel.labourRates,
             }),
           },
