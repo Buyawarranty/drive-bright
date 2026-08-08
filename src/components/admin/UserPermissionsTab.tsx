@@ -353,23 +353,38 @@ export const UserPermissionsTab = () => {
         return { id: u.id, permissions: nextPerms };
       });
 
-      const results = await Promise.allSettled(
-        updates.map(u =>
-          supabase.from('admin_users').update({ permissions: u.permissions }).eq('id', u.id)
-        )
+      // IMPORTANT: verify the write actually landed. A blocked row-level policy
+      // returns no error but updates 0 rows, which used to look like success.
+      const results = await Promise.all(
+        updates.map(async u => {
+          const { data, error } = await supabase
+            .from('admin_users')
+            .update({ permissions: u.permissions })
+            .eq('id', u.id)
+            .select('id, permissions');
+          if (error) return { id: u.id, ok: false, message: error.message };
+          if (!data || data.length === 0) {
+            return { id: u.id, ok: false, message: 'no rows updated (access blocked)' };
+          }
+          return { id: u.id, ok: true, permissions: (data[0] as any).permissions as Record<string, boolean> };
+        })
       );
 
-      const failed = results.filter(r => r.status === 'rejected').length;
-      if (failed > 0) {
-        toast.error(`${failed} user(s) failed to update`);
+      const failures = results.filter(r => !r.ok);
+      if (failures.length > 0) {
+        console.error('Bulk permission failures:', failures);
+        toast.error(`${failures.length} user(s) failed to update: ${failures[0].message}`);
       } else {
-        toast.success(`Updated ${affectedUsers.length} user(s) across ${bulkTabs.size} section(s)`);
+        toast.success(`Updated ${results.length} user(s) across ${bulkTabs.size} section(s)`);
       }
 
-      // Merge into local state
-      const patchMap = new Map(updates.map(u => [u.id, u.permissions]));
+      // Merge the server-confirmed permissions back into local state
+      const patchMap = new Map(
+        results.filter(r => r.ok).map(r => [r.id, (r as any).permissions as Record<string, boolean>])
+      );
       setUsers(prev => prev.map(u => patchMap.has(u.id) ? { ...u, permissions: patchMap.get(u.id)! } : u));
       setBulkTabs(new Set());
+
     } catch (err: any) {
       console.error('Bulk apply error:', err);
       toast.error(err.message || 'Bulk update failed');
