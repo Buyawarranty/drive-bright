@@ -327,17 +327,26 @@ function nearestMultiplier(table: Record<number, number>, value?: number): numbe
 export const MOTORBIKE_PRICE_MULTIPLIER = 0.5;
 
 /**
- * Customer journey (Step 3 → Step 4) only uplift: +10% on the base price and the
- * base price floor, rounded to whole pounds. Admin Quotes & Orders pricing is
- * NOT affected (it reads the same grid with surface = 'admin').
+ * Customer journey (Step 3 → Step 4) surface factor.
+ * The website price is ALWAYS the admin Quotes & Orders price minus the live
+ * Step 3 discount (10% by default) — never more expensive. This factor is applied
+ * to the base price AND to the minimum base price floor, so a floor-bound vehicle
+ * still shows 10% below the grid instead of overtaking it.
+ * Admin Quotes & Orders reads the same grid with surface = 'admin' (factor 1).
  * Dealer portal has its own engine and is unaffected.
  */
-export const CUSTOMER_JOURNEY_PRICE_MULTIPLIER = 1.10;
+export const CUSTOMER_JOURNEY_PRICE_MULTIPLIER = 1.0;
 
+export function getCustomerSurfaceFactor(): number {
+  return 1 - clampWebDiscountPct(LIVE_STEP3_DISCOUNT_PCT) / 100;
+}
+
+/** Convert an admin-grid figure to the customer-journey figure (grid − discount%). */
 export function applyCustomerJourneyUplift(price: number, surface: PricingSurface = 'customer'): number {
   if (surface === 'admin') return price;
-  return Math.ceil(price * CUSTOMER_JOURNEY_PRICE_MULTIPLIER);
+  return Math.ceil(price * getCustomerSurfaceFactor());
 }
+
 
 export function applyBasePriceFloor(
   adjustedBasePrice: number,
