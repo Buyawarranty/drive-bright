@@ -371,13 +371,19 @@ export function applyBasePriceFloor(
   claimLimit?: number
 ): number {
   const minBase = MIN_BASE_PRICE_BY_PERIOD[paymentPeriod] ?? 0;
+  // Claim limits above the grid's top column (£2,000) are charged as a separate
+  // surcharge on top of the base, so the floor must NOT step for them too —
+  // otherwise a floor-bound vehicle gets the uplift twice.
+  const floorClaimLimit =
+    typeof claimLimit === 'number' && claimLimit > 2000 ? 2000 : claimLimit;
   // Shape the floor by excess and claim limit so the customer always sees the
   // price move when they change an option, even if the published grid is flat.
   const rawFloor = Math.round(
     minBase *
       nearestMultiplier(EXCESS_FLOOR_MULTIPLIER, voluntaryExcess) *
-      nearestMultiplier(CLAIM_LIMIT_FLOOR_MULTIPLIER, claimLimit)
+      nearestMultiplier(CLAIM_LIMIT_FLOOR_MULTIPLIER, floorClaimLimit)
   );
+
   const upliftedFloor = applyCustomerJourneyUplift(rawFloor, surface);
   const effectiveFloor = isMotorbike
     ? Math.ceil(upliftedFloor * MOTORBIKE_PRICE_MULTIPLIER)
