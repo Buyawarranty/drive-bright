@@ -302,12 +302,38 @@ export const EXCESS_TIER_STEP_BY_PERIOD: Record<PaymentPeriod, number> = {
  * Ratios come from the reference grid so the steps feel the same as the matrix.
  */
 export const EXCESS_FLOOR_MULTIPLIER: Record<number, number> = {
-  0: 1.0,
-  50: 1.0,
+  0: 1.08,
+  50: 1.04,
   100: 1.0,
-  150: 1.0,
-  250: 1.0,
-  500: 1.0,
+  150: 0.97,
+  250: 0.87,
+  500: 0.8,
+};
+
+/**
+ * Voluntary excess pricing is PROPORTIONAL to the price of the cover, anchored on
+ * the £100 "Balanced" tier (= 1.00). A flat £/mo table made the tiers collapse:
+ * on a £700 warranty £0 excess and £500 excess were only a few pounds apart.
+ *
+ * The curve keeps the agreed shape: £250 ≈ 10% below £150, £500 ≈ 18% below £150.
+ */
+export const EXCESS_PRICE_FACTOR: Record<number, number> = {
+  0: 1.08,
+  50: 1.04,
+  100: 1.0,
+  150: 0.97,
+  250: 0.87,
+  500: 0.8,
+};
+
+/**
+ * Fallback £/mo table, used only when a caller has no base price to scale from
+ * (e.g. a hint rendered before the vehicle is priced). Never the primary path.
+ */
+export const EXCESS_MONTHLY_DELTA: Record<PaymentPeriod, Record<number, number>> = {
+  '12months': { 0: 5, 50: 3, 100: 0, 150: -2, 250: -5, 500: -9 },
+  '24months': { 0: 3, 50: 2, 100: 0, 150: -1, 250: -3, 500: -5 },
+  '36months': { 0: 2, 50: 1, 100: 0, 150: -1, 250: -2, 500: -3 },
 };
 
 /**
@@ -317,30 +343,9 @@ export const EXCESS_FLOOR_MULTIPLIER: Record<number, number> = {
 export const EXCESS_BASELINE = 100;
 
 /**
- * Voluntary excess price difference, expressed as £ per monthly instalment
- * (instalments are always 12, so the total adjustment is delta × 12).
- * Positive = costs more (lower excess), negative = saving (higher excess).
- */
-/**
- * £/mo difference vs the £100 "Balanced" baseline, per term.
- *
- * IMPORTANT: each term is a standalone table. 24 and 36 month instalments are
- * stored ready for when those instalment plans launch — they must NEVER be
- * derived from, blended with, or fall back to the 12 month figures.
- */
-export const EXCESS_MONTHLY_DELTA: Record<PaymentPeriod, Record<number, number>> = {
-  // Live today
-  '12months': { 0: 5, 50: 3, 100: 0, 150: -2, 250: -5, 500: -9 },
-  // Stored for future instalment plans (not yet live)
-  '24months': { 0: 3, 50: 2, 100: 0, 150: -1, 250: -3, 500: -5 },
-  '36months': { 0: 2, 50: 1, 100: 0, 150: -1, 250: -2, 500: -3 },
-};
-
-/**
  * How many instalments a term is actually charged over.
  * TODAY every cover term is billed over 12 instalments, so 24/36 month cover
- * still divides by 12. When 24/36 month instalment plans launch, flip these to
- * 24/36 — the per-term delta tables above are already stored for that day.
+ * still divides by 12.
  */
 export const TERM_INSTALMENT_MONTHS: Record<PaymentPeriod, number> = {
   '12months': 12,
@@ -348,9 +353,23 @@ export const TERM_INSTALMENT_MONTHS: Record<PaymentPeriod, number> = {
   '36months': 12,
 };
 
+/** Price factor vs the £100 baseline for the given excess (nearest tier). */
+export function getExcessFactor(excess?: number | null): number {
+  return nearestMultiplier(EXCESS_PRICE_FACTOR, Number(excess ?? EXCESS_BASELINE));
+}
+
 /** £ per month difference vs the £100 baseline for the given term + excess. */
-export function getExcessMonthlyDelta(paymentPeriod: PaymentPeriod, excess: number): number {
-  // No cross-term fallback: an unknown term returns 0 rather than borrowing the 12mo table.
+export function getExcessMonthlyDelta(
+  paymentPeriod: PaymentPeriod,
+  excess: number,
+  /** Base (pre-excess) total for this term — makes the delta proportional. */
+  basePrice?: number | null,
+): number {
+  const months = TERM_INSTALMENT_MONTHS[paymentPeriod] ?? 12;
+  const base = Number(basePrice);
+  if (Number.isFinite(base) && base > 0) {
+    return Math.round((base * (getExcessFactor(excess) - 1)) / months);
+  }
   const table = EXCESS_MONTHLY_DELTA[paymentPeriod];
   if (!table) return 0;
   if (table[excess] !== undefined) return table[excess];
@@ -360,8 +379,17 @@ export function getExcessMonthlyDelta(paymentPeriod: PaymentPeriod, excess: numb
   return table[nearest] ?? 0;
 }
 
-/** Total price difference vs the £100 baseline, over the instalments actually charged. */
-export function getExcessTotalAdjustment(paymentPeriod: PaymentPeriod, excess: number): number {
+/** Total price difference vs the £100 baseline for the chosen excess. */
+export function getExcessTotalAdjustment(
+  paymentPeriod: PaymentPeriod,
+  excess: number,
+  /** Base (pre-excess) total for this term — makes the adjustment proportional. */
+  basePrice?: number | null,
+): number {
+  const base = Number(basePrice);
+  if (Number.isFinite(base) && base > 0) {
+    return Math.round(base * (getExcessFactor(excess) - 1));
+  }
   const months = TERM_INSTALMENT_MONTHS[paymentPeriod] ?? 12;
   return getExcessMonthlyDelta(paymentPeriod, excess) * months;
 }
@@ -858,7 +886,7 @@ export function calculateTotalWarrantyPrice(params: {
 
   // 6. Add protection add-ons (Transfer Cover is £19 one-off, handled by caller)
   // 5b. Voluntary excess difference (explicit £/mo table, £100 = £0)
-  const excessAdjustment = getExcessTotalAdjustment(paymentPeriod, voluntaryExcess);
+  const excessAdjustment = getExcessTotalAdjustment(paymentPeriod, voluntaryExcess, flooredBase);
 
   const rawTotal = flooredBase + labourAdjustment + boostAdjustment + excessAdjustment + addOnPrice;
   // A model-specific minimum is absolute: a £50/hr labour discount can never take the
@@ -983,11 +1011,9 @@ export function getExcessBracketBasis(
 ): number | undefined {
   const total = Number(totalPrice);
   if (!Number.isFinite(total) || total <= 0) return undefined;
-  const adjustment = getExcessTotalAdjustment(
-    paymentType as PaymentPeriod,
-    Number(selectedExcess ?? 100),
-  );
-  return total - adjustment;
+  // Excess is proportional, so undo it by dividing by the selected tier's factor.
+  const factor = getExcessFactor(selectedExcess);
+  return factor > 0 ? Math.round(total / factor) : total;
 }
 
 

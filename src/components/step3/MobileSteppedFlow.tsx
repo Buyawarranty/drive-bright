@@ -416,7 +416,11 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                     ),
                   ).includes(ex.value),
                 ).map(ex => {
-                  const delta = getExcessMonthlyDelta((paymentType || '24months') as PaymentPeriod, ex.value);
+                  const delta = getExcessMonthlyDelta(
+                    (paymentType || '24months') as PaymentPeriod,
+                    ex.value,
+                    getExcessBracketBasis(paymentType || '24months', currentMonthlyPrice ? currentMonthlyPrice * 12 : null, voluntaryExcess),
+                  );
                   const selected = voluntaryExcess === ex.value;
                   return (
                     <button

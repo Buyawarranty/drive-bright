@@ -1,5 +1,5 @@
 import { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
-import { getExcessTotalAdjustment } from '@/lib/pricingMatrix';
+import { getExcessTotalAdjustment, getExcessFactor } from '@/lib/pricingMatrix';
 
 
 /**
@@ -168,13 +168,6 @@ export function priceFromPricingModel(
     l => Number(l.rate) === Number(options.labourRate),
     l => Math.abs(Number(l.rate) - Number(options.labourRate))
   );
-  // Excess is NOT a multiplier here. Quotes & Orders uses exactly the same
-  // 12-instalment logic as the customer journey: a flat £/mo difference vs the
-  // £100 "Balanced" baseline, applied once to the whole-term total.
-  const excessAdjustment = getExcessTotalAdjustment(
-    options.paymentPeriod as '12months' | '24months' | '36months',
-    Number(options.voluntaryExcess)
-  );
 
   const annualBase =
     Number(ageBand.oneYear) *
@@ -187,7 +180,17 @@ export function priceFromPricingModel(
   const floored = modelFloor ? Math.max(annualBase, modelFloor) : annualBase;
   const annual = floored * claimFactor * labourFactor;
 
-  let total = annual * termMult + excessAdjustment;
+  // Excess is PROPORTIONAL to the price of the cover (£100 "Balanced" = baseline),
+  // exactly as the customer journey prices it — a flat £/mo table made £0 and £500
+  // land within a few pounds of each other on a normal quote.
+  const baseTermTotal = annual * termMult;
+  const excessAdjustment = getExcessTotalAdjustment(
+    options.paymentPeriod as '12months' | '24months' | '36months',
+    Number(options.voluntaryExcess),
+    baseTermTotal
+  );
+
+  let total = baseTermTotal + excessAdjustment;
   if (options.transferCover) total += 19;
   total = Math.round(total);
 
@@ -211,7 +214,12 @@ export function priceFromPricingModel(
     (refLabourFactor > 0 ? labourFactor / refLabourFactor : 1);
 
   const minSellable = Math.round(
-    (MIN_SELLABLE_BY_MONTHS[months] ?? 399) * motorbikeFactor * floorShape + excessAdjustment
+    // The floor is shaped by the SAME excess factor, so a floor-bound vehicle still
+    // steps between £0 and £500 excess instead of collapsing onto one price.
+    (MIN_SELLABLE_BY_MONTHS[months] ?? 399) *
+      motorbikeFactor *
+      floorShape *
+      getExcessFactor(Number(options.voluntaryExcess))
   );
   const belowMinimum = total < minSellable;
   if (belowMinimum) total = minSellable;

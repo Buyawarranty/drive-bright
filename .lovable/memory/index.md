@@ -16,6 +16,7 @@ Updated: just now
 - Revenue metrics must exclude 'cancelled' or 'refunded' orders and prioritize `signup_date`.
 - Lead rotation NEVER catches an agent up: new starters, holiday returns and late starts rejoin at the back and take normal turns. Never order by assigned_today. See mem://admin/leads/late-start-agents
 - SEO work = visual/structural/wording ONLY. Never touch pricing, APIs, integrations, or tracking tags. See mem://constraints/seo-work-visual-only
+- Voluntary excess is a % factor of the cover price (£100 = 1.00; £0 1.08 → £500 0.80), never a flat £/mo table. See mem://pricing/excess-proportional-factors
 - Price floor is shaped by excess + claim limit; never clamp grid cells cell-by-cell. See mem://pricing/floor-must-not-flatten-options
 
 - Pricing test panels must offer the exact Step 3/4 options from src/lib/pricing/journeyOptions.ts. See mem://pricing/sandbox-step3-parity

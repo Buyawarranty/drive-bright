@@ -8,6 +8,7 @@ import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getClaimLimitSurcharge, getClaimLi
 import {
   calculateLabourRateAdjustment,
   getExcessTotalAdjustment,
+  getExcessFactor,
   applyBasePriceFloor,
   getVisibleExcessOptions,
   getExcessBracketBasis,
@@ -193,20 +194,19 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     // to match PricingTable's basePlanPrice + boostTotalAdjustment formula
     const boostTotalAdjust = 0; // boostAddon not currently passed to Step3Desktop; included as 0 for parity
 
-    const total = adjustedBasePrice + labourTotalAdjust + durationAddOnPrice + cardPremiumSurcharge + boostTotalAdjust + getExcessTotalAdjustment(durationId as PaymentPeriod, voluntaryExcess ?? 100);
+    const total = adjustedBasePrice + labourTotalAdjust + durationAddOnPrice + cardPremiumSurcharge + boostTotalAdjust + getExcessTotalAdjustment(durationId as PaymentPeriod, voluntaryExcess ?? 100, adjustedBasePrice);
     return Math.ceil(total / 12);
   };
 
-  // Approx +£/mo for excess pills (relative to current selection)
+  // Approx +£/mo for excess pills (relative to current selection). Excess is
+  // proportional, so the step is derived from the tier factors, not the grid cells.
   const excessPillSubText = (amount: number): string => {
-    if (voluntaryExcess === null || !selectedClaimLimit || !paymentType) {
-      return EXCESS_OPTIONS.find(e => e.value === amount)?.sub || '';
-    }
-    const baseCurrent = getPricingData(voluntaryExcess, selectedClaimLimit, paymentType);
-    const baseAt = getPricingData(amount, selectedClaimLimit, paymentType);
-    const diffMonthly = Math.round((baseAt - baseCurrent) / 12);
-    if (amount === voluntaryExcess) return EXCESS_OPTIONS.find(e => e.value === amount)?.sub || '';
-    if (diffMonthly === 0) return EXCESS_OPTIONS.find(e => e.value === amount)?.sub || '';
+    const sub = EXCESS_OPTIONS.find(e => e.value === amount)?.sub || '';
+    if (voluntaryExcess === null || !monthlyPrice || amount === voluntaryExcess) return sub;
+    const currentFactor = getExcessFactor(voluntaryExcess);
+    if (!currentFactor) return sub;
+    const diffMonthly = Math.round(monthlyPrice * (getExcessFactor(amount) / currentFactor - 1));
+    if (diffMonthly === 0) return sub;
     return diffMonthly > 0 ? `+£${diffMonthly}/mo` : `−£${Math.abs(diffMonthly)}/mo`;
   };
 

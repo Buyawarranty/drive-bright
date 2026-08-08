@@ -4114,7 +4114,11 @@ Questions? Call 0330 229 5040`;
                   <div className="grid grid-cols-3 gap-2">
                     {excessOptions.map((excess) => {
                       const meta = JOURNEY_EXCESS_OPTIONS.find(o => o.value === excess);
-                      const delta = getExcessMonthlyDelta(paymentType as PaymentPeriod, excess);
+                      const delta = getExcessMonthlyDelta(
+                        paymentType as PaymentPeriod,
+                        excess,
+                        excessPriceBasis,
+                      );
                       return (
                         <button
                           key={excess}
