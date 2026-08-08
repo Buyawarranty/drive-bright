@@ -229,7 +229,7 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* Mobile-first padding adjustments */
-    @media only screen and (max-width: 600px) {
+    @media only screen and (max-width: 620px) {
       .baw-content { padding: 0 20px !important; }
       .baw-header { padding: 20px 16px !important; }
       .baw-promo-code { font-size: 20px !important; padding: 12px 18px !important; letter-spacing: 1.5px !important; }
@@ -237,9 +237,10 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
       .baw-h1 { font-size: 20px !important; }
     }
   </style>
+  ${EMAIL_RESPONSIVE_STYLE}
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Ubuntu, sans-serif; background-color: #f6f9fc;">
-  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+  <div class="baw-wrap" style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
     <!-- Header -->
     <div class="baw-header" style="padding: 24px; text-align: center;">
       <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" width="180" alt="Buy A Warranty" style="margin: 0 auto; max-width: 100%; height: auto;" />
