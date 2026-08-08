@@ -296,7 +296,11 @@ const Field: React.FC<{
 
 function buildInvoiceHtml(f: ReturnType<QuoteInvoiceDialogHydrate>): string {
   const ukDate = (d: string) => (d ? format(new Date(d), 'dd/MM/yyyy') : '');
-  const amount = gbp(Number(f.amount));
+  const gross = Math.round(Number(f.amount) || 0);
+  const net = Math.round(gross / (1 + VAT_RATE));
+  const vat = gross - net;
+  const amount = gbp(gross);
+
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${f.invoiceNumber}</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
