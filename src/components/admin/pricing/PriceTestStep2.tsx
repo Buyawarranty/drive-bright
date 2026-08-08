@@ -11,7 +11,13 @@ import { formatGBP } from '@/lib/pricingMatrix';
 import { MANUAL_REFERRAL_MESSAGE } from './AgeBandPricingPreview';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
-import { getVisibleExcessOptions } from '@/lib/pricingMatrix';
+import {
+  getVisibleExcessOptions,
+  getExcessMonthlyDelta,
+  getExcessTotalAdjustment,
+  type PaymentPeriod,
+} from '@/lib/pricingMatrix';
+
 import { calculateAddOnPrice } from '@/lib/addOnsUtils';
 import { getExclusionReason, EXCLUSION_MESSAGE } from '@/lib/vehicleExclusions';
 import {
