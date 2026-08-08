@@ -1,4 +1,6 @@
 import { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
+import { getExcessTotalAdjustment } from '@/lib/pricingMatrix';
+
 
 /**
  * SHARED PRICE ENGINE for the age-band pricing model.
