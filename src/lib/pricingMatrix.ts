@@ -793,15 +793,15 @@ export function formatGBP(amount: number, showPence = false): string {
 
 /**
  * Which excesses are available, by warranty price bracket:
- *   £200–£299  → £0 / £50 / £100 / £150
- *   £300–£499  → £0 / £50 / £100 / £150 / £250
+ *   under £500  → £0 / £50 / £100 / £150
  *   £500–£3,000 → £0 / £50 / £100 / £150 / £250 / £500
+
  */
 export const EXCESS_PRICE_BRACKETS: { minPrice: number; options: number[] }[] = [
   { minPrice: 500, options: [0, 50, 100, 150, 250, 500] },
-  { minPrice: 300, options: [0, 50, 100, 150, 250] },
   { minPrice: 0, options: [0, 50, 100, 150] },
 ];
+
 
 /** Excess options allowed for a given total warranty price. */
 export function getExcessOptionsForPrice(warrantyPrice?: number | null): number[] {
