@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Info, PhoneCall, Save, RotateCcw, Rocket, Search, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatGBP } from '@/lib/pricingMatrix';
+import { formatGBP, getExcessTotalAdjustment, type PaymentPeriod } from '@/lib/pricingMatrix';
 import { supabase } from '@/integrations/supabase/client';
 import { matchModelFloor, describeFloorMatch } from '@/lib/pricing/modelFloorMatch';
 import { setVehiclePricingRules } from '@/lib/pricing/vehicleRules';
@@ -260,7 +260,7 @@ export function buildAdminMatrixFromModel(model: AgeBandModel): Record<string, R
       for (const column of [750, 1250, 2000]) {
         const clFactor =
           model.claimLimits.find(c => c.limit === COLUMN_TO_CLAIM_LIMIT[column])?.factor ?? 1;
-        const value = base * termMult[period] * clFactor * excessFactorFor(excess);
+        const value = base * termMult[period] * clFactor + excessAdjustmentFor(period, excess);
         raw[String(excess)][String(column)] = value;
         if (value < cheapest) cheapest = value;
       }
