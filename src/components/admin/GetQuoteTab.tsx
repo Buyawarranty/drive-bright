@@ -434,7 +434,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const priceMatchCompetitorPrice = (() => {
     const m = priceMatchCompetitor.replace(/,/g, '').match(/(\d+(?:\.\d+)?)/g);
     if (!m || m.length === 0) return null;
-    const val = parseFloat(m[m.length - 1]);
+    const val = Math.round(parseFloat(m[m.length - 1]));
     return Number.isFinite(val) && val > 0 ? val : null;
   })();
   // Lowest price allowed under price match: 10% cheaper than the competitor
@@ -448,7 +448,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [depositAmountInput, setDepositAmountInput] = useState('');
   const [depositDueDate, setDepositDueDate] = useState('');
   const depositAmountValue = (() => {
-    const v = parseFloat((depositAmountInput || '').replace(/[^0-9.]/g, ''));
+    // Whole pounds only — deposits and balances never carry pence.
+    const v = Math.round(parseFloat((depositAmountInput || '').replace(/[^0-9.]/g, '')));
     return Number.isFinite(v) && v > 0 ? v : null;
   })();
 
@@ -1177,7 +1178,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     // If custom prices are set and user has manually overridden, use them
     if (isPriceOverridden) {
       if (customFullPrice && parseFloat(customFullPrice) > 0) {
-        const fullPrice = parseFloat(customFullPrice);
+        const fullPrice = Math.round(parseFloat(customFullPrice));
         // Never show decimals — monthly is always rounded UP to a whole pound
         const monthly = Math.ceil(fullPrice / 12);
         return { 
@@ -1189,7 +1190,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         };
       }
       if (customMonthlyPrice && parseFloat(customMonthlyPrice) > 0) {
-        const monthly = Math.ceil(parseFloat(customMonthlyPrice));
+        const monthly = Math.round(parseFloat(customMonthlyPrice));
         const total = Math.ceil(monthly * 12);
         return { 
           totalPrice: total, 
@@ -1344,8 +1345,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // Handle custom price field changes — editing one side auto-updates the other
   // (monthly ↔ total uses ×12 / ÷12). Agents can still type any amount; the 20%
   // floor warning below is informational, not blocking.
+  // Whole pounds only — pence are stripped as they are typed so no quote, invoice
+  // or payment link can ever carry a decimal.
   const handleCustomMonthlyChange = (value: string) => {
-    const sanitized = value.replace(/[^0-9.]/g, '');
+    const sanitized = value.replace(/[^0-9]/g, '');
     setCustomMonthlyPrice(sanitized);
     const n = parseFloat(sanitized);
     if (!isNaN(n) && n > 0) {
@@ -1357,7 +1360,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
 
   const handleCustomFullChange = (value: string) => {
-    const sanitized = value.replace(/[^0-9.]/g, '');
+    const sanitized = value.replace(/[^0-9]/g, '');
     setCustomFullPrice(sanitized);
     const n = parseFloat(sanitized);
     if (!isNaN(n) && n > 0) {
@@ -3072,7 +3075,7 @@ Questions? Call 0330 229 5040`;
                 next_due_date: depositDueDate || null,
                 status: 'in_progress',
                 reminder_enabled: true,
-                reminder_note: `Deposit taken — chase £${Math.max(0, totalDue - (depositAmountValue || 0)).toFixed(2)} balance`,
+                reminder_note: `Deposit taken — chase £${Math.round(Math.max(0, totalDue - (depositAmountValue || 0)))} balance`,
                 created_by: adminUserRecordId,
               } as any,
               { onConflict: 'customer_id' },
@@ -4679,7 +4682,7 @@ Questions? Call 0330 229 5040`;
                                   : 'This matches the calculated price'}
                             </span>
                             <span className="text-xs">
-                              £{basePrice.totalPrice} calculated → £{(parseFloat(String(customFullPrice).replace(/[^0-9.]/g, '')) || basePrice.totalPrice)} total
+                              £{basePrice.totalPrice} calculated → £{Math.round(parseFloat(String(customFullPrice).replace(/[^0-9.]/g, '')) || basePrice.totalPrice)} total
                               {!priceMatchMode && effectiveMaxDiscountPct < 100 && (
                                 <> · your cap {effectiveMaxDiscountPct}%{overCap ? ' — over cap' : ''}</>
                               )}
@@ -4942,7 +4945,7 @@ Questions? Call 0330 229 5040`;
                           )}>
                             Lowest allowed price (10% under £{priceMatchCompetitorPrice}): <strong>£{priceMatchFloor}</strong>
                             {parseFloat(customFullPrice) > 0 && parseFloat(customFullPrice) < priceMatchFloor
-                              ? ` — current total £${customFullPrice} is too low`
+                              ? ` — current total £${Math.round(parseFloat(customFullPrice) || 0)} is too low`
                               : ''}
                           </p>
                         )}
@@ -7112,8 +7115,11 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-800 font-semibold text-base pointer-events-none">£</span>
                               <Input
                                 type="number"
+                                step={1}
+                                min={0}
                                 value={quotedPriceOverride === '' ? (currentPrice.monthlyPrice * 12) : quotedPriceOverride}
-                                onChange={(e) => setQuotedPriceOverride(e.target.value)}
+                                /* Whole pounds only — pence are stripped on entry. */
+                                onChange={(e) => setQuotedPriceOverride(e.target.value.replace(/[^0-9]/g, ''))}
                                 className="pl-7 bg-green-50 border-green-200 text-green-800 font-semibold text-base focus:bg-white focus:border-green-400"
                               />
                             </div>
@@ -7188,7 +7194,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
 
                     {/* Amount */}
                     {(() => {
-                      const effectiveQuoted = quotedPriceOverride !== '' ? (parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12);
+                      const effectiveQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12);
                       return (
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1.5">
@@ -7271,7 +7277,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                             <div className="space-y-1">
                               <Label className="text-xs font-semibold text-amber-900">Balance outstanding</Label>
                               <div className="h-10 flex items-center px-3 rounded-md border border-amber-300 bg-white text-sm font-bold text-amber-900">
-                                £{Math.max(0, Math.round(((quotedPriceOverride !== '' ? (parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12)) || 0) - (depositAmountValue || 0)))}
+                                £{Math.max(0, Math.round(((quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12)) || 0) - (depositAmountValue || 0)))}
                               </div>
                             </div>
                           </div>
@@ -7412,7 +7418,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
 
                   <aside className="lg:sticky lg:top-0 h-fit space-y-3 rounded-xl border border-border bg-background p-4 shadow-sm">
                     {(() => {
-                      const effectiveQuoted = quotedPriceOverride !== '' ? (parseFloat(quotedPriceOverride) || 0) : currentPrice.totalPrice;
+                      const effectiveQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : currentPrice.totalPrice;
                       const recorded = paymentAmount || effectiveQuoted;
                       const differs = paymentAmount && Math.abs(parseFloat(paymentAmount) - effectiveQuoted) > 1;
                       return (
