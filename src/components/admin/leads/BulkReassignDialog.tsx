@@ -482,8 +482,13 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     if (limit) q = q.limit(limit);
     const { data, error } = await q;
     if (error) throw error;
-    return (data || []).map((r: any) => r.id as string);
+    const ids = (data || []).map((r: any) => r.id as string);
+    // Hold back note-locked leads unless the manager has authorised them.
+    if (authoriseNoted) return ids;
+    const { movable } = await splitByNoteLock(ids);
+    return movable;
   };
+
 
   // Move unassigned customers (assigned_to IS NULL) to the given target agent.
   const reassignUnassignedCustomers = async (
