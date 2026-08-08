@@ -591,7 +591,19 @@ serve(async (req) => {
         error: bumperData,
         statusText: bumperResponse.statusText
       });
-      
+
+      if (bumperResponse.status >= 500 || bumperResponse.status === 429) {
+        return new Response(JSON.stringify({
+          error: true,
+          code: "bumper_unavailable",
+          retryable: true,
+          message: UPSTREAM_DOWN_MESSAGE
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 503,
+        });
+      }
+
       // Let Bumper handle their own error response
       throw new Error(`Bumper API error: ${bumperResponse.status} - ${bumperData?.message || 'Unknown error'}`);
     }
