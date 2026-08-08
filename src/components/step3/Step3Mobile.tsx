@@ -79,7 +79,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     previousPaymentType || '24months'
   );
   const [voluntaryExcess, setVoluntaryExcess] = useState<number | null>(
-    previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : 150
+    previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : getDefaultVoluntaryExcess(vehicleData)
   );
   const [selectedClaimLimit, setSelectedClaimLimit] = useState<number | null>(
     (() => {
