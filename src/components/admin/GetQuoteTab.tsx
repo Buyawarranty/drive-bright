@@ -1212,6 +1212,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const displayedPayInFullPrice = currentPrice.payInFullPrice || (includePayInFullDiscount ? Math.ceil(displayedTotalPrice * 0.9) : displayedTotalPrice);
   const displayedPayInFullSavings = Math.max(displayedTotalPrice - displayedPayInFullPrice, 0);
 
+  // Feed the quote total back into the excess visibility brackets (£250 unlocks
+  // from £300, £500 from £500) so Q&O matches Step 3 exactly.
+  useEffect(() => {
+    const total = Number(currentPrice?.totalPrice || 0) || undefined;
+    setExcessPriceBasis(prev => (prev === total ? prev : total));
+  }, [currentPrice?.totalPrice]);
+
+
+
   /**
    * Audit-only record of a manual price override (no blocking, no price change).
    * Managers review these in Admin → Discounts given → "Manual price overrides".
