@@ -728,32 +728,61 @@ export function formatGBP(amount: number, showPence = false): string {
 }
 
 /**
+ * Minimum total warranty price required before the £500 excess tier is offered.
+ * A £500 excess on a cheap policy is poor value for the customer, so it is only
+ * shown once the warranty itself costs more than £500.
+ */
+export const EXCESS_500_MIN_WARRANTY_PRICE = 500;
+
+/** Internal claim-limit values map to the figure the customer actually sees. */
+const DISPLAY_CLAIM_LIMIT: Record<number, number> = { 750: 1000, 1250: 2000 };
+
+/**
  * Determines whether a given excess value is allowed for a specific
  * payment term and claim limit combination.
  *
  * Rules (matched with PriceTestStep2 excessAllowed):
- * 1. No excess above 25% of the claim limit (customer-value guardrail).
+ * 1. No excess above 25% of the DISPLAYED claim limit (customer-value guardrail).
+ *    Internal grid values (750 = £1,000, 1250 = £2,000) are normalised first, so
+ *    £250 excess stays available on AutoCare Basic.
  * 2. No £500 excess when claim limit < £3,000.
  * 3. No £500 excess on 1-year (12-month) cover.
+ * 4. No £500 excess when the total warranty price is £500 or less.
  */
 export function isExcessAllowed(
   excess: number,
   paymentType: PaymentPeriod | string,
   claimLimit: number,
+  /** Total warranty price for the current selection, when known. */
+  warrantyPrice?: number | null,
 ): boolean {
-  if (excess > claimLimit * 0.25) return false;
-  if (excess === 500 && claimLimit < 3000) return false;
+  const displayLimit = DISPLAY_CLAIM_LIMIT[claimLimit] ?? claimLimit;
+  if (excess > displayLimit * 0.25) return false;
+  if (excess === 500 && displayLimit < 3000) return false;
   if (excess === 500 && paymentType === '12months') return false;
+  if (
+    excess === 500 &&
+    typeof warrantyPrice === 'number' &&
+    Number.isFinite(warrantyPrice) &&
+    warrantyPrice > 0 &&
+    warrantyPrice <= EXCESS_500_MIN_WARRANTY_PRICE
+  ) {
+    return false;
+  }
   return true;
 }
 
 /**
  * Filters the standard excess options array [0, 50, 100, 150, 250, 500]
- * to only those allowed for the given term + claim limit.
+ * to only those allowed for the given term + claim limit (+ warranty price).
  */
 export function getVisibleExcessOptions(
   paymentType: PaymentPeriod | string,
   claimLimit: number,
+  warrantyPrice?: number | null,
 ): number[] {
-  return [0, 50, 100, 150, 250, 500].filter((ex) => isExcessAllowed(ex, paymentType, claimLimit));
+  return [0, 50, 100, 150, 250, 500].filter((ex) =>
+    isExcessAllowed(ex, paymentType, claimLimit, warrantyPrice),
+  );
 }
+
