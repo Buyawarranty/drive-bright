@@ -166,10 +166,12 @@ export function priceFromPricingModel(
     l => Number(l.rate) === Number(options.labourRate),
     l => Math.abs(Number(l.rate) - Number(options.labourRate))
   );
-  const excessFactor = nearestFactor(
-    model.excessFactors,
-    e => Number(e.excess) === Number(options.voluntaryExcess),
-    e => Math.abs(Number(e.excess) - Number(options.voluntaryExcess))
+  // Excess is NOT a multiplier here. Quotes & Orders uses exactly the same
+  // 12-instalment logic as the customer journey: a flat £/mo difference vs the
+  // £100 "Balanced" baseline, applied once to the whole-term total.
+  const excessAdjustment = getExcessTotalAdjustment(
+    options.paymentPeriod,
+    Number(options.voluntaryExcess)
   );
 
   const annualBase =
@@ -181,9 +183,9 @@ export function priceFromPricingModel(
 
   const modelFloor = floor?.minOneYear ? Number(floor.minOneYear) * motorbikeFactor : null;
   const floored = modelFloor ? Math.max(annualBase, modelFloor) : annualBase;
-  const annual = floored * claimFactor * labourFactor * excessFactor;
+  const annual = floored * claimFactor * labourFactor;
 
-  let total = annual * termMult;
+  let total = annual * termMult + excessAdjustment;
   if (options.transferCover) total += 19;
   total = Math.round(total);
 
@@ -194,6 +196,7 @@ export function priceFromPricingModel(
   // We only ever offer 12 monthly instalments, whatever the cover term.
   const monthlyPrice = Math.ceil(total / 12);
   const payInFullPrice = Math.round(total * Number(model.payInFullFactor ?? 0.9));
+
 
   return {
     referral: false,
