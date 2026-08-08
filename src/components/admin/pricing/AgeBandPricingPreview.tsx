@@ -248,39 +248,33 @@ export function buildAdminMatrixFromModel(model: AgeBandModel): Record<string, R
     getExcessTotalAdjustment(period as PaymentPeriod, excess);
 
 
+  /**
+   * IMPORTANT: the grid is the REFERENCE-BAND price, not a sellable price.
+   * At quote time the live engine multiplies this cell by the vehicle factor
+   * (age band / mileage / powertrain / type) and only THEN applies the
+   * £399/£659/£938 minimum sellable floor (applyBasePriceFloor).
+   *
+   * So the floor must NOT be baked in here. Scaling the whole reference grid up
+   * to the floor and then multiplying by the age factor charged the lift twice —
+   * that is why an 8-9 year diesel priced £493 in the Aug hybrid sandbox but
+   * £778 on Step 3. The grid now stays at the model's own reference figures.
+   */
   const out: Record<string, Record<string, Record<string, number>>> = {};
   for (const period of ['12months', '24months', '36months']) {
-    // Build the raw grid first, then lift the WHOLE period by one scale factor if
-    // its cheapest cell is under the minimum sellable price. Clamping cell by cell
-    // used to flatten every excess / claim limit onto the same number, which is
-    // why Step 3 stopped moving when customers changed an option.
-    const raw: Record<string, Record<string, number>> = {};
-    let cheapest = Infinity;
-    for (const excess of GRID_EXCESSES) {
-      raw[String(excess)] = {};
-      for (const column of [750, 1250, 2000]) {
-        const clFactor =
-          model.claimLimits.find(c => c.limit === COLUMN_TO_CLAIM_LIMIT[column])?.factor ?? 1;
-        const value = base * termMult[period] * clFactor + excessAdjustmentFor(period, excess);
-        raw[String(excess)][String(column)] = value;
-        if (value < cheapest) cheapest = value;
-      }
-    }
-    const min = MIN_SELLABLE_BY_PERIOD[period];
-    const scale = cheapest > 0 && cheapest < min ? min / cheapest : 1;
     out[period] = {};
     for (const excess of GRID_EXCESSES) {
       out[period][String(excess)] = {};
       for (const column of [750, 1250, 2000]) {
-        out[period][String(excess)][String(column)] = Math.max(
-          min,
-          Math.round(raw[String(excess)][String(column)] * scale)
-        );
+        const clFactor =
+          model.claimLimits.find(c => c.limit === COLUMN_TO_CLAIM_LIMIT[column])?.factor ?? 1;
+        const value = base * termMult[period] * clFactor + excessAdjustmentFor(period, excess);
+        out[period][String(excess)][String(column)] = Math.max(1, Math.round(value));
       }
     }
   }
   return out;
 }
+
 
 
 export default function AgeBandPricingPreview({
