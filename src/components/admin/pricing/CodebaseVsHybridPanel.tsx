@@ -172,7 +172,7 @@ const CodebaseVsHybridPanel: React.FC<{
                 ...codeBaseModel,
                 refBandKey: codeBaseModel.bands[0]?.key ?? '',
                 websiteDiscountPct: 10,
-              }),
+              } as any),
               labourRateFactors: codeBaseModel.labourRates,
             }),
           },
