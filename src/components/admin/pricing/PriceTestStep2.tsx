@@ -818,9 +818,14 @@ export default function PriceTestStep2({
                   {isMotorbike ? <div className="font-medium text-primary">Motorbike: 50% of standard vehicle pricing (floor {formatGBP(calc.minSellable)})</div> : null}
 
                   <div className="pt-1">Adjusted one-year base: {formatGBP(Math.round(calc.floored))}</div>
-                  <div>× Claim limit: ×{claimFactor.toFixed(2)} · × Labour: ×{labourFactor.toFixed(2)} · × Excess: ×{excessFactor.toFixed(2)}</div>
+                  <div>× Claim limit: ×{claimFactor.toFixed(2)} · × Labour: ×{labourFactor.toFixed(2)}</div>
                   <div>One-year price: {formatGBP(Math.round(calc.annual))}</div>
                   <div>× Term {term.label}: ×{term.mult.toFixed(2)}</div>
+                  <div>
+                    Excess £{excess}: {excessMonthlyDelta === 0 ? 'baseline (£100 Balanced)' : `${excessMonthlyDelta > 0 ? '+' : '−'}£${Math.abs(excessMonthlyDelta)}/mo`}
+                    {excessAdjustment ? ` (${excessAdjustment > 0 ? '+' : '−'}${formatGBP(Math.abs(excessAdjustment))} on the total)` : ''}
+                  </div>
+
                   {calc.addOnTotal ? <div>+ Add-ons: {formatGBP(calc.addOnTotal)}</div> : null}
                   {calc.belowMinimum ? (
                     <div className="text-destructive">
