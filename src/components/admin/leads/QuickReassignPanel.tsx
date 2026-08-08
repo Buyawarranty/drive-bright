@@ -22,7 +22,10 @@ interface AgentRow {
   count: number;
   /** Leads that can still be moved — no call logged and no note written. */
   movable: number;
+  /** Ids of those movable leads, newest first. */
+  movableIds: string[];
 }
+
 
 /**
  * Quick reassign — shows how many open leads each sales agent is holding and
