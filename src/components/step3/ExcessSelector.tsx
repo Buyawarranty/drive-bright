@@ -10,6 +10,8 @@ interface ExcessSelectorProps {
   currentMonthlyPrice: number;
   paymentType?: string;
   claimLimit?: number;
+  /** Total warranty price — £500 excess only shows above £500. */
+  totalPrice?: number;
 }
 
 const ALL_EXCESS_OPTIONS = [
