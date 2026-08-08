@@ -176,6 +176,18 @@ function checkLabourRates(rates: PreflightInput['labourRateFactors']): Preflight
   };
 }
 
+/**
+ * Bands that sit outside what we are allowed to insure (over 15 years, over
+ * 150,000 miles) are deliberately left unpriced — they decline or refer out.
+ * Treating those as gaps would block every honest push, so they are skipped.
+ */
+const isDeclineBand = (b: any): boolean => {
+  const key = String(b?.key ?? '').toLowerCase();
+  if (key === '15+' || key === '150k+') return true;
+  const text = `${b?.treatment ?? ''} ${b?.customerLabel ?? ''}`.toLowerCase();
+  return text.includes('decline') || text.includes('referral');
+};
+
 function checkVehicleModel(model: any): PreflightItem {
   if (!model || typeof model !== 'object') {
     return {
@@ -188,19 +200,22 @@ function checkVehicleModel(model: any): PreflightItem {
   const gaps: string[] = [];
   const bands = Array.isArray(model.bands) ? model.bands : [];
   if (!bands.length) gaps.push('No age bands');
-  const emptyBands = bands.filter((b: any) => num(b?.oneYear) === null);
+  const emptyBands = bands.filter((b: any) => !isDeclineBand(b) && num(b?.oneYear) === null);
   if (emptyBands.length) {
     gaps.push(
       `${emptyBands.length} age band${emptyBands.length === 1 ? '' : 's'} with no one-year price` +
         ` (${emptyBands.slice(0, 3).map((b: any) => b?.key ?? '?').join(', ')})`
     );
   }
-  if (bands.length && !bands.some((b: any) => b?.key === model.refBandKey)) {
-    gaps.push('No reference age band set');
-  }
+  /**
+   * A missing reference band is not a gap: the publish step and the quote
+   * engine both fall back to the first age band, so pricing stays defined.
+   */
   const mileage = Array.isArray(model.mileageBands) ? model.mileageBands : [];
   if (!mileage.length) gaps.push('No mileage bands');
-  else if (mileage.some((b: any) => num(b?.factor) === null)) gaps.push('A mileage band has no factor');
+  else if (mileage.some((b: any) => !isDeclineBand(b) && num(b?.factor) === null))
+    gaps.push('A mileage band has no factor');
+
   const powertrains = Array.isArray(model.powertrains) ? model.powertrains : [];
   if (!powertrains.length) gaps.push('No powertrain factors');
   else if (powertrains.some((p: any) => num(p?.factor) === null))
