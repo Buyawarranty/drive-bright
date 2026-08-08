@@ -766,49 +766,43 @@ export function formatGBP(amount: number, showPence = false): string {
 }
 
 /**
- * Minimum total warranty price required before the £500 excess tier is offered.
- * A £500 excess on a cheap policy is poor value for the customer, so it is only
- * shown once the warranty itself costs more than £500.
+ * Which excesses are available, by warranty price bracket:
+ *   £200–£299  → £0 / £50 / £100 / £150
+ *   £300–£499  → £0 / £50 / £100 / £150 / £250
+ *   £500–£3,000 → £0 / £50 / £100 / £150 / £250 / £500
  */
-export const EXCESS_500_MIN_WARRANTY_PRICE = 500;
+export const EXCESS_PRICE_BRACKETS: { minPrice: number; options: number[] }[] = [
+  { minPrice: 500, options: [0, 50, 100, 150, 250, 500] },
+  { minPrice: 300, options: [0, 50, 100, 150, 250] },
+  { minPrice: 0, options: [0, 50, 100, 150] },
+];
 
-/** Internal claim-limit values map to the figure the customer actually sees. */
-const DISPLAY_CLAIM_LIMIT: Record<number, number> = { 750: 1000, 1250: 2000 };
+/** Excess options allowed for a given total warranty price. */
+export function getExcessOptionsForPrice(warrantyPrice?: number | null): number[] {
+  if (typeof warrantyPrice !== 'number' || !Number.isFinite(warrantyPrice) || warrantyPrice <= 0) {
+    // Price not known yet — show the full ladder and let it narrow once priced.
+    return [0, 50, 100, 150, 250, 500];
+  }
+  return (
+    EXCESS_PRICE_BRACKETS.find((b) => warrantyPrice >= b.minPrice)?.options ?? [0, 50, 100, 150]
+  );
+}
 
 /**
- * Determines whether a given excess value is allowed for a specific
- * payment term and claim limit combination.
- *
- * Rules (matched with PriceTestStep2 excessAllowed):
- * 1. No excess above 25% of the DISPLAYED claim limit (customer-value guardrail).
- *    Internal grid values (750 = £1,000, 1250 = £2,000) are normalised first, so
- *    £250 excess stays available on AutoCare Basic.
- * 2. No £500 excess when claim limit < £3,000.
- * 3. No £500 excess on 1-year (12-month) cover.
- * 4. No £500 excess when the total warranty price is £500 or less.
+ * Determines whether a given excess value is allowed.
+ * Availability is driven purely by the warranty price bracket above; the £250
+ * and £500 tiers unlock at £300 and £500 respectively.
  */
 export function isExcessAllowed(
   excess: number,
-  paymentType: PaymentPeriod | string,
-  claimLimit: number,
+  _paymentType: PaymentPeriod | string,
+  _claimLimit: number,
   /** Total warranty price for the current selection, when known. */
   warrantyPrice?: number | null,
 ): boolean {
-  const displayLimit = DISPLAY_CLAIM_LIMIT[claimLimit] ?? claimLimit;
-  if (excess > displayLimit * 0.25) return false;
-  if (excess === 500 && displayLimit < 3000) return false;
-  if (excess === 500 && paymentType === '12months') return false;
-  if (
-    excess === 500 &&
-    typeof warrantyPrice === 'number' &&
-    Number.isFinite(warrantyPrice) &&
-    warrantyPrice > 0 &&
-    warrantyPrice <= EXCESS_500_MIN_WARRANTY_PRICE
-  ) {
-    return false;
-  }
-  return true;
+  return getExcessOptionsForPrice(warrantyPrice).includes(excess);
 }
+
 
 /**
  * Filters the standard excess options array [0, 50, 100, 150, 250, 500]
