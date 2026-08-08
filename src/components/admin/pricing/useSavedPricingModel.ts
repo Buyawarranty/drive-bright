@@ -60,9 +60,11 @@ export function useSavedPricingModel(opts?: { preferLive?: boolean }) {
     const bump = () => setTick(t => t + 1);
     window.addEventListener(PRICING_MODEL_SAVED_EVENT, bump);
     window.addEventListener('storage', bump);
+    window.addEventListener('bw:pricing-updated', bump);
     return () => {
       window.removeEventListener(PRICING_MODEL_SAVED_EVENT, bump);
       window.removeEventListener('storage', bump);
+      window.removeEventListener('bw:pricing-updated', bump);
     };
   }, []);
 
