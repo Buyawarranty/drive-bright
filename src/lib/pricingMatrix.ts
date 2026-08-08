@@ -300,14 +300,21 @@ export function getExcessTotalAdjustment(paymentPeriod: PaymentPeriod, excess: n
 
 
 
+/**
+ * Claim-limit shape for the floor, anchored on £2,000 = 1.00. These MUST mirror
+ * the published claim limit factors (0.80 / 1.00 / 1.15 / 1.30) so a floor-bound
+ * vehicle still steps up as the cover level goes up — £3,000 and £5,000 must
+ * never land on the same price.
+ */
 export const CLAIM_LIMIT_FLOOR_MULTIPLIER: Record<number, number> = {
-  750: 0.89,
-  1000: 0.89,
+  750: 0.8,
+  1000: 0.8,
   1250: 1.0,
   2000: 1.0,
-  3000: 1.13,
-  5000: 1.13,
+  3000: 1.15,
+  5000: 1.3,
 };
+
 
 /** Nearest defined multiplier so unusual values never fall back to a flat 1. */
 function nearestMultiplier(table: Record<number, number>, value?: number): number {
