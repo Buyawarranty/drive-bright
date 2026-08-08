@@ -1011,11 +1011,9 @@ export function getExcessBracketBasis(
 ): number | undefined {
   const total = Number(totalPrice);
   if (!Number.isFinite(total) || total <= 0) return undefined;
-  const adjustment = getExcessTotalAdjustment(
-    paymentType as PaymentPeriod,
-    Number(selectedExcess ?? 100),
-  );
-  return total - adjustment;
+  // Excess is proportional, so undo it by dividing by the selected tier's factor.
+  const factor = getExcessFactor(selectedExcess);
+  return factor > 0 ? Math.round(total / factor) : total;
 }
 
 
