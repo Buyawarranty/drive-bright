@@ -1177,7 +1177,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     // If custom prices are set and user has manually overridden, use them
     if (isPriceOverridden) {
       if (customFullPrice && parseFloat(customFullPrice) > 0) {
-        const fullPrice = parseFloat(customFullPrice);
+        const fullPrice = Math.round(parseFloat(customFullPrice));
         // Never show decimals — monthly is always rounded UP to a whole pound
         const monthly = Math.ceil(fullPrice / 12);
         return { 
@@ -1189,7 +1189,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         };
       }
       if (customMonthlyPrice && parseFloat(customMonthlyPrice) > 0) {
-        const monthly = Math.ceil(parseFloat(customMonthlyPrice));
+        const monthly = Math.round(parseFloat(customMonthlyPrice));
         const total = Math.ceil(monthly * 12);
         return { 
           totalPrice: total, 
@@ -1344,8 +1344,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // Handle custom price field changes — editing one side auto-updates the other
   // (monthly ↔ total uses ×12 / ÷12). Agents can still type any amount; the 20%
   // floor warning below is informational, not blocking.
+  // Whole pounds only — pence are stripped as they are typed so no quote, invoice
+  // or payment link can ever carry a decimal.
   const handleCustomMonthlyChange = (value: string) => {
-    const sanitized = value.replace(/[^0-9.]/g, '');
+    const sanitized = value.replace(/[^0-9]/g, '');
     setCustomMonthlyPrice(sanitized);
     const n = parseFloat(sanitized);
     if (!isNaN(n) && n > 0) {
@@ -1357,7 +1359,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
 
   const handleCustomFullChange = (value: string) => {
-    const sanitized = value.replace(/[^0-9.]/g, '');
+    const sanitized = value.replace(/[^0-9]/g, '');
     setCustomFullPrice(sanitized);
     const n = parseFloat(sanitized);
     if (!isNaN(n) && n > 0) {
@@ -4679,7 +4681,7 @@ Questions? Call 0330 229 5040`;
                                   : 'This matches the calculated price'}
                             </span>
                             <span className="text-xs">
-                              £{basePrice.totalPrice} calculated → £{(parseFloat(String(customFullPrice).replace(/[^0-9.]/g, '')) || basePrice.totalPrice)} total
+                              £{basePrice.totalPrice} calculated → £{Math.round(parseFloat(String(customFullPrice).replace(/[^0-9.]/g, '')) || basePrice.totalPrice)} total
                               {!priceMatchMode && effectiveMaxDiscountPct < 100 && (
                                 <> · your cap {effectiveMaxDiscountPct}%{overCap ? ' — over cap' : ''}</>
                               )}
@@ -4942,7 +4944,7 @@ Questions? Call 0330 229 5040`;
                           )}>
                             Lowest allowed price (10% under £{priceMatchCompetitorPrice}): <strong>£{priceMatchFloor}</strong>
                             {parseFloat(customFullPrice) > 0 && parseFloat(customFullPrice) < priceMatchFloor
-                              ? ` — current total £${customFullPrice} is too low`
+                              ? ` — current total £${Math.round(parseFloat(customFullPrice) || 0)} is too low`
                               : ''}
                           </p>
                         )}
