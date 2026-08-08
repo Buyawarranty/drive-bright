@@ -394,13 +394,15 @@ export default function PriceTestStep2({
 
 
   /**
-   * Excess visibility uses the SAME rule as the live journey (pricingMatrix), so a
-   * combination that can never be sold is never priced in a test.
+   * Excess visibility uses the SAME rule as the live journey (pricingMatrix): the
+   * £250/£500 tiers unlock on the excess-neutral (£100 baseline) term total, so
+   * picking a cheaper excess can never hide the option just selected.
    */
   const visibleExcesses = useMemo(
-    () => getVisibleExcessOptions(term.period, claimLimit),
-    [term.period, claimLimit],
+    () => getVisibleExcessOptions(term.period, claimLimit, calc?.baseTermTotal ?? null),
+    [term.period, claimLimit, calc?.baseTermTotal],
   );
+
 
   /** Add-ons exactly as Step 3/4 lists them for this term. */
   const journeyAddOns = useMemo(
