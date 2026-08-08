@@ -33,8 +33,17 @@ export function TimesheetsTab({ onNavigateToTab }: TimesheetsTabProps = {}) {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [viewingUserId, setViewingUserId] = useState<string | null>(null);
 
-  const effectiveViewingUserId = viewingUserId && viewingUserId !== session?.user?.id ? viewingUserId : undefined;
+  // Only accounts/management may ever look at someone else's calendar. Sales agents
+  // (and any other role) are hard-locked to their own timesheet.
+  const canViewOthers =
+    userRole === 'accounts_manager' ||
+    userRole === 'accounts_payroll' ||
+    userRole === 'super_admin' ||
+    userRole === 'admin';
+  const effectiveViewingUserId =
+    canViewOthers && viewingUserId && viewingUserId !== session?.user?.id ? viewingUserId : undefined;
   const isViewingOther = !!effectiveViewingUserId;
+
 
   const {
     entries,
