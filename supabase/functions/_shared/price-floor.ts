@@ -86,22 +86,22 @@ const MIN_PERCENT_OF_BASE = 0.5;
 // valid Stripe amounts from being rejected as "price manipulation".
 const CHECKOUT_BASE_PRICING_MATRIX = {
   '12months': {
-    0: { 750: 391, 1250: 416, 2000: 492 },
-    50: { 750: 366, 1250: 383, 2000: 458 },
-    100: { 750: 324, 1250: 349, 2000: 425 },
-    150: { 750: 288, 1250: 324, 2000: 400 },
+    0: { 1000: 391, 3000: 416, 3000: 492 },
+    50: { 1000: 366, 2000: 383, 3000: 458 },
+    100: { 1000: 324, 2000: 349, 3000: 425 },
+    150: { 1000: 288, 2000: 324, 3000: 400 },
   },
   '24months': {
-    0: { 750: 752, 1250: 786, 2000: 862 },
-    50: { 750: 694, 1250: 736, 2000: 803 },
-    100: { 750: 618, 1250: 660, 2000: 736 },
-    150: { 750: 584, 1250: 618, 2000: 694 },
+    0: { 1000: 752, 3000: 786, 3000: 862 },
+    50: { 1000: 694, 3000: 736, 3000: 803 },
+    100: { 1000: 618, 2000: 660, 3000: 736 },
+    150: { 1000: 584, 2000: 618, 2000: 694 },
   },
   '36months': {
-    0: { 750: 1130, 1250: 1172, 2000: 1256 },
-    50: { 750: 1046, 1250: 1088, 2000: 1172 },
-    100: { 750: 920, 1250: 988, 2000: 1072 },
-    150: { 750: 878, 1250: 920, 2000: 1004 },
+    0: { 1000: 1130, 3000: 1172, 3000: 1256 },
+    50: { 1000: 1046, 3000: 1088, 3000: 1172 },
+    100: { 1000: 920, 2000: 988, 3000: 1072 },
+    150: { 1000: 878, 2000: 920, 3000: 1004 },
   },
 } as const;
 
@@ -122,12 +122,16 @@ function getCheckoutMatrixBasePrice(paymentType: string, voluntaryExcess?: numbe
     ? (Number(voluntaryExcess) as 0 | 50 | 100 | 150)
     : 100;
 
+  // Columns are the cover levels: £1,000 / £2,000 / £3,000. Retired wire values
+  // (750 = £1,000, 1250 = £2,000) still arrive on older records.
   const requestedClaimLimit = Number(claimLimit);
-  let normalizedClaimLimit: 750 | 1250 | 2000 = requestedClaimLimit === 750 || requestedClaimLimit === 2000 ? requestedClaimLimit : 1250;
+  let normalizedClaimLimit: 1000 | 2000 | 3000 = 2000;
+  if (requestedClaimLimit === 750 || requestedClaimLimit === 1000) normalizedClaimLimit = 1000;
+  else if (requestedClaimLimit >= 2000 && requestedClaimLimit !== 1250) normalizedClaimLimit = 3000;
 
-  // Public checkout promo logic: 2yr/3yr £2000 cover uses the £1250 price row.
-  if (duration !== '12months' && normalizedClaimLimit === 2000) {
-    normalizedClaimLimit = 1250;
+  // Public checkout promo logic: 2yr/3yr £2,000+ cover uses the £2,000 column.
+  if (duration !== '12months' && normalizedClaimLimit === 3000) {
+    normalizedClaimLimit = 2000;
   }
 
   return CHECKOUT_BASE_PRICING_MATRIX[duration][normalizedExcess][normalizedClaimLimit] ?? null;

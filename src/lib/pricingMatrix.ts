@@ -2,7 +2,7 @@
  * Centralized pricing matrix and utilities for warranty pricing.
  * 
  * PRICING RULES (UPDATED JAN 2026):
- * - BASE prices are from CURRENT_PRICE_JAN_2026.xlsx at £70/hr labour rate (DEFAULT), £100 excess, £1250 claim limit
+ * - BASE prices are from CURRENT_PRICE_JAN_2026.xlsx at £70/hr labour rate (DEFAULT), £100 excess, £2,000 claim limit
  * - Labour rate £50/hr = -£5/month for duration (BELOW base)
  * - Labour rate £70/hr = base price (no adjustment) - DEFAULT
  * - Labour rate £100/hr = +£8/month for duration

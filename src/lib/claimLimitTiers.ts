@@ -2,13 +2,13 @@
  * Claim limit tier configuration and surcharge utilities.
  * 
  * TIER STRUCTURE:
- * - AutoCare Basic: £1,000 per claim (internal value: 750, display: £1,000)
+ * - AutoCare Basic: £1,000 per claim (wire value 750 on stored records, shown as £1,000)
  * - AutoCare Essential: £2,000 per claim (MOST POPULAR)
  * - AutoCare Elite: £3,000 per claim (internally: £2000 base + elite surcharge)
  * - AutoCare Premium: £5,000 per claim (internally: £2000 base + elite surcharge + premium step)
  * 
  * SURCHARGE RULES:
- * - £2000→£3000 (Elite): same price step as £1000→£2000 (matrix diff: col 2000 - col 750)
+ * - £2000→£3000 (Elite): same price step as £1000→£2000 (grid diff: £3,000 col − £1,000 col)
  * - £3000→£5000 (Premium): +£8/mo (1yr), +£9/mo (2yr), +£10/mo (3yr)
  * 
  * £5000 is NOT available for premium vehicles: Tesla, Jaguar, Land Rover, Porsche
@@ -17,6 +17,8 @@
 import { getBasePrice as getMatrixBasePrice, type PaymentPeriod } from './pricingMatrix';
 
 export const CLAIM_LIMIT_TIERS = [
+  // 750 is the historic wire value for £1,000 cover — kept because it is written on
+  // live policies, Stripe metadata and the Warranties Register feed. Shown as £1,000.
   { value: 750, displayValue: 1000, name: 'AutoCare Basic', shortName: 'Basic', popular: false },
   { value: 2000, displayValue: 2000, name: 'AutoCare Essential', shortName: 'Essential', popular: false },
   { value: 3000, displayValue: 3000, name: 'AutoCare Elite', shortName: 'Elite', popular: true },
@@ -106,13 +108,13 @@ export function isPremiumVehicle(make?: string, model?: string): boolean {
 
 /**
  * Get the elite surcharge (£2000→£3000 step).
- * This equals the matrix difference between £2000 and £750 columns
+ * This equals the grid difference between the £3,000 and £1,000 columns
  * (i.e., same step as £1000→£2000).
  */
 export function getEliteSurcharge(paymentPeriod: string, voluntaryExcess: number): number {
-  const price2000 = getMatrixBasePrice(paymentPeriod as PaymentPeriod, voluntaryExcess, 2000);
-  const price750 = getMatrixBasePrice(paymentPeriod as PaymentPeriod, voluntaryExcess, 750);
-  return price2000 - price750;
+  const topColumn = getMatrixBasePrice(paymentPeriod as PaymentPeriod, voluntaryExcess, 3000);
+  const basicColumn = getMatrixBasePrice(paymentPeriod as PaymentPeriod, voluntaryExcess, 1000);
+  return topColumn - basicColumn;
 }
 
 /**
@@ -193,8 +195,8 @@ export function getClaimLimitTierName(claimLimit: number): string {
  * Legacy stored claim limits → the tier they were sold as.
  * We never rewrite what is stored on old policies (that would re-value them),
  * we only stop showing retired numbers on screen:
- *   750  → £1,000 (old Basic column)
- *   1250 → £2,000 (old Essential column)
+ *   750  → £1,000 (retired Basic wire value)
+ *   1250 → £2,000 (retired Essential wire value)
  */
 export const LEGACY_CLAIM_LIMIT_DISPLAY: Record<number, number> = {
   750: 1000,

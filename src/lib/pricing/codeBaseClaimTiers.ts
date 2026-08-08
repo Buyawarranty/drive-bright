@@ -1,22 +1,21 @@
 /**
  * Customer-facing claim limit tiers for the code-base pricing sandboxes.
  *
- * The July 2026 matrix stores three internal columns (750 / 1250 / 2000). Agents
- * and customers only ever see the four published tiers:
- *   £1,000 (Basic)  → internal column 750
- *   £2,000 (Essential, the reference / ×1.00 column) → internal column 1250
- *   £3,000 (Elite)  → internal column 2000
- *   £5,000 (Premium) → internal column 2000 + the £5/mo boost
+ * The matrix columns ARE the cover levels — the retired names (750 / 1250 / 2000)
+ * are gone:
+ *   £1,000 (Basic)  → £1,000 column
+ *   £2,000 (Essential, the reference / ×1.00 column) → £2,000 column
+ *   £3,000 (Elite)  → £3,000 column
+ *   £5,000 (Premium) → £3,000 column + the £5/mo boost
  *
- * Keeping this mapping in one place stops the sandboxes from mixing the internal
- * column numbers with the published limits (which showed a £1,250 tier and made
- * the ×1.00 reference land on a limit no customer can buy).
+ * Keeping this mapping in one place stops the sandboxes from inventing tiers that
+ * no customer can buy.
  */
 import { BOOST_CLAIM_LIMIT_MONTHLY, DURATION_MONTHS } from '@/lib/pricingMatrix';
 
 export type CodeBaseClaimTier = { key: string; limit: number; factor: number };
 
-/** Published tier → internal matrix column. */
+/** Published tier → grid column (identical, apart from £5,000 sitting on the £3,000 column). */
 export const CODE_BASE_TIER_COLUMN: Record<number, number> = {
   1000: 1000,
   2000: 2000,
@@ -24,7 +23,7 @@ export const CODE_BASE_TIER_COLUMN: Record<number, number> = {
   5000: 3000,
 };
 
-/** Internal matrix column → published tier (£5,000 sits on top of the 2000 column). */
+/** Grid column → published tier (£5,000 sits on top of the £3,000 column). */
 export const CODE_BASE_COLUMN_TIER: Record<number, number> = {
   1000: 1000,
   2000: 2000,
