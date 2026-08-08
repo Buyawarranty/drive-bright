@@ -740,6 +740,8 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     setPoolCounts({});
     setUnassignedBuckets([]);
     setWorkstream('new');
+    setAuthoriseNoted(false);
+
   };
 
   const handleOpenChange = (isOpen: boolean) => {
