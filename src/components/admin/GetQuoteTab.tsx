@@ -4117,7 +4117,7 @@ Questions? Call 0330 229 5040`;
                       const delta = getExcessMonthlyDelta(
                         paymentType as PaymentPeriod,
                         excess,
-                        excessBracketBasis,
+                        excessPriceBasis,
                       );
                       return (
                         <button
