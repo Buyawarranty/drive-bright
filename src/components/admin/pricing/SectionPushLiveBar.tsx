@@ -64,14 +64,12 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
   busy,
 }) => {
   const [pending, setPending] = useState<PushCandidate | null>(null);
-  const [overrideWarnings, setOverrideWarnings] = useState(false);
   const [webGap, setWebGap] = useState(
     String(liveWebDiscountPct ?? CODE_WEB_DISCOUNT_PCT)
   );
 
   const closePending = () => {
     setPending(null);
-    setOverrideWarnings(false);
   };
 
   const gapValue = Math.min(
@@ -113,7 +111,6 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
   }, [pending, gapValue]);
 
   const openPending = (c: PushCandidate) => {
-    setOverrideWarnings(false);
     setPending(c);
   };
 
@@ -233,10 +230,10 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
                   you never approved.
                 </p>
               )}
-              {!preflight.blocked && preflight.hasWarnings && !overrideWarnings && (
-                <Button size="sm" variant="outline" onClick={() => setOverrideWarnings(true)}>
-                  I've read these — let me publish
-                </Button>
+              {!preflight.blocked && preflight.hasWarnings && (
+                <p className="text-xs text-muted-foreground">
+                  These are advisory checks only. Review them above, then use the push button below.
+                </p>
               )}
             </div>
           )}
@@ -249,8 +246,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
               onClick={confirmPush}
               disabled={
                 busy ||
-                !!preflight?.blocked ||
-                (!!preflight?.hasWarnings && !overrideWarnings)
+                !!preflight?.blocked
               }
             >
               <Rocket className="mr-1 h-4 w-4" /> Yes, push {pending?.label} live
