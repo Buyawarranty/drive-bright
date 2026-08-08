@@ -168,10 +168,6 @@ export function priceFromPricingModel(
     l => Number(l.rate) === Number(options.labourRate),
     l => Math.abs(Number(l.rate) - Number(options.labourRate))
   );
-  // Excess is NOT a multiplier here. Quotes & Orders uses exactly the same
-  // 12-instalment logic as the customer journey: a flat £/mo difference vs the
-  // £100 "Balanced" baseline, applied once to the whole-term total.
-PLACEHOLDER_EXCESS
 
   const annualBase =
     Number(ageBand.oneYear) *
@@ -184,7 +180,17 @@ PLACEHOLDER_EXCESS
   const floored = modelFloor ? Math.max(annualBase, modelFloor) : annualBase;
   const annual = floored * claimFactor * labourFactor;
 
-  let total = annual * termMult + excessAdjustment;
+  // Excess is PROPORTIONAL to the price of the cover (£100 "Balanced" = baseline),
+  // exactly as the customer journey prices it — a flat £/mo table made £0 and £500
+  // land within a few pounds of each other on a normal quote.
+  const baseTermTotal = annual * termMult;
+  const excessAdjustment = getExcessTotalAdjustment(
+    options.paymentPeriod as '12months' | '24months' | '36months',
+    Number(options.voluntaryExcess),
+    baseTermTotal
+  );
+
+  let total = baseTermTotal + excessAdjustment;
   if (options.transferCover) total += 19;
   total = Math.round(total);
 
