@@ -633,12 +633,13 @@ export default function PriceTestStep2({
               <p className="mt-1 text-xs text-muted-foreground">Higher rate = more garage choice</p>
             </div>
 
-            {/* Excess — canonical Step 3 options, filtered by the live visibility rules */}
+            {/* Excess — canonical Step 3 options, priced as a flat £/mo difference */}
             <div>
               <Label className="mb-2 block">Excess Amount</Label>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {JOURNEY_EXCESS_OPTIONS.map(e => {
                   const allowed = visibleExcesses.includes(e.value);
+                  const delta = getExcessMonthlyDelta(term.period as PaymentPeriod, e.value);
                   return (
                     <OptionTile
                       key={e.value}
@@ -646,17 +647,25 @@ export default function PriceTestStep2({
                       onClick={() => allowed && setExcess(e.value)}
                       disabled={!allowed}
                       title={e.label}
-                      subtitle={allowed ? e.description : 'Not shown with this claim limit / term'}
-                      note={allowed ? `×${nearestFactor(excessFactors, x => x.excess, e.value).toFixed(2)}` : undefined}
+                      subtitle={allowed ? e.description : 'Only on warranties over £500'}
+                      note={
+                        allowed
+                          ? delta === 0
+                            ? 'baseline'
+                            : `${delta > 0 ? '+' : '−'}£${Math.abs(delta)}/mo`
+                          : undefined
+                      }
                     />
                   );
                 })}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                Lower excess = higher monthly cost. Excess is never shown above 25% of the claim limit,
-                and £500 needs a £3,000+ claim limit on 2 or 3-year cover.
+                Lower excess = higher monthly cost. Each tier is a flat £/mo difference vs the £100
+                “Balanced” baseline, and £250/£500 only unlock on warranties of £500+ — exactly as on
+                Step 3 and Quotes &amp; Orders.
               </p>
             </div>
+
 
             {/* Claim limit — the four AutoCare tiers the customer sees */}
             <div>
