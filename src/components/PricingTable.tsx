@@ -940,7 +940,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // Memoized total price calculation - EXACT Excel price + adjustments (no marketing discount applied)
   // Includes: base + labour rate + add-ons + premium claim surcharge + boost addon
   const totalPrice = useMemo(() => {
-    return basePlanPrice + labourRateTotalAdjustment + addOnPrice + premiumClaimSurcharge + boostTotalAdjustment + getExcessTotalAdjustment(paymentType as PaymentPeriod, voluntaryExcess ?? 100);
+    return basePlanPrice + labourRateTotalAdjustment + addOnPrice + premiumClaimSurcharge + boostTotalAdjustment + getExcessTotalAdjustment(paymentType as PaymentPeriod, voluntaryExcess ?? 100, basePlanPrice);
     // voluntaryExcess + paymentType MUST stay in the deps: the excess adjustment is
     // read straight from them, so leaving them out froze the price whenever the base
     // grid price didn't change (e.g. floor-bound vehicles).
