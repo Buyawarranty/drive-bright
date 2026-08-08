@@ -53,6 +53,19 @@ export function QuickReassignPanel({ className }: { className?: string }) {
     ]);
 
     const { tally, movable, unassigned: none, total: all } = tallyByAgent(leads);
+
+    // Newest-first ids of the leads that can still be moved, per agent. Passing
+    // these explicit ids to the RPC keeps the reassign fast (the old call made
+    // the database re-scan every lead the agent has ever held, which timed out).
+    const movableIdsByAgent = new Map<string, string[]>();
+    [...leads]
+      .filter(l => l.assigned_to && !l.worked)
+      .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+      .forEach(l => {
+        const arr = movableIdsByAgent.get(l.assigned_to!) || [];
+        arr.push(l.id);
+        movableIdsByAgent.set(l.assigned_to!, arr);
+      });
     setUnassigned(none);
     setTotalSince6pm(all);
 
@@ -66,6 +79,7 @@ export function QuickReassignPanel({ className }: { className?: string }) {
         name: `${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email || 'Unknown',
         count: tally.get(a.id) || 0,
         movable: movable.get(a.id) || 0,
+        movableIds: movableIdsByAgent.get(a.id) || [],
       }))
       .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
@@ -97,11 +111,16 @@ export function QuickReassignPanel({ className }: { className?: string }) {
     }
     setBusyId(from.id);
     try {
+      const ids = from.movableIds.slice(0, amount);
+      if (ids.length === 0) {
+        throw new Error('No movable leads left in this window — refresh and try again.');
+      }
       const { data, error } = await supabase.rpc('bulk_reassign_leads_to_agent', {
         p_from_agent: from.id,
         p_to_agent: toAgent,
-        p_limit: amount,
-        p_include_customers: true,
+        p_lead_ids: ids,
+        p_limit: ids.length,
+        p_include_customers: false,
         p_skip_worked: true,
       } as any);
       if (error) throw error;
@@ -117,7 +136,14 @@ export function QuickReassignPanel({ className }: { className?: string }) {
       setCounts((c) => ({ ...c, [from.id]: '' }));
       await load();
     } catch (e: any) {
-      toast({ title: 'Could not reassign', description: e.message, variant: 'destructive' });
+      const msg = String(e?.message || '');
+      toast({
+        title: 'Could not reassign',
+        description: /timeout|57014/i.test(msg)
+          ? 'The move took too long. Try a smaller number of leads.'
+          : msg || 'Unknown error — please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setBusyId(null);
     }
