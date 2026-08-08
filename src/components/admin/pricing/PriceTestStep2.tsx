@@ -277,6 +277,7 @@ export default function PriceTestStep2({
    * £100 "Balanced" baseline that Step 3/4 and Quotes & Orders use, applied once to
    * the whole-term total. Each term has its own stored delta table.
    */
+  const excessBase = calc ? 0 : 0; // base is applied per-term below
   const excessMonthlyDelta = getExcessMonthlyDelta(term.period as PaymentPeriod, excess);
   const excessAdjustment = getExcessTotalAdjustment(term.period as PaymentPeriod, excess);
 
@@ -368,7 +369,8 @@ export default function PriceTestStep2({
     if (referral || !calc) return [];
     return TERMS.map(t => {
       // Each term applies its OWN stored excess delta table — never the 12mo one.
-      let total = calc.annual * t.mult + getExcessTotalAdjustment(t.period as PaymentPeriod, excess);
+      const termBase = calc.annual * t.mult;
+      let total = termBase + getExcessTotalAdjustment(t.period as PaymentPeriod, excess, termBase);
       if (discount) {
         total -=
           discount.kind === 'flat' ? Math.min(discount.value, total) : (total * discount.value) / 100;

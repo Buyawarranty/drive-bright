@@ -245,8 +245,8 @@ export function buildAdminMatrixFromModel(model: AgeBandModel): Record<string, R
    * Excess is a flat £/mo difference vs the £100 "Balanced" baseline (per term),
    * exactly as Step 3/4 and Quotes & Orders price it — never a multiplier.
    */
-  const excessAdjustmentFor = (period: string, excess: number) =>
-    getExcessTotalAdjustment(period as PaymentPeriod, excess);
+  const excessAdjustmentFor = (period: string, excess: number, base?: number) =>
+    getExcessTotalAdjustment(period as PaymentPeriod, excess, base);
 
 
   /**
