@@ -434,7 +434,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const priceMatchCompetitorPrice = (() => {
     const m = priceMatchCompetitor.replace(/,/g, '').match(/(\d+(?:\.\d+)?)/g);
     if (!m || m.length === 0) return null;
-    const val = parseFloat(m[m.length - 1]);
+    const val = Math.round(parseFloat(m[m.length - 1]));
     return Number.isFinite(val) && val > 0 ? val : null;
   })();
   // Lowest price allowed under price match: 10% cheaper than the competitor
@@ -448,7 +448,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [depositAmountInput, setDepositAmountInput] = useState('');
   const [depositDueDate, setDepositDueDate] = useState('');
   const depositAmountValue = (() => {
-    const v = parseFloat((depositAmountInput || '').replace(/[^0-9.]/g, ''));
+    // Whole pounds only — deposits and balances never carry pence.
+    const v = Math.round(parseFloat((depositAmountInput || '').replace(/[^0-9.]/g, '')));
     return Number.isFinite(v) && v > 0 ? v : null;
   })();
 
@@ -3074,7 +3075,7 @@ Questions? Call 0330 229 5040`;
                 next_due_date: depositDueDate || null,
                 status: 'in_progress',
                 reminder_enabled: true,
-                reminder_note: `Deposit taken — chase £${Math.max(0, totalDue - (depositAmountValue || 0)).toFixed(2)} balance`,
+                reminder_note: `Deposit taken — chase £${Math.round(Math.max(0, totalDue - (depositAmountValue || 0)))} balance`,
                 created_by: adminUserRecordId,
               } as any,
               { onConflict: 'customer_id' },
