@@ -498,6 +498,24 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
             </div>
 
 
+            {/* Quick actions: weekday defaults + save */}
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                disabled={!canEditFor(editingAgent.id) || saving}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                onClick={() => setWeekdaysFullDay(editingAgent.id)}
+              >
+                <Check className="h-4 w-4 mr-1" strokeWidth={3} /> Select all weekdays (Mon–Fri)
+              </Button>
+              <Button size="sm" variant="outline" disabled={saving} onClick={saveRota}>
+                {saving ? 'Saving…' : 'Save rota'}
+              </Button>
+              <span className="text-[11px] text-muted-foreground">
+                Changes save instantly · double-click a day to set it as a full day
+              </span>
+            </div>
+
             {/* 7-day calendar strip */}
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
               {days.map((d) => {
@@ -512,6 +530,8 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                 return (
                   <div
                     key={d.toISOString()}
+                    onDoubleClick={() => !disabled && toggleDay(editingAgent!.id, d, 'full_day')}
+                    title="Double-click to set as a full working day"
                     className={cn(
                       'rounded-lg border p-2 flex flex-col',
                       isWorking
