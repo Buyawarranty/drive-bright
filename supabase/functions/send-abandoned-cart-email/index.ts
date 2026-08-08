@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { logCustomerEmail } from '../_shared/log-email.ts';
 import { buildUnsubscribeFooter } from "../_shared/unsubscribe-footer.ts";
+import { EMAIL_RESPONSIVE_STYLE } from "../_shared/email-layout.ts";
 
 // Utility functions for retrying fetch requests
 const timedFetch = (url: string, options: RequestInit, timeout = 30000): Promise<Response> => {

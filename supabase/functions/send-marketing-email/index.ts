@@ -3,6 +3,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { requireAdmin } from "../_shared/admin-auth.ts";
 import { buildUnsubscribeFooter } from "../_shared/unsubscribe-footer.ts";
+import { EMAIL_RESPONSIVE_STYLE } from "../_shared/email-layout.ts";
 
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -157,11 +158,12 @@ const handler = async (req: Request): Promise<Response> => {
             to: [recipientEmail],
             subject: subject,
             html: `
-              <div style="font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #ffffff;">
+              ${EMAIL_RESPONSIVE_STYLE}
+              <div class="baw-wrap baw-pad" style="font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #ffffff;">
                 <div style="text-align: center; padding-bottom: 20px;">
                   <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" width="180" alt="Buy A Warranty" style="max-width: 100%; height: auto;" />
                 </div>
-                <div style="color: #484848; font-size: 16px; line-height: 1.55; margin-bottom: 28px;">${htmlContent}</div>
+                <div class="baw-text" style="color: #484848; font-size: 16px; line-height: 1.55; margin-bottom: 28px;">${htmlContent}</div>
                 <hr style="border: none; border-top: 1px solid #e6ebf1; margin: 24px 0;" />
                 ${unsubFooter}
               </div>
