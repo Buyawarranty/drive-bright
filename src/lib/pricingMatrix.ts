@@ -233,15 +233,46 @@ export const EXCESS_TIER_STEP_BY_PERIOD: Record<PaymentPeriod, number> = {
  * Ratios come from the reference grid so the steps feel the same as the matrix.
  */
 export const EXCESS_FLOOR_MULTIPLIER: Record<number, number> = {
-  0: 1.28,
-  50: 1.18,
-  100: 1.08,
+  0: 1.0,
+  50: 1.0,
+  100: 1.0,
   150: 1.0,
-  // Higher excess earns a modest saving only — the customer is taking on £250/£500
-  // of risk, not buying half a warranty. Capped at ~18% below the £150 tier.
-  250: 0.9,
-  500: 0.82,
+  250: 1.0,
+  500: 1.0,
 };
+
+/**
+ * The excess a price is quoted at before any excess adjustment is applied.
+ * £100 = "Balanced" = £0 difference.
+ */
+export const EXCESS_BASELINE = 100;
+
+/**
+ * Voluntary excess price difference, expressed as £ per monthly instalment
+ * (instalments are always 12, so the total adjustment is delta × 12).
+ * Positive = costs more (lower excess), negative = saving (higher excess).
+ */
+export const EXCESS_MONTHLY_DELTA: Record<PaymentPeriod, Record<number, number>> = {
+  '12months': { 0: 5, 50: 3, 100: 0, 150: -2, 250: -5, 500: -9 },
+  '24months': { 0: 3, 50: 2, 100: 0, 150: -1, 250: -3, 500: -5 },
+  '36months': { 0: 2, 50: 1, 100: 0, 150: -1, 250: -2, 500: -3 },
+};
+
+/** £ per month difference vs the £100 baseline for the given term + excess. */
+export function getExcessMonthlyDelta(paymentPeriod: PaymentPeriod, excess: number): number {
+  const table = EXCESS_MONTHLY_DELTA[paymentPeriod] ?? EXCESS_MONTHLY_DELTA['12months'];
+  if (table[excess] !== undefined) return table[excess];
+  const keys = Object.keys(table).map(Number);
+  const nearest = keys.reduce((best, k) =>
+    Math.abs(k - excess) < Math.abs(best - excess) ? k : best, keys[0]);
+  return table[nearest] ?? 0;
+}
+
+/** Total (whole-term) price difference vs the £100 baseline. */
+export function getExcessTotalAdjustment(paymentPeriod: PaymentPeriod, excess: number): number {
+  return getExcessMonthlyDelta(paymentPeriod, excess) * 12;
+}
+
 
 export const CLAIM_LIMIT_FLOOR_MULTIPLIER: Record<number, number> = {
   750: 0.89,
@@ -496,7 +527,9 @@ export function getBasePrice(
 
   if (LIVE_ADMIN_MATRIX) {
     const periodData = LIVE_ADMIN_MATRIX[paymentPeriod] || LIVE_ADMIN_MATRIX['12months'];
-    const excessData = periodData?.[String(voluntaryExcess)] || periodData?.[String(DEFAULT_EXCESS)];
+    // Excess is priced by an explicit £/mo difference (see EXCESS_MONTHLY_DELTA),
+    // so the grid is always read at the £100 baseline column.
+    const excessData = periodData?.[String(EXCESS_BASELINE)] || periodData?.[String(voluntaryExcess)] || periodData?.[String(DEFAULT_EXCESS)];
     const adminPrice =
       excessData?.[String(pricingClaimLimit)] ?? excessData?.[String(DEFAULT_CLAIM_LIMIT)];
     if (typeof adminPrice === 'number') {
@@ -511,7 +544,7 @@ export function getBasePrice(
   }
 
   const periodData = BASE_PRICING_MATRIX[paymentPeriod] || BASE_PRICING_MATRIX['12months'];
-  const excessData = periodData[voluntaryExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
+  const excessData = periodData[EXCESS_BASELINE as ExcessAmount] || periodData[voluntaryExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
 
   const codePrice = excessData[pricingClaimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
   return applyCustomerJourneyUplift(withFactor(codePrice), surface);
@@ -658,7 +691,10 @@ export function calculateTotalWarrantyPrice(params: {
   const boostAdjustment = calculateBoostAdjustment(boostEnabled, paymentPeriod);
 
   // 6. Add protection add-ons (Transfer Cover is £19 one-off, handled by caller)
-  const rawTotal = flooredBase + labourAdjustment + boostAdjustment + addOnPrice;
+  // 5b. Voluntary excess difference (explicit £/mo table, £100 = £0)
+  const excessAdjustment = getExcessTotalAdjustment(paymentPeriod, voluntaryExcess);
+
+  const rawTotal = flooredBase + labourAdjustment + boostAdjustment + excessAdjustment + addOnPrice;
   // A model-specific minimum is absolute: a £50/hr labour discount can never take the
   // quote below it (add-ons are excluded from the comparison as they are extras).
   const ruleMin = getVehicleRuleMinPrice(vehicleName, paymentPeriod) ?? 0;
@@ -730,49 +766,43 @@ export function formatGBP(amount: number, showPence = false): string {
 }
 
 /**
- * Minimum total warranty price required before the £500 excess tier is offered.
- * A £500 excess on a cheap policy is poor value for the customer, so it is only
- * shown once the warranty itself costs more than £500.
+ * Which excesses are available, by warranty price bracket:
+ *   £200–£299  → £0 / £50 / £100 / £150
+ *   £300–£499  → £0 / £50 / £100 / £150 / £250
+ *   £500–£3,000 → £0 / £50 / £100 / £150 / £250 / £500
  */
-export const EXCESS_500_MIN_WARRANTY_PRICE = 500;
+export const EXCESS_PRICE_BRACKETS: { minPrice: number; options: number[] }[] = [
+  { minPrice: 500, options: [0, 50, 100, 150, 250, 500] },
+  { minPrice: 300, options: [0, 50, 100, 150, 250] },
+  { minPrice: 0, options: [0, 50, 100, 150] },
+];
 
-/** Internal claim-limit values map to the figure the customer actually sees. */
-const DISPLAY_CLAIM_LIMIT: Record<number, number> = { 750: 1000, 1250: 2000 };
+/** Excess options allowed for a given total warranty price. */
+export function getExcessOptionsForPrice(warrantyPrice?: number | null): number[] {
+  if (typeof warrantyPrice !== 'number' || !Number.isFinite(warrantyPrice) || warrantyPrice <= 0) {
+    // Price not known yet — show the full ladder and let it narrow once priced.
+    return [0, 50, 100, 150, 250, 500];
+  }
+  return (
+    EXCESS_PRICE_BRACKETS.find((b) => warrantyPrice >= b.minPrice)?.options ?? [0, 50, 100, 150]
+  );
+}
 
 /**
- * Determines whether a given excess value is allowed for a specific
- * payment term and claim limit combination.
- *
- * Rules (matched with PriceTestStep2 excessAllowed):
- * 1. No excess above 25% of the DISPLAYED claim limit (customer-value guardrail).
- *    Internal grid values (750 = £1,000, 1250 = £2,000) are normalised first, so
- *    £250 excess stays available on AutoCare Basic.
- * 2. No £500 excess when claim limit < £3,000.
- * 3. No £500 excess on 1-year (12-month) cover.
- * 4. No £500 excess when the total warranty price is £500 or less.
+ * Determines whether a given excess value is allowed.
+ * Availability is driven purely by the warranty price bracket above; the £250
+ * and £500 tiers unlock at £300 and £500 respectively.
  */
 export function isExcessAllowed(
   excess: number,
-  paymentType: PaymentPeriod | string,
-  claimLimit: number,
+  _paymentType: PaymentPeriod | string,
+  _claimLimit: number,
   /** Total warranty price for the current selection, when known. */
   warrantyPrice?: number | null,
 ): boolean {
-  const displayLimit = DISPLAY_CLAIM_LIMIT[claimLimit] ?? claimLimit;
-  if (excess > displayLimit * 0.25) return false;
-  if (excess === 500 && displayLimit < 3000) return false;
-  if (excess === 500 && paymentType === '12months') return false;
-  if (
-    excess === 500 &&
-    typeof warrantyPrice === 'number' &&
-    Number.isFinite(warrantyPrice) &&
-    warrantyPrice > 0 &&
-    warrantyPrice <= EXCESS_500_MIN_WARRANTY_PRICE
-  ) {
-    return false;
-  }
-  return true;
+  return getExcessOptionsForPrice(warrantyPrice).includes(excess);
 }
+
 
 /**
  * Filters the standard excess options array [0, 50, 100, 150, 250, 500]

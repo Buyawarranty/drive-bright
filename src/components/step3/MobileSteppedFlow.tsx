@@ -3,6 +3,8 @@ import { ArrowRight, ArrowLeft, Check, Lock, Shield, ShieldCheck, Car, Wrench, B
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle } from '@/lib/claimLimitTiers';
+import { getVisibleExcessOptions, getExcessMonthlyDelta } from '@/lib/pricingMatrix';
+import type { PaymentPeriod } from '@/lib/pricingMatrix';
 import { getMarketingSavings, type PaymentPeriod } from '@/lib/pricingMatrix';
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
@@ -403,7 +405,14 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                 Higher excess lowers your monthly payments
               </p>
               <div className="grid grid-cols-3 gap-2.5">
-                {EXCESS_OPTIONS.map(ex => {
+                {EXCESS_OPTIONS.filter(ex =>
+                  getVisibleExcessOptions(
+                    paymentType || '24months',
+                    selectedClaimLimit,
+                    currentMonthlyPrice ? currentMonthlyPrice * 12 : null,
+                  ).includes(ex.value),
+                ).map(ex => {
+                  const delta = getExcessMonthlyDelta((paymentType || '24months') as PaymentPeriod, ex.value);
                   const selected = voluntaryExcess === ex.value;
                   return (
                     <button
@@ -420,6 +429,9 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                         </span>
                       )}
                       <div className="text-base font-bold text-foreground">{ex.label}</div>
+                      <div className="text-[10px] font-semibold text-muted-foreground leading-snug">
+                        {delta === 0 ? '£0' : delta > 0 ? `+£${delta}/mo` : `−£${Math.abs(delta)}/mo`}
+                      </div>
                       {EXCESS_SUITABILITY[ex.value] && (
                         <div className="mt-1 text-[10px] font-semibold text-emerald-700 leading-snug">
                           {EXCESS_SUITABILITY[ex.value]}

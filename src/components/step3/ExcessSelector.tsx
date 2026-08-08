@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Check, Info } from 'lucide-react';
 import ExcessDetails from './ExcessDetails';
-import { getVisibleExcessOptions } from '@/lib/pricingMatrix';
+import { getVisibleExcessOptions, getExcessMonthlyDelta } from '@/lib/pricingMatrix';
+import type { PaymentPeriod } from '@/lib/pricingMatrix';
 
 interface ExcessSelectorProps {
   selectedExcess: number | null;
@@ -15,13 +16,20 @@ interface ExcessSelectorProps {
 }
 
 const ALL_EXCESS_OPTIONS = [
-  { value: 0, label: '£0', description: 'No Excess', hint: '+£14/mo' },
-  { value: 50, label: '£50', description: 'Low Excess', hint: '+£10/mo' },
-  { value: 100, label: '£100', description: 'Balanced', hint: '+£4/mo' },
-  { value: 150, label: '£150', description: 'Best Value', hint: 'Best value', isRecommended: true },
-  { value: 250, label: '£250', description: 'Lower Monthly Cost', hint: '−£3/mo' },
-  { value: 500, label: '£500', description: 'Maximum Saving', hint: '−£6/mo' },
+  { value: 0, label: '£0', description: 'No Excess' },
+  { value: 50, label: '£50', description: 'Low Excess' },
+  { value: 100, label: '£100', description: 'Balanced' },
+  { value: 150, label: '£150', description: 'Best Value', isRecommended: true },
+  { value: 250, label: '£250', description: 'Lower Monthly Cost' },
+  { value: 500, label: '£500', description: 'Maximum Saving' },
 ];
+
+/** £/mo difference vs the £100 baseline, straight from the pricing engine. */
+const excessHint = (paymentType: string, excess: number): string => {
+  const delta = getExcessMonthlyDelta(paymentType as PaymentPeriod, excess);
+  if (delta === 0) return '£0';
+  return delta > 0 ? `+£${delta}/mo` : `−£${Math.abs(delta)}/mo`;
+};
 
 const ExcessSelector: React.FC<ExcessSelectorProps> = ({
   selectedExcess,
@@ -33,10 +41,8 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
 }) => {
   const [detailsOpen, setDetailsOpen] = useState(false);
 
-  // Filter excess options by term + claim limit + warranty price:
-  // - No £500 on 1-year cover
-  // - No £500 when claim limit < £3,000
-  // - No £500 when the warranty itself costs £500 or less
+  // Availability follows the warranty price bracket:
+  // £200–£299 → up to £150, £300–£499 → adds £250, £500+ → adds £250 and £500
   const excessOptions = ALL_EXCESS_OPTIONS.filter((opt) =>
     getVisibleExcessOptions(paymentType, claimLimit, totalPrice).includes(opt.value),
   );
@@ -103,7 +109,7 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
                 <span className="font-bold text-base">{option.label}</span>
               </span>
               <span className="text-xs font-semibold text-foreground leading-tight">{option.description}</span>
-              <span className="text-[11px] text-muted-foreground leading-tight mt-auto">{option.hint}</span>
+              <span className="text-[11px] text-muted-foreground leading-tight mt-auto">{excessHint(paymentType, option.value)}</span>
             </button>
           );
         })}
