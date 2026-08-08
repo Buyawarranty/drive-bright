@@ -799,9 +799,9 @@ export function formatGBP(amount: number, showPence = false): string {
  */
 export const EXCESS_PRICE_BRACKETS: { minPrice: number; options: number[] }[] = [
   { minPrice: 500, options: [0, 50, 100, 150, 250, 500] },
-  { minPrice: 300, options: [0, 50, 100, 150, 250] },
   { minPrice: 0, options: [0, 50, 100, 150] },
 ];
+
 
 /** Excess options allowed for a given total warranty price. */
 export function getExcessOptionsForPrice(warrantyPrice?: number | null): number[] {
