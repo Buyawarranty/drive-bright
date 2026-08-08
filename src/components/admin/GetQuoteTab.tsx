@@ -252,20 +252,24 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // Excess options come from the SAME canonical journey list as Steps 3/4 — not
   // from the pricing model's excessFactors — because excess is priced as a flat
   // £/mo difference over 12 instalments, identical on both surfaces.
+  // The £250/£500 tiers unlock by warranty price bracket, so the current quote
+  // total feeds the visibility rules (kept in state to avoid a circular read).
+  const [excessPriceBasis, setExcessPriceBasis] = useState<number | undefined>(undefined);
   const excessOptions = React.useMemo(
     () =>
       JOURNEY_EXCESS_OPTIONS.map(o => o.value)
         .filter((ex: number) =>
-          getVisibleExcessOptions(paymentType, claimLimit, currentPrice?.totalPrice).includes(ex)
+          getVisibleExcessOptions(paymentType, claimLimit, excessPriceBasis).includes(ex)
         )
         .sort((a: number, b: number) => a - b),
-    [paymentType, claimLimit, currentPrice?.totalPrice]
+    [paymentType, claimLimit, excessPriceBasis]
   );
   useEffect(() => {
     if (excessOptions.length && !excessOptions.includes(excessAmount)) {
       setExcessAmount(excessOptions.includes(150) ? 150 : excessOptions[0]);
     }
   }, [excessOptions, excessAmount]);
+
 
 
   const [ageOverrideEnabled, setAgeOverrideEnabled] = useState(false);
