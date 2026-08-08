@@ -50,6 +50,8 @@ import {
   MARKETING_SAVINGS,
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
+import { getExcessMonthlyDelta } from '@/lib/pricingMatrix';
+import { JOURNEY_EXCESS_OPTIONS } from '@/lib/pricing/journeyOptions';
 import { MIN_BASE_PRICE_BY_PERIOD } from '@/lib/pricingMatrix';
 import { priceFromPricingModel } from './pricing/modelQuoteEngine';
 
@@ -247,21 +249,28 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // that — but agents still see the option so they can quote consistently.
   const getVisibleClaimLimits = (_vehicleMake?: string) => claimLimitOptions;
 
-  // Excess options are the pricing model's excess list, filtered by term +
-  // claim limit (no £500 on 1-year cover, none above 25% of the claim limit).
+  // Excess options come from the SAME canonical journey list as Steps 3/4 — not
+  // from the pricing model's excessFactors — because excess is priced as a flat
+  // £/mo difference over 12 instalments, identical on both surfaces.
+  // The £250/£500 tiers unlock by warranty price bracket, so the current quote
+  // total feeds the visibility rules (kept in state to avoid a circular read).
+  const [excessPriceBasis, setExcessPriceBasis] = useState<number | undefined>(undefined);
   const excessOptions = React.useMemo(
     () =>
-      pricingModel.excessFactors
-        .map((e: { excess: number }) => Number(e.excess))
-        .filter((ex: number) => getVisibleExcessOptions(paymentType, claimLimit).includes(ex))
+      JOURNEY_EXCESS_OPTIONS.map(o => o.value)
+        .filter((ex: number) =>
+          getVisibleExcessOptions(paymentType, claimLimit, excessPriceBasis).includes(ex)
+        )
         .sort((a: number, b: number) => a - b),
-    [pricingModel.excessFactors, paymentType, claimLimit]
+    [paymentType, claimLimit, excessPriceBasis]
   );
   useEffect(() => {
     if (excessOptions.length && !excessOptions.includes(excessAmount)) {
       setExcessAmount(excessOptions.includes(150) ? 150 : excessOptions[0]);
     }
   }, [excessOptions, excessAmount]);
+
+
 
   const [ageOverrideEnabled, setAgeOverrideEnabled] = useState(false);
   const [showAgeOverrideConfirm, setShowAgeOverrideConfirm] = useState(false);
@@ -1202,6 +1211,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     : Math.ceil(Number(currentPrice.monthlyPrice || 0) * 12);
   const displayedPayInFullPrice = currentPrice.payInFullPrice || (includePayInFullDiscount ? Math.ceil(displayedTotalPrice * 0.9) : displayedTotalPrice);
   const displayedPayInFullSavings = Math.max(displayedTotalPrice - displayedPayInFullPrice, 0);
+
+  // Feed the quote total back into the excess visibility brackets (£250 unlocks
+  // from £300, £500 from £500) so Q&O matches Step 3 exactly.
+  useEffect(() => {
+    const total = Number(currentPrice?.totalPrice || 0) || undefined;
+    setExcessPriceBasis(prev => (prev === total ? prev : total));
+  }, [currentPrice?.totalPrice]);
+
+
 
   /**
    * Audit-only record of a manual price override (no blocking, no price change).
@@ -4084,27 +4102,44 @@ Questions? Call 0330 229 5040`;
                   <p className="text-xs text-muted-foreground">Higher rate = more garage choice</p>
                 </div>
 
-                {/* Excess - Quick Select Chips */}
+                {/* Excess - Quick Select Chips (canonical journey labels + live £/mo delta) */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Excess Amount</Label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {excessOptions.map((excess) => (
-                      <button
-                        key={excess}
-                        onClick={() => setExcessAmount(excess)}
-                        className={cn(
-                          "py-3 px-2 rounded-lg border-2 text-center font-semibold transition-all",
-                          excessAmount === excess
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
-                        )}
-                      >
-                        £{excess}
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-3 gap-2">
+                    {excessOptions.map((excess) => {
+                      const meta = JOURNEY_EXCESS_OPTIONS.find(o => o.value === excess);
+                      const delta = getExcessMonthlyDelta(paymentType as PaymentPeriod, excess);
+                      return (
+                        <button
+                          key={excess}
+                          onClick={() => setExcessAmount(excess)}
+                          className={cn(
+                            "py-2.5 px-2 rounded-lg border-2 text-center transition-all",
+                            excessAmount === excess
+                              ? "border-primary bg-primary/10"
+                              : "border-border hover:border-primary/50"
+                          )}
+                        >
+                          <div className="font-semibold">£{excess}</div>
+                          <div className="text-[11px] text-muted-foreground leading-tight">
+                            {meta?.description}
+                          </div>
+                          <div className="text-[11px] font-medium">
+                            {delta === 0
+                              ? '£0'
+                              : delta > 0
+                                ? `+£${delta}/mo`
+                                : `−£${Math.abs(delta)}/mo`}
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <p className="text-xs text-muted-foreground">Lower excess = higher monthly cost</p>
+                  <p className="text-xs text-muted-foreground">
+                    Priced as a flat £/mo difference vs £100 (Balanced), over 12 instalments — identical to Step 3.
+                  </p>
                 </div>
+
 
                 {/* Claim Limit - Quick Select Chips */}
                 <div className="space-y-3">
