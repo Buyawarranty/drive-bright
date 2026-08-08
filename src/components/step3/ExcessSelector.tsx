@@ -29,14 +29,16 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
   currentMonthlyPrice,
   paymentType = '24months',
   claimLimit = 2000,
+  totalPrice,
 }) => {
   const [detailsOpen, setDetailsOpen] = useState(false);
 
-  // Filter excess options by term + claim limit:
+  // Filter excess options by term + claim limit + warranty price:
   // - No £500 on 1-year cover
   // - No £500 when claim limit < £3,000
+  // - No £500 when the warranty itself costs £500 or less
   const excessOptions = ALL_EXCESS_OPTIONS.filter((opt) =>
-    getVisibleExcessOptions(paymentType, claimLimit).includes(opt.value),
+    getVisibleExcessOptions(paymentType, claimLimit, totalPrice).includes(opt.value),
   );
 
   useEffect(() => {
