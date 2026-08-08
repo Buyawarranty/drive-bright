@@ -284,7 +284,7 @@ export const isVehicleExcluded = (make?: string | null, model?: string | null): 
 export const getExclusionReason = (make?: string | null, model?: string | null): string | null => {
   if (isExcludedMake(make)) return `${(make || '').trim()} — make not covered`;
   const m = normalise(make);
-  const mod = normalise(model);
+  const mod = stripCosmeticTrims(model);
   const combined = `${m} ${mod}`.trim();
   const rule = EXCLUDED_MODEL_RULES.find(
     (r) =>
