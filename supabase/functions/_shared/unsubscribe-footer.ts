@@ -36,13 +36,13 @@ export function buildContactRow(): string {
   return `
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin: 8px 0 20px;">
         <tr>
-          <td align="center" style="padding: 6px; border-right: 1px solid #e6ebf1; font-size: 13px; font-family: Arial, Helvetica, sans-serif;">
+          <td align="center" class="baw-stack" style="padding: 6px; border-right: 1px solid #e6ebf1; font-size: 13px; font-family: Arial, Helvetica, sans-serif;">
             <a href="https://buyawarranty.co.uk" style="color: ${BRAND_LINK}; text-decoration: none;">&#127760;&nbsp; buyawarranty.co.uk</a>
           </td>
-          <td align="center" style="padding: 6px; border-right: 1px solid #e6ebf1; font-size: 13px; font-family: Arial, Helvetica, sans-serif;">
+          <td align="center" class="baw-stack" style="padding: 6px; border-right: 1px solid #e6ebf1; font-size: 13px; font-family: Arial, Helvetica, sans-serif;">
             <a href="mailto:support@buyawarranty.co.uk" style="color: ${BRAND_LINK}; text-decoration: none;">&#9993;&nbsp; support@buyawarranty.co.uk</a>
           </td>
-          <td align="center" style="padding: 6px; font-size: 13px; font-family: Arial, Helvetica, sans-serif;">
+          <td align="center" class="baw-stack" style="padding: 6px; font-size: 13px; font-family: Arial, Helvetica, sans-serif;">
             <a href="tel:03302295040" style="color: ${BRAND_LINK}; text-decoration: none;">&#128222;&nbsp; 0330 229 5040</a>
           </td>
         </tr>
@@ -61,23 +61,23 @@ export function buildUnsubscribeFooter(email: string, options: UnsubFooterOption
   const reason = options.reason ?? 'You received this email because you requested a warranty quote from Buy A Warranty.';
 
   const softLink = softLabel
-    ? `<a href="${essentialsUrl}" style="color: ${BRAND_LINK}; font-size: 13px; font-weight: 600; text-decoration: underline;">${softLabel}</a>
-        <span style="color: #cbd5e1; padding: 0 10px;">|</span>`
+    ? `<a href="${essentialsUrl}" style="color: ${BRAND_LINK}; font-size: 13px; font-weight: 600; text-decoration: underline; display: inline-block; padding: 6px 0;">${softLabel}</a>
+        <span class="baw-hide-sm" style="color: #cbd5e1; padding: 0 10px;">|</span><br class="baw-only-sm" />`
     : '';
 
   return `
       ${options.includeContactRow ? buildContactRow() : ''}
-      <div style="background-color: #f1f5fb; border-radius: 10px; padding: 20px; margin: 8px 0 16px; font-family: Arial, Helvetica, sans-serif;">
+      <div class="baw-pad-sm" style="background-color: #f1f5fb; border-radius: 10px; padding: 20px; margin: 8px 0 16px; font-family: Arial, Helvetica, sans-serif;">
         <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;">
           <tr>
-            <td width="64" valign="top" style="padding-right: 14px;">
+            <td width="64" valign="top" class="baw-hide-sm" style="padding-right: 14px;">
               <div style="width: 52px; height: 52px; border-radius: 26px; background-color: #dce7f8; text-align: center; line-height: 52px; font-size: 24px; color: #0A2A66;">&#9993;</div>
             </td>
             <td valign="top">
               <p style="color: #1a1a1a; font-size: 15px; font-weight: 700; margin: 0 0 6px 0;">${title}</p>
-              <p style="color: #6b7280; font-size: 13px; line-height: 1.5; margin: 0 0 12px 0;">${blurb}</p>
+              <p style="color: #6b7280; font-size: 13px; line-height: 1.5; margin: 0 0 8px 0;">${blurb}</p>
               ${softLink}
-              <a href="${unsubscribeUrl}" style="color: ${BRAND_LINK}; font-size: 13px; font-weight: 600; text-decoration: underline;">Unsubscribe from marketing emails</a>
+              <a href="${unsubscribeUrl}" style="color: ${BRAND_LINK}; font-size: 13px; font-weight: 600; text-decoration: underline; display: inline-block; padding: 6px 0;">Unsubscribe from marketing emails</a>
             </td>
           </tr>
         </table>
