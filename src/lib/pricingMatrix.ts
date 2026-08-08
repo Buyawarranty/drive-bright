@@ -829,6 +829,29 @@ export function isExcessAllowed(
   return getExcessOptionsForPrice(warrantyPrice).includes(excess);
 }
 
+/**
+ * CANONICAL bracket basis. The £250/£500 tiers unlock on the warranty price at the
+ * £100 "Balanced" baseline — never on the already-discounted total of the excess
+ * currently selected. Without this, picking £500 could drop the total under £500
+ * and hide the very option just chosen, and Quotes & Orders could bracket a
+ * vehicle differently from Step 3/4. Every surface must pass its total through here.
+ */
+export function getExcessBracketBasis(
+  paymentType: PaymentPeriod | string,
+  totalPrice?: number | null,
+  selectedExcess?: number | null,
+): number | undefined {
+  const total = Number(totalPrice);
+  if (!Number.isFinite(total) || total <= 0) return undefined;
+  const adjustment = getExcessTotalAdjustment(
+    paymentType as PaymentPeriod,
+    Number(selectedExcess ?? 100),
+  );
+  return total - adjustment;
+}
+
+
+
 
 /**
  * Filters the standard excess options array [0, 50, 100, 150, 250, 500]
