@@ -1218,9 +1218,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   useEffect(() => {
     // Bracket on the £100-baseline total (same helper as Step 3/4) so the tiers
     // never flip just because a cheaper excess is currently selected.
-    const total = getExcessBracketBasis(paymentType, currentPrice?.totalPrice, voluntaryExcess);
+    const total = getExcessBracketBasis(paymentType, currentPrice?.totalPrice, excessAmount);
     setExcessPriceBasis(prev => (prev === total ? prev : total));
-  }, [currentPrice?.totalPrice, paymentType, voluntaryExcess]);
+  }, [currentPrice?.totalPrice, paymentType, excessAmount]);
 
 
 
