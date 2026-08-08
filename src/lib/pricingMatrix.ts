@@ -233,15 +233,46 @@ export const EXCESS_TIER_STEP_BY_PERIOD: Record<PaymentPeriod, number> = {
  * Ratios come from the reference grid so the steps feel the same as the matrix.
  */
 export const EXCESS_FLOOR_MULTIPLIER: Record<number, number> = {
-  0: 1.28,
-  50: 1.18,
-  100: 1.08,
+  0: 1.0,
+  50: 1.0,
+  100: 1.0,
   150: 1.0,
-  // Higher excess earns a modest saving only — the customer is taking on £250/£500
-  // of risk, not buying half a warranty. Capped at ~18% below the £150 tier.
-  250: 0.9,
-  500: 0.82,
+  250: 1.0,
+  500: 1.0,
 };
+
+/**
+ * The excess a price is quoted at before any excess adjustment is applied.
+ * £100 = "Balanced" = £0 difference.
+ */
+export const EXCESS_BASELINE = 100;
+
+/**
+ * Voluntary excess price difference, expressed as £ per monthly instalment
+ * (instalments are always 12, so the total adjustment is delta × 12).
+ * Positive = costs more (lower excess), negative = saving (higher excess).
+ */
+export const EXCESS_MONTHLY_DELTA: Record<PaymentPeriod, Record<number, number>> = {
+  '12months': { 0: 5, 50: 3, 100: 0, 150: -2, 250: -5, 500: -9 },
+  '24months': { 0: 3, 50: 2, 100: 0, 150: -1, 250: -3, 500: -5 },
+  '36months': { 0: 2, 50: 1, 100: 0, 150: -1, 250: -2, 500: -3 },
+};
+
+/** £ per month difference vs the £100 baseline for the given term + excess. */
+export function getExcessMonthlyDelta(paymentPeriod: PaymentPeriod, excess: number): number {
+  const table = EXCESS_MONTHLY_DELTA[paymentPeriod] ?? EXCESS_MONTHLY_DELTA['12months'];
+  if (table[excess] !== undefined) return table[excess];
+  const keys = Object.keys(table).map(Number);
+  const nearest = keys.reduce((best, k) =>
+    Math.abs(k - excess) < Math.abs(best - excess) ? k : best, keys[0]);
+  return table[nearest] ?? 0;
+}
+
+/** Total (whole-term) price difference vs the £100 baseline. */
+export function getExcessTotalAdjustment(paymentPeriod: PaymentPeriod, excess: number): number {
+  return getExcessMonthlyDelta(paymentPeriod, excess) * 12;
+}
+
 
 export const CLAIM_LIMIT_FLOOR_MULTIPLIER: Record<number, number> = {
   750: 0.89,
