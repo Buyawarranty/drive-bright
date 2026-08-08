@@ -272,7 +272,14 @@ export default function PriceTestStep2({
   // excess) always prices, even if the editor is missing that exact row.
   const claimFactor = nearestFactor(claimLimits, c => c.limit, claimLimit);
   const labourFactor = nearestFactor(labourRateFactors, l => l.rate, labour);
-  const excessFactor = nearestFactor(excessFactors, e => e.excess, excess);
+  /**
+   * Excess is NOT a multiplier any more. It is the SAME flat £/mo difference vs the
+   * £100 "Balanced" baseline that Step 3/4 and Quotes & Orders use, applied once to
+   * the whole-term total. Each term has its own stored delta table.
+   */
+  const excessMonthlyDelta = getExcessMonthlyDelta(term.period as PaymentPeriod, excess);
+  const excessAdjustment = getExcessTotalAdjustment(term.period as PaymentPeriod, excess);
+
   /** Chargeable add-on total for the selected term, priced exactly like Step 3/4. */
   const addOnTotalFor = (months: number) =>
     calculateAddOnPrice(addOns, periodForMonths(months), months);
