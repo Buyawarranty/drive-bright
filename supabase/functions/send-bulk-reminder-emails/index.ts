@@ -68,6 +68,15 @@ const handler = async (req: Request): Promise<Response> => {
       .select('email')
       .in('email', customerEmails);
     const blockedSet = new Set((blockedEmails || []).map((b: any) => b.email));
+
+    // Also respect the "stop quote reminders" (essentials-only) choice
+    const { data: essentialsRows } = await supabase
+      .from('marketing_audience')
+      .select('email')
+      .in('email', customerEmails)
+      .eq('frequency', 'essentials');
+    for (const row of essentialsRows || []) blockedSet.add((row as any).email);
+
     const filteredCustomers = customers.filter(c => !blockedSet.has(c.email.trim().toLowerCase()));
 
     if (blockedSet.size > 0) {

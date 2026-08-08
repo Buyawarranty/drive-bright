@@ -28,6 +28,24 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending ${reminderType} reminder to ${email}`);
 
+    // Never email someone who unsubscribed or asked for essential emails only
+    {
+      const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.45.0");
+      const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+      const clean = (email || '').trim().toLowerCase();
+      const [{ data: unsub }, { data: audience }] = await Promise.all([
+        sb.from('email_unsubscribes').select('email').eq('email', clean).limit(1),
+        sb.from('marketing_audience').select('frequency').eq('email', clean).maybeSingle(),
+      ]);
+      if ((unsub && unsub.length > 0) || (audience as any)?.frequency === 'essentials') {
+        console.log(`Skipping ${clean} - opted out of marketing reminders`);
+        return new Response(JSON.stringify({ success: true, skipped: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+    }
+
     const isUrgency = reminderType === 'urgency';
     const subject = isUrgency 
       ? "Only 9 days left to save 20%" 

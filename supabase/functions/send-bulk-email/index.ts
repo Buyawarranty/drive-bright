@@ -91,7 +91,15 @@ serve(async (req) => {
       .select('email')
       .in('email', allEmails);
     const blockedSet = new Set((blockedEmails || []).map((b: any) => b.email));
-    
+
+    // Also respect the "essential emails only" choice made from the unsubscribe footer
+    const { data: essentialsRows } = await supabase
+      .from('marketing_audience')
+      .select('email')
+      .in('email', allEmails)
+      .eq('frequency', 'essentials');
+    for (const row of essentialsRows || []) blockedSet.add((row as any).email);
+
     if (blockedSet.size > 0) {
       console.log(`Filtering out ${blockedSet.size} blocked/unsubscribed emails`);
     }
