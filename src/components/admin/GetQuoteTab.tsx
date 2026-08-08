@@ -4155,10 +4155,7 @@ Questions? Call 0330 229 5040`;
                       <button
                         key={option.value}
                         onClick={() => {
-                          if (option.value === 3000) {
-                            setClaimLimit(2000);
-                            setBoostAddon(true);
-                          } else if (option.value === 5000) {
+                          if (option.value === 5000) {
                             if (!claimLimit5kAllowed) {
                               setClaimLimitAuthSent(false);
                               setClaimLimitAuthReason('');
@@ -4168,13 +4165,17 @@ Questions? Call 0330 229 5040`;
                             setClaimLimit(5000);
                             setBoostAddon(false);
                           } else {
+                            // £3,000 is a real tier in the published model (its own
+                            // factor), never "£2,000 + boost" — otherwise it quotes
+                            // identically to £2,000.
                             setClaimLimit(option.value);
                             setBoostAddon(false);
                           }
                         }}
                         className={cn(
                           "py-3 px-2 rounded-lg border-2 text-center transition-all relative",
-                          (option.value === 3000 ? (claimLimit === 2000 && boostAddon) : claimLimit === option.value && (option.value !== 2000 || !boostAddon))
+                          claimLimit === option.value
+
                             ? "border-primary bg-primary/10"
                             : "border-border hover:border-primary/50",
                           option.value === 5000 && !claimLimit5kAllowed && "opacity-60"
