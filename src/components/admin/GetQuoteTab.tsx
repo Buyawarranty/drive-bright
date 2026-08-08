@@ -4102,27 +4102,44 @@ Questions? Call 0330 229 5040`;
                   <p className="text-xs text-muted-foreground">Higher rate = more garage choice</p>
                 </div>
 
-                {/* Excess - Quick Select Chips */}
+                {/* Excess - Quick Select Chips (canonical journey labels + live £/mo delta) */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Excess Amount</Label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {excessOptions.map((excess) => (
-                      <button
-                        key={excess}
-                        onClick={() => setExcessAmount(excess)}
-                        className={cn(
-                          "py-3 px-2 rounded-lg border-2 text-center font-semibold transition-all",
-                          excessAmount === excess
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
-                        )}
-                      >
-                        £{excess}
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-3 gap-2">
+                    {excessOptions.map((excess) => {
+                      const meta = JOURNEY_EXCESS_OPTIONS.find(o => o.value === excess);
+                      const delta = getExcessMonthlyDelta(paymentType as PaymentPeriod, excess);
+                      return (
+                        <button
+                          key={excess}
+                          onClick={() => setExcessAmount(excess)}
+                          className={cn(
+                            "py-2.5 px-2 rounded-lg border-2 text-center transition-all",
+                            excessAmount === excess
+                              ? "border-primary bg-primary/10"
+                              : "border-border hover:border-primary/50"
+                          )}
+                        >
+                          <div className="font-semibold">£{excess}</div>
+                          <div className="text-[11px] text-muted-foreground leading-tight">
+                            {meta?.description}
+                          </div>
+                          <div className="text-[11px] font-medium">
+                            {delta === 0
+                              ? '£0'
+                              : delta > 0
+                                ? `+£${delta}/mo`
+                                : `−£${Math.abs(delta)}/mo`}
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <p className="text-xs text-muted-foreground">Lower excess = higher monthly cost</p>
+                  <p className="text-xs text-muted-foreground">
+                    Priced as a flat £/mo difference vs £100 (Balanced), over 12 instalments — identical to Step 3.
+                  </p>
                 </div>
+
 
                 {/* Claim Limit - Quick Select Chips */}
                 <div className="space-y-3">
