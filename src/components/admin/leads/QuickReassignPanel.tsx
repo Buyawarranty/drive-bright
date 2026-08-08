@@ -185,7 +185,7 @@ export function QuickReassignPanel({ className }: { className?: string }) {
             <h3 className="text-base font-semibold text-foreground">Who is holding what</h3>
             <p className="text-sm text-muted-foreground mt-0.5">
               New leads since {label}, per agent. Move the newest ones straight across without opening the full tool.
-              Leads that have already been called or have a note stay with their agent.
+              {' '}{NOTE_LOCK_EXPLAINER}
             </p>
           </div>
         </div>
@@ -209,7 +209,10 @@ export function QuickReassignPanel({ className }: { className?: string }) {
         {!loading && rows.length === 0 && (
           <li className="px-5 py-4 text-sm text-muted-foreground">No sales agents found.</li>
         )}
-        {rows.map((row) => (
+        {rows.map((row) => {
+          const isAuthorised = !!authorised[row.id];
+          const available = isAuthorised ? row.movable + row.noteLocked : row.movable;
+          return (
           <li key={row.id} className="px-5 py-3 flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 min-w-[190px]">
               <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-primary/10 px-2 text-sm font-bold text-primary tabular-nums">
@@ -218,28 +221,46 @@ export function QuickReassignPanel({ className }: { className?: string }) {
               <div className="min-w-0">
                 <span className="text-sm font-medium text-foreground truncate block">{row.name}</span>
                 <span className="text-[11px] text-muted-foreground tabular-nums">
-                  {row.movable} movable · {row.count - row.movable} called/noted
+                  {row.movable} movable
+                  {row.noteLocked > 0 && (
+                    <span className="text-amber-600 dark:text-amber-500 font-medium">
+                      {' · '}{row.noteLocked} note-locked
+                    </span>
+                  )}
                 </span>
               </div>
             </div>
+
+            {row.noteLocked > 0 && (
+              <label className="flex items-center gap-2 text-[11px] text-amber-700 dark:text-amber-500 bg-amber-500/10 border border-amber-500/40 rounded-md px-2 py-1.5 cursor-pointer">
+                <Checkbox
+                  checked={isAuthorised}
+                  onCheckedChange={(v) => setAuthorised((a) => ({ ...a, [row.id]: !!v }))}
+                />
+                <span className="flex items-center gap-1 font-medium">
+                  <Lock className="h-3 w-3" />
+                  Authorised — I checked with {row.name.split(' ')[0]}
+                </span>
+              </label>
+            )}
 
             <div className="flex flex-wrap items-center gap-2 ml-auto">
               <Input
                 type="number"
                 min={1}
-                max={row.movable || undefined}
+                max={available || undefined}
                 inputMode="numeric"
                 placeholder="How many"
                 className="h-9 w-28"
                 value={counts[row.id] || ''}
                 onChange={(e) => setCounts((c) => ({ ...c, [row.id]: e.target.value }))}
-                disabled={row.movable === 0}
+                disabled={available === 0}
               />
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
               <Select
                 value={targets[row.id] || ''}
                 onValueChange={(v) => setTargets((t) => ({ ...t, [row.id]: v }))}
-                disabled={row.movable === 0}
+                disabled={available === 0}
               >
                 <SelectTrigger className="h-9 w-48">
                   <SelectValue placeholder="Move to agent" />
@@ -257,13 +278,15 @@ export function QuickReassignPanel({ className }: { className?: string }) {
               <Button
                 size="sm"
                 onClick={() => move(row)}
-                disabled={row.movable === 0 || busyId === row.id}
+                disabled={available === 0 || busyId === row.id}
               >
                 {busyId === row.id ? 'Moving…' : 'Move newest'}
               </Button>
             </div>
           </li>
-        ))}
+          );
+        })}
+
       </ul>
     </section>
   );
