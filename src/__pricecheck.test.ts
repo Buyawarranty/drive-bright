@@ -4,7 +4,7 @@ import { getBasePrice, toClaimLimitColumn, normalizeClaimColumnKeys } from '@/li
 describe('claim limit column rename keeps prices identical', () => {
   it('12 months / £100 excess', () => {
     expect(getBasePrice('12months', 100, 750, 'admin')).toBe(402);
-    expect(getBasePrice('12months', 100, 1250, 'admin')).toBe(433);
+    expect(getBasePrice("12months", 100, 1250, "admin")).toBe(433);
     expect(getBasePrice('12months', 100, 1000, 'admin')).toBe(402);
     expect(getBasePrice('12months', 100, 2000, 'admin')).toBe(529);
     expect(getBasePrice('12months', 100, 3000, 'admin')).toBe(529);

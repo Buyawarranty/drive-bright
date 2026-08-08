@@ -85,10 +85,12 @@ export const RETIRED_KEY_FOR_COLUMN: Record<number, number> = {
  */
 export function toClaimLimitColumn(claimLimit?: number | null): 1000 | 2000 | 3000 {
   const raw = Number(claimLimit);
-  if (!Number.isFinite(raw)) return 2000;
-  const normalised = RETIRED_CLAIM_COLUMN_NAMES[raw] ?? raw;
-  if (normalised <= 1000) return 1000;
-  if (normalised === 2000) return 2000;
+  if (!Number.isFinite(raw)) return DEFAULT_CLAIM_LIMIT_COLUMN as 2000;
+  if (raw === 750 || raw <= 1000) return 1000;
+  // 1250 is the retired wire value for £2,000 cover.
+  if (raw === 1250) return 2000;
+  // £2,000 / £3,000 / £5,000 all read the top column, exactly as before the rename
+  // (£3,000 and £5,000 then add their published step on top).
   return 3000;
 }
 
