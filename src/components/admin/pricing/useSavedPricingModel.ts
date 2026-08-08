@@ -13,6 +13,8 @@ import {
 } from './AgeBandPricingPreview';
 import { PRICING_MODEL_SAVED_EVENT } from './pricingModelEvents';
 import { loadVehicleSurchargeDraft } from './VehicleSurchargeEditor';
+import { getLiveVehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
+
 
 export { PRICING_MODEL_SAVED_EVENT } from './pricingModelEvents';
 
