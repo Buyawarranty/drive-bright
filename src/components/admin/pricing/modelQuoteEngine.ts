@@ -191,9 +191,31 @@ export function priceFromPricingModel(
   if (options.transferCover) total += 19;
   total = Math.round(total);
 
-  const minSellable = Math.round((MIN_SELLABLE_BY_MONTHS[months] ?? 399) * motorbikeFactor);
+  /**
+   * The floor is SHAPED by the options, anchored on the £2,000 claim limit /
+   * £70 labour rate / £100 excess reference. A flat floor made every claim
+   * limit, labour rate and excess collapse to the same price on cheap vehicles.
+   */
+  const refClaimFactor = nearestFactor(
+    model.claimLimits,
+    c => Number(c.limit) === 2000,
+    c => Math.abs(Number(c.limit) - 2000)
+  );
+  const refLabourFactor = nearestFactor(
+    model.labourRateFactors,
+    l => Number(l.rate) === 70,
+    l => Math.abs(Number(l.rate) - 70)
+  );
+  const floorShape =
+    (refClaimFactor > 0 ? claimFactor / refClaimFactor : 1) *
+    (refLabourFactor > 0 ? labourFactor / refLabourFactor : 1);
+
+  const minSellable = Math.round(
+    (MIN_SELLABLE_BY_MONTHS[months] ?? 399) * motorbikeFactor * floorShape + excessAdjustment
+  );
   const belowMinimum = total < minSellable;
   if (belowMinimum) total = minSellable;
+
 
   // We only ever offer 12 monthly instalments, whatever the cover term.
   const monthlyPrice = Math.ceil(total / 12);
