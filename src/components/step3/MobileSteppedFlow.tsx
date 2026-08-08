@@ -4,8 +4,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { cn } from '@/lib/utils';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle } from '@/lib/claimLimitTiers';
 import { getVisibleExcessOptions, getExcessMonthlyDelta } from '@/lib/pricingMatrix';
-import type { PaymentPeriod } from '@/lib/pricingMatrix';
 import { getMarketingSavings, type PaymentPeriod } from '@/lib/pricingMatrix';
+
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
