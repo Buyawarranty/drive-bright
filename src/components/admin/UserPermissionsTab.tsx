@@ -713,16 +713,21 @@ export const UserPermissionsTab = () => {
         ? editingUser.role as typeof validRoles[number]
         : 'guest';
 
-      const { error } = await supabase
+      const { data: savedRows, error } = await supabase
         .from('admin_users')
         .update({ 
           permissions: editingUser.permissions,
           role: roleValue,
           sip_extension: editingUser.sip_extension?.toString().trim() || null,
         })
-        .eq('id', editingUser.id);
+        .eq('id', editingUser.id)
+        .select('id');
 
       if (error) throw error;
+      if (!savedRows || savedRows.length === 0) {
+        throw new Error('No rows updated — your account does not have permission to change this user.');
+      }
+
       
       // Also update user_roles table for role changes using the correct user_id
       if (editingUser.user_id) {
