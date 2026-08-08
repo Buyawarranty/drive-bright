@@ -5611,8 +5611,8 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-                </>
                    );
+
                 })()}
 
                 <div className="flex gap-3">
