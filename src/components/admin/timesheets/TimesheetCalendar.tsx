@@ -30,7 +30,7 @@ const entryTypeConfig: Record<string, { icon: React.ElementType; label: string; 
   holiday: { icon: Umbrella, label: 'Holiday', color: 'text-amber-700', bgColor: 'bg-amber-100', selectedBg: 'bg-amber-500' },
   sick: { icon: HeartPulse, label: 'Sick', color: 'text-red-700', bgColor: 'bg-red-100', selectedBg: 'bg-red-500' },
   training: { icon: GraduationCap, label: 'Training', color: 'text-purple-700', bgColor: 'bg-purple-100', selectedBg: 'bg-purple-500' },
-  unpaid_leave: { icon: Coffee, label: 'Unpaid Leave', color: 'text-gray-700', bgColor: 'bg-gray-200', selectedBg: 'bg-gray-500' },
+  unpaid_leave: { icon: Coffee, label: 'Leave', color: 'text-gray-700', bgColor: 'bg-gray-200', selectedBg: 'bg-gray-500' },
 };
 
 type DayType = 'full_day' | 'half_day';
@@ -86,7 +86,7 @@ export function TimesheetCalendar({
   };
 
   const handleDayClick = (date: Date, entry?: TimesheetEntry) => {
-    // Always open the popover so the user can pick Worked / Half / Holiday / Sick / Training / Unpaid Leave.
+    // Always open the popover so the user can pick Worked / Half / Holiday / Sick / Training / Leave.
     setSelectedDate(date);
     if (entry) {
       setFormData({
@@ -189,7 +189,7 @@ export function TimesheetCalendar({
 
       {/* Hint */}
       <p className="text-xs text-gray-500 mb-3">
-        Just mark the days you're <span className="font-semibold text-red-600">off</span> — click a day and pick Holiday, Sick, Training or Unpaid Leave. Days off show a big red X. Worked days are Full (green) or Half (blue).
+        Just mark the days you're <span className="font-semibold text-red-600">off</span> — click a day and pick Holiday, Sick, Training or Leave. Days off show a big red X. Worked days are Full (green) or Half (blue).
       </p>
 
 
@@ -358,7 +358,7 @@ export function TimesheetCalendar({
                       <GraduationCap className="h-4 w-4" />
                       Training
                     </button>
-                    {/* Unpaid Leave */}
+                    {/* Leave */}
                     <button
                       onClick={() => setFormData(prev => ({ ...prev, entryType: 'unpaid_leave' }))}
                       className={cn(
@@ -369,7 +369,7 @@ export function TimesheetCalendar({
                       )}
                     >
                       <Coffee className="h-4 w-4" />
-                      Unpaid Leave
+                      Leave
                     </button>
                   </div>
 
