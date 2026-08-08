@@ -959,6 +959,23 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
           />
         )}
 
+        {step === 'confirm' && (
+          <div className="mx-6 mb-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
+            <label className="flex items-start gap-2 cursor-pointer">
+              <Checkbox
+                checked={authoriseNoted}
+                onCheckedChange={(v) => setAuthoriseNoted(!!v)}
+                className="mt-0.5"
+              />
+              <span className="text-xs text-amber-700 dark:text-amber-400">
+                <span className="font-semibold block">Include leads that have an agent note (needs authorisation)</span>
+                {NOTE_LOCK_EXPLAINER} Leave this unticked and noted leads stay with their current agent.
+              </span>
+            </label>
+          </div>
+        )}
+
+
         </div>
 
         <DialogFooter className="px-6 pb-6 pt-2 border-t shrink-0">
