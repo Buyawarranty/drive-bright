@@ -18,17 +18,17 @@ export type CodeBaseClaimTier = { key: string; limit: number; factor: number };
 
 /** Published tier → internal matrix column. */
 export const CODE_BASE_TIER_COLUMN: Record<number, number> = {
-  1000: 750,
-  2000: 1250,
-  3000: 2000,
-  5000: 2000,
+  1000: 1000,
+  2000: 2000,
+  3000: 3000,
+  5000: 3000,
 };
 
 /** Internal matrix column → published tier (£5,000 sits on top of the 2000 column). */
 export const CODE_BASE_COLUMN_TIER: Record<number, number> = {
-  750: 1000,
-  1250: 2000,
-  2000: 3000,
+  1000: 1000,
+  2000: 2000,
+  3000: 3000,
 };
 
 export const CODE_BASE_PUBLISHED_TIERS = [1000, 2000, 3000, 5000] as const;

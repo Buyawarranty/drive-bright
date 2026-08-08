@@ -54,7 +54,7 @@ const spread = (factor: number | null, amount: number) => {
 /** The hard-coded July 2026 matrix in the shape PriceTestStep2 expects: one flat grid. */
 function buildCodeBaseModel(saved: ReturnType<typeof useSavedPricingModel>) {
   const m: any = BASE_PRICING_MATRIX;
-  const ref = Number(m['12months'][150][1250]);
+  const ref = Number(m['12months'][150][2000]);
   return {
     bands: saved.ageBands.map((b: any) => ({ ...b, oneYear: ref })),
     mileageBands: saved.mileageBands.map((b: any) => ({ ...b, factor: 1 })),
@@ -75,10 +75,10 @@ function buildCodeBaseModel(saved: ReturnType<typeof useSavedPricingModel>) {
     excessFactors: EXCESSES.map(excess => ({
       key: `ex-${excess}`,
       excess,
-      factor: Number(m['12months'][excess][1250]) / ref,
+      factor: Number(m['12months'][excess][2000]) / ref,
     })),
-    twoYearMult: Number(m['24months'][150][1250]) / ref,
-    threeYearMult: Number(m['36months'][150][1250]) / ref,
+    twoYearMult: Number(m['24months'][150][2000]) / ref,
+    threeYearMult: Number(m['36months'][150][2000]) / ref,
     payInFullFactor: saved.payInFullFactor,
   };
 }
