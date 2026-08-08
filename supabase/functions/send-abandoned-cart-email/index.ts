@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { logCustomerEmail } from '../_shared/log-email.ts';
+import { buildUnsubscribeFooter } from "../_shared/unsubscribe-footer.ts";
 
 // Utility functions for retrying fetch requests
 const timedFetch = (url: string, options: RequestInit, timeout = 30000): Promise<Response> => {
@@ -218,10 +219,6 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
   // The main CTA must carry the promo too — most people tap the button, not the code chip.
   const ctaLink = promoLink;
 
-  const unsubBase = `${Deno.env.get('SUPABASE_URL')}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(request.email)}&token=${btoa(request.email.trim().toLowerCase() + '_baw_unsub_2024')}`;
-  const unsubscribeLink = `${unsubBase}&choice=off`;
-  // "Stop quote reminders" keeps them on essentials only (no quote/promo chasers)
-  const stopRemindersLink = `${unsubBase}&choice=essentials`;
 
 
   const html = `
@@ -320,19 +317,12 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
         </tr>
       </table>
 
-      <div style="background-color: #f1f5fb; border-radius: 10px; padding: 20px; margin: 8px 0 20px;">
-        <p style="color: #1a1a1a; font-size: 15px; font-weight: 700; margin: 0 0 6px 0;">No longer interested in your warranty quote?</p>
-        <p style="color: #6b7280; font-size: 13px; line-height: 1.5; margin: 0 0 12px 0;">That's okay. You can stop these quote reminders and still hear from us about your policy, or unsubscribe from all marketing emails.</p>
-        <a href="${stopRemindersLink}" style="color: #0066cc; font-size: 13px; font-weight: 600; text-decoration: underline;">Stop quote reminders</a>
-        <span style="color: #cbd5e1; padding: 0 10px;">|</span>
-        <a href="${unsubscribeLink}" style="color: #0066cc; font-size: 13px; font-weight: 600; text-decoration: underline;">Unsubscribe from marketing emails</a>
-      </div>
-
-      <div style="border-top: 1px solid #e6ebf1; padding-top: 16px; margin-top: 8px; text-align: center;">
-        <p style="color: #aab7c4; font-size: 11px; line-height: 1.5; margin: 0 0 16px;">
-          You received this email because you requested a warranty quote from Buy A Warranty.
-        </p>
-      </div>
+      ${buildUnsubscribeFooter(request.email, {
+        title: 'No longer interested in your warranty quote?',
+        blurb: "That's okay. You can stop these quote reminders or unsubscribe from all marketing emails.",
+        softLabel: 'Stop quote reminders',
+        reason: 'You received this email because you requested a warranty quote from Buy A Warranty.',
+      })}
     </div>
   </div>
 </body>

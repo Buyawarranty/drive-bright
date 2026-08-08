@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
+import { buildUnsubscribeFooter } from "../_shared/unsubscribe-footer.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -26,6 +27,24 @@ const handler = async (req: Request): Promise<Response> => {
     const { email, customerName, discountCode, daysRemaining, reminderType }: ReminderRequest = await req.json();
 
     console.log(`Sending ${reminderType} reminder to ${email}`);
+
+    // Never email someone who unsubscribed or asked for essential emails only
+    {
+      const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.45.0");
+      const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+      const clean = (email || '').trim().toLowerCase();
+      const [{ data: unsub }, { data: audience }] = await Promise.all([
+        sb.from('email_unsubscribes').select('email').eq('email', clean).limit(1),
+        sb.from('marketing_audience').select('frequency').eq('email', clean).maybeSingle(),
+      ]);
+      if ((unsub && unsub.length > 0) || (audience as any)?.frequency === 'essentials') {
+        console.log(`Skipping ${clean} - opted out of marketing reminders`);
+        return new Response(JSON.stringify({ success: true, skipped: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+    }
 
     const isUrgency = reminderType === 'urgency';
     const subject = isUrgency 
@@ -105,10 +124,13 @@ const handler = async (req: Request): Promise<Response> => {
 
                   <!-- Footer -->
                   <tr>
-                    <td style="background-color: #f9fafb; padding: 20px 40px; text-align: center; border-top: 1px solid #e5e5e5;">
-                      <p style="color: #6b7280; font-size: 12px; margin: 0;">
-                        © ${new Date().getFullYear()} Buy A Warranty. All rights reserved.
-                      </p>
+                    <td style="background-color: #f9fafb; padding: 20px 24px; border-top: 1px solid #e5e5e5;">
+                      ${buildUnsubscribeFooter(email, {
+                        title: 'Prefer not to get these reminders?',
+                        blurb: "That's okay. You can stop these discount reminders or unsubscribe from all marketing emails.",
+                        softLabel: 'Stop discount reminders',
+                        reason: `&copy; ${new Date().getFullYear()} Buy A Warranty. You received this email because you requested a warranty quote from Buy A Warranty.`,
+                      })}
                     </td>
                   </tr>
                 </table>
