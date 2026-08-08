@@ -182,10 +182,18 @@ function checkLabourRates(rates: PreflightInput['labourRateFactors']): Preflight
  * Treating those as gaps would block every honest push, so they are skipped.
  */
 const isDeclineBand = (b: any): boolean => {
-  const key = String(b?.key ?? '').toLowerCase();
-  if (key === '15+' || key === '150k+') return true;
-  const text = `${b?.treatment ?? ''} ${b?.customerLabel ?? ''}`.toLowerCase();
-  return text.includes('decline') || text.includes('referral');
+  const key = String(b?.key ?? '').trim().toLowerCase().replace(/\s/g, '');
+  if (key === '15+' || key === '150k+' || key === 'over15' || key === 'over150000') return true;
+  const text = `${b?.label ?? ''} ${b?.treatment ?? ''} ${b?.customerLabel ?? ''}`.toLowerCase();
+  if (text.includes('decline') || text.includes('referral')) return true;
+
+  // Published vehicle-factor models intentionally keep only min/max/factor for
+  // mileage bands. Their key and customer label are therefore unavailable when
+  // that live model is used as the hybrid starting point. Preserve the known
+  // eligibility boundary: mileage above 150,000 is a referral band, not a
+  // missing price factor.
+  const min = Number(b?.min);
+  return Number.isFinite(min) && min >= 150001 && b?.factor == null;
 };
 
 function checkVehicleModel(model: any): PreflightItem {

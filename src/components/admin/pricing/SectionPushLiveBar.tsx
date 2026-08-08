@@ -69,6 +69,11 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
     String(liveWebDiscountPct ?? CODE_WEB_DISCOUNT_PCT)
   );
 
+  const closePending = () => {
+    setPending(null);
+    setOverrideWarnings(false);
+  };
+
   const gapValue = Math.min(
     Math.max(Number(webGap) || 0, 0),
     MAX_WEB_DISCOUNT_PCT
@@ -116,7 +121,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
     if (!pending || !onPush) return;
     if (preflight?.blocked) return;
     const model = pending.getModel();
-    setPending(null);
+    closePending();
     if (!model) return;
     await onPush(model, `${sectionLabel} — ${pending.label}`, pending.websiteDiscountPct ?? gapValue);
   };
@@ -183,7 +188,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
         </div>
       </div>
 
-      <Dialog open={!!pending} onOpenChange={open => !open && setPending(null)}>
+      <Dialog open={!!pending} onOpenChange={open => !open && closePending()}>
         <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Push this model live?</DialogTitle>
@@ -237,7 +242,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPending(null)}>
+            <Button variant="outline" onClick={closePending}>
               Cancel
             </Button>
             <Button
