@@ -237,8 +237,10 @@ export const EXCESS_FLOOR_MULTIPLIER: Record<number, number> = {
   50: 1.18,
   100: 1.08,
   150: 1.0,
-  250: 0.81,
-  500: 0.5,
+  // Higher excess earns a modest saving only — the customer is taking on £250/£500
+  // of risk, not buying half a warranty. Capped at ~18% below the £150 tier.
+  250: 0.9,
+  500: 0.82,
 };
 
 export const CLAIM_LIMIT_FLOOR_MULTIPLIER: Record<number, number> = {
