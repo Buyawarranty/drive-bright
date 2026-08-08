@@ -12,6 +12,7 @@ export const SINCE_6PM_STATUS_EXCLUDE = '(lost,converted,fake_lead)';
 export interface Since6pmLeadRow {
   id: string;
   assigned_to: string | null;
+  created_at?: string | null;
   /**
    * True when an agent has already worked the lead (logged a call, adjusted
    * the counter, recorded a contact time, or written a note). Worked leads
@@ -34,7 +35,7 @@ export async function fetchLeadsSince6pm(fromOverride?: Date, toOverride?: Date 
   for (let i = 0; i < 50; i += 1) {
     const { data, error } = await supabase
       .from('sales_leads')
-      .select('id, assigned_to, call_count, manual_call_adjustment, last_contacted_at, notes')
+      .select('id, assigned_to, created_at, call_count, manual_call_adjustment, last_contacted_at, notes, owner_agent, status')
       .gte('created_at', fromIso)
       .lte('created_at', toIso)
       .not('status', 'in', SINCE_6PM_STATUS_EXCLUDE)
@@ -45,11 +46,14 @@ export async function fetchLeadsSince6pm(fromOverride?: Date, toOverride?: Date 
       ...(data as any[]).map((r) => ({
         id: r.id as string,
         assigned_to: (r.assigned_to ?? null) as string | null,
+        created_at: (r.created_at ?? null) as string | null,
         worked:
           (r.call_count ?? 0) > 0 ||
           (r.manual_call_adjustment ?? 0) > 0 ||
           !!r.last_contacted_at ||
-          !!(r.notes && String(r.notes).trim()),
+          !!(r.notes && String(r.notes).trim()) ||
+          !!r.owner_agent ||
+          (!!r.status && r.status !== 'new'),
       })),
     );
     if (data.length < page) break;
