@@ -5521,99 +5521,96 @@ Questions? Call 0330 229 5040`;
                     Math.ceil(Number(basePrice.monthlyPrice || 0) * 12) || Number(basePrice.totalPrice || 0);
                   const web = getWebReferencePrice(undiscountedGridTotal);
                   return (
-                <>
-                {/* Spacer so the fixed bar never covers the content below */}
-                <div aria-hidden className="h-[150px] sm:h-[130px]" />
-                <div className="fixed bottom-0 left-0 right-0 z-40 px-4 sm:px-6 pb-2 pointer-events-none">
-                  <div className="mx-auto w-full max-w-6xl pointer-events-auto px-5 py-3 bg-white rounded-xl shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.2)] border border-gray-200 border-t-4 border-t-emerald-400 max-h-[45vh] overflow-y-auto">
+                <div className="sticky bottom-2 z-40 mt-4">
+                  <div className="rounded-xl border border-gray-200 border-t-4 border-t-emerald-500 bg-white px-3 py-3 shadow-[0_-8px_24px_-10px_rgba(0,0,0,0.18)] max-h-[45vh] overflow-y-auto">
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-4 sm:divide-x sm:divide-gray-200">
+                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
 
-                    <div className="text-center sm:px-4">
-                      <div className="text-xs text-blue-600 font-medium uppercase tracking-wide">Monthly · Bumper (12)</div>
-                      <div className="text-2xl font-bold text-blue-700 leading-tight mt-0.5">£{currentPrice.monthlyPrice}<span className="text-sm font-medium text-blue-600">/month</span></div>
-                      <div className="text-xs text-blue-600 mt-0.5">Equal to just {fmtPerDay(monthlyPence)} over cover period</div>
-                      <div className="text-xs font-semibold text-blue-700 mt-1">Total you pay £{monthlyTotal} <span className="font-normal text-blue-600">(12 × £{currentPrice.monthlyPrice})</span></div>
-                    </div>
-                    <div className="text-center sm:px-4">
-                      <div className="text-xs text-emerald-600 font-medium uppercase tracking-wide">
-                        Pay in Full · Stripe {includePayInFullDiscount && <span className="text-emerald-700 normal-case">(10% off)</span>}
-                      </div>
-                      <div className="text-2xl font-bold text-emerald-700 leading-tight mt-0.5">
-                        £{currentPrice.payInFullPrice}
-                        {includePayInFullDiscount && (
-                          <span className="text-xs text-emerald-600 ml-2 font-semibold">Save £{Math.floor(currentPrice.totalPrice * 0.1)}</span>
-                        )}
-                      </div>
-                      <div className="text-xs text-emerald-600 mt-0.5">Equal to just {fmtPerDay(fullPence)} over cover period</div>
-                      {currentPrice.payInFullPrice > 0 && monthlyTotal > currentPrice.payInFullPrice && (
-                        <div className="text-xs font-semibold text-emerald-700 mt-1">
-                          £{monthlyTotal - currentPrice.payInFullPrice} cheaper than monthly
+                      {/* 1 — Monthly */}
+                      <div className="rounded-lg border border-blue-200 bg-blue-50/60 px-3 py-2.5">
+                        <div className="text-[11px] font-bold uppercase tracking-wide text-blue-700">Monthly · Bumper (12)</div>
+                        <div className="mt-1 text-2xl font-extrabold leading-none text-blue-800">
+                          £{currentPrice.monthlyPrice}<span className="text-sm font-semibold text-blue-600">/mo</span>
                         </div>
-                      )}
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={includePayInFullDiscount}
-                        aria-label="Apply 10% pay in full discount"
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIncludePayInFullDiscount(v => !v); }}
-                        className={cn(
-                          "mt-3 inline-flex items-center gap-2 text-xs font-semibold px-3.5 py-2 rounded-full border-2 shadow-sm cursor-pointer select-none transition-all active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1",
-                          includePayInFullDiscount
-                            ? "bg-emerald-600 border-emerald-700 text-white hover:bg-emerald-700 focus-visible:ring-emerald-500"
-                            : "bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200 hover:border-gray-400 focus-visible:ring-gray-400"
-                        )}
-                      >
-                        <span className={cn(
-                          "inline-block w-9 h-5 rounded-full transition-colors relative shrink-0",
-                          includePayInFullDiscount ? "bg-emerald-800" : "bg-gray-400"
-                        )}>
-                          <span className={cn(
-                            "absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform",
-                            includePayInFullDiscount ? "translate-x-4.5" : "translate-x-0.5"
-                          )} style={{ transform: includePayInFullDiscount ? 'translateX(18px)' : 'translateX(2px)' }} />
-                        </span>
-                        {includePayInFullDiscount ? (
-                          <span className="inline-flex items-center gap-1"><Check className="w-3.5 h-3.5" /> 10% off applied</span>
-                        ) : (
-                          <span>optional · apply 10% off</span>
-                        )}
-                      </button>
-
-                    </div>
-
-                    <div
-                      className="text-center sm:px-4"
-                      title={`Online website price for this exact cover: £${web.price}. That is ${web.discountPct}% below the undiscounted grid price of £${undiscountedGridTotal} (capped at ${MAX_WEB_DISCOUNT_VS_GRID_PCT}%). Agent discounts on this page do not change the online price.`}
-                    >
-                      <div className="text-xs text-gray-500 font-medium uppercase tracking-wide flex items-center justify-center gap-1">
-                        Web price <Info className="w-3 h-3 text-gray-400" />
+                        <div className="mt-1.5 text-[11px] text-blue-700">Total £{monthlyTotal} · 12 × £{currentPrice.monthlyPrice}</div>
+                        <div className="text-[11px] text-blue-600/80">{fmtPerDay(monthlyPence)} over cover</div>
                       </div>
-                      <div className="text-2xl font-bold text-gray-700 leading-tight mt-0.5">£{web.price}</div>
-                      <div className="text-xs text-gray-500 mt-0.5">
-                        {web.discountPct}% below grid · unaffected by agent discounts
-                      </div>
-                    </div>
-                    <div className="text-center sm:text-left sm:px-4 text-sm">
-                      <div className="font-semibold text-gray-900">Total £{gridTotal}</div>
-                      {priceMatchMode && priceMatchCompetitorPrice && (
-                        <div className="text-xs font-semibold text-sky-700 mt-0.5">
-                          Price matched vs {priceMatchCompany === 'Other' ? (priceMatchOtherName || 'competitor') : (priceMatchCompany || 'competitor')} £{Math.round(priceMatchCompetitorPrice)}
-                          {priceMatchSavedTotal !== null && priceMatchSavedTotal === displayedTotalPrice ? (
-                            <span className="ml-1.5 inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
-                              ✓ Saved £{priceMatchSavedTotal}
+
+                      {/* 2 — Pay in full */}
+                      <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 px-3 py-2.5">
+                        <div className="text-[11px] font-bold uppercase tracking-wide text-emerald-700">Pay in full · Stripe</div>
+                        <div className="mt-1 flex items-baseline gap-2">
+                          <span className="text-2xl font-extrabold leading-none text-emerald-800">£{currentPrice.payInFullPrice}</span>
+                          {includePayInFullDiscount && (
+                            <span className="rounded-full bg-emerald-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                              −£{Math.floor(currentPrice.totalPrice * 0.1)}
                             </span>
-                          ) : (
-                            <span className="ml-1.5 text-[10px] font-bold text-amber-700">Not saved yet</span>
                           )}
                         </div>
-                      )}
-                      <div className="text-xs text-gray-600 mt-0.5">Claim £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} · Labour £{labourRate}/hr</div>
-                      <div className="text-xs text-gray-500 mt-0.5">Over {durationMonths} months</div>
+                        <div className="mt-1.5 text-[11px] text-emerald-700">
+                          {currentPrice.payInFullPrice > 0 && monthlyTotal > currentPrice.payInFullPrice
+                            ? `£${monthlyTotal - currentPrice.payInFullPrice} cheaper than monthly`
+                            : `${fmtPerDay(fullPence)} over cover`}
+                        </div>
+
+                        <label
+                          className={cn(
+                            "mt-2 flex cursor-pointer select-none items-center gap-2 rounded-md border px-2 py-1.5 transition-colors",
+                            includePayInFullDiscount
+                              ? "border-emerald-300 bg-white"
+                              : "border-gray-200 bg-white hover:border-gray-300"
+                          )}
+                        >
+                          <Switch
+                            checked={includePayInFullDiscount}
+                            onCheckedChange={(v) => setIncludePayInFullDiscount(!!v)}
+                            aria-label="Apply 10% pay in full discount"
+                          />
+                          <span className={cn(
+                            "text-[11px] font-semibold",
+                            includePayInFullDiscount ? "text-emerald-700" : "text-gray-600"
+                          )}>
+                            10% discount · {includePayInFullDiscount ? 'on' : 'off'}
+                          </span>
+                        </label>
+                      </div>
+
+                      {/* 3 — Web price */}
+                      <div
+                        className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5"
+                        title={`Online website price for this exact cover: £${web.price}. That is ${web.discountPct}% below the undiscounted grid price of £${undiscountedGridTotal} (capped at ${MAX_WEB_DISCOUNT_VS_GRID_PCT}%). Agent discounts on this page do not change the online price.`}
+                      >
+                        <div className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-gray-500">
+                          Web price <Info className="h-3 w-3 text-gray-400" />
+                        </div>
+                        <div className="mt-1 text-2xl font-extrabold leading-none text-gray-700">£{web.price}</div>
+                        <div className="mt-1.5 text-[11px] text-gray-500">{web.discountPct}% below grid</div>
+                        <div className="text-[11px] text-gray-400">Unaffected by agent discounts</div>
+                      </div>
+
+                      {/* 4 — Cover summary */}
+                      <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+                        <div className="text-[11px] font-bold uppercase tracking-wide text-slate-500">This quote</div>
+                        <div className="mt-1 text-2xl font-extrabold leading-none text-slate-800">£{gridTotal}</div>
+                        <div className="mt-1.5 text-[11px] text-slate-600">
+                          Claim £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} · Labour £{labourRate}/hr
+                        </div>
+                        <div className="text-[11px] text-slate-500">Over {durationMonths} months</div>
+                        {priceMatchMode && priceMatchCompetitorPrice && (
+                          <div className="mt-1 text-[11px] font-semibold text-sky-700">
+                            Matched vs {priceMatchCompany === 'Other' ? (priceMatchOtherName || 'competitor') : (priceMatchCompany || 'competitor')} £{Math.round(priceMatchCompetitorPrice)}
+                            {priceMatchSavedTotal !== null && priceMatchSavedTotal === displayedTotalPrice ? (
+                              <span className="ml-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">✓ Saved</span>
+                            ) : (
+                              <span className="ml-1 text-[10px] font-bold text-amber-700">Not saved</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  </div>
                 </div>
+
                 </>
                    );
                 })()}
