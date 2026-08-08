@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { logCustomerEmail } from '../_shared/log-email.ts';
+import { buildUnsubscribeFooter } from "../_shared/unsubscribe-footer.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -130,9 +131,13 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
           </div>
           
-          <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 12px;">
-            <p>This email was sent to remind you about your incomplete warranty purchase.</p>
-            <p><a href="${Deno.env.get('SUPABASE_URL')}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(customer.email.trim().toLowerCase())}&token=${encodeURIComponent(btoa(customer.email.trim().toLowerCase() + '_baw_unsub_2024'))}" style="color: #6b7280; text-decoration: underline;">Unsubscribe</a> from future emails.</p>
+          <div style="max-width: 600px; margin: 20px auto 0;">
+            ${buildUnsubscribeFooter(customer.email, {
+              title: 'No longer interested in your warranty quote?',
+              blurb: "That's okay. You can stop these quote reminders or unsubscribe from all marketing emails.",
+              softLabel: 'Stop quote reminders',
+              reason: 'You received this email because you requested a warranty quote from Buy A Warranty.',
+            })}
           </div>
         </body>
         </html>
