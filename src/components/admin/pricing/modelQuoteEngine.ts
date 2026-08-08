@@ -172,7 +172,7 @@ export function priceFromPricingModel(
   // 12-instalment logic as the customer journey: a flat £/mo difference vs the
   // £100 "Balanced" baseline, applied once to the whole-term total.
   const excessAdjustment = getExcessTotalAdjustment(
-    options.paymentPeriod,
+    options.paymentPeriod as '12months' | '24months' | '36months',
     Number(options.voluntaryExcess)
   );
 
