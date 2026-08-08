@@ -679,7 +679,7 @@ export default function PriceTestStep2({
                     selected={claimLimit === c.value}
                     onClick={() => {
                       setClaimLimit(c.value);
-                      if (excess > c.value * 0.25 || (excess === 500 && c.value < 3000)) setExcess(150);
+                      // Excess availability is price-bracket driven now, not claim-limit driven.
                     }}
                     title={formatGBP(c.value)}
                     subtitle={c.name}
