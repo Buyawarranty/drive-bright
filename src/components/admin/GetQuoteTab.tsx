@@ -7115,8 +7115,11 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-800 font-semibold text-base pointer-events-none">£</span>
                               <Input
                                 type="number"
+                                step={1}
+                                min={0}
                                 value={quotedPriceOverride === '' ? (currentPrice.monthlyPrice * 12) : quotedPriceOverride}
-                                onChange={(e) => setQuotedPriceOverride(e.target.value)}
+                                /* Whole pounds only — pence are stripped on entry. */
+                                onChange={(e) => setQuotedPriceOverride(e.target.value.replace(/[^0-9]/g, ''))}
                                 className="pl-7 bg-green-50 border-green-200 text-green-800 font-semibold text-base focus:bg-white focus:border-green-400"
                               />
                             </div>
@@ -7191,7 +7194,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
 
                     {/* Amount */}
                     {(() => {
-                      const effectiveQuoted = quotedPriceOverride !== '' ? (parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12);
+                      const effectiveQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12);
                       return (
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1.5">
@@ -7274,7 +7277,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                             <div className="space-y-1">
                               <Label className="text-xs font-semibold text-amber-900">Balance outstanding</Label>
                               <div className="h-10 flex items-center px-3 rounded-md border border-amber-300 bg-white text-sm font-bold text-amber-900">
-                                £{Math.max(0, Math.round(((quotedPriceOverride !== '' ? (parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12)) || 0) - (depositAmountValue || 0)))}
+                                £{Math.max(0, Math.round(((quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12)) || 0) - (depositAmountValue || 0)))}
                               </div>
                             </div>
                           </div>
@@ -7415,7 +7418,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
 
                   <aside className="lg:sticky lg:top-0 h-fit space-y-3 rounded-xl border border-border bg-background p-4 shadow-sm">
                     {(() => {
-                      const effectiveQuoted = quotedPriceOverride !== '' ? (parseFloat(quotedPriceOverride) || 0) : currentPrice.totalPrice;
+                      const effectiveQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : currentPrice.totalPrice;
                       const recorded = paymentAmount || effectiveQuoted;
                       const differs = paymentAmount && Math.abs(parseFloat(paymentAmount) - effectiveQuoted) > 1;
                       return (
