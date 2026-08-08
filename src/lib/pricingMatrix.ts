@@ -536,15 +536,25 @@ export function applyReliableBrandDiscount(
 export type PricingMatrixShape = Record<string, Record<string, Record<string, number>>>;
 
 /**
- * Rewrite any retired claim-limit column keys (750 / 1250 / 2000) in a saved grid
- * to the cover levels they always meant (£1,000 / £2,000 / £3,000). Values are
- * copied across untouched, so a version saved before the rename prices identically
- * and simply reads correctly on screen.
+ * Rewrite retired claim-limit column keys in a saved grid to the cover levels they
+ * always meant: 750 → £1,000, 1250 → £2,000, 2000 → £3,000. A grid is treated as
+ * retired only when it actually contains a 750 or 1250 column, so a grid already
+ * saved as 1000 / 2000 / 3000 is left exactly as it is. Values are copied across
+ * untouched, so an older version prices identically and just reads correctly.
  */
 export function normalizeClaimColumnKeys(
   matrix: PricingMatrixShape | null | undefined
 ): PricingMatrixShape | null {
   if (!matrix || typeof matrix !== 'object') return (matrix ?? null) as PricingMatrixShape | null;
+
+  const isRetiredGrid = Object.values(matrix).some(periodData =>
+    Object.values(periodData || {}).some(
+      cells => cells && (cells['750'] !== undefined || cells['1250'] !== undefined)
+    )
+  );
+  if (!isRetiredGrid) return matrix;
+
+  const RETIRED_TO_COVER: Record<string, string> = { '750': '1000', '1250': '2000', '2000': '3000' };
   const out: PricingMatrixShape = {};
   for (const period of Object.keys(matrix)) {
     const periodData = matrix[period] || {};
@@ -555,18 +565,14 @@ export function normalizeClaimColumnKeys(
       for (const key of Object.keys(cells)) {
         const value = cells[key];
         if (typeof value !== 'number') continue;
-        const canonical = RETIRED_CLAIM_COLUMN_NAMES[Number(key)] ?? Number(key);
-        const target = String(Number.isFinite(canonical) ? canonical : key);
-        // A canonical key already written wins over a retired duplicate.
-        if (nextCells[target] === undefined || RETIRED_CLAIM_COLUMN_NAMES[Number(key)] === undefined) {
-          nextCells[target] = value;
-        }
+        nextCells[RETIRED_TO_COVER[key] ?? key] = value;
       }
       out[period][excess] = nextCells;
     }
   }
   return out;
 }
+
 
 
 export type PricingSurface = 'customer' | 'admin';
