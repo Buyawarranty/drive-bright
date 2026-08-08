@@ -85,25 +85,27 @@ const MIN_PERCENT_OF_BASE = 0.5;
 // Keeping the validation source aligned with the public calculator prevents
 // valid Stripe amounts from being rejected as "price manipulation".
 const CHECKOUT_BASE_PRICING_MATRIX = {
+  // Columns are the cover levels: £1,000 / £2,000 / £3,000.
   '12months': {
-    0: { 1000: 391, 3000: 416, 3000: 492 },
+    0: { 1000: 391, 2000: 416, 3000: 492 },
     50: { 1000: 366, 2000: 383, 3000: 458 },
     100: { 1000: 324, 2000: 349, 3000: 425 },
     150: { 1000: 288, 2000: 324, 3000: 400 },
   },
   '24months': {
-    0: { 1000: 752, 3000: 786, 3000: 862 },
-    50: { 1000: 694, 3000: 736, 3000: 803 },
+    0: { 1000: 752, 2000: 786, 3000: 862 },
+    50: { 1000: 694, 2000: 736, 3000: 803 },
     100: { 1000: 618, 2000: 660, 3000: 736 },
-    150: { 1000: 584, 2000: 618, 2000: 694 },
+    150: { 1000: 584, 2000: 618, 3000: 694 },
   },
   '36months': {
-    0: { 1000: 1130, 3000: 1172, 3000: 1256 },
-    50: { 1000: 1046, 3000: 1088, 3000: 1172 },
+    0: { 1000: 1130, 2000: 1172, 3000: 1256 },
+    50: { 1000: 1046, 2000: 1088, 3000: 1172 },
     100: { 1000: 920, 2000: 988, 3000: 1072 },
     150: { 1000: 878, 2000: 920, 3000: 1004 },
   },
 } as const;
+
 
 function normalizeCheckoutDuration(pt: string): keyof typeof CHECKOUT_BASE_PRICING_MATRIX | null {
   const n = (pt || '').toLowerCase().replace(/[_\-\s]/g, '');
