@@ -247,21 +247,24 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // that — but agents still see the option so they can quote consistently.
   const getVisibleClaimLimits = (_vehicleMake?: string) => claimLimitOptions;
 
-  // Excess options are the pricing model's excess list, filtered by term +
-  // claim limit (no £500 on 1-year cover, none above 25% of the claim limit).
+  // Excess options come from the SAME canonical journey list as Steps 3/4 — not
+  // from the pricing model's excessFactors — because excess is priced as a flat
+  // £/mo difference over 12 instalments, identical on both surfaces.
   const excessOptions = React.useMemo(
     () =>
-      pricingModel.excessFactors
-        .map((e: { excess: number }) => Number(e.excess))
-        .filter((ex: number) => getVisibleExcessOptions(paymentType, claimLimit).includes(ex))
+      JOURNEY_EXCESS_OPTIONS.map(o => o.value)
+        .filter((ex: number) =>
+          getVisibleExcessOptions(paymentType, claimLimit, currentPrice?.totalPrice).includes(ex)
+        )
         .sort((a: number, b: number) => a - b),
-    [pricingModel.excessFactors, paymentType, claimLimit]
+    [paymentType, claimLimit, currentPrice?.totalPrice]
   );
   useEffect(() => {
     if (excessOptions.length && !excessOptions.includes(excessAmount)) {
       setExcessAmount(excessOptions.includes(150) ? 150 : excessOptions[0]);
     }
   }, [excessOptions, excessAmount]);
+
 
   const [ageOverrideEnabled, setAgeOverrideEnabled] = useState(false);
   const [showAgeOverrideConfirm, setShowAgeOverrideConfirm] = useState(false);
