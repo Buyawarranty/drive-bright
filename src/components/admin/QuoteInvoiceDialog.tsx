@@ -27,13 +27,24 @@ import { Download, FileText, Mail, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 
+import logoAsset from '@/assets/buyawarranty-logo.png.asset.json';
+
+const VAT_RATE = 0.2;
+
 const COMPANY = {
   name: 'Buy A Warranty',
   website: 'www.buyawarranty.co.uk',
   email: 'support@buyawarranty.co.uk',
   phone: '0330 229 5040',
-  logoUrl: 'https://buyawarranty.co.uk/lovable-uploads/e4a0c8c7-1d74-4e55-a556-1b513ba12cc8.png',
+  logoUrl: logoAsset.url,
+  /** Absolute URL so the logo also renders inside emailed invoices. */
+  logoAbsoluteUrl: `https://buyawarranty.co.uk${logoAsset.url}`,
+  legalLine1:
+    'Buyawarranty.co.uk is a trading name of Buy A Warranty Limited. Established 2016. Registered in the United Kingdom under Company number: 10314863.',
+  legalLine2:
+    'Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England. VAT registration number 519 1099 85.',
 };
+
 
 /** Everything the invoice needs, pulled straight from the Step 2 quote. */
 export interface QuoteInvoiceSource {
