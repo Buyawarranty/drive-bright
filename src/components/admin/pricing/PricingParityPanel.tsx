@@ -16,7 +16,7 @@ import { ScaleIcon } from 'lucide-react';
 import { buildParityRows, summariseParity } from '@/lib/pricing/parityHarness';
 
 const EXCESS_OPTIONS = [0, 50, 100, 150, 250];
-import { formatClaimLimit } from '@/lib/claimLimitTiers';
+import { getDisplayClaimLimit } from '@/lib/claimLimitTiers';
 
 const CLAIM_LIMITS = [750, 1250, 2000];
 // 750 / 1250 / 2000 are internal grid columns for the £1,000 / £2,000 / £3,000 tiers.
@@ -94,7 +94,7 @@ export default function PricingParityPanel() {
               <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {CLAIM_LIMITS.map((v) => (
-                  <SelectItem key={v} value={String(v)}>{formatClaimLimit(v)}</SelectItem>
+                  <SelectItem key={v} value={String(v)}>{getDisplayClaimLimit(v)}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
