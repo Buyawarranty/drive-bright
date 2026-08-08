@@ -941,7 +941,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // Includes: base + labour rate + add-ons + premium claim surcharge + boost addon
   const totalPrice = useMemo(() => {
     return basePlanPrice + labourRateTotalAdjustment + addOnPrice + premiumClaimSurcharge + boostTotalAdjustment + getExcessTotalAdjustment(paymentType as PaymentPeriod, voluntaryExcess ?? 100);
-  }, [basePlanPrice, labourRateTotalAdjustment, addOnPrice, premiumClaimSurcharge, boostTotalAdjustment]);
+    // voluntaryExcess + paymentType MUST stay in the deps: the excess adjustment is
+    // read straight from them, so leaving them out froze the price whenever the base
+    // grid price didn't change (e.g. floor-bound vehicles).
+  }, [basePlanPrice, labourRateTotalAdjustment, addOnPrice, premiumClaimSurcharge, boostTotalAdjustment, paymentType, voluntaryExcess]);
 
   // Marketing savings (display only - NOT applied to actual price)
   const marketingSavings = useMemo(() => {
