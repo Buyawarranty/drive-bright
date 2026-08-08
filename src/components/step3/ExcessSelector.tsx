@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Check, Info } from 'lucide-react';
 import ExcessDetails from './ExcessDetails';
-import { getVisibleExcessOptions, getExcessMonthlyDelta } from '@/lib/pricingMatrix';
+import { getVisibleExcessOptions, getExcessMonthlyDelta, getExcessBracketBasis } from '@/lib/pricingMatrix';
 import type { PaymentPeriod } from '@/lib/pricingMatrix';
 
 interface ExcessSelectorProps {
@@ -44,7 +44,11 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
   // Availability follows the warranty price bracket:
   // £200–£299 → up to £150, £300–£499 → adds £250, £500+ → adds £250 and £500
   const excessOptions = ALL_EXCESS_OPTIONS.filter((opt) =>
-    getVisibleExcessOptions(paymentType, claimLimit, totalPrice).includes(opt.value),
+    getVisibleExcessOptions(
+      paymentType,
+      claimLimit,
+      getExcessBracketBasis(paymentType, totalPrice, selectedExcess),
+    ).includes(opt.value),
   );
 
   useEffect(() => {

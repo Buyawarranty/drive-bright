@@ -44,6 +44,7 @@ import {
   calculateAdminQuoteWarrantyPrice, 
   DURATION_MONTHS,
   getVisibleExcessOptions,
+  getExcessBracketBasis,
   getLabourRateOptions,
   getWebReferencePrice,
   MAX_WEB_DISCOUNT_VS_GRID_PCT,

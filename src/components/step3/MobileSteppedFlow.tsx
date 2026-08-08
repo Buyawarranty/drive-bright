@@ -3,7 +3,7 @@ import { ArrowRight, ArrowLeft, Check, Lock, Shield, ShieldCheck, Car, Wrench, B
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle } from '@/lib/claimLimitTiers';
-import { getVisibleExcessOptions, getExcessMonthlyDelta } from '@/lib/pricingMatrix';
+import { getVisibleExcessOptions, getExcessMonthlyDelta, getExcessBracketBasis } from '@/lib/pricingMatrix';
 import { getMarketingSavings, type PaymentPeriod } from '@/lib/pricingMatrix';
 
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
@@ -409,7 +409,11 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
                   getVisibleExcessOptions(
                     paymentType || '24months',
                     selectedClaimLimit,
-                    currentMonthlyPrice ? currentMonthlyPrice * 12 : null,
+                    getExcessBracketBasis(
+                      paymentType || '24months',
+                      currentMonthlyPrice ? currentMonthlyPrice * 12 : null,
+                      voluntaryExcess,
+                    ),
                   ).includes(ex.value),
                 ).map(ex => {
                   const delta = getExcessMonthlyDelta((paymentType || '24months') as PaymentPeriod, ex.value);
