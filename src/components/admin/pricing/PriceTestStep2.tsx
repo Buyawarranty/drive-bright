@@ -344,6 +344,8 @@ export default function PriceTestStep2({
       annualBase,
       floored,
       annual,
+      baseTermTotal,
+      excessAdjustment,
       total,
       monthly,
       minSellable,
@@ -358,14 +360,15 @@ export default function PriceTestStep2({
     };
   }, [
     referral, ageBand, mileageBand, powertrain, vehType, risk, floor, motorbikeFactor,
-    claimFactor, labourFactor, excessFactor, term, discount, addOns, freeMonths,
+    claimFactor, labourFactor, excessAdjustment, term, discount, addOns, freeMonths,
   ]);
 
   /** Every cover term priced with the same options — used for the overall price difference. */
   const termTotals = useMemo(() => {
     if (referral || !calc) return [];
     return TERMS.map(t => {
-      let total = calc.annual * t.mult;
+      // Each term applies its OWN stored excess delta table — never the 12mo one.
+      let total = calc.annual * t.mult + getExcessTotalAdjustment(t.period as PaymentPeriod, excess);
       if (discount) {
         total -=
           discount.kind === 'flat' ? Math.min(discount.value, total) : (total * discount.value) / 100;
@@ -376,7 +379,8 @@ export default function PriceTestStep2({
       return { key: t.key, label: t.label, months: t.months, total: Math.max(total, min) };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [referral, calc, TERMS, discount, addOns, motorbikeFactor]);
+  }, [referral, calc, TERMS, discount, addOns, motorbikeFactor, excess]);
+
 
   useEffect(() => {
     onQuoteChange?.({ referral, annual: calc ? calc.annual : null, terms: termTotals });
