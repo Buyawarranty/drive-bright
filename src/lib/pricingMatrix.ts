@@ -252,15 +252,33 @@ export const EXCESS_BASELINE = 100;
  * (instalments are always 12, so the total adjustment is delta × 12).
  * Positive = costs more (lower excess), negative = saving (higher excess).
  */
+/**
+ * £/mo difference vs the £100 "Balanced" baseline, per term.
+ *
+ * IMPORTANT: each term is a standalone table. 24 and 36 month instalments are
+ * stored ready for when those instalment plans launch — they must NEVER be
+ * derived from, blended with, or fall back to the 12 month figures.
+ */
 export const EXCESS_MONTHLY_DELTA: Record<PaymentPeriod, Record<number, number>> = {
+  // Live today
   '12months': { 0: 5, 50: 3, 100: 0, 150: -2, 250: -5, 500: -9 },
+  // Stored for future instalment plans (not yet live)
   '24months': { 0: 3, 50: 2, 100: 0, 150: -1, 250: -3, 500: -5 },
   '36months': { 0: 2, 50: 1, 100: 0, 150: -1, 250: -2, 500: -3 },
 };
 
+/** Number of instalments per term — used for whole-term totals. */
+export const TERM_INSTALMENT_MONTHS: Record<PaymentPeriod, number> = {
+  '12months': 12,
+  '24months': 24,
+  '36months': 36,
+};
+
 /** £ per month difference vs the £100 baseline for the given term + excess. */
 export function getExcessMonthlyDelta(paymentPeriod: PaymentPeriod, excess: number): number {
-  const table = EXCESS_MONTHLY_DELTA[paymentPeriod] ?? EXCESS_MONTHLY_DELTA['12months'];
+  // No cross-term fallback: an unknown term returns 0 rather than borrowing the 12mo table.
+  const table = EXCESS_MONTHLY_DELTA[paymentPeriod];
+  if (!table) return 0;
   if (table[excess] !== undefined) return table[excess];
   const keys = Object.keys(table).map(Number);
   const nearest = keys.reduce((best, k) =>
@@ -268,10 +286,12 @@ export function getExcessMonthlyDelta(paymentPeriod: PaymentPeriod, excess: numb
   return table[nearest] ?? 0;
 }
 
-/** Total (whole-term) price difference vs the £100 baseline. */
+/** Total (whole-term) price difference vs the £100 baseline, using that term's own instalment count. */
 export function getExcessTotalAdjustment(paymentPeriod: PaymentPeriod, excess: number): number {
-  return getExcessMonthlyDelta(paymentPeriod, excess) * 12;
+  const months = TERM_INSTALMENT_MONTHS[paymentPeriod] ?? 12;
+  return getExcessMonthlyDelta(paymentPeriod, excess) * months;
 }
+
 
 
 export const CLAIM_LIMIT_FLOOR_MULTIPLIER: Record<number, number> = {
