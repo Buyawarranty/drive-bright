@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { logCustomerEmail } from '../_shared/log-email.ts';
 import { buildUnsubscribeFooter } from "../_shared/unsubscribe-footer.ts";
+import { EMAIL_RESPONSIVE_STYLE } from "../_shared/email-layout.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -95,13 +96,14 @@ const handler = async (req: Request): Promise<Response> => {
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Complete Your Car Warranty</title>
+          ${EMAIL_RESPONSIVE_STYLE}
         </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <body class="baw-wrap baw-pad-sm" style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background-color: #f97316; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
             <h1 style="color: white; margin: 0;">Buy A Warranty</h1>
           </div>
           
-          <div style="background-color: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+          <div class="baw-pad-sm" style="background-color: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
             <h2 style="color: #1f2937; margin-top: 0;">Hi ${firstName},</h2>
             
             <p style="font-size: 16px; line-height: 1.8;">
@@ -115,7 +117,7 @@ const handler = async (req: Request): Promise<Response> => {
             </p>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="https://buyawarranty.co.uk/" 
+              <a href="https://buyawarranty.co.uk/" class="baw-btn"
                  style="background-color: #f97316; color: white; padding: 15px 30px; text-decoration: none; 
                         border-radius: 5px; font-weight: bold; display: inline-block; font-size: 16px;">
                 Complete Your Purchase Now
@@ -140,7 +142,7 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
           </div>
           
-          <div style="max-width: 600px; margin: 20px auto 0;">
+          <div class="baw-wrap" style="max-width: 600px; margin: 20px auto 0;">
             ${buildUnsubscribeFooter(customer.email, {
               title: 'No longer interested in your warranty quote?',
               blurb: "That's okay. You can stop these quote reminders or unsubscribe from all marketing emails.",

@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
 import { buildUnsubscribeFooter } from "../_shared/unsubscribe-footer.ts";
+import { EMAIL_RESPONSIVE_STYLE } from "../_shared/email-layout.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -58,17 +59,18 @@ const handler = async (req: Request): Promise<Response> => {
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>${subject}</title>
+          ${EMAIL_RESPONSIVE_STYLE}
         </head>
         <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px;">
+          <table width="100%" cellpadding="0" cellspacing="0" class="baw-pad-sm" style="background-color: #f5f5f5; padding: 20px;">
             <tr>
               <td align="center">
-                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <table width="600" cellpadding="0" cellspacing="0" class="baw-wrap" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                   
                   <!-- Header -->
                   <tr>
-                    <td style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 30px 40px; text-align: center;">
-                      <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">
+                    <td class="baw-pad-sm" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 30px 40px; text-align: center;">
+                      <h1 class="baw-h1" style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">
                         ${isUrgency ? '⏰ Time is Running Out!' : '🚨 Last Chance!'}
                       </h1>
                     </td>
@@ -76,7 +78,7 @@ const handler = async (req: Request): Promise<Response> => {
 
                   <!-- Content -->
                   <tr>
-                    <td style="padding: 40px;">
+                    <td class="baw-pad-sm baw-pad-y" style="padding: 40px;">
                       <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
                         Hi ${customerName},
                       </p>
@@ -110,7 +112,7 @@ const handler = async (req: Request): Promise<Response> => {
 
                       <!-- CTA Button -->
                       <div style="text-align: center; margin: 40px 0 30px;">
-                        <a href="https://buyawarranty.co.uk?returnDiscount=true&code=${discountCode}" 
+                        <a href="https://buyawarranty.co.uk?returnDiscount=true&code=${discountCode}" class="baw-btn"
                            style="display: inline-block; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                           ${isUrgency ? 'Claim Your 20% Discount' : 'Get Your Warranty Now'}
                         </a>
@@ -124,7 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
 
                   <!-- Footer -->
                   <tr>
-                    <td style="background-color: #f9fafb; padding: 20px 24px; border-top: 1px solid #e5e5e5;">
+                    <td class="baw-pad-sm" style="background-color: #f9fafb; padding: 20px 24px; border-top: 1px solid #e5e5e5;">
                       ${buildUnsubscribeFooter(email, {
                         title: 'Prefer not to get these reminders?',
                         blurb: "That's okay. You can stop these discount reminders or unsubscribe from all marketing emails.",

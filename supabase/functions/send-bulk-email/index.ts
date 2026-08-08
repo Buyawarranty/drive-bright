@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { requireAdmin } from "../_shared/admin-auth.ts";
 import { buildUnsubscribeFooter } from "../_shared/unsubscribe-footer.ts";
+import { EMAIL_RESPONSIVE_STYLE } from "../_shared/email-layout.ts";
 
 
 const corsHeaders = {
@@ -131,7 +132,7 @@ serve(async (req) => {
           softLabel: 'Essential emails only',
           reason: "You received this email because you've interacted with Buy A Warranty.",
         });
-        const wrap = (body: string) => `<div style="font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #ffffff;"><div style="text-align:center;padding-bottom:20px;"><img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" width="180" alt="Buy A Warranty" style="max-width:100%;height:auto;" /></div><div style="color:#484848;font-size:16px;line-height:1.55;margin-bottom:28px;">${body}</div><hr style="border:none;border-top:1px solid #e6ebf1;margin:24px 0;" />${unsubFooter}</div>`;
+        const wrap = (body: string) => `${EMAIL_RESPONSIVE_STYLE}<div class="baw-wrap baw-pad" style="font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #ffffff;"><div style="text-align:center;padding-bottom:20px;"><img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" width="180" alt="Buy A Warranty" style="max-width:100%;height:auto;" /></div><div class="baw-text" style="color:#484848;font-size:16px;line-height:1.55;margin-bottom:28px;">${body}</div><hr style="border:none;border-top:1px solid #e6ebf1;margin:24px 0;" />${unsubFooter}</div>`;
 
         const emailResponse = await resend.emails.send({
           from: fromEmail,
