@@ -940,7 +940,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // Memoized total price calculation - EXACT Excel price + adjustments (no marketing discount applied)
   // Includes: base + labour rate + add-ons + premium claim surcharge + boost addon
   const totalPrice = useMemo(() => {
-    return basePlanPrice + labourRateTotalAdjustment + addOnPrice + premiumClaimSurcharge + boostTotalAdjustment;
+    return basePlanPrice + labourRateTotalAdjustment + addOnPrice + premiumClaimSurcharge + boostTotalAdjustment + getExcessTotalAdjustment(paymentType as PaymentPeriod, voluntaryExcess ?? 100);
   }, [basePlanPrice, labourRateTotalAdjustment, addOnPrice, premiumClaimSurcharge, boostTotalAdjustment]);
 
   // Marketing savings (display only - NOT applied to actual price)
@@ -1114,7 +1114,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       
       // Apply minimum BASE price floor (acquisition + lead cost protection)
       const flooredBasePrice = applyBasePriceFloor(discountedBasePrice, selectedPaymentType as PaymentPeriod, voluntaryExcess, isMotorbikeAdjustment(vehiclePriceAdjustment), 'customer', [vehicleData?.make, vehicleData?.model].filter(Boolean).join(' '), selectedClaimLimit);
-      const totalPrice = flooredBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust;
+      const totalPrice = flooredBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust + getExcessTotalAdjustment(selectedPaymentType as PaymentPeriod, voluntaryExcess ?? 100);
       
       // Don't allow progression if vehicle is too old
       if (vehicleAgeError) {
