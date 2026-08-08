@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   startOfWeek,
   endOfWeek,
@@ -177,6 +177,88 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
     } finally {
       setSaving(false);
     }
+  };
+
+  /**
+   * Weekdays (Mon–Fri) default to ON with green ticks. Runs once per agent+week
+   * when that agent has no entries at all for the week, so nobody starts blank.
+   */
+  const autoFilled = useRef<Set<string>>(new Set());
+
+  const setWeekdaysFullDay = async (agentId: string, opts?: { silent?: boolean }) => {
+    if (!canEditFor(agentId)) return;
+    const weekdays = days.filter((d) => !isWeekend(d));
+    const missing = weekdays.filter((d) => !getRow(agentId, d));
+    const toChange = weekdays.filter((d) => {
+      const r = getRow(agentId, d);
+      return !r || r.day_type !== 'full_day';
+    });
+    if (toChange.length === 0) {
+      if (!opts?.silent) toast.success('Weekdays already set to full days');
+      return;
+    }
+    setSaving(true);
+    try {
+      // Flip existing non-full weekday rows, then insert the missing ones.
+      const existingIds = toChange
+        .map((d) => getRow(agentId, d))
+        .filter(Boolean)
+        .map((r) => r!.id);
+      if (existingIds.length) {
+        const { error } = await (supabase as any)
+          .from('agent_working_days')
+          .update({ day_type: 'full_day' })
+          .in('id', existingIds);
+        if (error) throw error;
+      }
+      let inserted: WorkingDayRow[] = [];
+      if (missing.length) {
+        const { data, error } = await (supabase as any)
+          .from('agent_working_days')
+          .insert(
+            missing.map((d) => ({
+              admin_user_id: agentId,
+              work_date: format(d, 'yyyy-MM-dd'),
+              day_type: 'full_day' as DayType,
+              created_by: user?.id ?? null,
+            })),
+          )
+          .select('id, admin_user_id, work_date, day_type');
+        if (error) throw error;
+        inserted = (data as WorkingDayRow[]) || [];
+      }
+      setRows((prev) => [
+        ...prev.map((r) =>
+          existingIds.includes(r.id) ? { ...r, day_type: 'full_day' as DayType } : r,
+        ),
+        ...inserted,
+      ]);
+      if (!opts?.silent) toast.success('Mon–Fri ticked as full days');
+    } catch (e: any) {
+      toast.error(e?.message ?? 'Could not set weekdays');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    if (loading || saving || !selectedAgentId) return;
+    if (!canEditFor(selectedAgentId)) return;
+    const key = `${selectedAgentId}:${format(weekStart, 'yyyy-MM-dd')}`;
+    if (autoFilled.current.has(key)) return;
+    const hasAny = rows.some((r) => r.admin_user_id === selectedAgentId);
+    if (hasAny) {
+      autoFilled.current.add(key);
+      return;
+    }
+    autoFilled.current.add(key);
+    setWeekdaysFullDay(selectedAgentId, { silent: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, selectedAgentId, rows.length, weekStart.toISOString()]);
+
+  const saveRota = async () => {
+    await load();
+    toast.success('Rota saved');
   };
 
   const displayName = (a: AdminLite) =>
@@ -416,6 +498,24 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
             </div>
 
 
+            {/* Quick actions: weekday defaults + save */}
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                disabled={!canEditFor(editingAgent.id) || saving}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                onClick={() => setWeekdaysFullDay(editingAgent.id)}
+              >
+                <Check className="h-4 w-4 mr-1" strokeWidth={3} /> Select all weekdays (Mon–Fri)
+              </Button>
+              <Button size="sm" variant="outline" disabled={saving} onClick={saveRota}>
+                {saving ? 'Saving…' : 'Save rota'}
+              </Button>
+              <span className="text-[11px] text-muted-foreground">
+                Changes save instantly · double-click a day to set it as a full day
+              </span>
+            </div>
+
             {/* 7-day calendar strip */}
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
               {days.map((d) => {
@@ -430,6 +530,8 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                 return (
                   <div
                     key={d.toISOString()}
+                    onDoubleClick={() => !disabled && toggleDay(editingAgent!.id, d, 'full_day')}
+                    title="Double-click to set as a full working day"
                     className={cn(
                       'rounded-lg border p-2 flex flex-col',
                       isWorking
