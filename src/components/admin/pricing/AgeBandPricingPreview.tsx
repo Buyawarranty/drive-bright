@@ -268,7 +268,8 @@ export function buildAdminMatrixFromModel(model: AgeBandModel): Record<string, R
       for (const column of CLAIM_LIMIT_COLUMNS) {
         const clFactor =
           model.claimLimits.find(c => c.limit === column)?.factor ?? 1;
-        const value = base * termMult[period] * clFactor + excessAdjustmentFor(period, excess);
+        const cellBase = base * termMult[period] * clFactor;
+        const value = cellBase + excessAdjustmentFor(period, excess, cellBase);
         out[period][String(excess)][String(column)] = Math.max(1, Math.round(value));
       }
     }

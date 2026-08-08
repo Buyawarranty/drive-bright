@@ -25,8 +25,8 @@ const ALL_EXCESS_OPTIONS = [
 ];
 
 /** £/mo difference vs the £100 baseline, straight from the pricing engine. */
-const excessHint = (paymentType: string, excess: number): string => {
-  const delta = getExcessMonthlyDelta(paymentType as PaymentPeriod, excess);
+const excessHint = (paymentType: string, excess: number, base?: number): string => {
+  const delta = getExcessMonthlyDelta(paymentType as PaymentPeriod, excess, base);
   if (delta === 0) return '£0';
   return delta > 0 ? `+£${delta}/mo` : `−£${Math.abs(delta)}/mo`;
 };
@@ -113,7 +113,7 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
                 <span className="font-bold text-base">{option.label}</span>
               </span>
               <span className="text-xs font-semibold text-foreground leading-tight">{option.description}</span>
-              <span className="text-[11px] text-muted-foreground leading-tight mt-auto">{excessHint(paymentType, option.value)}</span>
+              <span className="text-[11px] text-muted-foreground leading-tight mt-auto">{excessHint(paymentType, option.value, getExcessBracketBasis(paymentType, totalPrice, selectedExcess))}</span>
             </button>
           );
         })}
