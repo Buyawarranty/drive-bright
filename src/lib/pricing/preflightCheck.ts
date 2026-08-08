@@ -19,7 +19,8 @@ import {
 
 export const PREFLIGHT_TERMS = ['12months', '24months', '36months'] as const;
 export const PREFLIGHT_EXCESSES = [0, 50, 100, 150, 250, 500] as const;
-export const PREFLIGHT_CLAIM_LIMITS = [750, 1250, 2000] as const;
+/** Cover levels the grid must price (retired names 750/1250 are normalised before this runs). */
+export const PREFLIGHT_CLAIM_LIMITS = [1000, 2000, 3000] as const;
 export const PREFLIGHT_LABOUR_RATES = [50, 70, 100, 150] as const;
 
 export type PreflightSeverity = 'ok' | 'warn' | 'block';
@@ -120,7 +121,10 @@ function checkGrid(matrix: unknown): PreflightItem {
   for (const term of PREFLIGHT_TERMS) {
     for (const excess of PREFLIGHT_EXCESSES) {
       for (const limit of PREFLIGHT_CLAIM_LIMITS) {
-        const cell = m?.[term]?.[String(excess)]?.[String(limit)] ?? m?.[term]?.[excess]?.[limit];
+        const retired: Record<number, number> = { 1000: 750, 2000: 1250, 3000: 2000 };
+        const cells = m?.[term]?.[String(excess)] ?? m?.[term]?.[excess];
+        const cell =
+          cells?.[String(limit)] ?? cells?.[limit] ?? cells?.[String(retired[limit])];
         if (num(cell) === null) {
           gaps.push(
             `${term.replace('months', ' months')} / £${excess} excess / £${limit.toLocaleString()} limit`

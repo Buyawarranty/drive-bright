@@ -18,8 +18,7 @@ import { buildParityRows, summariseParity } from '@/lib/pricing/parityHarness';
 const EXCESS_OPTIONS = [0, 50, 100, 150, 250];
 import { getDisplayClaimLimit } from '@/lib/claimLimitTiers';
 
-const CLAIM_LIMITS = [750, 1250, 2000];
-// 750 / 1250 / 2000 are internal grid columns for the £1,000 / £2,000 / £3,000 tiers.
+const CLAIM_LIMITS = [1000, 2000, 3000];
 const LABOUR_RATES = [50, 70, 100, 150];
 
 const money = (n: number) => `£${Math.abs(n).toLocaleString('en-GB')}`;
@@ -38,7 +37,7 @@ function Delta({ value }: { value: number }) {
 
 export default function PricingParityPanel() {
   const [excess, setExcess] = useState(100);
-  const [claimLimit, setClaimLimit] = useState(1250);
+  const [claimLimit, setClaimLimit] = useState(2000);
   const [labourRate, setLabourRate] = useState(70);
   const [boost, setBoost] = useState(false);
   const [onlyDiffs, setOnlyDiffs] = useState(false);

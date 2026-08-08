@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import {
   BASE_PRICING_MATRIX,
   ADMIN_QUOTE_PRICE_MULTIPLIER,
+  normalizeClaimColumnKeys,
   type PricingMatrixShape,
 } from '@/lib/pricingMatrix';
 import type { VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
@@ -48,7 +49,9 @@ export interface PricingVersion {
 
 export const PERIODS = ['12months', '24months', '36months'] as const;
 export const EXCESSES = [0, 50, 100, 150, 250, 500] as const;
-export const CLAIM_LIMITS = [750, 1250, 2000] as const;
+// Claim-limit columns are the real cover levels. Retired names (750/1250/2000)
+// are normalised on read by normalizeClaimColumnKeys.
+export const CLAIM_LIMITS = [1000, 2000, 3000] as const;
 
 /**
  * The current live-in-code Quotes & Orders grid: base matrix × 1.10 (floored).
@@ -83,7 +86,15 @@ export function usePricingVersions() {
       .from('pricing_matrix_versions')
       .select('*')
       .order('created_at', { ascending: false });
-    if (!error && data) setVersions(data as unknown as PricingVersion[]);
+    if (!error && data) {
+      // Older rows store retired column names (750/1250/2000); map them to the
+      // cover levels they meant so every panel reads one set of column keys.
+      const rows = (data as unknown as PricingVersion[]).map(v => ({
+        ...v,
+        admin_matrix: (normalizeClaimColumnKeys(v.admin_matrix) ?? v.admin_matrix) as PricingMatrixShape,
+      }));
+      setVersions(rows);
+    }
     setLoading(false);
   }, []);
 

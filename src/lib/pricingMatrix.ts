@@ -2,7 +2,7 @@
  * Centralized pricing matrix and utilities for warranty pricing.
  * 
  * PRICING RULES (UPDATED JAN 2026):
- * - BASE prices are from CURRENT_PRICE_JAN_2026.xlsx at £70/hr labour rate (DEFAULT), £100 excess, £1250 claim limit
+ * - BASE prices are from CURRENT_PRICE_JAN_2026.xlsx at £70/hr labour rate (DEFAULT), £100 excess, £2,000 claim limit
  * - Labour rate £50/hr = -£5/month for duration (BELOW base)
  * - Labour rate £70/hr = base price (no adjustment) - DEFAULT
  * - Labour rate £100/hr = +£8/month for duration
@@ -20,37 +20,96 @@ import { getVehicleRuleMinPrice } from './pricing/vehicleRules';
 // Base pricing matrix - 3% INCREASE applied (Jun 2026), floored to whole numbers
 // Previous baseline was the May 2026 +12% matrix; all values multiplied by 1.03 and floored.
 // These are the base prices at £70/hr labour rate (DEFAULT)
+//
+// CLAIM-LIMIT COLUMNS ARE THE REAL COVER LEVELS: 1000 / 2000 / 3000.
+// The retired internal names (750 / 1250 / 2000) are gone from the grid — anything
+// still arriving with an old number is normalised by toClaimLimitColumn() below,
+// so every price is byte-identical to before the rename.
+//
 // NOTE: Admin Quotes & Orders pages apply an additional +10% markup on top via
 // calculateAdminQuoteWarrantyPrice (see below). Customer website Steps 1–4 use this
 // matrix unchanged.
 export const BASE_PRICING_MATRIX = {
   // +5% uplift applied (Jul 2026) to 12 months ONLY — 2yr/3yr unchanged.
   '12months': {
-    0: { 750: 486, 1250: 516, 2000: 613 },
-    50: { 750: 454, 1250: 475, 2000: 569 },
-    100: { 750: 402, 1250: 433, 2000: 529 },
-    150: { 750: 357, 1250: 402, 2000: 497 },
-    250: { 750: 277, 1250: 326, 2000: 417 },
-    500: { 750: 177, 1250: 200, 2000: 247 }
+    0: { 1000: 486, 2000: 516, 3000: 613 },
+    50: { 1000: 454, 2000: 475, 3000: 569 },
+    100: { 1000: 402, 2000: 433, 3000: 529 },
+    150: { 1000: 357, 2000: 402, 3000: 497 },
+    250: { 1000: 277, 2000: 326, 3000: 417 },
+    500: { 1000: 177, 2000: 200, 3000: 247 }
   },
   // +20% uplift applied (Jul 2026) to 2yr and 3yr only — 12 months unchanged.
   '24months': {
-    0: { 750: 1071, 1250: 1119, 2000: 1226 },
-    50: { 750: 988, 1250: 1047, 2000: 1142 },
-    100: { 750: 879, 1250: 939, 2000: 1047 },
-    150: { 750: 831, 1250: 879, 2000: 988 },
-    250: { 750: 650, 1250: 718, 2000: 829 },
-    500: { 750: 415, 1250: 469, 2000: 562 }
+    0: { 1000: 1071, 2000: 1119, 3000: 1226 },
+    50: { 1000: 988, 2000: 1047, 3000: 1142 },
+    100: { 1000: 879, 2000: 939, 3000: 1047 },
+    150: { 1000: 831, 2000: 879, 3000: 988 },
+    250: { 1000: 650, 2000: 718, 3000: 829 },
+    500: { 1000: 415, 2000: 469, 3000: 562 }
   },
   '36months': {
-    0: { 750: 1609, 1250: 1669, 2000: 1789 },
-    50: { 750: 1490, 1250: 1549, 2000: 1669 },
-    100: { 750: 1309, 1250: 1407, 2000: 1527 },
-    150: { 750: 1250, 1250: 1309, 2000: 1429 },
-    250: { 750: 1010, 1250: 1052, 2000: 1167 },
-    500: { 750: 802, 1250: 844, 2000: 960 }
+    0: { 1000: 1609, 2000: 1669, 3000: 1789 },
+    50: { 1000: 1490, 2000: 1549, 3000: 1669 },
+    100: { 1000: 1309, 2000: 1407, 3000: 1527 },
+    150: { 1000: 1250, 2000: 1309, 3000: 1429 },
+    250: { 1000: 1010, 2000: 1052, 3000: 1167 },
+    500: { 1000: 802, 2000: 844, 3000: 960 }
   }
 } as const;
+
+/** The only claim-limit columns the grid has, named after the cover they sell. */
+export const CLAIM_LIMIT_COLUMNS = [1000, 2000, 3000] as const;
+
+/** Retired internal column name → the cover level it always meant. */
+export const RETIRED_CLAIM_COLUMN_NAMES: Record<number, number> = {
+  750: 1000,
+  1250: 2000,
+};
+
+/** Canonical column → the retired key older saved grids used for it. */
+export const RETIRED_KEY_FOR_COLUMN: Record<number, number> = {
+  1000: 750,
+  2000: 1250,
+  3000: 2000,
+};
+
+/**
+ * Which grid column a claim limit is priced from. This preserves exactly the
+ * behaviour that was live before the rename:
+ *   £1,000 (or retired 750)      → the £1,000 column
+ *   retired 1250                 → the £2,000 column
+ *   £2,000 / £3,000 / £5,000     → the £3,000 column (£3,000 and £5,000 then add
+ *                                  their published step on top)
+ * The multi-year £2,000 promo is handled separately in getBasePrice().
+ */
+export function toClaimLimitColumn(claimLimit?: number | null): 1000 | 2000 | 3000 {
+  const raw = Number(claimLimit);
+  if (!Number.isFinite(raw)) return DEFAULT_CLAIM_LIMIT_COLUMN as 2000;
+  if (raw === 750 || raw <= 1000) return 1000;
+  // 1250 is the retired wire value for £2,000 cover.
+  if (raw === 1250) return 2000;
+  // £2,000 / £3,000 / £5,000 all read the top column, exactly as before the rename
+  // (£3,000 and £5,000 then add their published step on top).
+  return 3000;
+}
+
+/**
+ * Read a grid cell by canonical column, falling back to the retired key so
+ * pricing versions saved before the rename keep working untouched.
+ */
+export function readClaimColumn(
+  cells: Record<string, number> | undefined,
+  column: number
+): number | undefined {
+  if (!cells) return undefined;
+  const direct = cells[String(column)];
+  if (typeof direct === 'number') return direct;
+  const legacyKey = RETIRED_KEY_FOR_COLUMN[column];
+  const legacy = legacyKey !== undefined ? cells[String(legacyKey)] : undefined;
+  return typeof legacy === 'number' ? legacy : undefined;
+}
+
 
 // Marketing savings display (NOT actual discounts - just for "Was £X" display)
 export const MARKETING_SAVINGS: Record<string, number> = {
@@ -192,8 +251,18 @@ export const DEFAULT_LABOUR_RATE = 70;
 // Default excess is £100
 export const DEFAULT_EXCESS = 100;
 
-// Default claim limit is £1250
+/**
+ * Default wire value for the £2,000 (Essential) tier. It stays 1250 because that
+ * exact number is written on live records, Stripe metadata and saved quotes —
+ * rewriting it would re-value existing policies. Nothing user-facing shows it:
+ * toClaimLimitColumn() maps it to the £2,000 column and getDisplayClaimLimit()
+ * renders it as "£2,000".
+ */
 export const DEFAULT_CLAIM_LIMIT = 1250;
+
+/** The grid column the default tier is priced from. */
+export const DEFAULT_CLAIM_LIMIT_COLUMN = 2000;
+
 
 // Boost claim limit adds £5/month
 export const BOOST_CLAIM_LIMIT_MONTHLY = 5;
@@ -307,13 +376,16 @@ export function getExcessTotalAdjustment(paymentPeriod: PaymentPeriod, excess: n
  * never land on the same price.
  */
 export const CLAIM_LIMIT_FLOOR_MULTIPLIER: Record<number, number> = {
-  750: 0.8,
+  // Cover levels
   1000: 0.8,
-  1250: 1.0,
   2000: 1.0,
   3000: 1.15,
   5000: 1.3,
+  // Retired wire values still stored on live records (750 = £1,000, 1250 = £2,000)
+  750: 0.8,
+  1250: 1.0,
 };
+
 
 
 /** Nearest defined multiplier so unusual values never fall back to a flat 1. */
@@ -465,6 +537,46 @@ export function applyReliableBrandDiscount(
 
 export type PricingMatrixShape = Record<string, Record<string, Record<string, number>>>;
 
+/**
+ * Rewrite retired claim-limit column keys in a saved grid to the cover levels they
+ * always meant: 750 → £1,000, 1250 → £2,000, 2000 → £3,000. A grid is treated as
+ * retired only when it actually contains a 750 or 1250 column, so a grid already
+ * saved as 1000 / 2000 / 3000 is left exactly as it is. Values are copied across
+ * untouched, so an older version prices identically and just reads correctly.
+ */
+export function normalizeClaimColumnKeys(
+  matrix: PricingMatrixShape | null | undefined
+): PricingMatrixShape | null {
+  if (!matrix || typeof matrix !== 'object') return (matrix ?? null) as PricingMatrixShape | null;
+
+  const isRetiredGrid = Object.values(matrix).some(periodData =>
+    Object.values(periodData || {}).some(
+      cells => cells && (cells['750'] !== undefined || cells['1250'] !== undefined)
+    )
+  );
+  if (!isRetiredGrid) return matrix;
+
+  const RETIRED_TO_COVER: Record<string, string> = { '750': '1000', '1250': '2000', '2000': '3000' };
+  const out: PricingMatrixShape = {};
+  for (const period of Object.keys(matrix)) {
+    const periodData = matrix[period] || {};
+    out[period] = {};
+    for (const excess of Object.keys(periodData)) {
+      const cells = periodData[excess] || {};
+      const nextCells: Record<string, number> = {};
+      for (const key of Object.keys(cells)) {
+        const value = cells[key];
+        if (typeof value !== 'number') continue;
+        nextCells[RETIRED_TO_COVER[key] ?? key] = value;
+      }
+      out[period][excess] = nextCells;
+    }
+  }
+  return out;
+}
+
+
+
 export type PricingSurface = 'customer' | 'admin';
 
 let LIVE_ADMIN_MATRIX: PricingMatrixShape | null = null;
@@ -551,9 +663,14 @@ export function deriveCustomerMatrix(
 }
 
 /**
- * Get base price from the pricing matrix
- * PROMO: For 2yr/3yr plans with £2000 claim limit, use £1250 pricing
- * (customer gets £2000 coverage for the price of £1250)
+ * Get base price from the pricing matrix.
+ *
+ * Columns are the real cover levels (£1,000 / £2,000 / £3,000). Any claim limit
+ * arriving as a retired wire value (750, 1250) is normalised by
+ * toClaimLimitColumn(), so prices are unchanged by the rename.
+ *
+ * PROMO: 2yr/3yr cover at the £2,000 tier is priced from the £2,000 column
+ * (the 12-month £2,000 tier is priced from the £3,000 column, as it always was).
  */
 export function getBasePrice(
   paymentPeriod: PaymentPeriod,
@@ -567,9 +684,10 @@ export function getBasePrice(
    */
   vehicleFactor = 1
 ): number {
-  // PROMO LOGIC: For 2yr/3yr plans with £2000 claim limit, use £1250 pricing
+  // PROMO LOGIC: 2yr/3yr at the £2,000 tier reads the £2,000 column.
   const isMultiYearPlan = paymentPeriod === '24months' || paymentPeriod === '36months';
-  const pricingClaimLimit = (isMultiYearPlan && claimLimit === 2000) ? 1250 : claimLimit;
+  const column =
+    isMultiYearPlan && claimLimit === 2000 ? 2000 : toClaimLimitColumn(claimLimit);
   const factor = Number.isFinite(vehicleFactor) && vehicleFactor > 0 ? vehicleFactor : 1;
   const withFactor = (price: number) => (factor === 1 ? price : Math.ceil(price * factor));
 
@@ -579,7 +697,8 @@ export function getBasePrice(
     // so the grid is always read at the £100 baseline column.
     const excessData = periodData?.[String(EXCESS_BASELINE)] || periodData?.[String(voluntaryExcess)] || periodData?.[String(DEFAULT_EXCESS)];
     const adminPrice =
-      excessData?.[String(pricingClaimLimit)] ?? excessData?.[String(DEFAULT_CLAIM_LIMIT)];
+      readClaimColumn(excessData, column) ??
+      readClaimColumn(excessData, DEFAULT_CLAIM_LIMIT_COLUMN);
     if (typeof adminPrice === 'number') {
       const adjusted = withFactor(adminPrice);
       // Customer surface = grid − live Step 3 discount, applied EXACTLY once.
@@ -591,8 +710,10 @@ export function getBasePrice(
   const periodData = BASE_PRICING_MATRIX[paymentPeriod] || BASE_PRICING_MATRIX['12months'];
   const excessData = periodData[EXCESS_BASELINE as ExcessAmount] || periodData[voluntaryExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
 
-  const codePrice = excessData[pricingClaimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
+  const codePrice =
+    excessData[column as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT_COLUMN as ClaimLimit];
   return applyCustomerJourneyUplift(withFactor(codePrice), surface);
+
 }
 
 

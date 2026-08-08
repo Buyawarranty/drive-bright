@@ -220,7 +220,8 @@ export type AgeBandModel = {
  * grid has identical columns and the customer sees no price change when they
  * switch claim limit on Step 3.
  */
-const COLUMN_TO_CLAIM_LIMIT: Record<number, number> = { 750: 1000, 1250: 2000, 2000: 3000 };
+/** Grid columns are the cover levels themselves — no retired names left to map. */
+const CLAIM_LIMIT_COLUMNS = [1000, 2000, 3000] as const;
 const GRID_EXCESSES = [0, 50, 100, 150, 250, 500];
 const MIN_SELLABLE_BY_PERIOD: Record<string, number> = {
   '12months': 399,
@@ -264,9 +265,9 @@ export function buildAdminMatrixFromModel(model: AgeBandModel): Record<string, R
     out[period] = {};
     for (const excess of GRID_EXCESSES) {
       out[period][String(excess)] = {};
-      for (const column of [750, 1250, 2000]) {
+      for (const column of CLAIM_LIMIT_COLUMNS) {
         const clFactor =
-          model.claimLimits.find(c => c.limit === COLUMN_TO_CLAIM_LIMIT[column])?.factor ?? 1;
+          model.claimLimits.find(c => c.limit === column)?.factor ?? 1;
         const value = base * termMult[period] * clFactor + excessAdjustmentFor(period, excess);
         out[period][String(excess)][String(column)] = Math.max(1, Math.round(value));
       }

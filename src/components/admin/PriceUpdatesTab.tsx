@@ -105,9 +105,9 @@ function readStoredTabOrder(): string[] {
 
 /** Internal matrix columns → the customer-facing AutoCare tiers they price. */
 const CLAIM_COLUMN_LABELS: Record<number, { title: string; sub: string }> = {
-  750: { title: 'AutoCare Basic — £1,000', sub: 'Internal column 750' },
-  1250: { title: 'Legacy / promo fallback', sub: 'Internal column 1250 — not shown to customers' },
-  2000: { title: 'AutoCare Essential — £2,000', sub: 'Internal column 2000' },
+  1000: { title: 'AutoCare Basic — £1,000', sub: '£1,000 cover column' },
+  2000: { title: 'AutoCare Essential — £2,000', sub: '£2,000 cover column (2yr/3yr)' },
+  3000: { title: 'Top grid column — £3,000', sub: '£3,000 cover, and the 12-month £2,000 price' },
 };
 
 /**
@@ -1288,16 +1288,16 @@ export default function PriceUpdatesTab() {
                             <th className="text-left p-2">Excess</th>
                             {CLAIM_LIMITS.map(l => (
                               <th key={l} className="text-left p-2">
-                                {CLAIM_COLUMN_LABELS[l].title}
+                                {CLAIM_COLUMN_LABELS[l]?.title ?? `£${l.toLocaleString()}`}
                                 <div className="text-xs font-normal text-muted-foreground">
-                                  {CLAIM_COLUMN_LABELS[l].sub}
+                                  {CLAIM_COLUMN_LABELS[l]?.sub ?? 'Cover column'}
                                 </div>
                               </th>
                             ))}
                             <th className="text-left p-2">
                               AutoCare Elite — £3,000
                               <div className="text-xs font-normal text-muted-foreground">
-                                Derived: £2,000 col + (£2,000 − £1,000 step)
+                                Derived: top column + (£2,000 − £1,000 step)
                               </div>
                             </th>
                             <th className="text-left p-2">
@@ -1334,7 +1334,9 @@ export default function PriceUpdatesTab() {
                                 const step3 = raw;
                                 const belowFloor = value < minPrice;
                                 const changed = value !== codeValue;
-                                const blockedByGuardrail = excess === 500 && limit < 3000;
+                                // £500 excess is only offered on the derived £3,000 / £5,000
+                                // tiers, never on a grid column (unchanged by the rename).
+                                const blockedByGuardrail = excess === 500;
                                 return (
                                   <td key={limit} className="p-2">
                                     <div className="flex items-center gap-2">
@@ -1374,8 +1376,8 @@ export default function PriceUpdatesTab() {
                                 );
                               })}
                               {(() => {
-                                const basic = matrix?.[period]?.[String(excess)]?.['750'] ?? 0;
-                                const essential = matrix?.[period]?.[String(excess)]?.['2000'] ?? 0;
+                                const basic = matrix?.[period]?.[String(excess)]?.['1000'] ?? 0;
+                                const essential = matrix?.[period]?.[String(excess)]?.['3000'] ?? 0;
                                 const elite = essential + (essential - basic);
                                 const premium =
                                   elite + (PREMIUM_STEP_SURCHARGE[period] || 0);
