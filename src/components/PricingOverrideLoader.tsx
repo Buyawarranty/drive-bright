@@ -26,6 +26,8 @@ export default function PricingOverrideLoader() {
         if (cancelled || error || !data) return;
         // Guarded: only a version with status 'live' can ever be applied.
         applyLivePricingVersion(data as any);
+        // Let screens that quote from the published model (Quotes & Orders) re-read it.
+        window.dispatchEvent(new Event('bw:pricing-updated'));
       } catch {
         // Ignore — fall back to code pricing.
       }

@@ -418,7 +418,17 @@ export default function PriceUpdatesTab() {
         key: String(t.key),
         factor: t.factor === null || t.factor === undefined ? null : Number(t.factor),
       })),
+      // Full hybrid model figures so Quotes & Orders quotes exactly what was pushed live.
+      modelRisks: Array.isArray(m.modelRisks) ? m.modelRisks : undefined,
+      modelFloors: Array.isArray(m.modelFloors) ? m.modelFloors : undefined,
+      claimLimits: Array.isArray(m.claimLimits) ? m.claimLimits : undefined,
+      labourRates: Array.isArray(m.labourRates) ? m.labourRates : undefined,
+      excessFactors: Array.isArray(m.excessFactors) ? m.excessFactors : undefined,
+      twoYearMult: m.twoYearMult === undefined ? undefined : Number(m.twoYearMult),
+      threeYearMult: m.threeYearMult === undefined ? undefined : Number(m.threeYearMult),
+      payInFullFactor: m.payInFullFactor === undefined ? undefined : Number(m.payInFullFactor),
     };
+
   }
 
   async function handleSave() {
@@ -556,7 +566,17 @@ export default function PriceUpdatesTab() {
         key: String(t.key),
         factor: t.factor === null || t.factor === undefined ? null : Number(t.factor),
       })),
+      // Full hybrid figures so Quotes & Orders quotes the pushed side exactly.
+      modelRisks: Array.isArray(model.modelRisks) ? model.modelRisks : undefined,
+      modelFloors: Array.isArray(model.modelFloors) ? model.modelFloors : undefined,
+      claimLimits: claim.length ? claim : undefined,
+      labourRates: Array.isArray(model.labourRates) ? model.labourRates : undefined,
+      excessFactors: Array.isArray(model.excessFactors) ? model.excessFactors : undefined,
+      twoYearMult: model.twoYearMult === undefined ? undefined : Number(model.twoYearMult),
+      threeYearMult: model.threeYearMult === undefined ? undefined : Number(model.threeYearMult),
+      payInFullFactor: model.payInFullFactor === undefined ? undefined : Number(model.payInFullFactor),
     };
+
     const discount = effectiveDiscountPct(
       Number(websiteDiscountPct ?? model.websiteDiscountPct ?? discountPct ?? 10)
     );

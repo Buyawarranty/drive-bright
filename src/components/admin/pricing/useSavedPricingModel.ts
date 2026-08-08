@@ -13,6 +13,8 @@ import {
 } from './AgeBandPricingPreview';
 import { PRICING_MODEL_SAVED_EVENT } from './pricingModelEvents';
 import { loadVehicleSurchargeDraft } from './VehicleSurchargeEditor';
+import { getLiveVehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
+
 
 export { PRICING_MODEL_SAVED_EVENT } from './pricingModelEvents';
 
@@ -50,16 +52,19 @@ function mergeSurchargeLabourRates(base: any[]): any[] {
   return merged.sort((a, b) => a.rate - b.rate);
 }
 
-export function useSavedPricingModel() {
+export function useSavedPricingModel(opts?: { preferLive?: boolean }) {
+  const preferLive = opts?.preferLive === true;
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
     const bump = () => setTick(t => t + 1);
     window.addEventListener(PRICING_MODEL_SAVED_EVENT, bump);
     window.addEventListener('storage', bump);
+    window.addEventListener('bw:pricing-updated', bump);
     return () => {
       window.removeEventListener(PRICING_MODEL_SAVED_EVENT, bump);
       window.removeEventListener('storage', bump);
+      window.removeEventListener('bw:pricing-updated', bump);
     };
   }, []);
 
@@ -70,8 +75,35 @@ export function useSavedPricingModel() {
     } catch {
       saved = {};
     }
+    /**
+     * Quotes & Orders must quote from the figures a manager PUSHED LIVE, not the
+     * draft sitting in that agent's browser — otherwise the same car quotes a
+     * different price per machine and disagrees with the pricing sandboxes.
+     */
+    if (preferLive) {
+      const live: any = getLiveVehicleFactorModel();
+      if (live && Array.isArray(live.bands) && live.bands.length) {
+        saved = {
+          ...saved,
+          bands: live.bands,
+          refBandKey: live.refBandKey,
+          mileageBands: live.mileageBands,
+          powertrains: live.powertrains,
+          vehicleTypes: live.vehicleTypes,
+          ...(live.modelRisks ? { modelRisks: live.modelRisks } : {}),
+          ...(live.modelFloors ? { modelFloors: live.modelFloors } : {}),
+          ...(live.claimLimits ? { claimLimits: live.claimLimits } : {}),
+          ...(live.labourRates ? { labourRates: live.labourRates } : {}),
+          ...(live.excessFactors ? { excessFactors: live.excessFactors } : {}),
+          ...(live.twoYearMult !== undefined ? { twoYearMult: live.twoYearMult } : {}),
+          ...(live.threeYearMult !== undefined ? { threeYearMult: live.threeYearMult } : {}),
+          ...(live.payInFullFactor !== undefined ? { payInFullFactor: live.payInFullFactor } : {}),
+        };
+      }
+    }
     const pick = <T,>(value: T[] | undefined, fallback: T[]) =>
       Array.isArray(value) && value.length ? value : fallback;
+
 
     return {
       ageBands: pick(saved.bands, PROPOSED_AGE_BANDS),

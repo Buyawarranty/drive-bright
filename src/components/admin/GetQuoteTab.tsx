@@ -239,7 +239,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // Cover-option variables come from the published pricing model (Admin → Price
   // updates), the same source the Aug hybrid test Step 2 uses, so both screens
   // always offer identical excess amounts, claim-limit tiers and labour rates.
-  const pricingModel = useSavedPricingModel();
+  const pricingModel = useSavedPricingModel({ preferLive: true });
   const claimLimitOptions = React.useMemo(
     () => buildClaimLimitOptions(pricingModel.claimLimits),
     [pricingModel.claimLimits]
