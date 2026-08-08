@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
+import { getDefaultVoluntaryExcess } from '@/lib/pricing/getDefaultVoluntaryExcess';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { 
   getBasePrice as getCentralizedBasePrice,
