@@ -42,7 +42,7 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   // Availability follows the warranty price bracket:
-  // £200–£299 → up to £150, £300–£499 → adds £250, £500+ → adds £250 and £500
+  // under £500 → up to £150; £500+ → adds £250 and £500
   const excessOptions = ALL_EXCESS_OPTIONS.filter((opt) =>
     getVisibleExcessOptions(
       paymentType,
