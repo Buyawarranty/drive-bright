@@ -374,13 +374,16 @@ export function getExcessTotalAdjustment(paymentPeriod: PaymentPeriod, excess: n
  * never land on the same price.
  */
 export const CLAIM_LIMIT_FLOOR_MULTIPLIER: Record<number, number> = {
-  750: 0.8,
+  // Cover levels
   1000: 0.8,
-  1250: 1.0,
   2000: 1.0,
   3000: 1.15,
   5000: 1.3,
+  // Retired wire values still stored on live records (750 = £1,000, 1250 = £2,000)
+  750: 0.8,
+  1250: 1.0,
 };
+
 
 
 /** Nearest defined multiplier so unusual values never fall back to a flat 1. */
