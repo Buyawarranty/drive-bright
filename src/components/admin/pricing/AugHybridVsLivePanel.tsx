@@ -15,6 +15,7 @@ import type { PriceTestQuoteSnapshot } from './PriceTestStep2';
 import SectionPushLiveBar from './SectionPushLiveBar';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
+import { buildAdminMatrixFromModel } from './AgeBandPricingPreview';
 
 /**
  * AUG HYBRID TEST vs LIVE
@@ -132,6 +133,12 @@ const AugHybridVsLivePanel: React.FC<{
             label: 'Live pricing (left)',
             description: 'Republishes the current live builder figures unchanged.',
             getModel: () => liveModel,
+            getPreflightExtras: () => liveModel
+              ? {
+                  adminMatrix: buildAdminMatrixFromModel(liveModel),
+                  labourRateFactors: liveModel.labourRates,
+                }
+              : null,
           },
           {
             key: 'hybrid',
@@ -139,6 +146,10 @@ const AugHybridVsLivePanel: React.FC<{
             description:
               'Publishes the hybrid variables exactly as set above: reduced base, compressed risk/mileage spread and the multi-year discounts.',
             getModel: () => hybridModel,
+            getPreflightExtras: () => ({
+              adminMatrix: buildAdminMatrixFromModel(hybridModel),
+              labourRateFactors: hybridModel.labourRates,
+            }),
           },
         ]}
       />
