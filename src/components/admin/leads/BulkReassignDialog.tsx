@@ -16,6 +16,8 @@ import { ConfirmationStep } from './bulk-reassign/ConfirmationStep';
 import { ModeSelector, ReassignMode } from './bulk-reassign/ModeSelector';
 import { LeadPickerList } from './bulk-reassign/LeadPickerList';
 import { Checkbox } from '@/components/ui/checkbox';
+import { splitByNoteLock, NOTE_LOCK_EXPLAINER } from '@/lib/leadNoteLock';
+
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DateRangeSelector } from './bulk-reassign/DateRangeSelector';
 
@@ -186,6 +188,13 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
   // two flows have different SLAs, timers and reporting. Default to New; the
   // manager must explicitly opt in to move recontact-pool leads.
   const [workstream, setWorkstream] = useState<Workstream>('new');
+  /**
+   * Annual leave / holiday rule: leads carrying an agent-written note are held
+   * back unless the manager confirms they checked with (or authorised) the
+   * agent. Calls and status changes alone never block a move.
+   */
+  const [authoriseNoted, setAuthoriseNoted] = useState(false);
+
 
   useEffect(() => {
     if (!open) return;
@@ -475,8 +484,13 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     if (limit) q = q.limit(limit);
     const { data, error } = await q;
     if (error) throw error;
-    return (data || []).map((r: any) => r.id as string);
+    const ids = (data || []).map((r: any) => r.id as string);
+    // Hold back note-locked leads unless the manager has authorised them.
+    if (authoriseNoted) return ids;
+    const { movable } = await splitByNoteLock(ids);
+    return movable;
   };
+
 
   // Move unassigned customers (assigned_to IS NULL) to the given target agent.
   const reassignUnassignedCustomers = async (
@@ -513,7 +527,12 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
 
       if (mode === 'cherry_pick') {
         // Fetch lead → owner mapping for the selected leads so we call the RPC with the correct source
-        const ids = Array.from(selectedLeadIds);
+        const pickedIds = Array.from(selectedLeadIds);
+        const ids = authoriseNoted ? pickedIds : (await splitByNoteLock(pickedIds)).movable;
+        if (ids.length === 0) {
+          throw new Error('Every selected lead has an agent note — check with the agent and tick the authorisation box.');
+        }
+
         const { data: rows, error } = await supabase
           .from('sales_leads')
           .select('id, assigned_to')
@@ -721,6 +740,8 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
     setPoolCounts({});
     setUnassignedBuckets([]);
     setWorkstream('new');
+    setAuthoriseNoted(false);
+
   };
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -937,6 +958,23 @@ export const BulkReassignDialog: React.FC<BulkReassignDialogProps> = ({
             requestedPerAgent={moveCount}
           />
         )}
+
+        {step === 'confirm' && (
+          <div className="mx-6 mb-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
+            <label className="flex items-start gap-2 cursor-pointer">
+              <Checkbox
+                checked={authoriseNoted}
+                onCheckedChange={(v) => setAuthoriseNoted(!!v)}
+                className="mt-0.5"
+              />
+              <span className="text-xs text-amber-700 dark:text-amber-400">
+                <span className="font-semibold block">Include leads that have an agent note (needs authorisation)</span>
+                {NOTE_LOCK_EXPLAINER} Leave this unticked and noted leads stay with their current agent.
+              </span>
+            </label>
+          </div>
+        )}
+
 
         </div>
 

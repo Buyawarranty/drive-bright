@@ -139,3 +139,5 @@ Updated: just now
 - [Per-agent Reassign Access](mem://admin/leads/per-agent-reassign-access) — can_reassign_leads + reassign_scope per agent; managers always all_teams; sales/sales_lead configurable in Staff Lead Access panel
 - [Manager Reassign Bypass](mem://admin/leads/manager-reassign-bypass) — Touched-lead protection triggers must allow can_manage_lead_routing callers, else manager reassigns silently snap back
 - [Duplicate Customer One Owner](mem://admin/leads/duplicate-customer-one-owner) — Same customer (email or phone tail-9) can never sit with 2 agents; owner change propagates to uncalled duplicates, split-call pairs get manager alert tag
+- [Note-lock Reassign Authorisation](mem://admin/leads/note-lock-reassign-authorisation) — Calls/status changes never block a reassign; an agent-written note locks the lead until a manager ticks explicit authorisation
+
