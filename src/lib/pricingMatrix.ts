@@ -527,7 +527,9 @@ export function getBasePrice(
 
   if (LIVE_ADMIN_MATRIX) {
     const periodData = LIVE_ADMIN_MATRIX[paymentPeriod] || LIVE_ADMIN_MATRIX['12months'];
-    const excessData = periodData?.[String(voluntaryExcess)] || periodData?.[String(DEFAULT_EXCESS)];
+    // Excess is priced by an explicit £/mo difference (see EXCESS_MONTHLY_DELTA),
+    // so the grid is always read at the £100 baseline column.
+    const excessData = periodData?.[String(EXCESS_BASELINE)] || periodData?.[String(voluntaryExcess)] || periodData?.[String(DEFAULT_EXCESS)];
     const adminPrice =
       excessData?.[String(pricingClaimLimit)] ?? excessData?.[String(DEFAULT_CLAIM_LIMIT)];
     if (typeof adminPrice === 'number') {
@@ -542,7 +544,7 @@ export function getBasePrice(
   }
 
   const periodData = BASE_PRICING_MATRIX[paymentPeriod] || BASE_PRICING_MATRIX['12months'];
-  const excessData = periodData[voluntaryExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
+  const excessData = periodData[EXCESS_BASELINE as ExcessAmount] || periodData[voluntaryExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
 
   const codePrice = excessData[pricingClaimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
   return applyCustomerJourneyUplift(withFactor(codePrice), surface);
@@ -689,7 +691,10 @@ export function calculateTotalWarrantyPrice(params: {
   const boostAdjustment = calculateBoostAdjustment(boostEnabled, paymentPeriod);
 
   // 6. Add protection add-ons (Transfer Cover is £19 one-off, handled by caller)
-  const rawTotal = flooredBase + labourAdjustment + boostAdjustment + addOnPrice;
+  // 5b. Voluntary excess difference (explicit £/mo table, £100 = £0)
+  const excessAdjustment = getExcessTotalAdjustment(paymentPeriod, voluntaryExcess);
+
+  const rawTotal = flooredBase + labourAdjustment + boostAdjustment + excessAdjustment + addOnPrice;
   // A model-specific minimum is absolute: a £50/hr labour discount can never take the
   // quote below it (add-ons are excluded from the comparison as they are extras).
   const ruleMin = getVehicleRuleMinPrice(vehicleName, paymentPeriod) ?? 0;
