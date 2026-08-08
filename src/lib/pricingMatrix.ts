@@ -621,9 +621,14 @@ export function deriveCustomerMatrix(
 }
 
 /**
- * Get base price from the pricing matrix
- * PROMO: For 2yr/3yr plans with £2000 claim limit, use £1250 pricing
- * (customer gets £2000 coverage for the price of £1250)
+ * Get base price from the pricing matrix.
+ *
+ * Columns are the real cover levels (£1,000 / £2,000 / £3,000). Any claim limit
+ * arriving as a retired wire value (750, 1250) is normalised by
+ * toClaimLimitColumn(), so prices are unchanged by the rename.
+ *
+ * PROMO: 2yr/3yr cover at the £2,000 tier is priced from the £2,000 column
+ * (the 12-month £2,000 tier is priced from the £3,000 column, as it always was).
  */
 export function getBasePrice(
   paymentPeriod: PaymentPeriod,
@@ -637,9 +642,10 @@ export function getBasePrice(
    */
   vehicleFactor = 1
 ): number {
-  // PROMO LOGIC: For 2yr/3yr plans with £2000 claim limit, use £1250 pricing
+  // PROMO LOGIC: 2yr/3yr at the £2,000 tier reads the £2,000 column.
   const isMultiYearPlan = paymentPeriod === '24months' || paymentPeriod === '36months';
-  const pricingClaimLimit = (isMultiYearPlan && claimLimit === 2000) ? 1250 : claimLimit;
+  const column =
+    isMultiYearPlan && claimLimit === 2000 ? 2000 : toClaimLimitColumn(claimLimit);
   const factor = Number.isFinite(vehicleFactor) && vehicleFactor > 0 ? vehicleFactor : 1;
   const withFactor = (price: number) => (factor === 1 ? price : Math.ceil(price * factor));
 
@@ -649,7 +655,8 @@ export function getBasePrice(
     // so the grid is always read at the £100 baseline column.
     const excessData = periodData?.[String(EXCESS_BASELINE)] || periodData?.[String(voluntaryExcess)] || periodData?.[String(DEFAULT_EXCESS)];
     const adminPrice =
-      excessData?.[String(pricingClaimLimit)] ?? excessData?.[String(DEFAULT_CLAIM_LIMIT)];
+      readClaimColumn(excessData, column) ??
+      readClaimColumn(excessData, DEFAULT_CLAIM_LIMIT_COLUMN);
     if (typeof adminPrice === 'number') {
       const adjusted = withFactor(adminPrice);
       // Customer surface = grid − live Step 3 discount, applied EXACTLY once.
@@ -661,8 +668,10 @@ export function getBasePrice(
   const periodData = BASE_PRICING_MATRIX[paymentPeriod] || BASE_PRICING_MATRIX['12months'];
   const excessData = periodData[EXCESS_BASELINE as ExcessAmount] || periodData[voluntaryExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
 
-  const codePrice = excessData[pricingClaimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
+  const codePrice =
+    excessData[column as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT_COLUMN as ClaimLimit];
   return applyCustomerJourneyUplift(withFactor(codePrice), surface);
+
 }
 
 
