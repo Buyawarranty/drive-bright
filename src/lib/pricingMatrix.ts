@@ -886,7 +886,7 @@ export function calculateTotalWarrantyPrice(params: {
 
   // 6. Add protection add-ons (Transfer Cover is £19 one-off, handled by caller)
   // 5b. Voluntary excess difference (explicit £/mo table, £100 = £0)
-  const excessAdjustment = getExcessTotalAdjustment(paymentPeriod, voluntaryExcess);
+  const excessAdjustment = getExcessTotalAdjustment(paymentPeriod, voluntaryExcess, flooredBase);
 
   const rawTotal = flooredBase + labourAdjustment + boostAdjustment + excessAdjustment + addOnPrice;
   // A model-specific minimum is absolute: a £50/hr labour discount can never take the
