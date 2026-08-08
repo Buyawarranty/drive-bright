@@ -535,6 +535,40 @@ export function applyReliableBrandDiscount(
 
 export type PricingMatrixShape = Record<string, Record<string, Record<string, number>>>;
 
+/**
+ * Rewrite any retired claim-limit column keys (750 / 1250 / 2000) in a saved grid
+ * to the cover levels they always meant (£1,000 / £2,000 / £3,000). Values are
+ * copied across untouched, so a version saved before the rename prices identically
+ * and simply reads correctly on screen.
+ */
+export function normalizeClaimColumnKeys(
+  matrix: PricingMatrixShape | null | undefined
+): PricingMatrixShape | null {
+  if (!matrix || typeof matrix !== 'object') return (matrix ?? null) as PricingMatrixShape | null;
+  const out: PricingMatrixShape = {};
+  for (const period of Object.keys(matrix)) {
+    const periodData = matrix[period] || {};
+    out[period] = {};
+    for (const excess of Object.keys(periodData)) {
+      const cells = periodData[excess] || {};
+      const nextCells: Record<string, number> = {};
+      for (const key of Object.keys(cells)) {
+        const value = cells[key];
+        if (typeof value !== 'number') continue;
+        const canonical = RETIRED_CLAIM_COLUMN_NAMES[Number(key)] ?? Number(key);
+        const target = String(Number.isFinite(canonical) ? canonical : key);
+        // A canonical key already written wins over a retired duplicate.
+        if (nextCells[target] === undefined || RETIRED_CLAIM_COLUMN_NAMES[Number(key)] === undefined) {
+          nextCells[target] = value;
+        }
+      }
+      out[period][excess] = nextCells;
+    }
+  }
+  return out;
+}
+
+
 export type PricingSurface = 'customer' | 'admin';
 
 let LIVE_ADMIN_MATRIX: PricingMatrixShape | null = null;
