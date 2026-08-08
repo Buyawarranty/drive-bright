@@ -11,7 +11,13 @@ import { formatGBP } from '@/lib/pricingMatrix';
 import { MANUAL_REFERRAL_MESSAGE } from './AgeBandPricingPreview';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
-import { getVisibleExcessOptions } from '@/lib/pricingMatrix';
+import {
+  getVisibleExcessOptions,
+  getExcessMonthlyDelta,
+  getExcessTotalAdjustment,
+  type PaymentPeriod,
+} from '@/lib/pricingMatrix';
+
 import { calculateAddOnPrice } from '@/lib/addOnsUtils';
 import { getExclusionReason, EXCLUSION_MESSAGE } from '@/lib/vehicleExclusions';
 import {
@@ -266,7 +272,14 @@ export default function PriceTestStep2({
   // excess) always prices, even if the editor is missing that exact row.
   const claimFactor = nearestFactor(claimLimits, c => c.limit, claimLimit);
   const labourFactor = nearestFactor(labourRateFactors, l => l.rate, labour);
-  const excessFactor = nearestFactor(excessFactors, e => e.excess, excess);
+  /**
+   * Excess is NOT a multiplier any more. It is the SAME flat £/mo difference vs the
+   * £100 "Balanced" baseline that Step 3/4 and Quotes & Orders use, applied once to
+   * the whole-term total. Each term has its own stored delta table.
+   */
+  const excessMonthlyDelta = getExcessMonthlyDelta(term.period as PaymentPeriod, excess);
+  const excessAdjustment = getExcessTotalAdjustment(term.period as PaymentPeriod, excess);
+
   /** Chargeable add-on total for the selected term, priced exactly like Step 3/4. */
   const addOnTotalFor = (months: number) =>
     calculateAddOnPrice(addOns, periodForMonths(months), months);
@@ -302,8 +315,11 @@ export default function PriceTestStep2({
       (risk.factor as number);
     const modelFloor = floor?.minOneYear ? floor.minOneYear * motorbikeFactor : null;
     const floored = modelFloor ? Math.max(annualBase, modelFloor) : annualBase;
-    const annual = floored * claimFactor * labourFactor * excessFactor;
-    let total = annual * term.mult;
+    const annual = floored * claimFactor * labourFactor;
+    /** Excess-neutral term total — used for the £250/£500 bracket basis. */
+    const baseTermTotal = annual * term.mult;
+    let total = baseTermTotal + excessAdjustment;
+
     let discountAmount = 0;
     if (discount) {
       discountAmount =
@@ -328,6 +344,8 @@ export default function PriceTestStep2({
       annualBase,
       floored,
       annual,
+      baseTermTotal,
+      excessAdjustment,
       total,
       monthly,
       minSellable,
@@ -342,14 +360,15 @@ export default function PriceTestStep2({
     };
   }, [
     referral, ageBand, mileageBand, powertrain, vehType, risk, floor, motorbikeFactor,
-    claimFactor, labourFactor, excessFactor, term, discount, addOns, freeMonths,
+    claimFactor, labourFactor, excessAdjustment, term, discount, addOns, freeMonths,
   ]);
 
   /** Every cover term priced with the same options — used for the overall price difference. */
   const termTotals = useMemo(() => {
     if (referral || !calc) return [];
     return TERMS.map(t => {
-      let total = calc.annual * t.mult;
+      // Each term applies its OWN stored excess delta table — never the 12mo one.
+      let total = calc.annual * t.mult + getExcessTotalAdjustment(t.period as PaymentPeriod, excess);
       if (discount) {
         total -=
           discount.kind === 'flat' ? Math.min(discount.value, total) : (total * discount.value) / 100;
@@ -360,7 +379,8 @@ export default function PriceTestStep2({
       return { key: t.key, label: t.label, months: t.months, total: Math.max(total, min) };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [referral, calc, TERMS, discount, addOns, motorbikeFactor]);
+  }, [referral, calc, TERMS, discount, addOns, motorbikeFactor, excess]);
+
 
   useEffect(() => {
     onQuoteChange?.({ referral, annual: calc ? calc.annual : null, terms: termTotals });
@@ -374,13 +394,15 @@ export default function PriceTestStep2({
 
 
   /**
-   * Excess visibility uses the SAME rule as the live journey (pricingMatrix), so a
-   * combination that can never be sold is never priced in a test.
+   * Excess visibility uses the SAME rule as the live journey (pricingMatrix): the
+   * £250/£500 tiers unlock on the excess-neutral (£100 baseline) term total, so
+   * picking a cheaper excess can never hide the option just selected.
    */
   const visibleExcesses = useMemo(
-    () => getVisibleExcessOptions(term.period, claimLimit),
-    [term.period, claimLimit],
+    () => getVisibleExcessOptions(term.period, claimLimit, calc?.baseTermTotal ?? null),
+    [term.period, claimLimit, calc?.baseTermTotal],
   );
+
 
   /** Add-ons exactly as Step 3/4 lists them for this term. */
   const journeyAddOns = useMemo(
@@ -613,12 +635,13 @@ export default function PriceTestStep2({
               <p className="mt-1 text-xs text-muted-foreground">Higher rate = more garage choice</p>
             </div>
 
-            {/* Excess — canonical Step 3 options, filtered by the live visibility rules */}
+            {/* Excess — canonical Step 3 options, priced as a flat £/mo difference */}
             <div>
               <Label className="mb-2 block">Excess Amount</Label>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {JOURNEY_EXCESS_OPTIONS.map(e => {
                   const allowed = visibleExcesses.includes(e.value);
+                  const delta = getExcessMonthlyDelta(term.period as PaymentPeriod, e.value);
                   return (
                     <OptionTile
                       key={e.value}
@@ -626,17 +649,25 @@ export default function PriceTestStep2({
                       onClick={() => allowed && setExcess(e.value)}
                       disabled={!allowed}
                       title={e.label}
-                      subtitle={allowed ? e.description : 'Not shown with this claim limit / term'}
-                      note={allowed ? `×${nearestFactor(excessFactors, x => x.excess, e.value).toFixed(2)}` : undefined}
+                      subtitle={allowed ? e.description : 'Only on warranties over £500'}
+                      note={
+                        allowed
+                          ? delta === 0
+                            ? 'baseline'
+                            : `${delta > 0 ? '+' : '−'}£${Math.abs(delta)}/mo`
+                          : undefined
+                      }
                     />
                   );
                 })}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                Lower excess = higher monthly cost. Excess is never shown above 25% of the claim limit,
-                and £500 needs a £3,000+ claim limit on 2 or 3-year cover.
+                Lower excess = higher monthly cost. Each tier is a flat £/mo difference vs the £100
+                “Balanced” baseline, and £250/£500 only unlock on warranties of £500+ — exactly as on
+                Step 3 and Quotes &amp; Orders.
               </p>
             </div>
+
 
             {/* Claim limit — the four AutoCare tiers the customer sees */}
             <div>
@@ -648,7 +679,7 @@ export default function PriceTestStep2({
                     selected={claimLimit === c.value}
                     onClick={() => {
                       setClaimLimit(c.value);
-                      if (excess > c.value * 0.25 || (excess === 500 && c.value < 3000)) setExcess(150);
+                      // Excess availability is price-bracket driven now, not claim-limit driven.
                     }}
                     title={formatGBP(c.value)}
                     subtitle={c.name}
@@ -798,9 +829,14 @@ export default function PriceTestStep2({
                   {isMotorbike ? <div className="font-medium text-primary">Motorbike: 50% of standard vehicle pricing (floor {formatGBP(calc.minSellable)})</div> : null}
 
                   <div className="pt-1">Adjusted one-year base: {formatGBP(Math.round(calc.floored))}</div>
-                  <div>× Claim limit: ×{claimFactor.toFixed(2)} · × Labour: ×{labourFactor.toFixed(2)} · × Excess: ×{excessFactor.toFixed(2)}</div>
+                  <div>× Claim limit: ×{claimFactor.toFixed(2)} · × Labour: ×{labourFactor.toFixed(2)}</div>
                   <div>One-year price: {formatGBP(Math.round(calc.annual))}</div>
                   <div>× Term {term.label}: ×{term.mult.toFixed(2)}</div>
+                  <div>
+                    Excess £{excess}: {excessMonthlyDelta === 0 ? 'baseline (£100 Balanced)' : `${excessMonthlyDelta > 0 ? '+' : '−'}£${Math.abs(excessMonthlyDelta)}/mo`}
+                    {excessAdjustment ? ` (${excessAdjustment > 0 ? '+' : '−'}${formatGBP(Math.abs(excessAdjustment))} on the total)` : ''}
+                  </div>
+
                   {calc.addOnTotal ? <div>+ Add-ons: {formatGBP(calc.addOnTotal)}</div> : null}
                   {calc.belowMinimum ? (
                     <div className="text-destructive">
