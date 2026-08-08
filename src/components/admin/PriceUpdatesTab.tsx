@@ -566,7 +566,17 @@ export default function PriceUpdatesTab() {
         key: String(t.key),
         factor: t.factor === null || t.factor === undefined ? null : Number(t.factor),
       })),
+      // Full hybrid figures so Quotes & Orders quotes the pushed side exactly.
+      modelRisks: Array.isArray(model.modelRisks) ? model.modelRisks : undefined,
+      modelFloors: Array.isArray(model.modelFloors) ? model.modelFloors : undefined,
+      claimLimits: claim.length ? claim : undefined,
+      labourRates: Array.isArray(model.labourRates) ? model.labourRates : undefined,
+      excessFactors: Array.isArray(model.excessFactors) ? model.excessFactors : undefined,
+      twoYearMult: model.twoYearMult === undefined ? undefined : Number(model.twoYearMult),
+      threeYearMult: model.threeYearMult === undefined ? undefined : Number(model.threeYearMult),
+      payInFullFactor: model.payInFullFactor === undefined ? undefined : Number(model.payInFullFactor),
     };
+
     const discount = effectiveDiscountPct(
       Number(websiteDiscountPct ?? model.websiteDiscountPct ?? discountPct ?? 10)
     );
