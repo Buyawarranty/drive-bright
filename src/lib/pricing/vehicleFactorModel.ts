@@ -21,7 +21,21 @@ export type VehicleFactorModel = {
   mileageBands: { min: number; max: number | null; factor: number | null }[];
   powertrains: { key: string; factor: number }[];
   vehicleTypes: { key: string; factor: number | null }[];
+  /**
+   * The rest of the age-band ("Aug hybrid") model travels with every publish too,
+   * so Quotes & Orders can quote from the SAME figures a manager pushed live
+   * instead of whatever draft happens to sit in that agent's browser.
+   */
+  modelRisks?: any[];
+  modelFloors?: any[];
+  claimLimits?: { limit: number; factor: number }[];
+  labourRates?: { rate: number; factor: number; uxPosition?: string | null }[];
+  excessFactors?: any[];
+  twoYearMult?: number;
+  threeYearMult?: number;
+  payInFullFactor?: number;
 };
+
 
 export type VehicleFactorInput = {
   year?: string | number | null;
