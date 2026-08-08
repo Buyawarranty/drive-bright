@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
+import { buildUnsubscribeFooter } from "../_shared/unsubscribe-footer.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -105,10 +106,13 @@ const handler = async (req: Request): Promise<Response> => {
 
                   <!-- Footer -->
                   <tr>
-                    <td style="background-color: #f9fafb; padding: 20px 40px; text-align: center; border-top: 1px solid #e5e5e5;">
-                      <p style="color: #6b7280; font-size: 12px; margin: 0;">
-                        © ${new Date().getFullYear()} Buy A Warranty. All rights reserved.
-                      </p>
+                    <td style="background-color: #f9fafb; padding: 20px 24px; border-top: 1px solid #e5e5e5;">
+                      ${buildUnsubscribeFooter(email, {
+                        title: 'Prefer not to get these reminders?',
+                        blurb: "That's okay. You can stop these discount reminders or unsubscribe from all marketing emails.",
+                        softLabel: 'Stop discount reminders',
+                        reason: `&copy; ${new Date().getFullYear()} Buy A Warranty. You received this email because you requested a warranty quote from Buy A Warranty.`,
+                      })}
                     </td>
                   </tr>
                 </table>
