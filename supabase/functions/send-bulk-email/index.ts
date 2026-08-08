@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { requireAdmin } from "../_shared/admin-auth.ts";
+import { buildUnsubscribeFooter } from "../_shared/unsubscribe-footer.ts";
 
 
 const corsHeaders = {
@@ -116,15 +117,19 @@ serve(async (req) => {
         const personalizedContent = emailContent.replace(/\{name\}/g, recipientName);
 
         const cleanEmail = recipient.email.trim().toLowerCase();
-        const unsubToken = btoa(cleanEmail + '_baw_unsub_2024');
-        const unsubUrl = `${supabaseUrl}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(cleanEmail)}&token=${encodeURIComponent(unsubToken)}`;
-        const unsubFooter = `<div style="border-top: 1px solid #eee; padding-top: 16px; margin-top: 24px; text-align: center;"><p style="color: #aab7c4; font-size: 11px; margin: 0;"><a href="${unsubUrl}" style="color: #aab7c4; text-decoration: underline;">Unsubscribe</a> from future emails.</p></div>`;
+        const unsubFooter = buildUnsubscribeFooter(cleanEmail, {
+          title: 'Prefer fewer emails from us?',
+          blurb: "That's okay. You can switch to essential emails only, or unsubscribe from all marketing emails.",
+          softLabel: 'Essential emails only',
+          reason: "You received this email because you've interacted with Buy A Warranty.",
+        });
+        const wrap = (body: string) => `<div style="font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #ffffff;"><div style="text-align:center;padding-bottom:20px;"><img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" width="180" alt="Buy A Warranty" style="max-width:100%;height:auto;" /></div><div style="color:#484848;font-size:16px;line-height:1.55;margin-bottom:28px;">${body}</div><hr style="border:none;border-top:1px solid #e6ebf1;margin:24px 0;" />${unsubFooter}</div>`;
 
         const emailResponse = await resend.emails.send({
           from: fromEmail,
           to: [recipient.email],
           subject: personalizedSubject,
-          html: personalizedContent.replace(/\n/g, '<br>') + unsubFooter,
+          html: wrap(personalizedContent.replace(/\n/g, '<br>')),
         });
 
         console.log(`Email sent to ${recipient.email}:`, emailResponse);
