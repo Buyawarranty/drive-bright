@@ -1,5 +1,5 @@
 import { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
-import { getExcessTotalAdjustment } from '@/lib/pricingMatrix';
+import { getExcessTotalAdjustment, getExcessFactor } from '@/lib/pricingMatrix';
 
 
 /**
@@ -214,7 +214,12 @@ export function priceFromPricingModel(
     (refLabourFactor > 0 ? labourFactor / refLabourFactor : 1);
 
   const minSellable = Math.round(
-    (MIN_SELLABLE_BY_MONTHS[months] ?? 399) * motorbikeFactor * floorShape + excessAdjustment
+    // The floor is shaped by the SAME excess factor, so a floor-bound vehicle still
+    // steps between £0 and £500 excess instead of collapsing onto one price.
+    (MIN_SELLABLE_BY_MONTHS[months] ?? 399) *
+      motorbikeFactor *
+      floorShape *
+      getExcessFactor(Number(options.voluntaryExcess))
   );
   const belowMinimum = total < minSellable;
   if (belowMinimum) total = minSellable;

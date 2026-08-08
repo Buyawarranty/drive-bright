@@ -302,12 +302,12 @@ export const EXCESS_TIER_STEP_BY_PERIOD: Record<PaymentPeriod, number> = {
  * Ratios come from the reference grid so the steps feel the same as the matrix.
  */
 export const EXCESS_FLOOR_MULTIPLIER: Record<number, number> = {
-  0: 1.0,
-  50: 1.0,
+  0: 1.08,
+  50: 1.04,
   100: 1.0,
-  150: 1.0,
-  250: 1.0,
-  500: 1.0,
+  150: 0.97,
+  250: 0.87,
+  500: 0.8,
 };
 
 /**
