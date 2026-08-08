@@ -35,6 +35,7 @@ import {
   getBasePrice as getCentralizedBasePrice,
   DURATION_MONTHS,
   calculateLabourRateAdjustment,
+  getExcessTotalAdjustment,
   calculateBoostAdjustment,
   getMarketingSavings,
   applyBasePriceFloor,
@@ -939,7 +940,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // Memoized total price calculation - EXACT Excel price + adjustments (no marketing discount applied)
   // Includes: base + labour rate + add-ons + premium claim surcharge + boost addon
   const totalPrice = useMemo(() => {
-    return basePlanPrice + labourRateTotalAdjustment + addOnPrice + premiumClaimSurcharge + boostTotalAdjustment;
+    return basePlanPrice + labourRateTotalAdjustment + addOnPrice + premiumClaimSurcharge + boostTotalAdjustment + getExcessTotalAdjustment(paymentType as PaymentPeriod, voluntaryExcess ?? 100);
   }, [basePlanPrice, labourRateTotalAdjustment, addOnPrice, premiumClaimSurcharge, boostTotalAdjustment]);
 
   // Marketing savings (display only - NOT applied to actual price)
@@ -1113,7 +1114,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       
       // Apply minimum BASE price floor (acquisition + lead cost protection)
       const flooredBasePrice = applyBasePriceFloor(discountedBasePrice, selectedPaymentType as PaymentPeriod, voluntaryExcess, isMotorbikeAdjustment(vehiclePriceAdjustment), 'customer', [vehicleData?.make, vehicleData?.model].filter(Boolean).join(' '), selectedClaimLimit);
-      const totalPrice = flooredBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust;
+      const totalPrice = flooredBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust + getExcessTotalAdjustment(selectedPaymentType as PaymentPeriod, voluntaryExcess ?? 100);
       
       // Don't allow progression if vehicle is too old
       if (vehicleAgeError) {
@@ -1225,7 +1226,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
         const premSurcharge = getClaimLimitSurcharge(selectedClaimLimit, emailQuoteDuration, voluntaryExcess || 100);
         
-        const total = adjustedBasePrice + labourRateTotalAdj + addOnCost + premSurcharge;
+        const total = adjustedBasePrice + labourRateTotalAdj + addOnCost + premSurcharge + getExcessTotalAdjustment(emailQuoteDuration as PaymentPeriod, voluntaryExcess ?? 100);
         displayedMonthlyPrice = Math.ceil(total / 12);
       }
 
@@ -1307,7 +1308,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
     const addOnTotal = calculateAddOnPrice(termAddOns, term, durationMonths);
     const premiumSurcharge = getClaimLimitSurcharge(effectiveClaimLimit, term, effectiveExcess);
-    const total = flooredBasePrice + labourTotalAdjust + addOnTotal + premiumSurcharge + boostTotalAdjustment;
+    const total = flooredBasePrice + labourTotalAdjust + addOnTotal + premiumSurcharge + boostTotalAdjustment + getExcessTotalAdjustment(term as PaymentPeriod, effectiveExcess ?? 100);
 
     return Math.ceil(total / 12);
   }, [vehicleData, getPricingData, voluntaryExcess, selectedClaimLimit, selectedLabourRate, selectedProtectionAddOns, boostTotalAdjustment]);
@@ -1781,7 +1782,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                const cardPremiumSurcharge = getClaimLimitSurcharge(cardClaimLimit, durationId, voluntaryExcess || 100);
               
               // Calculate total price with all adjustments including add-ons
-              const totalPriceWithAdjustments = finalBasePrice + labourTotalAdjust + boostTotalAdjust + durationAddOnPrice + cardPremiumSurcharge;
+              const totalPriceWithAdjustments = finalBasePrice + labourTotalAdjust + boostTotalAdjust + durationAddOnPrice + cardPremiumSurcharge + getExcessTotalAdjustment(durationId as PaymentPeriod, voluntaryExcess ?? 100);
               
               // Calculate true monthly (for savings/totals)
               const trueMonthly = Math.ceil(totalPriceWithAdjustments / 12);
@@ -2595,7 +2596,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
                       
                       // Total price for this duration
-                      const total = adjustedBasePrice + labourRateTotalAdj + addOnCost + premSurcharge;
+                      const total = adjustedBasePrice + labourRateTotalAdj + addOnCost + premSurcharge + getExcessTotalAdjustment(emailQuoteDuration as PaymentPeriod, voluntaryExcess ?? 100);
                       
                       // Monthly = floor(total / 12)
                       return Math.ceil(total / 12);
@@ -2624,7 +2625,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     const premSurcharge = getClaimLimitSurcharge(selectedClaimLimit, emailQuoteDuration, voluntaryExcess || 100);
                     const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
                     
-                    const total = adjustedBasePrice + labourRateTotalAdj + addOnCost + premSurcharge;
+                    const total = adjustedBasePrice + labourRateTotalAdj + addOnCost + premSurcharge + getExcessTotalAdjustment(emailQuoteDuration as PaymentPeriod, voluntaryExcess ?? 100);
                     
                     // Total = floor(total / 12) * 12
                     return Math.ceil(total / 12) * 12;

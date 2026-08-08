@@ -7,6 +7,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly } from '@/lib/claimLimitTiers';
 import {
   calculateLabourRateAdjustment,
+  getExcessTotalAdjustment,
   applyBasePriceFloor,
   getVisibleExcessOptions,
   getExcessBracketBasis,
@@ -192,7 +193,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     // to match PricingTable's basePlanPrice + boostTotalAdjustment formula
     const boostTotalAdjust = 0; // boostAddon not currently passed to Step3Desktop; included as 0 for parity
 
-    const total = adjustedBasePrice + labourTotalAdjust + durationAddOnPrice + cardPremiumSurcharge + boostTotalAdjust;
+    const total = adjustedBasePrice + labourTotalAdjust + durationAddOnPrice + cardPremiumSurcharge + boostTotalAdjust + getExcessTotalAdjustment(durationId as PaymentPeriod, voluntaryExcess ?? 100);
     return Math.ceil(total / 12);
   };
 

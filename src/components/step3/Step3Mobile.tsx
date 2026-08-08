@@ -9,6 +9,7 @@ import {
   getBasePrice as getCentralizedBasePrice,
   DURATION_MONTHS,
   calculateLabourRateAdjustment,
+  getExcessTotalAdjustment,
   calculateBoostAdjustment,
   getMarketingSavings,
   applyBasePriceFloor,
@@ -289,7 +290,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     // Floor goes on base only so labour/boost/add-ons still cost extra on top.
     const flooredBase = applyBasePriceFloor(adjustedPrice, term as PaymentPeriod, voluntaryExcess ?? undefined, isMotorbikeAdjustment(termVehicleAdjustment), 'customer', [vehicleData?.make, vehicleData?.model].filter(Boolean).join(' '), selectedClaimLimit);
     const labourAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod, flooredBase);
-    return flooredBase + addOnPrice + labourAdjust + premiumSurcharge;
+    return flooredBase + addOnPrice + labourAdjust + premiumSurcharge + getExcessTotalAdjustment(term as PaymentPeriod, voluntaryExcess ?? 100);
   }, [paymentType, voluntaryExcess, selectedClaimLimit, vehicleData, selectedProtectionAddOns, selectedLabourRate, getBasePrice]);
 
   // Calculate monthly price (total / 12, ALWAYS rounded UP to a whole pound)
