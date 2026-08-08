@@ -239,15 +239,13 @@ export function buildAdminMatrixFromModel(model: AgeBandModel): Record<string, R
     '24months': model.twoYearMult,
     '36months': model.threeYearMult,
   };
-  const excessFactorFor = (excess: number) => {
-    const exact = model.excessFactors.find(e => e.excess === excess);
-    if (exact) return exact.factor;
-    // nearest defined excess
-    const sorted = [...model.excessFactors].sort(
-      (a, b) => Math.abs(a.excess - excess) - Math.abs(b.excess - excess)
-    );
-    return sorted[0]?.factor ?? 1;
-  };
+  /**
+   * Excess is a flat £/mo difference vs the £100 "Balanced" baseline (per term),
+   * exactly as Step 3/4 and Quotes & Orders price it — never a multiplier.
+   */
+  const excessAdjustmentFor = (period: string, excess: number) =>
+    getExcessTotalAdjustment(period as PaymentPeriod, excess);
+
 
   const out: Record<string, Record<string, Record<string, number>>> = {};
   for (const period of ['12months', '24months', '36months']) {
