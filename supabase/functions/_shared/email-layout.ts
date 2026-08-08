@@ -21,6 +21,7 @@ export const EMAIL_RESPONSIVE_STYLE = `
     body { margin: 0; padding: 0; width: 100% !important; -webkit-text-size-adjust: 100%; }
     img { border: 0; outline: none; text-decoration: none; }
     a { word-break: break-word; }
+    .baw-only-sm { display: none !important; }
     @media only screen and (max-width: 620px) {
       .baw-wrap { width: 100% !important; max-width: 100% !important; }
       .baw-pad { padding-left: 20px !important; padding-right: 20px !important; }
@@ -37,6 +38,7 @@ export const EMAIL_RESPONSIVE_STYLE = `
       }
       .baw-stack:last-child { border-bottom: 0 !important; }
       .baw-hide-sm { display: none !important; }
+      .baw-only-sm { display: block !important; }
       .baw-btn {
         display: block !important;
         width: auto !important;
