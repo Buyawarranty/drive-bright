@@ -315,8 +315,11 @@ export default function PriceTestStep2({
       (risk.factor as number);
     const modelFloor = floor?.minOneYear ? floor.minOneYear * motorbikeFactor : null;
     const floored = modelFloor ? Math.max(annualBase, modelFloor) : annualBase;
-    const annual = floored * claimFactor * labourFactor * excessFactor;
-    let total = annual * term.mult;
+    const annual = floored * claimFactor * labourFactor;
+    /** Excess-neutral term total — used for the £250/£500 bracket basis. */
+    const baseTermTotal = annual * term.mult;
+    let total = baseTermTotal + excessAdjustment;
+
     let discountAmount = 0;
     if (discount) {
       discountAmount =
