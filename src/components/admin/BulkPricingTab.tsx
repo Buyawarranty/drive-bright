@@ -620,7 +620,7 @@ export const BulkPricingTab = () => {
                     <strong>CSV Format Required Columns:</strong>
                     <ul className="mt-2 space-y-1 text-xs">
                       <li>• <strong>Voluntary Excess Amount:</strong> £0, £50, £100, £150</li>
-                      <li>• <strong>Claim Limit:</strong> £750, £1250, £2000</li>
+                      <li>• <strong>Claim Limit</strong> (internal grid columns): 750 = £1,000 cover, 1250 = £2,000 cover, 2000 = £3,000 cover</li>
                       <li>• <strong>1 Year Price:</strong> Base price at £70/hr</li>
                       <li>• <strong>2 Years Price:</strong> Base price at £70/hr</li>
                       <li>• <strong>3 Years Price:</strong> Base price at £70/hr</li>
