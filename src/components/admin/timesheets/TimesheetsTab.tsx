@@ -72,7 +72,16 @@ export function TimesheetsTab({ onNavigateToTab }: TimesheetsTabProps = {}) {
     checkRole();
   }, [session?.user?.id]);
 
-  const isAccountsRole = userRole === 'accounts_manager' || userRole === 'accounts_payroll' || userRole === 'super_admin' || userRole === 'admin';
+  const isAccountsRole = canViewOthers;
+
+  // If the role resolves to a non-manager, clear any stale "viewing other" selection
+  useEffect(() => {
+    if (userRole && !canViewOthers && viewingUserId) {
+      setViewingUserId(null);
+      setActiveView('my-timesheet');
+    }
+  }, [userRole, canViewOthers, viewingUserId]);
+
   const generateTimesheetHTML = () => {
     const monthLabel = format(currentMonth, 'MMMM yyyy');
     const userEmail = session?.user?.email || 'Unknown';
