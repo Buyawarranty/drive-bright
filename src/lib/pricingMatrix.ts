@@ -267,11 +267,16 @@ export const EXCESS_MONTHLY_DELTA: Record<PaymentPeriod, Record<number, number>>
   '36months': { 0: 2, 50: 1, 100: 0, 150: -1, 250: -2, 500: -3 },
 };
 
-/** Number of instalments per term — used for whole-term totals. */
+/**
+ * How many instalments a term is actually charged over.
+ * TODAY every cover term is billed over 12 instalments, so 24/36 month cover
+ * still divides by 12. When 24/36 month instalment plans launch, flip these to
+ * 24/36 — the per-term delta tables above are already stored for that day.
+ */
 export const TERM_INSTALMENT_MONTHS: Record<PaymentPeriod, number> = {
   '12months': 12,
-  '24months': 24,
-  '36months': 36,
+  '24months': 12,
+  '36months': 12,
 };
 
 /** £ per month difference vs the £100 baseline for the given term + excess. */
@@ -286,11 +291,12 @@ export function getExcessMonthlyDelta(paymentPeriod: PaymentPeriod, excess: numb
   return table[nearest] ?? 0;
 }
 
-/** Total (whole-term) price difference vs the £100 baseline, using that term's own instalment count. */
+/** Total price difference vs the £100 baseline, over the instalments actually charged. */
 export function getExcessTotalAdjustment(paymentPeriod: PaymentPeriod, excess: number): number {
   const months = TERM_INSTALMENT_MONTHS[paymentPeriod] ?? 12;
   return getExcessMonthlyDelta(paymentPeriod, excess) * months;
 }
+
 
 
 
