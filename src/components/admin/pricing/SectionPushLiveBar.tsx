@@ -64,14 +64,12 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
   busy,
 }) => {
   const [pending, setPending] = useState<PushCandidate | null>(null);
-  const [overrideWarnings, setOverrideWarnings] = useState(false);
   const [webGap, setWebGap] = useState(
     String(liveWebDiscountPct ?? CODE_WEB_DISCOUNT_PCT)
   );
 
   const closePending = () => {
     setPending(null);
-    setOverrideWarnings(false);
   };
 
   const gapValue = Math.min(
@@ -113,7 +111,6 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
   }, [pending, gapValue]);
 
   const openPending = (c: PushCandidate) => {
-    setOverrideWarnings(false);
     setPending(c);
   };
 
