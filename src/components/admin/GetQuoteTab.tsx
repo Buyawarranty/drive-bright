@@ -1691,7 +1691,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     if (absoluteMinBlocked) {
       toast({
         title: `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL}`,
-        description: `No warranty can be sold under £${ABSOLUTE_MIN_TOTAL}. Switch on Price match and upload the competitor quote to go lower.`,
+        description: `No warranty can be sold under £${ABSOLUTE_MIN_TOTAL}. Switch on Price match and upload the competitor quote to go lower — contact your manager if you cannot get evidence.`,
         variant: "destructive",
       });
       return;
@@ -2898,7 +2898,7 @@ Questions? Call 0330 229 5040`;
     if (isUnderAbsoluteMin(paymentAmount) && !priceMatchEvidenced) {
       toast({
         title: `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL}`,
-        description: `No warranty can be sold under £${ABSOLUTE_MIN_TOTAL}. Switch on Price match and upload the competitor quote to go lower.`,
+        description: `No warranty can be sold under £${ABSOLUTE_MIN_TOTAL}. Switch on Price match and upload the competitor quote to go lower — contact your manager if you cannot get evidence.`,
         variant: "destructive",
       });
       return;
@@ -4755,7 +4755,8 @@ Questions? Call 0330 229 5040`;
                           {absoluteMinBlocked ? (
                             <span className="font-bold">
                               — this total (£{displayedTotalPrice}) is below the minimum. Sale blocked unless you switch on
-                              Price match and upload the competitor quote.
+                              Price match and upload the competitor quote — contact your manager if you cannot get evidence.
+
                             </span>
                           ) : priceMatchEvidenced && isUnderAbsoluteMin(displayedTotalPrice) ? (
                             <span>— allowed: evidenced price match on file.</span>
@@ -5000,10 +5001,22 @@ Questions? Call 0330 229 5040`;
                           </div>
                         </div>
                         {!priceMatchProofPath && (
-                          <p className="text-xs font-semibold text-amber-700">
-                            Evidence not uploaded yet — please attach the competitor quote before completing the order.
+                          <div className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 space-y-1">
+                            <p className="text-xs font-bold text-amber-900">
+                              ⚠️ Evidence required — attach the competitor quote (image or PDF) before completing the order.
+                            </p>
+                            <p className="text-[11px] text-amber-800">
+                              Going below the £{ABSOLUTE_MIN_TOTAL} minimum is only allowed with uploaded price match evidence.
+                              If you cannot get the evidence, contact your manager for authorisation before selling.
+                            </p>
+                          </div>
+                        )}
+                        {priceMatchProofPath && isUnderAbsoluteMin(displayedTotalPrice) && (
+                          <p className="text-xs font-semibold text-sky-800">
+                            Evidence on file — this price match is allowed below the £{ABSOLUTE_MIN_TOTAL} minimum.
                           </p>
                         )}
+
                         {priceMatchFloor && (
                           <p className={cn(
                             "text-xs font-semibold",
@@ -7298,7 +7311,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               )}>
                                 {priceMatchEvidenced
                                   ? `Below the £${ABSOLUTE_MIN_TOTAL} minimum — allowed: evidenced price match on file.`
-                                  : `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL} — sale blocked. Use Price match with an uploaded competitor quote to go lower.`}
+                                  : `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL} — sale blocked. Use Price match with an uploaded competitor quote to go lower, or contact your manager.`}
                               </p>
                             )}
 
