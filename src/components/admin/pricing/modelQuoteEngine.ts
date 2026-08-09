@@ -11,11 +11,11 @@ import { getExcessTotalAdjustment, getExcessFactor } from '@/lib/pricingMatrix';
  * vehicle + options, otherwise agents quote something the test model never showed.
  */
 
-/** Never sell below £399 for one year; 2/3 year floors follow the term multipliers. */
+/** Never sell below £349 for one year; 2/3 year floors follow the term multipliers. */
 export const MIN_SELLABLE_BY_MONTHS: Record<number, number> = {
-  12: 399,
-  24: 659,
-  36: 938,
+  12: 249,
+  24: 498,
+  36: 747,
 };
 
 /**
@@ -26,8 +26,8 @@ export const MIN_SELLABLE_BY_MONTHS: Record<number, number> = {
  */
 export const ABSOLUTE_MIN_GRID_BY_MONTHS: Record<number, number> = {
   12: 349,
-  24: Math.round((349 * 659) / 399),
-  36: Math.round((349 * 938) / 399),
+  24: Math.round((349 * 577) / 349),
+  36: Math.round((349 * 821) / 349),
 };
 
 

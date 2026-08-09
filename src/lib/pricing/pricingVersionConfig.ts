@@ -51,11 +51,11 @@ export type PricingVersionConfig = {
   config_checksum?: string | null;
 };
 
-/** The floors currently hardcoded in the pricing engine (£399 / £659 / £938). */
+/** The absolute minimum sellable total currently hardcoded in the engine (£349 / £577 / £821). */
 export const CODE_PRICE_FLOORS: PriceFloors = {
-  '12months': 399,
-  '24months': 659,
-  '36months': 938,
+  '12months': 349,
+  '24months': 577,
+  '36months': 821,
 };
 
 /** The web gap currently hardcoded in the pricing engine (10% below the grid). */
