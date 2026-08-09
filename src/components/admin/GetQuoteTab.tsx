@@ -442,6 +442,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     ? Math.round(priceMatchCompetitorPrice * (1 - PRICE_MATCH_MAX_PCT / 100))
     : null;
 
+  // Absolute floor: no warranty may ever be sold under £349 on Quotes & Orders.
+  // The only exception is an evidenced price match (competitor quote uploaded).
+  const ABSOLUTE_MIN_TOTAL = 349;
+  const priceMatchEvidenced = priceMatchMode && !!priceMatchProofPath && !!priceMatchCompetitor.trim();
+  const isUnderAbsoluteMin = (total: unknown) => {
+    const v = typeof total === 'number' ? total : parseFloat(String(total ?? '').replace(/[^0-9.]/g, ''));
+    return Number.isFinite(v) && v > 0 && v < ABSOLUTE_MIN_TOTAL;
+  };
+  
+
   // Deposit on Stripe — agent takes a part payment now and tags the customer
   // record as "Payment due" so the balance can be chased in Customer Management.
   const [depositMode, setDepositMode] = useState(false);
@@ -1213,6 +1223,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     : Math.ceil(Number(currentPrice.monthlyPrice || 0) * 12);
   const displayedPayInFullPrice = currentPrice.payInFullPrice || (includePayInFullDiscount ? Math.ceil(displayedTotalPrice * 0.9) : displayedTotalPrice);
   const displayedPayInFullSavings = Math.max(displayedTotalPrice - displayedPayInFullPrice, 0);
+  // Hard block: total under the absolute £349 minimum without evidenced price match
+  const absoluteMinBlocked = isUnderAbsoluteMin(displayedTotalPrice) && !priceMatchEvidenced;
 
   // Feed the quote total back into the excess visibility brackets (£250 unlocks
   // from £300, £500 from £500) so Q&O matches Step 3 exactly.
@@ -1675,6 +1687,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       });
       return;
     }
+
+    if (absoluteMinBlocked) {
+      toast({
+        title: `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL}`,
+        description: `No warranty can be sold under £${ABSOLUTE_MIN_TOTAL}. Switch on Price match and upload the competitor quote to go lower.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
 
     // If no mileage, default to 0 - can be edited in dialog
     const effectiveMileage = mileage.trim() || '0';
@@ -2811,9 +2833,11 @@ Questions? Call 0330 229 5040`;
       paymentSource.trim() !== '' &&
       paymentAmount.trim() !== '' &&
       warrantyStartDate !== undefined &&
-      paymentConfirmed === true
+      paymentConfirmed === true &&
+      !(isUnderAbsoluteMin(paymentAmount) && !priceMatchEvidenced)
     );
   };
+
 
   // Handle confirm external payment - atomic operation
   const handleConfirmExternalPayment = async () => {
@@ -2868,6 +2892,19 @@ Questions? Call 0330 229 5040`;
         return;
       }
     }
+
+    // Absolute minimum — never sell a warranty under £349 unless it is an
+    // evidenced price match (competitor quote uploaded).
+    if (isUnderAbsoluteMin(paymentAmount) && !priceMatchEvidenced) {
+      toast({
+        title: `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL}`,
+        description: `No warranty can be sold under £${ABSOLUTE_MIN_TOTAL}. Switch on Price match and upload the competitor quote to go lower.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+
 
     // Price validation - allow override, just show warning in UI (no blocking)
     const confirmedAmount = parseFloat(paymentAmount);
@@ -4702,6 +4739,32 @@ Questions? Call 0330 229 5040`;
                             within your cap.
                           </p>
                         )}
+
+                        {/* Absolute floor notice — always visible, turns red when breached */}
+                        <div
+                          className={cn(
+                            'rounded-lg border px-3 py-2 text-xs font-semibold flex items-center gap-2 flex-wrap',
+                            absoluteMinBlocked
+                              ? 'border-red-400 bg-red-50 text-red-900'
+                              : priceMatchEvidenced && isUnderAbsoluteMin(displayedTotalPrice)
+                                ? 'border-sky-300 bg-sky-50 text-sky-900'
+                                : 'border-gray-300 bg-gray-50 text-gray-700'
+                          )}
+                        >
+                          <span>Minimum warranty price £{ABSOLUTE_MIN_TOTAL}</span>
+                          {absoluteMinBlocked ? (
+                            <span className="font-bold">
+                              — this total (£{displayedTotalPrice}) is below the minimum. Sale blocked unless you switch on
+                              Price match and upload the competitor quote.
+                            </span>
+                          ) : priceMatchEvidenced && isUnderAbsoluteMin(displayedTotalPrice) ? (
+                            <span>— allowed: evidenced price match on file.</span>
+                          ) : (
+                            <span className="font-normal">— no warranty can be sold below this, price match with evidence only.</span>
+                          )}
+                        </div>
+
+
 
                       </>
                     );
@@ -7228,6 +7291,17 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                                 ⚠️ Differs from quoted price (£{effectiveQuoted})
                               </p>
                             )}
+                            {isUnderAbsoluteMin(paymentAmount) && (
+                              <p className={cn(
+                                "text-xs font-semibold",
+                                priceMatchEvidenced ? "text-sky-700" : "text-red-600"
+                              )}>
+                                {priceMatchEvidenced
+                                  ? `Below the £${ABSOLUTE_MIN_TOTAL} minimum — allowed: evidenced price match on file.`
+                                  : `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL} — sale blocked. Use Price match with an uploaded competitor quote to go lower.`}
+                              </p>
+                            )}
+
                           </div>
                         </div>
                       );
