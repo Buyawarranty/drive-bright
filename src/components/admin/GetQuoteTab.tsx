@@ -2881,6 +2881,19 @@ Questions? Call 0330 229 5040`;
       }
     }
 
+    // Absolute minimum — never sell a warranty under £349 unless it is an
+    // evidenced price match (competitor quote uploaded).
+    if (isUnderAbsoluteMin(paymentAmount) && !priceMatchEvidenced) {
+      toast({
+        title: `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL}`,
+        description: `No warranty can be sold under £${ABSOLUTE_MIN_TOTAL}. Switch on Price match and upload the competitor quote to go lower.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+
+
     // Price validation - allow override, just show warning in UI (no blocking)
     const confirmedAmount = parseFloat(paymentAmount);
     // Audit-only: record who typed a custom price and how it compares to the grid.
