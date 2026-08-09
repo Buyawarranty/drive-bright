@@ -201,7 +201,7 @@ export const useScoreboardData = (): ScoreboardData => {
       // working — matches what they've selected/claimed and haven't killed off.
       // Note: this is a live workload count, so we intentionally do NOT filter by
       // the scoreboard period — an agent's open pipeline is what it is today.
-      const DEAD_STATUSES = ['lost', 'fake_lead', 'converted', 'not_interested', 'dormant', 'archived'];
+      const DEAD_STATUSES = ['lost', 'fake_lead', 'converted', 'not_interested', 'dormant', 'archived', 'not_eligible'];
       let leadsQuery = supabase
         .from('sales_leads')
         .select('id, assigned_to, is_paid, status, created_at')
