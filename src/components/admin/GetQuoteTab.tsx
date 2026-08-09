@@ -442,6 +442,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     ? Math.round(priceMatchCompetitorPrice * (1 - PRICE_MATCH_MAX_PCT / 100))
     : null;
 
+  // Absolute floor: no warranty may ever be sold under £349 on Quotes & Orders.
+  // The only exception is an evidenced price match (competitor quote uploaded).
+  const ABSOLUTE_MIN_TOTAL = 349;
+  const priceMatchEvidenced = priceMatchMode && !!priceMatchProofPath && !!priceMatchCompetitor.trim();
+  const isUnderAbsoluteMin = (total: unknown) => {
+    const v = typeof total === 'number' ? total : parseFloat(String(total ?? '').replace(/[^0-9.]/g, ''));
+    return Number.isFinite(v) && v > 0 && v < ABSOLUTE_MIN_TOTAL;
+  };
+  const absoluteMinBlocked = isUnderAbsoluteMin(displayedTotalPrice) && !priceMatchEvidenced;
+
   // Deposit on Stripe — agent takes a part payment now and tags the customer
   // record as "Payment due" so the balance can be chased in Customer Management.
   const [depositMode, setDepositMode] = useState(false);
