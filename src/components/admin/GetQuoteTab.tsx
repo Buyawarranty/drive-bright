@@ -1691,7 +1691,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     if (absoluteMinBlocked) {
       toast({
         title: `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL}`,
-        description: `No warranty can be sold under £${ABSOLUTE_MIN_TOTAL}. Switch on Price match and upload the competitor quote to go lower.`,
+        description: `No warranty can be sold under £${ABSOLUTE_MIN_TOTAL}. Switch on Price match and upload the competitor quote to go lower — contact your manager if you cannot get evidence.`,
         variant: "destructive",
       });
       return;
@@ -2898,7 +2898,7 @@ Questions? Call 0330 229 5040`;
     if (isUnderAbsoluteMin(paymentAmount) && !priceMatchEvidenced) {
       toast({
         title: `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL}`,
-        description: `No warranty can be sold under £${ABSOLUTE_MIN_TOTAL}. Switch on Price match and upload the competitor quote to go lower.`,
+        description: `No warranty can be sold under £${ABSOLUTE_MIN_TOTAL}. Switch on Price match and upload the competitor quote to go lower — contact your manager if you cannot get evidence.`,
         variant: "destructive",
       });
       return;
@@ -7311,7 +7311,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               )}>
                                 {priceMatchEvidenced
                                   ? `Below the £${ABSOLUTE_MIN_TOTAL} minimum — allowed: evidenced price match on file.`
-                                  : `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL} — sale blocked. Use Price match with an uploaded competitor quote to go lower.`}
+                                  : `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL} — sale blocked. Use Price match with an uploaded competitor quote to go lower, or contact your manager.`}
                               </p>
                             )}
 
