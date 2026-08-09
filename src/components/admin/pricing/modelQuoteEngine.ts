@@ -26,8 +26,8 @@ export const MIN_SELLABLE_BY_MONTHS: Record<number, number> = {
  */
 export const ABSOLUTE_MIN_GRID_BY_MONTHS: Record<number, number> = {
   12: 349,
-  24: Math.round((349 * 577) / 349),
-  36: Math.round((349 * 821) / 349),
+  24: 577,
+  36: 821,
 };
 
 
