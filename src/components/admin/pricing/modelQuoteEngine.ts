@@ -18,6 +18,21 @@ export const MIN_SELLABLE_BY_MONTHS: Record<number, number> = {
   36: 938,
 };
 
+/**
+ * ABSOLUTE minimum sellable grid total, anchored on the CHEAPEST REACHABLE combo
+ * (£150 excess, £1,000 claim limit, £50/hr labour) = £349 for 12 months.
+ * Shaped upwards by the same option factors so every chip still moves the price.
+ * Motorbikes are half (£175). Web journey = grid minus the Step 3 discount.
+ */
+export const ABSOLUTE_MIN_GRID_BY_MONTHS: Record<number, number> = {
+  12: 349,
+  24: Math.round((349 * 659) / 399),
+  36: Math.round((349 * 938) / 399),
+};
+
+const CHEAPEST_COMBO = { excess: 150, claimLimit: 1000, labourRate: 50 } as const;
+
+
 export interface ModelQuoteVehicle {
   ageYears?: number | null;
   mileage?: number | null;
