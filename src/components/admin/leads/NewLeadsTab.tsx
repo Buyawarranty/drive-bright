@@ -695,7 +695,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Statuses that mean the sales team has already worked this lead — used
   // by BOTH the date filter and the sort so a customer's resubmission never
   // pulls an already-touched row back into "Today" or bumps it to the top.
-  const WORKED_STATUSES_NO_BUBBLE = ['lost', 'not_interested', 'contacted', 'follow_up', 'converted', 'fake_lead', 'callback', 'quoted'];
+  const WORKED_STATUSES_NO_BUBBLE = ['lost', 'not_interested', 'contacted', 'follow_up', 'converted', 'fake_lead', 'callback', 'quoted', 'not_eligible'];
 
   // Date used by the "Today / This week / …" range filter.
   // Mirror the sort rule below: a repeat / already-touched lead must NOT be
@@ -1100,7 +1100,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     const absoluteTotal = countScopedLeads.length;
     // "Live" = active leads excluding lost, fake, and hidden — the working count agents care about.
     const liveCount = countScopedLeads.filter(
-      l => l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived'
+      l => l.status !== 'lost' && l.status !== 'fake_lead' && l.status !== 'not_eligible' && (l.status as string) !== 'archived'
     ).length;
 
     const live = {
@@ -1122,6 +1122,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           (l.priority === 'high' || l.priority === 'urgent') &&
           l.status !== 'lost' &&
           l.status !== 'fake_lead' &&
+          l.status !== 'not_eligible' &&
           (l.status as string) !== 'archived'
       ).length,
       fake: countScopedLeads.filter(l => l.status === 'fake_lead').length,
@@ -1149,10 +1150,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       source_facebook: sourceCountBaseLeads.filter(l => l.lead_source === 'social_ad').length,
       source_bing: sourceCountBaseLeads.filter(l => (l.lead_source as string) === 'bing_ad').length,
       source_organic: sourceCountBaseLeads.filter(l => !l.lead_source || l.lead_source === 'website').length,
-      source_google_live: sourceCountBaseLeads.filter(l => l.lead_source === 'google_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
-      source_facebook_live: sourceCountBaseLeads.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
-      source_bing_live: sourceCountBaseLeads.filter(l => (l.lead_source as string) === 'bing_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
-      source_organic_live: sourceCountBaseLeads.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead' && (l.status as string) !== 'archived').length,
+      source_google_live: sourceCountBaseLeads.filter(l => l.lead_source === 'google_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && l.status !== 'not_eligible' && (l.status as string) !== 'archived').length,
+      source_facebook_live: sourceCountBaseLeads.filter(l => l.lead_source === 'social_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && l.status !== 'not_eligible' && (l.status as string) !== 'archived').length,
+      source_bing_live: sourceCountBaseLeads.filter(l => (l.lead_source as string) === 'bing_ad' && l.status !== 'lost' && l.status !== 'fake_lead' && l.status !== 'not_eligible' && (l.status as string) !== 'archived').length,
+      source_organic_live: sourceCountBaseLeads.filter(l => (!l.lead_source || l.lead_source === 'website') && l.status !== 'lost' && l.status !== 'fake_lead' && l.status !== 'not_eligible' && (l.status as string) !== 'archived').length,
     };
 
     // Past-day override: prefer the locked nightly snapshot for status-derived tiles.
@@ -1244,7 +1245,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const agentLiveLeadCounts = useMemo(() => {
     const counts: Record<string, number> = { unassigned: 0 };
     teamScopedAgentCountRows.forEach(row => {
-      if (row.status === 'lost' || row.status === 'fake_lead' || row.status === 'archived') return;
+      if (row.status === 'lost' || row.status === 'fake_lead' || row.status === 'not_eligible' || row.status === 'archived') return;
       if (!row.assigned_to) {
         counts.unassigned = (counts.unassigned || 0) + 1;
       } else {

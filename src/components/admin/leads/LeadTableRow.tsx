@@ -132,6 +132,7 @@ const statusColors: Record<LeadStatus, string> = {
   bought_elsewhere: 'bg-zinc-200 text-zinc-800',
   vehicle_sold: 'bg-stone-200 text-stone-800',
   do_not_contact: 'bg-black text-white',
+  not_eligible: 'bg-orange-50 text-orange-800',
 };
 
 const statusLabels: Record<LeadStatus, string> = {
@@ -152,6 +153,7 @@ const statusLabels: Record<LeadStatus, string> = {
   bought_elsewhere: 'Bought elsewhere',
   vehicle_sold: 'Vehicle sold',
   do_not_contact: 'Do not contact',
+  not_eligible: 'Not eligible',
 };
 
 const formatUKPhone = (phone: string): string => {
@@ -203,8 +205,8 @@ const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: nu
   }
   
   // Closed/resolved leads don't need action
-  if (lead.status === 'converted' || lead.status === 'lost' || lead.status === 'not_interested' || lead.status === 'fake_lead') {
-    const labelMap: Record<string, string> = { converted: 'Converted', lost: 'Lost', not_interested: 'Not interested', fake_lead: 'Fake 404' };
+  if (lead.status === 'converted' || lead.status === 'lost' || lead.status === 'not_interested' || lead.status === 'fake_lead' || lead.status === 'not_eligible') {
+    const labelMap: Record<string, string> = { converted: 'Converted', lost: 'Lost', not_interested: 'Not interested', fake_lead: 'Fake 404', not_eligible: 'Not eligible' };
     return { label: labelMap[lead.status] || lead.status, color: 'bg-gray-100 text-gray-600', priority: 5 };
   }
   

@@ -85,6 +85,7 @@ const STATUS_META: Record<LeadStatus, { label: string; className: string }> = {
   bought_elsewhere: { label: 'Bought elsewhere', className: 'bg-zinc-200 text-zinc-800 border-zinc-200' },
   vehicle_sold: { label: 'Vehicle sold', className: 'bg-stone-200 text-stone-800 border-stone-200' },
   do_not_contact: { label: 'Do not contact', className: 'bg-black text-white border-black' },
+  not_eligible: { label: 'Not eligible', className: 'bg-orange-50 text-orange-800 border-orange-200' },
 };
 
 const STATUS_ORDER: LeadStatus[] = [
@@ -105,6 +106,7 @@ const STATUS_ORDER: LeadStatus[] = [
   'bought_elsewhere',
   'vehicle_sold',
   'do_not_contact',
+  'not_eligible',
 ];
 
 const FIRST_NAMES = ['Amira', 'Daniel', 'Priya', 'Callum', 'Rosie', 'Idris', 'Megan', 'Tomasz', 'Femi', 'Holly', 'Ravi', 'Sian', 'Owen', 'Bea', 'Marek', 'Nadia', 'Joel', 'Katie', 'Sam', 'Leah'];

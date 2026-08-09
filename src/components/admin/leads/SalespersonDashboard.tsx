@@ -80,7 +80,7 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
   const myLeads = useMemo(() => {
     if (!currentUserId) return [];
     return leads.filter(
-      l => l.assigned_to === currentUserId && l.status !== 'fake_lead' && l.status !== 'lost' && (l.status as string) !== 'archived'
+      l => l.assigned_to === currentUserId && l.status !== 'fake_lead' && l.status !== 'lost' && l.status !== 'not_eligible' && (l.status as string) !== 'archived'
     );
   }, [currentUserId, leads]);
 

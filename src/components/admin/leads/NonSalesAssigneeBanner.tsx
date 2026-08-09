@@ -87,7 +87,7 @@ export const NonSalesAssigneeBanner: React.FC<Props> = ({ agents, currentRole, o
       const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
       const base = (supabase.from('sales_leads') as any)
         .not('step_two_completed_at', 'is', null)
-        .not('status', 'in', '(new,converted,fake_lead,archived)')
+        .not('status', 'in', '(new,converted,fake_lead,archived,not_eligible)')
         .or('is_paid.is.null,is_paid.eq.false')
         .lt('created_at', d30)
         .in('assigned_to', nonSalesIds);
@@ -97,7 +97,7 @@ export const NonSalesAssigneeBanner: React.FC<Props> = ({ agents, currentRole, o
         (supabase.from('sales_leads') as any)
           .select('id, first_name, last_name, email, assigned_to')
           .not('step_two_completed_at', 'is', null)
-          .not('status', 'in', '(new,converted,fake_lead,archived)')
+          .not('status', 'in', '(new,converted,fake_lead,archived,not_eligible)')
           .or('is_paid.is.null,is_paid.eq.false')
           .lt('created_at', d30)
           .in('assigned_to', nonSalesIds)
@@ -154,7 +154,7 @@ export const NonSalesAssigneeBanner: React.FC<Props> = ({ agents, currentRole, o
       const { error, count: updated } = await (supabase.from('sales_leads') as any)
         .update(payload, { count: 'exact' })
         .not('step_two_completed_at', 'is', null)
-        .not('status', 'in', '(new,converted,fake_lead,archived)')
+        .not('status', 'in', '(new,converted,fake_lead,archived,not_eligible)')
         .or('is_paid.is.null,is_paid.eq.false')
         .lt('created_at', d30)
         .in('assigned_to', nonSalesIds);

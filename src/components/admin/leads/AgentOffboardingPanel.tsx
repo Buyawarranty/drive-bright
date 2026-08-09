@@ -98,7 +98,7 @@ export const AgentOffboardingPanel: React.FC = () => {
     try {
       const [total, open, paid, notes, quick, reminders] = await Promise.all([
         (supabase.from('sales_leads') as any).select('id', { count: 'exact', head: true }).eq('assigned_to', agentId),
-        (supabase.from('sales_leads') as any).select('id', { count: 'exact', head: true }).eq('assigned_to', agentId).eq('is_paid', false).not('status', 'in', '(lost,fake_lead,converted,not_interested,dormant,archived)'),
+        (supabase.from('sales_leads') as any).select('id', { count: 'exact', head: true }).eq('assigned_to', agentId).eq('is_paid', false).not('status', 'in', '(lost,fake_lead,converted,not_interested,dormant,archived,not_eligible)'),
         (supabase.from('sales_leads') as any).select('id', { count: 'exact', head: true }).eq('assigned_to', agentId).eq('is_paid', true),
         (supabase.from('sales_leads_changelog') as any).select('id', { count: 'exact', head: true }).eq('changed_by', agentId),
         (supabase.from('lead_quick_notes') as any).select('id', { count: 'exact', head: true }).eq('created_by', agentId),

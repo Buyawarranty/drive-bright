@@ -8,7 +8,7 @@ import { hasAgentWrittenNotesField, isAutomatedLeadNote } from '@/lib/leadNoteLo
  * numbers can never drift apart (different status filters previously made
  * the same agent show two different counts).
  */
-export const SINCE_6PM_STATUS_EXCLUDE = '(lost,converted,fake_lead)';
+export const SINCE_6PM_STATUS_EXCLUDE = '(lost,converted,fake_lead,not_eligible)';
 
 export interface Since6pmLeadRow {
   id: string;

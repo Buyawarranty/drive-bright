@@ -340,7 +340,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     // visible here, so we allow status='new' when last_claimed_at is set.
     return q
       .not('step_two_completed_at', 'is', null)
-      .not('status', 'in', '(converted,fake_lead,archived,lost,not_interested)')
+      .not('status', 'in', '(converted,fake_lead,archived,lost,not_interested,not_eligible)')
       .or('status.neq.new,last_claimed_at.not.is.null')
       .or('is_paid.is.null,is_paid.eq.false')
       .lt('created_at', d30);
@@ -443,7 +443,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           let q: any = (supabase.from('sales_leads') as any)
             .select('id', { count: 'exact', head: true })
             .not('step_two_completed_at', 'is', null)
-            .not('status', 'in', '(new,converted,fake_lead,archived,lost,not_interested)')
+            .not('status', 'in', '(new,converted,fake_lead,archived,lost,not_interested,not_eligible)')
             .or('is_paid.is.null,is_paid.eq.false')
             .lt('created_at', d30);
           q = applySegment(q, s.id);

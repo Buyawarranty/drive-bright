@@ -57,6 +57,7 @@ const getStatusBadgeVariant = (status: string) => {
     case 'converted': return 'bg-teal-100 text-teal-800';
     case 'lost': return 'bg-red-100 text-red-800';
     case 'fake_lead': return 'bg-gray-100 text-gray-800';
+    case 'not_eligible': return 'bg-orange-50 text-orange-800';
     default: return 'bg-gray-100 text-gray-800';
   }
 };
@@ -648,6 +649,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
       l.status !== 'converted' &&
       l.status !== 'lost' &&
       l.status !== 'fake_lead' &&
+      l.status !== 'not_eligible' &&
       !l.is_paid
     );
     groups.push({
