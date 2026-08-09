@@ -350,6 +350,7 @@ export const useLeadDistribution = () => {
         .is('assigned_to', null)
         .neq('status', 'lost')
         .neq('status', 'fake_lead')
+        .neq('status', 'not_eligible')
         .order('created_at', { ascending: true })
         .limit(1)
         .maybeSingle();
