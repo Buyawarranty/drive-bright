@@ -7291,6 +7291,17 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                                 ⚠️ Differs from quoted price (£{effectiveQuoted})
                               </p>
                             )}
+                            {isUnderAbsoluteMin(paymentAmount) && (
+                              <p className={cn(
+                                "text-xs font-semibold",
+                                priceMatchEvidenced ? "text-sky-700" : "text-red-600"
+                              )}>
+                                {priceMatchEvidenced
+                                  ? `Below the £${ABSOLUTE_MIN_TOTAL} minimum — allowed: evidenced price match on file.`
+                                  : `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL} — sale blocked. Use Price match with an uploaded competitor quote to go lower.`}
+                              </p>
+                            )}
+
                           </div>
                         </div>
                       );
