@@ -1004,7 +1004,11 @@ export function calculateAdminQuoteWarrantyPrice(
   // Admin grid is unaffected by the customer-journey +10% uplift.
   const base = calculateTotalWarrantyPrice({ ...params, surface: 'admin' });
 
-  const totalPrice = Math.ceil(base.totalPrice * ADMIN_QUOTE_PRICE_MULTIPLIER);
+  const totalPrice = Math.max(
+    Math.ceil(base.totalPrice * ADMIN_QUOTE_PRICE_MULTIPLIER),
+    getAbsoluteMinimumTotal({ ...params, surface: 'admin' })
+  );
+
   const monthlyPrice = Math.ceil(totalPrice / 12);
   const savings = MARKETING_SAVINGS[params.paymentPeriod] || 0;
   const wasPrice = totalPrice + savings;
