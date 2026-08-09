@@ -1235,6 +1235,65 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setExcessPriceBasis(prev => (prev === total ? prev : total));
   }, [currentPrice?.totalPrice, paymentType, excessAmount]);
 
+  /**
+   * Multi-year savings shown on the Cover Duration cards: what the customer pays
+   * per year on 2/3 year cover versus buying 1-year cover that many times over,
+   * with the same claim limit, labour rate and excess selected.
+   */
+  const termSavings = React.useMemo(() => {
+    const vehicleMileage = parseInt(String(mileage || '').replace(/[^0-9]/g, '')) || 0;
+    const ageYears = (() => {
+      const manufacture = (vehicleData as any)?.manufactureDate || (vehicleData as any)?.registrationDate;
+      if (manufacture) {
+        const d = new Date(manufacture);
+        if (!isNaN(d.getTime())) return (Date.now() - d.getTime()) / (365.25 * 24 * 3600 * 1000);
+      }
+      const year = parseInt(String(vehicleData?.year || ''), 10);
+      if (year) return new Date().getFullYear() - year;
+      return null;
+    })();
+    if (ageYears == null) return {} as Record<string, { total: number; perYear: number; saving: number; pct: number }>;
+
+    const totals: Record<string, number> = {};
+    for (const term of termOptions) {
+      const q = priceFromPricingModel(pricingModel, {
+        ageYears,
+        mileage: vehicleMileage || null,
+        fuelType: vehicleData?.fuelType,
+        vehicleType: vehicleData?.vehicleType,
+        make: vehicleData?.make,
+        model: (vehicleData as any)?.model,
+      }, {
+        paymentPeriod: term.id,
+        voluntaryExcess: excessAmount,
+        claimLimit: getDisplayClaimLimitValue(claimLimit),
+        labourRate: labourRate,
+      });
+      if (!q || q.referral || !q.totalPrice) return {} as Record<string, { total: number; perYear: number; saving: number; pct: number }>;
+      totals[term.id] = Math.ceil(q.totalPrice);
+    }
+
+    const oneYear = totals['12months'];
+    if (!oneYear) return {} as Record<string, { total: number; perYear: number; saving: number; pct: number }>;
+
+    const out: Record<string, { total: number; perYear: number; saving: number; pct: number }> = {};
+    for (const term of termOptions) {
+      const years = term.months / 12;
+      const total = totals[term.id];
+      const comparable = oneYear * years;
+      const saving = Math.max(0, Math.round(comparable - total));
+      out[term.id] = {
+        total,
+        perYear: Math.round(total / years),
+        saving,
+        pct: comparable > 0 ? Math.round((saving / comparable) * 100) : 0,
+      };
+    }
+    return out;
+  }, [mileage, vehicleData, pricingModel, excessAmount, claimLimit, labourRate]);
+
+
+
 
 
   /**
