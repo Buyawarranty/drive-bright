@@ -19,9 +19,9 @@ export const MIN_SELLABLE_BY_MONTHS: Record<number, number> = {
 };
 
 /**
- * ABSOLUTE minimum sellable grid total, anchored on the CHEAPEST REACHABLE combo
- * (£150 excess, £1,000 claim limit, £50/hr labour) = £349 for 12 months.
- * Shaped upwards by the same option factors so every chip still moves the price.
+ * ABSOLUTE hard-bottom minimum per term. 12 months = £349; 24 and 36 months scale
+ * from the 12-month figure. Only the cheapest combos get lifted to this; everything
+ * above the normal shaped floor stays where it already was.
  * Motorbikes are half (£175). Web journey = grid minus the Step 3 discount.
  */
 export const ABSOLUTE_MIN_GRID_BY_MONTHS: Record<number, number> = {
@@ -30,7 +30,6 @@ export const ABSOLUTE_MIN_GRID_BY_MONTHS: Record<number, number> = {
   36: Math.round((349 * 938) / 399),
 };
 
-const CHEAPEST_COMBO = { excess: 150, claimLimit: 1000, labourRate: 50 } as const;
 
 
 export interface ModelQuoteVehicle {
@@ -210,9 +209,8 @@ export function priceFromPricingModel(
   total = Math.round(total);
 
   /**
-   * The floor is SHAPED by the options, anchored on the £2,000 claim limit /
-   * £70 labour rate / £100 excess reference. A flat floor made every claim
-   * limit, labour rate and excess collapse to the same price on cheap vehicles.
+   * The normal shaped floor, anchored on the £2,000 claim / £70 labour / £100
+   * excess reference. This keeps chips moving on every option above the bottom.
    */
   const refClaimFactor = nearestFactor(
     model.claimLimits,
@@ -229,32 +227,19 @@ export function priceFromPricingModel(
     (refLabourFactor > 0 ? labourFactor / refLabourFactor : 1);
 
   const shapedModelFloor = Math.round(
-    // The floor is shaped by the SAME excess factor, so a floor-bound vehicle still
-    // steps between £0 and £500 excess instead of collapsing onto one price.
     (MIN_SELLABLE_BY_MONTHS[months] ?? 399) *
       motorbikeFactor *
       floorShape *
       getExcessFactor(Number(options.voluntaryExcess))
   );
 
-  // Absolute £349 minimum, anchored on the cheapest reachable combo and shaped upwards.
-  const cheapClaimFactor = nearestFactor(
-    model.claimLimits,
-    c => Number(c.limit) === CHEAPEST_COMBO.claimLimit,
-    c => Math.abs(Number(c.limit) - CHEAPEST_COMBO.claimLimit)
-  );
-  const cheapLabourFactor = nearestFactor(
-    model.labourRateFactors,
-    l => Number(l.rate) === CHEAPEST_COMBO.labourRate,
-    l => Math.abs(Number(l.rate) - CHEAPEST_COMBO.labourRate)
-  );
-  const absoluteMin = Math.round(
-    (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 349) *
-      motorbikeFactor *
-      (cheapClaimFactor > 0 ? claimFactor / cheapClaimFactor : 1) *
-      (cheapLabourFactor > 0 ? labourFactor / cheapLabourFactor : 1) *
-      (getExcessFactor(Number(options.voluntaryExcess)) / getExcessFactor(CHEAPEST_COMBO.excess))
-  );
+  /**
+   * Hard-bottom-only: a flat absolute minimum per term. Only the cheapest combos
+   * (young cars at £1,000 claim / £50 labour / high excess) get lifted to this;
+   * everything above the normal shaped floor stays where it already was.
+   * Motorbikes are half-price.
+   */
+  const absoluteMin = Math.round((ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 349) * motorbikeFactor);
 
   const minSellable = Math.max(shapedModelFloor, absoluteMin);
   const belowMinimum = total < minSellable;
