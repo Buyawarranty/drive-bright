@@ -205,8 +205,8 @@ const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: nu
   }
   
   // Closed/resolved leads don't need action
-  if (lead.status === 'converted' || lead.status === 'lost' || lead.status === 'not_interested' || lead.status === 'fake_lead') {
-    const labelMap: Record<string, string> = { converted: 'Converted', lost: 'Lost', not_interested: 'Not interested', fake_lead: 'Fake 404' };
+  if (lead.status === 'converted' || lead.status === 'lost' || lead.status === 'not_interested' || lead.status === 'fake_lead' || lead.status === 'not_eligible') {
+    const labelMap: Record<string, string> = { converted: 'Converted', lost: 'Lost', not_interested: 'Not interested', fake_lead: 'Fake 404', not_eligible: 'Not eligible' };
     return { label: labelMap[lead.status] || lead.status, color: 'bg-gray-100 text-gray-600', priority: 5 };
   }
   
