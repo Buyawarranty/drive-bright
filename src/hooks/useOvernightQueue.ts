@@ -34,7 +34,7 @@ async function fetchOvernightQueue(): Promise<OvernightQueue> {
     .eq('intake_class', 'overnight')
     .gt('eligible_at', nowIso)
     .is('assigned_to', null)
-    .not('status', 'in', '(converted,lost,fake_lead,dormant,archived)')
+    .not('status', 'in', '(converted,lost,fake_lead,dormant,archived,not_eligible)')
     .order('eligible_at', { ascending: true })
     .limit(1000);
 

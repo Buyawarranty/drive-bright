@@ -77,7 +77,7 @@ export function useSharkTankCounts() {
       .eq('queue', 'live_open_pool')
       .is('assigned_to', null)
       .is('owner_agent', null)
-      .not('status', 'in', '(lost,converted,fake_lead)')
+      .not('status', 'in', '(lost,converted,fake_lead,not_eligible)')
       .or('pool_status.is.null,pool_status.in.(new,callback_booked,contacted)');
     const poolCount = poolLeads?.length ?? 0;
     c.queued = Math.max(c.queued, poolCount);
