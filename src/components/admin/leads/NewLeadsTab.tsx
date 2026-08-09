@@ -1245,7 +1245,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const agentLiveLeadCounts = useMemo(() => {
     const counts: Record<string, number> = { unassigned: 0 };
     teamScopedAgentCountRows.forEach(row => {
-      if (row.status === 'lost' || row.status === 'fake_lead' || row.status === 'archived') return;
+      if (row.status === 'lost' || row.status === 'fake_lead' || row.status === 'not_eligible' || row.status === 'archived') return;
       if (!row.assigned_to) {
         counts.unassigned = (counts.unassigned || 0) + 1;
       } else {
