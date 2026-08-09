@@ -228,7 +228,7 @@ export function priceFromPricingModel(
     (refClaimFactor > 0 ? claimFactor / refClaimFactor : 1) *
     (refLabourFactor > 0 ? labourFactor / refLabourFactor : 1);
 
-  const minSellable = Math.round(
+  const shapedModelFloor = Math.round(
     // The floor is shaped by the SAME excess factor, so a floor-bound vehicle still
     // steps between £0 and £500 excess instead of collapsing onto one price.
     (MIN_SELLABLE_BY_MONTHS[months] ?? 399) *
@@ -236,8 +236,30 @@ export function priceFromPricingModel(
       floorShape *
       getExcessFactor(Number(options.voluntaryExcess))
   );
+
+  // Absolute £349 minimum, anchored on the cheapest reachable combo and shaped upwards.
+  const cheapClaimFactor = nearestFactor(
+    model.claimLimits,
+    c => Number(c.limit) === CHEAPEST_COMBO.claimLimit,
+    c => Math.abs(Number(c.limit) - CHEAPEST_COMBO.claimLimit)
+  );
+  const cheapLabourFactor = nearestFactor(
+    model.labourRateFactors,
+    l => Number(l.rate) === CHEAPEST_COMBO.labourRate,
+    l => Math.abs(Number(l.rate) - CHEAPEST_COMBO.labourRate)
+  );
+  const absoluteMin = Math.round(
+    (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 349) *
+      motorbikeFactor *
+      (cheapClaimFactor > 0 ? claimFactor / cheapClaimFactor : 1) *
+      (cheapLabourFactor > 0 ? labourFactor / cheapLabourFactor : 1) *
+      (getExcessFactor(Number(options.voluntaryExcess)) / getExcessFactor(CHEAPEST_COMBO.excess))
+  );
+
+  const minSellable = Math.max(shapedModelFloor, absoluteMin);
   const belowMinimum = total < minSellable;
   if (belowMinimum) total = minSellable;
+
 
 
   // We only ever offer 12 monthly instalments, whatever the cover term.
