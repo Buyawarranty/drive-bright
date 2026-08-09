@@ -280,6 +280,41 @@ html, body {
   input, button, textarea, select {
     font-family: 'Helvetica Neue', 'Segoe UI', Arial, sans-serif !important;
   }
+  }
+
+  /* ============================================================
+     WINDOWS ONLY FONT OVERRIDE
+     Inter replaces Helvetica Neue on Windows to fix thickness.
+     Mac/iOS keeps its current system / Helvetica Neue stack.
+     ============================================================ */
+  html.windows,
+  html.windows body,
+  html.windows *,
+  html.windows h1,
+  html.windows h2,
+  html.windows h3,
+  html.windows h4,
+  html.windows h5,
+  html.windows h6,
+  html.windows p,
+  html.windows input,
+  html.windows button,
+  html.windows textarea,
+  html.windows select,
+  html.windows a,
+  html.windows span,
+  html.windows div,
+  html.windows label,
+  html.windows .font-sans,
+  html.windows .font-helvetica {
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif !important;
+  }
+
+  /* Preserve UK registration plate font on Windows */
+  html.windows .reg-plate-box,
+  html.windows .reg-input {
+    font-family: 'Poppins', sans-serif !important;
+  }
 }
 
 /* Enhanced CTA Button Animation - Now defined in Tailwind Config */

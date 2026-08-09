@@ -2,6 +2,17 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <script>
+      // Detect Windows (not Windows Phone) and add class before CSS loads
+      (function () {
+        try {
+          var ua = navigator.userAgent;
+          if (/Windows NT|Win64|Win32/i.test(ua) && !/Windows Phone/i.test(ua)) {
+            document.documentElement.classList.add('windows');
+          }
+        } catch (e) {}
+      })();
+    </script>
     <meta charset="UTF-8" />
     <script>
       // Immediate www -> non-www redirect (runs before any other script)
@@ -71,9 +82,10 @@
     </style>
     
     <!-- Optimized font loading with display=swap for faster render -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"></noscript>
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Helvetica+Neue:wght@400;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"></noscript>
     
     <!-- Google Tag Manager + gtag stubs (real scripts loaded deferred via thirdPartyScripts.ts).
          The stubs let calls to gtag()/dataLayer queue before the network scripts arrive. -->
