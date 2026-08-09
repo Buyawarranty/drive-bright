@@ -4755,7 +4755,8 @@ Questions? Call 0330 229 5040`;
                           {absoluteMinBlocked ? (
                             <span className="font-bold">
                               — this total (£{displayedTotalPrice}) is below the minimum. Sale blocked unless you switch on
-                              Price match and upload the competitor quote.
+                              Price match and upload the competitor quote — contact your manager if you cannot get evidence.
+
                             </span>
                           ) : priceMatchEvidenced && isUnderAbsoluteMin(displayedTotalPrice) ? (
                             <span>— allowed: evidenced price match on file.</span>
