@@ -27,6 +27,7 @@ const statusTone: Record<string, string> = {
   converted: 'bg-emerald-100 text-emerald-800 border-emerald-200',
   lost: 'bg-slate-100 text-slate-700 border-slate-200',
   fake_lead: 'bg-red-100 text-red-800 border-red-200',
+  not_eligible: 'bg-orange-50 text-orange-800 border-orange-200',
 };
 
 /**

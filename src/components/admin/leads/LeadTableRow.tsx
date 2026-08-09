@@ -132,6 +132,7 @@ const statusColors: Record<LeadStatus, string> = {
   bought_elsewhere: 'bg-zinc-200 text-zinc-800',
   vehicle_sold: 'bg-stone-200 text-stone-800',
   do_not_contact: 'bg-black text-white',
+  not_eligible: 'bg-orange-50 text-orange-800',
 };
 
 const statusLabels: Record<LeadStatus, string> = {
@@ -152,6 +153,7 @@ const statusLabels: Record<LeadStatus, string> = {
   bought_elsewhere: 'Bought elsewhere',
   vehicle_sold: 'Vehicle sold',
   do_not_contact: 'Do not contact',
+  not_eligible: 'Not eligible',
 };
 
 const formatUKPhone = (phone: string): string => {
