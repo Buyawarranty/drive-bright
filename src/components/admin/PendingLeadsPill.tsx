@@ -35,7 +35,7 @@ export const PendingLeadsPill = ({ userRole, onClick, className }: Props) => {
         .select('id', { count: 'exact', head: true })
         .is('assigned_to', null)
         .is('owner_agent', null)
-        .not('status', 'in', '(lost,converted,fake_lead)')
+        .not('status', 'in', '(lost,converted,fake_lead,not_eligible)')
         .or('pool_status.is.null,pool_status.in.(new,callback_booked,contacted)')
         .or(`locked_by.is.null,locked_at.lt.${lockCutoff}`);
     const [live, morning, retry] = await Promise.all([
