@@ -493,6 +493,57 @@ export function applyBasePriceFloor(
   return Math.max(adjustedBasePrice, effectiveFloor, ruleFloor);
 }
 
+/**
+ * ABSOLUTE minimum sellable total, anchored on the CHEAPEST REACHABLE combination
+ * (12 months, £150 excess, £1,000 claim limit, £50/hr labour) = £349 on the admin
+ * Quotes & Orders grid. The web journey is that minus the live Step 3 discount.
+ *
+ * It is SHAPED (not clamped flat) by excess, claim limit and labour rate relative to
+ * that cheapest combo, so every chip still moves the price on a floor-bound vehicle.
+ * Motorbikes are half (£175 grid), per the motorbike rule.
+ */
+export const ABSOLUTE_MIN_GRID_TOTAL_12M = 349;
+
+/** Cheapest reachable combo (£250/£500 excess only unlock above a £500 total). */
+const CHEAPEST_COMBO = { excess: 150, claimLimit: 1000, labourRate: 50 } as const;
+
+/** Term ratios follow the existing base-floor ratios so 2/3 year scale identically. */
+function absoluteMinTermRatio(paymentPeriod: PaymentPeriod): number {
+  const ref = MIN_BASE_PRICE_BY_PERIOD['12months'] || 1;
+  return (MIN_BASE_PRICE_BY_PERIOD[paymentPeriod] ?? ref) / ref;
+}
+
+export function getAbsoluteMinimumTotal(params: {
+  paymentPeriod: PaymentPeriod;
+  voluntaryExcess?: number;
+  claimLimit?: number;
+  labourRate?: number;
+  isMotorbike?: boolean;
+  surface?: PricingSurface;
+}): number {
+  const { paymentPeriod, voluntaryExcess, claimLimit, labourRate, isMotorbike, surface = 'customer' } = params;
+
+  const excessShape =
+    getExcessFactor(voluntaryExcess ?? EXCESS_BASELINE) / getExcessFactor(CHEAPEST_COMBO.excess);
+  const claimShape =
+    nearestMultiplier(CLAIM_LIMIT_FLOOR_MULTIPLIER, claimLimit) /
+    nearestMultiplier(CLAIM_LIMIT_FLOOR_MULTIPLIER, CHEAPEST_COMBO.claimLimit);
+  const labourShape =
+    getLabourRateFactor(labourRate ?? DEFAULT_LABOUR_RATE) /
+    getLabourRateFactor(CHEAPEST_COMBO.labourRate);
+
+  const gridMin =
+    ABSOLUTE_MIN_GRID_TOTAL_12M *
+    absoluteMinTermRatio(paymentPeriod) *
+    excessShape *
+    claimShape *
+    labourShape *
+    (isMotorbike ? MOTORBIKE_PRICE_MULTIPLIER : 1);
+
+  return Math.ceil(surface === 'admin' ? gridMin : gridMin * getCustomerSurfaceFactor());
+}
+
+
 
 
 
