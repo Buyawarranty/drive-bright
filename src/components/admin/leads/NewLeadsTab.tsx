@@ -695,7 +695,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Statuses that mean the sales team has already worked this lead — used
   // by BOTH the date filter and the sort so a customer's resubmission never
   // pulls an already-touched row back into "Today" or bumps it to the top.
-  const WORKED_STATUSES_NO_BUBBLE = ['lost', 'not_interested', 'contacted', 'follow_up', 'converted', 'fake_lead', 'callback', 'quoted'];
+  const WORKED_STATUSES_NO_BUBBLE = ['lost', 'not_interested', 'contacted', 'follow_up', 'converted', 'fake_lead', 'callback', 'quoted', 'not_eligible'];
 
   // Date used by the "Today / This week / …" range filter.
   // Mirror the sort rule below: a repeat / already-touched lead must NOT be
