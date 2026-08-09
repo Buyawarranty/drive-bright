@@ -4142,7 +4142,10 @@ Questions? Call 0330 229 5040`;
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Cover Duration</Label>
                   <div className="grid grid-cols-3 gap-3">
-                    {termOptions.map((term) => (
+                    {termOptions.map((term) => {
+                      const s = termSavings[term.id];
+                      const years = term.months / 12;
+                      return (
                       <button
                         key={term.id}
                         onClick={() => setPaymentType(term.id as PaymentPeriod)}
@@ -4164,10 +4167,37 @@ Questions? Call 0330 229 5040`;
                           </span>
                         )}
                         <div className="font-semibold">{term.label}</div>
+                        {s && (
+                          <div className="mt-1.5 space-y-1">
+                            <div className="text-xs text-muted-foreground">£{s.total} total · £{s.perYear}/yr</div>
+                            {years === 1 ? (
+                              <div className="text-[11px] font-medium text-muted-foreground">Baseline price</div>
+                            ) : s.saving > 0 ? (
+                              <div className="inline-flex flex-col items-center gap-0.5 rounded-md border border-emerald-500/50 bg-emerald-500/10 px-2 py-1">
+                                <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+                                  Save £{s.saving} ({s.pct}% off)
+                                </span>
+                                <span className="text-[10px] text-emerald-700/80 dark:text-emerald-300/80">
+                                  vs {years}× 1-year cover
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="text-[11px] text-muted-foreground">Same yearly rate as 1 year</div>
+                            )}
+                          </div>
+                        )}
                       </button>
-                    ))}
+                      );
+                    })}
                   </div>
+                  {termSavings['24months'] && (
+                    <p className="text-xs text-muted-foreground">
+                      Savings compare the full term price against buying 1-year cover repeatedly, with the same claim
+                      limit, labour rate and excess selected.
+                    </p>
+                  )}
                 </div>
+
 
                 {/* Labour Rate - Quick Select Chips */}
                 <div className="space-y-3">
