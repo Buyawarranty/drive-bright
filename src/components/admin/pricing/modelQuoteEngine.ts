@@ -210,6 +210,31 @@ export function priceFromPricingModel(
   total = Math.round(total);
 
   /**
+   * The normal shaped floor, anchored on the £2,000 claim / £70 labour / £100
+   * excess reference. This keeps chips moving on every option above the bottom.
+   */
+  const refClaimFactor = nearestFactor(
+    model.claimLimits,
+    c => Number(c.limit) === 2000,
+    c => Math.abs(Number(c.limit) - 2000)
+  );
+  const refLabourFactor = nearestFactor(
+    model.labourRateFactors,
+    l => Number(l.rate) === 70,
+    l => Math.abs(Number(l.rate) - 70)
+  );
+  const floorShape =
+    (refClaimFactor > 0 ? claimFactor / refClaimFactor : 1) *
+    (refLabourFactor > 0 ? labourFactor / refLabourFactor : 1);
+
+  const shapedModelFloor = Math.round(
+    (MIN_SELLABLE_BY_MONTHS[months] ?? 399) *
+      motorbikeFactor *
+      floorShape *
+      getExcessFactor(Number(options.voluntaryExcess))
+  );
+
+  /**
    * Hard-bottom-only: a flat absolute minimum per term. Only the cheapest combos
    * (young cars at £1,000 claim / £50 labour / high excess) get lifted to this;
    * everything above the normal shaped floor stays where it already was.
