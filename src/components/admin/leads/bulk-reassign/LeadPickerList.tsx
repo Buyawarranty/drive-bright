@@ -91,7 +91,7 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
   const [previousAgents, setPreviousAgents] = useState<Map<string, string>>(new Map());
   /** lead_id → who wrote the most recent note, so a manager never reassigns away from the agent working it. */
   const [lastNote, setLastNote] = useState<Map<string, { author: string; text: string; at: string }>>(new Map());
-  const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead', 'cancelled'];
+  const TERMINAL_STATUSES = ['lost', 'converted', 'fake_lead', 'cancelled', 'not_eligible'];
 
 
   const range = useMemo(

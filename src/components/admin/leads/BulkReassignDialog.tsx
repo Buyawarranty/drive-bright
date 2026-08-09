@@ -117,7 +117,7 @@ const UNASSIGNED_ID = '00000000-0000-0000-0000-000000000000';
 // "Active workload" — mirrors the Sales Scoreboard definition. Dead/terminal
 // leads and already-paid leads should never be moved in a bulk reassign,
 // otherwise the target agent inherits ghost workload they can't work.
-const TERMINAL_STATUSES = ['lost', 'fake_lead', 'converted', 'not_interested', 'dormant', 'archived'];
+const TERMINAL_STATUSES = ['lost', 'fake_lead', 'converted', 'not_interested', 'dormant', 'archived', 'not_eligible'];
 
 // Workstream = New (never in the recontact pool) vs Recontact (has been claimed
 // out of the 60+ day pool at least once). last_claimed_at is the reliable flag

@@ -73,7 +73,7 @@ const RecontactAccessPanelInner: React.FC = () => {
     const { count } = await (supabase.from('sales_leads') as any)
       .select('id', { count: 'exact', head: true })
       .is('assigned_to', null)
-      .not('status', 'in', '(lost,fake_lead,converted,archived)')
+      .not('status', 'in', '(lost,fake_lead,converted,archived,not_eligible)')
       .lt('created_at', cutoff);
     setPoolRemaining(count ?? 0);
   }, []);
