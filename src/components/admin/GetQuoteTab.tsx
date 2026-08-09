@@ -1688,6 +1688,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       return;
     }
 
+    if (absoluteMinBlocked) {
+      toast({
+        title: `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL}`,
+        description: `No warranty can be sold under £${ABSOLUTE_MIN_TOTAL}. Switch on Price match and upload the competitor quote to go lower.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+
     // If no mileage, default to 0 - can be edited in dialog
     const effectiveMileage = mileage.trim() || '0';
 
