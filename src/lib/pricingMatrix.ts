@@ -943,7 +943,20 @@ export function calculateTotalWarrantyPrice(params: {
   // A model-specific minimum is absolute: a £50/hr labour discount can never take the
   // quote below it (add-ons are excluded from the comparison as they are extras).
   const ruleMin = getVehicleRuleMinPrice(vehicleName, paymentPeriod) ?? 0;
-  const totalPrice = Math.ceil(Math.max(rawTotal, ruleMin + addOnPrice));
+  // Absolute minimum sellable price (£349 grid at the cheapest reachable combo,
+  // shaped by the options so every chip still moves the price). Add-ons sit on top.
+  const absoluteMin = getAbsoluteMinimumTotal({
+    paymentPeriod,
+    voluntaryExcess,
+    claimLimit,
+    labourRate,
+    isMotorbike,
+    surface,
+  });
+  const totalPrice = Math.ceil(
+    Math.max(rawTotal, ruleMin + addOnPrice, absoluteMin + addOnPrice)
+  );
+
 
   
   // 6. Calculate monthly price (always 12 installments, always rounded UP to a whole pound)
