@@ -13151,6 +13151,7 @@ export type Database = {
         | "bought_elsewhere"
         | "vehicle_sold"
         | "do_not_contact"
+        | "not_eligible"
       mask_level: "none" | "partial" | "full"
       note_purpose:
         | "claim_query"
@@ -13384,6 +13385,7 @@ export const Constants = {
         "bought_elsewhere",
         "vehicle_sold",
         "do_not_contact",
+        "not_eligible",
       ],
       mask_level: ["none", "partial", "full"],
       note_purpose: [
