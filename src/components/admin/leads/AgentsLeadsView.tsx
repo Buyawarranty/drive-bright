@@ -648,6 +648,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
       l.status !== 'converted' &&
       l.status !== 'lost' &&
       l.status !== 'fake_lead' &&
+      l.status !== 'not_eligible' &&
       !l.is_paid
     );
     groups.push({

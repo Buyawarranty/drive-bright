@@ -19,7 +19,8 @@ export const LeadCallAnalyticsTiles: React.FC<LeadCallAnalyticsTilesProps> = ({ 
     new Date(lead.created_at) >= sevenDaysAgo &&
     lead.status !== 'converted' &&
     lead.status !== 'lost' &&
-    lead.status !== 'fake_lead'
+    lead.status !== 'fake_lead' &&
+    lead.status !== 'not_eligible'
   );
 
   // Count leads with 0 calls

@@ -27,7 +27,7 @@ const ALLOWED_ROLES = new Set([
 const MISSED_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
 const BUSINESS_START_HOUR = 9;  // 09:00
 const BUSINESS_END_HOUR = 18;   // 18:00
-const TERMINAL = new Set(['lost', 'converted', 'fake_lead', 'sale_made']);
+const TERMINAL = new Set(['lost', 'converted', 'fake_lead', 'sale_made', 'not_eligible']);
 
 interface LeadRow {
   id: string;
