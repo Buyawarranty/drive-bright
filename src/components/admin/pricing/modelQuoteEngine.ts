@@ -19,9 +19,9 @@ export const MIN_SELLABLE_BY_MONTHS: Record<number, number> = {
 };
 
 /**
- * ABSOLUTE minimum sellable grid total, anchored on the CHEAPEST REACHABLE combo
- * (£150 excess, £1,000 claim limit, £50/hr labour) = £349 for 12 months.
- * Shaped upwards by the same option factors so every chip still moves the price.
+ * ABSOLUTE hard-bottom minimum per term. 12 months = £349; 24 and 36 months scale
+ * from the 12-month figure. Only the cheapest combos get lifted to this; everything
+ * above the normal shaped floor stays where it already was.
  * Motorbikes are half (£175). Web journey = grid minus the Step 3 discount.
  */
 export const ABSOLUTE_MIN_GRID_BY_MONTHS: Record<number, number> = {
