@@ -2833,9 +2833,11 @@ Questions? Call 0330 229 5040`;
       paymentSource.trim() !== '' &&
       paymentAmount.trim() !== '' &&
       warrantyStartDate !== undefined &&
-      paymentConfirmed === true
+      paymentConfirmed === true &&
+      !(isUnderAbsoluteMin(paymentAmount) && !priceMatchEvidenced)
     );
   };
+
 
   // Handle confirm external payment - atomic operation
   const handleConfirmExternalPayment = async () => {
