@@ -510,6 +510,13 @@ const ABSOLUTE_MIN_GRID_BY_PERIOD: Record<PaymentPeriod, number> = {
   '36months': 821,
 };
 
+/**
+ * Cheapest reachable combo the £349 anchor is defined against:
+ * £1,000 claim limit, £50/hr labour, £150 excess. Better options than these lift
+ * the absolute minimum proportionally, so the hard bottom never flattens the caps.
+ */
+const ABS_MIN_ANCHOR = { claimLimit: 1000, labourRate: 50, voluntaryExcess: 150 };
+
 export function getAbsoluteMinimumTotal(params: {
   paymentPeriod: PaymentPeriod;
   voluntaryExcess?: number;
@@ -520,12 +527,41 @@ export function getAbsoluteMinimumTotal(params: {
 }): number {
   const { paymentPeriod, isMotorbike, surface = 'customer' } = params;
 
+  const claimLimit = params.claimLimit ?? ABS_MIN_ANCHOR.claimLimit;
+  const labourRate = params.labourRate ?? ABS_MIN_ANCHOR.labourRate;
+  const excess = params.voluntaryExcess ?? ABS_MIN_ANCHOR.voluntaryExcess;
+
+  const anchorClaim = getClaimLimitFloorFactor(ABS_MIN_ANCHOR.claimLimit);
+  const anchorLabour = getLabourRateFactor(ABS_MIN_ANCHOR.labourRate);
+  const anchorExcess = getExcessFactor(ABS_MIN_ANCHOR.voluntaryExcess);
+
+  const shape =
+    (anchorClaim > 0 ? getClaimLimitFloorFactor(claimLimit) / anchorClaim : 1) *
+    (anchorLabour > 0 ? getLabourRateFactor(labourRate) / anchorLabour : 1) *
+    (anchorExcess > 0 ? getExcessFactor(excess) / anchorExcess : 1);
+
   const gridMin =
     ABSOLUTE_MIN_GRID_BY_PERIOD[paymentPeriod] *
+    Math.max(1, shape) *
     (isMotorbike ? MOTORBIKE_PRICE_MULTIPLIER : 1);
 
   return Math.ceil(surface === 'admin' ? gridMin : gridMin * getCustomerSurfaceFactor());
 }
+
+/**
+ * Relative claim-limit weighting used only for shaping the absolute minimum.
+ * £1,000 is the anchor; higher limits raise the floor proportionally.
+ */
+function getClaimLimitFloorFactor(claimLimit: number): number {
+  const weights: Record<number, number> = { 1000: 1, 2000: 1.12, 3000: 1.22, 5000: 1.4 };
+  const keys = Object.keys(weights).map(Number).sort((a, b) => a - b);
+  const nearest = keys.reduce(
+    (best, k) => (Math.abs(k - claimLimit) < Math.abs(best - claimLimit) ? k : best),
+    keys[0],
+  );
+  return weights[nearest] ?? 1;
+}
+
 
 
 

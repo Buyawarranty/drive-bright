@@ -234,14 +234,32 @@ export function priceFromPricingModel(
   );
 
   /**
-   * Hard-bottom-only: a flat absolute minimum per term. Only the cheapest combos
-   * (young cars at £1,000 claim / £50 labour / high excess) get lifted to this;
-   * everything above the normal shaped floor stays where it already was.
-   * Motorbikes are half-price.
+   * Hard bottom, shaped from the cheapest reachable combo (£1,000 claim /
+   * £50 labour / £150 excess = £349 at 12 months). Better options lift the hard
+   * bottom proportionally so claim limit, labour rate and excess never go dead
+   * at the bottom of the grid. Motorbikes are half-price.
    */
-  const absoluteMin = Math.round((ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 349) * motorbikeFactor);
+  const anchorClaimFactor = nearestFactor(
+    model.claimLimits,
+    c => Number(c.limit) === 1000,
+    c => Math.abs(Number(c.limit) - 1000)
+  );
+  const anchorLabourFactor = nearestFactor(
+    model.labourRateFactors,
+    l => Number(l.rate) === 50,
+    l => Math.abs(Number(l.rate) - 50)
+  );
+  const absShape =
+    (anchorClaimFactor > 0 ? claimFactor / anchorClaimFactor : 1) *
+    (anchorLabourFactor > 0 ? labourFactor / anchorLabourFactor : 1) *
+    (getExcessFactor(Number(options.voluntaryExcess)) / getExcessFactor(150));
+
+  const absoluteMin = Math.round(
+    (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 349) * Math.max(1, absShape) * motorbikeFactor
+  );
 
   const minSellable = Math.max(shapedModelFloor, absoluteMin);
+
   const belowMinimum = total < minSellable;
   if (belowMinimum) total = minSellable;
 
