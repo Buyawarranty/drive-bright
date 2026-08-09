@@ -13,10 +13,15 @@ import { useSavedPricingModel } from './useSavedPricingModel';
 import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
 import {
   getVisibleExcessOptions,
+  getExcessFactor,
   getExcessMonthlyDelta,
   getExcessTotalAdjustment,
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
+import {
+  ABSOLUTE_MIN_GRID_BY_MONTHS,
+  MIN_SELLABLE_BY_MONTHS,
+} from './modelQuoteEngine';
 
 import { calculateAddOnPrice } from '@/lib/addOnsUtils';
 import { getExclusionReason, EXCLUSION_MESSAGE } from '@/lib/vehicleExclusions';
@@ -72,15 +77,6 @@ function nearestFactor<T extends { factor: number }>(list: T[], pick: (item: T) 
   const sorted = [...list].sort((a, b) => Math.abs(pick(a) - value) - Math.abs(pick(b) - value));
   return sorted[0]?.factor ?? 1;
 }
-
-/** Never sell below £399 for one year; 2/3 year floors follow the ×1.65 / ×2.35 multipliers. */
-const MIN_SELLABLE_BY_TERM: Record<number, number> = {
-  12: 399,
-  24: 659,
-  36: 938,
-};
-
-
 
 const DISCOUNTS = [
   { label: '£25 off', kind: 'flat' as const, value: 25 },
@@ -272,6 +268,30 @@ export default function PriceTestStep2({
   // excess) always prices, even if the editor is missing that exact row.
   const claimFactor = nearestFactor(claimLimits, c => c.limit, claimLimit);
   const labourFactor = nearestFactor(labourRateFactors, l => l.rate, labour);
+  const referenceClaimFactor = nearestFactor(claimLimits, c => c.limit, 2000);
+  const referenceLabourFactor = nearestFactor(labourRateFactors, l => l.rate, 70);
+
+  /**
+   * Match the published Aug Hybrid engine: retain the normal option-shaped floor,
+   * then apply the flat hard bottom only when a quote genuinely falls beneath it.
+   * This prevents the old £399/£659/£938 clamp from swallowing age, claim-limit,
+   * labour-rate and excess changes in the test replica.
+   */
+  const minimumFor = (months: number) => {
+    const floorShape =
+      (referenceClaimFactor > 0 ? claimFactor / referenceClaimFactor : 1) *
+      (referenceLabourFactor > 0 ? labourFactor / referenceLabourFactor : 1);
+    const shapedMinimum = Math.round(
+      (MIN_SELLABLE_BY_MONTHS[months] ?? 249) *
+        motorbikeFactor *
+        floorShape *
+        getExcessFactor(excess)
+    );
+    const hardBottom = Math.round(
+      (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 349) * motorbikeFactor
+    );
+    return Math.max(shapedMinimum, hardBottom);
+  };
   /**
    * Excess is NOT a multiplier any more. It is the SAME flat £/mo difference vs the
    * £100 "Balanced" baseline that Step 3/4 and Quotes & Orders use, applied once to
@@ -330,9 +350,7 @@ export default function PriceTestStep2({
     const addOnTotal = addOnTotalFor(term.months);
     total += addOnTotal;
     total = Math.round(total);
-    // Rule of thumb: never sell below £399 for one year (scaled by term multiplier).
-    // Motorbikes sit at 50% of standard vehicle pricing, so the floor halves too.
-    const minSellable = Math.round((MIN_SELLABLE_BY_TERM[term.months] ?? 399) * motorbikeFactor);
+    const minSellable = minimumFor(term.months);
     const belowMinimum = total < minSellable;
     if (belowMinimum) total = minSellable;
 
@@ -361,7 +379,8 @@ export default function PriceTestStep2({
     };
   }, [
     referral, ageBand, mileageBand, powertrain, vehType, risk, floor, motorbikeFactor,
-    claimFactor, labourFactor, excess, term, discount, addOns, freeMonths,
+    claimFactor, labourFactor, referenceClaimFactor, referenceLabourFactor,
+    excess, term, discount, addOns, freeMonths,
   ]);
 
   /** Every cover term priced with the same options — used for the overall price difference. */
@@ -377,11 +396,14 @@ export default function PriceTestStep2({
       }
       total += addOnTotalFor(t.months);
       total = Math.round(total);
-      const min = Math.round((MIN_SELLABLE_BY_TERM[t.months] ?? 399) * motorbikeFactor);
+      const min = minimumFor(t.months);
       return { key: t.key, label: t.label, months: t.months, total: Math.max(total, min) };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [referral, calc, TERMS, discount, addOns, motorbikeFactor, excess]);
+  }, [
+    referral, calc, TERMS, discount, addOns, motorbikeFactor, excess,
+    claimFactor, labourFactor, referenceClaimFactor, referenceLabourFactor,
+  ]);
 
 
   useEffect(() => {
