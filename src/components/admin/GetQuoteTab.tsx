@@ -1235,6 +1235,65 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setExcessPriceBasis(prev => (prev === total ? prev : total));
   }, [currentPrice?.totalPrice, paymentType, excessAmount]);
 
+  /**
+   * Multi-year savings shown on the Cover Duration cards: what the customer pays
+   * per year on 2/3 year cover versus buying 1-year cover that many times over,
+   * with the same claim limit, labour rate and excess selected.
+   */
+  const termSavings = React.useMemo(() => {
+    const vehicleMileage = parseInt(String(mileage || '').replace(/[^0-9]/g, '')) || 0;
+    const ageYears = (() => {
+      const manufacture = (vehicleData as any)?.manufactureDate || (vehicleData as any)?.registrationDate;
+      if (manufacture) {
+        const d = new Date(manufacture);
+        if (!isNaN(d.getTime())) return (Date.now() - d.getTime()) / (365.25 * 24 * 3600 * 1000);
+      }
+      const year = parseInt(String(vehicleData?.year || ''), 10);
+      if (year) return new Date().getFullYear() - year;
+      return null;
+    })();
+    if (ageYears == null) return {} as Record<string, { total: number; perYear: number; saving: number; pct: number }>;
+
+    const totals: Record<string, number> = {};
+    for (const term of termOptions) {
+      const q = priceFromPricingModel(pricingModel, {
+        ageYears,
+        mileage: vehicleMileage || null,
+        fuelType: vehicleData?.fuelType,
+        vehicleType: vehicleData?.vehicleType,
+        make: vehicleData?.make,
+        model: (vehicleData as any)?.model,
+      }, {
+        paymentPeriod: term.id,
+        voluntaryExcess: excessAmount,
+        claimLimit: getDisplayClaimLimitValue(claimLimit),
+        labourRate: labourRate,
+      });
+      if (!q || q.referral || !q.totalPrice) return {} as Record<string, { total: number; perYear: number; saving: number; pct: number }>;
+      totals[term.id] = Math.ceil(q.totalPrice);
+    }
+
+    const oneYear = totals['12months'];
+    if (!oneYear) return {} as Record<string, { total: number; perYear: number; saving: number; pct: number }>;
+
+    const out: Record<string, { total: number; perYear: number; saving: number; pct: number }> = {};
+    for (const term of termOptions) {
+      const years = term.months / 12;
+      const total = totals[term.id];
+      const comparable = oneYear * years;
+      const saving = Math.max(0, Math.round(comparable - total));
+      out[term.id] = {
+        total,
+        perYear: Math.round(total / years),
+        saving,
+        pct: comparable > 0 ? Math.round((saving / comparable) * 100) : 0,
+      };
+    }
+    return out;
+  }, [mileage, vehicleData, pricingModel, excessAmount, claimLimit, labourRate]);
+
+
+
 
 
   /**
@@ -4083,7 +4142,10 @@ Questions? Call 0330 229 5040`;
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Cover Duration</Label>
                   <div className="grid grid-cols-3 gap-3">
-                    {termOptions.map((term) => (
+                    {termOptions.map((term) => {
+                      const s = termSavings[term.id];
+                      const years = term.months / 12;
+                      return (
                       <button
                         key={term.id}
                         onClick={() => setPaymentType(term.id as PaymentPeriod)}
@@ -4105,10 +4167,37 @@ Questions? Call 0330 229 5040`;
                           </span>
                         )}
                         <div className="font-semibold">{term.label}</div>
+                        {s && (
+                          <div className="mt-1.5 space-y-1">
+                            <div className="text-xs text-muted-foreground">£{s.total} total · £{s.perYear}/yr</div>
+                            {years === 1 ? (
+                              <div className="text-[11px] font-medium text-muted-foreground">Baseline price</div>
+                            ) : s.saving > 0 ? (
+                              <div className="inline-flex flex-col items-center gap-0.5 rounded-md border border-emerald-500/50 bg-emerald-500/10 px-2 py-1">
+                                <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+                                  Save £{s.saving} ({s.pct}% off)
+                                </span>
+                                <span className="text-[10px] text-emerald-700/80 dark:text-emerald-300/80">
+                                  vs {years}× 1-year cover
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="text-[11px] text-muted-foreground">Same yearly rate as 1 year</div>
+                            )}
+                          </div>
+                        )}
                       </button>
-                    ))}
+                      );
+                    })}
                   </div>
+                  {termSavings['24months'] && (
+                    <p className="text-xs text-muted-foreground">
+                      Savings compare the full term price against buying 1-year cover repeatedly, with the same claim
+                      limit, labour rate and excess selected.
+                    </p>
+                  )}
                 </div>
+
 
                 {/* Labour Rate - Quick Select Chips */}
                 <div className="space-y-3">
