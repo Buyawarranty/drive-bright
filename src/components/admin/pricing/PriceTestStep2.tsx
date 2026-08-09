@@ -287,11 +287,20 @@ export default function PriceTestStep2({
         floorShape *
         getExcessFactor(excess)
     );
+    // Hard bottom shaped from the cheapest combo (£1,000 claim / £50 labour / £150 excess)
+    // so better options still lift the floor instead of flattening onto £349.
+    const anchorClaimFactor = nearestFactor(claimLimits, c => c.limit, 1000);
+    const anchorLabourFactor = nearestFactor(labourRateFactors, l => l.rate, 50);
+    const absShape =
+      (anchorClaimFactor > 0 ? claimFactor / anchorClaimFactor : 1) *
+      (anchorLabourFactor > 0 ? labourFactor / anchorLabourFactor : 1) *
+      (getExcessFactor(excess) / getExcessFactor(150));
     const hardBottom = Math.round(
-      (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 349) * motorbikeFactor
+      (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 349) * Math.max(1, absShape) * motorbikeFactor
     );
     return Math.max(shapedMinimum, hardBottom);
   };
+
   /**
    * Excess is NOT a multiplier any more. It is the SAME flat £/mo difference vs the
    * £100 "Balanced" baseline that Step 3/4 and Quotes & Orders use, applied once to
