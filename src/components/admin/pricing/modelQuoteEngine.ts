@@ -30,7 +30,6 @@ export const ABSOLUTE_MIN_GRID_BY_MONTHS: Record<number, number> = {
   36: Math.round((349 * 938) / 399),
 };
 
-const CHEAPEST_COMBO = { excess: 150, claimLimit: 1000, labourRate: 50 } as const;
 
 
 export interface ModelQuoteVehicle {

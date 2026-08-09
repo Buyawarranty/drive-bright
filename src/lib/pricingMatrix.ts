@@ -503,9 +503,6 @@ export function applyBasePriceFloor(
  */
 export const ABSOLUTE_MIN_GRID_TOTAL_12M = 349;
 
-/** Cheapest reachable combo — kept as reference even though the absolute floor is now flat. */
-const CHEAPEST_COMBO = { excess: 150, claimLimit: 1000, labourRate: 50 } as const;
-
 /** Flat term multipliers for the absolute minimum. */
 const ABSOLUTE_MIN_GRID_BY_PERIOD: Record<PaymentPeriod, number> = {
   '12months': 349,
