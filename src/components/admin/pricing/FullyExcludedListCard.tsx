@@ -103,14 +103,11 @@ const FullyExcludedListCard: React.FC<{ compact?: boolean }> = ({ compact }) => 
             <p className="text-sm text-muted-foreground">No excluded makes match “{q}”.</p>
           )}
           {makes.map(m => (
-            <Badge
-              key={m.make}
-              variant={m.origin === 'draft' ? 'outline' : 'destructive'}
-              className={`capitalize ${m.origin === 'draft' ? 'border-amber-500 text-amber-700' : ''}`}
-            >
+            <Badge key={m.make} variant="destructive" className="capitalize">
               {m.make}
-              {m.origin === 'live' ? ' • added' : m.origin === 'draft' ? ' • draft (not live yet)' : ''}
+              {m.origin === 'built-in' ? '' : ' • added'}
             </Badge>
+
           ))}
         </div>
 
