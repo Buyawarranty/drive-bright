@@ -324,14 +324,27 @@ const VehicleRiskBandsPanel: React.FC = () => {
                 Applied last: age base × mileage × powertrain × vehicle type × band factor.
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={reset}>
-                <RotateCcw className="h-4 w-4 mr-2" /> Reset
-              </Button>
-              <Button size="sm" onClick={save} disabled={!dirty}>
-                <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save changes' : 'Saved'}
-              </Button>
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={reset}>
+                  <RotateCcw className="h-4 w-4 mr-2" /> Reset
+                </Button>
+                <Button variant="outline" size="sm" onClick={save} disabled={!dirty}>
+                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save changes' : 'Saved'}
+                </Button>
+                <Button size="sm" onClick={pushLive} disabled={publishing}>
+                  <Rocket className="h-4 w-4 mr-2" />
+                  {publishing ? 'Pushing live…' : 'Push live'}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground text-right">
+                {liveVersionLabel
+                  ? <>Live pricing version: <strong>{liveVersionLabel}</strong></>
+                  : 'No pricing version is live yet'}
+                {lastPublishedAt ? ` · pushed ${lastPublishedAt}` : ''}
+              </p>
             </div>
+
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
