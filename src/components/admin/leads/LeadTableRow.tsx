@@ -351,10 +351,11 @@ const PhoneCopyText = memo<{ phone: string; leadId?: string | null; disabled?: b
 PhoneCopyText.displayName = 'PhoneCopyText';
 
 
-const EmailCopyText = memo<{ email: string }>(({ email }) => {
+const EmailCopyText = memo<{ email: string; disabled?: boolean }>(({ email, disabled }) => {
   const [copied, setCopied] = useState(false);
   
   const handleCopy = useCallback(async () => {
+    if (disabled) return;
     try {
       await navigator.clipboard.writeText(email);
       setCopied(true);
@@ -363,7 +364,7 @@ const EmailCopyText = memo<{ email: string }>(({ email }) => {
     } catch (error) {
       toast.error('Failed to copy');
     }
-  }, [email]);
+  }, [email, disabled]);
   
   return (
     <Tooltip delayDuration={100}>
@@ -371,7 +372,8 @@ const EmailCopyText = memo<{ email: string }>(({ email }) => {
         <span 
           className={cn(
             "text-xs cursor-pointer hover:text-primary select-all truncate max-w-[120px] transition-colors",
-            copied && "text-green-600"
+            copied && "text-green-600",
+            disabled && "pointer-events-none opacity-50 cursor-not-allowed"
           )}
           onClick={handleCopy}
           role="button"
