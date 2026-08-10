@@ -44,6 +44,9 @@ export function applyLivePricingVersion(version?: ApplicableVersion | null): App
   // age / mileage / powertrain instead of pricing every car the same.
   setLiveVehicleFactorModel(version.vehicle_factor_model ?? null);
   setLiveVehicleReferenceVehicle((version.reference_vehicle ?? null) as any);
+  // Model-risk bands travel inside the published vehicle factor model, so pushing
+  // bands live updates whichever pricing version is live without republishing it.
+  setLiveRiskBandConfig(((version.vehicle_factor_model as any)?.riskBands ?? null) as any);
   setLivePricingOverride(
     version.admin_matrix as PricingMatrixShape,
     Number(version.step3_discount_pct ?? 10)
