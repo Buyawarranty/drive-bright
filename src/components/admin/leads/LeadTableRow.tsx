@@ -263,11 +263,12 @@ const getRowUrgencyClass = (
 // Renders the number as a tel: link so click-to-dial works natively (and Zoiper
 // Click2Dial can still enhance it). A sibling copy button lets agents copy the
 // number to the clipboard for paste into any other dialer.
-const PhoneCopyText = memo<{ phone: string; leadId?: string | null }>(({ phone, leadId }) => {
+const PhoneCopyText = memo<{ phone: string; leadId?: string | null; disabled?: boolean }>(({ phone, leadId, disabled }) => {
   const telHref = `tel:${phone.replace(/[^\d+]/g, '')}`;
   const [copied, setCopied] = useState(false);
 
   const handleDial = useCallback((e: React.MouseEvent) => {
+    if (disabled) return;
     // Middle-click or modifier keys keep native behaviour so power users can
     // still open the tel: link in a new tab / their OS default handler.
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -279,9 +280,10 @@ const PhoneCopyText = memo<{ phone: string; leadId?: string | null }>(({ phone, 
       duration: 2500,
       description: "If Zoiper didn't open, the number is on your clipboard.",
     });
-  }, [phone, leadId]);
+  }, [phone, leadId, disabled]);
 
   const handleCopy = useCallback(async (e: React.MouseEvent) => {
+    if (disabled) return;
     e.preventDefault();
     e.stopPropagation();
     try {
@@ -292,10 +294,10 @@ const PhoneCopyText = memo<{ phone: string; leadId?: string | null }>(({ phone, 
     } catch {
       toast.error('Failed to copy');
     }
-  }, [phone]);
+  }, [phone, disabled]);
 
   return (
-    <span className="inline-flex items-center gap-1 whitespace-nowrap">
+    <span className={cn("inline-flex items-center gap-1 whitespace-nowrap", disabled && "pointer-events-none opacity-50")}>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
           <button
