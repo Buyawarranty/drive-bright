@@ -82,8 +82,31 @@ const VehicleRiskBandsPanel: React.FC = () => {
   const [testBase, setTestBase] = useState(499);
   const [testType, setTestType] = useState<'car' | 'van' | 'motorbike'>('car');
 
+  /** Excluded-vehicle settings: pushed-live extras plus the manager's local draft. */
+  const [exclusionDraft, setExclusionDraft] = useState<ExclusionDraft>(() => loadExclusionDraft());
+  const [exclusionsVersion, setExclusionsVersion] = useState(0);
+
+  useEffect(() => {
+    let alive = true;
+    const refresh = () => {
+      if (!alive) return;
+      setExclusionDraft(loadExclusionDraft());
+      setExclusionsVersion(v => v + 1);
+    };
+    primeLiveExclusions().then(refresh).catch(refresh);
+    window.addEventListener('storage', refresh);
+    window.addEventListener('focus', refresh);
+    return () => {
+      alive = false;
+      window.removeEventListener('storage', refresh);
+      window.removeEventListener('focus', refresh);
+    };
+  }, []);
+
+  /** Every change is persisted straight away so a toggle can never be lost. */
   const update = (next: RiskBandConfig) => {
     setConfig(next);
+    saveRiskBandConfig(next);
     setDirty(true);
   };
 
@@ -101,18 +124,50 @@ const VehicleRiskBandsPanel: React.FC = () => {
     return counts;
   }, [config.assignments]);
 
+  /** Unpublished excluded-vehicle additions still count as a clash — flagged as draft. */
+  const draftExclusionReason = (make?: string | null, model?: string | null): string | null => {
+    const m = (make || '').trim().toLowerCase();
+    const mod = (model || '').trim().toLowerCase();
+    if (m && exclusionDraft.makes.some(x => {
+      const e = x.trim().toLowerCase();
+      return e && (m === e || m.startsWith(`${e} `));
+    })) {
+      return `${make} — make on the excluded list (draft, not live yet)`;
+    }
+    const combined = `${m} ${mod}`.trim();
+    const rule = exclusionDraft.modelRules.find(r => {
+      const rm = (r.make || '').trim().toLowerCase();
+      const rmod = (r.model || '').trim().toLowerCase();
+      if (!rmod) return false;
+      const makeOk = !rm || m === rm || m.includes(rm);
+      return makeOk && (mod.includes(rmod) || combined.includes(rmod));
+    });
+    return rule
+      ? `${rule.label || rule.model} — model on the excluded list (draft, not live yet)`
+      : null;
+  };
 
-  /** Band rules that point at a make/model already on the site-wide excluded list. */
+  /** Band rules that point at a make/model already on the excluded list (live or draft). */
   const excludedClashes = useMemo(
     () =>
       config.assignments
-        .filter(a => a.enabled && isVehicleExcluded(a.make, a.model))
-        .map(a => ({
-          id: a.id,
-          label: `${a.make || '(all makes)'} ${a.model || '(all models)'}`.trim(),
-          reason: getExclusionReason(a.make, a.model) || 'On the excluded vehicles list',
-        })),
-    [config.assignments]
+        .map(a => {
+          if (!a.enabled) return null;
+          const liveHit = isVehicleExcluded(a.make, a.model);
+          const reason = liveHit
+            ? getExclusionReason(a.make, a.model) || 'On the excluded vehicles list'
+            : draftExclusionReason(a.make, a.model);
+          if (!reason) return null;
+          return {
+            id: a.id,
+            label: `${a.make || '(all makes)'} ${a.model || '(all models)'}`.trim(),
+            reason,
+            draftOnly: !liveHit,
+          };
+        })
+        .filter((x): x is { id: string; label: string; reason: string; draftOnly: boolean } => x !== null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [config.assignments, exclusionDraft, exclusionsVersion]
   );
   const clashIds = useMemo(() => new Set(excludedClashes.map(c => c.id)), [excludedClashes]);
 
