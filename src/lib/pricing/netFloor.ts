@@ -60,3 +60,26 @@ export function isUnderNetFloor(amount: unknown, params: NetFloorParams): boolea
   if (!Number.isFinite(v) || v <= 0) return false;
   return v < getNetPayableFloor(params) - 0.01;
 }
+
+/**
+ * PERMANENT floor clamp for every pricing model shown on Price Updates.
+ * Whatever the model (July 2026 code base, Aug 26 grid, Aug hybrid, live
+ * published version, drafts) and whatever discount is layered on top, no price
+ * may ever display or publish below the minimum sellable price for that term.
+ * Whole pounds — Price Updates never shows pence.
+ */
+export function clampToNetFloor(amount: number, params: NetFloorParams): number {
+  const floor = getNetPayableFloor(params);
+  if (!Number.isFinite(amount) || amount <= 0) return Math.round(floor);
+  return Math.round(Math.max(amount, floor));
+}
+
+/**
+ * Same clamp for a customer/website price: the floor is the admin floor minus
+ * the published Step 3 discount, so the web journey stays consistent with the
+ * grid instead of being clamped to the (higher) admin number.
+ */
+export function clampWebToNetFloor(amount: number, params: NetFloorParams): number {
+  return clampToNetFloor(amount, { ...params, surface: 'customer' });
+}
+
