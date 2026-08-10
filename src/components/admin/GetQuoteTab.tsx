@@ -2072,6 +2072,14 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
 
   const handleSendEmail = async () => {
+    if (vehicleIdBlocked && vehicleIdGap) {
+      toast({
+        title: 'Manager authorisation required',
+        description: `${vehicleIdGap.agentMessage} A quote cannot be sent until a manager authorises this vehicle.`,
+        variant: 'destructive',
+      });
+      return;
+    }
     if (previewMode) {
       toast({ title: 'Preview mode', description: 'This is a beta preview — nothing is sent, saved or charged.' });
       return;
