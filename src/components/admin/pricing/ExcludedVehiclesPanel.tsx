@@ -56,10 +56,23 @@ const ExcludedVehiclesPanel: React.FC = () => {
       .catch(() => undefined);
   }, []);
 
+  /**
+   * Every change applies live straight away — no "Push live" needed. The list is
+   * also re-stamped onto any pricing push, so it always matches the live version.
+   */
   const updateDraft = (next: ExclusionDraft) => {
     setDraft(next);
     saveExclusionDraft(next);
+    setBusy(true);
+    applyExclusionsLive(next)
+      .then(published => {
+        setLive(published);
+        toast.success('Applied live — Steps 1–4, Quotes & Orders and the DVLA lookup use it now');
+      })
+      .catch((e: any) => toast.error(e?.message || 'Saved locally but could not apply live'))
+      .finally(() => setBusy(false));
   };
+
 
   const addMake = () => {
     const m = newMake.trim().toLowerCase();
