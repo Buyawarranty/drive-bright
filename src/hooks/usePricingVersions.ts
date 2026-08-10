@@ -8,6 +8,8 @@ import {
 } from '@/lib/pricingMatrix';
 import type { VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
 import { runPreflightCheck } from '@/lib/pricing/preflightCheck';
+import { autoPublishExclusionsWithPricing } from '@/lib/pricing/liveVehicleExclusions';
+
 import {
   computeConfigChecksum,
   CODE_PRICE_FLOORS,
