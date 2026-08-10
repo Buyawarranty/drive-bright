@@ -973,7 +973,9 @@ export default function PriceUpdatesTab() {
             onPush={undefined}
             candidates={[]}
           />
+          <FullyExcludedListCard />
           <Tabs defaultValue="riskbands" className="w-full">
+
             <TabsList className="flex flex-wrap gap-2 bg-muted/40 p-1">
               <TabsTrigger value="riskbands">
                 <Layers className="h-4 w-4 mr-2" /> Risk bands &amp; vehicle types
