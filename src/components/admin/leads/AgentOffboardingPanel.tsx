@@ -91,7 +91,26 @@ export const AgentOffboardingPanel: React.FC = () => {
   }, []);
 
   const sourceAgent = useMemo(() => agents.find(a => a.id === sourceId) ?? null, [agents, sourceId]);
-  const targetAgent = useMemo(() => agents.find(a => a.id === targetId) ?? null, [agents, targetId]);
+  const targetAgents = useMemo(
+    () => targetIds.map(id => agents.find(a => a.id === id)).filter(Boolean) as Agent[],
+    [agents, targetIds],
+  );
+  const targetLabel = targetAgents.length === 0
+    ? 'agent'
+    : targetAgents.length === 1
+      ? targetAgents[0].name
+      : `${targetAgents.length} agents`;
+  const canRun = !!sourceId && targetIds.length > 0 && !targetIds.includes(sourceId);
+
+  /** Round-robin split of the source's lead count across the chosen receivers. */
+  const splitPlan = useMemo(() => {
+    const total = counts?.totalLeads ?? 0;
+    return targetAgents.map((a, i) => ({
+      agent: a,
+      count: Math.floor(total / targetAgents.length) + (i < total % targetAgents.length ? 1 : 0),
+    }));
+  }, [counts, targetAgents]);
+
 
   const loadCounts = useCallback(async (agentId: string) => {
     setLoadingCounts(true);
