@@ -902,12 +902,34 @@ export const UserPermissionsTab = () => {
   };
 
   const [sendingCreds, setSendingCreds] = useState(false);
+  // The exact password value that has been confirmed saved on the login server.
+  const [savedPassword, setSavedPassword] = useState<string | null>(null);
 
   const openPasswordDialog = (user: AdminUser) => {
     setPasswordUser(user);
     // Pre-generate a password so the admin can immediately copy / send / test it.
     setNewPassword(generatePasswordValue());
+    setSavedPassword(null);
     setShowPasswordDialog(true);
+  };
+
+  /** Saves the password and only resolves true when the server confirms it. */
+  const savePasswordToServer = async (): Promise<boolean> => {
+    if (!passwordUser || !newPassword || newPassword.length < 6) {
+      toast.error('Enter a password (min 6 chars) first');
+      return false;
+    }
+    const { data, error } = await supabase.functions.invoke('set-admin-password', {
+      body: {
+        userId: passwordUser.user_id,
+        email: passwordUser.email,
+        password: newPassword,
+      },
+    });
+    if (error) throw new Error(error.message || 'Could not save the password');
+    if (data && data.success === false) throw new Error(data.error || 'Could not save the password');
+    setSavedPassword(newPassword);
+    return true;
   };
 
   const handleSetPassword = async () => {
@@ -923,19 +945,13 @@ export const UserPermissionsTab = () => {
 
     setSettingPassword(true);
     try {
-      const { error } = await supabase.functions.invoke('set-admin-password', {
-        body: {
-          userId: passwordUser.user_id,
-          email: passwordUser.email,
-          password: newPassword
-        }
-      });
-
-      if (error) throw error;
-
-      toast.success(`Password set for ${passwordUser.email}`, { duration: 5000 });
+      const ok = await savePasswordToServer();
+      if (ok) {
+        toast.success(`Password saved for ${passwordUser.email} — this exact value now works`, { duration: 5000 });
+      }
     } catch (error: any) {
       console.error('Error setting password:', error);
+      setSavedPassword(null);
       toast.error(error.message || 'Failed to set password');
     } finally {
       setSettingPassword(false);
@@ -949,6 +965,9 @@ export const UserPermissionsTab = () => {
     }
     setSendingCreds(true);
     try {
+      // Always save first so the emailed value is guaranteed to be the live password.
+      await savePasswordToServer();
+
       const { error } = await supabase.functions.invoke('send-admin-login-details', {
         body: {
           userId: passwordUser.user_id,
@@ -960,7 +979,7 @@ export const UserPermissionsTab = () => {
         }
       });
       if (error) throw error;
-      toast.success(`Credentials emailed to ${passwordUser.email}`, { duration: 5000 });
+      toast.success(`Password saved and credentials emailed to ${passwordUser.email}`, { duration: 5000 });
     } catch (error: any) {
       console.error('Error sending credentials:', error);
       toast.error(error.message || 'Failed to send credentials');
