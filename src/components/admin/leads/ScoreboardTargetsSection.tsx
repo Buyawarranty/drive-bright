@@ -158,20 +158,26 @@ export const ScoreboardTargetsSection: React.FC<Props> = ({ isManagement }) => {
     return () => { cancelled = true; };
   }, [month.getFullYear(), month.getMonth(), isCurrentMonth]);
 
-  const agents = useMemo(
-    () =>
-      isCurrentMonth
-        ? liveAgents
-        : monthAgents.map(a => ({
-            ...a,
-            monthlyTarget: monthTargets[a.id] ?? null,
-            // sales_targets stores the £ revenue target in both columns, so the
-            // historical target_amount is the revenue goal for that month too.
-            revenueTarget: a.revenueTarget ?? monthTargets[a.id] ?? null,
-          })),
-    [isCurrentMonth, liveAgents, monthAgents, monthTargets],
-  );
-  const loading = isCurrentMonth ? liveLoading : monthLoading || targetsLoading;
+  // Revenue/sales always come from the month-scoped hook so this section matches the
+  // Team Scoreboard exactly (calendar month by signup_date). The live hook's default
+  // rolling 14-day window used to make monthly progress look higher than the scoreboard.
+  const agents = useMemo(() => {
+    const liveTargets = new Map(liveAgents.map(a => [a.id, a] as const));
+    return monthAgents.map(a => {
+      const live = liveTargets.get(a.id);
+      return {
+        ...a,
+        monthlyTarget: isCurrentMonth ? (live?.monthlyTarget ?? null) : (monthTargets[a.id] ?? null),
+        // sales_targets stores the £ revenue target in both columns, so the
+        // historical target_amount is the revenue goal for that month too.
+        revenueTarget: isCurrentMonth
+          ? (live?.revenueTarget ?? null)
+          : (a.revenueTarget ?? monthTargets[a.id] ?? null),
+      };
+    });
+  }, [isCurrentMonth, liveAgents, monthAgents, monthTargets]);
+  const loading = monthLoading || (isCurrentMonth ? liveLoading : targetsLoading);
+
 
   const myAgent = useMemo(
     () => agents.find(a => a.id === currentAdminUserId) || null,
