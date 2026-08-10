@@ -116,14 +116,29 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
     setPending(c);
   };
 
+  /** The exclusions section publishes its own list — don't double-publish. */
+  const ownsExclusions = sectionLabel.toLowerCase().includes('excluded vehicles');
+
   const confirmPush = async () => {
     if (!pending || !onPush) return;
     if (preflight?.blocked) return;
     const model = pending.getModel();
+    const versionLabel = `${sectionLabel} — ${pending.label}`;
     closePending();
     if (!model) return;
-    await onPush(model, `${sectionLabel} — ${pending.label}`, pending.websiteDiscountPct ?? gapValue);
+    await onPush(model, versionLabel, pending.websiteDiscountPct ?? gapValue);
+    // Excluded vehicles always go live with the pricing version.
+    if (!ownsExclusions) await autoPublishExclusionsWithPricing(versionLabel);
   };
+
+  const runDirectPush = async () => {
+    if (!directPush) return;
+    await directPush.run();
+    if (!ownsExclusions) {
+      await autoPublishExclusionsWithPricing(`${sectionLabel} — ${directPush.label}`);
+    }
+  };
+
 
   return (
     <>
