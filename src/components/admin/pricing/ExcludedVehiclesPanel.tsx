@@ -107,10 +107,26 @@ const ExcludedVehiclesPanel: React.FC = () => {
 
   const q = search.trim().toLowerCase();
 
-  const makes = useMemo(
-    () => EXCLUDED_MAKES.filter((m) => !q || m.includes(q)),
-    [q]
-  );
+  // Built-in matrix + anything pushed live + anything still sitting in the draft,
+  // so a make you have just typed in is visible straight away (tagged "draft").
+  const makes = useMemo(() => {
+    const rows = new Map<string, 'built-in' | 'live' | 'draft'>();
+    EXCLUDED_MAKES.forEach(m => rows.set(m, 'built-in'));
+    (live?.extra_makes ?? []).forEach(m => {
+      const k = m.trim().toLowerCase();
+      if (k && !rows.has(k)) rows.set(k, 'live');
+    });
+    draft.makes.forEach(m => {
+      const k = m.trim().toLowerCase();
+      if (!k) return;
+      const isLive = (live?.extra_makes ?? []).some(x => x.trim().toLowerCase() === k);
+      if (!rows.has(k)) rows.set(k, isLive ? 'live' : 'draft');
+    });
+    return [...rows.entries()]
+      .map(([make, origin]) => ({ make, origin }))
+      .filter(r => !q || r.make.includes(q))
+      .sort((a, b) => a.make.localeCompare(b.make));
+  }, [q, draft, live]);
 
   const rules = useMemo(
     () =>
