@@ -3,6 +3,7 @@ import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell'
 import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { getRecordedOrderDiscount, discountBandClass } from '@/lib/pricing/orderDiscount';
 import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { Button } from '@/components/ui/button';
@@ -4966,6 +4967,12 @@ Buyawarranty.co.uk`,
               <TableHead>DOB</TableHead>
               <TableHead>RegNum</TableHead>
               <TableHead>Price</TableHead>
+              <TableHead
+                className="bg-purple-50 whitespace-nowrap"
+                title="Discount given on this order — quoted price at the point of sale versus the amount collected."
+              >
+                Discount
+              </TableHead>
               {showPaymentColumn && <TableHead>Payment</TableHead>}
               <TableHead className="text-center bg-amber-50 min-w-[130px]" title="Upload a screenshot of the price comparison shown to the customer">Price Comp. Proof</TableHead>
 
@@ -6446,6 +6453,28 @@ Please log in and change your password after first login.`;
                     ) : (
                       <span className="text-xs text-muted-foreground">—</span>
                     )}
+                  </TableCell>
+                  <TableCell className="bg-purple-50/40">
+                    {(() => {
+                      const disc = getRecordedOrderDiscount(customer);
+                      if (!disc) return <span className="text-xs text-muted-foreground">—</span>;
+                      if (disc.amount <= 0) {
+                        return (
+                          <span className="text-xs text-muted-foreground whitespace-nowrap" title="Sold at the quoted price.">
+                            Full price
+                          </span>
+                        );
+                      }
+                      return (
+                        <Badge
+                          variant="outline"
+                          className={`text-xs whitespace-nowrap ${discountBandClass(disc.pct)}`}
+                          title={`Quoted £${disc.quoted.toFixed(2)} · collected £${disc.paid.toFixed(2)} · £${disc.amount.toFixed(2)} off`}
+                        >
+                          {disc.pct.toFixed(1)}% off
+                        </Badge>
+                      );
+                    })()}
                   </TableCell>
                   {showPaymentColumn && (
                     <TableCell>
