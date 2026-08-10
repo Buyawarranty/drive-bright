@@ -388,7 +388,7 @@ export const AgentOffboardingPanel: React.FC = () => {
           <Button
             variant="outline"
             onClick={runDryRun}
-            disabled={!sourceId || !targetId || sourceId === targetId || (counts?.totalLeads ?? 0) === 0}
+            disabled={!canRun || (counts?.totalLeads ?? 0) === 0}
           >
             <Eye className="h-4 w-4 mr-2" />
             Preview handover (dry run)
