@@ -28,17 +28,19 @@ export default function Claim5kBlocklistEditor() {
 
   const addRule = () => {
     const make = newMake.trim();
-    if (!make) {
-      toast.error('Enter a vehicle make to block');
+    const model = newModel.trim();
+    if (!make && !model) {
+      toast.error('Enter a make, a model, or both');
       return;
     }
     setDraft(prev => [
       ...prev,
-      { id: `rule-${Date.now()}`, make, model: newModel.trim() || null, blocked: true },
+      { id: `rule-${Date.now()}`, make, model: model || null, blocked: true },
     ]);
     setNewMake('');
     setNewModel('');
   };
+
 
   const handleSave = async () => {
     const ok = await save(draft);
