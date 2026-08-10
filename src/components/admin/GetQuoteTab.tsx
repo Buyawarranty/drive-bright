@@ -2081,7 +2081,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
       // CRITICAL: Sync the live_quotes record with current form values
       // This ensures the quote link and the email always show the same details
-      const accessToken = quoteLink.split('/quote/')[1];
+      const accessToken = sendLink.split('/quote/')[1];
       if (accessToken) {
         console.log('🔄 Syncing live_quotes with current form values...');
         const durationMap: Record<string, number> = { '12months': 12, '24months': 24, '36months': 36 };
@@ -2098,8 +2098,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
             upfront_price: displayedPayInFullPrice,
             customer_name: cleanCustomerName,
             customer_email: cleanCustomerEmail,
+            // Vehicle must be synced too, otherwise the emailed vehicle and the
+            // vehicle on the quote page can disagree.
+            vehicle_reg: cleanVehicleData.regNumber,
+            vehicle_make: cleanVehicleData.make || null,
+            vehicle_model: cleanVehicleData.model || null,
+            vehicle_year: cleanVehicleData.year ? String(cleanVehicleData.year) : null,
+            mileage: cleanVehicleData.mileage ? String(cleanVehicleData.mileage) : null,
           })
           .eq('access_token', accessToken);
+
         
         if (syncError) {
           console.error('⚠️ Failed to sync live_quotes:', syncError);
