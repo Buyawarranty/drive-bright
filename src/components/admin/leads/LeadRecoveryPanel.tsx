@@ -333,6 +333,11 @@ export const LeadRecoveryPanel: React.FC = () => {
             <Checkbox checked={resetStatus} onCheckedChange={(v) => setResetStatus(!!v)} />
             Reset status to "new" (unpaid only)
           </label>
+          <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+            <Checkbox checked={includePrevious} onCheckedChange={(v) => setIncludePrevious(!!v)} />
+            Include leads this agent used to own that are now unassigned
+          </label>
+
         </div>
 
         {/* Per-day breakdown */}
