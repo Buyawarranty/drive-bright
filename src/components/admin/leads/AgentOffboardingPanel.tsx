@@ -268,7 +268,8 @@ export const AgentOffboardingPanel: React.FC = () => {
   }, [loadEvents, loadCounts, sourceId]);
 
   return (
-    <Card className="border-amber-200 dark:border-amber-900/40">
+    <Card id="offboard-agent" className="border-amber-200 dark:border-amber-900/40 scroll-mt-28">
+
       <CardContent className="p-5 space-y-4">
         <div className="flex items-start gap-2">
           <UserMinus className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
