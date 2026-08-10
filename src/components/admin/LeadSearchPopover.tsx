@@ -247,10 +247,14 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
                       )}
                     </div>
                     <div className="text-right shrink-0">
-                      {lead.vehicle_reg && (
+                      {lead.vehicle_reg ? (
                         <Badge variant="outline" className="text-xs font-mono uppercase">
                           <Car className="h-3 w-3 mr-1" />
                           {lead.vehicle_reg}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs text-amber-600 border-amber-200 bg-amber-50">
+                          No reg
                         </Badge>
                       )}
                       {lead.vehicle_make && (
