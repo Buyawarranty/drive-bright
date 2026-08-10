@@ -94,7 +94,35 @@ const VehicleRiskBandsPanel: React.FC = () => {
       counts[a.bandId] = (counts[a.bandId] || 0) + 1;
     });
     return counts;
-  }, [config.assignments]);
+
+  /** Band rules that point at a make/model already on the site-wide excluded list. */
+  const excludedClashes = useMemo(
+    () =>
+      config.assignments
+        .filter(a => a.enabled && isVehicleExcluded(a.make, a.model))
+        .map(a => ({
+          id: a.id,
+          label: `${a.make || '(all makes)'} ${a.model || '(all models)'}`.trim(),
+          reason: getExclusionReason(a.make, a.model) || 'On the excluded vehicles list',
+        })),
+    [config.assignments]
+  );
+  const clashIds = useMemo(() => new Set(excludedClashes.map(c => c.id)), [excludedClashes]);
+
+  /** £500 base worked through each band for car / van / motorbike, for confirmation. */
+  const typeFactorCheck = useMemo(() => {
+    const base = 500;
+    return config.bands.map(band => {
+      const match = { band, assignment: null, isDefault: false };
+      const types = (['car', 'van', 'motorbike'] as const).map(t => ({
+        type: t,
+        result: applyRiskBand(base, match, t, config),
+      }));
+      return { band, types };
+    });
+  }, [config]);
+
+
 
   const visibleAssignments = useMemo(() => {
     const q = filter.trim().toLowerCase();
