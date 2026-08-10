@@ -42,7 +42,9 @@ export function QuickReassignPanel({ className }: { className?: string }) {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [counts, setCounts] = useState<Record<string, string>>({});
-  const [targets, setTargets] = useState<Record<string, string>>({});
+  /** Recipients per source agent — leads are split evenly between everyone ticked. */
+  const [targets, setTargets] = useState<Record<string, string[]>>({});
+
   const [authorised, setAuthorised] = useState<Record<string, boolean>>({});
   const [unassigned, setUnassigned] = useState(0);
   const [totalSince6pm, setTotalSince6pm] = useState(0);
