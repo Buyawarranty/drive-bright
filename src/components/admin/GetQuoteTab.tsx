@@ -33,6 +33,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
+import UnsubscribeQuickLink from '@/components/admin/UnsubscribeQuickLink';
+import { UnsubscribeLeadButton } from '@/components/admin/leads/UnsubscribeLeadButton';
 import { QuoteInvoiceDialog } from './QuoteInvoiceDialog';
 import MileageSlider from '@/components/MileageSlider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -3489,10 +3491,23 @@ Questions? Call 0330 229 5040`;
       record={duplicateWarning.record}
     />
     <div className="max-w-6xl mx-auto space-y-4">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold text-gray-900">Quotes & Orders</h1>
-        <p className="text-gray-600 mt-1 text-sm">Create quotes to send customers or confirm orders paid elsewhere</p>
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Quotes & Orders</h1>
+          <p className="text-gray-600 mt-1 text-sm">Create quotes to send customers or confirm orders paid elsewhere</p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {customerEmail.trim().includes('@') && (
+            <UnsubscribeLeadButton
+              email={customerEmail.trim()}
+              customerName={[customerFirstName, customerLastName].filter(Boolean).join(' ') || undefined}
+              vehicleReg={regNumber || undefined}
+            />
+          )}
+          <UnsubscribeQuickLink />
+        </div>
       </div>
+
 
       
 
