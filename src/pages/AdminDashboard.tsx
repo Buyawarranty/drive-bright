@@ -763,6 +763,14 @@ const AdminDashboard = () => {
       case 'page-analytics':
         return <PageAnalyticsTab />;
       case 'google-ads':
+        if (!['admin', 'super_admin', 'sales_manager', 'performance_manager', 'accounts_manager', 'lead_gen'].includes(effectiveUserRole) && effectiveUserPermissions?.['tab_google-ads'] !== true) {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">Marketing Analytics (Google, Facebook, Bing and TikTok) is restricted to management and lead generation users.</p>
+            </div>
+          );
+        }
         return <MarketingAnalyticsTab />;
       case 'lead-backup':
         return <LeadBackupRecoveryTab />;
