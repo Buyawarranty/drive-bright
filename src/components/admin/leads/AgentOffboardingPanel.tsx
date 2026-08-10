@@ -395,10 +395,11 @@ export const AgentOffboardingPanel: React.FC = () => {
           </Button>
           <Button
             onClick={() => setConfirmOpen(true)}
-            disabled={!sourceId || !targetId || sourceId === targetId || working || (counts?.totalLeads ?? 0) === 0}
+            disabled={!canRun || working || (counts?.totalLeads ?? 0) === 0}
           >
             {working ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ArrowRightLeft className="h-4 w-4 mr-2" />}
-            Back up & hand over {counts?.totalLeads ?? 0} lead{counts?.totalLeads === 1 ? '' : 's'} to {targetAgent?.name || 'agent'}
+            Back up & hand over {counts?.totalLeads ?? 0} lead{counts?.totalLeads === 1 ? '' : 's'} to {targetLabel}
+
           </Button>
         </div>
 
