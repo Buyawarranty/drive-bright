@@ -159,7 +159,7 @@ const LABOUR_RATE_CHIP_COPY: Record<number, { label: string; description: string
 };
 
 /** Built-in factors used when a pushed version does not include one of the four rates. */
-const DEFAULT_LABOUR_FACTORS: Record<number, number> = { 50: 0.84, 70: 1, 100: 1.18, 150: 1.8 };
+const DEFAULT_LABOUR_FACTORS: Record<number, number> = { 50: 0.90, 70: 1, 100: 1.08, 150: 1.20 };
 
 const getLabourRateChips = (modelRates?: { rate: number; factor: number; uxPosition?: string }[]) => {
   const legacy = getLabourRateOptions();

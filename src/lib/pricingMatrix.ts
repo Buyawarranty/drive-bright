@@ -130,21 +130,21 @@ export const DURATION_MONTHS = {
 
  * £70/hour is the reference option at factor 1.00, so the factor scales with the
  * vehicle price instead of being a flat £/month add-on.
- *   £50/hr  0.84 — budget garage option
+ *   £50/hr  0.90 — budget garage option
  *   £70/hr  1.00 — most popular / reference
- *   £100/hr 1.18 — broader garage choice
- *   £150/hr 1.80 — premium / specialist repairers (was £200/hr)
+ *   £100/hr 1.08 — broader garage choice (gentle upsell)
+ *   £150/hr 1.20 — premium / specialist repairers (deliberately discouraged)
  *
  * These are the code defaults. Admin → Price updates can publish a live set of
  * factors that overrides these without changing code.
  */
 export const LABOUR_RATE_FACTOR: Record<number, number> = {
-  50: 0.84,
+  50: 0.90,
   70: 1.00,
-  100: 1.18,
-  150: 1.80,
+  100: 1.08,
+  150: 1.20,
   // Legacy premium tier — kept so existing quotes/policies saved at £200/hr still price.
-  200: 1.80,
+  200: 1.20,
 };
 
 /** Live override for labour-rate factors, set from the published pricing version. */
@@ -171,10 +171,10 @@ function notifyPricingUpdated(): void {
 
 /** Built-in options used when no live pricing version publishes labour rates. */
 export const DEFAULT_LABOUR_RATE_OPTIONS: LabourRateOption[] = [
-  { rate: 50, factor: 0.84, label: 'Local Garages' },
+  { rate: 50, factor: 0.90, label: 'Local Garages' },
   { rate: 70, factor: 1.00, label: 'Independent Garages' },
-  { rate: 100, factor: 1.18, label: 'Approved Garages' },
-  { rate: 150, factor: 1.80, label: 'Specialist garages' },
+  { rate: 100, factor: 1.08, label: 'Approved Garages' },
+  { rate: 150, factor: 1.20, label: 'Specialist garages' },
 ];
 
 export function setLiveLabourRateFactors(
@@ -399,7 +399,7 @@ export function getExcessTotalAdjustment(
 
 /**
  * Claim-limit shape for the floor, anchored on £2,000 = 1.00. These MUST mirror
- * the published claim limit factors (0.80 / 1.00 / 1.15 / 1.30) so a floor-bound
+ * the published claim limit factors (0.80 / 1.00 / 1.20 / 1.38) so a floor-bound
  * vehicle still steps up as the cover level goes up — £3,000 and £5,000 must
  * never land on the same price.
  */
@@ -407,8 +407,8 @@ export const CLAIM_LIMIT_FLOOR_MULTIPLIER: Record<number, number> = {
   // Cover levels
   1000: 0.8,
   2000: 1.0,
-  3000: 1.15,
-  5000: 1.3,
+  3000: 1.2,
+  5000: 1.38,
   // Retired wire values still stored on live records (750 = £1,000, 1250 = £2,000)
   750: 0.8,
   1250: 1.0,
