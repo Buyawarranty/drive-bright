@@ -75,16 +75,27 @@ export const NEUTRAL_REFERENCE_FACTORS: ReferenceFactors = {
   vehicleType: 1,
 };
 
+/**
+ * Floors for a stored version (Aug hybrid, Aug 2026, age-based builder, …).
+ *
+ * The NET sell floor (£399 / £659 / £938 — see `lib/pricing/netFloor.ts`) is a
+ * hard bottom: a version may raise a floor, never lower it. Older versions were
+ * saved with the retired £349 / £577 / £821 figures, and without this clamp
+ * selecting one of those in Price Updates would quietly reintroduce sub-£399
+ * pricing on the hybrid/Aug grids.
+ */
 export function resolvePriceFloors(config?: PricingVersionConfig | null): PriceFloors {
   const floors = config?.price_floors;
   if (!floors || typeof floors !== 'object') return CODE_PRICE_FLOORS;
   const out: PriceFloors = { ...CODE_PRICE_FLOORS };
   (Object.keys(CODE_PRICE_FLOORS) as TermKey[]).forEach(term => {
     const v = Number((floors as any)[term]);
-    if (Number.isFinite(v) && v > 0) out[term] = v;
+    // Only ever accept a HIGHER floor than the code/net floor.
+    if (Number.isFinite(v) && v > 0) out[term] = Math.max(CODE_PRICE_FLOORS[term], v);
   });
   return out;
 }
+
 
 export function resolveWebDiscountPct(config?: PricingVersionConfig | null): number {
   const raw = Number(config?.web_discount_pct);
