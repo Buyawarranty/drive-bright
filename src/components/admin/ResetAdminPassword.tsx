@@ -50,12 +50,14 @@ const ResetAdminPassword = () => {
         throw error;
       }
 
-      toast({
-        title: "Password Reset",
-        description: `Temporary password: ${data.temporaryPassword}. Email sent to ${email}`,
-      });
+      if (!data?.success || !data?.verified) {
+        throw new Error(data?.error || 'The new password could not be verified on the login server. Nothing was shared — try again.');
+      }
 
-      console.log("New temporary password:", data.temporaryPassword);
+      toast({
+        title: "Password reset and verified",
+        description: `Temporary password: ${data.tempPassword}. Email sent to ${email}`,
+      });
       
     } catch (error: any) {
       console.error('Error resetting password:', error);

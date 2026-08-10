@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { verifyPassword, PASSWORD_NOT_VERIFIED_MESSAGE } from "../_shared/verify-password.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -192,6 +193,16 @@ serve(async (req: Request) => {
     }
 
     // Store invitation
+    // Never share a temporary password we have not proven works on the login server.
+    const passwordVerified = await verifyPassword(email, tempPassword);
+    console.log('Password verification:', passwordVerified);
+    if (!passwordVerified) {
+      return new Response(JSON.stringify({ error: PASSWORD_NOT_VERIFIED_MESSAGE }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     const { error: invitationError } = await supabase
       .from('admin_invitations')
       .insert({
@@ -258,6 +269,7 @@ serve(async (req: Request) => {
     return new Response(JSON.stringify({ 
       success: true, 
       message: 'User invited successfully',
+      verified: true,
       tempPassword 
     }), {
       status: 200,

@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import { verifyPassword, PASSWORD_NOT_VERIFIED_MESSAGE } from '../_shared/verify-password.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -80,6 +81,15 @@ serve(async (req) => {
       password: newPassword,
     });
     if (updateErr) throw updateErr;
+
+    // Only share credentials that actually sign in.
+    const verified = await verifyPassword(email, newPassword);
+    log('Password verification', { verified });
+    if (!verified) {
+      return new Response(JSON.stringify({ success: false, error: PASSWORD_NOT_VERIFIED_MESSAGE }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
     // Resolve correct gateway. Only super_admin / admin go to /auth (debug-enabled).
     // All other staff use the clean /sales-login gateway.
@@ -168,7 +178,7 @@ serve(async (req) => {
 
     log('Email sent', { id: result.id });
 
-    return new Response(JSON.stringify({ success: true, emailId: result.id }), {
+    return new Response(JSON.stringify({ success: true, verified: true, password: newPassword, emailId: result.id }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   } catch (err: any) {

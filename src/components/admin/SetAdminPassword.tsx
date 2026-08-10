@@ -9,7 +9,9 @@ import { supabase } from '@/integrations/supabase/client';
 const SetAdminPassword = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('info@buyawarranty.co.uk');
-  const [passwordValue, setPasswordValue] = useState('PasswordLogin123-');
+  // Starts blank on purpose: a pre-filled value looks live before it is saved.
+  const [passwordValue, setPasswordValue] = useState('');
+  const [savedPassword, setSavedPassword] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleSetPassword = async () => {
@@ -52,9 +54,14 @@ const SetAdminPassword = () => {
         throw error;
       }
 
+      if (!data?.success || !data?.verified) {
+        throw new Error(data?.error || 'The password could not be verified on the login server. Do not share it — try again.');
+      }
+
+      setSavedPassword(passwordValue);
       toast({
-        title: "Password Set",
-        description: `Password successfully set for ${email}. You can now login with: ${passwordValue}`,
+        title: "Password saved and verified",
+        description: `${email} can now sign in with this password.`,
       });
 
       console.log("Password set successfully for:", email);
@@ -105,13 +112,20 @@ const SetAdminPassword = () => {
           disabled={loading || !email || !passwordValue}
           className="w-full"
         >
-          {loading ? 'Setting Password...' : 'Set Password'}
+          {loading ? 'Saving and verifying...' : 'Save password'}
         </Button>
-        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-          <strong>Current credentials:</strong><br />
-          Email: {email}<br />
-          Password: {passwordValue}
-        </div>
+        {savedPassword ? (
+          <div className="text-sm text-muted-foreground bg-muted p-3 rounded">
+            <strong>Verified credentials (safe to share):</strong><br />
+            Email: {email}<br />
+            Password: {savedPassword}
+          </div>
+        ) : (
+          <div className="text-sm text-muted-foreground bg-muted p-3 rounded">
+            Enter a password and press Save. Nothing is shareable until the server confirms the
+            password signs in.
+          </div>
+        )}
       </CardContent>
     </Card>
   );
