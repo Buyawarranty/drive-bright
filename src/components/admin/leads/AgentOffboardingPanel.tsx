@@ -272,7 +272,7 @@ export const AgentOffboardingPanel: React.FC = () => {
           <UserMinus className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-base font-semibold text-foreground">Offboard an agent (safe handover)</h3>
+              <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Offboard an agent (safe handover)</h3>
               <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 gap-1">
                 <Database className="h-3 w-3" /> Full backup on every handover
               </Badge>
