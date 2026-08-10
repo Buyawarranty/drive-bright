@@ -100,7 +100,7 @@ let liveClaim5kBlocklist: Claim5kBlockRule[] | null = null;
 
 export function setLiveClaim5kBlocklist(rules: Claim5kBlockRule[] | null | undefined) {
   const clean = (rules || [])
-    .filter(r => (r?.make || '').trim() || (r?.model || '').trim())
+    .filter(r => (r?.make || '').trim() || (r?.model || '').trim() || (r?.registration || '').trim())
     .map(r => ({
       id: r.id,
       make: r.make ? String(r.make).toLowerCase().trim() : '',
