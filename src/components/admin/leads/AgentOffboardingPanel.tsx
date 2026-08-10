@@ -417,7 +417,7 @@ export const AgentOffboardingPanel: React.FC = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Back up & hand {counts?.totalLeads ?? 0} lead{counts?.totalLeads === 1 ? '' : 's'} from {sourceAgent?.name} to {targetAgent?.name}?
+              Back up & hand {counts?.totalLeads ?? 0} lead{counts?.totalLeads === 1 ? '' : 's'} from {sourceAgent?.name} to {targetLabel}?
             </AlertDialogTitle>
             <AlertDialogDescription>
               A full snapshot of every lead (with notes, call logs, changelog and reminders) is saved first, so this
