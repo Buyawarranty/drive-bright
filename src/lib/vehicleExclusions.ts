@@ -306,12 +306,15 @@ export const isExcludedModel = (make?: string | null, model?: string | null): bo
 
   const combined = `${m} ${mod}`.trim();
 
+  if (matchLiveModelRule(m, mod) || matchLiveModelRule(m, combined)) return true;
+
   return EXCLUDED_MODEL_RULES.some((rule) => {
     const makeMatches = rule.makes.some((alias) => m === alias || m.startsWith(`${alias} `) || m.includes(alias));
     if (!makeMatches) return false;
     return rule.patterns.some((p) => p.test(mod) || p.test(combined));
   });
 };
+
 
 
 /** Full matrix check: brand-level or make + model level. */
