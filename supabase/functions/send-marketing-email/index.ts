@@ -4,6 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { requireAdmin } from "../_shared/admin-auth.ts";
 import { buildUnsubscribeFooter } from "../_shared/unsubscribe-footer.ts";
 import { EMAIL_RESPONSIVE_STYLE } from "../_shared/email-layout.ts";
+import { getLeadOwnerEmails, withLeadOwnerReplyTo } from "../_shared/lead-owner-reply-to.ts";
+
 
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -116,6 +118,12 @@ const handler = async (req: Request): Promise<Response> => {
     // Convert content to HTML format (basic line breaks)
     const htmlContent = content.replace(/\n/g, '<br>');
 
+    // Work out which sales agent owns each recipient's lead, so replies
+    // (including "unsubscribe me") also reach that agent.
+    const leadOwnerByEmail = await getLeadOwnerEmails(supabaseClient, filteredEmails);
+    console.log(`Lead owner matched for ${Object.keys(leadOwnerByEmail).length}/${filteredEmails.length} recipients`);
+
+
     // Send emails individually for personalized unsubscribe links
     const results = [];
     const batchSize = 10; // Process in smaller batches with delays
@@ -152,9 +160,13 @@ const handler = async (req: Request): Promise<Response> => {
 
           return resend.emails.send({
             from: "Buyawarranty Customer Care <marketing@buyawarranty.co.uk>",
-            // reply_to routes the customer's actual REPLY to both inboxes,
-            // so support@ receives a copy only when the customer replies.
-            reply_to: ["info@buyawarranty.co.uk", "support@buyawarranty.co.uk"],
+            // reply_to routes the customer's actual REPLY to these inboxes,
+            // plus the sales agent who owns this lead (when we can identify them).
+            reply_to: withLeadOwnerReplyTo(
+              ["info@buyawarranty.co.uk", "support@buyawarranty.co.uk"],
+              leadOwnerByEmail[cleanEmail],
+            ),
+
             to: [recipientEmail],
             subject: subject,
             html: `
