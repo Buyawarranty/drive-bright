@@ -107,14 +107,14 @@ export function QuickReassignPanel({ className }: { className?: string }) {
   const assignedTotal = useMemo(() => rows.reduce((s, r) => s + r.count, 0), [rows]);
 
   const move = async (from: AgentRow) => {
-    const toAgent = targets[from.id];
+    const recipients = targets[from.id] || [];
     const amount = parseInt(counts[from.id] || '', 10);
     const isAuthorised = !!authorised[from.id];
     // Note-locked leads only join the pool once the manager has confirmed they
     // checked with the agent.
     const pool = isAuthorised ? [...from.movableIds, ...from.noteLockedIds] : from.movableIds;
-    if (!toAgent) {
-      toast({ title: 'Pick an agent', description: 'Choose who should receive the leads.', variant: 'destructive' });
+    if (recipients.length === 0) {
+      toast({ title: 'Pick at least one agent', description: 'Choose who should receive the leads.', variant: 'destructive' });
       return;
     }
     if (pool.length === 0) {
@@ -137,21 +137,37 @@ export function QuickReassignPanel({ className }: { className?: string }) {
       if (ids.length === 0) {
         throw new Error('No movable leads left in this window — refresh and try again.');
       }
-      const { data, error } = await supabase.rpc('bulk_reassign_leads_to_agent', {
-        p_from_agent: from.id,
-        p_to_agent: toAgent,
-        p_lead_ids: ids,
-        p_limit: ids.length,
-        p_include_customers: false,
-        p_skip_worked: false,
-      } as any);
-      if (error) throw error;
-      const r = data as { success: boolean; error?: string; moved?: number; skipped_worked?: number };
-      if (!r?.success) throw new Error(r?.error || 'Reassign failed');
-      const toName = rows.find((x) => x.id === toAgent)?.name || 'agent';
+
+      // Deal the leads out one at a time so everyone gets a fair, near-equal share
+      // (10 leads across 3 agents = 4 / 3 / 3), newest first.
+      const buckets: Record<string, string[]> = {};
+      recipients.forEach(id => (buckets[id] = []));
+      ids.forEach((leadId, i) => buckets[recipients[i % recipients.length]].push(leadId));
+
+      let movedTotal = 0;
+      const summary: string[] = [];
+      for (const agentId of recipients) {
+        const slice = buckets[agentId];
+        if (slice.length === 0) continue;
+        const { data, error } = await supabase.rpc('bulk_reassign_leads_to_agent', {
+          p_from_agent: from.id,
+          p_to_agent: agentId,
+          p_lead_ids: slice,
+          p_limit: slice.length,
+          p_include_customers: false,
+          p_skip_worked: false,
+        } as any);
+        if (error) throw error;
+        const r = data as { success: boolean; error?: string; moved?: number };
+        if (!r?.success) throw new Error(r?.error || 'Reassign failed');
+        movedTotal += r.moved ?? slice.length;
+        const name = rows.find((x) => x.id === agentId)?.name || 'agent';
+        summary.push(`${name} ${r.moved ?? slice.length}`);
+      }
+
       toast({
-        title: `Moved ${r.moved ?? amount} lead${(r.moved ?? amount) === 1 ? '' : 's'}`,
-        description: `${from.name} → ${toName}, newest first.${
+        title: `Moved ${movedTotal} lead${movedTotal === 1 ? '' : 's'}`,
+        description: `${from.name} → ${summary.join(' · ')}. Newest first, split evenly.${
           isAuthorised ? ' Note-locked leads included (authorised).' : ''
         }`,
       });
@@ -171,6 +187,7 @@ export function QuickReassignPanel({ className }: { className?: string }) {
       setBusyId(null);
     }
   };
+
 
 
   return (
