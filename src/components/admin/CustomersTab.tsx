@@ -2719,8 +2719,11 @@ export const CustomersTab = ({
         });
         return;
       }
-      if (!originalAmt) editingCustomer.original_amount = resolvedAmount;
+      // Never mirror the collected amount into original_amount — that would fake a
+      // "full price" sale. Only stamp it when we have a real quoted figure.
+      if (!originalAmt && policyAmount > 0) editingCustomer.original_amount = policyAmount;
       if (!finalAmt) editingCustomer.final_amount = resolvedAmount;
+
     }
 
 
