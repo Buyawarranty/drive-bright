@@ -116,7 +116,7 @@ export const ConvertedSalesLogPanel: React.FC = () => {
           Managers only
         </Badge>
         <span className="text-xs text-muted-foreground">
-          Notes & call history for sales that left the working list (last {DAYS} days)
+          Notes & call history for sales that left the working list (last 6 months)
         </span>
         {open ? (
           <ChevronUp className="ml-auto h-4 w-4 text-muted-foreground" />
