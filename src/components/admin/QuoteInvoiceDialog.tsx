@@ -43,6 +43,12 @@ const COMPANY = {
     'Buyawarranty.co.uk is a trading name of Buy A Warranty Limited. Established 2016. Registered in the United Kingdom under Company number: 10314863.',
   legalLine2:
     'Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England. VAT registration number 519 1099 85.',
+  bank: {
+    accountName: 'Buy A Warranty Limited',
+    bankName: 'Metro Bank plc',
+    sortCode: '23 05 80',
+    accountNumber: '21009695',
+  },
 };
 
 
