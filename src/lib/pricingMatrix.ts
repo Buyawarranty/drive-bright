@@ -16,6 +16,7 @@
  */
 
 import { getVehicleRuleMinPrice } from './pricing/vehicleRules';
+import { getLiveRiskBandFactor, getLiveRiskBandMinPrice } from './pricing/liveRiskBands';
 
 // Base pricing matrix - 3% INCREASE applied (Jun 2026), floored to whole numbers
 // Previous baseline was the May 2026 +12% matrix; all values multiplied by 1.03 and floored.
@@ -933,10 +934,17 @@ export function calculateTotalWarrantyPrice(params: {
   // 1a. Apply reliable-brand -20% base discount for non-EV Lexus/Toyota/Honda/Suzuki/Hyundai/Kia/Mazda.
   const brandDiscountedBase = applyReliableBrandDiscount(rawBasePrice, make, fuelType);
 
+  // 1a-ii. Published model-risk band factor (Admin → Price updates → Vehicle type &
+  // model-risk bands, pushed live onto the live pricing version). 1 when nothing matches.
+  const riskBandedBase = Math.ceil(
+    brandDiscountedBase * getLiveRiskBandFactor(vehicleName ?? make, fuelType)
+  );
+
   // 1b. Motorbikes: half the standard vehicle base price.
   const basePrice = isMotorbike
-    ? Math.ceil(brandDiscountedBase * MOTORBIKE_PRICE_MULTIPLIER)
-    : brandDiscountedBase;
+    ? Math.ceil(riskBandedBase * MOTORBIKE_PRICE_MULTIPLIER)
+    : riskBandedBase;
+
 
   // 2. Apply vehicle adjustments (Range Rover, van, mileage, age).
   // Percentage-style adjustments (e.g. the legacy motorbike -0.5) are ignored here —
@@ -965,7 +973,15 @@ export function calculateTotalWarrantyPrice(params: {
   const rawTotal = flooredBase + labourAdjustment + boostAdjustment + excessAdjustment + addOnPrice;
   // A model-specific minimum is absolute: a £50/hr labour discount can never take the
   // quote below it (add-ons are excluded from the comparison as they are extras).
-  const ruleMin = getVehicleRuleMinPrice(vehicleName, paymentPeriod) ?? 0;
+  const ruleMin = Math.max(
+    getVehicleRuleMinPrice(vehicleName, paymentPeriod) ?? 0,
+    // A published band minimum is absolute too (halved for motorbikes, which are
+    // priced at half of standard throughout).
+    Math.ceil(
+      (getLiveRiskBandMinPrice(vehicleName ?? make, paymentPeriod, fuelType) ?? 0) *
+        (isMotorbike ? MOTORBIKE_PRICE_MULTIPLIER : 1)
+    )
+  );
   // Absolute minimum sellable price (£349 grid at the cheapest reachable combo,
   // shaped by the options so every chip still moves the price). Add-ons sit on top.
   const absoluteMin = getAbsoluteMinimumTotal({

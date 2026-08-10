@@ -14,8 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Layers, Plus, RotateCcw, Save, Trash2, Search } from 'lucide-react';
+import { Layers, Plus, RotateCcw, Rocket, Save, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  fetchLivePricingVersionLabel,
+  publishRiskBandsToLiveVersion,
+} from '@/lib/pricing/publishRiskBands';
 import {
   DEFAULT_RISK_BAND_CONFIG,
   RiskBand,
@@ -81,6 +85,15 @@ const VehicleRiskBandsPanel: React.FC = () => {
   const [testModel, setTestModel] = useState('Range Rover Sport');
   const [testBase, setTestBase] = useState(499);
   const [testType, setTestType] = useState<'car' | 'van' | 'motorbike'>('car');
+  const [liveVersionLabel, setLiveVersionLabel] = useState<string | null>(null);
+  const [publishing, setPublishing] = useState(false);
+  const [lastPublishedAt, setLastPublishedAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchLivePricingVersionLabel()
+      .then(setLiveVersionLabel)
+      .catch(() => setLiveVersionLabel(null));
+  }, []);
 
   /** Excluded-vehicle settings: pushed-live extras plus the manager's local draft. */
   const [exclusionDraft, setExclusionDraft] = useState<ExclusionDraft>(() => loadExclusionDraft());
@@ -272,6 +285,31 @@ const VehicleRiskBandsPanel: React.FC = () => {
     toast.info('Reset to the starter bands — save to keep it.');
   };
 
+  /** Attach these bands to whichever pricing version is live right now. */
+  const pushLive = async () => {
+    setPublishing(true);
+    try {
+      saveRiskBandConfig(config);
+      setDirty(false);
+      const result = await publishRiskBandsToLiveVersion(config);
+      if (!result.published) {
+        toast.error(result.reason || 'Could not push the bands live.');
+        return;
+      }
+      setLiveVersionLabel(result.versionLabel ?? liveVersionLabel);
+      setLastPublishedAt(new Date().toLocaleString('en-GB'));
+      toast.success(
+        `Bands are live on "${result.versionLabel}" — Quotes & Orders and Steps 3–4 now use them.`
+      );
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Could not push the bands live.');
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+
+
   return (
     <div className="space-y-6">
       <Card>
@@ -286,14 +324,27 @@ const VehicleRiskBandsPanel: React.FC = () => {
                 Applied last: age base × mileage × powertrain × vehicle type × band factor.
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={reset}>
-                <RotateCcw className="h-4 w-4 mr-2" /> Reset
-              </Button>
-              <Button size="sm" onClick={save} disabled={!dirty}>
-                <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save changes' : 'Saved'}
-              </Button>
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={reset}>
+                  <RotateCcw className="h-4 w-4 mr-2" /> Reset
+                </Button>
+                <Button variant="outline" size="sm" onClick={save} disabled={!dirty}>
+                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save changes' : 'Saved'}
+                </Button>
+                <Button size="sm" onClick={pushLive} disabled={publishing}>
+                  <Rocket className="h-4 w-4 mr-2" />
+                  {publishing ? 'Pushing live…' : 'Push live'}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground text-right">
+                {liveVersionLabel
+                  ? <>Live pricing version: <strong>{liveVersionLabel}</strong></>
+                  : 'No pricing version is live yet'}
+                {lastPublishedAt ? ` · pushed ${lastPublishedAt}` : ''}
+              </p>
             </div>
+
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
