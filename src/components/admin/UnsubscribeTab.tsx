@@ -569,15 +569,15 @@ export const UnsubscribeTab: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card className="border-destructive/40">
+      <Card className="border-2 border-destructive/60 shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <Ban className="h-5 w-5 text-destructive" />
-            Stop all contact
+            Remove from calls, emails and new leads
           </CardTitle>
           <CardDescription>
-            Most people who ask to stop emails also want the calls to stop. This does both in one
-            click: no marketing emails, and every matching lead removed from calling lists.
+            The main action. One click stops all marketing emails, takes them off every calling
+            list, and removes their leads from the New Leads list.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -586,18 +586,19 @@ export const UnsubscribeTab: React.FC = () => {
             disabled={comboSaving || (!email.trim() && !phone.trim())}
             variant="destructive"
             size="lg"
-            className="w-full"
+            className="w-full h-14 text-base font-semibold"
           >
             {comboSaving ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
             ) : (
-              <Ban className="h-4 w-4 mr-2" />
+              <Ban className="h-5 w-5 mr-2" />
             )}
-            {comboSaving ? 'Stopping…' : 'Stop emails and calls'}
+            {comboSaving ? 'Removing…' : 'Removed from calls, emails and new leads'}
           </Button>
           <p className="text-xs text-muted-foreground text-center">
             Policy documents and claims updates still send.
           </p>
+
 
           {lastComboUpdate && (
             <Alert className="border-green-200 bg-green-50">
