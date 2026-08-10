@@ -14,8 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Layers, Plus, RotateCcw, Save, Trash2, Search } from 'lucide-react';
+import { Layers, Plus, RotateCcw, Rocket, Save, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  fetchLivePricingVersionLabel,
+  publishRiskBandsToLiveVersion,
+} from '@/lib/pricing/publishRiskBands';
 import {
   DEFAULT_RISK_BAND_CONFIG,
   RiskBand,
