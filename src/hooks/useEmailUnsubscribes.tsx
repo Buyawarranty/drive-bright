@@ -47,6 +47,24 @@ export function useEmailUnsubscribes() {
       const email = params.email.trim().toLowerCase();
       const { frequency } = params;
 
+      // Staff path: run the write server-side so it never silently fails on RLS.
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session) {
+        const { data, error } = await supabase.functions.invoke('staff-set-email-preference', {
+          body: {
+            email,
+            frequency,
+            reason: params.reason,
+            source: params.source,
+            customerName: params.customerName,
+            vehicleReg: params.vehicleReg,
+          },
+        });
+        if (!error && (data as any)?.success) return;
+        // Fall through to the direct write only for auth/permission edge cases.
+        if (error) console.warn('staff-set-email-preference failed, falling back', error);
+      }
+
       // 1. marketing_audience: upsert with the new frequency
       // is_subscribed mirrors frequency !== 'off' so legacy code keeps working.
       const isSubscribed = frequency !== 'off';
@@ -57,7 +75,7 @@ export function useEmailUnsubscribes() {
         .maybeSingle();
 
       if (existing) {
-        await supabase
+        const { error } = await supabase
           .from('marketing_audience')
           .update({
             is_subscribed: isSubscribed,
@@ -65,14 +83,16 @@ export function useEmailUnsubscribes() {
             frequency,
           })
           .eq('email', email);
+        if (error) throw error;
       } else {
-        await supabase.from('marketing_audience').insert({
+        const { error } = await supabase.from('marketing_audience').insert({
           email,
           is_subscribed: isSubscribed,
           unsubscribed_at: isSubscribed ? null : new Date().toISOString(),
           frequency,
           source: params.source || 'manual',
         });
+        if (error) throw error;
       }
 
       // 2. email_unsubscribes: only kept when frequency = 'off'. For 'all' or 'essentials',
@@ -93,9 +113,11 @@ export function useEmailUnsubscribes() {
         );
         if (unsubError) throw unsubError;
       } else {
-        await supabase.from('email_unsubscribes').delete().eq('email', email);
+        const { error } = await supabase.from('email_unsubscribes').delete().eq('email', email);
+        if (error) throw error;
       }
     },
+
     onSuccess: (_data, variables) => {
       const label =
         variables.frequency === 'off'
