@@ -35,6 +35,8 @@ import {
   normalizeFuelFilter,
   type FuelFilter,
 } from '@/lib/pricing/fuelCategory';
+import { getExclusionReason, isVehicleExcluded } from '@/lib/vehicleExclusions';
+
 
 const TONE_CLASS: Record<RiskBand['tone'], string> = {
   low: 'bg-emerald-100 text-emerald-800 border-emerald-200',
