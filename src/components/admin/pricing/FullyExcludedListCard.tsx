@@ -80,9 +80,10 @@ const FullyExcludedListCard: React.FC<{ compact?: boolean }> = ({ compact }) => 
         </CardTitle>
         <CardDescription>
           These brands are never quoted — Steps 1–4, Quotes &amp; Orders and the DVLA lookup all decline
-          them. This list is pushed live automatically with <strong>every</strong> pricing push live, so
-          it always matches whatever pricing version is live.
+          them. Anything added in Excluded vehicles &amp; tools applies immediately (no push live needed) and
+          is re-stamped onto <strong>every</strong> pricing push, so it always matches the live pricing version.
         </CardDescription>
+
       </CardHeader>
       <CardContent className="space-y-3">
         <Alert>
@@ -103,14 +104,11 @@ const FullyExcludedListCard: React.FC<{ compact?: boolean }> = ({ compact }) => 
             <p className="text-sm text-muted-foreground">No excluded makes match “{q}”.</p>
           )}
           {makes.map(m => (
-            <Badge
-              key={m.make}
-              variant={m.origin === 'draft' ? 'outline' : 'destructive'}
-              className={`capitalize ${m.origin === 'draft' ? 'border-amber-500 text-amber-700' : ''}`}
-            >
+            <Badge key={m.make} variant="destructive" className="capitalize">
               {m.make}
-              {m.origin === 'live' ? ' • added' : m.origin === 'draft' ? ' • draft (not live yet)' : ''}
+              {m.origin === 'built-in' ? '' : ' • added'}
             </Badge>
+
           ))}
         </div>
 

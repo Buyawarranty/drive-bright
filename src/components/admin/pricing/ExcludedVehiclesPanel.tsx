@@ -16,7 +16,9 @@ import {
 } from '@/lib/vehicleExclusions';
 import SectionPushLiveBar from '@/components/admin/pricing/SectionPushLiveBar';
 import {
+  applyExclusionsLive,
   emptyExclusionDraft,
+
   exclusionDraftDiffersFromLive,
   loadExclusionDraft,
   primeLiveExclusions,
@@ -56,10 +58,23 @@ const ExcludedVehiclesPanel: React.FC = () => {
       .catch(() => undefined);
   }, []);
 
+  /**
+   * Every change applies live straight away — no "Push live" needed. The list is
+   * also re-stamped onto any pricing push, so it always matches the live version.
+   */
   const updateDraft = (next: ExclusionDraft) => {
     setDraft(next);
     saveExclusionDraft(next);
+    setBusy(true);
+    applyExclusionsLive(next)
+      .then(published => {
+        setLive(published);
+        toast.success('Applied live — Steps 1–4, Quotes & Orders and the DVLA lookup use it now');
+      })
+      .catch((e: any) => toast.error(e?.message || 'Saved locally but could not apply live'))
+      .finally(() => setBusy(false));
   };
+
 
   const addMake = () => {
     const m = newMake.trim().toLowerCase();
@@ -152,7 +167,7 @@ const ExcludedVehiclesPanel: React.FC = () => {
         liveLabel={live ? live.label : 'Built-in matrix only'}
         candidates={[]}
         directPush={{
-          label: dirty ? 'Push exclusions live' : 'Re-push exclusions live',
+          label: dirty ? 'Re-apply exclusions live' : 'Exclusions are live',
           run: pushLive,
         }}
         busy={busy}
@@ -160,14 +175,15 @@ const ExcludedVehiclesPanel: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Extra exclusions (draft)</CardTitle>
+          <CardTitle className="text-base">Extra exclusions (always live)</CardTitle>
           <CardDescription>
-            Add anything the built-in matrix doesn’t cover, then press <strong>Push exclusions live</strong>{' '}
-            above. Drafts stay in your browser until pushed live; once live they apply to Steps 1–4,
-            Quotes &amp; Orders and the DVLA lookup with whatever pricing version is live.
-            {dirty ? ' Draft has unpublished changes.' : ' Draft matches what is live.'}
+            Add anything the built-in matrix doesn’t cover — it applies <strong>immediately</strong>, no
+            push live needed, on Steps 1–4, Quotes &amp; Orders and the DVLA lookup. These rules also
+            ride along with every pricing push, so they stay in force on whatever pricing version is live.
+            {dirty ? ' Applying latest change…' : ' All rules are live.'}
           </CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label>Exclude a whole make</Label>
