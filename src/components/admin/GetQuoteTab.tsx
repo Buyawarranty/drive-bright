@@ -5468,16 +5468,25 @@ Questions? Call 0330 229 5040`;
                         const newTotal = Math.max(0, base - discountAmount);
                         const impliedPct = d.type === 'pct' ? (d.pct as number) : (base > 0 ? (discountAmount / base) * 100 : 0);
                         const overCap = impliedPct > effectiveMaxDiscountPct + 0.01;
+                        // Hard net floor: even an allowed discount (incl. the full 30%)
+                        // can never take the sale below the minimum sellable price.
+                        const underFloor = !priceMatchEvidenced && isUnderAbsoluteMin(newTotal);
 
                         const currentTotalNum = parseFloat(customFullPrice);
                         const isActive = !isNaN(currentTotalNum) && Math.abs(currentTotalNum - newTotal) < 0.5 && isPriceOverridden;
-                        const disabled = base <= 0 || newTotal <= 0 || overCap;
+                        const disabled = base <= 0 || newTotal <= 0 || overCap || underFloor;
                         return (
                           <button
                             key={d.label}
                             type="button"
                             disabled={disabled}
-                            title={overCap ? (impliedPct > DISCOUNT_CEILING_PCT + 0.01 && !isManagementRole ? `Discounts above ${DISCOUNT_CEILING_PCT}% require authorisation from Management.` : `Your discount cap is ${effectiveMaxDiscountPct}%. Ask a manager to raise it.`) : undefined}
+                            title={
+                              underFloor
+                                ? `£${newTotal} is below the minimum sellable price of £${ABSOLUTE_MIN_TOTAL} for this cover. The floor caps this discount — only management can go lower.`
+                                : overCap
+                                  ? (impliedPct > DISCOUNT_CEILING_PCT + 0.01 && !isManagementRole ? `Discounts above ${DISCOUNT_CEILING_PCT}% require authorisation from Management.` : `Your discount cap is ${effectiveMaxDiscountPct}%. Ask a manager to raise it.`)
+                                  : undefined
+                            }
                             onClick={() => handleCustomFullChange(newTotal.toString())}
                             className={cn(
                               "py-3 px-3 rounded-lg border text-sm font-semibold transition-all",
@@ -5488,10 +5497,15 @@ Questions? Call 0330 229 5040`;
                             )}
                           >
                             {d.label}
-                            {overCap && <div className="text-[10px] font-normal opacity-70">{impliedPct > DISCOUNT_CEILING_PCT + 0.01 && !isManagementRole ? 'Needs authorisation' : 'Above cap'}</div>}
+                            {underFloor ? (
+                              <div className="text-[10px] font-normal opacity-70">Below £{ABSOLUTE_MIN_TOTAL} floor</div>
+                            ) : overCap ? (
+                              <div className="text-[10px] font-normal opacity-70">{impliedPct > DISCOUNT_CEILING_PCT + 0.01 && !isManagementRole ? 'Needs authorisation' : 'Above cap'}</div>
+                            ) : null}
                           </button>
                         );
                       })}
+
 
                       {/* Over 30% — needs management authorisation (Ali or Kam) */}
                       <button
