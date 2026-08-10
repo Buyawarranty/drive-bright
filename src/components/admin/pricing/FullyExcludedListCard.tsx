@@ -10,7 +10,7 @@ import {
   EXCLUSION_MESSAGE,
   getLiveExclusionExtras,
 } from '@/lib/vehicleExclusions';
-import { primeLiveExclusions } from '@/lib/pricing/liveVehicleExclusions';
+import { loadExclusionDraft, primeLiveExclusions } from '@/lib/pricing/liveVehicleExclusions';
 
 /**
  * Always-visible, read-only list of the fully excluded vehicles (Ferrari,
@@ -30,17 +30,24 @@ const FullyExcludedListCard: React.FC<{ compact?: boolean }> = ({ compact }) => 
 
   const search = q.trim().toLowerCase();
 
+  const draft = useMemo(() => loadExclusionDraft(), []);
+
   const makes = useMemo(() => {
+    const liveExtras = (extras.makes ?? []).map(m => m.trim().toLowerCase());
     const all = [
-      ...EXCLUDED_MAKES.map(m => ({ make: m, extra: false })),
-      ...(extras.makes ?? []).map(m => ({ make: m.toLowerCase(), extra: true })),
+      ...EXCLUDED_MAKES.map(m => ({ make: m, origin: 'built-in' as const })),
+      ...liveExtras.map(m => ({ make: m, origin: 'live' as const })),
+      ...draft.makes
+        .map(m => m.trim().toLowerCase())
+        .filter(m => m && !liveExtras.includes(m))
+        .map(m => ({ make: m, origin: 'draft' as const })),
     ];
     const seen = new Set<string>();
     return all
       .filter(m => (seen.has(m.make) ? false : (seen.add(m.make), true)))
       .filter(m => !search || m.make.includes(search))
       .sort((a, b) => a.make.localeCompare(b.make));
-  }, [extras, search]);
+  }, [extras, search, draft]);
 
   const rules = useMemo(
     () =>
@@ -96,9 +103,13 @@ const FullyExcludedListCard: React.FC<{ compact?: boolean }> = ({ compact }) => 
             <p className="text-sm text-muted-foreground">No excluded makes match “{q}”.</p>
           )}
           {makes.map(m => (
-            <Badge key={m.make} variant="destructive" className="capitalize">
+            <Badge
+              key={m.make}
+              variant={m.origin === 'draft' ? 'outline' : 'destructive'}
+              className={`capitalize ${m.origin === 'draft' ? 'border-amber-500 text-amber-700' : ''}`}
+            >
               {m.make}
-              {m.extra ? ' • added' : ''}
+              {m.origin === 'live' ? ' • added' : m.origin === 'draft' ? ' • draft (not live yet)' : ''}
             </Badge>
           ))}
         </div>
