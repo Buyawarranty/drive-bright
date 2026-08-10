@@ -2029,17 +2029,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       });
       return;
     }
-    // Safety: never email a link that belongs to a different vehicle/customer/cover.
-    if (quoteLinkIdentityRef.current && quoteLinkIdentityRef.current !== quoteIdentity) {
-      setQuoteLink(null);
-      setQuoteGenerated(false);
+    // Safety: never email a link that belongs to a different vehicle/customer.
+    // Verified against the stored quote, not just local state.
+    const sendLink = await getVerifiedQuoteLink();
+    if (!sendLink) {
       toast({
         title: "Quote link is out of date",
-        description: "The vehicle, customer or cover options changed. A fresh link is being generated — please try sending again in a moment.",
+        description: "The vehicle or customer changed and a fresh link couldn't be created. Please try again.",
         variant: "destructive",
       });
       return;
     }
+
 
     setIsSendingEmail(true);
     try {
@@ -2080,7 +2081,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
       // CRITICAL: Sync the live_quotes record with current form values
       // This ensures the quote link and the email always show the same details
-      const accessToken = quoteLink.split('/quote/')[1];
+      const accessToken = sendLink.split('/quote/')[1];
       if (accessToken) {
         console.log('🔄 Syncing live_quotes with current form values...');
         const durationMap: Record<string, number> = { '12months': 12, '24months': 24, '36months': 36 };
@@ -2097,8 +2098,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
             upfront_price: displayedPayInFullPrice,
             customer_name: cleanCustomerName,
             customer_email: cleanCustomerEmail,
+            // Vehicle must be synced too, otherwise the emailed vehicle and the
+            // vehicle on the quote page can disagree.
+            vehicle_reg: cleanVehicleData.regNumber,
+            vehicle_make: cleanVehicleData.make || null,
+            vehicle_model: cleanVehicleData.model || null,
+            vehicle_year: cleanVehicleData.year ? String(cleanVehicleData.year) : null,
+            vehicle_mileage: cleanVehicleData.mileage ? String(cleanVehicleData.mileage) : null,
           })
           .eq('access_token', accessToken);
+
         
         if (syncError) {
           console.error('⚠️ Failed to sync live_quotes:', syncError);
@@ -2124,7 +2133,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       console.log('📧 Sending email to:', cleanCustomerEmail);
       console.log('📧 Agent copy:', agentEmail);
       console.log('📧 Extra internal copies:', copyRecipients);
-      console.log('📎 Quote link:', quoteLink);
+      console.log('📎 Quote link:', sendLink);
 
       // Send the email with HTML template (customer receives it, sales agent is copied on the same email)
       const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-admin-quote', {
@@ -2135,7 +2144,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
           copyRecipients: copyRecipients.length > 0 ? copyRecipients : undefined,
 
           subject: emailSubject,
-          quoteLink: quoteLink,
+          quoteLink: sendLink,
           customerName: cleanCustomerName,
           vehicleData: cleanVehicleData,
           quoteDetails: {
@@ -2333,7 +2342,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       clearDraft();
       setLastSendPayload({
         subject: emailSubject,
-        quoteLink,
+        quoteLink: sendLink,
         customerName: cleanCustomerName,
         vehicleData: cleanVehicleData,
         quoteDetails: {
@@ -2442,6 +2451,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       const bonusMonths = selectedBonusMonths;
 
       const subject = (emailSubject && emailSubject.trim()) || generateEmailSubject();
+      // Agent copy must point at the same verified quote the customer gets.
+      const selfCopyLink = await getVerifiedQuoteLink();
+      if (!selfCopyLink) {
+        throw new Error("Couldn't verify the quote link for this vehicle. Please regenerate it and try again.");
+      }
 
       const { error } = await supabase.functions.invoke('send-admin-quote', {
         body: {
@@ -2450,7 +2464,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
           copyOnly: true,
           originalRecipientEmail: cleanCustomerEmail || undefined,
           subject,
-          quoteLink,
+          quoteLink: selfCopyLink,
+
           customerName: cleanCustomerName,
           vehicleData: cleanVehicleData,
           quoteDetails: {
@@ -2698,7 +2713,7 @@ Questions? Call 0330 229 5040`;
 
 
   const generateQuoteLink = async () => {
-    if (!customerEmail || !customerName || !vehicleData) return;
+    if (!customerEmail || !customerName || !vehicleData) return null;
     
     setIsGeneratingQuoteLink(true);
     setQuoteLink(null);
@@ -2749,7 +2764,7 @@ Questions? Call 0330 229 5040`;
         setQuoteGenerated(true);
         quoteLinkIdentityRef.current = quoteIdentity;
         auditPriceOverride('quote_link');
-
+        return quoteUrl;
       } else {
         throw new Error('No quote link returned');
       }
@@ -2760,10 +2775,44 @@ Questions? Call 0330 229 5040`;
         description: error.message || "Please try again",
         variant: "destructive",
       });
+      return null;
     } finally {
       setIsGeneratingQuoteLink(false);
     }
   };
+
+  /**
+   * Returns a quote link that is PROVEN to point at the vehicle/customer
+   * currently on screen. The emailed details are built from form state, so a
+   * stale link (left over from the previous lead) made the customer land on
+   * someone else's vehicle. We verify against the stored row and mint a fresh
+   * link whenever it doesn't match.
+   */
+  const getVerifiedQuoteLink = async (): Promise<string | null> => {
+    const normReg = (v: unknown) => (v || '').toString().toUpperCase().replace(/\s+/g, '');
+    const currentReg = normReg(vehicleData?.regNumber || regNumber);
+    const currentEmail = (customerEmail || '').trim().toLowerCase();
+    const token = quoteLink ? quoteLink.split('/quote/')[1] : null;
+
+    if (token) {
+      const { data: row } = await supabase
+        .from('live_quotes')
+        .select('vehicle_reg, customer_email')
+        .eq('access_token', token)
+        .maybeSingle();
+      const matches =
+        row &&
+        normReg(row.vehicle_reg) === currentReg &&
+        (!row.customer_email || !currentEmail || row.customer_email.toLowerCase() === currentEmail);
+      if (matches) return quoteLink;
+    }
+
+    // Stale or missing — mint a fresh one for the quote on screen.
+    setQuoteLink(null);
+    setQuoteGenerated(false);
+    return await generateQuoteLink();
+  };
+
 
   // Retry generating quote link
   const handleRetryQuoteLink = async () => {
