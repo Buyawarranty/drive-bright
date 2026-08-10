@@ -2698,7 +2698,7 @@ Questions? Call 0330 229 5040`;
 
 
   const generateQuoteLink = async () => {
-    if (!customerEmail || !customerName || !vehicleData) return;
+    if (!customerEmail || !customerName || !vehicleData) return null;
     
     setIsGeneratingQuoteLink(true);
     setQuoteLink(null);
