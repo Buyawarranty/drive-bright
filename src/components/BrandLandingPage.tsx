@@ -31,6 +31,7 @@ import MileageQuickSelect from './MileageQuickSelect';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
 import { saveWithTimestamp } from '@/utils/localStorage';
+import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
 
 interface VehicleData {
   regNumber: string;

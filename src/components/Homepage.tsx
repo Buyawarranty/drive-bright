@@ -35,6 +35,7 @@ import { supabase } from '@/integrations/supabase/client';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
 import { MileageField, ManualVehicleEntryCard, RegLookupError, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
+import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
 
 interface VehicleData {
   regNumber: string;
