@@ -2749,7 +2749,7 @@ Questions? Call 0330 229 5040`;
         setQuoteGenerated(true);
         quoteLinkIdentityRef.current = quoteIdentity;
         auditPriceOverride('quote_link');
-
+        return quoteUrl;
       } else {
         throw new Error('No quote link returned');
       }
@@ -2760,10 +2760,44 @@ Questions? Call 0330 229 5040`;
         description: error.message || "Please try again",
         variant: "destructive",
       });
+      return null;
     } finally {
       setIsGeneratingQuoteLink(false);
     }
   };
+
+  /**
+   * Returns a quote link that is PROVEN to point at the vehicle/customer
+   * currently on screen. The emailed details are built from form state, so a
+   * stale link (left over from the previous lead) made the customer land on
+   * someone else's vehicle. We verify against the stored row and mint a fresh
+   * link whenever it doesn't match.
+   */
+  const getVerifiedQuoteLink = async (): Promise<string | null> => {
+    const normReg = (v: unknown) => (v || '').toString().toUpperCase().replace(/\s+/g, '');
+    const currentReg = normReg(vehicleData?.regNumber || regNumber);
+    const currentEmail = (customerEmail || '').trim().toLowerCase();
+    const token = quoteLink ? quoteLink.split('/quote/')[1] : null;
+
+    if (token) {
+      const { data: row } = await supabase
+        .from('live_quotes')
+        .select('vehicle_reg, customer_email')
+        .eq('access_token', token)
+        .maybeSingle();
+      const matches =
+        row &&
+        normReg(row.vehicle_reg) === currentReg &&
+        (!row.customer_email || !currentEmail || row.customer_email.toLowerCase() === currentEmail);
+      if (matches) return quoteLink;
+    }
+
+    // Stale or missing — mint a fresh one for the quote on screen.
+    setQuoteLink(null);
+    setQuoteGenerated(false);
+    return await generateQuoteLink();
+  };
+
 
   // Retry generating quote link
   const handleRetryQuoteLink = async () => {
