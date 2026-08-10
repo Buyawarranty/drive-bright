@@ -273,6 +273,16 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
       }
 
       console.log('DVSA lookup result:', data);
+
+      // Excluded vehicle matrix — never quote supercars / luxury / performance models
+      const vehicleBlockMessage = getVehicleBlockMessage(data);
+      if (vehicleBlockMessage) {
+        console.log('Vehicle blocked by exclusion matrix:', vehicleBlockMessage);
+        setVehicleAgeError(vehicleBlockMessage);
+        setIsLookingUp(false);
+        return;
+      }
+
       
       if (!data?.found && data?.error && data.error.includes('15 years')) {
         console.log('Vehicle blocked: Over 15 years old');
@@ -348,15 +358,6 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
         setVehicleAgeError('');
       }
       
-      // Excluded vehicle matrix — never quote supercars / luxury / performance models
-      const vehicleBlockMessage = getVehicleBlockMessage(data);
-      if (vehicleBlockMessage) {
-        console.log('Vehicle blocked by exclusion matrix:', vehicleBlockMessage);
-        setVehicleAgeError(vehicleBlockMessage);
-        setIsLookingUp(false);
-        return;
-      }
-
       const vehicleData: VehicleData = {
         regNumber: regNumber,
         mileage: effectiveMileage,

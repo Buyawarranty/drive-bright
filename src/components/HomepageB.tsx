@@ -258,6 +258,16 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       }
 
       console.log('DVSA lookup result:', data);
+
+      // Excluded vehicle matrix — never quote supercars / luxury / performance models
+      const vehicleBlockMessage = getVehicleBlockMessage(data);
+      if (vehicleBlockMessage) {
+        console.log('Vehicle blocked by exclusion matrix:', vehicleBlockMessage);
+        setVehicleAgeError(vehicleBlockMessage);
+        setIsLookingUp(false);
+        return;
+      }
+
       
       // Check for age-related blocking when vehicle is not found
       if (!data?.found && data?.error && data.error.includes('15 years')) {
@@ -326,15 +336,6 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       // Block over-150k vehicles flagged via MOT history
       if (motResult.motMileage && motResult.motMileage > 150000) {
         setMileageError('Sorry, we can only cover vehicles under 150,000 miles.');
-        setIsLookingUp(false);
-        return;
-      }
-
-      // Excluded vehicle matrix — never quote supercars / luxury / performance models
-      const vehicleBlockMessage = getVehicleBlockMessage(data);
-      if (vehicleBlockMessage) {
-        console.log('Vehicle blocked by exclusion matrix:', vehicleBlockMessage);
-        setVehicleAgeError(vehicleBlockMessage);
         setIsLookingUp(false);
         return;
       }
