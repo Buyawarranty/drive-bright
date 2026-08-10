@@ -133,7 +133,7 @@ export const DURATION_MONTHS = {
  *   £50/hr  0.90 — budget garage option
  *   £70/hr  1.00 — most popular / reference
  *   £100/hr 1.08 — broader garage choice (gentle upsell)
- *   £150/hr 1.20 — premium / specialist repairers (deliberately discouraged)
+ *   £150/hr 1.30 — premium / specialist repairers (deliberately discouraged)
  *
  * These are the code defaults. Admin → Price updates can publish a live set of
  * factors that overrides these without changing code.
@@ -142,9 +142,9 @@ export const LABOUR_RATE_FACTOR: Record<number, number> = {
   50: 0.90,
   70: 1.00,
   100: 1.08,
-  150: 1.20,
+  150: 1.30,
   // Legacy premium tier — kept so existing quotes/policies saved at £200/hr still price.
-  200: 1.20,
+  200: 1.30,
 };
 
 /** Live override for labour-rate factors, set from the published pricing version. */
@@ -174,7 +174,7 @@ export const DEFAULT_LABOUR_RATE_OPTIONS: LabourRateOption[] = [
   { rate: 50, factor: 0.90, label: 'Local Garages' },
   { rate: 70, factor: 1.00, label: 'Independent Garages' },
   { rate: 100, factor: 1.08, label: 'Approved Garages' },
-  { rate: 150, factor: 1.20, label: 'Specialist garages' },
+  { rate: 150, factor: 1.30, label: 'Specialist garages' },
 ];
 
 export function setLiveLabourRateFactors(
