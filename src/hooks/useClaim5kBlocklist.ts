@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { setLiveClaim5kBlocklist, DEFAULT_CLAIM_5K_BLOCKED_MAKES, type Claim5kBlockRule } from '@/lib/claimLimitTiers';
+import { setLiveClaim5kBlocklist, DEFAULT_CLAIM_5K_BLOCKED_MAKES, normalizeBlockedLimits, type Claim5kBlockRule } from '@/lib/claimLimitTiers';
 import { normalizeFuelFilter } from '@/lib/pricing/fuelCategory';
 
 export const CLAIM_5K_BLOCKLIST_KEY = 'claim_limit_5000_blocklist';
@@ -10,18 +10,28 @@ const DEFAULT_RULES: Claim5kBlockRule[] = DEFAULT_CLAIM_5K_BLOCKED_MAKES.map((ma
   make,
   model: null,
   fuel: 'any',
+  limits: [5000],
+  registration: null,
   blocked: true,
 }));
 
 function normalise(raw: unknown): Claim5kBlockRule[] {
   if (!Array.isArray(raw)) return DEFAULT_RULES;
   const list = raw
-    .filter((r: any) => r && (String(r.make || '').trim() || String(r.model || '').trim()))
+    .filter(
+      (r: any) =>
+        r &&
+        (String(r.make || '').trim() ||
+          String(r.model || '').trim() ||
+          String(r.registration || '').trim())
+    )
     .map((r: any, i: number) => ({
       id: String(r.id || `rule-${i}`),
       make: r.make ? String(r.make).trim() : '',
       model: r.model ? String(r.model).trim() : null,
       fuel: normalizeFuelFilter(r.fuel),
+      limits: normalizeBlockedLimits(r.limits),
+      registration: r.registration ? String(r.registration).trim() : null,
       blocked: r.blocked !== false,
     }));
   return list.length ? list : DEFAULT_RULES;
