@@ -33,6 +33,8 @@ import AgeBandPricingPreview, {
   buildAdminMatrixFromModel,
   type AgeBandModel,
 } from '@/components/admin/pricing/AgeBandPricingPreview';
+import { clampToNetFloor, clampWebToNetFloor } from '@/lib/pricing/netFloor';
+
 
 import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
 import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
