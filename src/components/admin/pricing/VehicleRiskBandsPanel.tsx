@@ -511,7 +511,7 @@ const VehicleRiskBandsPanel: React.FC = () => {
             <span className="text-sm text-muted-foreground">
               {testResult.match.isDefault
                 ? 'No rule matched — default band used'
-                : `Matched: ${testResult.match.assignment?.make} ${testResult.match.assignment?.model || '(all models)'}`}
+                : `Matched: ${testResult.match.assignment?.make || '(all makes)'} ${testResult.match.assignment?.model || '(all models)'}`}
             </span>
             <div className="ml-auto text-right">
               {testResult.priced.referral ? (
