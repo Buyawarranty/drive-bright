@@ -48,6 +48,26 @@ export const NotesQuickActionsPopover: React.FC<NotesQuickActionsPopoverProps> =
   const hasNotes = !!(lead.notes || noteCount > 0);
   const count = noteCount > 0 ? noteCount : lead.notes ? 1 : 0;
 
+  const [savingNote, setSavingNote] = useState(false);
+
+  // Enter saves the note on its own — no outcome, no button click needed.
+  const saveNoteOnly = async () => {
+    const trimmedNote = quickNote.trim();
+    if (!trimmedNote || savingNote) return;
+    setSavingNote(true);
+    try {
+      await addSystemNote(lead.id, `📝 ${trimmedNote}`, agentId);
+      onLogActivity('note', trimmedNote);
+      toast.success('Note saved');
+      setQuickNote('');
+      setOpen(false);
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not save note');
+    } finally {
+      setSavingNote(false);
+    }
+  };
+
   const handleOutcome = async (outcome: CallOutcome) => {
     setSubmitting(outcome);
     try {
