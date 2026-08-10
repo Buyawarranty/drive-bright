@@ -28,7 +28,7 @@ import {
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
 import { getAutoIncludedAddOns } from '@/lib/addOnsUtils';
-import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge } from '@/lib/claimLimitTiers';
+import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBlockedClaimLimits, getBaseClaimLimit, getClaimLimitSurcharge } from '@/lib/claimLimitTiers';
 import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useIsManagement } from '@/hooks/useIsManagement';
@@ -67,11 +67,15 @@ const claimLimitOptions = [
   { value: 5000, label: '£5,000', description: 'AutoCare Premium' },
 ];
 
-const getVisibleClaimLimits = (vehicleMake?: string) => {
-  if (isPremiumVehicle(vehicleMake)) {
-    return claimLimitOptions.filter(opt => opt.value !== 5000);
-  }
-  return claimLimitOptions;
+/** Removes any claim limit management has blocked for this vehicle. */
+const getVisibleClaimLimits = (vehicle?: {
+  make?: string | null;
+  model?: string | null;
+  fuelType?: string | null;
+  registration?: string | null;
+}) => {
+  const blocked = getBlockedClaimLimits(vehicle || {});
+  return claimLimitOptions.filter(opt => !blocked.includes(opt.value));
 };
 
 const labourRateOptions = [
@@ -199,10 +203,16 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   }, []);
   // Reset claim limit if premium vehicle selected and £5000 was chosen
   useEffect(() => {
-    if (claimLimit === 5000 && isPremiumVehicle(vehicleData?.make, vehicleData?.model, vehicleData?.fuelType)) {
+    const blocked = getBlockedClaimLimits({
+      make: vehicleData?.make,
+      model: vehicleData?.model,
+      fuelType: vehicleData?.fuelType,
+      registration: regNumber,
+    });
+    if (blocked.includes(claimLimit)) {
       setClaimLimit(2000);
     }
-  }, [vehicleData?.make]);
+  }, [vehicleData?.make, vehicleData?.model, vehicleData?.fuelType, regNumber, claimLimit]);
 
   // Calculate price
   const effectiveClaimLimit = getBaseClaimLimit(claimLimit);
@@ -844,7 +854,12 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         <Select value={claimLimit.toString()} onValueChange={(v) => setClaimLimit(parseInt(v))}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
-                            {getVisibleClaimLimits(vehicleData?.make).map((opt) => (
+                            {getVisibleClaimLimits({
+                              make: vehicleData?.make,
+                              model: vehicleData?.model,
+                              fuelType: vehicleData?.fuelType,
+                              registration: regNumber,
+                            }).map((opt) => (
                               <SelectItem key={opt.value} value={opt.value.toString()}>{opt.label} — {opt.description}</SelectItem>
                             ))}
                           </SelectContent>
