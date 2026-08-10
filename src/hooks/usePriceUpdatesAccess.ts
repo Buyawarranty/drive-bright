@@ -8,7 +8,6 @@ export const PRICE_UPDATES_ROLES = [
   'sales_manager',
   'accounts',
   'accounts_manager',
-  'accounts_payroll',
 ] as const;
 
 /**
@@ -29,16 +28,11 @@ export function usePriceUpdatesAccess() {
           if (mounted) setAllowed(false);
           return;
         }
-        const { data, error } = await supabase
-          .from('admin_users')
-          .select('role')
-          .eq('user_id', uid)
-          .eq('is_active', true)
-          .maybeSingle();
+        // Use a SECURITY DEFINER function so the check works even when the
+        // direct admin_users read is blocked by RLS or row visibility rules.
+        const { data, error } = await supabase.rpc('has_price_updates_access', { _user_id: uid });
         if (mounted) {
-          setAllowed(
-            !error && !!data?.role && (PRICE_UPDATES_ROLES as readonly string[]).includes(data.role)
-          );
+          setAllowed(error ? false : data === true);
         }
       } catch {
         if (mounted) setAllowed(false);

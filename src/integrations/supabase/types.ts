@@ -12642,6 +12642,7 @@ export type Database = {
         Returns: boolean
       }
       has_all_leads_permission: { Args: { _user_id: string }; Returns: boolean }
+      has_price_updates_access: { Args: { _user_id: string }; Returns: boolean }
       has_tab_access: {
         Args: { _tab: string; _user_id: string }
         Returns: boolean
