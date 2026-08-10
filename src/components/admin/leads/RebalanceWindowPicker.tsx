@@ -1,33 +1,49 @@
 import React, { useEffect, useState } from 'react';
+import { format } from 'date-fns';
 import { Clock, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useRebalanceWindow } from '@/lib/rebalanceWindow';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-const toInputValue = (d: Date) => {
+const toTimeValue = (d: Date) => {
   const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+  return `${p(d.getHours())}:${p(d.getMinutes())}`;
+};
+
+/** Combine a picked calendar day with a "HH:mm" time into one local Date. */
+const combine = (day: Date | undefined, time: string): Date | null => {
+  if (!day) return null;
+  const [h, m] = (time || '00:00').split(':').map(Number);
+  const d = new Date(day);
+  d.setHours(Number.isFinite(h) ? h : 0, Number.isFinite(m) ? m : 0, 0, 0);
+  return d;
 };
 
 /**
  * Lets a manager pick the date/time window for the Rebalance Leads tools:
  * a start date/time and an optional end date/time, then Save.
- * Defaults to 6pm yesterday until now.
+ * Uses an in-popover calendar (the browser's native date overlay used to close
+ * the popover the moment you clicked a day, which made it look broken).
  */
 export const RebalanceWindowPicker: React.FC<{ className?: string }> = ({ className }) => {
   const { from, to, custom, label, setWindow, reset } = useRebalanceWindow();
   const [open, setOpen] = useState(false);
-  const [draftFrom, setDraftFrom] = useState(toInputValue(from));
-  const [draftTo, setDraftTo] = useState(to ? toInputValue(to) : '');
+  const [fromDay, setFromDay] = useState<Date | undefined>(from);
+  const [fromTime, setFromTime] = useState(toTimeValue(from));
+  const [toDay, setToDay] = useState<Date | undefined>(to ?? undefined);
+  const [toTime, setToTime] = useState(to ? toTimeValue(to) : '23:59');
 
   useEffect(() => {
     if (open) {
-      setDraftFrom(toInputValue(from));
-      setDraftTo(to ? toInputValue(to) : '');
+      setFromDay(from);
+      setFromTime(toTimeValue(from));
+      setToDay(to ?? undefined);
+      setToTime(to ? toTimeValue(to) : '23:59');
     }
   }, [open, from, to]);
 
@@ -38,32 +54,36 @@ export const RebalanceWindowPicker: React.FC<{ className?: string }> = ({ classN
     setOpen(false);
   };
 
+  /** Whole days — the common case for covering someone's holiday. */
+  const applyDayRange = (startDaysAgo: number, endDaysAgo = 0) => {
+    const start = new Date();
+    start.setDate(start.getDate() - startDaysAgo);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date();
+    end.setDate(end.getDate() - endDaysAgo);
+    end.setHours(23, 59, 59, 999);
+    setWindow(start, endDaysAgo === 0 ? null : end);
+    setOpen(false);
+  };
+
   const save = () => {
-    const start = new Date(draftFrom);
-    if (!draftFrom || Number.isNaN(start.getTime())) {
-      toast({ title: 'Pick a start date', description: 'Choose the date and time to count leads from.', variant: 'destructive' });
+    const start = combine(fromDay, fromTime);
+    if (!start) {
+      toast({ title: 'Pick a start date', description: 'Choose the day and time to count leads from.', variant: 'destructive' });
       return;
     }
-    let end: Date | null = null;
-    if (draftTo) {
-      const e = new Date(draftTo);
-      if (Number.isNaN(e.getTime())) {
-        toast({ title: 'Check the end date', description: 'That end date and time is not valid.', variant: 'destructive' });
-        return;
-      }
-      if (e.getTime() <= start.getTime()) {
-        toast({ title: 'End must be after start', description: 'Pick an end date and time later than the start.', variant: 'destructive' });
-        return;
-      }
-      end = e;
+    const end = combine(toDay, toTime);
+    if (end && end.getTime() <= start.getTime()) {
+      toast({ title: 'End must be after start', description: 'Pick an end date and time later than the start.', variant: 'destructive' });
+      return;
     }
     setWindow(start, end);
     setOpen(false);
     toast({
       title: 'Window saved',
       description: end
-        ? `Counting leads created between the two dates you picked.`
-        : `Counting leads created from your chosen date and time until now.`,
+        ? `Counting leads created between ${format(start, 'd MMM HH:mm')} and ${format(end, 'd MMM HH:mm')}.`
+        : `Counting leads created from ${format(start, 'd MMM HH:mm')} until now.`,
     });
   };
 
@@ -76,54 +96,74 @@ export const RebalanceWindowPicker: React.FC<{ className?: string }> = ({ classN
             Counting from: {label}
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="start" className="w-80 p-3 space-y-3 bg-popover z-50">
+        <PopoverContent align="start" className="w-auto max-w-[95vw] p-3 space-y-3 bg-popover z-50">
           <div>
             <p className="text-sm font-semibold text-foreground">Count leads from</p>
             <p className="text-xs text-muted-foreground">
-              Default is 6pm yesterday until now. Pick a start date and time, and an end if you want a fixed window.
+              Default is 6pm yesterday until now. Pick the start day and time, and an end day if you want a fixed window
+              (for example the days someone was on holiday).
             </p>
           </div>
 
-          <div className="space-y-2">
-            <div className="space-y-1">
-              <Label htmlFor="rebalance-from" className="text-xs font-medium">From</Label>
+          <div className="flex flex-wrap gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-medium">
+                From {fromDay ? <span className="text-muted-foreground font-normal">— {format(fromDay, 'd MMM yyyy')}</span> : null}
+              </Label>
+              <Calendar
+                mode="single"
+                selected={fromDay}
+                onSelect={(d) => d && setFromDay(d)}
+                className={cn('rounded-md border p-2 pointer-events-auto')}
+              />
               <Input
-                id="rebalance-from"
-                type="datetime-local"
-                value={draftFrom}
-                onChange={(e) => setDraftFrom(e.target.value)}
+                type="time"
+                value={fromTime}
+                onChange={(e) => setFromTime(e.target.value)}
                 className="h-9"
+                aria-label="Start time"
               />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="rebalance-to" className="text-xs font-medium">
-                To <span className="text-muted-foreground font-normal">(optional — leave blank for now)</span>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-medium">
+                To <span className="text-muted-foreground font-normal">(optional — blank means up to now)</span>
               </Label>
-              <Input
-                id="rebalance-to"
-                type="datetime-local"
-                value={draftTo}
-                min={draftFrom || undefined}
-                onChange={(e) => setDraftTo(e.target.value)}
-                className="h-9"
+              <Calendar
+                mode="single"
+                selected={toDay}
+                onSelect={(d) => setToDay(d ?? undefined)}
+                disabled={fromDay ? { before: fromDay } : undefined}
+                className={cn('rounded-md border p-2 pointer-events-auto')}
               />
-              {draftTo && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 px-1 text-xs text-muted-foreground"
-                  onClick={() => setDraftTo('')}
-                >
-                  Clear end date
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                <Input
+                  type="time"
+                  value={toTime}
+                  onChange={(e) => setToTime(e.target.value)}
+                  className="h-9"
+                  aria-label="End time"
+                  disabled={!toDay}
+                />
+                {toDay && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 px-2 text-xs text-muted-foreground"
+                    onClick={() => setToDay(undefined)}
+                  >
+                    Clear end
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-1">
             <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => applyPreset(6)}>Last 6 hours</Button>
             <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => applyPreset(24)}>Last 24 hours</Button>
-            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => applyPreset(72)}>Last 3 days</Button>
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => applyDayRange(6)}>Last 7 days</Button>
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => applyDayRange(13)}>Last 14 days</Button>
           </div>
           <div className="flex items-center justify-between gap-2 pt-1 border-t border-border">
             <Button
@@ -135,8 +175,8 @@ export const RebalanceWindowPicker: React.FC<{ className?: string }> = ({ classN
               <RotateCcw className="h-3 w-3" />
               6pm yesterday
             </Button>
-            <Button size="sm" className="h-7 text-xs" disabled={!draftFrom} onClick={save}>
-              Save
+            <Button size="sm" className="h-7 text-xs" disabled={!fromDay} onClick={save}>
+              Save window
             </Button>
           </div>
         </PopoverContent>
@@ -156,5 +196,6 @@ export const RebalanceWindowPicker: React.FC<{ className?: string }> = ({ classN
     </div>
   );
 };
+
 
 export default RebalanceWindowPicker;
