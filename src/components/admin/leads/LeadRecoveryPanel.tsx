@@ -52,7 +52,7 @@ export const LeadRecoveryPanel: React.FC = () => {
     const d = new Date(); d.setDate(d.getDate() - 1); d.setHours(23, 59, 59, 999); return d;
   });
   const [sourceAgent, setSourceAgent] = useState<string>(ANY_AGENT);
-  const [targetAgent, setTargetAgent] = useState<string>('');
+  const [targetAgents, setTargetAgents] = useState<string[]>([]);
   const [resetStatus, setResetStatus] = useState(true);
   const [rows, setRows] = useState<LeadRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -90,19 +90,25 @@ export const LeadRecoveryPanel: React.FC = () => {
     try {
       const fromIso = new Date(fromDate); fromIso.setHours(0, 0, 0, 0);
       const toIso = new Date(toDate); toIso.setHours(23, 59, 59, 999);
-      let q = (supabase.from('sales_leads') as any)
-        .select('id, first_name, last_name, email, phone, vehicle_reg, status, is_paid, assigned_to, assigned_at, created_at')
-        .gte('created_at', fromIso.toISOString())
-        .lte('created_at', toIso.toISOString())
-        .order('created_at', { ascending: true })
-        .limit(500);
-      if (sourceAgent === UNASSIGNED) q = q.is('assigned_to', null);
-      else if (sourceAgent !== ANY_AGENT) q = q.eq('assigned_to', sourceAgent);
-      const { data, error } = await q;
-      if (error) throw error;
-      setRows((data ?? []) as LeadRow[]);
-      if (!data || data.length === 0) toast.info('No leads matched that filter');
-      else toast.success(`Found ${data.length} lead${data.length === 1 ? '' : 's'}`);
+      const page = 1000;
+      const all: LeadRow[] = [];
+      for (let i = 0; i < 10; i += 1) {
+        let q = (supabase.from('sales_leads') as any)
+          .select('id, first_name, last_name, email, phone, vehicle_reg, status, is_paid, assigned_to, assigned_at, created_at')
+          .gte('created_at', fromIso.toISOString())
+          .lte('created_at', toIso.toISOString())
+          .order('created_at', { ascending: true })
+          .range(i * page, i * page + page - 1);
+        if (sourceAgent === UNASSIGNED) q = q.is('assigned_to', null);
+        else if (sourceAgent !== ANY_AGENT) q = q.eq('assigned_to', sourceAgent);
+        const { data, error } = await q;
+        if (error) throw error;
+        all.push(...((data ?? []) as LeadRow[]));
+        if (!data || data.length < page) break;
+      }
+      setRows(all);
+      if (all.length === 0) toast.info('No leads matched that filter');
+      else toast.success(`Found ${all.length} lead${all.length === 1 ? '' : 's'}`);
     } catch (e: any) {
       console.error('[LeadRecovery] scan', e);
       toast.error(e?.message || 'Scan failed');
@@ -111,33 +117,66 @@ export const LeadRecoveryPanel: React.FC = () => {
     }
   }, [fromDate, toDate, sourceAgent]);
 
+  /** Leads per calendar day in the scanned range (oldest first). */
+  const perDay = useMemo(() => {
+    const map = new Map<string, { total: number; paid: number }>();
+    rows.forEach(r => {
+      const key = format(new Date(r.created_at), 'yyyy-MM-dd');
+      const cur = map.get(key) ?? { total: 0, paid: 0 };
+      cur.total += 1;
+      if (r.is_paid) cur.paid += 1;
+      map.set(key, cur);
+    });
+    return Array.from(map.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([day, v]) => ({ day, ...v }));
+  }, [rows]);
+
+  /** Even round-robin split of the scanned leads across the chosen agents. */
+  const splitPlan = useMemo(() => {
+    if (targetAgents.length === 0) return [] as { agentId: string; ids: string[] }[];
+    const buckets = targetAgents.map(id => ({ agentId: id, ids: [] as string[] }));
+    rows.forEach((r, i) => { buckets[i % buckets.length].ids.push(r.id); });
+    return buckets;
+  }, [rows, targetAgents]);
+
+  const toggleTarget = (id: string) => {
+    setTargetAgents(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
   const doRecover = useCallback(async () => {
-    if (!targetAgent) { toast.error('Pick who to assign to'); return; }
+    if (targetAgents.length === 0) { toast.error('Pick who to assign to'); return; }
     if (rows.length === 0) { toast.error('Nothing to recover — scan first'); return; }
     setLoading(true);
     try {
-      const ids = rows.map(r => r.id);
       const now = new Date().toISOString();
-      // Split paid vs unpaid so we don't overwrite a "converted" status
-      const paidIds = rows.filter(r => r.is_paid).map(r => r.id);
-      const unpaidIds = rows.filter(r => !r.is_paid).map(r => r.id);
+      const paid = new Set(rows.filter(r => r.is_paid).map(r => r.id));
+      let moved = 0;
 
-      if (paidIds.length > 0) {
-        const { error } = await (supabase.from('sales_leads') as any)
-          .update({ assigned_to: targetAgent, assigned_at: now, last_activity_date: now })
-          .in('id', paidIds);
-        if (error) throw error;
+      for (const bucket of splitPlan) {
+        const paidIds = bucket.ids.filter(id => paid.has(id));
+        const unpaidIds = bucket.ids.filter(id => !paid.has(id));
+
+        for (let i = 0; i < paidIds.length; i += 200) {
+          const { error } = await (supabase.from('sales_leads') as any)
+            .update({ assigned_to: bucket.agentId, assigned_at: now, last_activity_date: now })
+            .in('id', paidIds.slice(i, i + 200));
+          if (error) throw error;
+        }
+        for (let i = 0; i < unpaidIds.length; i += 200) {
+          const patch: any = { assigned_to: bucket.agentId, assigned_at: now, last_activity_date: now };
+          if (resetStatus) patch.status = 'new';
+          const { error } = await (supabase.from('sales_leads') as any)
+            .update(patch)
+            .in('id', unpaidIds.slice(i, i + 200));
+          if (error) throw error;
+        }
+        moved += bucket.ids.length;
       }
-      if (unpaidIds.length > 0) {
-        const patch: any = { assigned_to: targetAgent, assigned_at: now, last_activity_date: now };
-        if (resetStatus) patch.status = 'new';
-        const { error } = await (supabase.from('sales_leads') as any)
-          .update(patch)
-          .in('id', unpaidIds);
-        if (error) throw error;
-      }
-      const target = agents.find(a => a.id === targetAgent);
-      toast.success(`Reassigned ${ids.length} lead${ids.length === 1 ? '' : 's'} to ${target?.name ?? 'agent'}`);
+
+      toast.success(
+        `Reassigned ${moved} lead${moved === 1 ? '' : 's'} across ${targetAgents.length} agent${targetAgents.length === 1 ? '' : 's'}`,
+      );
       setRows([]);
       setConfirmOpen(false);
     } catch (e: any) {
@@ -146,10 +185,16 @@ export const LeadRecoveryPanel: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [rows, targetAgent, agents, resetStatus]);
+  }, [rows, targetAgents, splitPlan, resetStatus]);
 
   const paidCount = rows.filter(r => r.is_paid).length;
-  const targetName = agents.find(a => a.id === targetAgent)?.name ?? '';
+  const nameOf = (id: string) => agents.find(a => a.id === id)?.name ?? 'Agent';
+  const targetName = targetAgents.length === 1
+    ? nameOf(targetAgents[0])
+    : targetAgents.length > 1
+      ? `${targetAgents.length} agents`
+      : '';
+
 
   return (
     <Card className="border-border">
@@ -211,15 +256,39 @@ export const LeadRecoveryPanel: React.FC = () => {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Reassign to</label>
-            <Select value={targetAgent} onValueChange={setTargetAgent}>
-              <SelectTrigger><SelectValue placeholder="Pick agent" /></SelectTrigger>
-              <SelectContent className="bg-popover z-50">
-                {agents.map(a => (
-                  <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <label className="text-xs font-medium text-muted-foreground">Reassign to (one or more)</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn('w-full justify-start text-left font-normal', targetAgents.length === 0 && 'text-muted-foreground')}>
+                  {targetAgents.length === 0
+                    ? 'Pick agents'
+                    : targetAgents.length === 1
+                      ? nameOf(targetAgents[0])
+                      : `${targetAgents.length} agents selected`}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-2 bg-popover z-50" align="start">
+                <div className="max-h-64 overflow-auto space-y-1">
+                  {agents.map(a => (
+                    <label
+                      key={a.id}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer text-sm"
+                    >
+                      <Checkbox
+                        checked={targetAgents.includes(a.id)}
+                        onCheckedChange={() => toggleTarget(a.id)}
+                      />
+                      {a.name}
+                    </label>
+                  ))}
+                </div>
+                {targetAgents.length > 0 && (
+                  <Button variant="ghost" size="sm" className="w-full mt-1" onClick={() => setTargetAgents([])}>
+                    Clear selection
+                  </Button>
+                )}
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
@@ -234,6 +303,27 @@ export const LeadRecoveryPanel: React.FC = () => {
           </label>
         </div>
 
+        {/* Per-day breakdown */}
+        {perDay.length > 0 && (
+          <div className="rounded-md border border-border bg-muted/20 p-3">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+              Leads per date
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {perDay.map(d => (
+                <span
+                  key={d.day}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-xs"
+                >
+                  <span className="text-muted-foreground">{format(new Date(`${d.day}T12:00:00`), 'EEE d MMM')}</span>
+                  <strong className="text-foreground">{d.total}</strong>
+                  {d.paid > 0 && <span className="text-green-700">({d.paid} paid)</span>}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Results */}
         {rows.length > 0 && (
           <div className="rounded-md border border-border overflow-hidden">
@@ -241,16 +331,22 @@ export const LeadRecoveryPanel: React.FC = () => {
               <div className="text-sm">
                 <strong className="text-foreground">{rows.length}</strong> lead{rows.length === 1 ? '' : 's'} found
                 {paidCount > 0 && <span className="ml-2 text-muted-foreground">({paidCount} paid)</span>}
+                {splitPlan.length > 1 && (
+                  <span className="ml-2 text-muted-foreground">
+                    → split {splitPlan.map(b => `${nameOf(b.agentId)} ${b.ids.length}`).join(' · ')}
+                  </span>
+                )}
               </div>
               <Button
                 size="sm"
                 onClick={() => setConfirmOpen(true)}
-                disabled={!targetAgent || loading}
+                disabled={targetAgents.length === 0 || loading}
               >
                 {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ArrowRightLeft className="h-4 w-4 mr-2" />}
                 Reassign all to {targetName || 'agent'}
               </Button>
             </div>
+
             <div className="max-h-72 overflow-auto">
               <table className="w-full text-sm">
                 <thead className="bg-muted/20 text-xs text-muted-foreground">
