@@ -585,8 +585,10 @@ const VehicleRiskBandsPanel: React.FC = () => {
               )}
               {visibleAssignments.map(a => {
                 const band = bandById.get(a.bandId);
+                const clashes = clashIds.has(a.id);
                 return (
-                <div key={a.id} className="flex flex-wrap items-center gap-3 p-3">
+                <div key={a.id} className={`flex flex-wrap items-center gap-3 p-3 ${clashes ? 'bg-destructive/5' : ''}`}>
+
                     <div className="min-w-[180px]">
                       <p className="font-medium">
                         {a.make || <span className="text-muted-foreground">(all makes)</span>}{' '}
