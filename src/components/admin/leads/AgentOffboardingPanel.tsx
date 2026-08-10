@@ -160,17 +160,25 @@ export const AgentOffboardingPanel: React.FC = () => {
   useEffect(() => { if (backupsOpen) loadEvents(); }, [backupsOpen, loadEvents]);
 
   const runHandover = useCallback(async () => {
-    if (!sourceId || !targetId || sourceId === targetId) {
-      toast.error('Pick a different agent to receive the leads');
+    if (!canRun) {
+      toast.error('Pick at least one different agent to receive the leads');
       return;
     }
     setWorking(true);
     try {
+      // Capture the lead ids BEFORE the handover so a multi-agent split can
+      // spread exactly this batch afterwards.
+      const { data: leadRows } = await (supabase.from('sales_leads') as any)
+        .select('id')
+        .eq('assigned_to', sourceId)
+        .order('created_at', { ascending: false });
+      const leadIds: string[] = (leadRows ?? []).map((r: any) => r.id);
+
       // Atomic: snapshot every lead + notes + reminders + changelog + call logs,
       // then reassign — all in one server-side transaction so nothing can be lost.
       const { data, error } = await (supabase as any).rpc('create_agent_offboarding_backup', {
         _source_admin_user_id: sourceId,
-        _target_admin_user_id: targetId,
+        _target_admin_user_id: targetIds[0],
         _reset_to_new: resetToNew,
         _also_deactivate: alsoDeactivate,
         _notes: null,
@@ -178,8 +186,29 @@ export const AgentOffboardingPanel: React.FC = () => {
       if (error) throw error;
 
       const moved = (data as any)?.lead_count ?? 0;
+
+      // Multi-agent split: the backup already covers every lead, so we now
+      // spread the same batch round-robin across the remaining receivers.
+      if (targetIds.length > 1 && leadIds.length > 0) {
+        const buckets: Record<string, string[]> = {};
+        leadIds.forEach((id, i) => {
+          const agentId = targetIds[i % targetIds.length];
+          (buckets[agentId] ||= []).push(id);
+        });
+        for (const [agentId, ids] of Object.entries(buckets)) {
+          if (agentId === targetIds[0]) continue; // already assigned by the RPC
+          for (let i = 0; i < ids.length; i += 200) {
+            const chunk = ids.slice(i, i + 200);
+            const { error: upErr } = await (supabase.from('sales_leads') as any)
+              .update({ assigned_to: agentId })
+              .in('id', chunk);
+            if (upErr) throw upErr;
+          }
+        }
+      }
+
       toast.success(
-        `Backed up & moved ${moved} lead${moved === 1 ? '' : 's'} to ${targetAgent?.name}. Full history preserved.`,
+        `Backed up & moved ${moved} lead${moved === 1 ? '' : 's'} to ${targetLabel}. Full history preserved.`,
       );
       setConfirmOpen(false);
       await loadCounts(sourceId);
@@ -189,11 +218,11 @@ export const AgentOffboardingPanel: React.FC = () => {
     } finally {
       setWorking(false);
     }
-  }, [sourceId, targetId, resetToNew, alsoDeactivate, targetAgent, loadCounts]);
+  }, [canRun, sourceId, targetIds, resetToNew, alsoDeactivate, targetLabel, loadCounts]);
 
   const runDryRun = useCallback(async () => {
-    if (!sourceId || !targetId || sourceId === targetId) {
-      toast.error('Pick a different agent to receive the leads');
+    if (!canRun) {
+      toast.error('Pick at least one different agent to receive the leads');
       return;
     }
     setDryRunOpen(true);
@@ -202,7 +231,7 @@ export const AgentOffboardingPanel: React.FC = () => {
     try {
       const { data, error } = await (supabase as any).rpc('preview_agent_offboarding_backup', {
         _source_admin_user_id: sourceId,
-        _target_admin_user_id: targetId,
+        _target_admin_user_id: targetIds[0],
         _reset_to_new: resetToNew,
         _also_deactivate: alsoDeactivate,
       });
@@ -214,7 +243,8 @@ export const AgentOffboardingPanel: React.FC = () => {
     } finally {
       setDryRunLoading(false);
     }
-  }, [sourceId, targetId, resetToNew, alsoDeactivate]);
+  }, [canRun, sourceId, targetIds, resetToNew, alsoDeactivate]);
+
 
   const restoreEvent = useCallback(async (eventId: string) => {
     if (!confirm('Restore every lead in this backup to its original owner? Notes and history are already intact.')) return;
