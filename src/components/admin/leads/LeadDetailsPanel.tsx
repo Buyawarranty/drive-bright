@@ -8,8 +8,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { 
   Phone, Mail, MessageSquare, Car, User, 
   ChevronDown, ChevronUp, 
-  CreditCard, Printer, Award
+  CreditCard, Printer, Award, History as HistoryIcon
 } from 'lucide-react';
+import { LeadHistoryTimeline } from './LeadHistoryTimeline';
+
 import { CommissionClaimDialog } from './CommissionClaimDialog';
 import { CommissionClaimReviewPanel } from './CommissionClaimReviewPanel';
 import { toast } from 'sonner';
@@ -43,6 +45,7 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
 }) => {
   const [contactOpen, setContactOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [isMarkPaidDialogOpen, setIsMarkPaidDialogOpen] = useState(false);
   const [isPrintLetterOpen, setIsPrintLetterOpen] = useState(false);
   
@@ -371,6 +374,26 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
           <div className={cn("p-4", !notesOpen && "hidden")}>
             <UnifiedNotesPanel leadId={lead.id} hidePoolOutcome={hidePoolOutcome} />
           </div>
+
+          {/* Full audit trail — calls, notes, status and owner changes with names */}
+          <div className="px-4 pb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8"
+              onClick={() => setHistoryOpen(!historyOpen)}
+            >
+              <HistoryIcon className="h-4 w-4 mr-1.5" />
+              {historyOpen ? 'Hide full history' : 'View full history (calls, notes, status)'}
+              {historyOpen ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />}
+            </Button>
+            {historyOpen && (
+              <div className="mt-3 rounded-lg border bg-muted/20 p-3">
+                <LeadHistoryTimeline leadId={lead.id} />
+              </div>
+            )}
+          </div>
+
         </CardContent>
       </Card>
 
