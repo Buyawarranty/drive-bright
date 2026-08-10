@@ -61,7 +61,7 @@ export interface SoldVsReference {
   /** Lowest allowed amount = whichever bites harder (30% ceiling vs net floor). */
   minAllowed: number;
   /** Sold more than 30% below QOP. */
-  overCeiling: number extends never ? never : boolean;
+  overCeiling: boolean;
   /** Sold below the absolute net payable floor. */
   underFloor: boolean;
   /** Either breach — needs management authorisation. */
