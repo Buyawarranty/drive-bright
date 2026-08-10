@@ -412,8 +412,9 @@ export const LeadRecoveryPanel: React.FC = () => {
           </label>
           <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
             <Checkbox checked={includePrevious} onCheckedChange={(v) => setIncludePrevious(!!v)} />
-            Include leads this agent used to own that are now unassigned
+            Include leads this agent used to own that are now unassigned (all-time, ignores date range)
           </label>
+
 
         </div>
 
