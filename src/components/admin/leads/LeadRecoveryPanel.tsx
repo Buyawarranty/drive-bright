@@ -54,6 +54,7 @@ export const LeadRecoveryPanel: React.FC = () => {
   const [sourceAgent, setSourceAgent] = useState<string>(ANY_AGENT);
   const [targetAgents, setTargetAgents] = useState<string[]>([]);
   const [resetStatus, setResetStatus] = useState(true);
+  const [includePrevious, setIncludePrevious] = useState(true);
   const [rows, setRows] = useState<LeadRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
@@ -61,15 +62,15 @@ export const LeadRecoveryPanel: React.FC = () => {
 
   useEffect(() => {
     (async () => {
+      // Include archived / departed agents — their leads are exactly what needs recovering.
       const { data, error } = await (supabase.from('admin_users') as any)
-        .select('id, first_name, last_name, email, role')
-        .eq('is_active', true)
+        .select('id, first_name, last_name, email, role, is_active')
         .in('role', ['sales', 'sales_lead'])
         .order('first_name');
       if (error) { console.error('[LeadRecovery] agents load', error); return; }
       setAgents((data ?? []).map((a: any) => ({
         id: a.id,
-        name: [a.first_name, a.last_name].filter(Boolean).join(' ').trim() || a.email || 'Agent',
+        name: `${[a.first_name, a.last_name].filter(Boolean).join(' ').trim() || a.email || 'Agent'}${a.is_active === false ? ' (left)' : ''}`,
         email: a.email,
         role: a.role,
       })));
@@ -84,6 +85,8 @@ export const LeadRecoveryPanel: React.FC = () => {
     return `${format(fromDate, 'd MMM')} → ${format(toDate, 'd MMM yyyy')}`;
   }, [fromDate, toDate]);
 
+  const LEAD_COLS = 'id, first_name, last_name, email, phone, vehicle_reg, status, is_paid, assigned_to, assigned_at, created_at';
+
   const scan = useCallback(async () => {
     if (!fromDate || !toDate) { toast.error('Pick a date range first'); return; }
     setScanning(true);
@@ -94,7 +97,7 @@ export const LeadRecoveryPanel: React.FC = () => {
       const all: LeadRow[] = [];
       for (let i = 0; i < 10; i += 1) {
         let q = (supabase.from('sales_leads') as any)
-          .select('id, first_name, last_name, email, phone, vehicle_reg, status, is_paid, assigned_to, assigned_at, created_at')
+          .select(LEAD_COLS)
           .gte('created_at', fromIso.toISOString())
           .lte('created_at', toIso.toISOString())
           .order('created_at', { ascending: true })
@@ -106,16 +109,45 @@ export const LeadRecoveryPanel: React.FC = () => {
         all.push(...((data ?? []) as LeadRow[]));
         if (!data || data.length < page) break;
       }
+
+      // Leads a departed agent USED to own that are now unassigned (their archive
+      // wiped assigned_to). Found via the assignment audit trail, so it works even
+      // when the lead itself was created before the chosen range.
+      let reclaimed = 0;
+      if (includePrevious && sourceAgent !== ANY_AGENT && sourceAgent !== UNASSIGNED) {
+        const { data: auditRows } = await (supabase.from('lead_assignment_audit') as any)
+          .select('lead_id')
+          .eq('previous_assigned_to_id', sourceAgent)
+          .gte('created_at', fromIso.toISOString())
+          .lte('created_at', toIso.toISOString())
+          .limit(5000);
+        const ids = Array.from(new Set(((auditRows ?? []) as any[]).map(r => r.lead_id).filter(Boolean)));
+        const seen = new Set(all.map(r => r.id));
+        for (let i = 0; i < ids.length; i += 300) {
+          const { data } = await (supabase.from('sales_leads') as any)
+            .select(LEAD_COLS)
+            .in('id', ids.slice(i, i + 300))
+            .is('assigned_to', null);
+          ((data ?? []) as LeadRow[]).forEach(r => {
+            if (!seen.has(r.id)) { seen.add(r.id); all.push(r); reclaimed += 1; }
+          });
+        }
+        all.sort((a, b) => a.created_at.localeCompare(b.created_at));
+      }
+
       setRows(all);
       if (all.length === 0) toast.info('No leads matched that filter');
-      else toast.success(`Found ${all.length} lead${all.length === 1 ? '' : 's'}`);
+      else toast.success(
+        `Found ${all.length} lead${all.length === 1 ? '' : 's'}${reclaimed ? ` (incl. ${reclaimed} unassigned ex-owned)` : ''}`,
+      );
     } catch (e: any) {
       console.error('[LeadRecovery] scan', e);
       toast.error(e?.message || 'Scan failed');
     } finally {
       setScanning(false);
     }
-  }, [fromDate, toDate, sourceAgent]);
+  }, [fromDate, toDate, sourceAgent, includePrevious]);
+
 
   /** Leads per calendar day in the scanned range (oldest first). */
   const perDay = useMemo(() => {
