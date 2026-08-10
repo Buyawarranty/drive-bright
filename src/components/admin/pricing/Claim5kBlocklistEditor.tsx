@@ -7,6 +7,19 @@ import { Ban, Plus, Save, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useClaim5kBlocklist } from '@/hooks/useClaim5kBlocklist';
 import type { Claim5kBlockRule } from '@/lib/claimLimitTiers';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  FUEL_FILTER_OPTIONS,
+  FUEL_LABEL,
+  normalizeFuelFilter,
+  type FuelFilter,
+} from '@/lib/pricing/fuelCategory';
 
 /**
  * Management editor for vehicles blocked from the £5,000 claim limit.
@@ -18,6 +31,8 @@ export default function Claim5kBlocklistEditor() {
   const [draft, setDraft] = useState<Claim5kBlockRule[]>([]);
   const [newMake, setNewMake] = useState('');
   const [newModel, setNewModel] = useState('');
+  const [newFuel, setNewFuel] = useState<FuelFilter>('any');
+  const [fuelFilter, setFuelFilter] = useState<FuelFilter | 'all'>('all');
 
   useEffect(() => {
     if (!loading) setDraft(rules);
@@ -35,10 +50,11 @@ export default function Claim5kBlocklistEditor() {
     }
     setDraft(prev => [
       ...prev,
-      { id: `rule-${Date.now()}`, make, model: model || null, blocked: true },
+      { id: `rule-${Date.now()}`, make, model: model || null, fuel: newFuel, blocked: true },
     ]);
     setNewMake('');
     setNewModel('');
+    setNewFuel('any');
   };
 
 
@@ -50,6 +66,12 @@ export default function Claim5kBlocklistEditor() {
   };
 
   const activeCount = draft.filter(r => r.blocked).length;
+  const visible =
+    fuelFilter === 'all' ? draft : draft.filter(r => normalizeFuelFilter(r.fuel) === fuelFilter);
+  const fuelSuffix = (rule: Claim5kBlockRule) => {
+    const f = normalizeFuelFilter(rule.fuel);
+    return f === 'any' ? '' : ` (${FUEL_LABEL[f].toLowerCase()} only)`;
+  };
 
   return (
     <div className="rounded-lg border-2 border-rose-300 bg-rose-50/50 p-4 space-y-4">
@@ -63,7 +85,8 @@ export default function Claim5kBlocklistEditor() {
             Blocked vehicles fall back to £3,000 cover on Quotes &amp; Orders and the customer
             journey. Enter a make on its own to block the whole make, a make plus a model to block
             just that model, or a model on its own to block that model across every make. Switch a
-            rule off to unblock without deleting it.
+            rule off to unblock without deleting it. Pick a fuel type to block only that
+            powertrain, e.g. diesel Range Rovers.
 
           </p>
         </div>
@@ -72,8 +95,25 @@ export default function Claim5kBlocklistEditor() {
         </Badge>
       </div>
 
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-medium text-muted-foreground">Filter by fuel</span>
+        <Select value={fuelFilter} onValueChange={v => setFuelFilter(v as FuelFilter | 'all')}>
+          <SelectTrigger className="h-9 w-[190px] bg-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All rules</SelectItem>
+            {FUEL_FILTER_OPTIONS.map(o => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="space-y-2">
-        {draft.map(rule => (
+        {visible.map(rule => (
           <div
             key={rule.id}
             className="flex flex-wrap items-center gap-2 rounded-md border bg-white p-2"
@@ -90,12 +130,27 @@ export default function Claim5kBlocklistEditor() {
               placeholder="Model (blank = all models)"
               className="w-48"
             />
+            <Select
+              value={normalizeFuelFilter(rule.fuel)}
+              onValueChange={v => update(rule.id!, { fuel: v as FuelFilter })}
+            >
+              <SelectTrigger className="h-9 w-[170px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {FUEL_FILTER_OPTIONS.map(o => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <span className="text-xs text-muted-foreground flex-1 min-w-[8rem]">
-              {!rule.make && rule.model
+              {(!rule.make && rule.model
                 ? `Blocks ${rule.model} across all makes`
                 : rule.model
                   ? `Blocks ${rule.make} ${rule.model} only`
-                  : `Blocks all ${rule.make}`}
+                  : `Blocks all ${rule.make}`) + fuelSuffix(rule)}
             </span>
 
             <div className="flex items-center gap-2">
@@ -121,9 +176,11 @@ export default function Claim5kBlocklistEditor() {
             </div>
           </div>
         ))}
-        {!draft.length && (
+        {!visible.length && (
           <p className="text-sm text-muted-foreground">
-            No blocks — every vehicle can be quoted at £5,000.
+            {draft.length
+              ? 'No blocks match that fuel filter.'
+              : 'No blocks — every vehicle can be quoted at £5,000.'}
           </p>
         )}
       </div>
@@ -141,6 +198,18 @@ export default function Claim5kBlocklistEditor() {
           placeholder="Model (optional)"
           className="w-48 bg-white"
         />
+        <Select value={newFuel} onValueChange={v => setNewFuel(v as FuelFilter)}>
+          <SelectTrigger className="w-[170px] bg-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {FUEL_FILTER_OPTIONS.map(o => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Button variant="outline" onClick={addRule}>
           <Plus className="h-4 w-4 mr-1" /> Add block
         </Button>

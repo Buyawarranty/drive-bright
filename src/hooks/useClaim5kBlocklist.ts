@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { setLiveClaim5kBlocklist, DEFAULT_CLAIM_5K_BLOCKED_MAKES, type Claim5kBlockRule } from '@/lib/claimLimitTiers';
+import { normalizeFuelFilter } from '@/lib/pricing/fuelCategory';
 
 export const CLAIM_5K_BLOCKLIST_KEY = 'claim_limit_5000_blocklist';
 
@@ -8,6 +9,7 @@ const DEFAULT_RULES: Claim5kBlockRule[] = DEFAULT_CLAIM_5K_BLOCKED_MAKES.map((ma
   id: `default-${i}`,
   make,
   model: null,
+  fuel: 'any',
   blocked: true,
 }));
 
@@ -19,6 +21,7 @@ function normalise(raw: unknown): Claim5kBlockRule[] {
       id: String(r.id || `rule-${i}`),
       make: r.make ? String(r.make).trim() : '',
       model: r.model ? String(r.model).trim() : null,
+      fuel: normalizeFuelFilter(r.fuel),
       blocked: r.blocked !== false,
     }));
   return list.length ? list : DEFAULT_RULES;
