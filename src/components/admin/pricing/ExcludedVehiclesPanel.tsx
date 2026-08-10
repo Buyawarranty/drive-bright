@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Ban, CheckCircle2, Info } from 'lucide-react';
+import { Ban, CheckCircle2, Info, Plus, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   EXCLUDED_MAKES,
   EXCLUDED_MODEL_RULES,
@@ -12,15 +14,96 @@ import {
   getExclusionReason,
   isVehicleExcluded,
 } from '@/lib/vehicleExclusions';
+import SectionPushLiveBar from '@/components/admin/pricing/SectionPushLiveBar';
+import {
+  emptyExclusionDraft,
+  exclusionDraftDiffersFromLive,
+  loadExclusionDraft,
+  primeLiveExclusions,
+  publishExclusions,
+  saveExclusionDraft,
+  type ExclusionDraft,
+  type PublishedExclusionVersion,
+} from '@/lib/pricing/liveVehicleExclusions';
 
 /**
- * Read-only view of the live excluded vehicle matrix, plus a tester.
- * This is the same matrix quotes and the DVLA lookup use, so nothing here is a draft.
+ * Read-only view of the live excluded vehicle matrix, plus a tester and an
+ * "extra exclusions" draft the manager can push live with the pricing version.
  */
 const ExcludedVehiclesPanel: React.FC = () => {
   const [search, setSearch] = useState('');
   const [testMake, setTestMake] = useState('');
   const [testModel, setTestModel] = useState('');
+
+  const [draft, setDraft] = useState<ExclusionDraft>(() => loadExclusionDraft());
+  const [live, setLive] = useState<PublishedExclusionVersion | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [newMake, setNewMake] = useState('');
+  const [ruleMake, setRuleMake] = useState('');
+  const [ruleModel, setRuleModel] = useState('');
+
+  useEffect(() => {
+    primeLiveExclusions()
+      .then(v => {
+        setLive(v);
+        // First visit with nothing drafted: start from whatever is live.
+        setDraft(prev =>
+          prev.makes.length === 0 && prev.modelRules.length === 0 && v
+            ? { makes: v.extra_makes, modelRules: v.extra_model_rules }
+            : prev
+        );
+      })
+      .catch(() => undefined);
+  }, []);
+
+  const updateDraft = (next: ExclusionDraft) => {
+    setDraft(next);
+    saveExclusionDraft(next);
+  };
+
+  const addMake = () => {
+    const m = newMake.trim().toLowerCase();
+    if (!m) return;
+    if (draft.makes.includes(m)) {
+      toast.info(`${m} is already in the draft`);
+      return;
+    }
+    updateDraft({ ...draft, makes: [...draft.makes, m] });
+    setNewMake('');
+  };
+
+  const addModelRule = () => {
+    const model = ruleModel.trim().toLowerCase();
+    if (!model) {
+      toast.error('Enter a model or keyword to exclude');
+      return;
+    }
+    updateDraft({
+      ...draft,
+      modelRules: [
+        ...draft.modelRules,
+        { make: ruleMake.trim().toLowerCase() || null, model, label: `${ruleMake.trim()} ${ruleModel.trim()}`.trim() },
+      ],
+    });
+    setRuleMake('');
+    setRuleModel('');
+  };
+
+  const pushLive = async () => {
+    setBusy(true);
+    try {
+      const label = `Exclusions ${new Date().toLocaleDateString('en-GB')} — ${draft.makes.length} makes, ${draft.modelRules.length} model rules`;
+      const published = await publishExclusions(draft, label);
+      setLive(published);
+      toast.success('Exclusions pushed live — every quoting surface now uses them');
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not push exclusions live');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const dirty = exclusionDraftDiffersFromLive(draft, live);
 
   const q = search.trim().toLowerCase();
 
@@ -44,6 +127,7 @@ const ExcludedVehiclesPanel: React.FC = () => {
   const tested = testMake.trim() || testModel.trim();
   const excluded = tested ? isVehicleExcluded(testMake, testModel) : false;
   const reason = tested ? getExclusionReason(testMake, testModel) : null;
+
 
   return (
     <div className="space-y-4">
