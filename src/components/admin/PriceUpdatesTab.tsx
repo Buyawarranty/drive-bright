@@ -33,6 +33,8 @@ import AgeBandPricingPreview, {
   buildAdminMatrixFromModel,
   type AgeBandModel,
 } from '@/components/admin/pricing/AgeBandPricingPreview';
+import { clampToNetFloor, clampWebToNetFloor } from '@/lib/pricing/netFloor';
+
 
 import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
 import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
@@ -1335,12 +1337,18 @@ export default function PriceUpdatesTab() {
                                 const codeValue =
                                   codeMatrix?.[period]?.[String(excess)]?.[String(limit)] ?? 0;
                                 const raw = deriveCustomerPriceFromAdmin(value, discountPct);
-                                const minPrice = MIN_SELLABLE_BY_PERIOD[period] ?? 399;
-                                // Website prices carry no acquisition cost, so they may sit
-                                // below the floor. The floor only guards the Quotes & Orders
-                                // price the sales team discounts from.
-                                const step3 = raw;
-                                const belowFloor = value < minPrice;
+                                // PERMANENT floor, shaped for this excess + claim limit.
+                                // Whatever grid or pricing model is loaded here, this is the
+                                // lowest the cover can ever be sold for.
+                                const floorParams = {
+                                  paymentPeriod: period as any,
+                                  voluntaryExcess: excess,
+                                  claimLimit: limit,
+                                };
+                                const minPrice = clampToNetFloor(0, floorParams);
+                                const sellsAt = clampToNetFloor(value, floorParams);
+                                const step3 = clampWebToNetFloor(raw, floorParams);
+                                const belowFloor = value > 0 && value < minPrice;
                                 const changed = value !== codeValue;
                                 // £500 excess is only offered on the derived £3,000 / £5,000
                                 // tiers, never on a grid column (unchanged by the rename).
@@ -1367,8 +1375,8 @@ export default function PriceUpdatesTab() {
                                         </div>
                                         {belowFloor && (
                                           <div className="text-xs text-amber-600">
-                                            Reference-band cell below {formatGBP(minPrice)} — the
-                                            {' '}floor is applied per vehicle at quote time
+                                            Below the {formatGBP(minPrice)} minimum — sells at{' '}
+                                            {formatGBP(sellsAt)}
                                           </div>
                                         )}
 
@@ -1389,24 +1397,36 @@ export default function PriceUpdatesTab() {
                                 const elite = essential + (essential - basic);
                                 const premium =
                                   elite + (PREMIUM_STEP_SURCHARGE[period] || 0);
-                                const minPrice = MIN_SELLABLE_BY_PERIOD[period] ?? 399;
                                 return (
                                   <>
-                                    {[elite, premium].map((total, i) => {
-                                      const raw = deriveCustomerPriceFromAdmin(total, discountPct);
-                                      const step3 = raw;
+                                    {[
+                                      { total: elite, limit: 3000 },
+                                      { total: premium, limit: 5000 },
+                                    ].map(({ total, limit }, i) => {
+                                      const floorParams = {
+                                        paymentPeriod: period as any,
+                                        voluntaryExcess: excess,
+                                        claimLimit: limit,
+                                      };
+                                      const minPrice = clampToNetFloor(0, floorParams);
+                                      const sellsAt = clampToNetFloor(total, floorParams);
+                                      const step3 = clampWebToNetFloor(
+                                        deriveCustomerPriceFromAdmin(total, discountPct),
+                                        floorParams,
+                                      );
                                       return (
                                         <td key={i} className="p-2 text-muted-foreground">
                                           <div className="font-medium text-foreground">
-                                            {formatGBP(total)}
+                                            {formatGBP(sellsAt)}
                                           </div>
                                           <div className="mt-1 text-xs">
                                             Website: {formatGBP(step3)} ·{' '}
                                             {formatGBP(Math.ceil(step3 / 12))}/mo
                                           </div>
-                                          {total < minPrice && (
-                                            <div className="text-xs text-destructive">
-                                              Below {formatGBP(minPrice)} Quotes &amp; Orders floor
+                                          {total > 0 && total < minPrice && (
+                                            <div className="text-xs text-amber-600">
+                                              Grid {formatGBP(total)} raised to the{' '}
+                                              {formatGBP(minPrice)} minimum
                                             </div>
                                           )}
 
@@ -1416,6 +1436,7 @@ export default function PriceUpdatesTab() {
                                   </>
                                 );
                               })()}
+
                             </tr>
                           ))}
                         </tbody>
@@ -1518,8 +1539,17 @@ export default function PriceUpdatesTab() {
                 </thead>
                 <tbody>
                   {PERIODS.map(p => {
-                    const cell = (ex: number) =>
-                      previewVersion.admin_matrix?.[p]?.[String(ex)]?.['2000'];
+                    // Old versions (July original, Aug hybrid, anything restored)
+                    // are shown at the permanent minimum sellable price too.
+                    const cell = (ex: number) => {
+                      const v = previewVersion.admin_matrix?.[p]?.[String(ex)]?.['2000'];
+                      if (!v) return null;
+                      return clampToNetFloor(Number(v), {
+                        paymentPeriod: p as any,
+                        voluntaryExcess: ex,
+                        claimLimit: 2000,
+                      });
+                    };
                     return (
                       <tr key={p} className="border-t">
                         <td className="py-1.5 font-medium">{PERIOD_LABELS[p] || p}</td>
@@ -1528,6 +1558,7 @@ export default function PriceUpdatesTab() {
                       </tr>
                     );
                   })}
+
                 </tbody>
               </table>
               <p className="text-xs text-muted-foreground">
