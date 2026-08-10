@@ -342,7 +342,10 @@ interface AdminUser {
   first_name?: string;
   last_name?: string;
   role: string;
+  /** false when the agent has left / been archived — kept so historical sales attribution still shows their name */
+  is_active?: boolean;
 }
+
 
 // Number plate component
 const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
@@ -1559,13 +1562,16 @@ export const CustomersTab = ({
 
   const fetchAdminUsers = async () => {
     try {
+      // Include archived (left) agents so Customer Management can still show
+      // who did each deal for commission purposes. Assignment dropdowns filter
+      // to active agents only.
       const { data, error } = await supabase
         .from('admin_users')
-        .select('id, user_id, email, first_name, last_name, role')
-        .eq('is_active', true);
+        .select('id, user_id, email, first_name, last_name, role, is_active');
       
       if (error) throw error;
       setAdminUsers(data || []);
+
       
       // Update current admin user if currentUser exists
       if (currentUser) {
@@ -4584,15 +4590,19 @@ Buyawarranty.co.uk`,
                         )}
                         {adminUsers
                           .filter(u => ['sales', 'sales_lead', 'sales_manager', 'admin', 'super_admin'].includes(u.role))
+                          // Keep archived agents that still hold sales credit so commissions stay traceable
+                          .filter(u => u.is_active !== false || (agentDealCounts[u.id]?.sales || 0) > 0 || (agentDealCounts[u.id]?.cancelled || 0) > 0)
+                          .sort((a, b) => Number(a.is_active === false) - Number(b.is_active === false))
                           .map(user => {
                             const stats = agentDealCounts[user.id] || { sales: 0, cancelled: 0 };
                             const displayName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
                             return (
                               <SelectItem key={user.id} value={user.id}>
-                                {displayName} ({stats.sales}{stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})
+                                {displayName}{user.is_active === false ? ' (left)' : ''} ({stats.sales}{stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})
                               </SelectItem>
                             );
                           })}
+
                       </SelectContent>
                     </Select>
                   )}
@@ -6529,11 +6539,17 @@ Please log in and change your password after first login.`;
                           <SelectContent>
                             <SelectItem value="unassigned">Unassigned</SelectItem>
                             <SelectItem value={WEBSITE_SALES_ACCOUNT_ID}>Website</SelectItem>
-                            {adminUsers.filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID && (u.role === 'sales' || u.role === 'sales_lead' || u.role === 'sales_manager' || u.role === 'admin' || u.role === 'super_admin')).map(user => (
+                            {adminUsers
+                              .filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID && (u.role === 'sales' || u.role === 'sales_lead' || u.role === 'sales_manager' || u.role === 'admin' || u.role === 'super_admin'))
+                              // Archived agents can't receive new assignments, but the current
+                              // owner must stay listed so their name keeps showing on the sale.
+                              .filter(u => u.is_active !== false || u.id === customer.assigned_to)
+                              .map(user => (
                               <SelectItem key={user.id} value={user.id}>
-                                {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                                {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}{user.is_active === false ? ' (left)' : ''}
                               </SelectItem>
                             ))}
+
                           </SelectContent>
                         </Select>
                       </div>
