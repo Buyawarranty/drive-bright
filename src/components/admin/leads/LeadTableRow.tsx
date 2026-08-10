@@ -550,6 +550,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   
   const isOverdue = lead.next_action_date && isPast(new Date(lead.next_action_date)) && lead.follow_up_status === 'pending';
   const isFakeLead = lead.status === 'fake_lead';
+  const isDoNotContact = lead.status === 'do_not_contact';
   
   // Suspicious lead detection
   const suspiciousFlags = useMemo(() => detectSuspiciousLead(lead), [lead.phone, lead.email, lead.first_name, lead.vehicle_reg]);
