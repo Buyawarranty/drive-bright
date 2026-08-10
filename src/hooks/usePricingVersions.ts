@@ -244,7 +244,18 @@ export function usePricingVersions() {
           .update({ published_by: authData.user.id } as any)
           .eq('id', id);
       }
+      // Excluded vehicle rules ride along with EVERY pricing publish, whichever
+      // screen triggered it, so the live exclusions can never lag the live prices.
+      const { data: publishedRow } = await supabase
+        .from('pricing_matrix_versions')
+        .select('label')
+        .eq('id', id)
+        .maybeSingle();
+      await autoPublishExclusionsWithPricing(
+        ((publishedRow as any)?.label as string) || 'pricing push'
+      );
       await load();
+
     },
     [load]
   );
