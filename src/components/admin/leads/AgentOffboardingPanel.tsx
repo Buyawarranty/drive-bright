@@ -66,6 +66,14 @@ export const AgentOffboardingPanel: React.FC = () => {
   const [alsoDeactivate, setAlsoDeactivate] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  // Archived agents have their leads set to unassigned, so "0 total leads" hides
+  // real work. We reclaim every lead they used to own (from the assignment audit
+  // trail) that is still sitting unassigned, from a chosen date onwards.
+  const [includeReclaim, setIncludeReclaim] = useState(true);
+  const [reclaimFrom, setReclaimFrom] = useState('2026-08-04');
+  const [reclaimIds, setReclaimIds] = useState<string[]>([]);
+  const [reclaimLoading, setReclaimLoading] = useState(false);
+
 
   const [backupsOpen, setBackupsOpen] = useState(false);
   const [events, setEvents] = useState<OffboardingEvent[]>([]);
