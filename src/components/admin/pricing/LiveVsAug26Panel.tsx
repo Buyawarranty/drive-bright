@@ -11,6 +11,8 @@ import SectionPushLiveBar from './SectionPushLiveBar';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import { usePricingVersions } from '@/hooks/usePricingVersions';
+import PriceSurfaceBadge from './PriceSurfaceBadge';
+
 
 
 /**
@@ -141,16 +143,22 @@ const LiveVsAug26Panel: React.FC<{
       />
       <Card className="border-2">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <GitCompare className="h-5 w-5" />
-            Live builder vs Aug26 pricing
-          </CardTitle>
-          <CardDescription>
-            The same Step 2 quote screen twice — left priced with the live Age-based builder figures,
-            right priced with a saved pricing version. Change any variable on either side to see the
-            effect. Nothing here saves a quote or changes live prices.
-          </CardDescription>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <GitCompare className="h-5 w-5" />
+                Live builder vs Aug26 pricing
+              </CardTitle>
+              <CardDescription>
+                The same Step 2 quote screen twice — left priced with the live Age-based builder figures,
+                right priced with a saved pricing version. Change any variable on either side to see the
+                effect. Nothing here saves a quote or changes live prices.
+              </CardDescription>
+            </div>
+            <PriceSurfaceBadge surface="quotes" />
+          </div>
         </CardHeader>
+
         <CardContent className="space-y-3">
           <Alert>
             <Info className="h-4 w-4" />

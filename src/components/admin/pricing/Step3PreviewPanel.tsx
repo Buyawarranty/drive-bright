@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import { Loader2, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { readAppliedPromos, setPromoSuppressed } from '@/lib/promoStorage';
+import PriceSurfaceBadge from './PriceSurfaceBadge';
+
 
 const PricingTable = lazy(() => import('@/components/PricingTable'));
 
@@ -77,20 +79,25 @@ export default function Step3PreviewPanel() {
     <div className="space-y-4">
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Website Step 3 preview</CardTitle>
-          <CardDescription>
-            Enter a vehicle to see the real customer plan selector priced with the grid selected
-            above. Choosing a plan here does nothing — it never reaches the cart or checkout.
-            {storedPromos.length > 0 && (
-              <span className="block mt-2 font-semibold text-foreground">
-                Promo code{storedPromos.length > 1 ? 's' : ''} {storedPromos.join(', ')} {storedPromos.length > 1 ? 'are' : 'is'} saved
-                in this browser and {storedPromos.length > 1 ? 'are' : 'is'} ignored here, so the preview shows the true grid
-                prices.
-              </span>
-            )}
-          </CardDescription>
-
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <CardTitle className="text-base">Website Step 3 preview</CardTitle>
+              <CardDescription>
+                Enter a vehicle to see the real customer plan selector priced with the grid selected
+                above. Choosing a plan here does nothing — it never reaches the cart or checkout.
+                {storedPromos.length > 0 && (
+                  <span className="block mt-2 font-semibold text-foreground">
+                    Promo code{storedPromos.length > 1 ? 's' : ''} {storedPromos.join(', ')} {storedPromos.length > 1 ? 'are' : 'is'} saved
+                    in this browser and {storedPromos.length > 1 ? 'are' : 'is'} ignored here, so the preview shows the true grid
+                    prices.
+                  </span>
+                )}
+              </CardDescription>
+            </div>
+            <PriceSurfaceBadge surface="web" />
+          </div>
         </CardHeader>
+
         <CardContent className="flex flex-wrap items-end gap-3">
           <div className="space-y-1">
             <Label className="text-xs">Registration</Label>

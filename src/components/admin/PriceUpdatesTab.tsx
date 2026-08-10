@@ -42,6 +42,8 @@ import CodebaseVsCurrentPanel from '@/components/admin/pricing/CodebaseVsCurrent
 import ClaimLimit5kAuthToggle from '@/components/admin/pricing/ClaimLimit5kAuthToggle';
 import ExcludedVehiclesPanel from '@/components/admin/pricing/ExcludedVehiclesPanel';
 import FullyExcludedListCard from '@/components/admin/pricing/FullyExcludedListCard';
+import PriceSurfaceBadge from '@/components/admin/pricing/PriceSurfaceBadge';
+
 
 import VehicleRiskBandsPanel from '@/components/admin/pricing/VehicleRiskBandsPanel';
 import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
@@ -752,6 +754,7 @@ export default function PriceUpdatesTab() {
               ) : (
                 <Badge variant="secondary">Live: built-in code pricing</Badge>
               )}
+              <PriceSurfaceBadge surface="quotes" />
             </div>
             <p className="text-sm text-muted-foreground max-w-3xl">
               Build and test a new Quotes &amp; Orders price structure without touching live pricing.
@@ -772,6 +775,7 @@ export default function PriceUpdatesTab() {
             </Button>
           </div>
         </div>
+
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {selectedId ? (
             <span>
@@ -1159,6 +1163,7 @@ export default function PriceUpdatesTab() {
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
+              <PriceSurfaceBadge surface="quotes" />
               {liveVersion ? (
                 <Badge className="bg-emerald-600">Live: {liveVersion.label}</Badge>
               ) : (
@@ -1168,6 +1173,7 @@ export default function PriceUpdatesTab() {
                 <RotateCcw className="h-4 w-4 mr-1" /> Revert to code base pricing 7/2026
               </Button>
             </div>
+
           </div>
         </CardHeader>
         <CardContent className="space-y-4">

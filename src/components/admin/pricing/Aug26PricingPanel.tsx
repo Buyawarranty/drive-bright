@@ -15,6 +15,8 @@ import {
 } from '@/hooks/usePricingVersions';
 import { resolvePriceFloors, CODE_PRICE_FLOORS } from '@/lib/pricing/pricingVersionConfig';
 import { clampToNetFloor } from '@/lib/pricing/netFloor';
+import PriceSurfaceBadge from './PriceSurfaceBadge';
+
 
 
 const PERIOD_LABEL: Record<string, string> = {
@@ -95,15 +97,21 @@ const Aug26PricingPanel: React.FC = () => {
     <div className="space-y-4">
       <Card className="border-2">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <CalendarClock className="h-5 w-5" />
-            Aug26 pricing
-          </CardTitle>
-          <CardDescription>
-            The pricing grid in force now, with every earlier version kept below so older prices can
-            still be checked or copied into a new draft.
-          </CardDescription>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <CalendarClock className="h-5 w-5" />
+                Aug26 pricing
+              </CardTitle>
+              <CardDescription>
+                The pricing grid in force now, with every earlier version kept below so older prices can
+                still be checked or copied into a new draft.
+              </CardDescription>
+            </div>
+            <PriceSurfaceBadge surface="quotes" />
+          </div>
         </CardHeader>
+
         <CardContent className="space-y-4">
           <Alert>
             <Info className="h-4 w-4" />

@@ -14,6 +14,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { matchModelFloor, describeFloorMatch } from '@/lib/pricing/modelFloorMatch';
 import { setVehiclePricingRules } from '@/lib/pricing/vehicleRules';
 import { PRICING_MODEL_SAVED_EVENT } from './pricingModelEvents';
+import PriceSurfaceBadge from './PriceSurfaceBadge';
+
 
 
 
@@ -688,9 +690,13 @@ export default function AgeBandPricingPreview({
               This replaces the old under/over 120,000 mile split.
             </CardDescription>
           </div>
-          <Badge variant="secondary">Preview only — nothing is live</Badge>
+          <div className="flex items-center gap-2">
+            <PriceSurfaceBadge surface="quotes" />
+            <Badge variant="secondary">Preview only — nothing is live</Badge>
+          </div>
         </div>
       </CardHeader>
+
       <CardContent className="space-y-5">
         {/* Save bar — sticky so it is reachable from anywhere in this long panel */}
         <div className="sticky top-0 z-20 -mx-6 flex flex-wrap items-center gap-2 border-b bg-background/95 px-6 py-3 backdrop-blur">

@@ -12,6 +12,8 @@ import {
   MAX_WEB_DISCOUNT_PCT,
 } from '@/lib/pricing/pricingVersionConfig';
 import type { PaymentPeriod } from '@/lib/pricingMatrix';
+import PriceSurfaceBadge from './PriceSurfaceBadge';
+
 
 const TERMS: PaymentPeriod[] = ['12months', '24months', '36months'];
 
@@ -47,10 +49,14 @@ export default function WebGapDraftPanel({ gridTotals }: { gridTotals?: Partial<
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Percent className="h-4 w-4" /> Web price gap (draft)
-        </CardTitle>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Percent className="h-4 w-4" /> Web price gap (draft)
+          </CardTitle>
+          <PriceSurfaceBadge surface="web" />
+        </div>
       </CardHeader>
+
       <CardContent className="space-y-4">
         <Alert>
           <AlertDescription className="text-sm">
