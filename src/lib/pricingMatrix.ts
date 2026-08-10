@@ -511,11 +511,14 @@ const ABSOLUTE_MIN_GRID_BY_PERIOD: Record<PaymentPeriod, number> = {
 };
 
 /**
- * Cheapest reachable combo the £349 anchor is defined against:
- * £1,000 claim limit, £50/hr labour, £150 excess. Better options than these lift
- * the absolute minimum proportionally, so the hard bottom never flattens the caps.
+ * The REFERENCE combo the £349 anchor is defined against:
+ * £2,000 claim limit, £70/hr labour, £150 excess. Anchoring on the cheapest combo
+ * instead inflated the hard bottom on a default quote, which clamped almost every
+ * vehicle to the same price. Options better than the reference lift the absolute
+ * minimum proportionally; cheaper options never drop below it.
  */
-const ABS_MIN_ANCHOR = { claimLimit: 1000, labourRate: 50, voluntaryExcess: 150 };
+const ABS_MIN_ANCHOR = { claimLimit: 2000, labourRate: 70, voluntaryExcess: 150 };
+
 
 export function getAbsoluteMinimumTotal(params: {
   paymentPeriod: PaymentPeriod;
