@@ -136,7 +136,28 @@ export const publishExclusions = async (
   };
 };
 
+/**
+ * Save AND apply live in one step.
+ *
+ * Excluded vehicle rules are never a draft any more: every add/remove is
+ * published immediately so Steps 1–4, Quotes & Orders and the DVLA lookup pick
+ * it up without anyone having to press "Push live". The list is also re-stamped
+ * onto every pricing push (see `autoPublishExclusionsWithPricing`), so it can
+ * never lag behind whichever pricing version is live.
+ */
+export const applyExclusionsLive = async (
+  draft: ExclusionDraft,
+  pricingVersionLabel?: string | null
+): Promise<PublishedExclusionVersion> => {
+  saveExclusionDraft(draft);
+  const label =
+    `Exclusions auto-applied ${new Date().toLocaleString('en-GB')} — ` +
+    `${draft.makes.length} makes, ${draft.modelRules.length} model rules`;
+  return publishExclusions(draft, label, pricingVersionLabel ?? null);
+};
+
 /** True when the draft differs from what is live. */
+
 export const exclusionDraftDiffersFromLive = (
   draft: ExclusionDraft,
   live: PublishedExclusionVersion | null
