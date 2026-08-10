@@ -1,22 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Lock, RefreshCw, Users } from 'lucide-react';
+import { ArrowRight, Lock, RefreshCw, Users, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from '@/hooks/use-toast';
 import { fetchLeadsSince6pm, tallyByAgent } from '@/lib/since6pmLeadCounts';
 import { NOTE_LOCK_EXPLAINER } from '@/lib/leadNoteLock';
 import { cn } from '@/lib/utils';
 import { useRebalanceWindow } from '@/lib/rebalanceWindow';
 import { RebalanceWindowPicker } from './RebalanceWindowPicker';
+
 
 interface AgentRow {
   id: string;
