@@ -1,5 +1,5 @@
 import { getVehicleAge } from '@/lib/vehicleAge';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -2029,6 +2029,17 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       });
       return;
     }
+    // Safety: never email a link that belongs to a different vehicle/customer/cover.
+    if (quoteLinkIdentityRef.current && quoteLinkIdentityRef.current !== quoteIdentity) {
+      setQuoteLink(null);
+      setQuoteGenerated(false);
+      toast({
+        title: "Quote link is out of date",
+        description: "The vehicle, customer or cover options changed. A fresh link is being generated — please try sending again in a moment.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsSendingEmail(true);
     try {
@@ -2652,13 +2663,39 @@ Questions? Call 0330 229 5040`;
   const [isGeneratingQuoteLink, setIsGeneratingQuoteLink] = useState(false);
   const [quoteLink, setQuoteLink] = useState<string | null>(null);
   const [quoteGenerated, setQuoteGenerated] = useState(false);
+  // Identity of the quote the current link belongs to. If any of these change
+  // (new reg, different customer, different cover options) the existing link is
+  // stale and MUST be regenerated — otherwise the emailed link opens the
+  // previous customer's vehicle.
+  const quoteIdentity = [
+    (vehicleData?.regNumber || '').toUpperCase().replace(/\s+/g, ''),
+    (customerEmail || '').toLowerCase(),
+    customerName || '',
+    paymentType,
+    String(excessAmount),
+    String(claimLimit),
+    String(labourRate),
+    String(boostAddon),
+    String(currentPrice.monthlyPrice),
+  ].join('|');
+  const quoteLinkIdentityRef = useRef<string | null>(null);
 
-  // Auto-generate quote link when entering step 3
   useEffect(() => {
-    if (step === 3 && customerEmail && customerName && vehicleData && !quoteGenerated) {
+    if (quoteLinkIdentityRef.current !== null && quoteLinkIdentityRef.current !== quoteIdentity) {
+      setQuoteLink(null);
+      setQuoteGenerated(false);
+      setQuoteSent(false);
+      setSelfCopySent(false);
+    }
+  }, [quoteIdentity]);
+
+  // Auto-generate quote link when entering step 3 (or after it was invalidated)
+  useEffect(() => {
+    if (step === 3 && customerEmail && customerName && vehicleData && (!quoteGenerated || !quoteLink)) {
       generateQuoteLink();
     }
-  }, [step, customerEmail, customerName, vehicleData]);
+  }, [step, customerEmail, customerName, vehicleData, quoteGenerated, quoteLink]);
+
 
   const generateQuoteLink = async () => {
     if (!customerEmail || !customerName || !vehicleData) return;
@@ -2710,6 +2747,7 @@ Questions? Call 0330 229 5040`;
         const quoteUrl = `${origin}/quote/${data.quote.accessToken}`;
         setQuoteLink(quoteUrl);
         setQuoteGenerated(true);
+        quoteLinkIdentityRef.current = quoteIdentity;
         auditPriceOverride('quote_link');
 
       } else {
