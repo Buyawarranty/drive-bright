@@ -497,28 +497,32 @@ export function applyBasePriceFloor(
 /**
  * ABSOLUTE minimum sellable total — hard-bottom-only version.
  *
- * £349 is the floor for the cheapest reachable 12-month combo. 24 and 36 month
- * floors scale with the term. Only quotes that fall below this level get lifted;
- * everything above the normal shaped floor stays where it already was.
+ * £399 is the floor for the cheapest reachable 12-month combo. 24 and 36 month
+ * floors scale with the term (×1.65 / ×2.35). Only quotes that fall below this
+ * level get lifted; everything above the normal shaped floor stays where it was.
  * Motorbikes are half-price; web journey is grid minus the live Step 3 discount.
+ *
+ * These same figures are the NET payable floor (see `lib/pricing/netFloor.ts`),
+ * so an agent discount or a manual payment confirmation cannot land below them.
  */
-export const ABSOLUTE_MIN_GRID_TOTAL_12M = 349;
+export const ABSOLUTE_MIN_GRID_TOTAL_12M = 399;
 
 /** Flat term multipliers for the absolute minimum. */
 const ABSOLUTE_MIN_GRID_BY_PERIOD: Record<PaymentPeriod, number> = {
-  '12months': 349,
-  '24months': 577,
-  '36months': 821,
+  '12months': 399,
+  '24months': 659,
+  '36months': 938,
 };
 
 /**
- * The REFERENCE combo the £349 anchor is defined against:
+ * The REFERENCE combo the £399 anchor is defined against:
  * £2,000 claim limit, £70/hr labour, £150 excess. Anchoring on the cheapest combo
  * instead inflated the hard bottom on a default quote, which clamped almost every
  * vehicle to the same price. Options better than the reference lift the absolute
  * minimum proportionally; cheaper options never drop below it.
  */
 const ABS_MIN_ANCHOR = { claimLimit: 2000, labourRate: 70, voluntaryExcess: 150 };
+
 
 
 export function getAbsoluteMinimumTotal(params: {
