@@ -132,14 +132,15 @@ const VehicleRiskBandsPanel: React.FC = () => {
 
   const addAssignment = () => {
     const make = newEntry.make.trim();
-    if (!make) {
-      toast.error('Enter a make.');
+    const model = newEntry.model.trim();
+    if (!make && !model) {
+      toast.error('Enter a make, a model, or both.');
       return;
     }
     update({
       ...config,
       assignments: [
-        { id: newId('assign'), bandId: newEntry.bandId, make, model: newEntry.model.trim(), enabled: true },
+        { id: newId('assign'), bandId: newEntry.bandId, make, model, enabled: true },
         ...config.assignments,
       ],
     });
@@ -355,15 +356,15 @@ const VehicleRiskBandsPanel: React.FC = () => {
               <div className="space-y-1">
                 <Label className="text-xs">Make</Label>
                 <Input
-                  placeholder="e.g. Land Rover"
+                  placeholder="e.g. Land Rover (blank = all makes)"
                   value={newEntry.make}
                   onChange={e => setNewEntry({ ...newEntry, make: e.target.value })}
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Model / trim (blank = whole make)</Label>
+                <Label className="text-xs">Model / trim (blank = all models)</Label>
                 <Input
-                  placeholder="e.g. Range Rover Velar"
+                  placeholder="e.g. Range Rover Velar (blank = all models)"
                   value={newEntry.model}
                   onChange={e => setNewEntry({ ...newEntry, model: e.target.value })}
                 />
@@ -405,10 +406,11 @@ const VehicleRiskBandsPanel: React.FC = () => {
               {visibleAssignments.map(a => {
                 const band = bandById.get(a.bandId);
                 return (
-                  <div key={a.id} className="flex flex-wrap items-center gap-3 p-3">
+                <div key={a.id} className="flex flex-wrap items-center gap-3 p-3">
                     <div className="min-w-[180px]">
                       <p className="font-medium">
-                        {a.make} {a.model || <span className="text-muted-foreground">(all models)</span>}
+                        {a.make || <span className="text-muted-foreground">(all makes)</span>}{' '}
+                        {a.model || <span className="text-muted-foreground">(all models)</span>}
                       </p>
                       {band && (
                         <p className="text-xs text-muted-foreground">
@@ -509,7 +511,7 @@ const VehicleRiskBandsPanel: React.FC = () => {
             <span className="text-sm text-muted-foreground">
               {testResult.match.isDefault
                 ? 'No rule matched — default band used'
-                : `Matched: ${testResult.match.assignment?.make} ${testResult.match.assignment?.model || '(all models)'}`}
+                : `Matched: ${testResult.match.assignment?.make || '(all makes)'} ${testResult.match.assignment?.model || '(all models)'}`}
             </span>
             <div className="ml-auto text-right">
               {testResult.priced.referral ? (
