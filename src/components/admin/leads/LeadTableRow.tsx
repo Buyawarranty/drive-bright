@@ -608,6 +608,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       isFakeLead && "opacity-50 bg-red-50 hover:bg-red-100/60 pointer-events-auto",
       isLocked && "opacity-70",
       isSuspiciousLead && !isFakeLead && "bg-red-50/50 hover:bg-red-100/40",
+      // Do not contact: grey out the entire row and reduce interactivity.
+      isDoNotContact && "bg-gray-100/60 opacity-70 cursor-not-allowed",
       // Open Lead Pool: pinned reserved row — clearer left rail (6px) + slightly stronger mint tint.
       // Kept restrained so phone / reg / actions still read as the primary content.
       isReserved && "!bg-emerald-100/60 hover:!bg-emerald-100/80 shadow-[inset_6px_0_0_0_theme(colors.emerald.600)]"
