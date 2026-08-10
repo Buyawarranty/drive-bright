@@ -988,9 +988,13 @@ export const UserPermissionsTab = () => {
     }
   };
 
-  const handleTestLogin = () => {
+  const handleTestLogin = async () => {
     if (!passwordUser || !newPassword) {
       toast.error('Set a password first');
+      return;
+    }
+    if (savedPassword !== newPassword) {
+      toast.error('Save the password first — this value is not live yet');
       return;
     }
     // Copy credentials so they can be pasted on the gateway, then open the login page.
