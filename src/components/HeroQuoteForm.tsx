@@ -156,6 +156,15 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
         return;
       }
 
+      // Excluded vehicle matrix — never quote supercars / luxury / performance models
+      const vehicleBlockMessage = getVehicleBlockMessage(data);
+      if (vehicleBlockMessage) {
+        console.log('Vehicle blocked by exclusion matrix:', vehicleBlockMessage);
+        setVehicleAgeError(vehicleBlockMessage);
+        setIsLookingUp(false);
+        return;
+      }
+
       if (!data || !data.make) {
         showRegError('notFound');
         return;
@@ -229,15 +238,6 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
         }
         quotedMileage = String(typed);
         rememberMileageSource('customer', typed);
-      }
-
-      // Excluded vehicle matrix — never quote supercars / luxury / performance models
-      const vehicleBlockMessage = getVehicleBlockMessage(data);
-      if (vehicleBlockMessage) {
-        console.log('Vehicle blocked by exclusion matrix:', vehicleBlockMessage);
-        setVehicleAgeError(vehicleBlockMessage);
-        setIsLookingUp(false);
-        return;
       }
 
       const vehicleData: VehicleData = {
