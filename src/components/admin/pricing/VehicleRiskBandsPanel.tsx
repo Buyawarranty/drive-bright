@@ -608,7 +608,13 @@ const VehicleRiskBandsPanel: React.FC = () => {
                             : `×${band.factor.toFixed(2)}${band.minOneYear ? ` · min £${band.minOneYear}` : ''}`}
                         </p>
                       )}
+                      {clashes && (
+                        <p className="text-xs font-semibold text-destructive">
+                          Excluded list wins — never quoted
+                        </p>
+                      )}
                     </div>
+
                     <Select value={a.bandId} onValueChange={v => patchAssignment(a.id, { bandId: v })}>
                       <SelectTrigger className="h-9 w-[220px]">
                         <SelectValue />
