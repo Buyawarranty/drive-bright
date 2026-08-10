@@ -902,12 +902,34 @@ export const UserPermissionsTab = () => {
   };
 
   const [sendingCreds, setSendingCreds] = useState(false);
+  // The exact password value that has been confirmed saved on the login server.
+  const [savedPassword, setSavedPassword] = useState<string | null>(null);
 
   const openPasswordDialog = (user: AdminUser) => {
     setPasswordUser(user);
     // Pre-generate a password so the admin can immediately copy / send / test it.
     setNewPassword(generatePasswordValue());
+    setSavedPassword(null);
     setShowPasswordDialog(true);
+  };
+
+  /** Saves the password and only resolves true when the server confirms it. */
+  const savePasswordToServer = async (): Promise<boolean> => {
+    if (!passwordUser || !newPassword || newPassword.length < 6) {
+      toast.error('Enter a password (min 6 chars) first');
+      return false;
+    }
+    const { data, error } = await supabase.functions.invoke('set-admin-password', {
+      body: {
+        userId: passwordUser.user_id,
+        email: passwordUser.email,
+        password: newPassword,
+      },
+    });
+    if (error) throw new Error(error.message || 'Could not save the password');
+    if (data && data.success === false) throw new Error(data.error || 'Could not save the password');
+    setSavedPassword(newPassword);
+    return true;
   };
 
   const handleSetPassword = async () => {
@@ -923,19 +945,13 @@ export const UserPermissionsTab = () => {
 
     setSettingPassword(true);
     try {
-      const { error } = await supabase.functions.invoke('set-admin-password', {
-        body: {
-          userId: passwordUser.user_id,
-          email: passwordUser.email,
-          password: newPassword
-        }
-      });
-
-      if (error) throw error;
-
-      toast.success(`Password set for ${passwordUser.email}`, { duration: 5000 });
+      const ok = await savePasswordToServer();
+      if (ok) {
+        toast.success(`Password saved for ${passwordUser.email} — this exact value now works`, { duration: 5000 });
+      }
     } catch (error: any) {
       console.error('Error setting password:', error);
+      setSavedPassword(null);
       toast.error(error.message || 'Failed to set password');
     } finally {
       setSettingPassword(false);
@@ -949,6 +965,9 @@ export const UserPermissionsTab = () => {
     }
     setSendingCreds(true);
     try {
+      // Always save first so the emailed value is guaranteed to be the live password.
+      await savePasswordToServer();
+
       const { error } = await supabase.functions.invoke('send-admin-login-details', {
         body: {
           userId: passwordUser.user_id,
@@ -960,7 +979,7 @@ export const UserPermissionsTab = () => {
         }
       });
       if (error) throw error;
-      toast.success(`Credentials emailed to ${passwordUser.email}`, { duration: 5000 });
+      toast.success(`Password saved and credentials emailed to ${passwordUser.email}`, { duration: 5000 });
     } catch (error: any) {
       console.error('Error sending credentials:', error);
       toast.error(error.message || 'Failed to send credentials');
@@ -969,9 +988,13 @@ export const UserPermissionsTab = () => {
     }
   };
 
-  const handleTestLogin = () => {
+  const handleTestLogin = async () => {
     if (!passwordUser || !newPassword) {
       toast.error('Set a password first');
+      return;
+    }
+    if (savedPassword !== newPassword) {
+      toast.error('Save the password first — this value is not live yet');
       return;
     }
     // Copy credentials so they can be pasted on the gateway, then open the login page.
@@ -1564,20 +1587,36 @@ export const UserPermissionsTab = () => {
             </DialogTitle>
           </DialogHeader>
           {passwordUser && (() => {
+            const isSaved = !!newPassword && savedPassword === newPassword;
             const fullBlock = `Step 1 — Gateway\nLink: ${loginUrlForRole(passwordUser.role)}\nPassword: SmashSales2026!!\n\nStep 2 — ${passwordUser.first_name || ''} ${passwordUser.last_name || ''}'s login\nUsername: ${passwordUser.email}\nPassword: ${newPassword || '(set a password first)'}`;
             return (
             <div className="space-y-4">
+              {!isSaved && (
+                <div className="rounded-lg border-2 border-amber-400 bg-amber-50 p-3 text-sm text-amber-900">
+                  <strong>This password is not live yet.</strong> Click <em>Save password</em> (or
+                  <em> Save &amp; email login</em>) before you share it — otherwise the staff member
+                  will get "invalid login credentials".
+                </div>
+              )}
+              {isSaved && (
+                <div className="rounded-lg border-2 border-emerald-400 bg-emerald-50 p-3 text-sm text-emerald-900">
+                  <strong>Saved.</strong> This exact password now works on the login page.
+                </div>
+              )}
+
               {/* One-click copy-all */}
               <Button
                 type="button"
                 variant="outline"
                 className="w-full justify-center border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-900"
                 onClick={() => copyToClipboard(fullBlock, 'all')}
-                disabled={!newPassword}
+                disabled={!isSaved}
+                title={isSaved ? undefined : 'Save the password first'}
               >
                 {copiedField === 'all' ? <Check className="h-4 w-4 mr-2 text-green-600" /> : <Copy className="h-4 w-4 mr-2" />}
                 {copiedField === 'all' ? 'Copied all login details' : 'Copy all login details'}
               </Button>
+
 
               {/* Step 1: Gateway */}
               <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 space-y-2">
@@ -1637,11 +1676,11 @@ export const UserPermissionsTab = () => {
                     </Button>
                     <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0"
                       onClick={() => copyToClipboard(newPassword, 'password')}
-                      disabled={!newPassword} title="Copy password">
+                      disabled={!isSaved} title={isSaved ? 'Copy password' : 'Save the password first'}>
                       {copiedField === 'password' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                     </Button>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">Min 6 chars. This is the value emailed to the user.</p>
+                  <p className="text-[11px] text-muted-foreground">Min 6 chars. Only shareable once saved.</p>
                 </div>
               </div>
 
@@ -1649,7 +1688,7 @@ export const UserPermissionsTab = () => {
                 <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>
                   Close
                 </Button>
-                <Button variant="outline" onClick={handleTestLogin} disabled={!newPassword}>
+                <Button variant="outline" onClick={handleTestLogin} disabled={!isSaved}>
                   Copy & open login page
                 </Button>
                 <Button variant="outline" onClick={handleSetPassword}
