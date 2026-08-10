@@ -57,8 +57,9 @@ const PREMIUM_VEHICLE_MAKES = DEFAULT_CLAIM_5K_BLOCKED_MAKES;
 
 /**
  * Managed £5,000 blocklist, editable on the Price updates page.
- * Each entry blocks a make, optionally narrowed to a model, and can be
- * switched off (unblocked) without deleting it.
+ * A rule can name a make (blocks the whole make), a make + model (blocks just
+ * that model), or a model on its own (blocks that model across every make).
+ * Each rule can be switched off (unblocked) without deleting it.
  */
 export type Claim5kBlockRule = {
   id?: string;
@@ -71,10 +72,10 @@ let liveClaim5kBlocklist: Claim5kBlockRule[] | null = null;
 
 export function setLiveClaim5kBlocklist(rules: Claim5kBlockRule[] | null | undefined) {
   const clean = (rules || [])
-    .filter(r => (r?.make || '').trim())
+    .filter(r => (r?.make || '').trim() || (r?.model || '').trim())
     .map(r => ({
       id: r.id,
-      make: String(r.make).toLowerCase().trim(),
+      make: r.make ? String(r.make).toLowerCase().trim() : '',
       model: r.model ? String(r.model).toLowerCase().trim() : null,
       blocked: r.blocked !== false,
     }));
@@ -91,20 +92,24 @@ export function getLiveClaim5kBlocklist(): Claim5kBlockRule[] | null {
  */
 export function isPremiumVehicle(make?: string, model?: string): boolean {
   const m = (make || '').toLowerCase().trim();
-  if (!m) return false;
+  const mo = (model || '').toLowerCase().trim();
 
   if (liveClaim5kBlocklist) {
-    const mo = (model || '').toLowerCase().trim();
+    if (!m && !mo) return false;
     return liveClaim5kBlocklist.some(r => {
       if (!r.blocked) return false;
+      // Model-only rule: block that model whatever the make is.
+      if (!r.make) return !!r.model && (mo.includes(r.model) || m.includes(r.model));
       if (!m.includes(r.make)) return false;
       if (!r.model) return true;
       return mo.includes(r.model);
     });
   }
 
+  if (!m) return false;
   return PREMIUM_VEHICLE_MAKES.some(p => m.includes(p));
 }
+
 
 /**
  * Get the elite surcharge (£2000→£3000 step).

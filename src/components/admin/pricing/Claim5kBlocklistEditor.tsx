@@ -28,17 +28,19 @@ export default function Claim5kBlocklistEditor() {
 
   const addRule = () => {
     const make = newMake.trim();
-    if (!make) {
-      toast.error('Enter a vehicle make to block');
+    const model = newModel.trim();
+    if (!make && !model) {
+      toast.error('Enter a make, a model, or both');
       return;
     }
     setDraft(prev => [
       ...prev,
-      { id: `rule-${Date.now()}`, make, model: newModel.trim() || null, blocked: true },
+      { id: `rule-${Date.now()}`, make, model: model || null, blocked: true },
     ]);
     setNewMake('');
     setNewModel('');
   };
+
 
   const handleSave = async () => {
     const ok = await save(draft);
@@ -59,8 +61,10 @@ export default function Claim5kBlocklistEditor() {
           </div>
           <p className="text-sm text-muted-foreground max-w-2xl">
             Blocked vehicles fall back to £3,000 cover on Quotes &amp; Orders and the customer
-            journey. Leave Model blank to block the whole make, or add a model to block just that
-            model. Switch a rule off to unblock without deleting it.
+            journey. Enter a make on its own to block the whole make, a make plus a model to block
+            just that model, or a model on its own to block that model across every make. Switch a
+            rule off to unblock without deleting it.
+
           </p>
         </div>
         <Badge variant="outline" className="bg-white">
@@ -77,18 +81,23 @@ export default function Claim5kBlocklistEditor() {
             <Input
               value={rule.make}
               onChange={e => update(rule.id!, { make: e.target.value })}
-              placeholder="Make (e.g. Land Rover)"
+              placeholder="Make (blank = all makes)"
               className="w-48"
             />
             <Input
               value={rule.model ?? ''}
               onChange={e => update(rule.id!, { model: e.target.value || null })}
-              placeholder="Model (optional)"
+              placeholder="Model (blank = all models)"
               className="w-48"
             />
             <span className="text-xs text-muted-foreground flex-1 min-w-[8rem]">
-              {rule.model ? `Blocks ${rule.make} ${rule.model} only` : `Blocks all ${rule.make}`}
+              {!rule.make && rule.model
+                ? `Blocks ${rule.model} across all makes`
+                : rule.model
+                  ? `Blocks ${rule.make} ${rule.model} only`
+                  : `Blocks all ${rule.make}`}
             </span>
+
             <div className="flex items-center gap-2">
               <span
                 className={`text-xs font-semibold ${
