@@ -722,7 +722,17 @@ const VehicleRiskBandsPanel: React.FC = () => {
             </div>
           </div>
 
+          {isVehicleExcluded(testMake, testModel) && (
+            <Alert className="border-destructive/40 bg-destructive/5">
+              <AlertDescription className="text-sm">
+                <strong>On the excluded vehicles list</strong> — {getExclusionReason(testMake, testModel)}. This
+                vehicle is declined at registration lookup, so the band below is never reached.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="rounded-lg border p-4 flex flex-wrap items-center gap-4">
+
             <Badge variant="outline" className={TONE_CLASS[testResult.match.band.tone]}>
               {testResult.match.band.name}
             </Badge>
