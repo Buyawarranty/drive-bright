@@ -257,8 +257,12 @@ export function usePricingVersions() {
         ((publishedRow as any)?.label as string) || 'pricing push'
       );
       await load();
+      // Apply the newly published prices to the running app immediately so open
+      // screens (Quotes & Orders / import lead) quote the new price without a reload.
+      await refreshLivePricing();
 
     },
+
     [load]
   );
 
