@@ -767,6 +767,21 @@ serve(async (req) => {
       }
     }
 
+    // DVSA MOT history record (stored from the same DVSA API) is the last word on
+    // make/model. Never return a vehicle with a missing model when we already hold it.
+    if (!make || !model) {
+      const motCached = await fetchMotHistoryFallback(registrationNumber);
+      if (motCached?.make) {
+        console.log('✅ Recovered make/model from DVSA MOT history record:', motCached.make, motCached.model);
+        make = make || motCached.make;
+        model = model || motCached.model || null;
+        fuelType = fuelType || motCached.fuelType;
+        colour = colour || motCached.colour;
+        yearOfManufacture = yearOfManufacture || motCached.yearOfManufacture;
+      }
+    }
+
+
     // Apply manual overrides by registration (ensures correct make/model, e.g., Audi S8 cases)
     {
       const regUpper = registrationNumber.toUpperCase();
