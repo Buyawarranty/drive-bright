@@ -131,7 +131,116 @@ const ExcludedVehiclesPanel: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      <SectionPushLiveBar
+        sectionLabel="Excluded vehicles"
+        liveLabel={live ? live.label : 'Built-in matrix only'}
+        candidates={[]}
+        directPush={{
+          label: dirty ? 'Push exclusions live' : 'Re-push exclusions live',
+          run: pushLive,
+        }}
+        busy={busy}
+      />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Extra exclusions (draft)</CardTitle>
+          <CardDescription>
+            Add anything the built-in matrix doesn’t cover, then press <strong>Push exclusions live</strong>{' '}
+            above. Drafts stay in your browser until pushed live; once live they apply to Steps 1–4,
+            Quotes &amp; Orders and the DVLA lookup with whatever pricing version is live.
+            {dirty ? ' Draft has unpublished changes.' : ' Draft matches what is live.'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Exclude a whole make</Label>
+            <div className="flex gap-2">
+              <Input
+                value={newMake}
+                onChange={e => setNewMake(e.target.value)}
+                placeholder="e.g. Corvette"
+                onKeyDown={e => e.key === 'Enter' && addMake()}
+              />
+              <Button type="button" variant="outline" onClick={addMake}>
+                <Plus className="mr-1 h-4 w-4" /> Add
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {draft.makes.length === 0 && (
+                <p className="text-sm text-muted-foreground">No extra makes in the draft.</p>
+              )}
+              {draft.makes.map(m => (
+                <Badge key={m} variant="destructive" className="gap-1 capitalize">
+                  {m}
+                  <button
+                    type="button"
+                    aria-label={`Remove ${m}`}
+                    onClick={() => updateDraft({ ...draft, makes: draft.makes.filter(x => x !== m) })}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Exclude a model / keyword</Label>
+            <div className="grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+              <Input
+                value={ruleMake}
+                onChange={e => setRuleMake(e.target.value)}
+                placeholder="Make (blank = all makes)"
+              />
+              <Input
+                value={ruleModel}
+                onChange={e => setRuleModel(e.target.value)}
+                placeholder="Model or keyword, e.g. velar"
+                onKeyDown={e => e.key === 'Enter' && addModelRule()}
+              />
+              <Button type="button" variant="outline" onClick={addModelRule}>
+                <Plus className="mr-1 h-4 w-4" /> Add
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {draft.modelRules.length === 0 && (
+                <p className="text-sm text-muted-foreground">No extra model rules in the draft.</p>
+              )}
+              {draft.modelRules.map((r, i) => (
+                <div
+                  key={`${r.make}-${r.model}-${i}`}
+                  className="flex items-center justify-between gap-2 rounded-md border p-2 text-sm"
+                >
+                  <span>
+                    Excludes <strong className="capitalize">{r.model}</strong>{' '}
+                    {r.make ? (
+                      <>
+                        on <span className="capitalize">{r.make}</span>
+                      </>
+                    ) : (
+                      'across all makes'
+                    )}
+                  </span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() =>
+                      updateDraft({ ...draft, modelRules: draft.modelRules.filter((_, x) => x !== i) })
+                    }
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="border-2">
+
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl">
             <Ban className="h-5 w-5 text-destructive" />
