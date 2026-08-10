@@ -43,6 +43,12 @@ const COMPANY = {
     'Buyawarranty.co.uk is a trading name of Buy A Warranty Limited. Established 2016. Registered in the United Kingdom under Company number: 10314863.',
   legalLine2:
     'Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England. VAT registration number 519 1099 85.',
+  bank: {
+    accountName: 'Buy A Warranty Limited',
+    bankName: 'Metro Bank plc',
+    sortCode: '23 05 80',
+    accountNumber: '21009695',
+  },
 };
 
 
@@ -352,6 +358,13 @@ function buildInvoiceHtml(f: ReturnType<QuoteInvoiceDialogHydrate>): string {
     <div class="row grand"><span>Total (incl. VAT)</span><span>${amount}</span></div>
   </div></div>
   ${f.notes ? `<p style="font-size:12px;color:#555;margin-bottom:24px">${f.notes}</p>` : ''}
+  <div style="background:#f9fafb;border-radius:8px;padding:18px;margin-bottom:24px">
+    <h4 style="color:#f97316;font-size:13px;text-transform:uppercase;margin-bottom:10px">Bank transfer details</h4>
+    <p style="font-size:13px;margin:3px 0"><strong>Account name:</strong> ${COMPANY.bank.accountName}</p>
+    <p style="font-size:13px;margin:3px 0"><strong>Bank:</strong> ${COMPANY.bank.bankName}</p>
+    <p style="font-size:13px;margin:3px 0"><strong>Sort code:</strong> ${COMPANY.bank.sortCode}</p>
+    <p style="font-size:13px;margin:3px 0"><strong>Account number:</strong> ${COMPANY.bank.accountNumber}</p>
+  </div>
   <div class="footer">
     <p><strong>${COMPANY.name}</strong></p>
     <p>${COMPANY.website} · ${COMPANY.email} · ${COMPANY.phone}</p>

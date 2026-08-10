@@ -47,7 +47,13 @@ const COMPANY_INFO = {
   email: 'support@buyawarranty.co.uk',
   phone: '0330 229 5040',
   address: ['Buy A Warranty', 'Online', 'United Kingdom'],
-  logoUrl: 'https://buyawarranty.co.uk/lovable-uploads/e4a0c8c7-1d74-4e55-a556-1b513ba12cc8.png'
+  logoUrl: 'https://buyawarranty.co.uk/lovable-uploads/e4a0c8c7-1d74-4e55-a556-1b513ba12cc8.png',
+  bank: {
+    accountName: 'Buy A Warranty Limited',
+    bankName: 'Metro Bank plc',
+    sortCode: '23 05 80',
+    accountNumber: '21009695',
+  },
 };
 
 const formatCurrency = (amount: number): string => {
@@ -197,6 +203,14 @@ const generateInvoiceHTML = (customer: Customer): string => {
             <span>${formatCurrency(customer.final_amount)}</span>
           </div>
         </div>
+      </div>
+      
+      <div style="background: #f9fafb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+        <h4 style="color: #f97316; font-size: 14px; text-transform: uppercase; margin-bottom: 12px;">Bank transfer details</h4>
+        <p style="font-size: 13px; margin: 4px 0;"><strong>Account name:</strong> ${COMPANY_INFO.bank.accountName}</p>
+        <p style="font-size: 13px; margin: 4px 0;"><strong>Bank:</strong> ${COMPANY_INFO.bank.bankName}</p>
+        <p style="font-size: 13px; margin: 4px 0;"><strong>Sort code:</strong> ${COMPANY_INFO.bank.sortCode}</p>
+        <p style="font-size: 13px; margin: 4px 0;"><strong>Account number:</strong> ${COMPANY_INFO.bank.accountNumber}</p>
       </div>
       
       <div class="footer">
