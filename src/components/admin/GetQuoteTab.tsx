@@ -2736,6 +2736,7 @@ Questions? Call 0330 229 5040`;
         const quoteUrl = `${origin}/quote/${data.quote.accessToken}`;
         setQuoteLink(quoteUrl);
         setQuoteGenerated(true);
+        quoteLinkIdentityRef.current = quoteIdentity;
         auditPriceOverride('quote_link');
 
       } else {
