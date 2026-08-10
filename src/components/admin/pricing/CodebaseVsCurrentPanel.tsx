@@ -198,8 +198,16 @@ export default function CodebaseVsCurrentPanel({
           Number(currentMatrix?.[period]?.[String(excess)]?.[String(column)] ?? codeGrid - step) + step;
         const codeBase = Number((BASE_PRICING_MATRIX as any)[period]?.[excess]?.[column] ?? 0) + step;
 
-        const code = Math.round(codeGrid * codeFactor);
-        const current = Math.round(currentGrid * liveFactor);
+        // PERMANENT floor: no pricing model — July code base, live or draft —
+        // may ever show a price below the minimum sellable price for the term.
+        const floorParams = {
+          paymentPeriod: period as any,
+          voluntaryExcess: excess,
+          claimLimit,
+          labourRate,
+        };
+        const code = clampToNetFloor(codeGrid * codeFactor, floorParams);
+        const current = clampToNetFloor(currentGrid * liveFactor, floorParams);
         return {
           period,
           excess,
@@ -207,14 +215,19 @@ export default function CodebaseVsCurrentPanel({
           currentGrid,
           code,
           current,
-          codeWeb: Math.round(applyCustomerJourneyUplift(codeBase, 'customer') * codeFactor),
-          currentWeb: Math.round(
-            deriveCustomerPriceFromAdmin(currentGrid, currentDiscountPct) * liveFactor
+          codeWeb: clampWebToNetFloor(
+            applyCustomerJourneyUplift(codeBase, 'customer') * codeFactor,
+            floorParams,
+          ),
+          currentWeb: clampWebToNetFloor(
+            deriveCustomerPriceFromAdmin(currentGrid, currentDiscountPct) * liveFactor,
+            floorParams,
           ),
         };
       })
     );
-  }, [codeMatrix, currentMatrix, claimLimit, currentDiscountPct, codeFactor, liveFactor]);
+  }, [codeMatrix, currentMatrix, claimLimit, labourRate, currentDiscountPct, codeFactor, liveFactor]);
+
 
   const summary = useMemo(() => {
     return PERIODS.map(period => {
