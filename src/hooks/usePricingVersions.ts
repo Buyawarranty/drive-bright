@@ -9,6 +9,8 @@ import {
 import type { VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
 import { runPreflightCheck } from '@/lib/pricing/preflightCheck';
 import { autoPublishExclusionsWithPricing } from '@/lib/pricing/liveVehicleExclusions';
+import { refreshLivePricing } from '@/lib/pricing/refreshLivePricing';
+
 
 import {
   computeConfigChecksum,
