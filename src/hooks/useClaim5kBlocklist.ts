@@ -14,15 +14,16 @@ const DEFAULT_RULES: Claim5kBlockRule[] = DEFAULT_CLAIM_5K_BLOCKED_MAKES.map((ma
 function normalise(raw: unknown): Claim5kBlockRule[] {
   if (!Array.isArray(raw)) return DEFAULT_RULES;
   const list = raw
-    .filter((r: any) => r && String(r.make || '').trim())
+    .filter((r: any) => r && (String(r.make || '').trim() || String(r.model || '').trim()))
     .map((r: any, i: number) => ({
       id: String(r.id || `rule-${i}`),
-      make: String(r.make).trim(),
+      make: r.make ? String(r.make).trim() : '',
       model: r.model ? String(r.model).trim() : null,
       blocked: r.blocked !== false,
     }));
   return list.length ? list : DEFAULT_RULES;
 }
+
 
 /**
  * Managed list of vehicles blocked from the £5,000 AutoCare Premium claim limit.
