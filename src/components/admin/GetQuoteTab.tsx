@@ -5828,10 +5828,11 @@ Questions? Call 0330 229 5040`;
                     Math.ceil(Number(basePrice.monthlyPrice || 0) * 12) || Number(basePrice.totalPrice || 0);
                   const web = getWebReferencePrice(undiscountedGridTotal);
                   return (
-                <div className="sticky bottom-2 z-40 mt-4">
-                  <div className="rounded-xl border border-gray-200 border-t-4 border-t-emerald-500 bg-white px-3 py-3 shadow-[0_-8px_24px_-10px_rgba(0,0,0,0.18)] max-h-[45vh] overflow-y-auto">
+                <div className="sticky bottom-0 z-40 mt-4 pb-2">
+                  <div className="rounded-xl border border-gray-200 border-t-4 border-t-emerald-500 bg-white px-3 py-3 shadow-[0_-8px_24px_-10px_rgba(0,0,0,0.18)]">
 
-                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-2.5 xl:grid-cols-4">
+
 
                       {/* 1 — Monthly */}
                       <div className="rounded-lg border border-blue-200 bg-blue-50/60 px-3 py-2.5">
