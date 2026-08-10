@@ -62,7 +62,9 @@ export default function PricingOverrideLoader() {
 
     return () => {
       cancelled = true;
+      window.removeEventListener('focus', onFocus);
     };
+
   }, []);
 
   return null;
