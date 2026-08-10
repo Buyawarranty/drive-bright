@@ -256,15 +256,39 @@ export const LeadRecoveryPanel: React.FC = () => {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Reassign to</label>
-            <Select value={targetAgent} onValueChange={setTargetAgent}>
-              <SelectTrigger><SelectValue placeholder="Pick agent" /></SelectTrigger>
-              <SelectContent className="bg-popover z-50">
-                {agents.map(a => (
-                  <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <label className="text-xs font-medium text-muted-foreground">Reassign to (one or more)</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn('w-full justify-start text-left font-normal', targetAgents.length === 0 && 'text-muted-foreground')}>
+                  {targetAgents.length === 0
+                    ? 'Pick agents'
+                    : targetAgents.length === 1
+                      ? nameOf(targetAgents[0])
+                      : `${targetAgents.length} agents selected`}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-2 bg-popover z-50" align="start">
+                <div className="max-h-64 overflow-auto space-y-1">
+                  {agents.map(a => (
+                    <label
+                      key={a.id}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer text-sm"
+                    >
+                      <Checkbox
+                        checked={targetAgents.includes(a.id)}
+                        onCheckedChange={() => toggleTarget(a.id)}
+                      />
+                      {a.name}
+                    </label>
+                  ))}
+                </div>
+                {targetAgents.length > 0 && (
+                  <Button variant="ghost" size="sm" className="w-full mt-1" onClick={() => setTargetAgents([])}>
+                    Clear selection
+                  </Button>
+                )}
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
@@ -279,6 +303,27 @@ export const LeadRecoveryPanel: React.FC = () => {
           </label>
         </div>
 
+        {/* Per-day breakdown */}
+        {perDay.length > 0 && (
+          <div className="rounded-md border border-border bg-muted/20 p-3">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+              Leads per date
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {perDay.map(d => (
+                <span
+                  key={d.day}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-xs"
+                >
+                  <span className="text-muted-foreground">{format(new Date(`${d.day}T12:00:00`), 'EEE d MMM')}</span>
+                  <strong className="text-foreground">{d.total}</strong>
+                  {d.paid > 0 && <span className="text-green-700">({d.paid} paid)</span>}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Results */}
         {rows.length > 0 && (
           <div className="rounded-md border border-border overflow-hidden">
@@ -286,16 +331,22 @@ export const LeadRecoveryPanel: React.FC = () => {
               <div className="text-sm">
                 <strong className="text-foreground">{rows.length}</strong> lead{rows.length === 1 ? '' : 's'} found
                 {paidCount > 0 && <span className="ml-2 text-muted-foreground">({paidCount} paid)</span>}
+                {splitPlan.length > 1 && (
+                  <span className="ml-2 text-muted-foreground">
+                    → split {splitPlan.map(b => `${nameOf(b.agentId)} ${b.ids.length}`).join(' · ')}
+                  </span>
+                )}
               </div>
               <Button
                 size="sm"
                 onClick={() => setConfirmOpen(true)}
-                disabled={!targetAgent || loading}
+                disabled={targetAgents.length === 0 || loading}
               >
                 {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ArrowRightLeft className="h-4 w-4 mr-2" />}
                 Reassign all to {targetName || 'agent'}
               </Button>
             </div>
+
             <div className="max-h-72 overflow-auto">
               <table className="w-full text-sm">
                 <thead className="bg-muted/20 text-xs text-muted-foreground">
