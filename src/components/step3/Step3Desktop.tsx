@@ -137,7 +137,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   const [excessDetailsOpen, setExcessDetailsOpen] = React.useState(false);
   const [vehicleEditOpen, setVehicleEditOpen] = useState(false);
 
-  const isPremium = isPremiumVehicle(vehicleData?.make, vehicleData?.model);
+  const isPremium = isPremiumVehicle(vehicleData?.make, vehicleData?.model, vehicleData?.fuelType);
   const visibleClaimTiers = isPremium
     ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
     : [...CLAIM_LIMIT_TIERS];
