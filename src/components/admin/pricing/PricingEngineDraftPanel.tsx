@@ -317,7 +317,7 @@ export default function PricingEngineDraftPanel() {
         <CardHeader className="flex flex-row items-start justify-between gap-2">
           <CardTitle className="text-base">Breakdown</CardTitle>
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <PriceSurfaceBadge surface={surface === 'web' ? 'web' : 'quotes'} />
+            <PriceSurfaceBadge surface={surface === 'admin' ? 'quotes' : 'web'} />
             {eligibilityBadge()}
             <Badge variant="outline">factor ×{result.vehicleFactor.toFixed(3)}</Badge>
           </div>
