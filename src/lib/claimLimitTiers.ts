@@ -15,6 +15,7 @@
  */
 
 import { getBasePrice as getMatrixBasePrice, type PaymentPeriod } from './pricingMatrix';
+import { fuelFilterMatches, normalizeFuelFilter, type FuelFilter } from './pricing/fuelCategory';
 
 export const CLAIM_LIMIT_TIERS = [
   // 750 is the historic wire value for £1,000 cover — kept because it is written on
@@ -65,6 +66,8 @@ export type Claim5kBlockRule = {
   id?: string;
   make: string;
   model?: string | null;
+  /** Restrict the block to one powertrain. 'any' (or absent) = all fuels. */
+  fuel?: FuelFilter;
   blocked: boolean;
 };
 
@@ -77,6 +80,7 @@ export function setLiveClaim5kBlocklist(rules: Claim5kBlockRule[] | null | undef
       id: r.id,
       make: r.make ? String(r.make).toLowerCase().trim() : '',
       model: r.model ? String(r.model).toLowerCase().trim() : null,
+      fuel: normalizeFuelFilter(r.fuel),
       blocked: r.blocked !== false,
     }));
   liveClaim5kBlocklist = clean.length ? clean : null;
@@ -90,7 +94,7 @@ export function getLiveClaim5kBlocklist(): Claim5kBlockRule[] | null {
  * Check whether a vehicle is blocked from the £5,000 claim limit.
  * Uses the managed blocklist when present, otherwise the code defaults.
  */
-export function isPremiumVehicle(make?: string, model?: string): boolean {
+export function isPremiumVehicle(make?: string, model?: string, fuelType?: string | null): boolean {
   const m = (make || '').toLowerCase().trim();
   const mo = (model || '').toLowerCase().trim();
 
@@ -98,6 +102,7 @@ export function isPremiumVehicle(make?: string, model?: string): boolean {
     if (!m && !mo) return false;
     return liveClaim5kBlocklist.some(r => {
       if (!r.blocked) return false;
+      if (!fuelFilterMatches(r.fuel, fuelType)) return false;
       // Model-only rule: block that model whatever the make is.
       if (!r.make) return !!r.model && (mo.includes(r.model) || m.includes(r.model));
       if (!m.includes(r.make)) return false;
