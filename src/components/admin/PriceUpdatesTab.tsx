@@ -859,7 +859,11 @@ export default function PriceUpdatesTab() {
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                 )}
-                <TabsTrigger value={value} className="flex-1 py-3 text-base font-semibold">
+                <TabsTrigger
+                  value={value}
+                  className="flex-1 py-3 text-base font-semibold rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground"
+                >
+
                   <Icon className="h-4 w-4 mr-2" />
                   {tab.label}
                 </TabsTrigger>
