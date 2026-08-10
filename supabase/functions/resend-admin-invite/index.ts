@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { requireAdmin } from "../_shared/admin-auth.ts";
+import { verifyPassword, PASSWORD_NOT_VERIFIED_MESSAGE } from "../_shared/verify-password.ts";
 
 
 const corsHeaders = {
@@ -114,6 +115,16 @@ const handler = async (req: Request): Promise<Response> => {
       console.log('Updated password for existing user:', authUser.id);
     }
 
+    // Never email a temporary password we have not proven works on the login server.
+    const passwordVerified = await verifyPassword(email, tempPassword);
+    console.log('Password verification:', passwordVerified);
+    if (!passwordVerified) {
+      return new Response(JSON.stringify({ success: false, error: PASSWORD_NOT_VERIFIED_MESSAGE }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     // Create invitation link
     const invitationLink = `https://pricing.buyawarranty.co.uk/admin-dashboard`;
 
@@ -211,7 +222,8 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: true, 
         message: 'Invitation resent successfully',
-        tempPassword: tempPassword
+        tempPassword: tempPassword,
+        verified: true
       }),
       {
         status: 200,
