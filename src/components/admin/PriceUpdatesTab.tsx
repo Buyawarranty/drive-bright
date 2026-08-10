@@ -1539,8 +1539,17 @@ export default function PriceUpdatesTab() {
                 </thead>
                 <tbody>
                   {PERIODS.map(p => {
-                    const cell = (ex: number) =>
-                      previewVersion.admin_matrix?.[p]?.[String(ex)]?.['2000'];
+                    // Old versions (July original, Aug hybrid, anything restored)
+                    // are shown at the permanent minimum sellable price too.
+                    const cell = (ex: number) => {
+                      const v = previewVersion.admin_matrix?.[p]?.[String(ex)]?.['2000'];
+                      if (!v) return null;
+                      return clampToNetFloor(Number(v), {
+                        paymentPeriod: p as any,
+                        voluntaryExcess: ex,
+                        claimLimit: 2000,
+                      });
+                    };
                     return (
                       <tr key={p} className="border-t">
                         <td className="py-1.5 font-medium">{PERIOD_LABELS[p] || p}</td>
@@ -1549,6 +1558,7 @@ export default function PriceUpdatesTab() {
                       </tr>
                     );
                   })}
+
                 </tbody>
               </table>
               <p className="text-xs text-muted-foreground">
