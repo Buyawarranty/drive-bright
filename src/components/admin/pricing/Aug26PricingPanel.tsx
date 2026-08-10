@@ -164,9 +164,14 @@ const Aug26PricingPanel: React.FC = () => {
                           <td className="border p-2 font-medium">£{excess}</td>
                           {CLAIM_LIMITS.map((limit) => {
                             const cell = matrix?.[period]?.[String(excess)]?.[String(limit)];
-                            const floor = (floors as any)[period] as number | undefined;
-                            const underFloor =
-                              typeof cell === 'number' && typeof floor === 'number' && cell < floor;
+                            // PERMANENT floor: shaped per claim limit / excess, so
+                            // every cell of every version shows a sellable price.
+                            const floor = clampToNetFloor(0, {
+                              paymentPeriod: period as any,
+                              voluntaryExcess: excess,
+                              claimLimit: limit,
+                            });
+                            const underFloor = typeof cell === 'number' && cell < floor;
                             return (
                               <td
                                 key={limit}
@@ -175,19 +180,20 @@ const Aug26PricingPanel: React.FC = () => {
                                 }`}
                                 title={
                                   underFloor
-                                    ? `Below the £${floor} net floor — sold at £${floor}`
+                                    ? `Grid cell £${Math.round(cell as number)} is below the £${floor} minimum sellable price — it can only ever be sold at £${floor}.`
                                     : undefined
                                 }
                               >
-                                {money(cell)}
+                                {money(underFloor ? floor : cell)}
                                 {underFloor && (
                                   <span className="ml-1 text-[10px] font-semibold">
-                                    → £{floor}
+                                    floor
                                   </span>
                                 )}
                               </td>
                             );
                           })}
+
                         </tr>
                       ))}
                     </tbody>
