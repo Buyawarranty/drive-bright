@@ -907,8 +907,9 @@ export const UserPermissionsTab = () => {
 
   const openPasswordDialog = (user: AdminUser) => {
     setPasswordUser(user);
-    // Pre-generate a password so the admin can immediately copy / send / test it.
-    setNewPassword(generatePasswordValue());
+    // Deliberately blank: a pre-filled value looks live but isn't, which is how
+    // staff ended up with "Invalid login credentials". Generate + save explicitly.
+    setNewPassword('');
     setSavedPassword(null);
     setShowPasswordDialog(true);
   };
@@ -928,9 +929,15 @@ export const UserPermissionsTab = () => {
     });
     if (error) throw new Error(error.message || 'Could not save the password');
     if (data && data.success === false) throw new Error(data.error || 'Could not save the password');
+    // The function signs in with the new password before returning — only treat
+    // it as shareable when that verification passed.
+    if (data && data.verified !== true) {
+      throw new Error('Password could not be verified on the login server — do not share it yet.');
+    }
     setSavedPassword(newPassword);
     return true;
   };
+
 
   const handleSetPassword = async () => {
     if (!passwordUser || !newPassword) {
