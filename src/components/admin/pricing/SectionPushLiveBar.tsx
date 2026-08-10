@@ -14,6 +14,8 @@ import { Label } from '@/components/ui/label';
 import { Rocket, ArrowRight, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 import { CODE_WEB_DISCOUNT_PCT, MAX_WEB_DISCOUNT_PCT } from '@/lib/pricing/pricingVersionConfig';
 import { runPreflightCheck, type PreflightItem } from '@/lib/pricing/preflightCheck';
+import { autoPublishExclusionsWithPricing } from '@/lib/pricing/liveVehicleExclusions';
+
 
 
 /** One model in this section that a manager is allowed to publish. */
