@@ -480,9 +480,10 @@ export default function PriceTestStep2({
           <Badge variant="secondary">{badgeText ?? 'Test environment'}</Badge>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          One price per model — this is the price this pricing model produces, shown on the Step 2
-          layout. There is no separate website figure here.
+          Two figures per model so both can be tested before pushing live: the customer Step 3
+          (website) price on top, and the Quotes &amp; Orders (agent) price beneath it.
         </p>
+
 
 
       </CardHeader>
