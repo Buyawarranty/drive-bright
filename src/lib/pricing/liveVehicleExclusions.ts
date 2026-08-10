@@ -153,3 +153,28 @@ export const exclusionDraftDiffersFromLive = (
     norm({ makes: live?.extra_makes ?? [], modelRules: live?.extra_model_rules ?? [] })
   );
 };
+
+/**
+ * Re-publish the exclusion list alongside a pricing version.
+ *
+ * Called automatically from every section "Push live" so the excluded vehicle
+ * list can never lag behind the live pricing version. Uses the manager's local
+ * draft when it has content, otherwise re-stamps whatever is already live.
+ * Failures are swallowed — a pricing push must never be blocked by this.
+ */
+export const autoPublishExclusionsWithPricing = async (
+  pricingVersionLabel: string
+): Promise<void> => {
+  try {
+    const draft = loadExclusionDraft();
+    const live = await fetchLiveExclusionVersion();
+    const toPublish: ExclusionDraft =
+      draft.makes.length > 0 || draft.modelRules.length > 0
+        ? draft
+        : { makes: live?.extra_makes ?? [], modelRules: live?.extra_model_rules ?? [] };
+    const label = `Exclusions with ${pricingVersionLabel}`;
+    await publishExclusions(toPublish, label, pricingVersionLabel);
+  } catch {
+    /* non-blocking: built-in matrix stays enforced regardless */
+  }
+};
