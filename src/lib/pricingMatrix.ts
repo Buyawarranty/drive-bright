@@ -973,7 +973,15 @@ export function calculateTotalWarrantyPrice(params: {
   const rawTotal = flooredBase + labourAdjustment + boostAdjustment + excessAdjustment + addOnPrice;
   // A model-specific minimum is absolute: a £50/hr labour discount can never take the
   // quote below it (add-ons are excluded from the comparison as they are extras).
-  const ruleMin = getVehicleRuleMinPrice(vehicleName, paymentPeriod) ?? 0;
+  const ruleMin = Math.max(
+    getVehicleRuleMinPrice(vehicleName, paymentPeriod) ?? 0,
+    // A published band minimum is absolute too (halved for motorbikes, which are
+    // priced at half of standard throughout).
+    Math.ceil(
+      (getLiveRiskBandMinPrice(vehicleName ?? make, paymentPeriod, fuelType) ?? 0) *
+        (isMotorbike ? MOTORBIKE_PRICE_MULTIPLIER : 1)
+    )
+  );
   // Absolute minimum sellable price (£349 grid at the cheapest reachable combo,
   // shaped by the options so every chip still moves the price). Add-ons sit on top.
   const absoluteMin = getAbsoluteMinimumTotal({
