@@ -908,15 +908,18 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   "h-9 w-9 transition-all duration-150",
                   isExpanded 
                     ? "bg-primary text-primary-foreground shadow-lg scale-105" 
-                    : "border-2 border-primary hover:border-primary hover:bg-primary hover:text-primary-foreground"
+                    : "border-2 border-primary hover:border-primary hover:bg-primary hover:text-primary-foreground",
+                  isDoNotContact && !isExpanded && "opacity-40 cursor-not-allowed border-gray-300 hover:bg-transparent hover:text-muted-foreground"
                 )}
                 onClick={onToggleExpand}
+                disabled={isDoNotContact && !isExpanded}
+                aria-label={isDoNotContact && !isExpanded ? "Lead marked do not contact" : (isExpanded ? "Close" : "Click to open")}
               >
                 <ChevronDown className={cn("h-5 w-5 transition-transform duration-180", isExpanded && "rotate-180 text-white")} strokeWidth={3.5} />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top" className="text-xs">
-              {isExpanded ? "Close" : "Click to open"}
+              {isDoNotContact && !isExpanded ? "Do not contact — change status to reactivate" : (isExpanded ? "Close" : "Click to open")}
             </TooltipContent>
           </Tooltip>
           
