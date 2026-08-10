@@ -18,7 +18,7 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-type Agent = { id: string; name: string; email: string | null; role: string };
+type Agent = { id: string; name: string; email: string | null; role: string; active: boolean };
 type LeadRow = {
   id: string;
   first_name: string | null;
@@ -35,6 +35,8 @@ type LeadRow = {
 
 const ANY_AGENT = '__any__';
 const UNASSIGNED = '__unassigned__';
+/** Statuses that are finished business — recoverable but not worth working again. */
+const DEAD_STATUSES = new Set(['converted', 'lost', 'fake_lead', 'do_not_contact', 'unsubscribed']);
 
 /**
  * Management-only Lead Recovery panel.
@@ -59,6 +61,8 @@ export const LeadRecoveryPanel: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [recoverable, setRecoverable] = useState<{ unassigned: number; workable: number; stillOwned: number } | null>(null);
+  const [recoverableLoading, setRecoverableLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -73,9 +77,61 @@ export const LeadRecoveryPanel: React.FC = () => {
         name: `${[a.first_name, a.last_name].filter(Boolean).join(' ').trim() || a.email || 'Agent'}${a.is_active === false ? ' (left)' : ''}`,
         email: a.email,
         role: a.role,
+        active: a.is_active !== false,
       })));
     })();
   }, []);
+
+  const sourceAgentRecord = useMemo(
+    () => agents.find(a => a.id === sourceAgent) ?? null,
+    [agents, sourceAgent],
+  );
+
+  /**
+   * Live "still recoverable" counter for whichever agent is selected — works for
+   * ANY agent who leaves, not just one specific person. Counts leads they used to
+   * own that currently sit unassigned (all-time, ignoring the date range).
+   */
+  useEffect(() => {
+    if (sourceAgent === ANY_AGENT || sourceAgent === UNASSIGNED) {
+      setRecoverable(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      setRecoverableLoading(true);
+      try {
+        const { data: auditRows } = await (supabase.from('lead_assignment_audit') as any)
+          .select('lead_id')
+          .eq('previous_assigned_to_id', sourceAgent)
+          .limit(10000);
+        const ids = Array.from(new Set(((auditRows ?? []) as any[]).map(r => r.lead_id).filter(Boolean)));
+        let unassigned = 0;
+        let workable = 0;
+        for (let i = 0; i < ids.length; i += 300) {
+          const { data } = await (supabase.from('sales_leads') as any)
+            .select('id, status')
+            .in('id', ids.slice(i, i + 300))
+            .is('assigned_to', null);
+          ((data ?? []) as any[]).forEach(r => {
+            unassigned += 1;
+            if (!DEAD_STATUSES.has(String(r.status ?? ''))) workable += 1;
+          });
+        }
+        const { count: stillOwned } = await (supabase.from('sales_leads') as any)
+          .select('id', { count: 'exact', head: true })
+          .eq('assigned_to', sourceAgent);
+        if (!cancelled) setRecoverable({ unassigned, workable, stillOwned: stillOwned ?? 0 });
+      } catch (e) {
+        console.error('[LeadRecovery] recoverable count', e);
+        if (!cancelled) setRecoverable(null);
+      } finally {
+        if (!cancelled) setRecoverableLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [sourceAgent]);
+
 
   const rangeText = useMemo(() => {
     if (!fromDate || !toDate) return 'Pick a date range';
@@ -110,17 +166,16 @@ export const LeadRecoveryPanel: React.FC = () => {
         if (!data || data.length < page) break;
       }
 
-      // Leads a departed agent USED to own that are now unassigned (their archive
-      // wiped assigned_to). Found via the assignment audit trail, so it works even
-      // when the lead itself was created before the chosen range.
+      // Leads this agent USED to own that are now unassigned (archiving them wipes
+      // assigned_to). Found via the assignment audit trail, and deliberately NOT
+      // limited to the chosen date range — a departed agent's leads were created
+      // over their whole tenure, so a narrow range would silently drop most of them.
       let reclaimed = 0;
       if (includePrevious && sourceAgent !== ANY_AGENT && sourceAgent !== UNASSIGNED) {
         const { data: auditRows } = await (supabase.from('lead_assignment_audit') as any)
           .select('lead_id')
           .eq('previous_assigned_to_id', sourceAgent)
-          .gte('created_at', fromIso.toISOString())
-          .lte('created_at', toIso.toISOString())
-          .limit(5000);
+          .limit(10000);
         const ids = Array.from(new Set(((auditRows ?? []) as any[]).map(r => r.lead_id).filter(Boolean)));
         const seen = new Set(all.map(r => r.id));
         for (let i = 0; i < ids.length; i += 300) {
@@ -134,6 +189,7 @@ export const LeadRecoveryPanel: React.FC = () => {
         }
         all.sort((a, b) => a.created_at.localeCompare(b.created_at));
       }
+
 
       setRows(all);
       if (all.length === 0) toast.info('No leads matched that filter');
@@ -285,7 +341,28 @@ export const LeadRecoveryPanel: React.FC = () => {
                 ))}
               </SelectContent>
             </Select>
+            {sourceAgentRecord && (
+              <div className="pt-1 text-xs">
+                {recoverableLoading ? (
+                  <span className="inline-flex items-center gap-1 text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Counting recoverable leads…
+                  </span>
+                ) : recoverable ? (
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Badge variant="secondary">{recoverable.unassigned} unassigned ex-owned</Badge>
+                    <Badge variant="outline">{recoverable.workable} still workable</Badge>
+                    {recoverable.stillOwned > 0 && (
+                      <Badge variant="outline">{recoverable.stillOwned} still on them</Badge>
+                    )}
+                    <span className="text-muted-foreground">
+                      all-time{!sourceAgentRecord.active ? ' · agent has left' : ''}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+            )}
           </div>
+
 
           <div className="space-y-1">
             <label className="text-xs font-medium text-muted-foreground">Reassign to (one or more)</label>
@@ -335,8 +412,9 @@ export const LeadRecoveryPanel: React.FC = () => {
           </label>
           <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
             <Checkbox checked={includePrevious} onCheckedChange={(v) => setIncludePrevious(!!v)} />
-            Include leads this agent used to own that are now unassigned
+            Include leads this agent used to own that are now unassigned (all-time, ignores date range)
           </label>
+
 
         </div>
 
