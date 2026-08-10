@@ -263,11 +263,12 @@ const getRowUrgencyClass = (
 // Renders the number as a tel: link so click-to-dial works natively (and Zoiper
 // Click2Dial can still enhance it). A sibling copy button lets agents copy the
 // number to the clipboard for paste into any other dialer.
-const PhoneCopyText = memo<{ phone: string; leadId?: string | null }>(({ phone, leadId }) => {
+const PhoneCopyText = memo<{ phone: string; leadId?: string | null; disabled?: boolean }>(({ phone, leadId, disabled }) => {
   const telHref = `tel:${phone.replace(/[^\d+]/g, '')}`;
   const [copied, setCopied] = useState(false);
 
   const handleDial = useCallback((e: React.MouseEvent) => {
+    if (disabled) return;
     // Middle-click or modifier keys keep native behaviour so power users can
     // still open the tel: link in a new tab / their OS default handler.
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -279,9 +280,10 @@ const PhoneCopyText = memo<{ phone: string; leadId?: string | null }>(({ phone, 
       duration: 2500,
       description: "If Zoiper didn't open, the number is on your clipboard.",
     });
-  }, [phone, leadId]);
+  }, [phone, leadId, disabled]);
 
   const handleCopy = useCallback(async (e: React.MouseEvent) => {
+    if (disabled) return;
     e.preventDefault();
     e.stopPropagation();
     try {
@@ -292,10 +294,10 @@ const PhoneCopyText = memo<{ phone: string; leadId?: string | null }>(({ phone, 
     } catch {
       toast.error('Failed to copy');
     }
-  }, [phone]);
+  }, [phone, disabled]);
 
   return (
-    <span className="inline-flex items-center gap-1 whitespace-nowrap">
+    <span className={cn("inline-flex items-center gap-1 whitespace-nowrap", disabled && "pointer-events-none opacity-50")}>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
           <button
@@ -349,10 +351,11 @@ const PhoneCopyText = memo<{ phone: string; leadId?: string | null }>(({ phone, 
 PhoneCopyText.displayName = 'PhoneCopyText';
 
 
-const EmailCopyText = memo<{ email: string }>(({ email }) => {
+const EmailCopyText = memo<{ email: string; disabled?: boolean }>(({ email, disabled }) => {
   const [copied, setCopied] = useState(false);
   
   const handleCopy = useCallback(async () => {
+    if (disabled) return;
     try {
       await navigator.clipboard.writeText(email);
       setCopied(true);
@@ -361,7 +364,7 @@ const EmailCopyText = memo<{ email: string }>(({ email }) => {
     } catch (error) {
       toast.error('Failed to copy');
     }
-  }, [email]);
+  }, [email, disabled]);
   
   return (
     <Tooltip delayDuration={100}>
@@ -369,7 +372,8 @@ const EmailCopyText = memo<{ email: string }>(({ email }) => {
         <span 
           className={cn(
             "text-xs cursor-pointer hover:text-primary select-all truncate max-w-[120px] transition-colors",
-            copied && "text-green-600"
+            copied && "text-green-600",
+            disabled && "pointer-events-none opacity-50 cursor-not-allowed"
           )}
           onClick={handleCopy}
           role="button"
@@ -550,6 +554,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   
   const isOverdue = lead.next_action_date && isPast(new Date(lead.next_action_date)) && lead.follow_up_status === 'pending';
   const isFakeLead = lead.status === 'fake_lead';
+  const isDoNotContact = lead.status === 'do_not_contact';
   
   // Suspicious lead detection
   const suspiciousFlags = useMemo(() => detectSuspiciousLead(lead), [lead.phone, lead.email, lead.first_name, lead.vehicle_reg]);
@@ -607,6 +612,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       isFakeLead && "opacity-50 bg-red-50 hover:bg-red-100/60 pointer-events-auto",
       isLocked && "opacity-70",
       isSuspiciousLead && !isFakeLead && "bg-red-50/50 hover:bg-red-100/40",
+      // Do not contact: grey out the entire row and reduce interactivity.
+      isDoNotContact && "bg-gray-100/60 opacity-70 cursor-not-allowed",
       // Open Lead Pool: pinned reserved row — clearer left rail (6px) + slightly stronger mint tint.
       // Kept restrained so phone / reg / actions still read as the primary content.
       isReserved && "!bg-emerald-100/60 hover:!bg-emerald-100/80 shadow-[inset_6px_0_0_0_theme(colors.emerald.600)]"
@@ -905,73 +912,77 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   "h-9 w-9 transition-all duration-150",
                   isExpanded 
                     ? "bg-primary text-primary-foreground shadow-lg scale-105" 
-                    : "border-2 border-primary hover:border-primary hover:bg-primary hover:text-primary-foreground"
+                    : "border-2 border-primary hover:border-primary hover:bg-primary hover:text-primary-foreground",
+                  isDoNotContact && !isExpanded && "opacity-40 cursor-not-allowed border-gray-300 hover:bg-transparent hover:text-muted-foreground"
                 )}
                 onClick={onToggleExpand}
+                disabled={isDoNotContact && !isExpanded}
+                aria-label={isDoNotContact && !isExpanded ? "Lead marked do not contact" : (isExpanded ? "Close" : "Click to open")}
               >
                 <ChevronDown className={cn("h-5 w-5 transition-transform duration-180", isExpanded && "rotate-180 text-white")} strokeWidth={3.5} />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top" className="text-xs">
-              {isExpanded ? "Close" : "Click to open"}
+              {isDoNotContact && !isExpanded ? "Do not contact — change status to reactivate" : (isExpanded ? "Close" : "Click to open")}
             </TooltipContent>
           </Tooltip>
-          
-          <ZoiperDialButton
-            phone={lead.phone || ''}
-            leadId={lead.id}
-            leadType={lead.is_from_abandoned_cart ? 'abandoned_cart' : 'sales_lead'}
-            leadSource={lead.lead_source || null}
-            onDialed={(number) => onLogActivity('call_dial', `Dialled ${number} via Zoiper`)}
-          />
 
-          <RetryCountdownBadge
-            nextActionDate={lead.next_action_date}
-            followUpStatus={lead.follow_up_status}
-          />
+          <div className={cn("flex items-center gap-1", isDoNotContact && "pointer-events-none opacity-40")}>
+            <ZoiperDialButton
+              phone={lead.phone || ''}
+              leadId={lead.id}
+              leadType={lead.is_from_abandoned_cart ? 'abandoned_cart' : 'sales_lead'}
+              leadSource={lead.lead_source || null}
+              onDialed={(number) => onLogActivity('call_dial', `Dialled ${number} via Zoiper`)}
+            />
 
-          <OvernightBadge leadId={lead.id} />
+            <RetryCountdownBadge
+              nextActionDate={lead.next_action_date}
+              followUpStatus={lead.follow_up_status}
+            />
 
-          
-          <NotesQuickActionsPopover
-            lead={lead}
-            noteCount={noteCount}
-            onOpenFullNotes={onToggleExpand}
-            onUpdateCallCount={onUpdateCallCount}
-            onScheduleFollowUp={onScheduleFollowUp}
-            onLogActivity={onLogActivity}
-            agentId={lead.assigned_to || ''}
-          />
+            <OvernightBadge leadId={lead.id} />
 
-          
-          <EmailActionsButton
-            email={lead.email}
-            onAction={(a) =>
-              onLogActivity(
-                a === 'gmail' ? 'email_open_gmail' : 'email_copy',
-                a === 'gmail' ? 'Opened lead in Gmail' : 'Copied email address',
-              )
-            }
-          />
-          <RemindMePopover leadId={lead.id} compact onReminderSaved={(msg) => onLogActivity('reminder', msg)} />
-          
-          {onSendQuote && !lead.is_paid && (
-            <Tooltip delayDuration={100}>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="h-7 px-2 text-xs font-medium text-orange-600 border-orange-300 hover:bg-orange-50"
-                  onClick={() => { onLogActivity('quote_open', 'Opened Send Quote flow'); onSendQuote(); }}
-                >
-                  <FileText className="h-3 w-3 mr-1" />
-                  Quote
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="text-xs">Send Quote</TooltipContent>
-            </Tooltip>
-          )}
+            
+            <NotesQuickActionsPopover
+              lead={lead}
+              noteCount={noteCount}
+              onOpenFullNotes={onToggleExpand}
+              onUpdateCallCount={onUpdateCallCount}
+              onScheduleFollowUp={onScheduleFollowUp}
+              onLogActivity={onLogActivity}
+              agentId={lead.assigned_to || ''}
+            />
 
+            
+            <EmailActionsButton
+              email={lead.email}
+              onAction={(a) =>
+                onLogActivity(
+                  a === 'gmail' ? 'email_open_gmail' : 'email_copy',
+                  a === 'gmail' ? 'Opened lead in Gmail' : 'Copied email address',
+                )
+              }
+            />
+            <RemindMePopover leadId={lead.id} compact onReminderSaved={(msg) => onLogActivity('reminder', msg)} />
+            
+            {onSendQuote && !lead.is_paid && (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="h-7 px-2 text-xs font-medium text-orange-600 border-orange-300 hover:bg-orange-50"
+                    onClick={() => { onLogActivity('quote_open', 'Opened Send Quote flow'); onSendQuote(); }}
+                  >
+                    <FileText className="h-3 w-3 mr-1" />
+                    Quote
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">Send Quote</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         </div>
       </TableCell>
       )}
@@ -1177,9 +1188,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <PhoneCopyText phone={lead.phone} leadId={lead.id} />
+              <PhoneCopyText phone={lead.phone} leadId={lead.id} disabled={isDoNotContact} />
             )}
-            <div className="flex items-center">
+            <div className={cn("flex items-center", isDoNotContact && "pointer-events-none opacity-40")}>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <Button 
@@ -1187,6 +1198,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                     size="icon"
                     className="h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50"
                     onClick={() => window.open(`https://wa.me/${lead.phone?.replace(/\D/g, '')}`)}
+                    disabled={isDoNotContact}
                   >
                     <MessageSquare className="h-3 w-3" />
                   </Button>
@@ -1203,7 +1215,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Email */}
       <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-0.5">
-          <EmailCopyText email={lead.email} />
+          <EmailCopyText email={lead.email} disabled={isDoNotContact} />
           <Tooltip delayDuration={100}>
             <TooltipTrigger asChild>
               <Button 
@@ -1218,6 +1230,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   }
                   if (!lead.is_from_abandoned_cart) onLogActivity('email', 'Sent email');
                 }}
+                disabled={isDoNotContact}
               >
                 <Send className="h-3 w-3" />
               </Button>
