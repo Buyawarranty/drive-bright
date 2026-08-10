@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
+import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -557,6 +558,45 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       });
 
       if (error) throw error;
+
+      // Record the discount given on this manual confirmation. Confirming an
+      // outside payment IS the moment the discount is agreed, so we store the
+      // quoted grid price alongside the amount collected — Discounts given and
+      // Customer management both read these two numbers.
+      if (data?.customerId && quotedTotal > 0) {
+        const collected = parseFloat(paymentAmount) || 0;
+        const givenAway = Math.max(0, Math.round((quotedTotal - collected) * 100) / 100);
+        try {
+          await supabase
+            .from('customers')
+            .update({
+              original_amount: Math.round(quotedTotal * 100) / 100,
+              discount_amount: givenAway,
+            })
+            .eq('id', data.customerId);
+        } catch (discErr) {
+          console.error('Failed to record discount on manual confirmation:', discErr);
+        }
+
+        if (givenAway > 0.5) {
+          logPriceOverride({
+            adminUserId: assigneeId || null,
+            context: 'confirm_payment',
+            customerName: fullName,
+            customerEmail: editableCustomerEmail,
+            vehicleReg: editableRegNumber,
+            vehicleMake: vehicleData?.make,
+            vehicleModel: vehicleData?.model,
+            paymentType,
+            excessAmount,
+            claimLimit: displayClaimLimit,
+            labourRate,
+            matrixTotal: quotedTotal,
+            enteredTotal: collected,
+            notes: `Manual payment confirmed via ${paymentSource || 'outside route'} — ${discountPct.toFixed(1)}% off`,
+          });
+        }
+      }
 
       // Part payment: open a plan + log the deposit so the balance is chased
       if (partPaymentMode && data?.customerId) {
