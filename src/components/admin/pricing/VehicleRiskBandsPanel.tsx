@@ -132,14 +132,15 @@ const VehicleRiskBandsPanel: React.FC = () => {
 
   const addAssignment = () => {
     const make = newEntry.make.trim();
-    if (!make) {
-      toast.error('Enter a make.');
+    const model = newEntry.model.trim();
+    if (!make && !model) {
+      toast.error('Enter a make, a model, or both.');
       return;
     }
     update({
       ...config,
       assignments: [
-        { id: newId('assign'), bandId: newEntry.bandId, make, model: newEntry.model.trim(), enabled: true },
+        { id: newId('assign'), bandId: newEntry.bandId, make, model, enabled: true },
         ...config.assignments,
       ],
     });
