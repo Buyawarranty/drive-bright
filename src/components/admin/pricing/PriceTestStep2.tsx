@@ -11,6 +11,7 @@ import { formatGBP } from '@/lib/pricingMatrix';
 import { MANUAL_REFERRAL_MESSAGE } from './AgeBandPricingPreview';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
+import PriceSurfaceBadge from './PriceSurfaceBadge';
 import {
   getVisibleExcessOptions,
   getExcessFactor,
