@@ -87,7 +87,7 @@ export const TikTokAdsTab: React.FC = () => {
     },
   });
 
-  // TikTok leads (abandoned carts with ttclid or bing utm_source)
+  // TikTok leads (abandoned carts with ttclid or tiktok utm_source)
   const { data: tiktokLeads, isLoading: leadsLoading } = useQuery({
     queryKey: ['tiktok-leads', dateRange],
     queryFn: async () => {
@@ -222,7 +222,7 @@ export const TikTokAdsTab: React.FC = () => {
         <div>
           <h3 className="text-xl font-bold flex items-center gap-2">
             <Search className="h-5 w-5 text-teal-600" />
-            TikTok Ads (Microsoft Advertising)
+            TikTok Ads
           </h3>
           <p className="text-sm text-muted-foreground">
             Traffic, leads and sales attributed to TikTok via <code>ttclid</code> and TikTok UTM tags
