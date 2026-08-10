@@ -526,6 +526,14 @@ serve(async (req) => {
                   console.warn('DVSA model-recovery retry failed:', retryErr instanceof Error ? retryErr.message : retryErr);
                 }
               }
+              if (!recoveredModel) {
+                const motCached = await fetchMotHistoryFallback(registrationNumber);
+                if (motCached?.model) {
+                  recoveredModel = motCached.model;
+                  console.log('✅ Recovered model from DVSA MOT history record:', recoveredModel);
+                }
+              }
+
 
               const validation = validateVehicleEligibility({ make: dvla.make, model: recoveredModel || '', regNumber: registrationNumber });
               const blocked = !validation.isValid;
@@ -671,6 +679,15 @@ serve(async (req) => {
             console.warn('Final DVSA model-recovery retry failed:', e2 instanceof Error ? e2.message : e2);
           }
         }
+        if (!recoveredModel2) {
+          const motCached2 = await fetchMotHistoryFallback(registrationNumber);
+          if (motCached2?.model) {
+            recoveredModel2 = motCached2.model;
+            console.log('✅ Recovered model from DVSA MOT history record (post-DVSA-failure):', recoveredModel2);
+          }
+        }
+
+
 
         const validation = validateVehicleEligibility({ make: dvlaFallback.make, model: recoveredModel2 || '', regNumber: registrationNumber });
         const blocked = !validation.isValid;
@@ -766,6 +783,21 @@ serve(async (req) => {
         yearOfManufacture = dvla.yearOfManufacture || yearOfManufacture;
       }
     }
+
+    // DVSA MOT history record (stored from the same DVSA API) is the last word on
+    // make/model. Never return a vehicle with a missing model when we already hold it.
+    if (!make || !model) {
+      const motCached = await fetchMotHistoryFallback(registrationNumber);
+      if (motCached?.make) {
+        console.log('✅ Recovered make/model from DVSA MOT history record:', motCached.make, motCached.model);
+        make = make || motCached.make;
+        model = model || motCached.model || null;
+        fuelType = fuelType || motCached.fuelType;
+        colour = colour || motCached.colour;
+        yearOfManufacture = yearOfManufacture || motCached.yearOfManufacture;
+      }
+    }
+
 
     // Apply manual overrides by registration (ensures correct make/model, e.g., Audi S8 cases)
     {
