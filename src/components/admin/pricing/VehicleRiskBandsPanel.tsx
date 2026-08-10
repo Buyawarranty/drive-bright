@@ -26,7 +26,9 @@ import {
   loadRiskBandConfig,
   matchRiskBand,
   saveRiskBandConfig,
+  DEFAULT_BLOCK_MESSAGE,
 } from '@/lib/pricing/vehicleRiskBands';
+import { Textarea } from '@/components/ui/textarea';
 import {
   FUEL_FILTER_OPTIONS,
   FUEL_LABEL,
@@ -40,6 +42,7 @@ const TONE_CLASS: Record<RiskBand['tone'], string> = {
   high: 'bg-amber-100 text-amber-900 border-amber-200',
   severe: 'bg-orange-100 text-orange-900 border-orange-200',
   referral: 'bg-destructive/10 text-destructive border-destructive/30',
+  blocked: 'bg-destructive text-destructive-foreground border-destructive',
 };
 
 const TONE_OPTIONS: { value: RiskBand['tone']; label: string }[] = [
@@ -48,6 +51,7 @@ const TONE_OPTIONS: { value: RiskBand['tone']; label: string }[] = [
   { value: 'high', label: 'Amber (high)' },
   { value: 'severe', label: 'Orange (very high)' },
   { value: 'referral', label: 'Red (referral)' },
+  { value: 'blocked', label: 'Red solid (not covered)' },
 ];
 
 function newId(prefix: string) {
@@ -273,7 +277,7 @@ const VehicleRiskBandsPanel: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {config.bands
-                      .filter(b => !b.referral)
+                      .filter(b => !b.referral && !b.blocked)
                       .map(b => (
                         <SelectItem key={b.id} value={b.id}>
                           {b.name}
@@ -306,7 +310,7 @@ const VehicleRiskBandsPanel: React.FC = () => {
                         type="number"
                         step="0.01"
                         value={band.factor}
-                        disabled={band.referral}
+                        disabled={band.referral || band.blocked}
                         onChange={e => patchBand(band.id, { factor: clampBandFactor(Number(e.target.value)) })}
                       />
                     </div>
@@ -317,7 +321,7 @@ const VehicleRiskBandsPanel: React.FC = () => {
                         type="number"
                         placeholder="global floor"
                         value={band.minOneYear ?? ''}
-                        disabled={band.referral}
+                        disabled={band.referral || band.blocked}
                         onChange={e =>
                           patchBand(band.id, {
                             minOneYear: e.target.value === '' ? null : Math.max(0, Number(e.target.value)),
@@ -344,6 +348,20 @@ const VehicleRiskBandsPanel: React.FC = () => {
                       />
                       <Label className="text-xs">Referral only</Label>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={band.blocked === true}
+                        onCheckedChange={v =>
+                          patchBand(band.id, {
+                            blocked: v,
+                            referral: v ? false : band.referral,
+                            tone: v ? 'blocked' : band.tone === 'blocked' ? 'normal' : band.tone,
+                            blockMessage: v ? band.blockMessage || DEFAULT_BLOCK_MESSAGE : band.blockMessage,
+                          })
+                        }
+                      />
+                      <Label className="text-xs">Not covered (block)</Label>
+                    </div>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -359,6 +377,21 @@ const VehicleRiskBandsPanel: React.FC = () => {
                     value={band.note || ''}
                     onChange={e => patchBand(band.id, { note: e.target.value })}
                   />
+                  {band.blocked && (
+                    <div className="space-y-1 rounded-md border border-destructive/30 bg-destructive/5 p-3">
+                      <Label className="text-xs font-semibold">Customer message shown when declined</Label>
+                      <Textarea
+                        className="min-h-[76px] text-sm"
+                        value={band.blockMessage ?? DEFAULT_BLOCK_MESSAGE}
+                        placeholder={DEFAULT_BLOCK_MESSAGE}
+                        onChange={e => patchBand(band.id, { blockMessage: e.target.value })}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Keep it polite and explanatory — this wording is read by the customer or the agent
+                        on the call.
+                      </p>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -470,7 +503,9 @@ const VehicleRiskBandsPanel: React.FC = () => {
                       )}
                       {band && (
                         <p className="text-xs text-muted-foreground">
-                          {band.referral
+                          {band.blocked
+                            ? 'Not covered — declined politely'
+                            : band.referral
                             ? 'Referral — no automatic price'
                             : `×${band.factor.toFixed(2)}${band.minOneYear ? ` · min £${band.minOneYear}` : ''}`}
                         </p>
@@ -593,7 +628,12 @@ const VehicleRiskBandsPanel: React.FC = () => {
                 : `Matched: ${testResult.match.assignment?.make || '(all makes)'} ${testResult.match.assignment?.model || '(all models)'}`}
             </span>
             <div className="ml-auto text-right">
-              {testResult.priced.referral ? (
+              {testResult.priced.blocked ? (
+                <div className="max-w-md text-left">
+                  <p className="text-lg font-bold text-destructive">Not covered</p>
+                  <p className="text-xs text-muted-foreground">{testResult.priced.blockMessage}</p>
+                </div>
+              ) : testResult.priced.referral ? (
                 <p className="text-lg font-bold text-destructive">Referral — no automatic price</p>
               ) : (
                 <>
