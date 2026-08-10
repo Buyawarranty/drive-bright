@@ -285,6 +285,31 @@ const VehicleRiskBandsPanel: React.FC = () => {
     toast.info('Reset to the starter bands — save to keep it.');
   };
 
+  /** Attach these bands to whichever pricing version is live right now. */
+  const pushLive = async () => {
+    setPublishing(true);
+    try {
+      saveRiskBandConfig(config);
+      setDirty(false);
+      const result = await publishRiskBandsToLiveVersion(config);
+      if (!result.published) {
+        toast.error(result.reason || 'Could not push the bands live.');
+        return;
+      }
+      setLiveVersionLabel(result.versionLabel ?? liveVersionLabel);
+      setLastPublishedAt(new Date().toLocaleString('en-GB'));
+      toast.success(
+        `Bands are live on "${result.versionLabel}" — Quotes & Orders and Steps 3–4 now use them.`
+      );
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Could not push the bands live.');
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+
+
   return (
     <div className="space-y-6">
       <Card>
