@@ -6472,7 +6472,10 @@ Please log in and change your password after first login.`;
                     ) : (
                       <span className="text-xs text-muted-foreground">—</span>
                     )}
-                  </TableCell>
+                   </TableCell>
+                   <TableCell className="bg-sky-50/40">
+                     <ReferencePriceCell order={customer as any} />
+                   </TableCell>
                   <TableCell className="bg-purple-50/40">
                     {(() => {
                       const disc = getRecordedOrderDiscount(customer);
