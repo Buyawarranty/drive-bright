@@ -47,7 +47,13 @@ const COMPANY_INFO = {
   email: 'support@buyawarranty.co.uk',
   phone: '0330 229 5040',
   address: ['Buy A Warranty', 'Online', 'United Kingdom'],
-  logoUrl: 'https://buyawarranty.co.uk/lovable-uploads/e4a0c8c7-1d74-4e55-a556-1b513ba12cc8.png'
+  logoUrl: 'https://buyawarranty.co.uk/lovable-uploads/e4a0c8c7-1d74-4e55-a556-1b513ba12cc8.png',
+  bank: {
+    accountName: 'Buy A Warranty Limited',
+    bankName: 'Metro Bank plc',
+    sortCode: '23 05 80',
+    accountNumber: '21009695',
+  },
 };
 
 const formatCurrency = (amount: number): string => {
