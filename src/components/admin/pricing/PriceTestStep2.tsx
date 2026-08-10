@@ -7,11 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { FlaskConical, PhoneCall, Info, RotateCcw } from 'lucide-react';
-import { formatGBP, getWebReferencePrice } from '@/lib/pricingMatrix';
+import { formatGBP } from '@/lib/pricingMatrix';
 import { MANUAL_REFERRAL_MESSAGE } from './AgeBandPricingPreview';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
-import PriceSurfaceBadge from './PriceSurfaceBadge';
 import {
   getVisibleExcessOptions,
   getExcessFactor,
