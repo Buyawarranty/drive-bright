@@ -15,6 +15,7 @@ import {
   type VehicleFactorModel,
 } from '@/lib/pricing/vehicleFactorModel';
 import type { ReferenceVehicle } from '@/lib/pricing/pricingVersionConfig';
+import { setLiveRiskBandConfig } from '@/lib/pricing/liveRiskBands';
 
 export type ApplicableVersion = {
   status?: string | null;
