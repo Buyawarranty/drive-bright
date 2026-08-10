@@ -110,17 +110,16 @@ export const LeadRecoveryPanel: React.FC = () => {
         if (!data || data.length < page) break;
       }
 
-      // Leads a departed agent USED to own that are now unassigned (their archive
-      // wiped assigned_to). Found via the assignment audit trail, so it works even
-      // when the lead itself was created before the chosen range.
+      // Leads this agent USED to own that are now unassigned (archiving them wipes
+      // assigned_to). Found via the assignment audit trail, and deliberately NOT
+      // limited to the chosen date range — a departed agent's leads were created
+      // over their whole tenure, so a narrow range would silently drop most of them.
       let reclaimed = 0;
       if (includePrevious && sourceAgent !== ANY_AGENT && sourceAgent !== UNASSIGNED) {
         const { data: auditRows } = await (supabase.from('lead_assignment_audit') as any)
           .select('lead_id')
           .eq('previous_assigned_to_id', sourceAgent)
-          .gte('created_at', fromIso.toISOString())
-          .lte('created_at', toIso.toISOString())
-          .limit(5000);
+          .limit(10000);
         const ids = Array.from(new Set(((auditRows ?? []) as any[]).map(r => r.lead_id).filter(Boolean)));
         const seen = new Set(all.map(r => r.id));
         for (let i = 0; i < ids.length; i += 300) {
@@ -134,6 +133,7 @@ export const LeadRecoveryPanel: React.FC = () => {
         }
         all.sort((a, b) => a.created_at.localeCompare(b.created_at));
       }
+
 
       setRows(all);
       if (all.length === 0) toast.info('No leads matched that filter');
