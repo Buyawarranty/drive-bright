@@ -34,6 +34,8 @@ import SectionPushLiveBar from './SectionPushLiveBar';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import { clampToNetFloor, clampWebToNetFloor } from '@/lib/pricing/netFloor';
+import PriceSurfaceBadge from './PriceSurfaceBadge';
+
 
 
 
@@ -276,12 +278,18 @@ export default function CodebaseVsCurrentPanel({
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Cover options being compared</CardTitle>
-          <CardDescription>
-            Pick the claim limit and labour rate. Terms and excess tiers are shown as rows, so all
-            three variables are visible at once.
-          </CardDescription>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <CardTitle className="text-base">Cover options being compared</CardTitle>
+              <CardDescription>
+                Pick the claim limit and labour rate. Terms and excess tiers are shown as rows, so all
+                three variables are visible at once.
+              </CardDescription>
+            </div>
+            <PriceSurfaceBadge surface="mixed" />
+          </div>
         </CardHeader>
+
         <CardContent className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground w-24">Claim limit</span>
