@@ -1562,13 +1562,16 @@ export const CustomersTab = ({
 
   const fetchAdminUsers = async () => {
     try {
+      // Include archived (left) agents so Customer Management can still show
+      // who did each deal for commission purposes. Assignment dropdowns filter
+      // to active agents only.
       const { data, error } = await supabase
         .from('admin_users')
-        .select('id, user_id, email, first_name, last_name, role')
-        .eq('is_active', true);
+        .select('id, user_id, email, first_name, last_name, role, is_active');
       
       if (error) throw error;
       setAdminUsers(data || []);
+
       
       // Update current admin user if currentUser exists
       if (currentUser) {
