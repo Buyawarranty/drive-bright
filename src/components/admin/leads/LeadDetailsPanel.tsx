@@ -371,6 +371,26 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
           <div className={cn("p-4", !notesOpen && "hidden")}>
             <UnifiedNotesPanel leadId={lead.id} hidePoolOutcome={hidePoolOutcome} />
           </div>
+
+          {/* Full audit trail — calls, notes, status and owner changes with names */}
+          <div className="px-4 pb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8"
+              onClick={() => setHistoryOpen(!historyOpen)}
+            >
+              <History className="h-4 w-4 mr-1.5" />
+              {historyOpen ? 'Hide full history' : 'View full history (calls, notes, status)'}
+              {historyOpen ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />}
+            </Button>
+            {historyOpen && (
+              <div className="mt-3 rounded-lg border bg-muted/20 p-3">
+                <LeadHistoryTimeline leadId={lead.id} />
+              </div>
+            )}
+          </div>
+
         </CardContent>
       </Card>
 
