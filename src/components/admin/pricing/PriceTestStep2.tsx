@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { FlaskConical, PhoneCall, Info, RotateCcw } from 'lucide-react';
-import { formatGBP } from '@/lib/pricingMatrix';
+import { formatGBP, getWebReferencePrice } from '@/lib/pricingMatrix';
 import { MANUAL_REFERRAL_MESSAGE } from './AgeBandPricingPreview';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
@@ -862,6 +862,13 @@ export default function PriceTestStep2({
                   ) : (
                     <div className="text-sm font-semibold text-foreground">Total {formatGBP(calc.total)}</div>
                   )}
+
+                  <div className="text-sm font-semibold text-sky-700 dark:text-sky-400">
+                    Website Step 3 price {formatGBP(getWebReferencePrice(calc.total).price)}
+                    <span className="ml-1 text-xs font-normal text-muted-foreground">
+                      ({getWebReferencePrice(calc.total).discountPct}% below the Q&amp;O total)
+                    </span>
+                  </div>
 
                   <div>Claim {formatGBP(claimLimit)} · Labour £{labour}/hr · Excess £{excess}</div>
                   <div>
