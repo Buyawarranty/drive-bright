@@ -836,12 +836,30 @@ export default function PriceTestStep2({
 
               {calc ? (
                 <div className="mt-4 space-y-1 border-t pt-3 text-xs text-muted-foreground">
-                  <div className="text-sm font-semibold text-foreground">Total {formatGBP(calc.total)}</div>
+                  {/* One payable figure only — never two competing totals. With the
+                      pay-in-full discount on, that price is the total and the
+                      instalment total is shown struck through as the "was". */}
+                  {payInFull ? (
+                    <div className="text-sm font-semibold text-foreground">
+                      Total to pay today {formatGBP(calc.payInFullTotal)}
+                      <span className="ml-2 text-xs font-normal text-muted-foreground line-through">
+                        {formatGBP(calc.total)}
+                      </span>
+                      <span className="ml-1 text-xs font-normal text-muted-foreground">
+                        if paid over 12 instalments
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="text-sm font-semibold text-foreground">Total {formatGBP(calc.total)}</div>
+                  )}
+
                   <div>Claim {formatGBP(claimLimit)} · Labour £{labour}/hr · Excess £{excess}</div>
                   <div>
-                    Cover runs {term.months + freeMonths} months ({calc.days} days) · paid over 12 instalments
+                    Cover runs {term.months + freeMonths} months ({calc.days} days) ·{' '}
+                    {payInFull ? 'paid in full today' : 'paid over 12 instalments'}
                     {freeMonths ? ` · includes ${freeMonths} free months` : ''}
                   </div>
+
                   {calc.discountAmount ? <div>Discount applied: {formatGBP(calc.discountAmount)} off</div> : null}
                 </div>
               ) : null}
