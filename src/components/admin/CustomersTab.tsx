@@ -6539,11 +6539,17 @@ Please log in and change your password after first login.`;
                           <SelectContent>
                             <SelectItem value="unassigned">Unassigned</SelectItem>
                             <SelectItem value={WEBSITE_SALES_ACCOUNT_ID}>Website</SelectItem>
-                            {adminUsers.filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID && (u.role === 'sales' || u.role === 'sales_lead' || u.role === 'sales_manager' || u.role === 'admin' || u.role === 'super_admin')).map(user => (
+                            {adminUsers
+                              .filter(u => u.id !== WEBSITE_SALES_ACCOUNT_ID && (u.role === 'sales' || u.role === 'sales_lead' || u.role === 'sales_manager' || u.role === 'admin' || u.role === 'super_admin'))
+                              // Archived agents can't receive new assignments, but the current
+                              // owner must stay listed so their name keeps showing on the sale.
+                              .filter(u => u.is_active !== false || u.id === customer.assigned_to)
+                              .map(user => (
                               <SelectItem key={user.id} value={user.id}>
-                                {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                                {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}{user.is_active === false ? ' (left)' : ''}
                               </SelectItem>
                             ))}
+
                           </SelectContent>
                         </Select>
                       </div>
