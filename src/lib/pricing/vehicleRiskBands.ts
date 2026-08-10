@@ -14,6 +14,7 @@
  */
 
 import { normalizeVehicleText } from './modelFloorMatch';
+import { fuelFilterMatches, normalizeFuelFilter, type FuelFilter } from './fuelCategory';
 
 export const RISK_BAND_MIN_FACTOR = 0.5;
 export const RISK_BAND_MAX_FACTOR = 2.5;
@@ -41,6 +42,8 @@ export type RiskBandAssignment = {
   make: string;
   /** Model / trim text, e.g. "X5". Empty = whole make. */
   model: string;
+  /** Restrict the rule to one powertrain. 'any' (or absent) = all fuels. */
+  fuel?: FuelFilter;
   enabled: boolean;
 };
 
@@ -172,7 +175,8 @@ export type RiskBandMatch = {
 export function matchRiskBand(
   make: string | null | undefined,
   model: string | null | undefined,
-  config: RiskBandConfig
+  config: RiskBandConfig,
+  fuelType?: string | null
 ): RiskBandMatch {
   const fallbackBand =
     config.bands.find(b => b.id === config.defaultBandId) || config.bands[0] || DEFAULT_RISK_BANDS[1];
@@ -184,6 +188,8 @@ export function matchRiskBand(
   let best: { assignment: RiskBandAssignment; specificity: number } | null = null;
   for (const a of config.assignments) {
     if (!a.enabled) continue;
+    // Fuel-specific rules only fire on that powertrain.
+    if (!fuelFilterMatches(a.fuel, fuelType)) continue;
 
     const assignmentMake = String(a.make || '').trim();
     const assignmentModel = String(a.model || '').trim();
@@ -206,7 +212,10 @@ export function matchRiskBand(
       continue;
     }
 
-    const specificity = (assignmentMake ? tokens(assignmentMake).join('').length : 0) + (assignmentModel ? tokens(assignmentModel).join('').length + 10 : 0);
+    const specificity =
+      (assignmentMake ? tokens(assignmentMake).join('').length : 0) +
+      (assignmentModel ? tokens(assignmentModel).join('').length + 10 : 0) +
+      (normalizeFuelFilter(a.fuel) !== 'any' ? 5 : 0);
     if (!best || specificity > best.specificity) best = { assignment: a, specificity };
   }
 
@@ -284,6 +293,7 @@ export function loadRiskBandConfig(): RiskBandConfig {
               bandId: String(a.bandId || 'normal'),
               make: String(a.make || ''),
               model: String(a.model || ''),
+              fuel: normalizeFuelFilter(a.fuel),
               enabled: a.enabled !== false,
             }))
         : [],

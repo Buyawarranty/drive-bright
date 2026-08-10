@@ -27,6 +27,12 @@ import {
   matchRiskBand,
   saveRiskBandConfig,
 } from '@/lib/pricing/vehicleRiskBands';
+import {
+  FUEL_FILTER_OPTIONS,
+  FUEL_LABEL,
+  normalizeFuelFilter,
+  type FuelFilter,
+} from '@/lib/pricing/fuelCategory';
 
 const TONE_CLASS: Record<RiskBand['tone'], string> = {
   low: 'bg-emerald-100 text-emerald-800 border-emerald-200',
@@ -52,7 +58,14 @@ const VehicleRiskBandsPanel: React.FC = () => {
   const [config, setConfig] = useState<RiskBandConfig>(() => loadRiskBandConfig());
   const [dirty, setDirty] = useState(false);
   const [filter, setFilter] = useState('');
-  const [newEntry, setNewEntry] = useState({ make: '', model: '', bandId: 'high' });
+  const [newEntry, setNewEntry] = useState<{ make: string; model: string; bandId: string; fuel: FuelFilter }>({
+    make: '',
+    model: '',
+    bandId: 'high',
+    fuel: 'any',
+  });
+  const [fuelFilter, setFuelFilter] = useState<FuelFilter | 'all'>('all');
+  const [testFuel, setTestFuel] = useState<string>('Petrol');
   const [testMake, setTestMake] = useState('Land Rover');
   const [testModel, setTestModel] = useState('Range Rover Sport');
   const [testBase, setTestBase] = useState(499);
@@ -79,21 +92,25 @@ const VehicleRiskBandsPanel: React.FC = () => {
 
   const visibleAssignments = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    const list = q
-      ? config.assignments.filter(a =>
-          `${a.make} ${a.model} ${bandById.get(a.bandId)?.name || ''}`.toLowerCase().includes(q)
-        )
-      : config.assignments;
+    let list = config.assignments;
+    if (fuelFilter !== 'all') list = list.filter(a => normalizeFuelFilter(a.fuel) === fuelFilter);
+    if (q) {
+      list = list.filter(a =>
+        `${a.make} ${a.model} ${FUEL_LABEL[normalizeFuelFilter(a.fuel)]} ${bandById.get(a.bandId)?.name || ''}`
+          .toLowerCase()
+          .includes(q)
+      );
+    }
     return [...list].sort(
       (a, b) => a.make.localeCompare(b.make) || a.model.localeCompare(b.model)
     );
-  }, [config.assignments, filter, bandById]);
+  }, [config.assignments, filter, fuelFilter, bandById]);
 
   const testResult = useMemo(() => {
-    const match = matchRiskBand(testMake, testModel, config);
+    const match = matchRiskBand(testMake, testModel, config, testFuel);
     const priced = applyRiskBand(Number(testBase) || 0, match, testType, config);
     return { match, priced };
-  }, [testMake, testModel, testBase, testType, config]);
+  }, [testMake, testModel, testBase, testType, testFuel, config]);
 
   const patchBand = (id: string, patch: Partial<RiskBand>) => {
     update({ ...config, bands: config.bands.map(b => (b.id === id ? { ...b, ...patch } : b)) });
@@ -140,11 +157,11 @@ const VehicleRiskBandsPanel: React.FC = () => {
     update({
       ...config,
       assignments: [
-        { id: newId('assign'), bandId: newEntry.bandId, make, model, enabled: true },
+        { id: newId('assign'), bandId: newEntry.bandId, make, model, fuel: newEntry.fuel, enabled: true },
         ...config.assignments,
       ],
     });
-    setNewEntry({ make: '', model: '', bandId: newEntry.bandId });
+    setNewEntry({ make: '', model: '', bandId: newEntry.bandId, fuel: 'any' });
   };
 
   const save = () => {
@@ -352,7 +369,7 @@ const VehicleRiskBandsPanel: React.FC = () => {
           {/* Assignments */}
           <div>
             <h3 className="font-semibold mb-3">Makes &amp; models in each band</h3>
-            <div className="grid gap-2 sm:grid-cols-[1fr_1fr_200px_auto] items-end mb-4">
+            <div className="grid gap-2 sm:grid-cols-[1fr_1fr_170px_200px_auto] items-end mb-4">
               <div className="space-y-1">
                 <Label className="text-xs">Make</Label>
                 <Input
@@ -368,6 +385,24 @@ const VehicleRiskBandsPanel: React.FC = () => {
                   value={newEntry.model}
                   onChange={e => setNewEntry({ ...newEntry, model: e.target.value })}
                 />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Fuel type</Label>
+                <Select
+                  value={newEntry.fuel}
+                  onValueChange={v => setNewEntry({ ...newEntry, fuel: v as FuelFilter })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FUEL_FILTER_OPTIONS.map(o => (
+                      <SelectItem key={o.value} value={o.value}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Band</Label>
@@ -389,11 +424,27 @@ const VehicleRiskBandsPanel: React.FC = () => {
               </Button>
             </div>
 
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <Select value={fuelFilter} onValueChange={v => setFuelFilter(v as FuelFilter | 'all')}>
+                <SelectTrigger className="w-[190px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All fuel types</SelectItem>
+                  {FUEL_FILTER_OPTIONS.map(o => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="relative mb-3">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 className="pl-9"
-                placeholder="Search makes, models or bands"
+                placeholder="Search makes, models, fuel or bands"
                 value={filter}
                 onChange={e => setFilter(e.target.value)}
               />
@@ -412,6 +463,11 @@ const VehicleRiskBandsPanel: React.FC = () => {
                         {a.make || <span className="text-muted-foreground">(all makes)</span>}{' '}
                         {a.model || <span className="text-muted-foreground">(all models)</span>}
                       </p>
+                      {normalizeFuelFilter(a.fuel) !== 'any' && (
+                        <p className="text-xs font-medium text-primary">
+                          {FUEL_LABEL[normalizeFuelFilter(a.fuel)]} only
+                        </p>
+                      )}
                       {band && (
                         <p className="text-xs text-muted-foreground">
                           {band.referral
@@ -438,6 +494,21 @@ const VehicleRiskBandsPanel: React.FC = () => {
                       placeholder="Model / trim"
                       onChange={e => patchAssignment(a.id, { model: e.target.value })}
                     />
+                    <Select
+                      value={normalizeFuelFilter(a.fuel)}
+                      onValueChange={v => patchAssignment(a.id, { fuel: v as FuelFilter })}
+                    >
+                      <SelectTrigger className="h-9 w-[170px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FUEL_FILTER_OPTIONS.map(o => (
+                          <SelectItem key={o.value} value={o.value}>
+                            {o.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     {band && (
                       <Badge variant="outline" className={TONE_CLASS[band.tone]}>
                         {band.name}
@@ -476,10 +547,18 @@ const VehicleRiskBandsPanel: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-5">
             <div className="space-y-1">
               <Label className="text-xs">Make</Label>
               <Input value={testMake} onChange={e => setTestMake(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Fuel type (as DVLA)</Label>
+              <Input
+                value={testFuel}
+                placeholder="e.g. Diesel"
+                onChange={e => setTestFuel(e.target.value)}
+              />
             </div>
             <div className="space-y-1">
               <Label className="text-xs">Model</Label>
