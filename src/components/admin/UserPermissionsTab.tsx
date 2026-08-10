@@ -1587,20 +1587,36 @@ export const UserPermissionsTab = () => {
             </DialogTitle>
           </DialogHeader>
           {passwordUser && (() => {
+            const isSaved = !!newPassword && savedPassword === newPassword;
             const fullBlock = `Step 1 — Gateway\nLink: ${loginUrlForRole(passwordUser.role)}\nPassword: SmashSales2026!!\n\nStep 2 — ${passwordUser.first_name || ''} ${passwordUser.last_name || ''}'s login\nUsername: ${passwordUser.email}\nPassword: ${newPassword || '(set a password first)'}`;
             return (
             <div className="space-y-4">
+              {!isSaved && (
+                <div className="rounded-lg border-2 border-amber-400 bg-amber-50 p-3 text-sm text-amber-900">
+                  <strong>This password is not live yet.</strong> Click <em>Save password</em> (or
+                  <em> Save &amp; email login</em>) before you share it — otherwise the staff member
+                  will get "invalid login credentials".
+                </div>
+              )}
+              {isSaved && (
+                <div className="rounded-lg border-2 border-emerald-400 bg-emerald-50 p-3 text-sm text-emerald-900">
+                  <strong>Saved.</strong> This exact password now works on the login page.
+                </div>
+              )}
+
               {/* One-click copy-all */}
               <Button
                 type="button"
                 variant="outline"
                 className="w-full justify-center border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-900"
                 onClick={() => copyToClipboard(fullBlock, 'all')}
-                disabled={!newPassword}
+                disabled={!isSaved}
+                title={isSaved ? undefined : 'Save the password first'}
               >
                 {copiedField === 'all' ? <Check className="h-4 w-4 mr-2 text-green-600" /> : <Copy className="h-4 w-4 mr-2" />}
                 {copiedField === 'all' ? 'Copied all login details' : 'Copy all login details'}
               </Button>
+
 
               {/* Step 1: Gateway */}
               <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 space-y-2">
