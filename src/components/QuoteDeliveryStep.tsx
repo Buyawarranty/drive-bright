@@ -336,8 +336,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                     ...(storedFbclid ? { fbclid: storedFbclid } : {}),
                     ...(storedGclid ? { gclid: storedGclid } : {}),
                     ...(storedMsclkid ? { msclkid: storedMsclkid } : {}),
-              ...(storedTtclid ? { ttclid: storedTtclid } : {}),
                     ...(storedTtclid ? { ttclid: storedTtclid } : {}),
+
                     ...utms,
                     ...(fbRef ? { fb_referrer: fbRef } : {}),
                     ab_variant: abVariant,
