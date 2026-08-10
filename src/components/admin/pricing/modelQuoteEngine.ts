@@ -234,21 +234,14 @@ export function priceFromPricingModel(
   );
 
   /**
-   * Hard bottom, shaped from the cheapest reachable combo (£1,000 claim /
-   * £50 labour / £150 excess = £349 at 12 months). Better options lift the hard
-   * bottom proportionally so claim limit, labour rate and excess never go dead
-   * at the bottom of the grid. Motorbikes are half-price.
+   * Hard bottom, anchored on the REFERENCE combo (£2,000 claim / £70 labour /
+   * £150 excess = £349 at 12 months). Anchoring it on the cheapest combo instead
+   * inflated the hard bottom by ~1.39× on a default quote, which clamped every
+   * vehicle up to ~9 years old to the SAME price. Upgrades above the reference
+   * still lift the hard bottom proportionally; cheaper options never go below it.
    */
-  const anchorClaimFactor = nearestFactor(
-    model.claimLimits,
-    c => Number(c.limit) === 1000,
-    c => Math.abs(Number(c.limit) - 1000)
-  );
-  const anchorLabourFactor = nearestFactor(
-    model.labourRateFactors,
-    l => Number(l.rate) === 50,
-    l => Math.abs(Number(l.rate) - 50)
-  );
+  const anchorClaimFactor = refClaimFactor;
+  const anchorLabourFactor = refLabourFactor;
   const absShape =
     (anchorClaimFactor > 0 ? claimFactor / anchorClaimFactor : 1) *
     (anchorLabourFactor > 0 ? labourFactor / anchorLabourFactor : 1) *
@@ -257,6 +250,7 @@ export function priceFromPricingModel(
   const absoluteMin = Math.round(
     (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 349) * Math.max(1, absShape) * motorbikeFactor
   );
+
 
   const minSellable = Math.max(shapedModelFloor, absoluteMin);
 

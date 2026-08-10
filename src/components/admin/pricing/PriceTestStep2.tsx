@@ -287,10 +287,11 @@ export default function PriceTestStep2({
         floorShape *
         getExcessFactor(excess)
     );
-    // Hard bottom shaped from the cheapest combo (£1,000 claim / £50 labour / £150 excess)
-    // so better options still lift the floor instead of flattening onto £349.
-    const anchorClaimFactor = nearestFactor(claimLimits, c => c.limit, 1000);
-    const anchorLabourFactor = nearestFactor(labourRateFactors, l => l.rate, 50);
+    // Hard bottom anchored on the REFERENCE combo (£2,000 claim / £70 labour /
+    // £150 excess). Anchoring on the cheapest combo inflated the bottom ~1.39× on a
+    // default quote, clamping nearly every vehicle to the same price.
+    const anchorClaimFactor = referenceClaimFactor;
+    const anchorLabourFactor = referenceLabourFactor;
     const absShape =
       (anchorClaimFactor > 0 ? claimFactor / anchorClaimFactor : 1) *
       (anchorLabourFactor > 0 ? labourFactor / anchorLabourFactor : 1) *
