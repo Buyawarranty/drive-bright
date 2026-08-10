@@ -4981,6 +4981,12 @@ Buyawarranty.co.uk`,
               <TableHead>RegNum</TableHead>
               <TableHead>Price</TableHead>
               <TableHead
+                className="bg-sky-50 min-w-[160px]"
+                title="System price for this reg, claim limit, excess, labour rate and duration — QOP (Quotes & Orders grid) and RP (retail / Step 3) — next to what was actually sold, and the percentage gap."
+              >
+                QOP / RP vs sold
+              </TableHead>
+              <TableHead
                 className="bg-purple-50 whitespace-nowrap"
                 title="Discount given on this order — quoted price at the point of sale versus the amount collected."
               >
