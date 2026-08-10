@@ -6303,6 +6303,57 @@ export type Database = {
         }
         Relationships: []
       }
+      erased_customers: {
+        Row: {
+          created_at: string
+          customer_name: string | null
+          customers_archive: Json
+          email: string | null
+          erased_by: string | null
+          erased_by_name: string | null
+          id: string
+          lead_ids: string[]
+          leads_archive: Json
+          other_archive: Json
+          phone: string | null
+          reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name?: string | null
+          customers_archive?: Json
+          email?: string | null
+          erased_by?: string | null
+          erased_by_name?: string | null
+          id?: string
+          lead_ids?: string[]
+          leads_archive?: Json
+          other_archive?: Json
+          phone?: string | null
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string | null
+          customers_archive?: Json
+          email?: string | null
+          erased_by?: string | null
+          erased_by_name?: string | null
+          id?: string
+          lead_ids?: string[]
+          leads_archive?: Json
+          other_archive?: Json
+          phone?: string | null
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       feature_flags: {
         Row: {
           category: string
@@ -13152,6 +13203,7 @@ export type Database = {
         | "vehicle_sold"
         | "do_not_contact"
         | "not_eligible"
+        | "unsubscribed"
       mask_level: "none" | "partial" | "full"
       note_purpose:
         | "claim_query"
@@ -13386,6 +13438,7 @@ export const Constants = {
         "vehicle_sold",
         "do_not_contact",
         "not_eligible",
+        "unsubscribed",
       ],
       mask_level: ["none", "partial", "full"],
       note_purpose: [
