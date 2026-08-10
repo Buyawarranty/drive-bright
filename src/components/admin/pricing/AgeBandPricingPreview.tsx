@@ -165,10 +165,10 @@ export type LabourRateFactor = {
 
 /** 5.2 Customer-selected cover options — labour-rate factors. */
 export const PROPOSED_LABOUR_RATE_FACTORS: LabourRateFactor[] = [
-  { key: 'lr-50', rate: 50, factor: 0.84, uxPosition: 'Budget garage option' },
+  { key: 'lr-50', rate: 50, factor: 0.90, uxPosition: 'Budget garage option' },
   { key: 'lr-70', rate: 70, factor: 1.0, uxPosition: 'Most popular / reference' },
-  { key: 'lr-100', rate: 100, factor: 1.18, uxPosition: 'Broader garage choice' },
-  { key: 'lr-150', rate: 150, factor: 1.80, uxPosition: 'Specialist garages' },
+  { key: 'lr-100', rate: 100, factor: 1.08, uxPosition: 'Broader garage choice' },
+  { key: 'lr-150', rate: 150, factor: 1.20, uxPosition: 'Specialist garages — premium' },
 ];
 
 
