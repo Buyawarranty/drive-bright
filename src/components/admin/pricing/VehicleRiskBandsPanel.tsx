@@ -715,9 +715,13 @@ const VehicleRiskBandsPanel: React.FC = () => {
                     )}
                     <div className="flex items-center gap-2 ml-auto">
                       <Switch
+                        id={`rule-${a.id}`}
                         checked={a.enabled}
                         onCheckedChange={v => patchAssignment(a.id, { enabled: v })}
                       />
+                      <Label htmlFor={`rule-${a.id}`} className="text-xs w-8">
+                        {a.enabled ? 'On' : 'Off'}
+                      </Label>
                       <Button
                         variant="ghost"
                         size="icon"
