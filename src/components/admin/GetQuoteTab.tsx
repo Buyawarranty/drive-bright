@@ -32,6 +32,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { getExclusionReason, EXCLUSION_MESSAGE } from '@/lib/vehicleExclusions';
+
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
 import UnsubscribeQuickLink from '@/components/admin/UnsubscribeQuickLink';
 import { UnsubscribeLeadButton } from '@/components/admin/leads/UnsubscribeLeadButton';
