@@ -242,8 +242,29 @@ const VehicleRiskBandsPanel: React.FC = () => {
               A <strong>referral</strong> band produces no automatic price — the quote goes to manual
               underwriting. Motorbikes always price at the motorbike share of standard, and their band
               floor halves with them.
+              <br />
+              <strong>Excluded vehicles always win:</strong> anything on the site-wide excluded list is
+              declined at registration lookup, so a band never overrides it — no clash is possible.
             </AlertDescription>
           </Alert>
+
+          {excludedClashes.length > 0 && (
+            <Alert className="border-destructive/40 bg-destructive/5">
+              <AlertDescription className="text-sm">
+                <strong>{excludedClashes.length} band rule{excludedClashes.length === 1 ? '' : 's'} overlap the excluded list</strong>{' '}
+                and will never price — the vehicle is declined first. Remove them, or take the vehicle off the
+                excluded list if you do want to cover it.
+                <ul className="mt-2 list-disc pl-5 space-y-0.5">
+                  {excludedClashes.map(c => (
+                    <li key={c.id}>
+                      <span className="font-medium">{c.label}</span> — {c.reason}
+                    </li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
+
 
           {/* Vehicle type factors */}
           <div>
