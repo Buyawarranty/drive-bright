@@ -23,12 +23,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import WebGapDraftPanel from '@/components/admin/pricing/WebGapDraftPanel';
 import ModelRiskDraftPanel from '@/components/admin/pricing/ModelRiskDraftPanel';
+import PriceSurfaceBadge from './PriceSurfaceBadge';
 
 const PERIODS: { value: PaymentPeriod; label: string }[] = [
   { value: '12months', label: '12 months' },
   { value: '24months', label: '24 months' },
   { value: '36months', label: '36 months' },
 ];
+
 
 const EXCESS_OPTIONS = [0, 50, 100, 150, 250, 500];
 import { getDisplayClaimLimit } from '@/lib/claimLimitTiers';
@@ -312,13 +314,15 @@ export default function PricingEngineDraftPanel() {
       </div>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-2">
+        <CardHeader className="flex flex-row items-start justify-between gap-2">
           <CardTitle className="text-base">Breakdown</CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <PriceSurfaceBadge surface={surface === 'web' ? 'web' : 'quotes'} />
             {eligibilityBadge()}
             <Badge variant="outline">factor ×{result.vehicleFactor.toFixed(3)}</Badge>
           </div>
         </CardHeader>
+
         <CardContent className="space-y-3">
           {result.eligibility.outcome !== 'eligible' && (
             <Alert variant={result.eligibility.outcome === 'declined' ? 'destructive' : 'default'}>
