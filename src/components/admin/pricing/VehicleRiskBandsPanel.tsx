@@ -85,6 +85,15 @@ const VehicleRiskBandsPanel: React.FC = () => {
   const [testModel, setTestModel] = useState('Range Rover Sport');
   const [testBase, setTestBase] = useState(499);
   const [testType, setTestType] = useState<'car' | 'van' | 'motorbike'>('car');
+  const [liveVersionLabel, setLiveVersionLabel] = useState<string | null>(null);
+  const [publishing, setPublishing] = useState(false);
+  const [lastPublishedAt, setLastPublishedAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchLivePricingVersionLabel()
+      .then(setLiveVersionLabel)
+      .catch(() => setLiveVersionLabel(null));
+  }, []);
 
   /** Excluded-vehicle settings: pushed-live extras plus the manager's local draft. */
   const [exclusionDraft, setExclusionDraft] = useState<ExclusionDraft>(() => loadExclusionDraft());
