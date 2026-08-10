@@ -118,6 +118,12 @@ const handler = async (req: Request): Promise<Response> => {
     // Convert content to HTML format (basic line breaks)
     const htmlContent = content.replace(/\n/g, '<br>');
 
+    // Work out which sales agent owns each recipient's lead, so replies
+    // (including "unsubscribe me") also reach that agent.
+    const leadOwnerByEmail = await getLeadOwnerEmails(supabaseClient, filteredEmails);
+    console.log(`Lead owner matched for ${Object.keys(leadOwnerByEmail).length}/${filteredEmails.length} recipients`);
+
+
     // Send emails individually for personalized unsubscribe links
     const results = [];
     const batchSize = 10; // Process in smaller batches with delays
