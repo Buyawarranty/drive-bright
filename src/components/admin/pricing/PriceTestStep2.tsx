@@ -297,7 +297,7 @@ export default function PriceTestStep2({
       (anchorLabourFactor > 0 ? labourFactor / anchorLabourFactor : 1) *
       (getExcessFactor(excess) / getExcessFactor(150));
     const hardBottom = Math.round(
-      (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 349) * Math.max(1, absShape) * motorbikeFactor
+      (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 399) * Math.max(1, absShape) * motorbikeFactor
     );
     return Math.max(shapedMinimum, hardBottom);
   };
