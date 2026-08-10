@@ -4,7 +4,7 @@ import type { EditableVehicleData } from '@/components/EditVehicleDialog';
 import { cn } from '@/lib/utils';
 import { Check, Info, Edit3, ArrowLeft, Star, ChevronDown } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly } from '@/lib/claimLimitTiers';
+import { CLAIM_LIMIT_TIERS, getBlockedClaimLimits, isPremiumVehicle, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly } from '@/lib/claimLimitTiers';
 import {
   calculateLabourRateAdjustment,
   getExcessTotalAdjustment,
@@ -137,10 +137,15 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   const [excessDetailsOpen, setExcessDetailsOpen] = React.useState(false);
   const [vehicleEditOpen, setVehicleEditOpen] = useState(false);
 
-  const isPremium = isPremiumVehicle(vehicleData?.make, vehicleData?.model, vehicleData?.fuelType);
-  const visibleClaimTiers = isPremium
-    ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
-    : [...CLAIM_LIMIT_TIERS];
+  // Managed claim-limit blocks (make / model / fuel / single reg) hide tiers here.
+  const blockedClaimLimits = getBlockedClaimLimits({
+    make: vehicleData?.make,
+    model: vehicleData?.model,
+    fuelType: vehicleData?.fuelType,
+    registration: vehicleData?.regNumber,
+  });
+  const isPremium = blockedClaimLimits.includes(5000);
+  const visibleClaimTiers = CLAIM_LIMIT_TIERS.filter(t => !blockedClaimLimits.includes(t.value));
 
   // Filter excess options by term + claim limit + warranty price:
   // - No £500 on 1-year cover

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowRight, ArrowLeft, Check, Lock, Shield, ShieldCheck, Car, Wrench, Building2, ChevronDown } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
-import { CLAIM_LIMIT_TIERS, isPremiumVehicle } from '@/lib/claimLimitTiers';
+import { CLAIM_LIMIT_TIERS, getBlockedClaimLimits } from '@/lib/claimLimitTiers';
 import { getVisibleExcessOptions, getExcessMonthlyDelta, getExcessBracketBasis } from '@/lib/pricingMatrix';
 import { getMarketingSavings, type PaymentPeriod } from '@/lib/pricingMatrix';
 
@@ -118,10 +118,14 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   onAddOnChange,
 }) => {
   const [emailQuoteOpen, setEmailQuoteOpen] = useState(false);
-  const isPremium = isPremiumVehicle(vehicleData?.make, vehicleData?.model, vehicleData?.fuelType);
-  const claimTiers = isPremium
-    ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
-    : [...CLAIM_LIMIT_TIERS];
+  const blockedClaimLimits = getBlockedClaimLimits({
+    make: vehicleData?.make,
+    model: vehicleData?.model,
+    fuelType: vehicleData?.fuelType,
+    registration: vehicleData?.regNumber,
+  });
+  const isPremium = blockedClaimLimits.includes(5000);
+  const claimTiers = CLAIM_LIMIT_TIERS.filter(t => !blockedClaimLimits.includes(t.value));
 
   const visibleTerms = (Object.keys(TERM_META) as PaymentType[]).filter(t =>
     availableDurations.includes(t)

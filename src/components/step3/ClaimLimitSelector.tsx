@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Info } from 'lucide-react';
-import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getClaimLimitSurcharge } from '@/lib/claimLimitTiers';
+import { CLAIM_LIMIT_TIERS, getBlockedClaimLimits, getClaimLimitSurcharge } from '@/lib/claimLimitTiers';
 import ClaimLimitDetails from './ClaimLimitDetails';
 
 interface ClaimLimitSelectorProps {
@@ -13,6 +13,9 @@ interface ClaimLimitSelectorProps {
   boostPrice: number;
   paymentType?: '12months' | '24months' | '36months' | null;
   vehicleMake?: string;
+  vehicleModel?: string;
+  vehicleFuelType?: string;
+  vehicleReg?: string;
   voluntaryExcess?: number;
 }
 
@@ -25,15 +28,22 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
   boostPrice,
   paymentType,
   vehicleMake,
+  vehicleModel,
+  vehicleFuelType,
+  vehicleReg,
   voluntaryExcess = 100
 }) => {
   const [detailsOpen, setDetailsOpen] = useState(false);
 
-  // Filter out £5000 for premium vehicles
-  const isPremium = isPremiumVehicle(vehicleMake);
-  const visibleTiers = isPremium
-    ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
-    : [...CLAIM_LIMIT_TIERS];
+  // Hide any claim limit blocked for this vehicle (make / model / fuel / reg).
+  const blockedClaimLimits = getBlockedClaimLimits({
+    make: vehicleMake,
+    model: vehicleModel,
+    fuelType: vehicleFuelType,
+    registration: vehicleReg,
+  });
+  const isPremium = blockedClaimLimits.includes(5000);
+  const visibleTiers = CLAIM_LIMIT_TIERS.filter(t => !blockedClaimLimits.includes(t.value));
 
   const handleSelect = (limit: number) => {
     onClaimLimitChange(limit);

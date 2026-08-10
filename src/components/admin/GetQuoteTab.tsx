@@ -66,7 +66,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { calculateVehiclePriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import { useMotMileage } from '@/hooks/useMotMileage';
-import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
+import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBlockedClaimLimits, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { DeliveryStatusBadge } from './DeliveryStatusBadge';
 import WorldpayPaymentPanel from './WorldpayPaymentPanel';
 import PaymentAssistPanel from './PaymentAssistPanel';
@@ -250,7 +250,21 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // every agent regardless of vehicle make. Premium is disallowed for a small
   // list of makes at checkout — the inline warning under the chips explains
   // that — but agents still see the option so they can quote consistently.
-  const getVisibleClaimLimits = (_vehicleMake?: string) => claimLimitOptions;
+  // Management can block individual claim limits for a make, model, fuel type or
+  // a single registration (Price updates → Claim limit blocks). Those tiers are
+  // removed here so an agent can never quote cover we do not offer.
+  const blockedClaimLimits = React.useMemo(
+    () =>
+      getBlockedClaimLimits({
+        make: vehicleData?.make,
+        model: vehicleData?.model,
+        fuelType: vehicleData?.fuelType,
+        registration: regNumber,
+      }),
+    [vehicleData?.make, vehicleData?.model, vehicleData?.fuelType, regNumber]
+  );
+  const getVisibleClaimLimits = (_vehicleMake?: string) =>
+    claimLimitOptions.filter((opt: { value: number }) => !blockedClaimLimits.includes(opt.value));
 
   // Excess options come from the SAME canonical journey list as Steps 3/4 — not
   // from the pricing model's excessFactors — because excess is priced as a flat
@@ -1351,12 +1365,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setIsPriceOverridden(false);
   }, [paymentType, excessAmount, claimLimit, labourRate, boostAddon, selectedAddOns]);
 
-  // Reset claim limit if premium vehicle selected and £5000 was chosen
+  // Drop back to £2,000 whenever the selected claim limit is blocked for this vehicle.
   useEffect(() => {
-    if (claimLimit === 5000 && isPremiumVehicle(vehicleData?.make, vehicleData?.model, vehicleData?.fuelType)) {
+    if (blockedClaimLimits.includes(claimLimit)) {
       setClaimLimit(2000);
     }
-  }, [vehicleData?.make]);
+  }, [blockedClaimLimits, claimLimit]);
 
   // £5,000 cannot stay selected without a manager authorisation for this reg —
   // fall back to £3,000 (2000 + boost) so it can never be quoted or paid.
