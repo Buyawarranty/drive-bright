@@ -359,8 +359,8 @@ const AugHybridVsLivePanel: React.FC<{
           liveModel={liveModel}
           vehicle={vehicle}
           showRegLookup={false}
-          title="Live pricing — Quotes & Orders price (agent)"
-          subtitle="Exactly what agents sell today. This is the Q&O price, not the website Step 3 price."
+          title="Live pricing — price"
+          subtitle="Exactly what agents sell today, from the live age-based builder figures."
           badgeText="Live"
         />
         <PriceTestStep2
@@ -369,8 +369,8 @@ const AugHybridVsLivePanel: React.FC<{
           vehicle={vehicle}
           showRegLookup={false}
           autoQuoteCeiling={ceiling}
-          title="Aug hybrid test — Quotes & Orders price (agent)"
-          subtitle="Lower base, compressed risk uplifts, cheaper multi-year terms and an auto-quote ceiling. Q&O price, not the website Step 3 price."
+          title="Aug hybrid test — price"
+          subtitle="Lower base, compressed risk uplifts, cheaper multi-year terms and an auto-quote ceiling."
           badgeText="Hybrid draft"
         />
       </div>

@@ -7,11 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { FlaskConical, PhoneCall, Info, RotateCcw } from 'lucide-react';
-import { formatGBP, getWebReferencePrice } from '@/lib/pricingMatrix';
+import { formatGBP } from '@/lib/pricingMatrix';
 import { MANUAL_REFERRAL_MESSAGE } from './AgeBandPricingPreview';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
-import PriceSurfaceBadge from './PriceSurfaceBadge';
 import {
   getVisibleExcessOptions,
   getExcessFactor,
@@ -478,16 +477,13 @@ export default function PriceTestStep2({
                 'Same layout as Quotes & Orders Step 2, priced with the proposed age × mileage × factor model. Practice only — nothing here saves a quote or changes live pricing.'}
             </CardDescription>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <PriceSurfaceBadge surface="quotes" />
-            <Badge variant="secondary">{badgeText ?? 'Test environment'}</Badge>
-          </div>
+          <Badge variant="secondary">{badgeText ?? 'Test environment'}</Badge>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          These are <strong>Quotes &amp; Orders (agent) prices</strong> — not the website Step 3
-          price. The customer-facing Step 3 figure is this total minus the website gap (10% by
-          default); use the “Website Step 3 preview” section to see it.
+          One price per model — this is the price this pricing model produces, shown on the Step 2
+          layout. There is no separate website figure here.
         </p>
+
 
       </CardHeader>
 
@@ -863,12 +859,6 @@ export default function PriceTestStep2({
                     <div className="text-sm font-semibold text-foreground">Total {formatGBP(calc.total)}</div>
                   )}
 
-                  <div className="text-sm font-semibold text-sky-700 dark:text-sky-400">
-                    Website Step 3 price {formatGBP(getWebReferencePrice(calc.total).price)}
-                    <span className="ml-1 text-xs font-normal text-muted-foreground">
-                      ({getWebReferencePrice(calc.total).discountPct}% below the Q&amp;O total)
-                    </span>
-                  </div>
 
                   <div>Claim {formatGBP(claimLimit)} · Labour £{labour}/hr · Excess £{excess}</div>
                   <div>
