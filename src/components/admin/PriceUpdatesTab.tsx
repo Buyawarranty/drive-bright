@@ -859,7 +859,11 @@ export default function PriceUpdatesTab() {
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                 )}
-                <TabsTrigger value={value} className="flex-1 py-3 text-base font-semibold">
+                <TabsTrigger
+                  value={value}
+                  className="flex-1 py-3 text-base font-semibold rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground"
+                >
+
                   <Icon className="h-4 w-4 mr-2" />
                   {tab.label}
                 </TabsTrigger>
@@ -979,13 +983,13 @@ export default function PriceUpdatesTab() {
           <Tabs defaultValue="riskbands" className="w-full">
 
             <TabsList className="flex flex-wrap gap-2 bg-muted/40 p-1">
-              <TabsTrigger value="riskbands">
+              <TabsTrigger value="riskbands" className="rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground">
                 <Layers className="h-4 w-4 mr-2" /> Risk bands &amp; vehicle types
               </TabsTrigger>
-              <TabsTrigger value="excluded">
+              <TabsTrigger value="excluded" className="rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground">
                 <Ban className="h-4 w-4 mr-2" /> Excluded vehicles
               </TabsTrigger>
-              <TabsTrigger value="engine">
+              <TabsTrigger value="engine" className="rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground">
                 <FlaskConical className="h-4 w-4 mr-2" /> Pricing engine (draft)
               </TabsTrigger>
             </TabsList>
@@ -1025,10 +1029,10 @@ export default function PriceUpdatesTab() {
           />
           <Tabs defaultValue="quotes-preview" className="w-full">
             <TabsList className="flex flex-wrap gap-2 bg-muted/40 p-1">
-              <TabsTrigger value="quotes-preview">
+              <TabsTrigger value="quotes-preview" className="rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground">
                 <Rocket className="h-4 w-4 mr-2" /> Quotes &amp; Orders Preview
               </TabsTrigger>
-              <TabsTrigger value="step3-preview">
+              <TabsTrigger value="step3-preview" className="rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground">
                 <Globe className="h-4 w-4 mr-2" /> Website Step 3 Preview
               </TabsTrigger>
             </TabsList>
