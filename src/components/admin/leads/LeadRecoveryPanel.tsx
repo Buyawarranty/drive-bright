@@ -406,6 +406,13 @@ export const LeadRecoveryPanel: React.FC = () => {
             {scanning ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
             Scan {rangeText}
           </Button>
+          <Button
+            onClick={() => setConfirmOpen(true)}
+            disabled={rows.length === 0 || targetAgents.length === 0 || loading || scanning}
+          >
+            {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ArrowRightLeft className="h-4 w-4 mr-2" />}
+            Update leads
+          </Button>
           <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
             <Checkbox checked={resetStatus} onCheckedChange={(v) => setResetStatus(!!v)} />
             Reset status to "new" (unpaid only)
@@ -414,8 +421,6 @@ export const LeadRecoveryPanel: React.FC = () => {
             <Checkbox checked={includePrevious} onCheckedChange={(v) => setIncludePrevious(!!v)} />
             Include leads this agent used to own that are now unassigned (all-time, ignores date range)
           </label>
-
-
         </div>
 
         {/* Per-day breakdown */}
