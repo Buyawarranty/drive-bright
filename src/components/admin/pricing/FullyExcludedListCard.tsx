@@ -10,7 +10,7 @@ import {
   EXCLUSION_MESSAGE,
   getLiveExclusionExtras,
 } from '@/lib/vehicleExclusions';
-import { primeLiveExclusions } from '@/lib/pricing/liveVehicleExclusions';
+import { loadExclusionDraft, primeLiveExclusions } from '@/lib/pricing/liveVehicleExclusions';
 
 /**
  * Always-visible, read-only list of the fully excluded vehicles (Ferrari,
