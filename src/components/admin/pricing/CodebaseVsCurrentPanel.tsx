@@ -33,6 +33,8 @@ import type { PriceTestQuoteSnapshot } from './PriceTestStep2';
 import SectionPushLiveBar from './SectionPushLiveBar';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
+import { clampToNetFloor, clampWebToNetFloor } from '@/lib/pricing/netFloor';
+
 
 
 /**
