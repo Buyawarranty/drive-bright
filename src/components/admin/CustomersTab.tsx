@@ -4590,15 +4590,19 @@ Buyawarranty.co.uk`,
                         )}
                         {adminUsers
                           .filter(u => ['sales', 'sales_lead', 'sales_manager', 'admin', 'super_admin'].includes(u.role))
+                          // Keep archived agents that still hold sales credit so commissions stay traceable
+                          .filter(u => u.is_active !== false || (agentDealCounts[u.id]?.sales || 0) > 0 || (agentDealCounts[u.id]?.cancelled || 0) > 0)
+                          .sort((a, b) => Number(a.is_active === false) - Number(b.is_active === false))
                           .map(user => {
                             const stats = agentDealCounts[user.id] || { sales: 0, cancelled: 0 };
                             const displayName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
                             return (
                               <SelectItem key={user.id} value={user.id}>
-                                {displayName} ({stats.sales}{stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})
+                                {displayName}{user.is_active === false ? ' (left)' : ''} ({stats.sales}{stats.cancelled > 0 ? ` · ${stats.cancelled} refunds` : ''})
                               </SelectItem>
                             );
                           })}
+
                       </SelectContent>
                     </Select>
                   )}
