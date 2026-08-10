@@ -61,8 +61,10 @@ export default function Claim5kBlocklistEditor() {
           </div>
           <p className="text-sm text-muted-foreground max-w-2xl">
             Blocked vehicles fall back to £3,000 cover on Quotes &amp; Orders and the customer
-            journey. Leave Model blank to block the whole make, or add a model to block just that
-            model. Switch a rule off to unblock without deleting it.
+            journey. Enter a make on its own to block the whole make, a make plus a model to block
+            just that model, or a model on its own to block that model across every make. Switch a
+            rule off to unblock without deleting it.
+
           </p>
         </div>
         <Badge variant="outline" className="bg-white">
