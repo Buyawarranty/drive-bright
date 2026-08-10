@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { captureGclid } from '@/utils/gclidCapture';
 import { captureFbclid } from '@/utils/fbclidCapture';
+import { captureMsclkid } from '@/utils/msclkidCapture';
+import { captureTtclid } from '@/utils/ttclidCapture';
 import { captureUtms } from '@/utils/utmCapture';
 
 // Track page views in Google Ads/Analytics on route changes
@@ -13,7 +15,10 @@ export const PageViewTracker = () => {
     // (e.g. /tesla/, /quote) don't lose attribution.
     captureGclid();
     captureFbclid();
+    captureMsclkid();
+    captureTtclid();
     captureUtms();
+
 
     // Check if gtag is available
     if (typeof window !== 'undefined' && window.gtag) {
