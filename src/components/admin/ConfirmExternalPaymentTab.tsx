@@ -1190,14 +1190,22 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         )}
                         {discountBlocked && (
                           <p className="text-xs font-semibold text-destructive">
-                            Blocked — that is {discountPct.toFixed(1)}% off. You cannot confirm this payment.
-                            Please contact management to authorise anything below £{minAllowedAmount.toFixed(2)} (max {DISCOUNT_CEILING_PCT}% off).
+                            {underNetFloor
+                              ? `Blocked — £${netFloorAmount.toFixed(2)} is the minimum sellable price for this cover (${paymentType.replace('months', ' month')} term). Contact management to authorise anything lower.`
+                              : `Blocked — that is ${discountPct.toFixed(1)}% off. You cannot confirm this payment. Please contact management to authorise anything below £${minAllowedAmount.toFixed(2)} (max ${DISCOUNT_CEILING_PCT}% off).`}
+                          </p>
+                        )}
+
+                        {underNetFloor && isManagementRole && (
+                          <p className="text-xs font-semibold text-amber-600">
+                            Management override: below the £{netFloorAmount.toFixed(2)} minimum sellable price. This will be logged.
                           </p>
                         )}
 
                         {overDiscountCeiling && isManagementRole && (
                           <p className="text-xs font-semibold text-amber-600">
                             Management override: {discountPct.toFixed(1)}% off (over the {DISCOUNT_CEILING_PCT}% ceiling). This will be logged.
+
                           </p>
                         )}
                       </div>
