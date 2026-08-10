@@ -3,6 +3,7 @@ import React from 'react';
 import { Phone, Mail, Facebook, Instagram } from 'lucide-react';
 import { X } from 'lucide-react';
 import { SALES_PHONE, SALES_PHONE_TEL, SUPPORT_EMAIL } from '@/constants/contact';
+import icoLogo from '@/assets/ico-registered.png.asset.json';
 
 const Footer = () => {
   return (
