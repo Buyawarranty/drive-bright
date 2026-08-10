@@ -155,6 +155,41 @@ export const AgentOffboardingPanel: React.FC = () => {
 
   useEffect(() => { if (sourceId) loadCounts(sourceId); else setCounts(null); }, [sourceId, loadCounts]);
 
+  /**
+   * Leads this agent USED to own that are now unassigned (their archive wiped
+   * assigned_to). Pulled from the assignment audit trail from the chosen date on.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!sourceId || !includeReclaim || !reclaimFrom) { setReclaimIds([]); return; }
+      setReclaimLoading(true);
+      try {
+        const { data: auditRows } = await (supabase.from('lead_assignment_audit') as any)
+          .select('lead_id')
+          .eq('previous_assigned_to_id', sourceId)
+          .gte('created_at', `${reclaimFrom}T00:00:00Z`)
+          .limit(5000);
+        const ids = Array.from(new Set(((auditRows ?? []) as any[]).map(r => r.lead_id).filter(Boolean)));
+        const stillUnassigned: string[] = [];
+        for (let i = 0; i < ids.length; i += 300) {
+          const chunk = ids.slice(i, i + 300);
+          const { data } = await (supabase.from('sales_leads') as any)
+            .select('id')
+            .in('id', chunk)
+            .is('assigned_to', null);
+          (data ?? []).forEach((r: any) => stillUnassigned.push(r.id));
+        }
+        if (!cancelled) setReclaimIds(stillUnassigned);
+      } catch (e: any) {
+        if (!cancelled) setReclaimIds([]);
+      } finally {
+        if (!cancelled) setReclaimLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [sourceId, includeReclaim, reclaimFrom]);
+
   const loadEvents = useCallback(async () => {
     setLoadingEvents(true);
     try {
