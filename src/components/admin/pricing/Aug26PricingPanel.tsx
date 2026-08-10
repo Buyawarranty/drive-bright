@@ -13,6 +13,7 @@ import {
   CLAIM_LIMITS,
   type PricingVersion,
 } from '@/hooks/usePricingVersions';
+import { resolvePriceFloors, CODE_PRICE_FLOORS } from '@/lib/pricing/pricingVersionConfig';
 
 const PERIOD_LABEL: Record<string, string> = {
   '12months': '12 months',
@@ -44,6 +45,19 @@ const Aug26PricingPanel: React.FC = () => {
   const selected = versions.find((v) => v.id === selectedId) ?? preferred;
   const matrix = selected?.admin_matrix ?? buildCodeAdminMatrix();
   const webDiscount = selected?.step3_discount_pct ?? 10;
+  /**
+   * Net sell floor for this version. `resolvePriceFloors` clamps to the agreed
+   * £399 / £659 / £938 bottom, so a version saved with the retired £349 / £577 /
+   * £821 figures is displayed — and priced — at the current floor.
+   */
+  const floors = useMemo(
+    () => resolvePriceFloors({ price_floors: selected?.price_floors ?? null } as any),
+    [selected?.price_floors],
+  );
+  const floorWasRaised = (PERIODS as readonly string[]).some(
+    (p) => Number((selected?.price_floors as any)?.[p] ?? 0) > 0 &&
+      Number((selected?.price_floors as any)?.[p]) < (CODE_PRICE_FLOORS as any)[p],
+  );
 
   const duplicate = async () => {
     if (!selected) return;
@@ -93,7 +107,15 @@ const Aug26PricingPanel: React.FC = () => {
             <Info className="h-4 w-4" />
             <AlertDescription className="text-sm">
               Viewing only — nothing here changes live prices. Website (Step 3/4) prices are{' '}
-              {webDiscount}% below the figures shown.
+              {webDiscount}% below the figures shown. No warranty may be sold under the net floor of{' '}
+              £{floors['12months']} / £{floors['24months']} / £{floors['36months']} (12 / 24 / 36 months,
+              halved for motorbikes, shaped up by claim limit, labour rate and excess).
+              {floorWasRaised && (
+                <span className="mt-1 block font-semibold text-amber-600">
+                  This version was saved with older, lower floors — they are shown and applied at the
+                  current net floor.
+                </span>
+              )}
             </AlertDescription>
           </Alert>
 
@@ -140,11 +162,32 @@ const Aug26PricingPanel: React.FC = () => {
                       {EXCESSES.map((excess) => (
                         <tr key={excess}>
                           <td className="border p-2 font-medium">£{excess}</td>
-                          {CLAIM_LIMITS.map((limit) => (
-                            <td key={limit} className="border p-2 text-right tabular-nums">
-                              {money(matrix?.[period]?.[String(excess)]?.[String(limit)])}
-                            </td>
-                          ))}
+                          {CLAIM_LIMITS.map((limit) => {
+                            const cell = matrix?.[period]?.[String(excess)]?.[String(limit)];
+                            const floor = (floors as any)[period] as number | undefined;
+                            const underFloor =
+                              typeof cell === 'number' && typeof floor === 'number' && cell < floor;
+                            return (
+                              <td
+                                key={limit}
+                                className={`border p-2 text-right tabular-nums ${
+                                  underFloor ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/30' : ''
+                                }`}
+                                title={
+                                  underFloor
+                                    ? `Below the £${floor} net floor — sold at £${floor}`
+                                    : undefined
+                                }
+                              >
+                                {money(cell)}
+                                {underFloor && (
+                                  <span className="ml-1 text-[10px] font-semibold">
+                                    → £{floor}
+                                  </span>
+                                )}
+                              </td>
+                            );
+                          })}
                         </tr>
                       ))}
                     </tbody>
