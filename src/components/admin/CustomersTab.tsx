@@ -342,7 +342,10 @@ interface AdminUser {
   first_name?: string;
   last_name?: string;
   role: string;
+  /** false when the agent has left / been archived — kept so historical sales attribution still shows their name */
+  is_active?: boolean;
 }
+
 
 // Number plate component
 const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
