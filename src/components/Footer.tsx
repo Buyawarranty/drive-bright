@@ -109,8 +109,22 @@ const Footer = () => {
 
           {/* Bottom section */}
           <div className="mt-8 pt-4 border-t border-white/10 text-center text-sm text-gray-300">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
+              <span className="inline-flex items-center bg-white rounded-md px-2.5 py-1.5">
+                <img
+                  src={icoLogo.url}
+                  alt="Registered with the Information Commissioner's Office (ICO)"
+                  loading="lazy"
+                  className="h-5 sm:h-6 w-auto"
+                />
+              </span>
+              <span className="text-xs text-gray-300">
+                Registered with the Information Commissioner&apos;s Office
+              </span>
+            </div>
             <p>&copy; {new Date().getFullYear()} Buy a Warranty. All rights reserved.</p>
           </div>
+
         </div>
       </footer>
     </div>
