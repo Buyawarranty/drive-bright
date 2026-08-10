@@ -9,6 +9,8 @@ import {
 import type { VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
 import { runPreflightCheck } from '@/lib/pricing/preflightCheck';
 import { autoPublishExclusionsWithPricing } from '@/lib/pricing/liveVehicleExclusions';
+import { refreshLivePricing } from '@/lib/pricing/refreshLivePricing';
+
 
 import {
   computeConfigChecksum,
@@ -257,8 +259,12 @@ export function usePricingVersions() {
         ((publishedRow as any)?.label as string) || 'pricing push'
       );
       await load();
+      // Apply the newly published prices to the running app immediately so open
+      // screens (Quotes & Orders / import lead) quote the new price without a reload.
+      await refreshLivePricing();
 
     },
+
     [load]
   );
 
