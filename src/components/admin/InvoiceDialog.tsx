@@ -205,6 +205,14 @@ const generateInvoiceHTML = (customer: Customer): string => {
         </div>
       </div>
       
+      <div style="background: #f9fafb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+        <h4 style="color: #f97316; font-size: 14px; text-transform: uppercase; margin-bottom: 12px;">Bank transfer details</h4>
+        <p style="font-size: 13px; margin: 4px 0;"><strong>Account name:</strong> ${COMPANY_INFO.bank.accountName}</p>
+        <p style="font-size: 13px; margin: 4px 0;"><strong>Bank:</strong> ${COMPANY_INFO.bank.bankName}</p>
+        <p style="font-size: 13px; margin: 4px 0;"><strong>Sort code:</strong> ${COMPANY_INFO.bank.sortCode}</p>
+        <p style="font-size: 13px; margin: 4px 0;"><strong>Account number:</strong> ${COMPANY_INFO.bank.accountNumber}</p>
+      </div>
+      
       <div class="footer">
         <p><strong>Thank you for your purchase!</strong></p>
         <p>This invoice is issued in UK format (GBP, DD/MM/YYYY).</p>
