@@ -22,6 +22,8 @@ import SectionPushLiveBar from './SectionPushLiveBar';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import { buildAdminMatrixFromModel } from './AgeBandPricingPreview';
+import PriceSurfaceBadge from './PriceSurfaceBadge';
+
 
 /**
  * CODE BASE vs TEST HYBRID AUG
@@ -194,17 +196,23 @@ const CodebaseVsHybridPanel: React.FC<{
       />
       <Card className="border-2">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <FlaskConical className="h-5 w-5" />
-            Code base vs Test Hybrid Aug
-          </CardTitle>
-          <CardDescription>
-            The original July 2026 code-base pricing against the August test model in the same Step 2
-            screen. Left is the flat code-base grid (no age, mileage, powertrain or model-risk
-            differentiation); right applies the hybrid variables below. Sandbox only — nothing saves a
-            quote or changes live prices.
-          </CardDescription>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <FlaskConical className="h-5 w-5" />
+                Code base vs Test Hybrid Aug
+              </CardTitle>
+              <CardDescription>
+                The original July 2026 code-base pricing against the August test model in the same Step 2
+                screen. Left is the flat code-base grid (no age, mileage, powertrain or model-risk
+                differentiation); right applies the hybrid variables below. Sandbox only — nothing saves a
+                quote or changes live prices.
+              </CardDescription>
+            </div>
+            <PriceSurfaceBadge surface="quotes" />
+          </div>
         </CardHeader>
+
         <CardContent className="space-y-4">
           <Alert>
             <Info className="h-4 w-4" />
