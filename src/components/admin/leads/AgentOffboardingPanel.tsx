@@ -112,14 +112,18 @@ export const AgentOffboardingPanel: React.FC = () => {
       : `${targetAgents.length} agents`;
   const canRun = !!sourceId && targetIds.length > 0 && !targetIds.includes(sourceId);
 
+  const reclaimCount = includeReclaim ? reclaimIds.length : 0;
+  const effectiveTotal = (counts?.totalLeads ?? 0) + reclaimCount;
+
   /** Round-robin split of the source's lead count across the chosen receivers. */
   const splitPlan = useMemo(() => {
-    const total = counts?.totalLeads ?? 0;
+    const total = effectiveTotal;
     return targetAgents.map((a, i) => ({
       agent: a,
       count: Math.floor(total / targetAgents.length) + (i < total % targetAgents.length ? 1 : 0),
     }));
-  }, [counts, targetAgents]);
+  }, [effectiveTotal, targetAgents]);
+
 
 
   const loadCounts = useCallback(async (agentId: string) => {
