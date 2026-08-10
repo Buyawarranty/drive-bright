@@ -4,6 +4,7 @@ import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { getRecordedOrderDiscount, discountBandClass } from '@/lib/pricing/orderDiscount';
+import { ReferencePriceCell } from '@/components/admin/customers/ReferencePriceCell';
 import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { Button } from '@/components/ui/button';
@@ -4981,6 +4982,12 @@ Buyawarranty.co.uk`,
               <TableHead>RegNum</TableHead>
               <TableHead>Price</TableHead>
               <TableHead
+                className="bg-sky-50 min-w-[160px]"
+                title="System price for this reg, claim limit, excess, labour rate and duration — QOP (Quotes & Orders grid) and RP (retail / Step 3) — next to what was actually sold, and the percentage gap."
+              >
+                QOP / RP vs sold
+              </TableHead>
+              <TableHead
                 className="bg-purple-50 whitespace-nowrap"
                 title="Discount given on this order — quoted price at the point of sale versus the amount collected."
               >
@@ -6466,7 +6473,10 @@ Please log in and change your password after first login.`;
                     ) : (
                       <span className="text-xs text-muted-foreground">—</span>
                     )}
-                  </TableCell>
+                   </TableCell>
+                   <TableCell className="bg-sky-50/40">
+                     <ReferencePriceCell order={customer as any} />
+                   </TableCell>
                   <TableCell className="bg-purple-50/40">
                     {(() => {
                       const disc = getRecordedOrderDiscount(customer);
