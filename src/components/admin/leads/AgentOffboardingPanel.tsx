@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { UserMinus, Loader2, ArrowRightLeft, Info, ShieldCheck, History, Undo2, Database, Eye } from 'lucide-react';
+import { UserMinus, Loader2, ArrowRightLeft, Info, ShieldCheck, History, Undo2, Database, Eye, ChevronsUpDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -56,13 +58,14 @@ type OffboardingEvent = {
 export const AgentOffboardingPanel: React.FC = () => {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [sourceId, setSourceId] = useState<string>('');
-  const [targetId, setTargetId] = useState<string>('');
+  const [targetIds, setTargetIds] = useState<string[]>([]);
   const [counts, setCounts] = useState<Counts | null>(null);
   const [loadingCounts, setLoadingCounts] = useState(false);
   const [working, setWorking] = useState(false);
   const [resetToNew, setResetToNew] = useState(false);
   const [alsoDeactivate, setAlsoDeactivate] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+
 
   const [backupsOpen, setBackupsOpen] = useState(false);
   const [events, setEvents] = useState<OffboardingEvent[]>([]);
@@ -90,7 +93,26 @@ export const AgentOffboardingPanel: React.FC = () => {
   }, []);
 
   const sourceAgent = useMemo(() => agents.find(a => a.id === sourceId) ?? null, [agents, sourceId]);
-  const targetAgent = useMemo(() => agents.find(a => a.id === targetId) ?? null, [agents, targetId]);
+  const targetAgents = useMemo(
+    () => targetIds.map(id => agents.find(a => a.id === id)).filter(Boolean) as Agent[],
+    [agents, targetIds],
+  );
+  const targetLabel = targetAgents.length === 0
+    ? 'agent'
+    : targetAgents.length === 1
+      ? targetAgents[0].name
+      : `${targetAgents.length} agents`;
+  const canRun = !!sourceId && targetIds.length > 0 && !targetIds.includes(sourceId);
+
+  /** Round-robin split of the source's lead count across the chosen receivers. */
+  const splitPlan = useMemo(() => {
+    const total = counts?.totalLeads ?? 0;
+    return targetAgents.map((a, i) => ({
+      agent: a,
+      count: Math.floor(total / targetAgents.length) + (i < total % targetAgents.length ? 1 : 0),
+    }));
+  }, [counts, targetAgents]);
+
 
   const loadCounts = useCallback(async (agentId: string) => {
     setLoadingCounts(true);
@@ -140,17 +162,25 @@ export const AgentOffboardingPanel: React.FC = () => {
   useEffect(() => { if (backupsOpen) loadEvents(); }, [backupsOpen, loadEvents]);
 
   const runHandover = useCallback(async () => {
-    if (!sourceId || !targetId || sourceId === targetId) {
-      toast.error('Pick a different agent to receive the leads');
+    if (!canRun) {
+      toast.error('Pick at least one different agent to receive the leads');
       return;
     }
     setWorking(true);
     try {
+      // Capture the lead ids BEFORE the handover so a multi-agent split can
+      // spread exactly this batch afterwards.
+      const { data: leadRows } = await (supabase.from('sales_leads') as any)
+        .select('id')
+        .eq('assigned_to', sourceId)
+        .order('created_at', { ascending: false });
+      const leadIds: string[] = (leadRows ?? []).map((r: any) => r.id);
+
       // Atomic: snapshot every lead + notes + reminders + changelog + call logs,
       // then reassign — all in one server-side transaction so nothing can be lost.
       const { data, error } = await (supabase as any).rpc('create_agent_offboarding_backup', {
         _source_admin_user_id: sourceId,
-        _target_admin_user_id: targetId,
+        _target_admin_user_id: targetIds[0],
         _reset_to_new: resetToNew,
         _also_deactivate: alsoDeactivate,
         _notes: null,
@@ -158,8 +188,29 @@ export const AgentOffboardingPanel: React.FC = () => {
       if (error) throw error;
 
       const moved = (data as any)?.lead_count ?? 0;
+
+      // Multi-agent split: the backup already covers every lead, so we now
+      // spread the same batch round-robin across the remaining receivers.
+      if (targetIds.length > 1 && leadIds.length > 0) {
+        const buckets: Record<string, string[]> = {};
+        leadIds.forEach((id, i) => {
+          const agentId = targetIds[i % targetIds.length];
+          (buckets[agentId] ||= []).push(id);
+        });
+        for (const [agentId, ids] of Object.entries(buckets)) {
+          if (agentId === targetIds[0]) continue; // already assigned by the RPC
+          for (let i = 0; i < ids.length; i += 200) {
+            const chunk = ids.slice(i, i + 200);
+            const { error: upErr } = await (supabase.from('sales_leads') as any)
+              .update({ assigned_to: agentId })
+              .in('id', chunk);
+            if (upErr) throw upErr;
+          }
+        }
+      }
+
       toast.success(
-        `Backed up & moved ${moved} lead${moved === 1 ? '' : 's'} to ${targetAgent?.name}. Full history preserved.`,
+        `Backed up & moved ${moved} lead${moved === 1 ? '' : 's'} to ${targetLabel}. Full history preserved.`,
       );
       setConfirmOpen(false);
       await loadCounts(sourceId);
@@ -169,11 +220,11 @@ export const AgentOffboardingPanel: React.FC = () => {
     } finally {
       setWorking(false);
     }
-  }, [sourceId, targetId, resetToNew, alsoDeactivate, targetAgent, loadCounts]);
+  }, [canRun, sourceId, targetIds, resetToNew, alsoDeactivate, targetLabel, loadCounts]);
 
   const runDryRun = useCallback(async () => {
-    if (!sourceId || !targetId || sourceId === targetId) {
-      toast.error('Pick a different agent to receive the leads');
+    if (!canRun) {
+      toast.error('Pick at least one different agent to receive the leads');
       return;
     }
     setDryRunOpen(true);
@@ -182,7 +233,7 @@ export const AgentOffboardingPanel: React.FC = () => {
     try {
       const { data, error } = await (supabase as any).rpc('preview_agent_offboarding_backup', {
         _source_admin_user_id: sourceId,
-        _target_admin_user_id: targetId,
+        _target_admin_user_id: targetIds[0],
         _reset_to_new: resetToNew,
         _also_deactivate: alsoDeactivate,
       });
@@ -194,7 +245,8 @@ export const AgentOffboardingPanel: React.FC = () => {
     } finally {
       setDryRunLoading(false);
     }
-  }, [sourceId, targetId, resetToNew, alsoDeactivate]);
+  }, [canRun, sourceId, targetIds, resetToNew, alsoDeactivate]);
+
 
   const restoreEvent = useCallback(async (eventId: string) => {
     if (!confirm('Restore every lead in this backup to its original owner? Notes and history are already intact.')) return;
@@ -216,13 +268,14 @@ export const AgentOffboardingPanel: React.FC = () => {
   }, [loadEvents, loadCounts, sourceId]);
 
   return (
-    <Card className="border-amber-200 dark:border-amber-900/40">
+    <Card id="offboard-agent" className="border-amber-200 dark:border-amber-900/40 scroll-mt-28">
+
       <CardContent className="p-5 space-y-4">
         <div className="flex items-start gap-2">
           <UserMinus className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-base font-semibold text-foreground">Offboard an agent (safe handover)</h3>
+              <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Offboard an agent (safe handover)</h3>
               <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 gap-1">
                 <Database className="h-3 w-3" /> Full backup on every handover
               </Badge>
@@ -252,16 +305,45 @@ export const AgentOffboardingPanel: React.FC = () => {
             </Select>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Hand everything to</label>
-            <Select value={targetId} onValueChange={setTargetId} disabled={!sourceId}>
-              <SelectTrigger><SelectValue placeholder="Pick the receiving agent" /></SelectTrigger>
-              <SelectContent className="bg-popover z-50">
-                {agents.filter(a => a.id !== sourceId && a.is_active).map(a => (
-                  <SelectItem key={a.id} value={a.id}>{a.name} — {a.email}</SelectItem>
+            <label className="text-xs font-medium text-muted-foreground">Hand everything to (one or more agents)</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" disabled={!sourceId} className="w-full justify-between font-normal">
+                  <span className="truncate">
+                    {targetAgents.length === 0
+                      ? 'Pick the receiving agent(s)'
+                      : targetAgents.map(a => a.name).join(', ')}
+                  </span>
+                  <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-2 bg-popover z-50" align="start">
+                <div className="max-h-64 overflow-auto space-y-1">
+                  {agents.filter(a => a.id !== sourceId && a.is_active).map(a => (
+                    <label key={a.id} className="flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-muted cursor-pointer">
+                      <Checkbox
+                        checked={targetIds.includes(a.id)}
+                        onCheckedChange={(v) =>
+                          setTargetIds(prev => v ? [...prev, a.id] : prev.filter(id => id !== a.id))
+                        }
+                      />
+                      <span className="truncate">{a.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+            {targetAgents.length > 1 && (counts?.totalLeads ?? 0) > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {splitPlan.map(p => (
+                  <Badge key={p.agent.id} variant="outline" className="text-[11px]">
+                    {p.agent.name}: {p.count}
+                  </Badge>
                 ))}
-              </SelectContent>
-            </Select>
+              </div>
+            )}
           </div>
+
         </div>
 
         {sourceId && (
@@ -309,17 +391,18 @@ export const AgentOffboardingPanel: React.FC = () => {
           <Button
             variant="outline"
             onClick={runDryRun}
-            disabled={!sourceId || !targetId || sourceId === targetId || (counts?.totalLeads ?? 0) === 0}
+            disabled={!canRun || (counts?.totalLeads ?? 0) === 0}
           >
             <Eye className="h-4 w-4 mr-2" />
             Preview handover (dry run)
           </Button>
           <Button
             onClick={() => setConfirmOpen(true)}
-            disabled={!sourceId || !targetId || sourceId === targetId || working || (counts?.totalLeads ?? 0) === 0}
+            disabled={!canRun || working || (counts?.totalLeads ?? 0) === 0}
           >
             {working ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ArrowRightLeft className="h-4 w-4 mr-2" />}
-            Back up & hand over {counts?.totalLeads ?? 0} lead{counts?.totalLeads === 1 ? '' : 's'} to {targetAgent?.name || 'agent'}
+            Back up & hand over {counts?.totalLeads ?? 0} lead{counts?.totalLeads === 1 ? '' : 's'} to {targetLabel}
+
           </Button>
         </div>
 
@@ -337,7 +420,7 @@ export const AgentOffboardingPanel: React.FC = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Back up & hand {counts?.totalLeads ?? 0} lead{counts?.totalLeads === 1 ? '' : 's'} from {sourceAgent?.name} to {targetAgent?.name}?
+              Back up & hand {counts?.totalLeads ?? 0} lead{counts?.totalLeads === 1 ? '' : 's'} from {sourceAgent?.name} to {targetLabel}?
             </AlertDialogTitle>
             <AlertDialogDescription>
               A full snapshot of every lead (with notes, call logs, changelog and reminders) is saved first, so this
