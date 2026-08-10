@@ -2451,6 +2451,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       const bonusMonths = selectedBonusMonths;
 
       const subject = (emailSubject && emailSubject.trim()) || generateEmailSubject();
+      // Agent copy must point at the same verified quote the customer gets.
+      const selfCopyLink = await getVerifiedQuoteLink();
+      if (!selfCopyLink) {
+        throw new Error("Couldn't verify the quote link for this vehicle. Please regenerate it and try again.");
+      }
 
       const { error } = await supabase.functions.invoke('send-admin-quote', {
         body: {
@@ -2459,7 +2464,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
           copyOnly: true,
           originalRecipientEmail: cleanCustomerEmail || undefined,
           subject,
-          quoteLink,
+          quoteLink: selfCopyLink,
+
           customerName: cleanCustomerName,
           vehicleData: cleanVehicleData,
           quoteDetails: {
