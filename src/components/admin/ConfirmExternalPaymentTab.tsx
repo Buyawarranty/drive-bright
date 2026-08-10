@@ -246,11 +246,27 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     quotedTotal > 0 && Number.isFinite(enteredAmount) && enteredAmount < quotedTotal
       ? ((quotedTotal - enteredAmount) / quotedTotal) * 100
       : 0;
-  const minAllowedAmount = quotedTotal > 0
+  // NET payable floor — £399 / £659 / £938 (12/24/36mo), shaped by the options
+  // chosen and halved for motorbikes. Confirming a manual payment used to have no
+  // floor at all, so this closes the biggest under-floor leak. Management may go
+  // below (logged to price_override_audit).
+  const netFloorAmount = getNetPayableFloor({
+    paymentPeriod: paymentType,
+    voluntaryExcess: excessAmount,
+    claimLimit: effectiveClaimLimit,
+    labourRate,
+    isMotorbike: /motor\s*(bike|cycle)|\bbike\b/i.test(String((vehicleData as any)?.vehicleType || '')),
+    surface: 'admin',
+  });
+  const ceilingMinAmount = quotedTotal > 0
     ? Math.round(quotedTotal * (1 - DISCOUNT_CEILING_PCT / 100) * 100) / 100
     : 0;
+  // Whichever bites harder: the 30% ceiling or the absolute net floor.
+  const minAllowedAmount = Math.max(ceilingMinAmount, netFloorAmount);
   const overDiscountCeiling = discountPct > DISCOUNT_CEILING_PCT + 0.01;
-  const discountBlocked = overDiscountCeiling && !isManagementRole;
+  const underNetFloor = Number.isFinite(enteredAmount) && enteredAmount > 0 && enteredAmount < netFloorAmount - 0.01;
+  const discountBlocked = (overDiscountCeiling || underNetFloor) && !isManagementRole;
+
 
 
   const formatRegNumber = (value: string): string => {
