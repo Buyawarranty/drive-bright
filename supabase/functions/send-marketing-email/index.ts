@@ -4,6 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { requireAdmin } from "../_shared/admin-auth.ts";
 import { buildUnsubscribeFooter } from "../_shared/unsubscribe-footer.ts";
 import { EMAIL_RESPONSIVE_STYLE } from "../_shared/email-layout.ts";
+import { getLeadOwnerEmails, withLeadOwnerReplyTo } from "../_shared/lead-owner-reply-to.ts";
+
 
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
