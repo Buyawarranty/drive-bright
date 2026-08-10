@@ -922,62 +922,63 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               {isDoNotContact && !isExpanded ? "Do not contact — change status to reactivate" : (isExpanded ? "Close" : "Click to open")}
             </TooltipContent>
           </Tooltip>
-          
-          <ZoiperDialButton
-            phone={lead.phone || ''}
-            leadId={lead.id}
-            leadType={lead.is_from_abandoned_cart ? 'abandoned_cart' : 'sales_lead'}
-            leadSource={lead.lead_source || null}
-            onDialed={(number) => onLogActivity('call_dial', `Dialled ${number} via Zoiper`)}
-          />
 
-          <RetryCountdownBadge
-            nextActionDate={lead.next_action_date}
-            followUpStatus={lead.follow_up_status}
-          />
+          <div className={cn("flex items-center gap-1", isDoNotContact && "pointer-events-none opacity-40")}>
+            <ZoiperDialButton
+              phone={lead.phone || ''}
+              leadId={lead.id}
+              leadType={lead.is_from_abandoned_cart ? 'abandoned_cart' : 'sales_lead'}
+              leadSource={lead.lead_source || null}
+              onDialed={(number) => onLogActivity('call_dial', `Dialled ${number} via Zoiper`)}
+            />
 
-          <OvernightBadge leadId={lead.id} />
+            <RetryCountdownBadge
+              nextActionDate={lead.next_action_date}
+              followUpStatus={lead.follow_up_status}
+            />
 
-          
-          <NotesQuickActionsPopover
-            lead={lead}
-            noteCount={noteCount}
-            onOpenFullNotes={onToggleExpand}
-            onUpdateCallCount={onUpdateCallCount}
-            onScheduleFollowUp={onScheduleFollowUp}
-            onLogActivity={onLogActivity}
-            agentId={lead.assigned_to || ''}
-          />
+            <OvernightBadge leadId={lead.id} />
 
-          
-          <EmailActionsButton
-            email={lead.email}
-            onAction={(a) =>
-              onLogActivity(
-                a === 'gmail' ? 'email_open_gmail' : 'email_copy',
-                a === 'gmail' ? 'Opened lead in Gmail' : 'Copied email address',
-              )
-            }
-          />
-          <RemindMePopover leadId={lead.id} compact onReminderSaved={(msg) => onLogActivity('reminder', msg)} />
-          
-          {onSendQuote && !lead.is_paid && (
-            <Tooltip delayDuration={100}>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="h-7 px-2 text-xs font-medium text-orange-600 border-orange-300 hover:bg-orange-50"
-                  onClick={() => { onLogActivity('quote_open', 'Opened Send Quote flow'); onSendQuote(); }}
-                >
-                  <FileText className="h-3 w-3 mr-1" />
-                  Quote
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="text-xs">Send Quote</TooltipContent>
-            </Tooltip>
-          )}
+            
+            <NotesQuickActionsPopover
+              lead={lead}
+              noteCount={noteCount}
+              onOpenFullNotes={onToggleExpand}
+              onUpdateCallCount={onUpdateCallCount}
+              onScheduleFollowUp={onScheduleFollowUp}
+              onLogActivity={onLogActivity}
+              agentId={lead.assigned_to || ''}
+            />
 
+            
+            <EmailActionsButton
+              email={lead.email}
+              onAction={(a) =>
+                onLogActivity(
+                  a === 'gmail' ? 'email_open_gmail' : 'email_copy',
+                  a === 'gmail' ? 'Opened lead in Gmail' : 'Copied email address',
+                )
+              }
+            />
+            <RemindMePopover leadId={lead.id} compact onReminderSaved={(msg) => onLogActivity('reminder', msg)} />
+            
+            {onSendQuote && !lead.is_paid && (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="h-7 px-2 text-xs font-medium text-orange-600 border-orange-300 hover:bg-orange-50"
+                    onClick={() => { onLogActivity('quote_open', 'Opened Send Quote flow'); onSendQuote(); }}
+                  >
+                    <FileText className="h-3 w-3 mr-1" />
+                    Quote
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">Send Quote</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         </div>
       </TableCell>
       )}
