@@ -271,7 +271,16 @@ const VehicleRiskBandsPanel: React.FC = () => {
       ],
     });
     setNewEntry({ make: '', model: '', bandId: newEntry.bandId, fuel: 'any' });
+    // A live search or fuel filter would hide the row we just added and make it
+    // look like nothing saved — clear both so the new entry is always visible.
+    setFilter('');
+    setFuelFilter('all');
+    const bandName = bandById.get(newEntry.bandId)?.name ?? 'band';
+    toast.success(
+      `Saved — ${[make, model].filter(Boolean).join(' ')} added to ${bandName}. Push live to apply it to quotes.`
+    );
   };
+
 
   const save = () => {
     saveRiskBandConfig(config);
