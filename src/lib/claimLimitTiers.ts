@@ -68,8 +68,33 @@ export type Claim5kBlockRule = {
   model?: string | null;
   /** Restrict the block to one powertrain. 'any' (or absent) = all fuels. */
   fuel?: FuelFilter;
+  /**
+   * Which claim limits the rule blocks. Absent/empty = £5,000 only, which keeps
+   * every rule saved before per-tier blocking behaving exactly as it did.
+   * £2,000 can never be blocked — it is the reference tier every price is built
+   * from, so removing it would leave a vehicle with no quotable cover.
+   */
+  limits?: number[];
+  /** Block one specific vehicle by registration (blank = match on make/model). */
+  registration?: string | null;
   blocked: boolean;
 };
+
+/** Claim limits that management is allowed to block. £2,000 is the protected reference tier. */
+export const BLOCKABLE_CLAIM_LIMITS = [750, 3000, 5000] as const;
+
+/** Coerce stored limits to blockable tiers; empty/invalid falls back to £5,000 only. */
+export function normalizeBlockedLimits(limits?: number[] | null): number[] {
+  const clean = (Array.isArray(limits) ? limits : [])
+    .map(n => Number(n))
+    .filter(n => (BLOCKABLE_CLAIM_LIMITS as readonly number[]).includes(n));
+  return clean.length ? Array.from(new Set(clean)) : [5000];
+}
+
+/** Only reg matters when a rule names one — one exact vehicle, nothing else. */
+function normalizeReg(reg?: string | null): string {
+  return String(reg || '').toLowerCase().replace(/\s+/g, '');
+}
 
 let liveClaim5kBlocklist: Claim5kBlockRule[] | null = null;
 
@@ -81,6 +106,8 @@ export function setLiveClaim5kBlocklist(rules: Claim5kBlockRule[] | null | undef
       make: r.make ? String(r.make).toLowerCase().trim() : '',
       model: r.model ? String(r.model).toLowerCase().trim() : null,
       fuel: normalizeFuelFilter(r.fuel),
+      limits: normalizeBlockedLimits(r.limits),
+      registration: r.registration ? String(r.registration).toLowerCase().replace(/\s+/g, '') : null,
       blocked: r.blocked !== false,
     }));
   liveClaim5kBlocklist = clean.length ? clean : null;
@@ -90,29 +117,68 @@ export function getLiveClaim5kBlocklist(): Claim5kBlockRule[] | null {
   return liveClaim5kBlocklist;
 }
 
-/**
- * Check whether a vehicle is blocked from the £5,000 claim limit.
- * Uses the managed blocklist when present, otherwise the code defaults.
- */
-export function isPremiumVehicle(make?: string, model?: string, fuelType?: string | null): boolean {
-  const m = (make || '').toLowerCase().trim();
-  const mo = (model || '').toLowerCase().trim();
+/** Which claim limits are blocked for this vehicle, per the managed blocklist. */
+export function getBlockedClaimLimits(vehicle: {
+  make?: string | null;
+  model?: string | null;
+  fuelType?: string | null;
+  registration?: string | null;
+}): number[] {
+  const m = (vehicle.make || '').toLowerCase().trim();
+  const mo = (vehicle.model || '').toLowerCase().trim();
+  const reg = normalizeReg(vehicle.registration);
 
-  if (liveClaim5kBlocklist) {
-    if (!m && !mo) return false;
-    return liveClaim5kBlocklist.some(r => {
-      if (!r.blocked) return false;
-      if (!fuelFilterMatches(r.fuel, fuelType)) return false;
-      // Model-only rule: block that model whatever the make is.
-      if (!r.make) return !!r.model && (mo.includes(r.model) || m.includes(r.model));
-      if (!m.includes(r.make)) return false;
-      if (!r.model) return true;
-      return mo.includes(r.model);
-    });
+  if (!liveClaim5kBlocklist) {
+    if (!m) return [];
+    return PREMIUM_VEHICLE_MAKES.some(p => m.includes(p)) ? [5000] : [];
   }
 
-  if (!m) return false;
-  return PREMIUM_VEHICLE_MAKES.some(p => m.includes(p));
+  const blocked = new Set<number>();
+  for (const r of liveClaim5kBlocklist) {
+    if (!r.blocked) continue;
+    const ruleReg = normalizeReg(r.registration);
+    if (ruleReg) {
+      // Registration rule: exact vehicle only, fuel/make/model ignored.
+      if (!reg || ruleReg !== reg) continue;
+    } else {
+      if (!m && !mo) continue;
+      if (!fuelFilterMatches(r.fuel, vehicle.fuelType)) continue;
+      if (!r.make) {
+        if (!r.model || !(mo.includes(r.model) || m.includes(r.model))) continue;
+      } else {
+        if (!m.includes(r.make)) continue;
+        if (r.model && !mo.includes(r.model)) continue;
+      }
+    }
+    normalizeBlockedLimits(r.limits).forEach(l => blocked.add(l));
+  }
+  return Array.from(blocked);
+}
+
+/** Is one specific claim limit blocked for this vehicle? */
+export function isClaimLimitBlocked(
+  claimLimit: number,
+  vehicle: {
+    make?: string | null;
+    model?: string | null;
+    fuelType?: string | null;
+    registration?: string | null;
+  }
+): boolean {
+  return getBlockedClaimLimits(vehicle).includes(Number(claimLimit));
+}
+
+/**
+ * Check whether a vehicle is blocked from the £5,000 claim limit.
+ * Kept for the existing call sites; delegates to the per-tier blocklist.
+ */
+export function isPremiumVehicle(
+  make?: string,
+  model?: string,
+  fuelType?: string | null,
+  registration?: string | null
+): boolean {
+  return isClaimLimitBlocked(5000, { make, model, fuelType, registration });
 }
 
 
