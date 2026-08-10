@@ -36,6 +36,11 @@ import {
   type FuelFilter,
 } from '@/lib/pricing/fuelCategory';
 import { getExclusionReason, isVehicleExcluded } from '@/lib/vehicleExclusions';
+import {
+  loadExclusionDraft,
+  primeLiveExclusions,
+  type ExclusionDraft,
+} from '@/lib/pricing/liveVehicleExclusions';
 
 
 const TONE_CLASS: Record<RiskBand['tone'], string> = {
