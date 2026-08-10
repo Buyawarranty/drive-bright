@@ -1676,11 +1676,11 @@ export const UserPermissionsTab = () => {
                     </Button>
                     <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0"
                       onClick={() => copyToClipboard(newPassword, 'password')}
-                      disabled={!newPassword} title="Copy password">
+                      disabled={!isSaved} title={isSaved ? 'Copy password' : 'Save the password first'}>
                       {copiedField === 'password' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                     </Button>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">Min 6 chars. This is the value emailed to the user.</p>
+                  <p className="text-[11px] text-muted-foreground">Min 6 chars. Only shareable once saved.</p>
                 </div>
               </div>
 
@@ -1688,7 +1688,7 @@ export const UserPermissionsTab = () => {
                 <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>
                   Close
                 </Button>
-                <Button variant="outline" onClick={handleTestLogin} disabled={!newPassword}>
+                <Button variant="outline" onClick={handleTestLogin} disabled={!isSaved}>
                   Copy & open login page
                 </Button>
                 <Button variant="outline" onClick={handleSetPassword}
