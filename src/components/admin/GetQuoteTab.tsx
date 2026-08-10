@@ -2029,17 +2029,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       });
       return;
     }
-    // Safety: never email a link that belongs to a different vehicle/customer/cover.
-    if (quoteLinkIdentityRef.current && quoteLinkIdentityRef.current !== quoteIdentity) {
-      setQuoteLink(null);
-      setQuoteGenerated(false);
+    // Safety: never email a link that belongs to a different vehicle/customer.
+    // Verified against the stored quote, not just local state.
+    const sendLink = await getVerifiedQuoteLink();
+    if (!sendLink) {
       toast({
         title: "Quote link is out of date",
-        description: "The vehicle, customer or cover options changed. A fresh link is being generated — please try sending again in a moment.",
+        description: "The vehicle or customer changed and a fresh link couldn't be created. Please try again.",
         variant: "destructive",
       });
       return;
     }
+
 
     setIsSendingEmail(true);
     try {
