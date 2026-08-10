@@ -14,6 +14,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { matchModelFloor, describeFloorMatch } from '@/lib/pricing/modelFloorMatch';
 import { setVehiclePricingRules } from '@/lib/pricing/vehicleRules';
 import { PRICING_MODEL_SAVED_EVENT } from './pricingModelEvents';
+import PriceSurfaceBadge from './PriceSurfaceBadge';
+
 
 
 
