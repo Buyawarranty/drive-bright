@@ -505,16 +505,20 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     // Prevent double-click race condition
     if (isConfirming) return;
 
-    // Hard stop: never create a policy more than 30% below the quoted price
-    // unless Management are the ones confirming it.
+    // Hard stop: never create a policy more than 30% below the quoted price, and
+    // never below the absolute net floor (£399/£659/£938 shaped), unless
+    // Management are the ones confirming it.
     if (discountBlocked) {
       toast({
         title: `Blocked — contact management`,
-        description: `${discountPct.toFixed(1)}% off exceeds the ${DISCOUNT_CEILING_PCT}% limit. You cannot confirm this payment — contact management to authorise it. Minimum allowed here is £${minAllowedAmount.toFixed(2)}.`,
+        description: underNetFloor
+          ? `£${enteredAmount.toFixed(2)} is below the minimum sellable price of £${netFloorAmount.toFixed(2)} for this cover. You cannot confirm this payment — contact management to authorise it.`
+          : `${discountPct.toFixed(1)}% off exceeds the ${DISCOUNT_CEILING_PCT}% limit. You cannot confirm this payment — contact management to authorise it. Minimum allowed here is £${minAllowedAmount.toFixed(2)}.`,
         variant: "destructive",
       });
       return;
     }
+
     setIsConfirming(true);
 
     // Check for duplicate warranty before proceeding
