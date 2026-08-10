@@ -1188,9 +1188,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <PhoneCopyText phone={lead.phone} leadId={lead.id} />
+              <PhoneCopyText phone={lead.phone} leadId={lead.id} disabled={isDoNotContact} />
             )}
-            <div className="flex items-center">
+            <div className={cn("flex items-center", isDoNotContact && "pointer-events-none opacity-40")}>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <Button 
@@ -1198,6 +1198,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                     size="icon"
                     className="h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50"
                     onClick={() => window.open(`https://wa.me/${lead.phone?.replace(/\D/g, '')}`)}
+                    disabled={isDoNotContact}
                   >
                     <MessageSquare className="h-3 w-3" />
                   </Button>
@@ -1214,7 +1215,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Email */}
       <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-0.5">
-          <EmailCopyText email={lead.email} />
+          <EmailCopyText email={lead.email} disabled={isDoNotContact} />
           <Tooltip delayDuration={100}>
             <TooltipTrigger asChild>
               <Button 
@@ -1229,6 +1230,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   }
                   if (!lead.is_from_abandoned_cart) onLogActivity('email', 'Sent email');
                 }}
+                disabled={isDoNotContact}
               >
                 <Send className="h-3 w-3" />
               </Button>
