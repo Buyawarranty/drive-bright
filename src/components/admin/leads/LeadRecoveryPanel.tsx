@@ -341,7 +341,28 @@ export const LeadRecoveryPanel: React.FC = () => {
                 ))}
               </SelectContent>
             </Select>
+            {sourceAgentRecord && (
+              <div className="pt-1 text-xs">
+                {recoverableLoading ? (
+                  <span className="inline-flex items-center gap-1 text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Counting recoverable leads…
+                  </span>
+                ) : recoverable ? (
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Badge variant="secondary">{recoverable.unassigned} unassigned ex-owned</Badge>
+                    <Badge variant="outline">{recoverable.workable} still workable</Badge>
+                    {recoverable.stillOwned > 0 && (
+                      <Badge variant="outline">{recoverable.stillOwned} still on them</Badge>
+                    )}
+                    <span className="text-muted-foreground">
+                      all-time{!sourceAgentRecord.active ? ' · agent has left' : ''}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+            )}
           </div>
+
 
           <div className="space-y-1">
             <label className="text-xs font-medium text-muted-foreground">Reassign to (one or more)</label>
