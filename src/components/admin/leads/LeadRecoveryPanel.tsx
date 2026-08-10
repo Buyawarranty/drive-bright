@@ -35,6 +35,8 @@ type LeadRow = {
 
 const ANY_AGENT = '__any__';
 const UNASSIGNED = '__unassigned__';
+/** Statuses that are finished business — recoverable but not worth working again. */
+const DEAD_STATUSES = new Set(['converted', 'lost', 'fake_lead', 'do_not_contact', 'unsubscribed']);
 
 /**
  * Management-only Lead Recovery panel.
