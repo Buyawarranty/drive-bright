@@ -13,7 +13,7 @@ import { Trophy, ChevronDown, ChevronUp, Search, RefreshCw } from 'lucide-react'
 /**
  * Converted sales stay out of the working New Leads list, so managers lost the
  * ability to read the notes and call log behind a sale. This panel keeps the
- * last 90 days of converted / paid leads in the New Leads section with the
+ * last 6 months of converted / paid leads in the New Leads section with the
  * full audit trail (calls, dials, notes, status and owner changes) per lead.
  * Management only.
  */
