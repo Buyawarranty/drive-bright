@@ -617,7 +617,18 @@ const VehicleRiskBandsPanel: React.FC = () => {
 
           {/* Assignments */}
           <div>
-            <h3 className="font-semibold mb-3">Makes &amp; models in each band</h3>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <h3 className="font-semibold">Makes &amp; models in each band</h3>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={save} disabled={!dirty}>
+                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save changes' : 'Saved'}
+                </Button>
+                <Button size="sm" onClick={pushLive} disabled={publishing}>
+                  <Rocket className="h-4 w-4 mr-2" />
+                  {publishing ? 'Pushing live…' : 'Push live'}
+                </Button>
+              </div>
+            </div>
             <div className="grid gap-2 sm:grid-cols-[1fr_1fr_170px_200px_auto] items-end mb-4">
               <div className="space-y-1">
                 <Label className="text-xs">Make</Label>
@@ -647,12 +658,13 @@ const VehicleRiskBandsPanel: React.FC = () => {
                   <SelectContent>
                     {FUEL_FILTER_OPTIONS.map(o => (
                       <SelectItem key={o.value} value={o.value}>
-                        {o.label}
+                        {o.value === 'any' ? 'All fuel types' : o.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-1">
                 <Label className="text-xs">Band</Label>
                 <Select value={newEntry.bandId} onValueChange={v => setNewEntry({ ...newEntry, bandId: v })}>
