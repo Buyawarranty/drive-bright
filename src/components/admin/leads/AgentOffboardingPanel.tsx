@@ -66,6 +66,14 @@ export const AgentOffboardingPanel: React.FC = () => {
   const [alsoDeactivate, setAlsoDeactivate] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  // Archived agents have their leads set to unassigned, so "0 total leads" hides
+  // real work. We reclaim every lead they used to own (from the assignment audit
+  // trail) that is still sitting unassigned, from a chosen date onwards.
+  const [includeReclaim, setIncludeReclaim] = useState(true);
+  const [reclaimFrom, setReclaimFrom] = useState('2026-08-04');
+  const [reclaimIds, setReclaimIds] = useState<string[]>([]);
+  const [reclaimLoading, setReclaimLoading] = useState(false);
+
 
   const [backupsOpen, setBackupsOpen] = useState(false);
   const [events, setEvents] = useState<OffboardingEvent[]>([]);
@@ -104,14 +112,18 @@ export const AgentOffboardingPanel: React.FC = () => {
       : `${targetAgents.length} agents`;
   const canRun = !!sourceId && targetIds.length > 0 && !targetIds.includes(sourceId);
 
+  const reclaimCount = includeReclaim ? reclaimIds.length : 0;
+  const effectiveTotal = (counts?.totalLeads ?? 0) + reclaimCount;
+
   /** Round-robin split of the source's lead count across the chosen receivers. */
   const splitPlan = useMemo(() => {
-    const total = counts?.totalLeads ?? 0;
+    const total = effectiveTotal;
     return targetAgents.map((a, i) => ({
       agent: a,
       count: Math.floor(total / targetAgents.length) + (i < total % targetAgents.length ? 1 : 0),
     }));
-  }, [counts, targetAgents]);
+  }, [effectiveTotal, targetAgents]);
+
 
 
   const loadCounts = useCallback(async (agentId: string) => {
@@ -142,6 +154,41 @@ export const AgentOffboardingPanel: React.FC = () => {
   }, []);
 
   useEffect(() => { if (sourceId) loadCounts(sourceId); else setCounts(null); }, [sourceId, loadCounts]);
+
+  /**
+   * Leads this agent USED to own that are now unassigned (their archive wiped
+   * assigned_to). Pulled from the assignment audit trail from the chosen date on.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!sourceId || !includeReclaim || !reclaimFrom) { setReclaimIds([]); return; }
+      setReclaimLoading(true);
+      try {
+        const { data: auditRows } = await (supabase.from('lead_assignment_audit') as any)
+          .select('lead_id')
+          .eq('previous_assigned_to_id', sourceId)
+          .gte('created_at', `${reclaimFrom}T00:00:00Z`)
+          .limit(5000);
+        const ids = Array.from(new Set(((auditRows ?? []) as any[]).map(r => r.lead_id).filter(Boolean)));
+        const stillUnassigned: string[] = [];
+        for (let i = 0; i < ids.length; i += 300) {
+          const chunk = ids.slice(i, i + 300);
+          const { data } = await (supabase.from('sales_leads') as any)
+            .select('id')
+            .in('id', chunk)
+            .is('assigned_to', null);
+          (data ?? []).forEach((r: any) => stillUnassigned.push(r.id));
+        }
+        if (!cancelled) setReclaimIds(stillUnassigned);
+      } catch (e: any) {
+        if (!cancelled) setReclaimIds([]);
+      } finally {
+        if (!cancelled) setReclaimLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [sourceId, includeReclaim, reclaimFrom]);
 
   const loadEvents = useCallback(async () => {
     setLoadingEvents(true);
@@ -174,45 +221,50 @@ export const AgentOffboardingPanel: React.FC = () => {
         .select('id')
         .eq('assigned_to', sourceId)
         .order('created_at', { ascending: false });
-      const leadIds: string[] = (leadRows ?? []).map((r: any) => r.id);
+      const ownedIds: string[] = (leadRows ?? []).map((r: any) => r.id);
+      // Reclaimed leads (previously this agent's, now unassigned) ride along.
+      const leadIds: string[] = [...ownedIds, ...(includeReclaim ? reclaimIds : [])];
 
-      // Atomic: snapshot every lead + notes + reminders + changelog + call logs,
-      // then reassign — all in one server-side transaction so nothing can be lost.
-      const { data, error } = await (supabase as any).rpc('create_agent_offboarding_backup', {
-        _source_admin_user_id: sourceId,
-        _target_admin_user_id: targetIds[0],
-        _reset_to_new: resetToNew,
-        _also_deactivate: alsoDeactivate,
-        _notes: null,
-      });
-      if (error) throw error;
+      let moved = 0;
+      if (ownedIds.length > 0) {
+        // Atomic: snapshot every lead + notes + reminders + changelog + call logs,
+        // then reassign — all in one server-side transaction so nothing can be lost.
+        const { data, error } = await (supabase as any).rpc('create_agent_offboarding_backup', {
+          _source_admin_user_id: sourceId,
+          _target_admin_user_id: targetIds[0],
+          _reset_to_new: resetToNew,
+          _also_deactivate: alsoDeactivate,
+          _notes: null,
+        });
+        if (error) throw error;
+        moved = (data as any)?.lead_count ?? 0;
+      }
 
-      const moved = (data as any)?.lead_count ?? 0;
-
-      // Multi-agent split: the backup already covers every lead, so we now
-      // spread the same batch round-robin across the remaining receivers.
-      if (targetIds.length > 1 && leadIds.length > 0) {
+      // Spread the whole batch (owned + reclaimed) round-robin across receivers.
+      if (leadIds.length > 0) {
         const buckets: Record<string, string[]> = {};
         leadIds.forEach((id, i) => {
           const agentId = targetIds[i % targetIds.length];
           (buckets[agentId] ||= []).push(id);
         });
         for (const [agentId, ids] of Object.entries(buckets)) {
-          if (agentId === targetIds[0]) continue; // already assigned by the RPC
           for (let i = 0; i < ids.length; i += 200) {
             const chunk = ids.slice(i, i + 200);
+            const patch: Record<string, any> = { assigned_to: agentId };
             const { error: upErr } = await (supabase.from('sales_leads') as any)
-              .update({ assigned_to: agentId })
+              .update(patch)
               .in('id', chunk);
             if (upErr) throw upErr;
           }
         }
+        moved = Math.max(moved, leadIds.length);
       }
 
       toast.success(
         `Backed up & moved ${moved} lead${moved === 1 ? '' : 's'} to ${targetLabel}. Full history preserved.`,
       );
       setConfirmOpen(false);
+      setReclaimIds([]);
       await loadCounts(sourceId);
     } catch (e: any) {
       console.error('[AgentOffboarding]', e);
@@ -220,7 +272,7 @@ export const AgentOffboardingPanel: React.FC = () => {
     } finally {
       setWorking(false);
     }
-  }, [canRun, sourceId, targetIds, resetToNew, alsoDeactivate, targetLabel, loadCounts]);
+  }, [canRun, sourceId, targetIds, resetToNew, alsoDeactivate, targetLabel, loadCounts, includeReclaim, reclaimIds]);
 
   const runDryRun = useCallback(async () => {
     if (!canRun) {
@@ -361,8 +413,43 @@ export const AgentOffboardingPanel: React.FC = () => {
                 <Badge variant="outline">{counts.notes} note events</Badge>
                 <Badge variant="outline">{counts.quickNotes} quick notes</Badge>
                 <Badge variant="outline">{counts.reminders} reminders</Badge>
+                {includeReclaim && (
+                  <Badge className="bg-amber-100 text-amber-900 border-amber-200">
+                    {reclaimLoading ? '…' : reclaimIds.length} unassigned leads they used to own
+                  </Badge>
+                )}
               </div>
             )}
+          </div>
+        )}
+
+        {sourceId && (
+          <div className="rounded-md border border-amber-200 dark:border-amber-900/40 bg-amber-50/60 dark:bg-amber-950/20 p-3 space-y-2">
+            <label className="inline-flex items-start gap-2 text-sm">
+              <Checkbox checked={includeReclaim} onCheckedChange={(v) => setIncludeReclaim(!!v)} className="mt-0.5" />
+              <span>
+                Also pull back leads they received but that are now <strong>unassigned</strong> (archiving an agent
+                clears the owner, so their real workload shows as 0)
+              </span>
+            </label>
+            <div className="flex flex-wrap items-center gap-2 pl-6 text-sm">
+              <span className="text-muted-foreground">Received from</span>
+              <input
+                type="date"
+                value={reclaimFrom}
+                disabled={!includeReclaim}
+                onChange={(e) => setReclaimFrom(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+              />
+              <span className="text-muted-foreground">to today</span>
+              {includeReclaim && (
+                <span className="text-muted-foreground">
+                  {reclaimLoading
+                    ? 'Scanning the assignment audit trail…'
+                    : `${reclaimIds.length} lead${reclaimIds.length === 1 ? '' : 's'} found to hand over`}
+                </span>
+              )}
+            </div>
           </div>
         )}
 
@@ -398,10 +485,10 @@ export const AgentOffboardingPanel: React.FC = () => {
           </Button>
           <Button
             onClick={() => setConfirmOpen(true)}
-            disabled={!canRun || working || (counts?.totalLeads ?? 0) === 0}
+            disabled={!canRun || working || effectiveTotal === 0}
           >
             {working ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ArrowRightLeft className="h-4 w-4 mr-2" />}
-            Back up & hand over {counts?.totalLeads ?? 0} lead{counts?.totalLeads === 1 ? '' : 's'} to {targetLabel}
+            Back up & hand over {effectiveTotal} lead{effectiveTotal === 1 ? '' : 's'} to {targetLabel}
 
           </Button>
         </div>
