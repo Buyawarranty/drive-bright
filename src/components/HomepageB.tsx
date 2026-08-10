@@ -330,6 +330,15 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         return;
       }
 
+      // Excluded vehicle matrix — never quote supercars / luxury / performance models
+      const vehicleBlockMessage = getVehicleBlockMessage(data);
+      if (vehicleBlockMessage) {
+        console.log('Vehicle blocked by exclusion matrix:', vehicleBlockMessage);
+        setVehicleAgeError(vehicleBlockMessage);
+        setIsLookingUp(false);
+        return;
+      }
+
       // Prepare vehicle data
       const vehicleData: VehicleData = {
         regNumber: regNumber,

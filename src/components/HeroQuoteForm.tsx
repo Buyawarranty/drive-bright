@@ -231,6 +231,15 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
         rememberMileageSource('customer', typed);
       }
 
+      // Excluded vehicle matrix — never quote supercars / luxury / performance models
+      const vehicleBlockMessage = getVehicleBlockMessage(data);
+      if (vehicleBlockMessage) {
+        console.log('Vehicle blocked by exclusion matrix:', vehicleBlockMessage);
+        setVehicleAgeError(vehicleBlockMessage);
+        setIsLookingUp(false);
+        return;
+      }
+
       const vehicleData: VehicleData = {
         regNumber: regNumber.toUpperCase(),
         mileage: quotedMileage,
