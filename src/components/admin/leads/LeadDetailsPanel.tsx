@@ -45,6 +45,7 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
 }) => {
   const [contactOpen, setContactOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [isMarkPaidDialogOpen, setIsMarkPaidDialogOpen] = useState(false);
   const [isPrintLetterOpen, setIsPrintLetterOpen] = useState(false);
   
@@ -382,7 +383,7 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
               className="h-8"
               onClick={() => setHistoryOpen(!historyOpen)}
             >
-              <History className="h-4 w-4 mr-1.5" />
+              <HistoryIcon className="h-4 w-4 mr-1.5" />
               {historyOpen ? 'Hide full history' : 'View full history (calls, notes, status)'}
               {historyOpen ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />}
             </Button>
