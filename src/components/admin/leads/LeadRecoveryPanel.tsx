@@ -73,9 +73,61 @@ export const LeadRecoveryPanel: React.FC = () => {
         name: `${[a.first_name, a.last_name].filter(Boolean).join(' ').trim() || a.email || 'Agent'}${a.is_active === false ? ' (left)' : ''}`,
         email: a.email,
         role: a.role,
+        active: a.is_active !== false,
       })));
     })();
   }, []);
+
+  const sourceAgentRecord = useMemo(
+    () => agents.find(a => a.id === sourceAgent) ?? null,
+    [agents, sourceAgent],
+  );
+
+  /**
+   * Live "still recoverable" counter for whichever agent is selected — works for
+   * ANY agent who leaves, not just one specific person. Counts leads they used to
+   * own that currently sit unassigned (all-time, ignoring the date range).
+   */
+  useEffect(() => {
+    if (sourceAgent === ANY_AGENT || sourceAgent === UNASSIGNED) {
+      setRecoverable(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      setRecoverableLoading(true);
+      try {
+        const { data: auditRows } = await (supabase.from('lead_assignment_audit') as any)
+          .select('lead_id')
+          .eq('previous_assigned_to_id', sourceAgent)
+          .limit(10000);
+        const ids = Array.from(new Set(((auditRows ?? []) as any[]).map(r => r.lead_id).filter(Boolean)));
+        let unassigned = 0;
+        let workable = 0;
+        for (let i = 0; i < ids.length; i += 300) {
+          const { data } = await (supabase.from('sales_leads') as any)
+            .select('id, status')
+            .in('id', ids.slice(i, i + 300))
+            .is('assigned_to', null);
+          ((data ?? []) as any[]).forEach(r => {
+            unassigned += 1;
+            if (!DEAD_STATUSES.has(String(r.status ?? ''))) workable += 1;
+          });
+        }
+        const { count: stillOwned } = await (supabase.from('sales_leads') as any)
+          .select('id', { count: 'exact', head: true })
+          .eq('assigned_to', sourceAgent);
+        if (!cancelled) setRecoverable({ unassigned, workable, stillOwned: stillOwned ?? 0 });
+      } catch (e) {
+        console.error('[LeadRecovery] recoverable count', e);
+        if (!cancelled) setRecoverable(null);
+      } finally {
+        if (!cancelled) setRecoverableLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [sourceAgent]);
+
 
   const rangeText = useMemo(() => {
     if (!fromDate || !toDate) return 'Pick a date range';
