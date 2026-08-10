@@ -934,10 +934,17 @@ export function calculateTotalWarrantyPrice(params: {
   // 1a. Apply reliable-brand -20% base discount for non-EV Lexus/Toyota/Honda/Suzuki/Hyundai/Kia/Mazda.
   const brandDiscountedBase = applyReliableBrandDiscount(rawBasePrice, make, fuelType);
 
+  // 1a-ii. Published model-risk band factor (Admin → Price updates → Vehicle type &
+  // model-risk bands, pushed live onto the live pricing version). 1 when nothing matches.
+  const riskBandedBase = Math.ceil(
+    brandDiscountedBase * getLiveRiskBandFactor(vehicleName ?? make, fuelType)
+  );
+
   // 1b. Motorbikes: half the standard vehicle base price.
   const basePrice = isMotorbike
-    ? Math.ceil(brandDiscountedBase * MOTORBIKE_PRICE_MULTIPLIER)
-    : brandDiscountedBase;
+    ? Math.ceil(riskBandedBase * MOTORBIKE_PRICE_MULTIPLIER)
+    : riskBandedBase;
+
 
   // 2. Apply vehicle adjustments (Range Rover, van, mileage, age).
   // Percentage-style adjustments (e.g. the legacy motorbike -0.5) are ignored here —
