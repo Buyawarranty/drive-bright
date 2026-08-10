@@ -130,21 +130,21 @@ export const DURATION_MONTHS = {
 
  * £70/hour is the reference option at factor 1.00, so the factor scales with the
  * vehicle price instead of being a flat £/month add-on.
- *   £50/hr  0.84 — budget garage option
+ *   £50/hr  0.90 — budget garage option
  *   £70/hr  1.00 — most popular / reference
- *   £100/hr 1.18 — broader garage choice
- *   £150/hr 1.80 — premium / specialist repairers (was £200/hr)
+ *   £100/hr 1.08 — broader garage choice (gentle upsell)
+ *   £150/hr 1.20 — premium / specialist repairers (deliberately discouraged)
  *
  * These are the code defaults. Admin → Price updates can publish a live set of
  * factors that overrides these without changing code.
  */
 export const LABOUR_RATE_FACTOR: Record<number, number> = {
-  50: 0.84,
+  50: 0.90,
   70: 1.00,
-  100: 1.18,
-  150: 1.80,
+  100: 1.08,
+  150: 1.20,
   // Legacy premium tier — kept so existing quotes/policies saved at £200/hr still price.
-  200: 1.80,
+  200: 1.20,
 };
 
 /** Live override for labour-rate factors, set from the published pricing version. */
