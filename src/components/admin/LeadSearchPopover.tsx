@@ -180,7 +180,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button className={cn("gap-2 bg-brand-orange hover:bg-brand-orange-light text-white font-bold text-base px-6 h-12 shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg border-2 border-brand-orange hover:border-brand-orange-light", className)}>
+        <Button type="button" className={cn("gap-2 bg-brand-orange hover:bg-brand-orange-light text-white font-bold text-base px-6 h-12 shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg border-2 border-brand-orange hover:border-brand-orange-light", className)}>
           <UserPlus className="h-5 w-5" />
           Import from Lead
         </Button>
@@ -247,10 +247,14 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
                       )}
                     </div>
                     <div className="text-right shrink-0">
-                      {lead.vehicle_reg && (
+                      {lead.vehicle_reg ? (
                         <Badge variant="outline" className="text-xs font-mono uppercase">
                           <Car className="h-3 w-3 mr-1" />
                           {lead.vehicle_reg}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs text-amber-600 border-amber-200 bg-amber-50">
+                          No reg
                         </Badge>
                       )}
                       {lead.vehicle_make && (

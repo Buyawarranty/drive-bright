@@ -809,11 +809,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       })();
     }
 
+    let toastDescription: string;
+    if (newReg) {
+      toastDescription = regChanged
+        ? `Switched to ${lead.first_name || lead.email} — ${newReg}${lead.vehicle_make ? ` (${lead.vehicle_make}${lead.vehicle_model ? ' ' + lead.vehicle_model : ''})` : ''}.`
+        : `Details for ${lead.first_name || lead.email} have been loaded.`;
+    } else {
+      toastDescription = `Contact details for ${lead.first_name || lead.email} imported. The lead has no vehicle registration — enter it manually to price the quote.`;
+    }
+
     toast({
       title: "Lead imported",
-      description: regChanged
-        ? `Switched to ${lead.first_name || lead.email} — ${newReg}${lead.vehicle_make ? ` (${lead.vehicle_make}${lead.vehicle_model ? ' ' + lead.vehicle_model : ''})` : ''}.`
-        : `Details for ${lead.first_name || lead.email} have been loaded.`,
+      description: toastDescription,
     });
   };
 
