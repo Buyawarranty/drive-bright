@@ -311,7 +311,50 @@ const VehicleRiskBandsPanel: React.FC = () => {
                 <p className="text-xs text-muted-foreground">0.50 = half of standard, floors halve too.</p>
               </div>
             </div>
+
+            {/* Confirmation: how each band prices per vehicle type */}
+            <div className="mt-4 rounded-lg border overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50">
+                  <tr className="text-left">
+                    <th className="p-2 font-medium">Band</th>
+                    <th className="p-2 font-medium">Factor</th>
+                    <th className="p-2 font-medium">Car (£500 base)</th>
+                    <th className="p-2 font-medium">Van ×{config.vehicleTypes.van.toFixed(2)}</th>
+                    <th className="p-2 font-medium">Motorbike ×{config.vehicleTypes.motorbike.toFixed(2)}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {typeFactorCheck.map(({ band, types }) => (
+                    <tr key={band.id}>
+                      <td className="p-2">
+                        <Badge variant="outline" className={TONE_CLASS[band.tone]}>
+                          {band.name}
+                        </Badge>
+                      </td>
+                      <td className="p-2 text-muted-foreground">
+                        {band.blocked || band.referral ? '—' : `×${band.factor.toFixed(2)}`}
+                        {band.minOneYear ? ` · min £${band.minOneYear}` : ''}
+                      </td>
+                      {types.map(({ type, result }) => (
+                        <td key={type} className="p-2">
+                          {result.blocked
+                            ? 'Not covered'
+                            : result.referral
+                            ? 'Referral'
+                            : `£${result.price}${result.floorApplied ? ' (floor)' : ''}`}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Worked example only. Type factor is applied after the band factor; motorbike floors are halved.
+            </p>
           </div>
+
 
           <Separator />
 
