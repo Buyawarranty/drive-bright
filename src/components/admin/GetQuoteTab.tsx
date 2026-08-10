@@ -2104,7 +2104,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
             vehicle_make: cleanVehicleData.make || null,
             vehicle_model: cleanVehicleData.model || null,
             vehicle_year: cleanVehicleData.year ? String(cleanVehicleData.year) : null,
-            mileage: cleanVehicleData.mileage ? String(cleanVehicleData.mileage) : null,
+            vehicle_mileage: cleanVehicleData.mileage ? String(cleanVehicleData.mileage) : null,
           })
           .eq('access_token', accessToken);
 
