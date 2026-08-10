@@ -14,6 +14,8 @@ import {
   type PricingVersion,
 } from '@/hooks/usePricingVersions';
 import { resolvePriceFloors, CODE_PRICE_FLOORS } from '@/lib/pricing/pricingVersionConfig';
+import { clampToNetFloor } from '@/lib/pricing/netFloor';
+
 
 const PERIOD_LABEL: Record<string, string> = {
   '12months': '12 months',
