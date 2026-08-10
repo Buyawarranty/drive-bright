@@ -406,10 +406,11 @@ const VehicleRiskBandsPanel: React.FC = () => {
               {visibleAssignments.map(a => {
                 const band = bandById.get(a.bandId);
                 return (
-                  <div key={a.id} className="flex flex-wrap items-center gap-3 p-3">
+                <div key={a.id} className="flex flex-wrap items-center gap-3 p-3">
                     <div className="min-w-[180px]">
                       <p className="font-medium">
-                        {a.make} {a.model || <span className="text-muted-foreground">(all models)</span>}
+                        {a.make || <span className="text-muted-foreground">(all makes)</span>}{' '}
+                        {a.model || <span className="text-muted-foreground">(all models)</span>}
                       </p>
                       {band && (
                         <p className="text-xs text-muted-foreground">
