@@ -526,6 +526,14 @@ serve(async (req) => {
                   console.warn('DVSA model-recovery retry failed:', retryErr instanceof Error ? retryErr.message : retryErr);
                 }
               }
+              if (!recoveredModel) {
+                const motCached = await fetchMotHistoryFallback(registrationNumber);
+                if (motCached?.model) {
+                  recoveredModel = motCached.model;
+                  console.log('✅ Recovered model from DVSA MOT history record:', recoveredModel);
+                }
+              }
+
 
               const validation = validateVehicleEligibility({ make: dvla.make, model: recoveredModel || '', regNumber: registrationNumber });
               const blocked = !validation.isValid;
