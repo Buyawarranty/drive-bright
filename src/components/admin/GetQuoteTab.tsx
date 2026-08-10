@@ -1365,6 +1365,23 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setIsPriceOverridden(false);
   }, [paymentType, excessAmount, claimLimit, labourRate, boostAddon, selectedAddOns]);
 
+  // Switching to a different vehicle (e.g. importing another lead) must drop any
+  // manual override so the price is re-quoted for the new car, never the old one.
+  const vehiclePricingKey = [
+    (vehicleData?.regNumber || '').replace(/\s+/g, '').toUpperCase(),
+    vehicleData?.make || '',
+    (vehicleData as any)?.model || '',
+    vehicleData?.fuelType || '',
+    vehicleData?.year || '',
+    String(mileage || '').replace(/[^0-9]/g, ''),
+  ].join('|');
+  useEffect(() => {
+    setIsPriceOverridden(false);
+    setPriceMatchMode(false);
+    setPriceMatchSavedTotal(null);
+    setQuotedPriceOverride('');
+  }, [vehiclePricingKey]);
+
   // Drop back to £2,000 whenever the selected claim limit is blocked for this vehicle.
   useEffect(() => {
     if (blockedClaimLimits.includes(claimLimit)) {
@@ -1381,13 +1398,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     }
   }, [claimLimit, claimLimit5kAllowed]);
 
-  // Auto-populate custom price fields when selections change (if not manually overridden)
+  // Auto-populate custom price fields when selections OR the vehicle change
+  // (if not manually overridden), so the fields always show the live quote.
   useEffect(() => {
     if (!isPriceOverridden) {
       setCustomMonthlyPrice(basePrice.monthlyPrice.toString());
       setCustomFullPrice(basePrice.totalPrice.toString());
     }
-  }, [paymentType, excessAmount, claimLimit, labourRate, boostAddon, selectedAddOns, isPriceOverridden]);
+  }, [basePrice.monthlyPrice, basePrice.totalPrice, isPriceOverridden]);
+
 
   // Auto-identify vehicle when a complete reg is entered (Step 1 only)
   useEffect(() => {
