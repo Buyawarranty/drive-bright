@@ -251,12 +251,50 @@ export const stripCosmeticTrims = (model?: string | null): string => {
   return out;
 };
 
+/**
+ * Published (pushed-live) extras layered on top of the code matrix.
+ * The code matrix is always enforced; extras can only ever add exclusions.
+ */
+export interface LiveExclusionExtras {
+  /** Whole makes, lowercase. */
+  makes: string[];
+  /** Make + model keyword rules. A blank make means "any make". */
+  modelRules: { make?: string | null; model: string; label?: string | null }[];
+  label?: string | null;
+  publishedAt?: string | null;
+}
+
+let liveExtras: LiveExclusionExtras = { makes: [], modelRules: [] };
+
+/** Called once the published exclusion version has loaded. */
+export const setLiveExclusionExtras = (extras: LiveExclusionExtras | null): void => {
+  liveExtras = {
+    makes: (extras?.makes ?? []).map((m) => normalise(m)).filter(Boolean),
+    modelRules: (extras?.modelRules ?? [])
+      .map((r) => ({ make: normalise(r.make), model: normalise(r.model), label: r.label ?? null }))
+      .filter((r) => r.model.length > 0),
+    label: extras?.label ?? null,
+    publishedAt: extras?.publishedAt ?? null,
+  };
+};
+
+export const getLiveExclusionExtras = (): LiveExclusionExtras => liveExtras;
+
 /** True when the whole brand is excluded. */
 export const isExcludedMake = (make?: string | null): boolean => {
   const m = normalise(make);
   if (!m) return false;
-  return EXCLUDED_MAKES.some((excluded) => m === excluded || m.startsWith(`${excluded} `));
+  const all = [...EXCLUDED_MAKES, ...liveExtras.makes];
+  return all.some((excluded) => m === excluded || m.startsWith(`${excluded} `));
 };
+
+/** Published model-keyword extras, checked alongside the code rules. */
+const matchLiveModelRule = (make: string, model: string) =>
+  liveExtras.modelRules.find((rule) => {
+    const makeOk = !rule.make || make === rule.make || make.includes(rule.make);
+    return makeOk && model.includes(rule.model);
+  });
+
 
 /** True when this specific make + model combination is excluded. */
 export const isExcludedModel = (make?: string | null, model?: string | null): boolean => {
@@ -268,12 +306,15 @@ export const isExcludedModel = (make?: string | null, model?: string | null): bo
 
   const combined = `${m} ${mod}`.trim();
 
+  if (matchLiveModelRule(m, mod) || matchLiveModelRule(m, combined)) return true;
+
   return EXCLUDED_MODEL_RULES.some((rule) => {
     const makeMatches = rule.makes.some((alias) => m === alias || m.startsWith(`${alias} `) || m.includes(alias));
     if (!makeMatches) return false;
     return rule.patterns.some((p) => p.test(mod) || p.test(combined));
   });
 };
+
 
 
 /** Full matrix check: brand-level or make + model level. */
@@ -286,7 +327,10 @@ export const getExclusionReason = (make?: string | null, model?: string | null):
   const m = normalise(make);
   const mod = stripCosmeticTrims(model);
   const combined = `${m} ${mod}`.trim();
+  const liveRule = matchLiveModelRule(m, mod) || matchLiveModelRule(m, combined);
+  if (liveRule) return `${liveRule.label || liveRule.model} — model not covered (published rule)`;
   const rule = EXCLUDED_MODEL_RULES.find(
+
     (r) =>
       r.makes.some((alias) => m === alias || m.startsWith(`${alias} `) || m.includes(alias)) &&
       r.patterns.some((p) => p.test(mod) || p.test(combined))

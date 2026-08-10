@@ -11832,6 +11832,45 @@ export type Database = {
         }
         Relationships: []
       }
+      vehicle_exclusion_versions: {
+        Row: {
+          created_at: string
+          extra_makes: Json
+          extra_model_rules: Json
+          id: string
+          label: string
+          notes: string | null
+          pricing_version_label: string | null
+          published_at: string
+          published_by: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          extra_makes?: Json
+          extra_model_rules?: Json
+          id?: string
+          label: string
+          notes?: string | null
+          pricing_version_label?: string | null
+          published_at?: string
+          published_by?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          extra_makes?: Json
+          extra_model_rules?: Json
+          id?: string
+          label?: string
+          notes?: string | null
+          pricing_version_label?: string | null
+          published_at?: string
+          published_by?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       video_play_tracking: {
         Row: {
           completed: boolean | null
