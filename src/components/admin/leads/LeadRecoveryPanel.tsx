@@ -52,7 +52,7 @@ export const LeadRecoveryPanel: React.FC = () => {
     const d = new Date(); d.setDate(d.getDate() - 1); d.setHours(23, 59, 59, 999); return d;
   });
   const [sourceAgent, setSourceAgent] = useState<string>(ANY_AGENT);
-  const [targetAgent, setTargetAgent] = useState<string>('');
+  const [targetAgents, setTargetAgents] = useState<string[]>([]);
   const [resetStatus, setResetStatus] = useState(true);
   const [rows, setRows] = useState<LeadRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -90,19 +90,25 @@ export const LeadRecoveryPanel: React.FC = () => {
     try {
       const fromIso = new Date(fromDate); fromIso.setHours(0, 0, 0, 0);
       const toIso = new Date(toDate); toIso.setHours(23, 59, 59, 999);
-      let q = (supabase.from('sales_leads') as any)
-        .select('id, first_name, last_name, email, phone, vehicle_reg, status, is_paid, assigned_to, assigned_at, created_at')
-        .gte('created_at', fromIso.toISOString())
-        .lte('created_at', toIso.toISOString())
-        .order('created_at', { ascending: true })
-        .limit(500);
-      if (sourceAgent === UNASSIGNED) q = q.is('assigned_to', null);
-      else if (sourceAgent !== ANY_AGENT) q = q.eq('assigned_to', sourceAgent);
-      const { data, error } = await q;
-      if (error) throw error;
-      setRows((data ?? []) as LeadRow[]);
-      if (!data || data.length === 0) toast.info('No leads matched that filter');
-      else toast.success(`Found ${data.length} lead${data.length === 1 ? '' : 's'}`);
+      const page = 1000;
+      const all: LeadRow[] = [];
+      for (let i = 0; i < 10; i += 1) {
+        let q = (supabase.from('sales_leads') as any)
+          .select('id, first_name, last_name, email, phone, vehicle_reg, status, is_paid, assigned_to, assigned_at, created_at')
+          .gte('created_at', fromIso.toISOString())
+          .lte('created_at', toIso.toISOString())
+          .order('created_at', { ascending: true })
+          .range(i * page, i * page + page - 1);
+        if (sourceAgent === UNASSIGNED) q = q.is('assigned_to', null);
+        else if (sourceAgent !== ANY_AGENT) q = q.eq('assigned_to', sourceAgent);
+        const { data, error } = await q;
+        if (error) throw error;
+        all.push(...((data ?? []) as LeadRow[]));
+        if (!data || data.length < page) break;
+      }
+      setRows(all);
+      if (all.length === 0) toast.info('No leads matched that filter');
+      else toast.success(`Found ${all.length} lead${all.length === 1 ? '' : 's'}`);
     } catch (e: any) {
       console.error('[LeadRecovery] scan', e);
       toast.error(e?.message || 'Scan failed');
@@ -111,33 +117,66 @@ export const LeadRecoveryPanel: React.FC = () => {
     }
   }, [fromDate, toDate, sourceAgent]);
 
+  /** Leads per calendar day in the scanned range (oldest first). */
+  const perDay = useMemo(() => {
+    const map = new Map<string, { total: number; paid: number }>();
+    rows.forEach(r => {
+      const key = format(new Date(r.created_at), 'yyyy-MM-dd');
+      const cur = map.get(key) ?? { total: 0, paid: 0 };
+      cur.total += 1;
+      if (r.is_paid) cur.paid += 1;
+      map.set(key, cur);
+    });
+    return Array.from(map.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([day, v]) => ({ day, ...v }));
+  }, [rows]);
+
+  /** Even round-robin split of the scanned leads across the chosen agents. */
+  const splitPlan = useMemo(() => {
+    if (targetAgents.length === 0) return [] as { agentId: string; ids: string[] }[];
+    const buckets = targetAgents.map(id => ({ agentId: id, ids: [] as string[] }));
+    rows.forEach((r, i) => { buckets[i % buckets.length].ids.push(r.id); });
+    return buckets;
+  }, [rows, targetAgents]);
+
+  const toggleTarget = (id: string) => {
+    setTargetAgents(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
   const doRecover = useCallback(async () => {
-    if (!targetAgent) { toast.error('Pick who to assign to'); return; }
+    if (targetAgents.length === 0) { toast.error('Pick who to assign to'); return; }
     if (rows.length === 0) { toast.error('Nothing to recover — scan first'); return; }
     setLoading(true);
     try {
-      const ids = rows.map(r => r.id);
       const now = new Date().toISOString();
-      // Split paid vs unpaid so we don't overwrite a "converted" status
-      const paidIds = rows.filter(r => r.is_paid).map(r => r.id);
-      const unpaidIds = rows.filter(r => !r.is_paid).map(r => r.id);
+      const paid = new Set(rows.filter(r => r.is_paid).map(r => r.id));
+      let moved = 0;
 
-      if (paidIds.length > 0) {
-        const { error } = await (supabase.from('sales_leads') as any)
-          .update({ assigned_to: targetAgent, assigned_at: now, last_activity_date: now })
-          .in('id', paidIds);
-        if (error) throw error;
+      for (const bucket of splitPlan) {
+        const paidIds = bucket.ids.filter(id => paid.has(id));
+        const unpaidIds = bucket.ids.filter(id => !paid.has(id));
+
+        for (let i = 0; i < paidIds.length; i += 200) {
+          const { error } = await (supabase.from('sales_leads') as any)
+            .update({ assigned_to: bucket.agentId, assigned_at: now, last_activity_date: now })
+            .in('id', paidIds.slice(i, i + 200));
+          if (error) throw error;
+        }
+        for (let i = 0; i < unpaidIds.length; i += 200) {
+          const patch: any = { assigned_to: bucket.agentId, assigned_at: now, last_activity_date: now };
+          if (resetStatus) patch.status = 'new';
+          const { error } = await (supabase.from('sales_leads') as any)
+            .update(patch)
+            .in('id', unpaidIds.slice(i, i + 200));
+          if (error) throw error;
+        }
+        moved += bucket.ids.length;
       }
-      if (unpaidIds.length > 0) {
-        const patch: any = { assigned_to: targetAgent, assigned_at: now, last_activity_date: now };
-        if (resetStatus) patch.status = 'new';
-        const { error } = await (supabase.from('sales_leads') as any)
-          .update(patch)
-          .in('id', unpaidIds);
-        if (error) throw error;
-      }
-      const target = agents.find(a => a.id === targetAgent);
-      toast.success(`Reassigned ${ids.length} lead${ids.length === 1 ? '' : 's'} to ${target?.name ?? 'agent'}`);
+
+      toast.success(
+        `Reassigned ${moved} lead${moved === 1 ? '' : 's'} across ${targetAgents.length} agent${targetAgents.length === 1 ? '' : 's'}`,
+      );
       setRows([]);
       setConfirmOpen(false);
     } catch (e: any) {
@@ -146,10 +185,16 @@ export const LeadRecoveryPanel: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [rows, targetAgent, agents, resetStatus]);
+  }, [rows, targetAgents, splitPlan, resetStatus]);
 
   const paidCount = rows.filter(r => r.is_paid).length;
-  const targetName = agents.find(a => a.id === targetAgent)?.name ?? '';
+  const nameOf = (id: string) => agents.find(a => a.id === id)?.name ?? 'Agent';
+  const targetName = targetAgents.length === 1
+    ? nameOf(targetAgents[0])
+    : targetAgents.length > 1
+      ? `${targetAgents.length} agents`
+      : '';
+
 
   return (
     <Card className="border-border">
