@@ -272,7 +272,7 @@ export const AgentOffboardingPanel: React.FC = () => {
     } finally {
       setWorking(false);
     }
-  }, [canRun, sourceId, targetIds, resetToNew, alsoDeactivate, targetLabel, loadCounts]);
+  }, [canRun, sourceId, targetIds, resetToNew, alsoDeactivate, targetLabel, loadCounts, includeReclaim, reclaimIds]);
 
   const runDryRun = useCallback(async () => {
     if (!canRun) {
