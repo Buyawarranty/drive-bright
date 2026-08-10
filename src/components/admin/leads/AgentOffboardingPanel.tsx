@@ -302,16 +302,45 @@ export const AgentOffboardingPanel: React.FC = () => {
             </Select>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Hand everything to</label>
-            <Select value={targetId} onValueChange={setTargetId} disabled={!sourceId}>
-              <SelectTrigger><SelectValue placeholder="Pick the receiving agent" /></SelectTrigger>
-              <SelectContent className="bg-popover z-50">
-                {agents.filter(a => a.id !== sourceId && a.is_active).map(a => (
-                  <SelectItem key={a.id} value={a.id}>{a.name} — {a.email}</SelectItem>
+            <label className="text-xs font-medium text-muted-foreground">Hand everything to (one or more agents)</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" disabled={!sourceId} className="w-full justify-between font-normal">
+                  <span className="truncate">
+                    {targetAgents.length === 0
+                      ? 'Pick the receiving agent(s)'
+                      : targetAgents.map(a => a.name).join(', ')}
+                  </span>
+                  <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-2 bg-popover z-50" align="start">
+                <div className="max-h-64 overflow-auto space-y-1">
+                  {agents.filter(a => a.id !== sourceId && a.is_active).map(a => (
+                    <label key={a.id} className="flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-muted cursor-pointer">
+                      <Checkbox
+                        checked={targetIds.includes(a.id)}
+                        onCheckedChange={(v) =>
+                          setTargetIds(prev => v ? [...prev, a.id] : prev.filter(id => id !== a.id))
+                        }
+                      />
+                      <span className="truncate">{a.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+            {targetAgents.length > 1 && (counts?.totalLeads ?? 0) > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {splitPlan.map(p => (
+                  <Badge key={p.agent.id} variant="outline" className="text-[11px]">
+                    {p.agent.name}: {p.count}
+                  </Badge>
                 ))}
-              </SelectContent>
-            </Select>
+              </div>
+            )}
           </div>
+
         </div>
 
         {sourceId && (
