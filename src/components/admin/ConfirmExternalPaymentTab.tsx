@@ -600,7 +600,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
           console.error('Failed to record discount on manual confirmation:', discErr);
         }
 
-        if (givenAway > 0.5) {
+        if (givenAway > 0.5 || underNetFloor) {
           logPriceOverride({
             adminUserId: assigneeId || null,
             context: 'confirm_payment',
@@ -615,9 +615,15 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
             labourRate,
             matrixTotal: quotedTotal,
             enteredTotal: collected,
-            notes: `Manual payment confirmed via ${paymentSource || 'outside route'} — ${discountPct.toFixed(1)}% off`,
+            notes: [
+              `Manual payment confirmed via ${paymentSource || 'outside route'} — ${discountPct.toFixed(1)}% off`,
+              underNetFloor
+                ? `MANAGEMENT OVERRIDE — below the £${netFloorAmount.toFixed(2)} net floor for this cover`
+                : '',
+            ].filter(Boolean).join(' · '),
           });
         }
+
       }
 
       // Part payment: open a plan + log the deposit so the balance is chased
