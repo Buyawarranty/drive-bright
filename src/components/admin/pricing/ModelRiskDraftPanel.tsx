@@ -23,6 +23,8 @@ import {
 import { calculateQuotePrice } from '@/lib/pricing/quotePricingService';
 import { isVehicleExcluded } from '@/lib/vehicleExclusions';
 import type { PaymentPeriod } from '@/lib/pricingMatrix';
+import PriceSurfaceBadge from './PriceSurfaceBadge';
+
 
 const money = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
 
@@ -135,11 +137,15 @@ export default function ModelRiskDraftPanel() {
               not used by Quotes &amp; Orders or the customer journey.
             </CardDescription>
           </div>
-          <Badge variant="outline" className="border-amber-400 text-amber-700">
-            Not live
-          </Badge>
+          <div className="flex items-center gap-2">
+            <PriceSurfaceBadge surface="quotes" />
+            <Badge variant="outline" className="border-amber-400 text-amber-700">
+              Not live
+            </Badge>
+          </div>
         </div>
       </CardHeader>
+
 
       <CardContent className="space-y-5">
         <Alert>

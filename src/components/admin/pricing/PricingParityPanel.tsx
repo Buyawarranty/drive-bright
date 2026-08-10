@@ -14,6 +14,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScaleIcon } from 'lucide-react';
 import { buildParityRows, summariseParity } from '@/lib/pricing/parityHarness';
+import PriceSurfaceBadge from './PriceSurfaceBadge';
+
 
 const EXCESS_OPTIONS = [0, 50, 100, 150, 250];
 import { getDisplayClaimLimit } from '@/lib/claimLimitTiers';
@@ -61,10 +63,14 @@ export default function PricingParityPanel() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <ScaleIcon className="h-4 w-4" /> Parity table — draft service vs live surfaces
-        </CardTitle>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ScaleIcon className="h-4 w-4" /> Parity table — draft service vs live surfaces
+          </CardTitle>
+          <PriceSurfaceBadge surface="mixed" />
+        </div>
       </CardHeader>
+
       <CardContent className="space-y-4">
         <Alert>
           <AlertDescription className="text-sm">
