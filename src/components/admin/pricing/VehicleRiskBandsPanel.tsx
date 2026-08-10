@@ -35,6 +35,8 @@ import {
   normalizeFuelFilter,
   type FuelFilter,
 } from '@/lib/pricing/fuelCategory';
+import { getExclusionReason, isVehicleExcluded } from '@/lib/vehicleExclusions';
+
 
 const TONE_CLASS: Record<RiskBand['tone'], string> = {
   low: 'bg-emerald-100 text-emerald-800 border-emerald-200',
@@ -93,6 +95,36 @@ const VehicleRiskBandsPanel: React.FC = () => {
     });
     return counts;
   }, [config.assignments]);
+
+
+  /** Band rules that point at a make/model already on the site-wide excluded list. */
+  const excludedClashes = useMemo(
+    () =>
+      config.assignments
+        .filter(a => a.enabled && isVehicleExcluded(a.make, a.model))
+        .map(a => ({
+          id: a.id,
+          label: `${a.make || '(all makes)'} ${a.model || '(all models)'}`.trim(),
+          reason: getExclusionReason(a.make, a.model) || 'On the excluded vehicles list',
+        })),
+    [config.assignments]
+  );
+  const clashIds = useMemo(() => new Set(excludedClashes.map(c => c.id)), [excludedClashes]);
+
+  /** £500 base worked through each band for car / van / motorbike, for confirmation. */
+  const typeFactorCheck = useMemo(() => {
+    const base = 500;
+    return config.bands.map(band => {
+      const match = { band, assignment: null, isDefault: false };
+      const types = (['car', 'van', 'motorbike'] as const).map(t => ({
+        type: t,
+        result: applyRiskBand(base, match, t, config),
+      }));
+      return { band, types };
+    });
+  }, [config]);
+
+
 
   const visibleAssignments = useMemo(() => {
     const q = filter.trim().toLowerCase();
@@ -210,8 +242,29 @@ const VehicleRiskBandsPanel: React.FC = () => {
               A <strong>referral</strong> band produces no automatic price — the quote goes to manual
               underwriting. Motorbikes always price at the motorbike share of standard, and their band
               floor halves with them.
+              <br />
+              <strong>Excluded vehicles always win:</strong> anything on the site-wide excluded list is
+              declined at registration lookup, so a band never overrides it — no clash is possible.
             </AlertDescription>
           </Alert>
+
+          {excludedClashes.length > 0 && (
+            <Alert className="border-destructive/40 bg-destructive/5">
+              <AlertDescription className="text-sm">
+                <strong>{excludedClashes.length} band rule{excludedClashes.length === 1 ? '' : 's'} overlap the excluded list</strong>{' '}
+                and will never price — the vehicle is declined first. Remove them, or take the vehicle off the
+                excluded list if you do want to cover it.
+                <ul className="mt-2 list-disc pl-5 space-y-0.5">
+                  {excludedClashes.map(c => (
+                    <li key={c.id}>
+                      <span className="font-medium">{c.label}</span> — {c.reason}
+                    </li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
+
 
           {/* Vehicle type factors */}
           <div>
@@ -258,7 +311,50 @@ const VehicleRiskBandsPanel: React.FC = () => {
                 <p className="text-xs text-muted-foreground">0.50 = half of standard, floors halve too.</p>
               </div>
             </div>
+
+            {/* Confirmation: how each band prices per vehicle type */}
+            <div className="mt-4 rounded-lg border overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50">
+                  <tr className="text-left">
+                    <th className="p-2 font-medium">Band</th>
+                    <th className="p-2 font-medium">Factor</th>
+                    <th className="p-2 font-medium">Car (£500 base)</th>
+                    <th className="p-2 font-medium">Van ×{config.vehicleTypes.van.toFixed(2)}</th>
+                    <th className="p-2 font-medium">Motorbike ×{config.vehicleTypes.motorbike.toFixed(2)}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {typeFactorCheck.map(({ band, types }) => (
+                    <tr key={band.id}>
+                      <td className="p-2">
+                        <Badge variant="outline" className={TONE_CLASS[band.tone]}>
+                          {band.name}
+                        </Badge>
+                      </td>
+                      <td className="p-2 text-muted-foreground">
+                        {band.blocked || band.referral ? '—' : `×${band.factor.toFixed(2)}`}
+                        {band.minOneYear ? ` · min £${band.minOneYear}` : ''}
+                      </td>
+                      {types.map(({ type, result }) => (
+                        <td key={type} className="p-2">
+                          {result.blocked
+                            ? 'Not covered'
+                            : result.referral
+                            ? 'Referral'
+                            : `£${result.price}${result.floorApplied ? ' (floor)' : ''}`}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Worked example only. Type factor is applied after the band factor; motorbike floors are halved.
+            </p>
           </div>
+
 
           <Separator />
 
@@ -489,8 +585,10 @@ const VehicleRiskBandsPanel: React.FC = () => {
               )}
               {visibleAssignments.map(a => {
                 const band = bandById.get(a.bandId);
+                const clashes = clashIds.has(a.id);
                 return (
-                <div key={a.id} className="flex flex-wrap items-center gap-3 p-3">
+                <div key={a.id} className={`flex flex-wrap items-center gap-3 p-3 ${clashes ? 'bg-destructive/5' : ''}`}>
+
                     <div className="min-w-[180px]">
                       <p className="font-medium">
                         {a.make || <span className="text-muted-foreground">(all makes)</span>}{' '}
@@ -510,7 +608,13 @@ const VehicleRiskBandsPanel: React.FC = () => {
                             : `×${band.factor.toFixed(2)}${band.minOneYear ? ` · min £${band.minOneYear}` : ''}`}
                         </p>
                       )}
+                      {clashes && (
+                        <p className="text-xs font-semibold text-destructive">
+                          Excluded list wins — never quoted
+                        </p>
+                      )}
                     </div>
+
                     <Select value={a.bandId} onValueChange={v => patchAssignment(a.id, { bandId: v })}>
                       <SelectTrigger className="h-9 w-[220px]">
                         <SelectValue />
@@ -618,7 +722,17 @@ const VehicleRiskBandsPanel: React.FC = () => {
             </div>
           </div>
 
+          {isVehicleExcluded(testMake, testModel) && (
+            <Alert className="border-destructive/40 bg-destructive/5">
+              <AlertDescription className="text-sm">
+                <strong>On the excluded vehicles list</strong> — {getExclusionReason(testMake, testModel)}. This
+                vehicle is declined at registration lookup, so the band below is never reached.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="rounded-lg border p-4 flex flex-wrap items-center gap-4">
+
             <Badge variant="outline" className={TONE_CLASS[testResult.match.band.tone]}>
               {testResult.match.band.name}
             </Badge>
