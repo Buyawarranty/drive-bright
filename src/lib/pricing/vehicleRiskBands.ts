@@ -278,11 +278,11 @@ export function loadRiskBandConfig(): RiskBandConfig {
       })),
       assignments: Array.isArray(parsed.assignments)
         ? parsed.assignments
-            .filter((a: RiskBandAssignment) => a && String(a.make || '').trim())
+            .filter((a: RiskBandAssignment) => a && (String(a.make || '').trim() || String(a.model || '').trim()))
             .map((a: RiskBandAssignment, i: number) => ({
               id: a.id || `assign-${i}`,
               bandId: String(a.bandId || 'normal'),
-              make: String(a.make),
+              make: String(a.make || ''),
               model: String(a.model || ''),
               enabled: a.enabled !== false,
             }))
