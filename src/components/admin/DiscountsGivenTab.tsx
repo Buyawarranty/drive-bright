@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { PriceOverridesPanel } from './pricing/PriceOverridesPanel';
+import { getRecordedOrderDiscount } from '@/lib/pricing/orderDiscount';
 
 
 interface CustomerRecord {
@@ -41,6 +42,7 @@ interface CustomerRecord {
   status: string;
   discount_code: string | null;
   discount_amount: number | null;
+  original_amount?: number | null;
   price_match_applied?: boolean | null;
   vehicle_make: string | null;
   vehicle_model: string | null;
@@ -322,7 +324,7 @@ export const DiscountsGivenTab: React.FC = () => {
         fetchAllRows(() =>
           supabase
             .from('customers')
-            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, payment_confirmed_by, quote_sent_by, purchase_source, signup_date, status, discount_code, discount_amount, price_match_applied, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
+            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, payment_confirmed_by, quote_sent_by, purchase_source, signup_date, status, discount_code, discount_amount, original_amount, price_match_applied, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
             // Only agent-created sales from the Quotes & Orders page — never retail website (step 3) self-serve purchases
             .eq('is_manual_entry', true)
             .not('status', 'in', '("cancelled","refunded")'),
@@ -370,6 +372,7 @@ export const DiscountsGivenTab: React.FC = () => {
         status: 'quote_sent',
         discount_code: null,
         discount_amount: null,
+        original_amount: null,
         price_match_applied: false,
         vehicle_make: quote.vehicle_make,
         vehicle_model: quote.vehicle_model,
@@ -430,7 +433,14 @@ export const DiscountsGivenTab: React.FC = () => {
       .filter(c => !c.price_match_applied)
       .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount >= 20)
       .map(c => {
-        const retailPrice = withPricingAsOf(pricingVersions, c.signup_date, () => calculateRetailPrice(c));
+        // Manual confirmations store the price the agent was quoting at the moment
+        // they confirmed the payment — that is the truth for this sale. Only fall
+        // back to recalculating from the grid when nothing was recorded.
+        const recorded = getRecordedOrderDiscount(c);
+        const retailPrice = recorded
+          ? recorded.quoted
+          : withPricingAsOf(pricingVersions, c.signup_date, () => calculateRetailPrice(c));
+        const retailSource: 'recorded' | 'estimated' = recorded ? 'recorded' : 'estimated';
         const paid = c.final_amount || 0;
         const diff = retailPrice !== null ? paid - retailPrice : null;
         const pctDiff = retailPrice && retailPrice > 0 ? ((paid - retailPrice) / retailPrice) * 100 : null;
@@ -443,7 +453,7 @@ export const DiscountsGivenTab: React.FC = () => {
         const agentId = c.payment_confirmed_by || c.quote_sent_by || c.assigned_to || null;
         const band = getDiscountBand(discountPct);
         const takenOutside = isOutsidePayment(c.purchase_source);
-        return { ...c, agentId, retailPrice, diff, pctDiff, normalizedPT, maxDiscount, discountPct, exceedsLimit, band, takenOutside };
+        return { ...c, agentId, retailPrice, retailSource, diff, pctDiff, normalizedPT, maxDiscount, discountPct, exceedsLimit, band, takenOutside };
 
       })
       .filter(c => {
@@ -1109,7 +1119,21 @@ export const DiscountsGivenTab: React.FC = () => {
                           </TableCell>
                           <TableCell className="bg-blue-50/50 font-bold">£{(c.final_amount || 0).toLocaleString()}</TableCell>
                           <TableCell className="bg-amber-50/50 font-medium">
-                            {c.retailPrice !== null ? `£${c.retailPrice.toLocaleString()}` : '-'}
+                            {c.retailPrice !== null ? (
+                              <div className="flex flex-col items-start gap-0.5">
+                                <span>£{c.retailPrice.toLocaleString()}</span>
+                                <span
+                                  className={`text-[10px] font-medium ${c.retailSource === 'recorded' ? 'text-emerald-700' : 'text-muted-foreground'}`}
+                                  title={
+                                    c.retailSource === 'recorded'
+                                      ? 'Quoted price recorded when the agent confirmed this payment — exact.'
+                                      : 'No quote was recorded on this order, so this is recalculated from the price grid that was live on the sale date.'
+                                  }
+                                >
+                                  {c.retailSource === 'recorded' ? 'Recorded at confirmation' : 'Grid estimate'}
+                                </span>
+                              </div>
+                            ) : '-'}
                           </TableCell>
                           <TableCell className="bg-purple-50/50">
                             {c.diff !== null && c.pctDiff !== null ? (
