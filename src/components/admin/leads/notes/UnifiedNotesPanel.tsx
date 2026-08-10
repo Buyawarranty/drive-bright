@@ -912,9 +912,41 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
 
 
 
+      {/* Add note input — placed at the top so it’s easy to find */}
+      <div className="px-4 py-3 border-y border-border bg-muted">
+        <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+          Add a note
+        </label>
+        <div className="flex gap-2">
+          <Input
+            value={quickNoteValue}
+            onChange={(e) => handleQuickNoteChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSaveNote(); }
+            }}
+            onBlur={() => { if (quickNoteValue.trim()) void flushPendingNote(); }}
+            placeholder="Type a note and press Enter to save…"
+            className="flex-1 h-9 text-sm bg-background border-2 border-border focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/20"
+            disabled={isSaving || hookIsSaving}
+          />
+          <Button
+            size="sm"
+            onClick={handleSaveNote}
+            disabled={!quickNoteValue.trim() || isSaving || hookIsSaving}
+            className="h-9 px-4"
+          >
+            <Save className="h-4 w-4 mr-1.5" />
+            Save
+          </Button>
+        </div>
+        <div className="text-[10px] text-muted-foreground mt-1.5">
+          {isSaving || hookIsSaving ? 'Saving…' : 'Press Enter to save · Shift+Enter for a new line'}
+        </div>
+      </div>
+
       <div className="px-4 py-3 max-h-[320px] overflow-y-auto">
         {sortedNotes.length === 0 ? (
-          <p className="text-sm text-muted-foreground italic py-2">No notes yet — use a quick log above or type below.</p>
+          <p className="text-sm text-muted-foreground italic py-2">No notes yet — type one above or use the quick log outcome.</p>
         ) : (
           <div className="space-y-1.5">
             {sortedNotes.map((note) => {
@@ -1015,31 +1047,6 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
         )}
       </div>
 
-      {/* Add note input */}
-      <div className="px-4 py-3 border-t border-border bg-muted/30 rounded-b-lg">
-        <div className="flex gap-2">
-          <Input
-            value={quickNoteValue}
-            onChange={(e) => handleQuickNoteChange(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') { e.preventDefault(); handleSaveNote(); }
-            }}
-            onBlur={() => { if (quickNoteValue.trim()) void flushPendingNote(); }}
-            placeholder="Add a note…"
-            className="flex-1 h-9 text-sm bg-background"
-            disabled={isSaving || hookIsSaving}
-          />
-          <Button
-            size="sm"
-            onClick={handleSaveNote}
-            disabled={!quickNoteValue.trim() || isSaving || hookIsSaving}
-            className="h-9 px-4"
-          >
-            <Save className="h-4 w-4 mr-1.5" />
-            Save
-          </Button>
-        </div>
-      </div>
     </div>
   );
 };
