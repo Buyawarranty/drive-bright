@@ -13,7 +13,7 @@ import { Trophy, ChevronDown, ChevronUp, Search, RefreshCw } from 'lucide-react'
 /**
  * Converted sales stay out of the working New Leads list, so managers lost the
  * ability to read the notes and call log behind a sale. This panel keeps the
- * last 90 days of converted / paid leads in the New Leads section with the
+ * last 6 months of converted / paid leads in the New Leads section with the
  * full audit trail (calls, dials, notes, status and owner changes) per lead.
  * Management only.
  */
@@ -35,7 +35,7 @@ interface Row {
   is_paid: boolean | null;
 }
 
-const DAYS = 90;
+const DAYS = 180;
 
 export const ConvertedSalesLogPanel: React.FC = () => {
   const { isManagement } = useIsManagement();
@@ -116,7 +116,7 @@ export const ConvertedSalesLogPanel: React.FC = () => {
           Managers only
         </Badge>
         <span className="text-xs text-muted-foreground">
-          Notes & call history for sales that left the working list (last {DAYS} days)
+          Notes & call history for sales that left the working list (last 6 months)
         </span>
         {open ? (
           <ChevronUp className="ml-auto h-4 w-4 text-muted-foreground" />
