@@ -33,6 +33,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
+import UnsubscribeQuickLink from '@/components/admin/UnsubscribeQuickLink';
+import { UnsubscribeLeadButton } from '@/components/admin/leads/UnsubscribeLeadButton';
 import { QuoteInvoiceDialog } from './QuoteInvoiceDialog';
 import MileageSlider from '@/components/MileageSlider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
