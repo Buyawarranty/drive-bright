@@ -18,7 +18,7 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-type Agent = { id: string; name: string; email: string | null; role: string };
+type Agent = { id: string; name: string; email: string | null; role: string; active: boolean };
 type LeadRow = {
   id: string;
   first_name: string | null;
