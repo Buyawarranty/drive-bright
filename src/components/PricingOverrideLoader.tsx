@@ -2,36 +2,27 @@ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { setVehiclePricingRules } from '@/lib/pricing/vehicleRules';
 import { setLiveClaim5kBlocklist, type Claim5kBlockRule } from '@/lib/claimLimitTiers';
-import {
-  applyLivePricingVersion,
-  LIVE_PRICING_VERSION_COLUMNS,
-} from '@/lib/pricing/applyLivePricingVersion';
+import { refreshLivePricing } from '@/lib/pricing/refreshLivePricing';
 
 /**
  * Loads the published (live) pricing version once at app start and applies it as
  * the pricing override. With no live version, pricing stays on the code defaults.
  * Also loads the shared model-specific floors / "not covered" rules so the admin
  * Quotes & Orders page and the customer journey (Steps 3 → 4) use the same list.
+ *
+ * It also re-reads the live version when the tab regains focus, so a price pushed
+ * live elsewhere is reflected in an already-open Quotes & Orders screen.
  */
 export default function PricingOverrideLoader() {
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      try {
-        const { data, error } = await supabase
-          .from('pricing_matrix_versions')
-          .select(LIVE_PRICING_VERSION_COLUMNS)
-          .eq('status', 'live')
-          .maybeSingle();
-        if (cancelled || error || !data) return;
-        // Guarded: only a version with status 'live' can ever be applied.
-        applyLivePricingVersion(data as any);
-        // Let screens that quote from the published model (Quotes & Orders) re-read it.
-        window.dispatchEvent(new Event('bw:pricing-updated'));
-      } catch {
-        // Ignore — fall back to code pricing.
-      }
-    })();
+    void refreshLivePricing();
+
+    const onFocus = () => {
+      if (!cancelled) void refreshLivePricing();
+    };
+    window.addEventListener('focus', onFocus);
+
 
 
     (async () => {
