@@ -45,10 +45,33 @@ export interface PriceFloorResult {
   minimumAllowed?: number;
 }
 
-// Hard absolute floor — no warranty in the catalogue is anywhere near this low.
-// Business rule: block every transaction under £120 (and definitely every £1
-// attempt) across Stripe, Bumper, Payment Assist, and multi-warranty flows,
-// UNLESS the caller is an authenticated manager applying a TEST bypass code.
+// Hard absolute floor — raised to track the agreed NET sell floor
+// (£399 / £659 / £938 for 12 / 24 / 36 months, see src/lib/pricing/netFloor.ts).
+//
+// Website promo codes (SAVE25, cart recovery, 10% pay-in-full) are deliberately
+// allowed to breach the net floor, so the server backstop sits at
+// NET_FLOOR_BACKSTOP_PCT of it — high enough to kill the "set finalAmount to £1"
+// attack class, low enough that a legitimate stacked promo still goes through.
+// Motorbikes are half price, so the term floor is halved before the % is applied.
+export const NET_SELL_FLOOR_GBP: Record<"yearly" | "two_yearly" | "three_yearly" | "monthly", number> = {
+  monthly: 399,
+  yearly: 399,
+  two_yearly: 659,
+  three_yearly: 938,
+};
+
+const NET_FLOOR_BACKSTOP_PCT = 0.6;
+
+/** Server backstop for a term: 60% of the net sell floor, floored to whole pounds. */
+export function getTermFloorGBP(paymentType: string): number {
+  const term = normalizePaymentType(paymentType);
+  const netFloor = NET_SELL_FLOOR_GBP[term] ?? NET_SELL_FLOOR_GBP.yearly;
+  // Halve for motorbike-priced policies — we cannot see vehicle type here, so the
+  // halved figure is used as the safe lower bound for every term.
+  return Math.floor((netFloor / 2) * NET_FLOOR_BACKSTOP_PCT);
+}
+
+// Retained for callers that need a single hard number with no term context.
 export const ABSOLUTE_MIN_GBP = 120;
 
 // Returns true if the caller's JWT belongs to an admin / super_admin /
@@ -181,7 +204,8 @@ export async function validateCheckoutPrice(
   // below £120 because the JWT check fails.
   const codeLooksLikeBypass = isTestBypassCode(discountCode);
   const bypass = codeLooksLikeBypass && (await callerIsManager(authHeader, supabase));
-  const absoluteFloor = bypass ? TEST_MIN_GBP : ABSOLUTE_MIN_GBP;
+  const termFloor = getTermFloorGBP(paymentType);
+  const absoluteFloor = bypass ? TEST_MIN_GBP : termFloor;
 
   // 1. Absolute floor — fast reject
   if (!finalAmount || finalAmount < absoluteFloor) {
@@ -201,7 +225,7 @@ export async function validateCheckoutPrice(
   if (checkoutMatrixBasePrice && checkoutMatrixBasePrice > 0) {
     const minimumAllowed = bypass
       ? TEST_MIN_GBP
-      : Math.max(ABSOLUTE_MIN_GBP, Math.floor(checkoutMatrixBasePrice * MIN_PERCENT_OF_BASE));
+      : Math.max(termFloor, Math.floor(checkoutMatrixBasePrice * MIN_PERCENT_OF_BASE));
 
     if (finalAmount < minimumAllowed) {
       return {
@@ -236,7 +260,7 @@ export async function validateCheckoutPrice(
 
   const minimumAllowed = bypass
     ? TEST_MIN_GBP
-    : Math.max(ABSOLUTE_MIN_GBP, Math.floor(serverBasePrice * MIN_PERCENT_OF_BASE));
+    : Math.max(termFloor, Math.floor(serverBasePrice * MIN_PERCENT_OF_BASE));
 
   if (finalAmount < minimumAllowed) {
     return {

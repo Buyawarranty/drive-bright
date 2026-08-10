@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
+import { getNetPayableFloor } from '@/lib/pricing/netFloor';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -246,11 +248,27 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     quotedTotal > 0 && Number.isFinite(enteredAmount) && enteredAmount < quotedTotal
       ? ((quotedTotal - enteredAmount) / quotedTotal) * 100
       : 0;
-  const minAllowedAmount = quotedTotal > 0
+  // NET payable floor — £399 / £659 / £938 (12/24/36mo), shaped by the options
+  // chosen and halved for motorbikes. Confirming a manual payment used to have no
+  // floor at all, so this closes the biggest under-floor leak. Management may go
+  // below (logged to price_override_audit).
+  const netFloorAmount = getNetPayableFloor({
+    paymentPeriod: paymentType,
+    voluntaryExcess: excessAmount,
+    claimLimit: effectiveClaimLimit,
+    labourRate,
+    isMotorbike: /motor\s*(bike|cycle)|\bbike\b/i.test(String((vehicleData as any)?.vehicleType || '')),
+    surface: 'admin',
+  });
+  const ceilingMinAmount = quotedTotal > 0
     ? Math.round(quotedTotal * (1 - DISCOUNT_CEILING_PCT / 100) * 100) / 100
     : 0;
+  // Whichever bites harder: the 30% ceiling or the absolute net floor.
+  const minAllowedAmount = Math.max(ceilingMinAmount, netFloorAmount);
   const overDiscountCeiling = discountPct > DISCOUNT_CEILING_PCT + 0.01;
-  const discountBlocked = overDiscountCeiling && !isManagementRole;
+  const underNetFloor = Number.isFinite(enteredAmount) && enteredAmount > 0 && enteredAmount < netFloorAmount - 0.01;
+  const discountBlocked = (overDiscountCeiling || underNetFloor) && !isManagementRole;
+
 
 
   const formatRegNumber = (value: string): string => {
@@ -487,16 +505,20 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     // Prevent double-click race condition
     if (isConfirming) return;
 
-    // Hard stop: never create a policy more than 30% below the quoted price
-    // unless Management are the ones confirming it.
+    // Hard stop: never create a policy more than 30% below the quoted price, and
+    // never below the absolute net floor (£399/£659/£938 shaped), unless
+    // Management are the ones confirming it.
     if (discountBlocked) {
       toast({
         title: `Blocked — contact management`,
-        description: `${discountPct.toFixed(1)}% off exceeds the ${DISCOUNT_CEILING_PCT}% limit. You cannot confirm this payment — contact management to authorise it. Minimum allowed here is £${minAllowedAmount.toFixed(2)}.`,
+        description: underNetFloor
+          ? `£${enteredAmount.toFixed(2)} is below the minimum sellable price of £${netFloorAmount.toFixed(2)} for this cover. You cannot confirm this payment — contact management to authorise it.`
+          : `${discountPct.toFixed(1)}% off exceeds the ${DISCOUNT_CEILING_PCT}% limit. You cannot confirm this payment — contact management to authorise it. Minimum allowed here is £${minAllowedAmount.toFixed(2)}.`,
         variant: "destructive",
       });
       return;
     }
+
     setIsConfirming(true);
 
     // Check for duplicate warranty before proceeding
@@ -578,7 +600,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
           console.error('Failed to record discount on manual confirmation:', discErr);
         }
 
-        if (givenAway > 0.5) {
+        if (givenAway > 0.5 || underNetFloor) {
           logPriceOverride({
             adminUserId: assigneeId || null,
             context: 'confirm_payment',
@@ -593,9 +615,15 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
             labourRate,
             matrixTotal: quotedTotal,
             enteredTotal: collected,
-            notes: `Manual payment confirmed via ${paymentSource || 'outside route'} — ${discountPct.toFixed(1)}% off`,
+            notes: [
+              `Manual payment confirmed via ${paymentSource || 'outside route'} — ${discountPct.toFixed(1)}% off`,
+              underNetFloor
+                ? `MANAGEMENT OVERRIDE — below the £${netFloorAmount.toFixed(2)} net floor for this cover`
+                : '',
+            ].filter(Boolean).join(' · '),
           });
         }
+
       }
 
       // Part payment: open a plan + log the deposit so the balance is chased
@@ -1162,14 +1190,22 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         )}
                         {discountBlocked && (
                           <p className="text-xs font-semibold text-destructive">
-                            Blocked — that is {discountPct.toFixed(1)}% off. You cannot confirm this payment.
-                            Please contact management to authorise anything below £{minAllowedAmount.toFixed(2)} (max {DISCOUNT_CEILING_PCT}% off).
+                            {underNetFloor
+                              ? `Blocked — £${netFloorAmount.toFixed(2)} is the minimum sellable price for this cover (${paymentType.replace('months', ' month')} term). Contact management to authorise anything lower.`
+                              : `Blocked — that is ${discountPct.toFixed(1)}% off. You cannot confirm this payment. Please contact management to authorise anything below £${minAllowedAmount.toFixed(2)} (max ${DISCOUNT_CEILING_PCT}% off).`}
+                          </p>
+                        )}
+
+                        {underNetFloor && isManagementRole && (
+                          <p className="text-xs font-semibold text-amber-600">
+                            Management override: below the £{netFloorAmount.toFixed(2)} minimum sellable price. This will be logged.
                           </p>
                         )}
 
                         {overDiscountCeiling && isManagementRole && (
                           <p className="text-xs font-semibold text-amber-600">
                             Management override: {discountPct.toFixed(1)}% off (over the {DISCOUNT_CEILING_PCT}% ceiling). This will be logged.
+
                           </p>
                         )}
                       </div>
