@@ -809,8 +809,30 @@ export default function PriceTestStep2({
 
           {/* Summary column */}
           <div className="space-y-4">
+            {/* Customer-facing Step 3 (website) price — shown first, derived from the
+                Quotes & Orders total minus the live website gap. */}
+            {calc ? (() => {
+              const web = getWebReferencePrice(calc.total);
+              const webPayInFull = getWebReferencePrice(calc.payInFullTotal);
+              return (
+                <div className="rounded-lg border-2 border-primary/60 bg-primary/5 p-4">
+                  <div className="text-sm font-semibold">Step 3 price (customer website)</div>
+                  <div className="text-3xl font-bold">
+                    {formatGBP(payInFull ? webPayInFull.price : web.price)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {web.discountPct}% below the Quotes &amp; Orders total ·{' '}
+                    {payInFull ? 'paid in full today' : 'paid over 12 instalments'} · about{' '}
+                    {formatGBP(Math.round((payInFull ? webPayInFull.price : web.price) / 12))}/month
+                  </div>
+                </div>
+              );
+            })() : null}
+
             <div className="rounded-lg border-2 p-4">
-              <div className="text-sm font-semibold">Monthly · Bumper (12 instalments)</div>
+              <div className="text-sm font-semibold">Quotes &amp; Orders price (agent)</div>
+              <div className="mt-2 text-sm font-semibold">Monthly · Bumper (12 instalments)</div>
+
               <div className="text-3xl font-bold">
                 {calc ? formatGBP(calc.monthly) : '—'}
                 <span className="text-sm font-normal text-muted-foreground">/month</span>
