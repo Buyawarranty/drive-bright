@@ -855,9 +855,11 @@ export default function PriceTestStep2({
 
                   <div>Claim {formatGBP(claimLimit)} · Labour £{labour}/hr · Excess £{excess}</div>
                   <div>
-                    Cover runs {term.months + freeMonths} months ({calc.days} days) · paid over 12 instalments
+                    Cover runs {term.months + freeMonths} months ({calc.days} days) ·{' '}
+                    {payInFull ? 'paid in full today' : 'paid over 12 instalments'}
                     {freeMonths ? ` · includes ${freeMonths} free months` : ''}
                   </div>
+
                   {calc.discountAmount ? <div>Discount applied: {formatGBP(calc.discountAmount)} off</div> : null}
                 </div>
               ) : null}
