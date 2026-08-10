@@ -56,13 +56,14 @@ type OffboardingEvent = {
 export const AgentOffboardingPanel: React.FC = () => {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [sourceId, setSourceId] = useState<string>('');
-  const [targetId, setTargetId] = useState<string>('');
+  const [targetIds, setTargetIds] = useState<string[]>([]);
   const [counts, setCounts] = useState<Counts | null>(null);
   const [loadingCounts, setLoadingCounts] = useState(false);
   const [working, setWorking] = useState(false);
   const [resetToNew, setResetToNew] = useState(false);
   const [alsoDeactivate, setAlsoDeactivate] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+
 
   const [backupsOpen, setBackupsOpen] = useState(false);
   const [events, setEvents] = useState<OffboardingEvent[]>([]);
