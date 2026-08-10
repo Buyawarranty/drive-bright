@@ -8,8 +8,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { 
   Phone, Mail, MessageSquare, Car, User, 
   ChevronDown, ChevronUp, 
-  CreditCard, Printer, Award
+  CreditCard, Printer, Award, History as HistoryIcon
 } from 'lucide-react';
+import { LeadHistoryTimeline } from './LeadHistoryTimeline';
+
 import { CommissionClaimDialog } from './CommissionClaimDialog';
 import { CommissionClaimReviewPanel } from './CommissionClaimReviewPanel';
 import { toast } from 'sonner';
