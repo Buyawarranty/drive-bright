@@ -94,6 +94,8 @@ const VehicleRiskBandsPanel: React.FC = () => {
       counts[a.bandId] = (counts[a.bandId] || 0) + 1;
     });
     return counts;
+  }, [config.assignments]);
+
 
   /** Band rules that point at a make/model already on the site-wide excluded list. */
   const excludedClashes = useMemo(
