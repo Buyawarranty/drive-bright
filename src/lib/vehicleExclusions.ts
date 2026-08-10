@@ -327,7 +327,10 @@ export const getExclusionReason = (make?: string | null, model?: string | null):
   const m = normalise(make);
   const mod = stripCosmeticTrims(model);
   const combined = `${m} ${mod}`.trim();
+  const liveRule = matchLiveModelRule(m, mod) || matchLiveModelRule(m, combined);
+  if (liveRule) return `${liveRule.label || liveRule.model} — model not covered (published rule)`;
   const rule = EXCLUDED_MODEL_RULES.find(
+
     (r) =>
       r.makes.some((alias) => m === alias || m.startsWith(`${alias} `) || m.includes(alias)) &&
       r.patterns.some((p) => p.test(mod) || p.test(combined))
