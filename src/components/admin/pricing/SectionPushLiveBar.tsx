@@ -181,7 +181,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
               </div>
             )}
             {directPush && (
-              <Button size="sm" disabled={busy} onClick={() => directPush.run()}>
+              <Button size="sm" disabled={busy} onClick={runDirectPush}>
                 <Rocket className="mr-1 h-4 w-4" />
                 Push live: {directPush.label}
               </Button>
