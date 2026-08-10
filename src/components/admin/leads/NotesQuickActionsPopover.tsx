@@ -155,12 +155,22 @@ export const NotesQuickActionsPopover: React.FC<NotesQuickActionsPopoverProps> =
         <Textarea
           value={quickNote}
           onChange={(e) => setQuickNote(e.target.value)}
-          placeholder="Type a quick note — e.g. 'Left voicemail, mentioned quote'"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              void saveNoteOnly();
+            }
+          }}
+          placeholder="Type a quick note and press Enter to save"
           rows={2}
           maxLength={500}
-          className="text-xs mb-2 resize-none"
+          className="text-xs mb-1 resize-none"
           onClick={(e) => e.stopPropagation()}
         />
+        <div className="text-[10px] text-muted-foreground px-1 pb-2">
+          {savingNote ? 'Saving…' : 'Press Enter to save · Shift+Enter for a new line'}
+        </div>
+
         <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide px-1 pb-1.5">
           Log outcome
         </div>
