@@ -81,18 +81,23 @@ export default function Claim5kBlocklistEditor() {
             <Input
               value={rule.make}
               onChange={e => update(rule.id!, { make: e.target.value })}
-              placeholder="Make (e.g. Land Rover)"
+              placeholder="Make (blank = all makes)"
               className="w-48"
             />
             <Input
               value={rule.model ?? ''}
               onChange={e => update(rule.id!, { model: e.target.value || null })}
-              placeholder="Model (optional)"
+              placeholder="Model (blank = all models)"
               className="w-48"
             />
             <span className="text-xs text-muted-foreground flex-1 min-w-[8rem]">
-              {rule.model ? `Blocks ${rule.make} ${rule.model} only` : `Blocks all ${rule.make}`}
+              {!rule.make && rule.model
+                ? `Blocks ${rule.model} across all makes`
+                : rule.model
+                  ? `Blocks ${rule.make} ${rule.model} only`
+                  : `Blocks all ${rule.make}`}
             </span>
+
             <div className="flex items-center gap-2">
               <span
                 className={`text-xs font-semibold ${
