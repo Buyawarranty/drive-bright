@@ -140,6 +140,10 @@ export const DEFAULT_RISK_BAND_ASSIGNMENTS: RiskBandAssignment[] = [
   { id: 'a-rr-sport', bandId: 'severe', make: 'Land Rover', model: 'Range Rover Sport', enabled: true },
   { id: 'a-rr', bandId: 'severe', make: 'Land Rover', model: 'Range Rover', enabled: true },
   { id: 'a-tesla3', bandId: 'high', make: 'Tesla', model: 'Model 3', enabled: true },
+  // Sport TRIMS (not performance derivatives) — always covered, always high risk.
+  { id: 'a-bmw-msport', bandId: 'high', make: 'BMW', model: 'M Sport', enabled: true },
+  { id: 'a-audi-sline', bandId: 'high', make: 'Audi', model: 'S Line', enabled: true },
+  { id: 'a-merc-amgline', bandId: 'high', make: 'Mercedes', model: 'AMG Line', enabled: true },
 ];
 
 export const DEFAULT_RISK_BAND_CONFIG: RiskBandConfig = {
