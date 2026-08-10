@@ -82,7 +82,36 @@ serve(async (req) => {
       { onConflict: "user_id,role" }
     );
 
-    return new Response(JSON.stringify({ success: true, userId: targetAuthId }), {
+    // Prove the password actually works before telling the admin it is live.
+    // Without this, a silent Auth failure leaves the admin sharing a password
+    // that returns "Invalid login credentials".
+    let verified = false;
+    try {
+      const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+      const verifyRes = await fetch(
+        `${Deno.env.get("SUPABASE_URL")}/auth/v1/token?grant_type=password`,
+        {
+          method: "POST",
+          headers: { apikey: anonKey, "Content-Type": "application/json" },
+          body: JSON.stringify({ email: normalizedEmail, password: rawPassword }),
+        }
+      );
+      verified = verifyRes.ok;
+    } catch (_e) {
+      verified = false;
+    }
+
+    if (!verified) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "The password was submitted but could not be verified on the login server. Try again before sharing it.",
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    return new Response(JSON.stringify({ success: true, verified, userId: targetAuthId }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
