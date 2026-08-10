@@ -11,6 +11,7 @@ import { formatGBP } from '@/lib/pricingMatrix';
 import { MANUAL_REFERRAL_MESSAGE } from './AgeBandPricingPreview';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
+import PriceSurfaceBadge from './PriceSurfaceBadge';
 import {
   getVisibleExcessOptions,
   getExcessFactor,
@@ -477,8 +478,17 @@ export default function PriceTestStep2({
                 'Same layout as Quotes & Orders Step 2, priced with the proposed age × mileage × factor model. Practice only — nothing here saves a quote or changes live pricing.'}
             </CardDescription>
           </div>
-          <Badge variant="secondary">{badgeText ?? 'Test environment'}</Badge>
+          <div className="flex flex-wrap items-center gap-2">
+            <PriceSurfaceBadge surface="quotes" />
+            <Badge variant="secondary">{badgeText ?? 'Test environment'}</Badge>
+          </div>
         </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          These are <strong>Quotes &amp; Orders (agent) prices</strong> — not the website Step 3
+          price. The customer-facing Step 3 figure is this total minus the website gap (10% by
+          default); use the “Website Step 3 preview” section to see it.
+        </p>
+
       </CardHeader>
 
 
