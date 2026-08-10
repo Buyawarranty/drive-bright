@@ -11,6 +11,7 @@ import { OptimizedImage } from '@/components/OptimizedImage';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import pandaMechanicImage from '@/assets/panda-mechanic-car.png';
 import QuoteFormInline from '@/components/QuoteFormInline';
+import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
 
 
 interface VehicleData {
@@ -114,6 +115,13 @@ const HomepageAlt: React.FC<HomepageAltProps> = ({ onRegistrationSubmit }) => {
         toast.error('Vehicle too old', {
           description: 'Sorry, we can only provide cover for vehicles up to 15 years old.',
         });
+        setIsLoading(false);
+        return;
+      }
+
+      const blockMessage = getVehicleBlockMessage({ ...data, found: true });
+      if (blockMessage) {
+        toast.error('Vehicle not eligible', { description: blockMessage });
         setIsLoading(false);
         return;
       }

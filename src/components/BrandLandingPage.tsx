@@ -31,6 +31,7 @@ import MileageQuickSelect from './MileageQuickSelect';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
 import { saveWithTimestamp } from '@/utils/localStorage';
+import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
 
 interface VehicleData {
   regNumber: string;
@@ -347,6 +348,15 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
         setVehicleAgeError('');
       }
       
+      // Excluded vehicle matrix — never quote supercars / luxury / performance models
+      const vehicleBlockMessage = getVehicleBlockMessage(data);
+      if (vehicleBlockMessage) {
+        console.log('Vehicle blocked by exclusion matrix:', vehicleBlockMessage);
+        setVehicleAgeError(vehicleBlockMessage);
+        setIsLookingUp(false);
+        return;
+      }
+
       const vehicleData: VehicleData = {
         regNumber: regNumber,
         mileage: effectiveMileage,

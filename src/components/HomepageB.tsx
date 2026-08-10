@@ -33,6 +33,7 @@ import { supabase } from '@/integrations/supabase/client';
 import MileageQuickSelect from './MileageQuickSelect';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
+import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
 
 interface VehicleData {
   regNumber: string;
@@ -325,6 +326,15 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       // Block over-150k vehicles flagged via MOT history
       if (motResult.motMileage && motResult.motMileage > 150000) {
         setMileageError('Sorry, we can only cover vehicles under 150,000 miles.');
+        setIsLookingUp(false);
+        return;
+      }
+
+      // Excluded vehicle matrix — never quote supercars / luxury / performance models
+      const vehicleBlockMessage = getVehicleBlockMessage(data);
+      if (vehicleBlockMessage) {
+        console.log('Vehicle blocked by exclusion matrix:', vehicleBlockMessage);
+        setVehicleAgeError(vehicleBlockMessage);
         setIsLookingUp(false);
         return;
       }

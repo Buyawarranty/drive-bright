@@ -35,6 +35,7 @@ import { supabase } from '@/integrations/supabase/client';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
 import { MileageField, ManualVehicleEntryCard, RegLookupError, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
+import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
 
 interface VehicleData {
   regNumber: string;
@@ -443,6 +444,15 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       }
 
 
+
+      // Excluded vehicle matrix — never quote supercars / luxury / performance models
+      const vehicleBlockMessage = getVehicleBlockMessage(data);
+      if (vehicleBlockMessage) {
+        console.log('Vehicle blocked by exclusion matrix:', vehicleBlockMessage);
+        setVehicleAgeError(vehicleBlockMessage);
+        setIsLookingUp(false);
+        return;
+      }
 
       // Prepare vehicle data
       const vehicleData: VehicleData = {
