@@ -171,10 +171,10 @@ function notifyPricingUpdated(): void {
 
 /** Built-in options used when no live pricing version publishes labour rates. */
 export const DEFAULT_LABOUR_RATE_OPTIONS: LabourRateOption[] = [
-  { rate: 50, factor: 0.84, label: 'Local Garages' },
+  { rate: 50, factor: 0.90, label: 'Local Garages' },
   { rate: 70, factor: 1.00, label: 'Independent Garages' },
-  { rate: 100, factor: 1.18, label: 'Approved Garages' },
-  { rate: 150, factor: 1.80, label: 'Specialist garages' },
+  { rate: 100, factor: 1.08, label: 'Approved Garages' },
+  { rate: 150, factor: 1.20, label: 'Specialist garages' },
 ];
 
 export function setLiveLabourRateFactors(
