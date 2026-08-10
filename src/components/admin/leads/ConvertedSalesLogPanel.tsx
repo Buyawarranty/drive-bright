@@ -35,7 +35,7 @@ interface Row {
   is_paid: boolean | null;
 }
 
-const DAYS = 90;
+const DAYS = 180;
 
 export const ConvertedSalesLogPanel: React.FC = () => {
   const { isManagement } = useIsManagement();
