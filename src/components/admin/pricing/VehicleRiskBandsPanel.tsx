@@ -356,15 +356,15 @@ const VehicleRiskBandsPanel: React.FC = () => {
               <div className="space-y-1">
                 <Label className="text-xs">Make</Label>
                 <Input
-                  placeholder="e.g. Land Rover"
+                  placeholder="e.g. Land Rover (blank = all makes)"
                   value={newEntry.make}
                   onChange={e => setNewEntry({ ...newEntry, make: e.target.value })}
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Model / trim (blank = whole make)</Label>
+                <Label className="text-xs">Model / trim (blank = all models)</Label>
                 <Input
-                  placeholder="e.g. Range Rover Velar"
+                  placeholder="e.g. Range Rover Velar (blank = all models)"
                   value={newEntry.model}
                   onChange={e => setNewEntry({ ...newEntry, model: e.target.value })}
                 />
