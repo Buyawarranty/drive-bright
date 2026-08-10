@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import { getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { getSessionMsclkid } from '@/utils/msclkidCapture';
+import { getSessionTtclid } from '@/utils/ttclidCapture';
 import { getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
 import { getSessionUtms, compactUtms } from '@/utils/utmCapture';
 import { getAbVariant } from '@/utils/abVariant';
@@ -127,6 +128,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             ...(skipFbclid ? { fbclid: skipFbclid } : {}),
             ...(skipGclid ? { gclid: skipGclid } : {}),
             ...((() => { const ms = getSessionMsclkid(); return ms ? { msclkid: ms } : {}; })()),
+            ...((() => { const tt = getSessionTtclid(); return tt ? { ttclid: tt } : {}; })()),
           }
         });
       }
@@ -250,6 +252,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       const storedFbclid = getSessionFbclid();
       const storedGclid = getSessionGclid();
       const storedMsclkid = getSessionMsclkid();
+      const storedTtclid = getSessionTtclid();
       // Pull all 5 UTMs from session (utm_source/medium/campaign/term/content).
       // Fallback: if session is empty but URL still has them, read live.
       const sessionUtms = compactUtms(getSessionUtms());
@@ -284,6 +287,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 const fb = storedFbclid || getSessionFbclid();
                 const gc = storedGclid || getSessionGclid();
                 const ms = storedMsclkid || getSessionMsclkid();
+                const tt = storedTtclid || getSessionTtclid();
                 const fbRef = !fb ? getSessionFbReferrer() : null;
                 const abVariant: 'a' | 'b' = isVariantB ? 'b' : 'a';
                 return {
@@ -291,6 +295,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                     ...(fb ? { fbclid: fb } : {}),
                     ...(gc ? { gclid: gc } : {}),
                     ...(ms ? { msclkid: ms } : {}),
+                    ...(tt ? { ttclid: tt } : {}),
                     ...utms,
                     ...(fbRef ? { fb_referrer: fbRef } : {}),
                     ab_variant: abVariant,
@@ -331,6 +336,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                     ...(storedFbclid ? { fbclid: storedFbclid } : {}),
                     ...(storedGclid ? { gclid: storedGclid } : {}),
                     ...(storedMsclkid ? { msclkid: storedMsclkid } : {}),
+              ...(storedTtclid ? { ttclid: storedTtclid } : {}),
+                    ...(storedTtclid ? { ttclid: storedTtclid } : {}),
                     ...utms,
                     ...(fbRef ? { fb_referrer: fbRef } : {}),
                     ab_variant: abVariant,
@@ -359,6 +366,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               ...(fallbackFbclid ? { fbclid: fallbackFbclid } : {}),
               ...(fallbackGclid ? { gclid: fallbackGclid } : {}),
               ...(storedMsclkid ? { msclkid: storedMsclkid } : {}),
+              ...(storedTtclid ? { ttclid: storedTtclid } : {}),
             }
           });
 

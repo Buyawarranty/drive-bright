@@ -55,6 +55,7 @@ interface AbandonedCartData {
   fbclid?: string;
   gclid?: string;
   msclkid?: string;
+  ttclid?: string;
   fb_referrer?: string;
   // Campaign attribution (UTMs)
   utm_source?: string;
@@ -299,6 +300,7 @@ const handler = async (req: Request): Promise<Response> => {
           ...(cartData.fbclid ? { fbclid: cartData.fbclid } : {}),
           ...(cartData.gclid ? { gclid: cartData.gclid } : {}),
           ...(cartData.msclkid ? { msclkid: cartData.msclkid } : {}),
+          ...(cartData.ttclid ? { ttclid: cartData.ttclid } : {}),
           ...(cartData.fb_referrer ? { fb_referrer: cartData.fb_referrer } : {}),
           // Preserve previously captured UTMs; only overwrite with non-empty new values
           ...((existingCart[0] as any).cart_metadata && typeof (existingCart[0] as any).cart_metadata === 'object'
@@ -351,6 +353,7 @@ const handler = async (req: Request): Promise<Response> => {
             ...(cartData.fbclid ? { fbclid: cartData.fbclid } : {}),
             ...(cartData.gclid ? { gclid: cartData.gclid } : {}),
           ...(cartData.msclkid ? { msclkid: cartData.msclkid } : {}),
+          ...(cartData.ttclid ? { ttclid: cartData.ttclid } : {}),
             ...(cartData.fb_referrer ? { fb_referrer: cartData.fb_referrer } : {}),
             ...utmMeta(cartData as any),
           }
