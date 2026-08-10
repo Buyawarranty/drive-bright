@@ -76,6 +76,7 @@ import BumperPaymentPanel from './BumperPaymentPanel';
 import { useAgentDiscountCap } from '@/hooks/useAgentDiscountCap';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import { getVehicleIdentificationGap } from '@/lib/vehicleIdentification';
 import { useSavedPricingModel } from './pricing/useSavedPricingModel';
 
 
@@ -404,6 +405,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   })();
   const { required: claimLimit5kAuthRequired } = useClaimLimit5kAuthRequired();
   const claimLimit5kAllowed = !claimLimit5kAuthRequired || isManagementRole || !!claimLimit5kApproval;
+
+  // Vehicle must be fully identified (make AND model) before an agent can quote.
+  // Only a manager can authorise continuing on a partially identified vehicle.
+  const [vehicleIdManagerAuth, setVehicleIdManagerAuth] = useState<string | null>(null);
+  const vehicleIdGap = vehicleData
+    ? getVehicleIdentificationGap({ found: true, make: vehicleData.make, model: vehicleData.model })
+    : null;
+  const vehicleIdBlocked = !!vehicleIdGap && vehicleIdManagerAuth !== (vehicleData?.regNumber || '');
+
+
 
   // Reliability score — fetched from the same edge function the customer pricing
   // table uses, so management can see how dependable the vehicle is before
@@ -1986,6 +1997,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       hasError = true;
     } else {
       setShowEmailError(false);
+    }
+
+    if (vehicleIdBlocked && vehicleIdGap) {
+      toast({
+        title: 'Manager authorisation required',
+        description: `${vehicleIdGap.agentMessage} Do not quote or sell until a manager has authorised this vehicle.`,
+        variant: 'destructive',
+      });
+      return;
     }
 
     if (hasError) {
@@ -4051,6 +4071,39 @@ Questions? Call 0330 229 5040`;
           {/* Step 2: Quote Details */}
           {step === 2 && vehicleData && (
             <Card>
+              {vehicleIdGap && (
+                <Alert className={`m-4 mb-0 border-2 ${vehicleIdBlocked ? 'border-destructive bg-destructive/10' : 'border-amber-500 bg-amber-50'}`}>
+                  <Ban className={`h-4 w-4 ${vehicleIdBlocked ? 'text-destructive' : 'text-amber-600'}`} />
+                  <AlertDescription className={`text-sm ${vehicleIdBlocked ? 'text-destructive' : 'text-amber-800'}`}>
+                    <strong>Vehicle not fully recognised.</strong> {vehicleIdGap.agentMessage}
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      {vehicleIdBlocked ? (
+                        isManagementRole ? (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              setVehicleIdManagerAuth(vehicleData?.regNumber || '');
+                              toast({ title: 'Authorised', description: 'Manager authorisation recorded for this vehicle.' });
+                            }}
+                          >
+                            Authorise this vehicle (manager)
+                          </Button>
+                        ) : (
+                          <span className="font-semibold">
+                            You cannot continue — ask a manager to authorise this vehicle first.
+                          </span>
+                        )
+                      ) : (
+                        <span className="font-semibold text-green-700">
+                          Manager authorised — you may continue with this vehicle.
+                        </span>
+                      )}
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {getExclusionReason(vehicleData?.make, vehicleData?.model) && (
                 <Alert className="m-4 mb-0 border-2 border-destructive bg-destructive/10">
                   <Ban className="h-4 w-4 text-destructive" />

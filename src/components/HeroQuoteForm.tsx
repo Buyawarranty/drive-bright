@@ -8,6 +8,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
 import { MileageField, ManualVehicleEntryCard, RegLookupError, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
 import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
+import { getVehicleIdentificationGap, type VehicleIdGap } from '@/lib/vehicleIdentification';
+import VehicleNotRecognisedCard from '@/components/quote/VehicleNotRecognisedCard';
 
 interface VehicleData {
   regNumber: string;
@@ -39,6 +41,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
   const [needsMileage, setNeedsMileage] = useState(false);
   const [manualMileage, setManualMileage] = useState('');
   const [showManualVehicle, setShowManualVehicle] = useState(false);
+  const [idGap, setIdGap] = useState<VehicleIdGap | null>(null);
   const [manualVehicle, setManualVehicle] = useState({ make: '', model: '', year: '', mileage: '' });
 
   // Inline registration error copy, by failure type
@@ -165,10 +168,16 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
         return;
       }
 
-      if (!data || !data.make) {
-        showRegError('notFound');
+      // Make AND model must be known before any price is shown.
+      const idGapResult = getVehicleIdentificationGap(data);
+      if (idGapResult) {
+        setIdGap(idGapResult);
+        setShowManualVehicle(false);
+        setNeedsMileage(false);
+        setIsLookingUp(false);
         return;
       }
+      setIdGap(null);
 
       // Check vehicle age using precise manufactureDate if available
       const now = new Date();
@@ -324,12 +333,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                 <RegLookupError
                   message={regError}
                   detail={regErrorDetail}
-                  showManualLink={!showManualVehicle}
-                  onManualEntry={() => {
-                    setShowManualVehicle(true);
-                    setNeedsMileage(false);
-                    setTimeout(() => document.getElementById('hero-manual-make')?.focus(), 50);
-                  }}
+                  showManualLink={false}
                 />
               )}
 
@@ -362,17 +366,8 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                         </span>
                       </span>
                     </button>
-                  ) : showManualVehicle ? (
-                    <ManualVehicleEntryCard
-                      idPrefix="hero-manual"
-                      make={manualVehicle.make}
-                      model={manualVehicle.model}
-                      year={manualVehicle.year}
-                      mileage={manualVehicle.mileage}
-                      onChange={(patch) => setManualVehicle((prev) => ({ ...prev, ...patch }))}
-                      onSubmit={submitManualVehicle}
-                      isSubmitting={isLookingUp}
-                    />
+                  ) : idGap ? (
+                    <VehicleNotRecognisedCard gap={idGap} regNumber={regNumber} />
                   ) : needsMileage ? (
                     <div className="space-y-3 rounded-xl border-2 border-[#F0A500] bg-[#FFF8E5] p-4 text-left">
                       <div>

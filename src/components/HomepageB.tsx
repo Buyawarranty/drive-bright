@@ -34,6 +34,8 @@ import MileageQuickSelect from './MileageQuickSelect';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
 import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
+import { getVehicleIdentificationGap } from '@/lib/vehicleIdentification';
+import { SALES_PHONE } from '@/constants/contact';
 
 interface VehicleData {
   regNumber: string;
@@ -264,6 +266,14 @@ const HomepageB: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       if (vehicleBlockMessage) {
         console.log('Vehicle blocked by exclusion matrix:', vehicleBlockMessage);
         setVehicleAgeError(vehicleBlockMessage);
+        setIsLookingUp(false);
+        return;
+      }
+
+      // Vehicle must be fully identified (make AND model) before any price.
+      const idGap = getVehicleIdentificationGap(data);
+      if (idGap) {
+        setVehicleAgeError(`${idGap.message}. ${idGap.detail} Call ${SALES_PHONE}.`);
         setIsLookingUp(false);
         return;
       }
