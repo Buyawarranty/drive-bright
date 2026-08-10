@@ -17,6 +17,11 @@ import { normalizeVehicleText } from './modelFloorMatch';
 import { fuelFilterMatches, normalizeFuelFilter, type FuelFilter } from './fuelCategory';
 
 export const RISK_BAND_MIN_FACTOR = 0.5;
+
+/** Polite, customer-facing decline used when a band is set to "not covered". */
+export const DEFAULT_BLOCK_MESSAGE =
+  "Thanks for your interest! Unfortunately we're not able to offer warranty cover for this vehicle. This is down to factors like specialist parts or limited access to suitable repair centres. We're sorry we can't help this time.";
+
 export const RISK_BAND_MAX_FACTOR = 2.5;
 
 export type RiskBand = {
@@ -29,10 +34,14 @@ export type RiskBand = {
   minOneYear: number | null;
   /** No automatic price — send to manual underwriting. */
   referral: boolean;
+  /** Vehicles in this band are not covered at all — quote is declined politely. */
+  blocked?: boolean;
+  /** Customer-facing decline wording shown when `blocked` is true. */
+  blockMessage?: string;
   /** Why the band exists / how to use it. Never shown to customers. */
   note?: string;
   /** Tailwind-friendly accent token for the badge. */
-  tone: 'low' | 'normal' | 'high' | 'severe' | 'referral';
+  tone: 'low' | 'normal' | 'high' | 'severe' | 'referral' | 'blocked';
 };
 
 export type RiskBandAssignment = {
@@ -100,6 +109,17 @@ export const DEFAULT_RISK_BANDS: RiskBand[] = [
     referral: false,
     tone: 'severe',
     note: 'Materially higher expected cost — air suspension, complex electronics, premium SUVs.',
+  },
+  {
+    id: 'blocked',
+    name: 'Not covered — decline politely',
+    factor: 1,
+    minOneYear: null,
+    referral: false,
+    blocked: true,
+    blockMessage: DEFAULT_BLOCK_MESSAGE,
+    tone: 'blocked',
+    note: 'No quote at all. Makes / models here are declined with the polite customer message.',
   },
   {
     id: 'referral',
@@ -230,9 +250,13 @@ export function matchRiskBand(
 
 
 export type RiskBandPriceResult = {
-  /** null when the band is a referral. */
+  /** null when the band is a referral or blocked. */
   price: number | null;
   referral: boolean;
+  /** True when the vehicle must not be quoted at all. */
+  blocked: boolean;
+  /** Polite customer-facing decline wording (only when `blocked`). */
+  blockMessage: string | null;
   floorApplied: boolean;
   factorUsed: number;
   band: RiskBand;
@@ -250,8 +274,19 @@ export function applyRiskBand(
   config: RiskBandConfig
 ): RiskBandPriceResult {
   const band = match.band;
+  if (band.blocked) {
+    return {
+      price: null,
+      referral: false,
+      blocked: true,
+      blockMessage: band.blockMessage?.trim() || DEFAULT_BLOCK_MESSAGE,
+      floorApplied: false,
+      factorUsed: 1,
+      band,
+    };
+  }
   if (band.referral) {
-    return { price: null, referral: true, floorApplied: false, factorUsed: 1, band };
+    return { price: null, referral: true, blocked: false, blockMessage: null, floorApplied: false, factorUsed: 1, band };
   }
 
   const typeFactor = config.vehicleTypes[vehicleType] ?? 1;
@@ -267,7 +302,7 @@ export function applyRiskBand(
     }
   }
 
-  return { price, referral: false, floorApplied, factorUsed, band };
+  return { price, referral: false, blocked: false, blockMessage: null, floorApplied, factorUsed, band };
 }
 
 const STORAGE_KEY = 'bw:pricing:vehicle-risk-bands';
@@ -286,8 +321,10 @@ export function loadRiskBandConfig(): RiskBandConfig {
         minOneYear:
           Number.isFinite(Number(b.minOneYear)) && Number(b.minOneYear) > 0 ? Number(b.minOneYear) : null,
         referral: b.referral === true,
+        blocked: b.blocked === true,
+        blockMessage: b.blocked === true ? String(b.blockMessage || DEFAULT_BLOCK_MESSAGE) : b.blockMessage || undefined,
         note: b.note || undefined,
-        tone: (['low', 'normal', 'high', 'severe', 'referral'] as const).includes(b.tone) ? b.tone : 'normal',
+        tone: (['low', 'normal', 'high', 'severe', 'referral', 'blocked'] as const).includes(b.tone) ? b.tone : 'normal',
       })),
       assignments: Array.isArray(parsed.assignments)
         ? parsed.assignments
