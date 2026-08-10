@@ -5,6 +5,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { RepeatCustomerBanner } from './RepeatCustomerBanner';
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
 import { QuotesSentPanel } from '@/components/admin/QuotesSentPanel';
+import { ConvertedSalesLogPanel } from './ConvertedSalesLogPanel';
 import { PaymentFailedLeadsPanel } from './PaymentFailedLeadsPanel';
 import { DateRange } from 'react-day-picker';
 import { UnifiedDateFilter, periodToRange, type PeriodKey, type DateScope } from '@/components/admin/UnifiedDateFilter';
@@ -2008,6 +2009,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
           {/* Failed-payment / struggling-checkout claimable leads */}
           <PaymentFailedLeadsPanel userRole={userRole} />
+
+          {/* Converted sales keep their notes & call log visible to managers */}
+          <ConvertedSalesLogPanel />
 
           {/* Search & Filters — full width, search is hero */}
           <LeadsFilters
