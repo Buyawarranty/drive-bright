@@ -463,7 +463,7 @@ export const LeadRecoveryPanel: React.FC = () => {
                 disabled={targetAgents.length === 0 || loading}
               >
                 {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ArrowRightLeft className="h-4 w-4 mr-2" />}
-                Reassign all to {targetName || 'agent'}
+                Update leads
               </Button>
             </div>
 
