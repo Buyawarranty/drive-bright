@@ -6,6 +6,9 @@ import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import { trackButtonClick, trackQuoteRequest } from '@/utils/analytics';
 import MileageQuickSelect from './MileageQuickSelect';
+import { getVehicleIdentificationGap } from '@/lib/vehicleIdentification';
+import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
+import { SALES_PHONE } from '@/constants/contact';
 
 interface QuoteFormInlineProps {
   vehicleType?: string; // 'car' | 'van' | 'motorcycle'
@@ -82,6 +85,24 @@ const QuoteFormInline: React.FC<QuoteFormInlineProps> = ({
       });
 
       if (error) throw error;
+
+      // Excluded vehicle matrix — never quote supercars / luxury / performance models
+      const blockMessage = getVehicleBlockMessage(data);
+      if (blockMessage) {
+        setVehicleAgeError(blockMessage);
+        toast({ title: 'Vehicle not eligible', description: blockMessage, variant: 'destructive' });
+        setIsLookingUp(false);
+        return;
+      }
+
+      // Make AND model must be confirmed before a price is shown.
+      const idGap = getVehicleIdentificationGap(data);
+      if (idGap) {
+        setVehicleAgeError(`${idGap.message}. ${idGap.detail} Call ${SALES_PHONE}.`);
+        toast({ title: idGap.message, description: `${idGap.detail} Call ${SALES_PHONE}.`, variant: 'destructive' });
+        setIsLookingUp(false);
+        return;
+      }
 
       // Age checks
       if (!data?.found && data?.error && data.error.includes('15 years')) {
@@ -161,22 +182,13 @@ const QuoteFormInline: React.FC<QuoteFormInlineProps> = ({
       navigate('/?step=2');
     } catch (err) {
       console.error('Vehicle lookup error:', err);
-      toast({ title: "Lookup Failed", description: "Unable to find vehicle details, but you can still continue to get your quote.", variant: "destructive" });
-
-      const vehicleData = {
-        regNumber,
-        mileage: effectiveMileage.replace(/,/g, ''),
-        vehicleType,
-      };
-
-      saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
-      saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
-      saveWithTimestamp('buyawarranty_currentStep', '2');
-
-      if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
-        sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
-      }
-      navigate('/?step=2');
+      // Never continue without a confirmed make and model — customer must call us.
+      setVehicleAgeError(`We couldn't confirm this vehicle from its registration. We can only price a vehicle once we know the exact make and model — please call ${SALES_PHONE}.`);
+      toast({
+        title: "We couldn't confirm this vehicle",
+        description: `We can only price a vehicle once we know the exact make and model. Please call ${SALES_PHONE}.`,
+        variant: 'destructive',
+      });
     } finally {
       setIsLookingUp(false);
     }

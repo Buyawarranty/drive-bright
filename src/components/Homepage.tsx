@@ -36,6 +36,9 @@ import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
 import { MileageField, ManualVehicleEntryCard, RegLookupError, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
 import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
+import { getVehicleIdentificationGap, type VehicleIdGap } from '@/lib/vehicleIdentification';
+import VehicleNotRecognisedCard from '@/components/quote/VehicleNotRecognisedCard';
+
 
 interface VehicleData {
   regNumber: string;
@@ -71,7 +74,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   // Only shown when the MOT lookup returns no odometer reading.
   const [needsMileage, setNeedsMileage] = useState(false);
   const [showManualVehicle, setShowManualVehicle] = useState(false);
+  const [idGap, setIdGap] = useState<VehicleIdGap | null>(null);
   const [manualVehicle, setManualVehicle] = useState({ make: '', model: '', year: '', mileage: '' });
+
   const [mileageError, setMileageError] = useState('');
   const [vehicleAgeError, setVehicleAgeError] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -151,6 +156,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       setRegNumber(formatted);
       if (regError) { setRegError(''); setRegErrorDetail(''); }
       if (showManualVehicle) setShowManualVehicle(false);
+      if (idGap) setIdGap(null);
+
       if (vehicleAgeError) setVehicleAgeError('');
     }
   };
@@ -415,12 +422,21 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         return;
       }
 
-      // Unrecognised registration → inline "couldn't find" message
-      if (!data?.found || !data?.make) {
-        showRegError('notFound');
+      // Vehicle must be fully identified (make AND model) before any price.
+      // No manual make/model route — customer calls us or requests a callback.
+      const idGapResult = getVehicleIdentificationGap(data);
+      if (idGapResult) {
+        setIdGap(idGapResult);
+        setShowManualVehicle(false);
+        setNeedsMileage(false);
         setIsLookingUp(false);
+        setTimeout(() => {
+          document.getElementById('vehicle-not-recognised')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 50);
         return;
       }
+      setIdGap(null);
+
 
       // Reg-only journey: mileage normally comes from the last MOT reading. When
       // there is no reading (new vehicle, import, NI plate) we ask the customer
@@ -632,13 +648,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     <RegLookupError
                       message={regError}
                       detail={regErrorDetail}
-                      showManualLink={!showManualVehicle}
-                      onManualEntry={() => {
-                        setShowManualVehicle(true);
-                        setNeedsMileage(false);
-                        setTimeout(() => document.getElementById('manual-make')?.focus(), 50);
-                      }}
+                      showManualLink={false}
                     />
+
                     <style>{`
                       #reg-input-field {
                         box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.6) !important;
@@ -678,19 +690,18 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                         </button>
                       );
                     }
-                    if (showManualVehicle) {
+                    if (idGap) {
                       return (
-                        <ManualVehicleEntryCard
-                          make={manualVehicle.make}
-                          model={manualVehicle.model}
-                          year={manualVehicle.year}
-                          mileage={manualVehicle.mileage}
-                          onChange={(patch) => setManualVehicle((prev) => ({ ...prev, ...patch }))}
-                          onSubmit={submitManualVehicle}
-                          isSubmitting={isLookingUp}
-                        />
+                        <div id="vehicle-not-recognised">
+                          <VehicleNotRecognisedCard
+                            gap={idGap}
+                            regNumber={regNumber}
+                            onRequestCallback={() => setShowCallbackModal(true)}
+                          />
+                        </div>
                       );
                     }
+
                     if (needsMileage) {
                       return (
                         <div className="space-y-3 rounded-xl border-2 border-[#F0A500] bg-[#FFF8E5] p-4 text-left animate-fade-in">

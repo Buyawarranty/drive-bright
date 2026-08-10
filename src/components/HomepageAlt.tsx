@@ -12,6 +12,8 @@ import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import pandaMechanicImage from '@/assets/panda-mechanic-car.png';
 import QuoteFormInline from '@/components/QuoteFormInline';
 import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
+import { getVehicleIdentificationGap } from '@/lib/vehicleIdentification';
+import { SALES_PHONE } from '@/constants/contact';
 
 
 interface VehicleData {
@@ -126,6 +128,14 @@ const HomepageAlt: React.FC<HomepageAltProps> = ({ onRegistrationSubmit }) => {
         return;
       }
 
+      // Make AND model must be known before any price is shown.
+      const idGap = getVehicleIdentificationGap({ ...data, found: true });
+      if (idGap) {
+        toast.error(idGap.message, { description: `${idGap.detail} Call ${SALES_PHONE}.` });
+        setIsLoading(false);
+        return;
+      }
+
       const vehicleData: VehicleData = {
         registration: registration,
         make: data.make || '',
@@ -139,18 +149,11 @@ const HomepageAlt: React.FC<HomepageAltProps> = ({ onRegistrationSubmit }) => {
       onRegistrationSubmit(vehicleData);
     } catch (error) {
       console.error('Error fetching vehicle data:', error);
-      
-      const basicVehicleData: VehicleData = {
-        registration: registration,
-        make: '',
-        model: '',
-        year: '',
-        fuel: '',
-        color: '',
-        mileage: mileage,
-      };
-      
-      onRegistrationSubmit(basicVehicleData);
+      // Never continue without a confirmed make and model — customer must call us.
+      toast.error("We couldn't confirm this vehicle from its registration", {
+        description: `We can only price a vehicle once we know the exact make and model. Please call ${SALES_PHONE} and we'll confirm it for you.`,
+      });
+
     } finally {
       setIsLoading(false);
     }
