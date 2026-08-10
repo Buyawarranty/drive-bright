@@ -271,31 +271,81 @@ export function QuickReassignPanel({ className }: { className?: string }) {
                 disabled={available === 0}
               />
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              <Select
-                value={targets[row.id] || ''}
-                onValueChange={(v) => setTargets((t) => ({ ...t, [row.id]: v }))}
-                disabled={available === 0}
-              >
-                <SelectTrigger className="h-9 w-48">
-                  <SelectValue placeholder="Move to agent" />
-                </SelectTrigger>
-                <SelectContent className="bg-popover z-50">
-                  {rows
-                    .filter((r) => r.id !== row.id)
-                    .map((r) => (
-                      <SelectItem key={r.id} value={r.id}>
-                        {r.name} ({r.count})
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 w-56 justify-between font-normal"
+                    disabled={available === 0}
+                  >
+                    <span className="truncate">
+                      {(targets[row.id]?.length ?? 0) === 0
+                        ? 'Share between agents'
+                        : targets[row.id].length === 1
+                          ? rows.find((r) => r.id === targets[row.id][0])?.name || '1 agent'
+                          : `${targets[row.id].length} agents selected`}
+                    </span>
+                    <ChevronDown className="h-4 w-4 opacity-60" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-64 p-2 bg-popover z-50">
+                  <p className="px-1 pb-2 text-xs text-muted-foreground">
+                    Tick everyone who should cover these leads — they’re dealt out evenly, newest first.
+                  </p>
+                  <div className="max-h-64 space-y-1 overflow-y-auto">
+                    {rows
+                      .filter((r) => r.id !== row.id)
+                      .map((r) => {
+                        const picked = (targets[row.id] || []).includes(r.id);
+                        return (
+                          <label
+                            key={r.id}
+                            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
+                          >
+                            <Checkbox
+                              checked={picked}
+                              onCheckedChange={(v) =>
+                                setTargets((t) => {
+                                  const cur = t[row.id] || [];
+                                  return {
+                                    ...t,
+                                    [row.id]: v ? [...cur, r.id] : cur.filter((x) => x !== r.id),
+                                  };
+                                })
+                              }
+                            />
+                            <span className="truncate">
+                              {r.name} <span className="text-muted-foreground tabular-nums">({r.count})</span>
+                            </span>
+                          </label>
+                        );
+                      })}
+                  </div>
+                  {(targets[row.id]?.length ?? 0) > 0 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="mt-1 h-7 w-full text-xs text-muted-foreground"
+                      onClick={() => setTargets((t) => ({ ...t, [row.id]: [] }))}
+                    >
+                      Clear selection
+                    </Button>
+                  )}
+                </PopoverContent>
+              </Popover>
               <Button
                 size="sm"
                 onClick={() => move(row)}
                 disabled={available === 0 || busyId === row.id}
               >
-                {busyId === row.id ? 'Moving…' : 'Move newest'}
+                {busyId === row.id
+                  ? 'Moving…'
+                  : (targets[row.id]?.length ?? 0) > 1
+                    ? 'Split newest'
+                    : 'Move newest'}
               </Button>
+
             </div>
           </li>
           );
