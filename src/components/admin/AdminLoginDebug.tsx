@@ -13,7 +13,7 @@ const AdminLoginDebug = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('info@buyawarranty.co.uk');
-  const [password, setPassword] = useState('h3WfIIijI195');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSetPassword = async () => {

@@ -454,12 +454,15 @@ export const UserPermissionsTab = () => {
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
       let pw = '';
       for (let i = 0; i < 14; i++) pw += chars.charAt(Math.floor(Math.random() * chars.length));
-      const { error } = await supabase.functions.invoke('set-admin-password', {
+      const { data, error } = await supabase.functions.invoke('set-admin-password', {
         body: { userId: u.user_id || u.id, email: u.email, password: pw }
       });
       if (error) throw error;
+      if (!data?.success || !data?.verified) {
+        throw new Error(data?.error || 'Password could not be verified on the login server — nothing revealed. Try again.');
+      }
       setRevealedCreds({ email: u.email, password: pw, loginUrl: loginUrlForRole(u.role) });
-      toast.success(`New password generated for ${u.email}`);
+      toast.success(`New password generated and verified for ${u.email}`);
     } catch (err: any) {
       console.error('Generate password error:', err);
       toast.error(err.message || 'Failed to generate password');
@@ -664,7 +667,7 @@ export const UserPermissionsTab = () => {
 
       if (error) throw error;
 
-      toast.success(`User invited successfully! Password: ${data.tempPassword}`, {
+      toast.success(`User invited successfully! Verified password: ${data.tempPassword}`, {
         duration: 10000
       });
 
@@ -847,7 +850,10 @@ export const UserPermissionsTab = () => {
       });
 
       if (error) throw error;
-      
+      if (!data?.success || !data?.verified) {
+        throw new Error(data?.error || 'The new password could not be verified on the login server. Nothing was sent — try again.');
+      }
+
       toast.success(`Password reset email sent to ${email}. New temporary password: ${data.tempPassword}`, {
         duration: 15000
       });
@@ -870,7 +876,10 @@ export const UserPermissionsTab = () => {
       });
 
       if (error) throw error;
-      
+      if (!data?.success || !data?.verified) {
+        throw new Error(data?.error || 'The temporary password could not be verified on the login server. Nothing was sent — try again.');
+      }
+
       toast.success(`Invitation resent to ${email}. New temporary password: ${data.tempPassword}`, {
         duration: 15000
       });
