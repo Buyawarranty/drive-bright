@@ -28,6 +28,7 @@ import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 import { captureGclid, getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
 import { captureFbclid, getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { captureMsclkid, getSessionMsclkid } from '@/utils/msclkidCapture';
+import { captureTtclid, getSessionTtclid } from '@/utils/ttclidCapture';
 import { getUtmPayload } from '@/utils/utmCapture';
 import { trackMetaPixelFunnelEvent } from '@/utils/metaPixelTracking';
 import { formatStepParam, stepNumber } from '@/utils/abVariant';
@@ -772,6 +773,7 @@ const Index = () => {
     captureGclid();
     captureFbclid();
     captureMsclkid();
+    captureTtclid();
   }, []);
 
 
@@ -1492,6 +1494,7 @@ const Index = () => {
       const gclid = getSessionGclid();
       const fbReferrer = getSessionFbReferrer();
       const msclkid = getSessionMsclkid();
+      const ttclid = getSessionTtclid();
       
       await supabase.functions.invoke('track-abandoned-cart', {
         body: {
@@ -1510,6 +1513,7 @@ const Index = () => {
           ...(fbclid ? { fbclid } : {}),
           ...(gclid ? { gclid } : {}),
           ...(msclkid ? { msclkid } : {}),
+          ...(ttclid ? { ttclid } : {}),
           ...(fbReferrer && !fbclid ? { fb_referrer: fbReferrer } : {}),
           ...getUtmPayload(),
         }

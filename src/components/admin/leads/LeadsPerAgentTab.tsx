@@ -62,6 +62,8 @@ const SOURCE_META: Record<string, { label: string; emoji: string; cls: string }>
   facebook:   { label: 'Facebook',  emoji: '🔵', cls: 'bg-blue-100 text-blue-800 border-blue-200' },
   instagram:  { label: 'Instagram', emoji: '🟣', cls: 'bg-pink-100 text-pink-800 border-pink-200' },
   tiktok:     { label: 'TikTok',    emoji: '⚫', cls: 'bg-zinc-100 text-zinc-800 border-zinc-200' },
+  tiktok_ad:  { label: 'TikTok Ad', emoji: '⚫', cls: 'bg-zinc-100 text-zinc-800 border-zinc-200' },
+  bing_ad:    { label: 'Bing Ad',   emoji: '🟦', cls: 'bg-teal-100 text-teal-800 border-teal-200' },
   youtube:    { label: 'YouTube',   emoji: '🔴', cls: 'bg-red-100 text-red-800 border-red-200' },
   organic:    { label: 'Organic',   emoji: '🌱', cls: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
   website:    { label: 'Website',   emoji: '🌐', cls: 'bg-slate-100 text-slate-800 border-slate-200' },

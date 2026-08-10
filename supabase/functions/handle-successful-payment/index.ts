@@ -410,8 +410,8 @@ serve(async (req) => {
       device_type: metadata?.device_type || customerData?.device_type || null
     };
 
-    // Detect Facebook Ads attribution + capture UTMs from abandoned cart metadata
-    let detectedAdSource: 'google' | 'facebook' | null = null;
+    // Detect Facebook / Bing / TikTok Ads attribution + capture UTMs from abandoned cart metadata
+    let detectedAdSource: 'google' | 'facebook' | 'bing' | 'tiktok' | null = null;
     if (trackingData?.gclid || metadata?.gclid) {
       detectedAdSource = 'google';
     }
@@ -427,20 +427,22 @@ serve(async (req) => {
 
       if (cartData?.cart_metadata) {
         const meta = cartData.cart_metadata as Record<string, any>;
+        const utmSrc = (meta.utm_source || '').toLowerCase();
 
-        // Facebook detection (only if Google didn't already win)
+        // Paid-source detection (only if Google didn't already win)
         if (!detectedAdSource) {
-          if (meta.fbclid) {
+          if (meta.msclkid || ['bing', 'microsoft', 'msn'].includes(utmSrc)) {
+            detectedAdSource = 'bing';
+            customerRecord.purchase_source = 'bing_ads';
+          } else if (meta.ttclid || ['tiktok', 'tik_tok', 'tt'].includes(utmSrc)) {
+            detectedAdSource = 'tiktok';
+            customerRecord.purchase_source = 'tiktok_ads';
+          } else if (meta.fbclid || utmSrc === 'facebook' || utmSrc === 'fb' || utmSrc === 'ig') {
             detectedAdSource = 'facebook';
             customerRecord.purchase_source = 'facebook_ads';
-          } else {
-            const utmSrc = (meta.utm_source || '').toLowerCase();
-            if (utmSrc === 'facebook' || utmSrc === 'fb' || utmSrc === 'ig') {
-              detectedAdSource = 'facebook';
-              customerRecord.purchase_source = 'facebook_ads';
-            }
           }
         }
+
 
         // Persist UTM attribution onto the customer record (all 5 params)
         ['utm_source','utm_medium','utm_campaign','utm_term','utm_content'].forEach((k) => {

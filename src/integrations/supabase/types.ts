@@ -8567,6 +8567,7 @@ export type Database = {
           is_bing_ads: boolean | null
           is_facebook_ads: boolean | null
           is_google_ads: boolean | null
+          is_tiktok_ads: boolean | null
           msclkid: string | null
           page_path: string
           page_title: string | null
@@ -8574,6 +8575,7 @@ export type Database = {
           screen_height: number | null
           screen_width: number | null
           session_id: string | null
+          ttclid: string | null
           user_agent: string | null
           utm_campaign: string | null
           utm_content: string | null
@@ -8590,6 +8592,7 @@ export type Database = {
           is_bing_ads?: boolean | null
           is_facebook_ads?: boolean | null
           is_google_ads?: boolean | null
+          is_tiktok_ads?: boolean | null
           msclkid?: string | null
           page_path: string
           page_title?: string | null
@@ -8597,6 +8600,7 @@ export type Database = {
           screen_height?: number | null
           screen_width?: number | null
           session_id?: string | null
+          ttclid?: string | null
           user_agent?: string | null
           utm_campaign?: string | null
           utm_content?: string | null
@@ -8613,6 +8617,7 @@ export type Database = {
           is_bing_ads?: boolean | null
           is_facebook_ads?: boolean | null
           is_google_ads?: boolean | null
+          is_tiktok_ads?: boolean | null
           msclkid?: string | null
           page_path?: string
           page_title?: string | null
@@ -8620,6 +8625,7 @@ export type Database = {
           screen_height?: number | null
           screen_width?: number | null
           session_id?: string | null
+          ttclid?: string | null
           user_agent?: string | null
           utm_campaign?: string | null
           utm_content?: string | null
@@ -13219,6 +13225,7 @@ export type Database = {
         | "partner"
         | "other"
         | "bing_ad"
+        | "tiktok_ad"
       lead_status:
         | "new"
         | "contacted"
@@ -13453,6 +13460,7 @@ export const Constants = {
         "partner",
         "other",
         "bing_ad",
+        "tiktok_ad",
       ],
       lead_status: [
         "new",

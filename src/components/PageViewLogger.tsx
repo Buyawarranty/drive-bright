@@ -50,6 +50,7 @@ export const PageViewLogger = () => {
       gclid: params.get('gclid') || null,
       fbclid: params.get('fbclid') || null,
       msclkid: params.get('msclkid') || null,
+      ttclid: params.get('ttclid') || null,
       user_agent: navigator.userAgent || null,
       screen_width: window.innerWidth,
       screen_height: window.innerHeight,
@@ -58,6 +59,8 @@ export const PageViewLogger = () => {
       is_google_ads: !!(params.get('gclid') || params.get('utm_source')?.toLowerCase() === 'google'),
       is_facebook_ads: !!(params.get('fbclid') || params.get('utm_source')?.toLowerCase() === 'facebook' || params.get('utm_source')?.toLowerCase() === 'fb' || params.get('utm_source')?.toLowerCase() === 'ig'),
       is_bing_ads: !!(params.get('msclkid') || ['bing', 'microsoft', 'msn'].includes((params.get('utm_source') || '').toLowerCase())),
+      is_tiktok_ads: !!(params.get('ttclid') || ['tiktok', 'tik_tok', 'tt'].includes((params.get('utm_source') || '').toLowerCase())),
+
 
     };
 

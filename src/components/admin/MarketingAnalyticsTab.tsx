@@ -1,11 +1,12 @@
 import React, { lazy, Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Target, Facebook, Search } from 'lucide-react';
+import { Target, Facebook, Search, Music2 } from 'lucide-react';
 import { MarketingOverviewCards } from './marketing/MarketingOverviewCards';
 
 const GoogleAdsSettingsTab = lazy(() => import('@/components/admin/GoogleAdsSettingsTab').then(m => ({ default: m.GoogleAdsSettingsTab })));
 const FacebookAdsTab = lazy(() => import('@/components/admin/FacebookAdsTab').then(m => ({ default: m.FacebookAdsTab })));
 const BingAdsTab = lazy(() => import('@/components/admin/BingAdsTab').then(m => ({ default: m.BingAdsTab })));
+const TikTokAdsTab = lazy(() => import('@/components/admin/TikTokAdsTab').then(m => ({ default: m.TikTokAdsTab })));
 
 const TabFallback = () => (
   <div className="flex items-center justify-center h-32">
@@ -27,7 +28,7 @@ export const MarketingAnalyticsTab: React.FC = () => {
       <MarketingOverviewCards />
 
       <Tabs defaultValue="google" className="w-full">
-        <TabsList className="grid w-full max-w-2xl grid-cols-3 gap-2 bg-transparent p-1">
+        <TabsList className="grid w-full max-w-3xl grid-cols-4 gap-2 bg-transparent p-1">
           <TabsTrigger value="google" className="flex items-center gap-2 border-2 border-emerald-500 bg-emerald-50 text-emerald-700 font-semibold data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-700">
             <Target className="h-4 w-4" />
             Google Ads
@@ -39,6 +40,10 @@ export const MarketingAnalyticsTab: React.FC = () => {
           <TabsTrigger value="bing" className="flex items-center gap-2 border-2 border-teal-500 bg-teal-50 text-teal-700 font-semibold data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=active]:border-teal-700">
             <Search className="h-4 w-4" />
             Bing Ads
+          </TabsTrigger>
+          <TabsTrigger value="tiktok" className="flex items-center gap-2 border-2 border-zinc-500 bg-zinc-50 text-zinc-800 font-semibold data-[state=active]:bg-zinc-900 data-[state=active]:text-white data-[state=active]:border-zinc-900">
+            <Music2 className="h-4 w-4" />
+            TikTok Ads
           </TabsTrigger>
         </TabsList>
 
@@ -57,6 +62,12 @@ export const MarketingAnalyticsTab: React.FC = () => {
         <TabsContent value="bing" className="mt-6">
           <Suspense fallback={<TabFallback />}>
             <BingAdsTab />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="tiktok" className="mt-6">
+          <Suspense fallback={<TabFallback />}>
+            <TikTokAdsTab />
           </Suspense>
         </TabsContent>
       </Tabs>
