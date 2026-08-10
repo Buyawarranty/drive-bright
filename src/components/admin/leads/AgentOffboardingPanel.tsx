@@ -413,8 +413,43 @@ export const AgentOffboardingPanel: React.FC = () => {
                 <Badge variant="outline">{counts.notes} note events</Badge>
                 <Badge variant="outline">{counts.quickNotes} quick notes</Badge>
                 <Badge variant="outline">{counts.reminders} reminders</Badge>
+                {includeReclaim && (
+                  <Badge className="bg-amber-100 text-amber-900 border-amber-200">
+                    {reclaimLoading ? '…' : reclaimIds.length} unassigned leads they used to own
+                  </Badge>
+                )}
               </div>
             )}
+          </div>
+        )}
+
+        {sourceId && (
+          <div className="rounded-md border border-amber-200 dark:border-amber-900/40 bg-amber-50/60 dark:bg-amber-950/20 p-3 space-y-2">
+            <label className="inline-flex items-start gap-2 text-sm">
+              <Checkbox checked={includeReclaim} onCheckedChange={(v) => setIncludeReclaim(!!v)} className="mt-0.5" />
+              <span>
+                Also pull back leads they received but that are now <strong>unassigned</strong> (archiving an agent
+                clears the owner, so their real workload shows as 0)
+              </span>
+            </label>
+            <div className="flex flex-wrap items-center gap-2 pl-6 text-sm">
+              <span className="text-muted-foreground">Received from</span>
+              <input
+                type="date"
+                value={reclaimFrom}
+                disabled={!includeReclaim}
+                onChange={(e) => setReclaimFrom(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+              />
+              <span className="text-muted-foreground">to today</span>
+              {includeReclaim && (
+                <span className="text-muted-foreground">
+                  {reclaimLoading
+                    ? 'Scanning the assignment audit trail…'
+                    : `${reclaimIds.length} lead${reclaimIds.length === 1 ? '' : 's'} found to hand over`}
+                </span>
+              )}
+            </div>
           </div>
         )}
 
