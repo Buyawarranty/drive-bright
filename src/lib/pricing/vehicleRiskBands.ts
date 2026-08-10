@@ -179,15 +179,34 @@ export function matchRiskBand(
 
   const makeTokens = tokens(`${make || ''}`);
   const fullTokens = tokens(`${make || ''} ${model || ''}`);
-  if (!makeTokens.length) return { band: fallbackBand, assignment: null, isDefault: true };
+  if (!makeTokens.length && !fullTokens.length) return { band: fallbackBand, assignment: null, isDefault: true };
 
   let best: { assignment: RiskBandAssignment; specificity: number } | null = null;
   for (const a of config.assignments) {
     if (!a.enabled) continue;
-    if (!containsAllTokens(makeTokens, a.make) && !containsAllTokens(fullTokens, a.make)) continue;
-    const modelText = String(a.model || '').trim();
-    if (modelText && !containsAllTokens(fullTokens, modelText)) continue;
-    const specificity = modelText ? tokens(modelText).join('').length + 10 : 0;
+
+    const assignmentMake = String(a.make || '').trim();
+    const assignmentModel = String(a.model || '').trim();
+
+    // Make-only rule: must match the make tokens.
+    if (assignmentMake && !assignmentModel) {
+      if (!containsAllTokens(makeTokens, assignmentMake) && !containsAllTokens(fullTokens, assignmentMake)) continue;
+    }
+    // Model-only rule: must match the model tokens somewhere in the vehicle name.
+    else if (!assignmentMake && assignmentModel) {
+      if (!containsAllTokens(fullTokens, assignmentModel)) continue;
+    }
+    // Make + model rule: both must match, and make must match first to avoid cross-make matches.
+    else if (assignmentMake && assignmentModel) {
+      if (!containsAllTokens(makeTokens, assignmentMake) && !containsAllTokens(fullTokens, assignmentMake)) continue;
+      if (!containsAllTokens(fullTokens, assignmentModel)) continue;
+    }
+    // Empty assignment (shouldn't happen) — skip.
+    else {
+      continue;
+    }
+
+    const specificity = (assignmentMake ? tokens(assignmentMake).join('').length : 0) + (assignmentModel ? tokens(assignmentModel).join('').length + 10 : 0);
     if (!best || specificity > best.specificity) best = { assignment: a, specificity };
   }
 
@@ -195,6 +214,7 @@ export function matchRiskBand(
   const band = config.bands.find(b => b.id === best!.assignment.bandId) || fallbackBand;
   return { band, assignment: best.assignment, isDefault: false };
 }
+
 
 export type RiskBandPriceResult = {
   /** null when the band is a referral. */
