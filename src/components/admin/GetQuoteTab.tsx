@@ -2133,7 +2133,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       console.log('📧 Sending email to:', cleanCustomerEmail);
       console.log('📧 Agent copy:', agentEmail);
       console.log('📧 Extra internal copies:', copyRecipients);
-      console.log('📎 Quote link:', quoteLink);
+      console.log('📎 Quote link:', sendLink);
 
       // Send the email with HTML template (customer receives it, sales agent is copied on the same email)
       const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-admin-quote', {
@@ -2144,7 +2144,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
           copyRecipients: copyRecipients.length > 0 ? copyRecipients : undefined,
 
           subject: emailSubject,
-          quoteLink: quoteLink,
+          quoteLink: sendLink,
           customerName: cleanCustomerName,
           vehicleData: cleanVehicleData,
           quoteDetails: {
@@ -2342,7 +2342,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       clearDraft();
       setLastSendPayload({
         subject: emailSubject,
-        quoteLink,
+        quoteLink: sendLink,
         customerName: cleanCustomerName,
         vehicleData: cleanVehicleData,
         quoteDetails: {
