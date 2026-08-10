@@ -86,6 +86,7 @@ const STATUS_META: Record<LeadStatus, { label: string; className: string }> = {
   vehicle_sold: { label: 'Vehicle sold', className: 'bg-stone-200 text-stone-800 border-stone-200' },
   do_not_contact: { label: 'Do not contact', className: 'bg-black text-white border-black' },
   not_eligible: { label: 'Not eligible', className: 'bg-orange-50 text-orange-800 border-orange-200' },
+  unsubscribed: { label: 'Unsubscribed', className: 'bg-rose-200 text-rose-900 border-rose-300' },
 };
 
 const STATUS_ORDER: LeadStatus[] = [

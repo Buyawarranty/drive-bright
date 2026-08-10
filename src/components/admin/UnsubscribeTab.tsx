@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { format } from 'date-fns';
 import { LeadSearchPopover, type LeadData } from '@/components/admin/LeadSearchPopover';
+import { PermanentErasePanel } from '@/components/admin/unsubscribe/PermanentErasePanel';
 
 const emailSchema = z.string().trim().email('Please enter a valid email address').max(255);
 
@@ -611,6 +612,8 @@ export const UnsubscribeTab: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      <PermanentErasePanel email={email} phone={phone} reason={reason} />
 
       <div className="text-sm font-medium text-muted-foreground">Or change just one thing</div>
 

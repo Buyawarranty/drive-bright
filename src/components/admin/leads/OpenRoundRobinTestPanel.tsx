@@ -53,6 +53,7 @@ const statusColors: Record<LeadStatus, string> = {
   vehicle_sold: 'bg-stone-200 text-stone-800',
   do_not_contact: 'bg-black text-white',
   not_eligible: 'bg-orange-50 text-orange-800',
+  unsubscribed: 'bg-rose-200 text-rose-900',
 };
 
 const statusLabels: Record<LeadStatus, string> = {
@@ -74,6 +75,7 @@ const statusLabels: Record<LeadStatus, string> = {
   vehicle_sold: 'Vehicle sold',
   do_not_contact: 'Do not contact',
   not_eligible: 'Not eligible',
+  unsubscribed: 'Unsubscribed',
 };
 
 const STATUS_ORDER: LeadStatus[] = [
