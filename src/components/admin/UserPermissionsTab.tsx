@@ -1698,8 +1698,9 @@ export const UserPermissionsTab = () => {
                 <Button variant="outline" onClick={handleTestLogin} disabled={!isSaved}>
                   Copy & open login page
                 </Button>
-                <Button variant="outline" onClick={handleSetPassword}
-                  disabled={settingPassword || !newPassword}>
+                <Button onClick={handleSetPassword}
+                  disabled={settingPassword || !newPassword}
+                  className="bg-blue-600 hover:bg-blue-700 text-white">
                   {settingPassword ? 'Saving…' : 'Save password'}
                 </Button>
                 <Button onClick={handleSendCredentials}
@@ -1707,6 +1708,7 @@ export const UserPermissionsTab = () => {
                   className="bg-emerald-600 hover:bg-emerald-700 text-white">
                   {sendingCreds ? 'Sending…' : 'Save & email login'}
                 </Button>
+
               </div>
 
               {/* Safe View as User — mirrors the customer dashboard Safe View panel */}
