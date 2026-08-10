@@ -10,9 +10,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useEmailUnsubscribes } from '@/hooks/useEmailUnsubscribes';
 import { supabase } from '@/integrations/supabase/client';
-import { MailX, Loader2 } from 'lucide-react';
+import { MailX, MailCheck, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Props {
@@ -27,6 +28,7 @@ interface Props {
 /**
  * One-click manager action: unsubscribes the person from all marketing email
  * and marks the lead as "Not interested" in the same step.
+ * If they are already unsubscribed, the same button re-subscribes them.
  */
 export function UnsubscribeLeadButton({
   email,
@@ -57,6 +59,21 @@ export function UnsubscribeLeadButton({
           || adminRow?.email || user.email || null;
       }
 
+      if (blocked) {
+        // Toggle back on — puts them back on all marketing emails.
+        await setFrequency.mutateAsync({
+          email,
+          frequency: 'all',
+          reason: 'Re-subscribed by staff from Leads',
+          source: 'leads_unsubscribe',
+          customerName: customerName || undefined,
+          vehicleReg: vehicleReg || undefined,
+          unsubscribedBy: adminId || undefined,
+          unsubscribedByName: adminName || undefined,
+        });
+        setOpen(false);
+        return;
+      }
 
       await setFrequency.mutateAsync({
         email,
@@ -72,7 +89,7 @@ export function UnsubscribeLeadButton({
       if (!alreadyNotInterested) onMarkNotInterested?.();
       setOpen(false);
     } catch (e: any) {
-      toast.error(e?.message || 'Could not unsubscribe');
+      toast.error(e?.message || 'Could not update email preference');
     } finally {
       setBusy(false);
     }
@@ -80,35 +97,58 @@ export function UnsubscribeLeadButton({
 
   if (!email) return null;
 
+  const tooltipText = blocked
+    ? `Unsubscribed from marketing emails — click to put ${email} back on the list`
+    : `Unsubscribe ${email} from marketing emails and mark as Not interested`;
+
   return (
     <>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={(e) => { e.stopPropagation(); setOpen(true); }}
-        disabled={blocked}
-        title={blocked
-          ? 'Already unsubscribed from marketing emails'
-          : 'Unsubscribe from marketing emails and mark as Not interested'}
-        className="h-7 px-1.5 text-rose-600 hover:bg-rose-50 disabled:opacity-40"
-      >
-        <MailX className="h-3.5 w-3.5" />
-      </Button>
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              aria-label={blocked ? 'Re-subscribe to marketing emails' : 'Unsubscribe from marketing emails'}
+              onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+              className={
+                blocked
+                  ? 'h-7 px-1.5 text-emerald-600 hover:bg-emerald-50'
+                  : 'h-7 px-1.5 text-rose-600 hover:bg-rose-50'
+              }
+            >
+              {blocked ? <MailCheck className="h-3.5 w-3.5" /> : <MailX className="h-3.5 w-3.5" />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-[260px] text-xs">
+            {tooltipText}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogContent onClick={(e) => e.stopPropagation()}>
           <AlertDialogHeader>
-            <AlertDialogTitle>Unsubscribe {email}?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {blocked ? `Re-subscribe ${email}?` : `Unsubscribe ${email}?`}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              They will be removed from all marketing emails (including the £25 off reminders)
-              {alreadyNotInterested ? '.' : ', and this lead will be set to "Not interested".'}
-              {' '}You can re-subscribe them later from the Email preferences page.
+              {blocked ? (
+                <>They will start receiving our marketing emails again, including renewal offers and discounts.</>
+              ) : (
+                <>
+                  They will be removed from all marketing emails (including the £25 off reminders)
+                  {alreadyNotInterested ? '.' : ', and this lead will be set to "Not interested".'}
+                  {' '}You can re-subscribe them later from this same button or the Unsubscribe page.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={(e) => { e.preventDefault(); handleConfirm(); }} disabled={busy}>
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Unsubscribe'}
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : blocked ? 'Re-subscribe' : 'Unsubscribe'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
