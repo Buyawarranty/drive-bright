@@ -39,6 +39,8 @@ import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
 import CodebaseVsCurrentPanel from '@/components/admin/pricing/CodebaseVsCurrentPanel';
 import ClaimLimit5kAuthToggle from '@/components/admin/pricing/ClaimLimit5kAuthToggle';
 import ExcludedVehiclesPanel from '@/components/admin/pricing/ExcludedVehiclesPanel';
+import FullyExcludedListCard from '@/components/admin/pricing/FullyExcludedListCard';
+
 import VehicleRiskBandsPanel from '@/components/admin/pricing/VehicleRiskBandsPanel';
 import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
 import SectionPushLiveBar from '@/components/admin/pricing/SectionPushLiveBar';
@@ -973,7 +975,9 @@ export default function PriceUpdatesTab() {
             onPush={undefined}
             candidates={[]}
           />
+          <FullyExcludedListCard />
           <Tabs defaultValue="riskbands" className="w-full">
+
             <TabsList className="flex flex-wrap gap-2 bg-muted/40 p-1">
               <TabsTrigger value="riskbands">
                 <Layers className="h-4 w-4 mr-2" /> Risk bands &amp; vehicle types

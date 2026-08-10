@@ -14,6 +14,8 @@ import { Label } from '@/components/ui/label';
 import { Rocket, ArrowRight, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 import { CODE_WEB_DISCOUNT_PCT, MAX_WEB_DISCOUNT_PCT } from '@/lib/pricing/pricingVersionConfig';
 import { runPreflightCheck, type PreflightItem } from '@/lib/pricing/preflightCheck';
+import { autoPublishExclusionsWithPricing } from '@/lib/pricing/liveVehicleExclusions';
+
 
 
 /** One model in this section that a manager is allowed to publish. */
@@ -114,14 +116,29 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
     setPending(c);
   };
 
+  /** The exclusions section publishes its own list — don't double-publish. */
+  const ownsExclusions = sectionLabel.toLowerCase().includes('excluded vehicles');
+
   const confirmPush = async () => {
     if (!pending || !onPush) return;
     if (preflight?.blocked) return;
     const model = pending.getModel();
+    const versionLabel = `${sectionLabel} — ${pending.label}`;
     closePending();
     if (!model) return;
-    await onPush(model, `${sectionLabel} — ${pending.label}`, pending.websiteDiscountPct ?? gapValue);
+    await onPush(model, versionLabel, pending.websiteDiscountPct ?? gapValue);
+    // Excluded vehicles always go live with the pricing version.
+    if (!ownsExclusions) await autoPublishExclusionsWithPricing(versionLabel);
   };
+
+  const runDirectPush = async () => {
+    if (!directPush) return;
+    await directPush.run();
+    if (!ownsExclusions) {
+      await autoPublishExclusionsWithPricing(`${sectionLabel} — ${directPush.label}`);
+    }
+  };
+
 
   return (
     <>
@@ -164,7 +181,7 @@ const SectionPushLiveBar: React.FC<SectionPushLiveBarProps> = ({
               </div>
             )}
             {directPush && (
-              <Button size="sm" disabled={busy} onClick={() => directPush.run()}>
+              <Button size="sm" disabled={busy} onClick={runDirectPush}>
                 <Rocket className="mr-1 h-4 w-4" />
                 Push live: {directPush.label}
               </Button>
