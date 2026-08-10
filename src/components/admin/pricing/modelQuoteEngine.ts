@@ -11,7 +11,7 @@ import { getExcessTotalAdjustment, getExcessFactor } from '@/lib/pricingMatrix';
  * vehicle + options, otherwise agents quote something the test model never showed.
  */
 
-/** Never sell below £349 for one year; 2/3 year floors follow the term multipliers. */
+/** Never sell below £399 for one year; 2/3 year floors follow the term multipliers. */
 export const MIN_SELLABLE_BY_MONTHS: Record<number, number> = {
   12: 249,
   24: 498,
@@ -19,15 +19,15 @@ export const MIN_SELLABLE_BY_MONTHS: Record<number, number> = {
 };
 
 /**
- * ABSOLUTE hard-bottom minimum per term. 12 months = £349; 24 and 36 months scale
+ * ABSOLUTE hard-bottom minimum per term. 12 months = £399; 24 and 36 months scale
  * from the 12-month figure. Only the cheapest combos get lifted to this; everything
  * above the normal shaped floor stays where it already was.
- * Motorbikes are half (£175). Web journey = grid minus the Step 3 discount.
+ * Motorbikes are half (£200). Web journey = grid minus the Step 3 discount.
  */
 export const ABSOLUTE_MIN_GRID_BY_MONTHS: Record<number, number> = {
-  12: 349,
-  24: 577,
-  36: 821,
+  12: 399,
+  24: 659,
+  36: 938,
 };
 
 
@@ -235,7 +235,7 @@ export function priceFromPricingModel(
 
   /**
    * Hard bottom, anchored on the REFERENCE combo (£2,000 claim / £70 labour /
-   * £150 excess = £349 at 12 months). Anchoring it on the cheapest combo instead
+   * £150 excess = £399 at 12 months). Anchoring it on the cheapest combo instead
    * inflated the hard bottom by ~1.39× on a default quote, which clamped every
    * vehicle up to ~9 years old to the SAME price. Upgrades above the reference
    * still lift the hard bottom proportionally; cheaper options never go below it.
@@ -248,7 +248,7 @@ export function priceFromPricingModel(
     (getExcessFactor(Number(options.voluntaryExcess)) / getExcessFactor(150));
 
   const absoluteMin = Math.round(
-    (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 349) * Math.max(1, absShape) * motorbikeFactor
+    (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 399) * Math.max(1, absShape) * motorbikeFactor
   );
 
 

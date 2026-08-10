@@ -986,7 +986,7 @@ export function calculateTotalWarrantyPrice(params: {
         (isMotorbike ? MOTORBIKE_PRICE_MULTIPLIER : 1)
     )
   );
-  // Absolute minimum sellable price (£349 grid at the cheapest reachable combo,
+  // Absolute minimum sellable price (£399 grid at the cheapest reachable combo,
   // shaped by the options so every chip still moves the price). Add-ons sit on top.
   const absoluteMin = getAbsoluteMinimumTotal({
     paymentPeriod,
