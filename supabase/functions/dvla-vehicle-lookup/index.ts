@@ -679,6 +679,15 @@ serve(async (req) => {
             console.warn('Final DVSA model-recovery retry failed:', e2 instanceof Error ? e2.message : e2);
           }
         }
+        if (!recoveredModel2) {
+          const motCached2 = await fetchMotHistoryFallback(registrationNumber);
+          if (motCached2?.model) {
+            recoveredModel2 = motCached2.model;
+            console.log('✅ Recovered model from DVSA MOT history record (post-DVSA-failure):', recoveredModel2);
+          }
+        }
+
+
 
         const validation = validateVehicleEligibility({ make: dvlaFallback.make, model: recoveredModel2 || '', regNumber: registrationNumber });
         const blocked = !validation.isValid;
