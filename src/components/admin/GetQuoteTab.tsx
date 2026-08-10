@@ -471,14 +471,29 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     ? Math.round(priceMatchCompetitorPrice * (1 - PRICE_MATCH_MAX_PCT / 100))
     : null;
 
-  // Absolute floor: no warranty may ever be sold under £349 on Quotes & Orders.
-  // The only exception is an evidenced price match (competitor quote uploaded).
-  const ABSOLUTE_MIN_TOTAL = 349;
+  // NET floor: no warranty may ever be SOLD below £399 / £659 / £938 (12/24/36mo)
+  // on Quotes & Orders — after discounts, manual overrides and manual payments.
+  // Shaped up when the customer picks a richer claim limit / labour rate / lower
+  // excess, halved for motorbikes. Exceptions: Management, and an evidenced
+  // price match (competitor quote uploaded).
+  const isMotorbikeQuote = /motor\s*(bike|cycle)|\bbike\b/i.test(
+    String((vehicleData as any)?.vehicleType || ''),
+  );
+  const ABSOLUTE_MIN_TOTAL = getNetPayableFloor({
+    paymentPeriod: paymentType,
+    voluntaryExcess: excessAmount,
+    claimLimit,
+    labourRate,
+    isMotorbike: isMotorbikeQuote,
+    surface: 'admin',
+  });
   const priceMatchEvidenced = priceMatchMode && !!priceMatchProofPath && !!priceMatchCompetitor.trim();
   const isUnderAbsoluteMin = (total: unknown) => {
+    if (isManagementRole) return false; // Management may sell below the net floor (logged)
     const v = typeof total === 'number' ? total : parseFloat(String(total ?? '').replace(/[^0-9.]/g, ''));
-    return Number.isFinite(v) && v > 0 && v < ABSOLUTE_MIN_TOTAL;
+    return Number.isFinite(v) && v > 0 && v < ABSOLUTE_MIN_TOTAL - 0.01;
   };
+
   
 
   // Deposit on Stripe — agent takes a part payment now and tags the customer
