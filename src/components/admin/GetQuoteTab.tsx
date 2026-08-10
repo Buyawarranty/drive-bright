@@ -4049,7 +4049,18 @@ Questions? Call 0330 229 5040`;
           {/* Step 2: Quote Details */}
           {step === 2 && vehicleData && (
             <Card>
+              {getExclusionReason(vehicleData?.make, vehicleData?.model) && (
+                <Alert className="m-4 mb-0 border-2 border-destructive bg-destructive/10">
+                  <Ban className="h-4 w-4 text-destructive" />
+                  <AlertDescription className="text-sm text-destructive">
+                    <strong>Not covered — {getExclusionReason(vehicleData?.make, vehicleData?.model)}.</strong>{' '}
+                    This vehicle is on the fully excluded list, so a policy must not be sold. Customer
+                    message: “{EXCLUSION_MESSAGE}”
+                  </AlertDescription>
+                </Alert>
+              )}
               <CardHeader className="space-y-4">
+
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div>
                     <CardTitle>Step 2: Quote Details</CardTitle>
