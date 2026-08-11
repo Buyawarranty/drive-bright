@@ -360,8 +360,8 @@ const AugHybridVsLivePanel: React.FC<{
           liveModel={liveModel}
           vehicle={vehicle}
           showRegLookup={false}
-          title="Live pricing — price"
-          subtitle="Exactly what agents sell today, from the live age-based builder figures."
+          title="Live pricing — Quotes &amp; Orders price"
+          subtitle="Exactly what agents sell today, from the live age-based builder figures. The website Step 3 price is 10% below this figure."
           badgeText="Live"
         />
         <PriceTestStep2
