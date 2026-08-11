@@ -9,6 +9,7 @@ import { ArrowLeft, User, Share2, CheckCircle2, Info } from 'lucide-react';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import GooglePreferredSourceCTA from '@/components/GooglePreferredSourceCTA';
 import BlogRegQuoteCTA from '@/components/blog/BlogRegQuoteCTA';
+import BlogStickyQuoteBar from '@/components/blog/BlogStickyQuoteBar';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import defaultBlogHero from '@/assets/blog/used-car-warranty-uk-hero-2026.png.asset.json';
@@ -32,6 +33,20 @@ interface BlogPost {
   blog_categories: { name: string } | null;
 }
 
+const proseClass = `prose prose-slate prose-base sm:prose-lg max-w-none
+  prose-headings:font-bold prose-headings:text-[#001F3F]
+  prose-h2:font-extrabold prose-h2:text-2xl sm:prose-h2:text-3xl md:prose-h2:text-4xl prose-h2:mt-10 sm:prose-h2:mt-14 prose-h2:mb-4 prose-h2:scroll-mt-24
+  prose-h3:text-xl sm:prose-h3:text-2xl prose-h3:mt-8 sm:prose-h3:mt-10 prose-h3:mb-3
+  prose-p:text-slate-700 prose-p:leading-[1.8]
+  prose-a:text-primary hover:prose-a:text-primary/80 prose-a:font-medium prose-a:break-words
+  prose-strong:text-[#001F3F]
+  prose-li:text-slate-700 prose-li:leading-relaxed
+  prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-slate-50 prose-blockquote:py-2 prose-blockquote:px-4 sm:prose-blockquote:px-6 prose-blockquote:not-italic prose-blockquote:rounded-r-lg prose-blockquote:text-[#001F3F] prose-blockquote:font-medium
+  prose-img:rounded-xl prose-img:shadow-md prose-img:my-6 sm:prose-img:my-8
+  prose-table:text-sm prose-th:bg-slate-100 prose-th:text-[#001F3F] prose-td:align-top
+  [&_h2]:font-[Playfair_Display,Georgia,serif]
+  [&_.overflow-x-auto]:-mx-4 [&_.overflow-x-auto]:px-4 sm:[&_.overflow-x-auto]:mx-0 sm:[&_.overflow-x-auto]:px-0`;
+
 const getDefaultHeroImage = (slug: string) => {
   const comparisonSlugs = ['breakdown', 'insurance', 'compare', 'vs', 'versus'];
   if (comparisonSlugs.some((k) => slug.toLowerCase().includes(k))) {
@@ -39,6 +54,7 @@ const getDefaultHeroImage = (slug: string) => {
   }
   return defaultBlogHero.url;
 };
+
 
 const BlogArticle = () => {
   const { slug } = useParams();
@@ -72,6 +88,19 @@ const BlogArticle = () => {
       return `<h2${attrs} id="${item.id}">`;
     });
   }, [html, toc]);
+
+  // Split the article at a mid-point <h2> so we can drop a reg CTA into the flow
+  const [htmlPartOne, htmlPartTwo] = useMemo(() => {
+    if (!enrichedHtml) return ['', ''] as [string, string];
+    const positions: number[] = [];
+    const re = /<h2[^>]*>/gi;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(enrichedHtml))) positions.push(m.index);
+    if (positions.length < 4) return [enrichedHtml, ''] as [string, string];
+    const cut = positions[Math.floor(positions.length / 2)];
+    return [enrichedHtml.slice(0, cut), enrichedHtml.slice(cut)] as [string, string];
+  }, [enrichedHtml]);
+
 
   useEffect(() => {
     if (slug) {
@@ -383,7 +412,7 @@ const BlogArticle = () => {
             {/* Main body */}
             <div className="flex-1 min-w-0 max-w-3xl">
               {/* Top-of-article reg quote CTA */}
-              <div className="mb-10 sm:mb-12">
+              <div id="blog-reg-quote" className="mb-10 scroll-mt-24 sm:mb-12">
                 <BlogRegQuoteCTA
                   compact
                   heading="Get an instant warranty price"
@@ -404,22 +433,32 @@ const BlogArticle = () => {
 
               {/* Article content */}
               {enrichedHtml ? (
-                <article
-                  className="prose prose-slate prose-lg max-w-none
-                    prose-headings:font-bold prose-headings:text-[#001F3F]
-                    prose-h2:font-extrabold prose-h2:text-3xl md:prose-h2:text-4xl prose-h2:mt-14 prose-h2:mb-5 prose-h2:scroll-mt-24
-                    prose-h3:text-2xl prose-h3:mt-10 prose-h3:mb-3
-                    prose-p:text-slate-700 prose-p:leading-[1.8]
-                    prose-a:text-primary hover:prose-a:text-primary/80 prose-a:font-medium
-                    prose-strong:text-[#001F3F]
-                    prose-li:text-slate-700 prose-li:leading-relaxed
-                    prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-slate-50 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:not-italic prose-blockquote:rounded-r-lg prose-blockquote:text-[#001F3F] prose-blockquote:font-medium
-                    prose-img:rounded-xl prose-img:shadow-md prose-img:my-8
-                    prose-table:text-sm prose-th:bg-slate-100 prose-th:text-[#001F3F] prose-td:align-top
-                    [&_h2]:font-[Playfair_Display,Georgia,serif]"
-                  style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-                  dangerouslySetInnerHTML={{ __html: enrichedHtml }}
-                />
+                <>
+                  <article
+                    className={proseClass}
+                    style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                    dangerouslySetInnerHTML={{ __html: htmlPartOne }}
+                  />
+
+                  {/* Mid-article reg CTA */}
+                  {htmlPartTwo && (
+                    <div className="my-10 sm:my-12">
+                      <BlogRegQuoteCTA
+                        compact
+                        heading="Still reading? Check your price first"
+                        subheading="Enter your reg — takes 60 seconds and there’s no obligation."
+                      />
+                    </div>
+                  )}
+
+                  {htmlPartTwo && (
+                    <article
+                      className={proseClass}
+                      style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                      dangerouslySetInnerHTML={{ __html: htmlPartTwo }}
+                    />
+                  )}
+                </>
               ) : (
                 <article className="prose prose-slate prose-lg max-w-none">
                   <div className="text-slate-700" style={{ lineHeight: '1.8' }}>
@@ -430,10 +469,15 @@ const BlogArticle = () => {
                 </article>
               )}
 
-              {/* Inline Reg-plate CTA (reg-only journey, same as homepage) */}
+              {/* End-of-article Reg-plate CTA (reg-only journey, same as homepage) */}
               <div className="my-10 sm:my-12">
-                <BlogRegQuoteCTA />
+                <BlogRegQuoteCTA
+                  heading="Ready to protect your car?"
+                  subheading="Enter your reg for an instant, no-obligation price — cover can start today."
+                />
               </div>
+
+
 
 
               {/* Google Preferred Source CTA */}
@@ -535,6 +579,10 @@ const BlogArticle = () => {
           </section>
         )}
       </div>
+
+      {/* Mobile sticky CTA */}
+      <BlogStickyQuoteBar />
+      <div className="h-16 lg:hidden" aria-hidden="true" />
     </div>
   );
 };
