@@ -182,13 +182,6 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     ogType: "article",
   },
   {
-    path: "/thewarrantyhub/cheap-car-warranty-uk-2026-what-is-covered-how-to-choose/",
-    title: "Cheap Car Warranty UK 2026 | What's Covered & How to Choose",
-    description:
-      "A 2026 guide to cheap UK car warranties — inclusions, exclusions, claim limits and how to avoid worthless cover.",
-    ogType: "article",
-  },
-  {
     path: "/thewarrantyhub/top-reasons-car-warranty-claims-rejected-uk-2026/",
     title: "Top 7 Reasons UK Warranty Claims Get Rejected (2026)",
     description:
