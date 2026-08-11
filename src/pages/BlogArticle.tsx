@@ -405,10 +405,10 @@ const BlogArticle = () => {
           { name: post.title, url: `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}/` }
         ]}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      {/* Article + FAQ schema lives in <head> so crawlers pick it up with the meta tags */}
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+      </Helmet>
 
       {/* Editorial serif for headings */}
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
