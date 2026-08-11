@@ -13,7 +13,8 @@ import { AIOptimizationTools } from './blog/AIOptimizationTools';
 import { ContentCalendar } from './blog/ContentCalendar';
 import { HeroImageValidator } from './blog/HeroImageValidator';
 import { BlogAnalyticsTab } from './blog/BlogAnalyticsTab';
-import { PenTool, Search, Image, FolderOpen, BarChart3, Eye, Brain, Calendar, ShieldCheck, LineChart } from 'lucide-react';
+import { SearchConsolePanel } from './blog/SearchConsolePanel';
+import { PenTool, Search, Image, FolderOpen, BarChart3, Eye, Brain, Calendar, ShieldCheck, LineChart, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
