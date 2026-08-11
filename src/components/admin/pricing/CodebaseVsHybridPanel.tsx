@@ -128,7 +128,7 @@ const CodebaseVsHybridPanel: React.FC<{
   const referenceLive = Number(referenceBand?.oneYear ?? 0);
   const reducedReference = Math.round(referenceLive * (1 - cfg.baseReductionPct / 100));
   const targetBeforeUplift = cfg.targetReference > 0 ? cfg.targetReference : reducedReference;
-  /** +10% uplift on every hybrid Quotes & Orders price (Aug 2026). */
+  /** +20% total uplift on every hybrid Quotes & Orders price (Aug 2026). */
   const effectiveTarget = Math.round(targetBeforeUplift * (1 + HYBRID_PRICE_UPLIFT_PCT / 100));
   const targetScale = referenceLive > 0 ? effectiveTarget / referenceLive : 1;
 
