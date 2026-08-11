@@ -30,6 +30,13 @@ import PriceSurfaceBadge from './PriceSurfaceBadge';
  * Nothing on this screen saves a quote or changes live pricing.
  */
 
+/**
+ * Aug 2026: every Aug hybrid Quotes & Orders price is 10% higher than the
+ * original hybrid proposal. The website Step 3 price stays "grid minus the web
+ * gap", so it rises in proportion automatically — no separate web change.
+ */
+export const HYBRID_PRICE_UPLIFT_PCT = 10;
+
 const HYBRID_DEFAULTS = {
   referenceBandKey: '6-7',
   /** Proposal starts below August pricing because the August level is not converting. */
@@ -45,6 +52,7 @@ const HYBRID_DEFAULTS = {
   ceiling: 650,
   ceilingOn: true,
 };
+
 
 /** Normalise either the live builder model or the saved editor model into one shape. */
 function baseFrom(liveModel: any, saved: ReturnType<typeof useSavedPricingModel>) {
