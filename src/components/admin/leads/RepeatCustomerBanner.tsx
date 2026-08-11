@@ -46,7 +46,7 @@ export const RepeatCustomerBanner: React.FC<RepeatCustomerBannerProps> = ({
 }) => {
   const [expanded, setExpanded] = useState(false);
   const { repeatByLeadId } = useRepeatCustomers(
-    leads.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg, created_at: (l as any).created_at }))
+    leads.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg, phone: (l as any).phone, first_name: (l as any).first_name, last_name: (l as any).last_name, created_at: (l as any).created_at }))
   );
 
   const matches = useMemo(() => {
