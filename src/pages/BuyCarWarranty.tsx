@@ -108,7 +108,7 @@ const BuyCarWarranty: React.FC = () => {
                 height={350}
                 loading="eager"
                 decoding="async"
-                fetchPriority="high"
+                {...({ fetchpriority: "high" } as any)}
               />
             </div>
           </div>
