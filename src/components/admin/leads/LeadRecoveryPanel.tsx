@@ -291,6 +291,8 @@ export const LeadRecoveryPanel: React.FC = () => {
         `Reassigned ${moved} lead${moved === 1 ? '' : 's'} across ${targetAgents.length} agent${targetAgents.length === 1 ? '' : 's'}`,
       );
       setRows([]);
+      setScanBreakdown(null);
+
       setConfirmOpen(false);
     } catch (e: any) {
       console.error('[LeadRecovery] recover', e);
