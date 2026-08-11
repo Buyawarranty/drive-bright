@@ -22,6 +22,7 @@ import SectionPushLiveBar from './SectionPushLiveBar';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import PriceSurfaceBadge from './PriceSurfaceBadge';
+import QuickUpliftBar, { applyModelUplift } from './QuickUpliftBar';
 
 
 /**
@@ -124,6 +125,7 @@ const CodebaseVsLivePanel: React.FC<{
   const [vehicle, setVehicle] = useState<ResolvedTestVehicle | null>(null);
   const [leftQuote, setLeftQuote] = useState<PriceTestQuoteSnapshot | null>(null);
   const [rightQuote, setRightQuote] = useState<PriceTestQuoteSnapshot | null>(null);
+  const [upliftPct, setUpliftPct] = useState(0);
   const [cfg, setCfg] = useState(DEFAULTS);
   const set = <K extends keyof typeof DEFAULTS>(key: K, value: (typeof DEFAULTS)[K]) =>
     setCfg(c => ({ ...c, [key]: value }));
@@ -140,7 +142,7 @@ const CodebaseVsLivePanel: React.FC<{
   const codeThreeYearDiscountPct = Math.round((1 - codeBase.threeYearMult / 3) * 1000) / 10;
 
   /** Risk / mileage spread reintroduces the live curve on top of the flat code base. */
-  const testModel = useMemo(
+  const testModelBeforeUplift = useMemo(
     () => ({
       ...codeBase,
       bands: codeBase.bands.map((b: any) => ({
@@ -167,10 +169,17 @@ const CodebaseVsLivePanel: React.FC<{
     [codeBase, live, targetScale, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
   );
 
+  /** Quick percentage uplift on the whole variant curve. */
+  const testModel = useMemo(
+    () => applyModelUplift(testModelBeforeUplift, upliftPct),
+    [testModelBeforeUplift, upliftPct]
+  );
+
   const ceiling = cfg.ceilingOn ? cfg.ceiling : null;
 
   return (
     <div className="space-y-4">
+      <QuickUpliftBar variantLabel="Code base test" value={upliftPct} onChange={setUpliftPct} />
       <SectionPushLiveBar
         sectionLabel="Code base vs Live"
         liveLabel={liveLabel}
