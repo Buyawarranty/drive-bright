@@ -1,31 +1,44 @@
-# BuyAWarranty.co.uk
+# Buy A Warranty (buyawarranty.co.uk)
 
-Site: https://buyawarranty.co.uk
+> UK vehicle warranty provider. Instant online quotes for car, van, motorbike
+> and EV warranties, with claims handled in-house. Editorial guides for UK
+> drivers are published on The Warranty Hub. Content is human-authored,
+> UK-specific (GBP, UK law, DVSA/MOT rules) and regularly updated.
+> All pages are open to AI crawlers (GPTBot, OAI-SearchBot, ClaudeBot,
+> Google-Extended, PerplexityBot, Applebot-Extended, CCBot) and may be cited
+> with a link back to the source URL.
 
-About:
+## Core pages
 
-BuyAWarranty provides vehicle warranty protection plans in the UK.
+- [Home — car warranty quotes](https://buyawarranty.co.uk/): Enter a registration to get an instant UK warranty quote.
+- [What's covered](https://buyawarranty.co.uk/whats-covered): Components, claim limits, labour rates and exclusions.
+- [Make a claim](https://buyawarranty.co.uk/make-a-claim): How the claims process works and what documents are needed.
+- [FAQs](https://buyawarranty.co.uk/faqs): Common questions on eligibility, waiting periods and cancellations.
+- [Contact us](https://buyawarranty.co.uk/contact-us): Phone, email and opening hours.
 
-Key Pages:
+## The Warranty Hub (guides & news)
 
-https://buyawarranty.co.uk/
+- [The Warranty Hub](https://buyawarranty.co.uk/thewarrantyhub/): Index of all guides, news and buying advice for UK car owners.
+- [Toyota Corolla Hybrid ownership cost UK — fuel savings vs warranty protection](https://buyawarranty.co.uk/thewarrantyhub/toyota-corolla-hybrid-ownership-cost-uk-fuel-savings-vs-warranty-protection/)
+- [Cheap car warranty in the UK — what is covered, what is not, how to choose smartly](https://buyawarranty.co.uk/thewarrantyhub/cheap-car-warranty-in-the-uk-what-is-covered-what-is-not-how-to-choose-smartly/)
+- [Are car warranties worth it? Best car warranty UK guide 2026](https://buyawarranty.co.uk/thewarrantyhub/are-car-warranties-worth-it-best-car-warranty-uk-2026/)
+- [UK car theft hotspots 2026 — riskiest areas and protection](https://buyawarranty.co.uk/thewarrantyhub/uk-car-theft-hotspots-2026-riskiest-areas-and-protection/)
+- [Car warranty vs breakdown cover vs car insurance (UK 2026)](https://buyawarranty.co.uk/thewarrantyhub/car-warranty-vs-breakdown-cover-vs-insurance-uk-2026/)
+- [How much do UK car repairs really cost without a warranty? (2026 data)](https://buyawarranty.co.uk/thewarrantyhub/uk-car-repair-costs-2026-without-warranty/)
+- [Used car warranty UK 2026 — what's covered, when to buy, how to claim](https://buyawarranty.co.uk/thewarrantyhub/used-car-warranty-uk-2026-whats-covered-when-to-buy/)
+- [Dealership vs independent cover UK 2026](https://buyawarranty.co.uk/thewarrantyhub/dealership-vs-independent-cover-protect-used-car-uk-2026/)
+- [What is good mileage for a used car in the UK? 2026 buyer's guide](https://buyawarranty.co.uk/thewarrantyhub/good-mileage-used-car-uk-2026-buyers-guide/)
+- [Auto warranty vs extended warranty insurance UK 2026](https://buyawarranty.co.uk/thewarrantyhub/auto-warranty-vs-extended-warranty-insurance-uk-2026/)
+- [Do electric cars need an MOT in the UK? 2026 rules explained](https://buyawarranty.co.uk/thewarrantyhub/do-electric-cars-need-mot-uk-rules-explained-2026/)
+- [Cheap car warranty UK 2026 — what's covered and how to choose](https://buyawarranty.co.uk/thewarrantyhub/cheap-car-warranty-uk-2026-what-is-covered-how-to-choose/)
+- [Top 7 reasons UK car warranty claims get rejected](https://buyawarranty.co.uk/thewarrantyhub/top-reasons-car-warranty-claims-rejected-uk-2026/)
+- [12 reliable used cars under £15,000 in the UK (2026)](https://buyawarranty.co.uk/thewarrantyhub/12-top-reliable-used-cars-under-15000-uk-2026/)
+- [Is a maintenance warranty necessary for a used car in the UK? (2026)](https://buyawarranty.co.uk/thewarrantyhub/is-maintenance-warranty-necessary-used-cars-uk-2026/)
+- [Private car warranty UK 2026 — is it safe to buy without a dealer?](https://buyawarranty.co.uk/thewarrantyhub/private-car-warranty-uk-2026-safe-without-a-dealer/)
+- [Maintenance warranty vs extended warranty UK 2026](https://buyawarranty.co.uk/thewarrantyhub/maintenance-warranty-vs-extended-warranty-uk-2026/)
 
-https://buyawarranty.co.uk/whats-covered
+## Optional
 
-https://buyawarranty.co.uk/make-a-claim
-
-https://buyawarranty.co.uk/faqs
-
-https://buyawarranty.co.uk/contact-us
-
-Services:
-
-- Vehicle warranty plans
-
-- Claims support
-
-- Customer assistance
-
-Contact:
-
-https://buyawarranty.co.uk/contact-us
+- [Sitemap](https://buyawarranty.co.uk/sitemap.xml): Every indexable URL with last-modified dates.
+- [Terms](https://buyawarranty.co.uk/terms): Policy terms and conditions.
+- Attribution: cite as "Buy A Warranty (buyawarranty.co.uk)" with a link to the page used.

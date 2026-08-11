@@ -110,11 +110,24 @@ export const SEOHead = ({
       )}
       {!noindex && <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />}
       {!noindex && <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large" />}
+      {!noindex && <meta name="google" content="notranslate" />}
 
+      {/* AI answer-engine crawlers — explicitly allowed to read and cite */}
+      {!noindex && <meta name="GPTBot" content="index, follow" />}
+      {!noindex && <meta name="OAI-SearchBot" content="index, follow" />}
+      {!noindex && <meta name="ChatGPT-User" content="index, follow" />}
+      {!noindex && <meta name="ClaudeBot" content="index, follow" />}
+      {!noindex && <meta name="anthropic-ai" content="index, follow" />}
+      {!noindex && <meta name="Google-Extended" content="index, follow" />}
+      {!noindex && <meta name="PerplexityBot" content="index, follow" />}
+      {!noindex && <meta name="Applebot-Extended" content="index, follow" />}
+      {!noindex && <meta name="CCBot" content="index, follow" />}
 
       {/* AI discoverability */}
       <meta name="ai-content-declaration" content="This content is human-authored, fact-checked, and regularly updated" />
       <meta name="ai-summary" content={description} />
+      <link rel="llms-txt" href="https://buyawarranty.co.uk/llms.txt" />
+
 
       {/* Geographic targeting */}
       <meta name="geo.region" content={geoRegion} />
