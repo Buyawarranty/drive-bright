@@ -82,14 +82,55 @@ const BlogArticle = () => {
     return items;
   }, [html]);
   const enrichedHtml = useMemo(() => {
-    if (!html || toc.length === 0) return html;
+    if (!html) return html;
     let idx = 0;
-    return html.replace(/<h2([^>]*)>/gi, (_f, attrs) => {
-      const item = toc[idx++];
-      if (!item || /\sid=/.test(attrs)) return `<h2${attrs}>`;
-      return `<h2${attrs} id="${item.id}">`;
+    let out = toc.length
+      ? html.replace(/<h2([^>]*)>/gi, (_f, attrs) => {
+          const item = toc[idx++];
+          if (!item || /\sid=/.test(attrs)) return `<h2${attrs}>`;
+          return `<h2${attrs} id="${item.id}">`;
+        })
+      : html;
+    // Image performance + accessibility hygiene (Core Web Vitals + image search)
+    out = out.replace(/<img([^>]*)>/gi, (_f, attrs: string) => {
+      let a = attrs;
+      if (!/\sloading=/i.test(a)) a += ' loading="lazy"';
+      if (!/\sdecoding=/i.test(a)) a += ' decoding="async"';
+      if (!/\salt=/i.test(a)) a += ' alt=""';
+      return `<img${a}>`;
     });
+    return out;
   }, [html, toc]);
+
+  // FAQ pairs (Q1./A1. style) → FAQPage schema for rich results + AI answer engines
+  const faqItems = useMemo(() => {
+    if (!html) return [] as { question: string; answer: string }[];
+    const items: { question: string; answer: string }[] = [];
+    const re = /<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi;
+    let m: RegExpExecArray | null;
+    const strip = (s: string) =>
+      s.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+    while ((m = re.exec(html))) {
+      const q = strip(m[1]);
+      const a = strip(m[2]);
+      if (!/^Q\d+\./i.test(q)) continue;
+      items.push({
+        question: q.replace(/^Q\d+\.\s*/i, ''),
+        answer: a.replace(/^A\d+\.\s*/i, ''),
+      });
+    }
+    return items;
+  }, [html]);
+
+  // First substantive paragraph — used as the concise "quick answer" for AI overviews
+  const quickAnswer = useMemo(() => {
+    if (!html) return '';
+    const m = html.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+    if (!m) return '';
+    const text = m[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    return text.length > 320 ? `${text.slice(0, 317)}…` : text;
+  }, [html]);
+
 
   // Split the article at a mid-point <h2> so we can drop a reg CTA into the flow
   const [htmlPartOne, htmlPartTwo] = useMemo(() => {
