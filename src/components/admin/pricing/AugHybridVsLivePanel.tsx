@@ -114,8 +114,19 @@ const AugHybridVsLivePanel: React.FC<{
   const referenceBand =
     base.bands.find((b: any) => String(b.key) === cfg.referenceBandKey) ?? base.bands[0];
   const referenceLive = Number(referenceBand?.oneYear ?? 0);
+  /**
+   * NO COMPOUNDING ON REPUBLISH.
+   * The hybrid curve is derived from whatever is live. Once a hybrid has been
+   * pushed live, live already carries the base reduction and the compressed
+   * risk/mileage spreads — reapplying them dropped the whole curve every push,
+   * which is why "+20%" landed on prices lower than before. Published hybrids
+   * carry `hybridBaseApplied`, so from then on only the uplift is applied.
+   */
+  const baseAlreadyHybrid = !!(liveModel as any)?.[HYBRID_BASE_MARKER];
   /** Exact target wins; otherwise apply the deliberate reduction to the August base. */
-  const reducedReference = Math.round(referenceLive * (1 - cfg.baseReductionPct / 100));
+  const reducedReference = baseAlreadyHybrid
+    ? referenceLive
+    : Math.round(referenceLive * (1 - cfg.baseReductionPct / 100));
   const targetBeforeUplift = cfg.targetReference > 0 ? cfg.targetReference : reducedReference;
   /** +20% total uplift on every hybrid Quotes & Orders price (Aug 2026). */
   const effectiveTarget = Math.round(targetBeforeUplift * (1 + HYBRID_PRICE_UPLIFT_PCT / 100));
@@ -129,22 +140,23 @@ const AugHybridVsLivePanel: React.FC<{
   const hybridModelBeforeUplift = useMemo(
     () => ({
       ...base,
+      [HYBRID_BASE_MARKER]: true,
       bands: base.bands.map((b: any) => ({
         ...b,
         oneYear: b.oneYear === null ? null : Math.round(b.oneYear * targetScale),
       })),
       mileageBands: base.mileageBands.map((b: any) => ({
         ...b,
-        factor: spread(b.factor, cfg.mileageSpread),
+        factor: baseAlreadyHybrid ? b.factor : spread(b.factor, cfg.mileageSpread),
       })),
       modelRisks: base.modelRisks.map((r: any) => ({
         ...r,
-        factor: spread(r.factor, cfg.riskSpread),
+        factor: baseAlreadyHybrid ? r.factor : spread(r.factor, cfg.riskSpread),
       })),
       twoYearMult: upliftTermMult(Math.round(2 * (1 - cfg.twoYearDiscountPct / 100) * 100) / 100, 24),
       threeYearMult: upliftTermMult(Math.round(3 * (1 - cfg.threeYearDiscountPct / 100) * 100) / 100, 36),
     }),
-    [base, targetScale, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
+    [base, targetScale, baseAlreadyHybrid, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
   );
 
   /** Quick percentage uplift on the whole variant curve. */
