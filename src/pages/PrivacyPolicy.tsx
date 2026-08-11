@@ -17,7 +17,7 @@ const PrivacyPolicy = () => {
         title="UK Car Warranty Privacy Policy | BuyA Warranty"
         description="Read our UK car warranty privacy policy at BuyA Warranty. How we protect your personal data when you buy or manage your extended car warranty."
         keywords="privacy policy, data protection, Buy A Warranty, GDPR, personal data, privacy rights"
-        canonical="https://buyawarranty.co.uk/privacy"
+        canonical="https://buyawarranty.co.uk/privacy/"
       />
 
       {/* Header */}

@@ -50,7 +50,7 @@ const MotorbikeWarranty = () => {
         title="Motorbike Warranty UK | Best Motorcycle Repair Cover & Electric Car Warranty Provider"
         description="Best motorbike warranty UK with comprehensive motorcycle repair cover. What's included in motorbike warranty: engine, gearbox, electrical systems. Also offering best electric car warranty provider services with extended electric car warranties UK, USA, Canada."
         keywords="motorbike warranty UK, motorbike warranty UK best, whats included in motorbike warranty, motorcycle warranty, buy motorbike warranty online, motorcycle repair warranty UK, extended motorbike warranty, best electric car warranty provider, extended electric car warranty providers, electric car warranty insurance, used electric car warranty, best electric car warranty, extended electric cars warranties UK, extended electric cars warranties USA, best electric cars warranties UK"
-        canonical="https://buyawarranty.co.uk/motorbike-repair-warranty-uk-warranties"
+        canonical="https://buyawarranty.co.uk/motorbike-repair-warranty-uk-warranties/"
       />
 
       {/* Header */}

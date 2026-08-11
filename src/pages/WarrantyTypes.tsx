@@ -141,7 +141,7 @@ const WarrantyTypes: React.FC = () => {
         <title>Car Warranty Cover UK | Full Options | BuyA Warranty</title>
         <meta name="description" content="Explore full car warranty cover options at BuyA Warranty UK. Choose the right level of protection for your vehicle with transparent pricing." />
         <meta name="keywords" content="warranty types, car warranty, van warranty, BMW warranty, Audi warranty, Mercedes warranty, vehicle warranty, extended warranty" />
-        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types" />
+        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/" />
         <meta property="og:title" content="Car Warranty Cover UK | Full Options | BuyA Warranty" />
         <meta property="og:description" content="Explore full car warranty cover options at BuyA Warranty UK. Choose the right level of protection for your vehicle with transparent pricing." />
         <meta property="og:type" content="website" />

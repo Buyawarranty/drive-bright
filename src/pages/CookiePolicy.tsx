@@ -18,7 +18,7 @@ const CookiePolicy = () => {
         title="Vehicle Warranty Cookies Policy UK | BuyA Warranty"
         description="Learn how BuyA Warranty uses cookies to improve your vehicle warranty experience in the UK. Full policy on data privacy and site functionality."
         keywords="cookie policy, privacy, Buy A Warranty, cookies, website tracking, data protection"
-        canonical="https://buyawarranty.co.uk/cookies"
+        canonical="https://buyawarranty.co.uk/cookies/"
       />
 
       {/* Back Button */}

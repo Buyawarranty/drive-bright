@@ -185,7 +185,7 @@ const Complaints = () => {
         title="Complaints Procedure | Buy A Warranty UK"
         description="Submit a complaint to Buy A Warranty. We acknowledge complaints within 2 working days and aim to resolve within 10 working days."
         keywords="complaints procedure, customer service, Buy A Warranty"
-        canonical="https://buyawarranty.co.uk/complaints"
+        canonical="https://buyawarranty.co.uk/complaints/"
       />
 
       {/* Back link */}
