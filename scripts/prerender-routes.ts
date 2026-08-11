@@ -19,6 +19,10 @@ export interface RouteMeta {
   ogImage?: string;
   /** Optional Open Graph type override, e.g. "article" for editorial pages. */
   ogType?: string;
+  /** Static <h1> for the crawler-visible fallback body. Defaults to the title minus its brand suffix. */
+  h1?: string;
+  /** Static intro paragraph for the crawler-visible fallback body. Defaults to the description. */
+  intro?: string;
 }
 
 

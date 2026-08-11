@@ -71,6 +71,57 @@ function setCanonical(html: string, url: string): string {
   return html.replace(/<\/head>/i, `    ${tag}\n  </head>`);
 }
 
+/**
+ * Static body content for crawlers.
+ *
+ * The SPA mounts into #root and React replaces this markup on hydration, so
+ * real visitors never see it. Crawlers and text-only fetches (which is what
+ * Semrush measures for "low text-HTML ratio", "missing h1" and "low word
+ * count") get a heading, an intro paragraph and the site's main links instead
+ * of an empty container. The copy is derived from the same title/description
+ * the page itself renders, so it never differs from the live page.
+ */
+function deriveH1(route: RouteMeta): string {
+  if (route.h1) return route.h1;
+  // Drop the brand suffix: "Ford Extended Warranty UK | Instant Quote | Buy A Warranty"
+  const [first] = route.title.split("|");
+  return (first || route.title).replace(/\s*[-–—]\s*$/, "").trim();
+}
+
+function buildStaticBody(route: RouteMeta): string {
+  const h1 = escapeHtmlText(deriveH1(route));
+  const intro = escapeHtmlText(route.intro ?? route.description);
+  const links = [
+    ["/", "Get an instant warranty quote"],
+    ["/what-is-covered/", "What's covered"],
+    ["/warranty-plan/", "Warranty plans and pricing"],
+    ["/warranty-types/", "Cover by vehicle and make"],
+    ["/thewarrantyhub/", "The Warranty Hub guides"],
+    ["/faq/", "Frequently asked questions"],
+    ["/make-a-claim/", "Make a claim"],
+    ["/contact-us/", "Contact our UK team"],
+  ]
+    .filter(([href]) => href !== route.path)
+    .map(([href, label]) => `<li><a href="${href}">${escapeHtmlText(label)}</a></li>`)
+    .join("");
+
+  return [
+    `<div id="prerender-content">`,
+    `<h1>${h1}</h1>`,
+    `<p>${intro}</p>`,
+    `<p>Buy A Warranty arranges extended warranty cover for cars, vans, motorbikes, hybrids and electric vehicles across the UK. Choose your claim limit, voluntary excess, labour rate and cover length, then get an instant online price using just your registration and mileage. Repairs are carried out by VAT-registered garages, and our UK-based team handles claims and questions by phone, email or WhatsApp.</p>`,
+    `<nav aria-label="Main sections"><ul>${links}</ul></nav>`,
+    `</div>`,
+  ].join("");
+}
+
+function setStaticBody(html: string, route: RouteMeta): string {
+  return html.replace(
+    /<div id="root">\s*<\/div>/i,
+    `<div id="root">${buildStaticBody(route)}</div>`,
+  );
+}
+
 function buildHtmlForRoute(template: string, route: RouteMeta): string {
   const canonical = `${SITE_URL}${route.path}`;
   const ogImage = route.ogImage ?? DEFAULT_OG_IMAGE_URL;
@@ -144,6 +195,8 @@ function buildHtmlForRoute(template: string, route: RouteMeta): string {
       "",
     );
   }
+
+  html = setStaticBody(html, route);
 
   return html;
 }
