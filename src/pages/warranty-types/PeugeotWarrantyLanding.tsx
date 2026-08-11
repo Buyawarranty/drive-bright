@@ -208,10 +208,11 @@ const PeugeotWarrantyLanding: React.FC = () => {
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
+      "image": ["https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"],
     "name": "Peugeot Extended Warranty UK",
     "description": "Comprehensive extended warranty for Peugeot models including 208, 308, 3008, 5008, 508, e-208, e-2008. PureTech engines, EAT8 gearbox, EV components covered.",
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
-    "manufacturer": { "@type": "Organization", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "logo": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "contactPoint": { "@type": "ContactPoint", "telephone": "+44-330-229-5040", "contactType": "customer service", "availableLanguage": "English", "areaServed": "GB" } },
+    "manufacturer": { "@type": "Organization", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "logo": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "contactPoint": { "@type": "ContactPoint", "telephone": "+44-330-229-5040", "contactType": "customer service", "availableLanguage": "English", } },
     "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/peugeot-warranty/", "seller": { "@type": "Organization", "name": "Buy A Warranty" }, "priceSpecification": { "@type": "UnitPriceSpecification", "price": String(SEO_FROM_MONTHLY_PRICE), "priceCurrency": "GBP", "unitText": "month", "billingIncrement": 1 } },
     "aggregateRating": { "@type": "AggregateRating", "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT, "bestRating": "5", "worstRating": "1" },
     "review": testimonials.map((t, i) => ({ "@type": "Review", "author": { "@type": "Person", "name": t.name }, "reviewRating": { "@type": "Rating", "ratingValue": t.rating, "bestRating": "5" }, "reviewBody": t.text, "datePublished": new Date(Date.now() - (i + 1) * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] })),

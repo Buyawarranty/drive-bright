@@ -384,6 +384,7 @@ const SkodaWarrantyLanding: React.FC = () => {
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
+      "image": ["https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"],
     "name": "Škoda Extended Warranty UK",
     "description": "Comprehensive extended warranty coverage for all Škoda models including Octavia, Superb, Kodiaq, Karoq, Kamiq, Fabia, Scala, Enyaq iV and Yeti. Covers engine, DSG gearbox, turbo, electrical systems, EV drivetrain components. Nationwide UK coverage with any VAT-registered garage.",
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
@@ -397,8 +398,7 @@ const SkodaWarrantyLanding: React.FC = () => {
         "telephone": "+44-800-917-9270",
         "contactType": "customer service",
         "availableLanguage": "English",
-        "areaServed": "GB"
-      }
+        }
     },
     "offers": {
       "@type": "Offer",

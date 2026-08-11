@@ -111,6 +111,7 @@ export const LandingPagePreview = ({ pageId }: LandingPagePreviewProps) => {
       schemas.push({
         "@context": "https://schema.org",
         "@type": "Product",
+      "image": ["https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"],
         "name": `${page.brand_name} Extended Warranty`,
         "description": page.meta_description,
         "brand": { "@type": "Brand", "name": "Buy A Warranty" },

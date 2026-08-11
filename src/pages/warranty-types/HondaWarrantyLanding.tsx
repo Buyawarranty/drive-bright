@@ -386,6 +386,7 @@ const HondaWarrantyLanding: React.FC = () => {
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
+      "image": ["https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"],
     "name": "Honda Extended Warranty UK",
     "description": "Comprehensive extended warranty coverage for all Honda models including Civic, Jazz, CR-V, HR-V, ZR-V, Accord, Honda e, and e:Ny1. Covers engine, gearbox, transmission, electrical systems, and more. Nationwide UK coverage with any VAT-registered garage.",
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
@@ -399,8 +400,7 @@ const HondaWarrantyLanding: React.FC = () => {
         "telephone": "+44-800-917-9270",
         "contactType": "customer service",
         "availableLanguage": "English",
-        "areaServed": "GB"
-      }
+        }
     },
     "offers": {
       "@type": "Offer",

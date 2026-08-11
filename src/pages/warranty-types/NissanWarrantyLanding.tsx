@@ -386,6 +386,7 @@ const NissanWarrantyLanding: React.FC = () => {
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
+      "image": ["https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"],
     "name": "Nissan Extended Warranty UK",
     "description": "Comprehensive extended warranty coverage for all Nissan models including Qashqai, Juke, X-Trail, Leaf, Ariya, Micra, Note, Navara. Covers engine, CVT gearbox, transmission, electrical systems, and more. Nationwide UK coverage with any VAT-registered garage.",
     "brand": {
@@ -402,8 +403,7 @@ const NissanWarrantyLanding: React.FC = () => {
         "telephone": "+44-330-229-5040",
         "contactType": "customer service",
         "availableLanguage": "English",
-        "areaServed": "GB"
-      }
+        }
     },
     "offers": {
       "@type": "Offer",

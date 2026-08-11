@@ -332,10 +332,11 @@ const CitroenWarrantyLanding: React.FC = () => {
 
   const productSchema = {
     "@context": "https://schema.org", "@type": "Product",
+      "image": ["https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"],
     "name": "Citroën Extended Warranty UK",
     "description": "Comprehensive extended warranty coverage for all Citroën models including C3, C4, C5 Aircross, Berlingo, ë-C4 and more. Covers engine, gearbox, electrical systems, turbocharger, and more. Nationwide UK coverage.",
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
-    "manufacturer": { "@type": "Organization", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "contactPoint": { "@type": "ContactPoint", "telephone": "+44-800-917-9270", "contactType": "customer service", "areaServed": "GB" } },
+    "manufacturer": { "@type": "Organization", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "contactPoint": { "@type": "ContactPoint", "telephone": "+44-800-917-9270", "contactType": "customer service", } },
     "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/citroen-warranty/", "seller": { "@type": "Organization", "name": "Buy A Warranty" }, "priceSpecification": { "@type": "UnitPriceSpecification", "price": String(SEO_FROM_MONTHLY_PRICE), "priceCurrency": "GBP", "unitText": "month" } },
     "aggregateRating": { "@type": "AggregateRating", "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT, "bestRating": "5" },
     "review": testimonials.map((t, i) => ({ "@type": "Review", "author": { "@type": "Person", "name": t.name }, "reviewRating": { "@type": "Rating", "ratingValue": t.rating, "bestRating": "5" }, "reviewBody": t.text, "datePublished": new Date(Date.now() - (i + 1) * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] })),

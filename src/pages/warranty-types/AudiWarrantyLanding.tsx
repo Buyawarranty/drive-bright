@@ -275,6 +275,7 @@ const AudiWarrantyLanding: React.FC = () => {
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
+      "image": ["https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"],
     "name": "Audi Extended Warranty UK",
     "description": "Comprehensive used Audi extended warranty plans covering A3, A4, A5, A6, A7, A8, Q2, Q3, Q5, Q7, Q8, TT and e-tron models. Includes S tronic gearbox, quattro drivetrain, TFSI and TDI engines, MMI infotainment, air suspension and EV components. Available nationwide across England, Scotland, Wales and Northern Ireland from £25 per month.",
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
@@ -288,8 +289,7 @@ const AudiWarrantyLanding: React.FC = () => {
         "telephone": "+44-800-917-9270",
         "contactType": "customer service",
         "availableLanguage": "English",
-        "areaServed": "GB"
-      }
+        }
     },
     "offers": {
       "@type": "Offer",

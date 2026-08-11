@@ -503,6 +503,7 @@ const EVWarrantyLanding: React.FC = () => {
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
+      "image": ["https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"],
     "name": "Electric Vehicle Extended Warranty UK",
     "description": "Comprehensive extended warranty coverage for all electric vehicles including Tesla, Nissan Leaf, BMW i-series, Hyundai Ioniq, Kia EV6, VW ID range, and more. Covers electric motors, inverters, on-board chargers, power electronics, cooling systems, and more. Nationwide UK coverage with any VAT-registered garage.",
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
@@ -511,7 +512,7 @@ const EVWarrantyLanding: React.FC = () => {
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "logo": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
-      "contactPoint": { "@type": "ContactPoint", "telephone": "+44-330-229-5040", "contactType": "customer service", "availableLanguage": "English", "areaServed": "GB" }
+      "contactPoint": { "@type": "ContactPoint", "telephone": "+44-330-229-5040", "contactType": "customer service", "availableLanguage": "English", }
     },
     "offers": {
       "@type": "Offer",

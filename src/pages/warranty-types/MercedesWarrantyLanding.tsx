@@ -395,6 +395,7 @@ const MercedesWarrantyLanding: React.FC = () => {
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
+      "image": ["https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"],
     "name": "Mercedes-Benz Extended Warranty UK",
     "description": "Comprehensive extended warranty coverage for all Mercedes-Benz models including A-Class, B-Class, C-Class, E-Class, S-Class, GLA, GLB, GLC, GLE, GLS, G-Class, EQA, EQB, EQC, EQE, and EQS. Covers engine, gearbox, transmission, electrical systems, and more. Nationwide UK coverage with any VAT-registered garage.",
     "brand": {
@@ -411,8 +412,7 @@ const MercedesWarrantyLanding: React.FC = () => {
         "telephone": "+44-800-917-9270",
         "contactType": "customer service",
         "availableLanguage": "English",
-        "areaServed": "GB"
-      }
+        }
     },
     "offers": {
       "@type": "Offer",

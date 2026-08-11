@@ -521,6 +521,7 @@ const HybridWarrantyLanding: React.FC = () => {
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
+      "image": ["https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"],
     "name": "Hybrid Car Warranty UK — Extended Cover for HEV, PHEV & Mild Hybrids",
     "description": "UK's specialist hybrid vehicle extended warranty from £19/month. Covers Toyota Prius, RAV4, Corolla Hybrid, Honda CR-V e:HEV, Kia Niro, Hyundai Tucson Hybrid, BMW 330e, Volvo XC60 Recharge, Mercedes C 300 e, Lexus NX, Audi Q5 TFSI e, and 100+ hybrid models. Protection for electric motors, inverters, battery management systems, DC-DC converters, regenerative braking, e-CVT transmissions, on-board chargers, and 1,000+ components. Unlimited claims at any VAT-registered garage across the UK.",
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
@@ -529,7 +530,7 @@ const HybridWarrantyLanding: React.FC = () => {
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "logo": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
-      "contactPoint": { "@type": "ContactPoint", "telephone": "+44-330-229-5040", "contactType": "customer service", "availableLanguage": "English", "areaServed": "GB" }
+      "contactPoint": { "@type": "ContactPoint", "telephone": "+44-330-229-5040", "contactType": "customer service", "availableLanguage": "English", }
     },
     "offers": {
       "@type": "Offer",
