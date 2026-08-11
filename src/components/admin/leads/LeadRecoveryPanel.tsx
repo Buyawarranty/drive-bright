@@ -213,10 +213,12 @@ export const LeadRecoveryPanel: React.FC = () => {
 
 
       setRows(all);
+      setScanBreakdown({ inRange: all.length - reclaimed, exOwned: reclaimed });
       if (all.length === 0) toast.info('No leads matched that filter');
       else toast.success(
         `Found ${all.length} lead${all.length === 1 ? '' : 's'}${reclaimed ? ` (incl. ${reclaimed} unassigned ex-owned)` : ''}`,
       );
+
     } catch (e: any) {
       console.error('[LeadRecovery] scan', e);
       toast.error(e?.message || 'Scan failed');
