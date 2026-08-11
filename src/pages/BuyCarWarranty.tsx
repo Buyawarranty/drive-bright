@@ -9,12 +9,12 @@ import HomepageFAQ from '@/components/HomepageFAQ';
 // WebsiteFooter removed - rendered globally via App.tsx ConditionalFooter
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
-import carWarrantyHero from '@/assets/car-warranty-uk-diesel-car-warranty.png';
-import pandaCarWarranty from '@/assets/car-warranty-uk-suv-warranty.png';
-import pandaFastService from '@/assets/car-warranty-uk-affordable-warranty.png';
+import carWarrantyHero from '@/assets/car-warranty-uk-diesel-car-warranty.webp';
+import pandaCarWarranty from '@/assets/car-warranty-uk-suv-warranty.webp';
+import pandaFastService from '@/assets/car-warranty-uk-affordable-warranty.webp';
 import trustpilotLogo from '@/assets/trustpilot-excellent-box.webp';
-import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
-import companyRegistration from '@/assets/company-registration-footer.png';
+import whatsappIconNew from '@/assets/whatsapp-icon-new.webp';
+import companyRegistration from '@/assets/company-registration-footer.webp';
 
 const BuyCarWarranty: React.FC = () => {
   const isMobile = useIsMobile();
@@ -104,6 +104,11 @@ const BuyCarWarranty: React.FC = () => {
                 src={carWarrantyHero} 
                 alt="Buy a car warranty online UK - trusted vehicle protection"
                 className="w-full h-auto"
+                width={750}
+                height={350}
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
               />
             </div>
           </div>
@@ -178,6 +183,10 @@ const BuyCarWarranty: React.FC = () => {
                 src={pandaFastService} 
                 alt="Car warranty cover includes comprehensive protection"
                 className="w-full max-w-md mx-auto h-auto"
+                width={896}
+                height={896}
+                loading="lazy"
+                decoding="async"
               />
             </div>
 
@@ -296,6 +305,10 @@ const BuyCarWarranty: React.FC = () => {
                 src={pandaCarWarranty} 
                 alt="Affordable car warranty UK with flexible payment options"
                 className="w-full max-w-md mx-auto h-auto"
+                width={896}
+                height={597}
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>
@@ -352,7 +365,11 @@ const BuyCarWarranty: React.FC = () => {
               <img 
                 src={trustpilotLogo} 
                 alt="Trustpilot excellent reviews for car warranty UK"
-                className="h-16 mx-auto mb-4"
+                className="h-16 w-auto mx-auto mb-4"
+                width={220}
+                height={64}
+                loading="lazy"
+                decoding="async"
               />
               <p className="text-gray-600">Rated Excellent by our customers</p>
             </div>
@@ -693,7 +710,11 @@ const BuyCarWarranty: React.FC = () => {
             <img 
               src={companyRegistration} 
               alt="Buy A Warranty company registration - FCA regulated"
-              className="h-16 opacity-70"
+              className="h-16 w-auto opacity-70"
+              width={222}
+              height={64}
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </div>
@@ -711,7 +732,7 @@ const BuyCarWarranty: React.FC = () => {
             className="bg-[#25D366] hover:bg-[#20BA5A] text-white p-1 rounded-full shadow-lg transition-all duration-300 hover:scale-110 flex items-center justify-center"
             onClick={() => trackButtonClick('whatsapp_float_buy_car_warranty')}
           >
-            <img src={whatsappIconNew} alt="WhatsApp" className="h-12 w-12" />
+            <img src={whatsappIconNew} alt="WhatsApp" className="h-12 w-12" width={48} height={48} loading="lazy" decoding="async" />
           </a>
           
           <a
