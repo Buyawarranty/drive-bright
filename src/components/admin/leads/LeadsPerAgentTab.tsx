@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { DraftRangeCalendar } from '@/components/admin/shared/DraftRangeCalendar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Lock, Radio, CalendarRange, RefreshCcw, Download, Users, Target, AlertTriangle, CheckCircle2, PhoneCall, StickyNote, BellRing, Activity, ChevronRight, Mail, Phone, Car, Inbox } from 'lucide-react';
@@ -491,11 +492,9 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="p-0 w-auto">
-                  <Calendar
-                    mode="range"
-                    selected={{ from: customRange.from, to: customRange.to }}
-                    onSelect={(r: any) => setCustomRange({ from: r?.from, to: r?.to })}
-                    numberOfMonths={2}
+                  <DraftRangeCalendar
+                    value={{ from: customRange.from, to: customRange.to }}
+                    onApply={(r) => setCustomRange({ from: r?.from, to: r?.to })}
                   />
                 </PopoverContent>
               </Popover>

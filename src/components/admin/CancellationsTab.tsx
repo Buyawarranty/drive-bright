@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Calendar } from '@/components/ui/calendar';
+import { DraftRangeCalendar } from '@/components/admin/shared/DraftRangeCalendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Search, CalendarIcon, RefreshCw, Download, Ban, Pencil, Check, X, FileWarning, FileSpreadsheet } from 'lucide-react';
@@ -647,15 +648,11 @@ export const CancellationsTab: React.FC<{
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-4 z-50" align="start">
-                <Calendar
-                  initialFocus
-                  mode="range"
-                  defaultMonth={dateRange?.from || subMonths(new Date(), 1)}
-                  selected={dateRange}
-                  onSelect={(range) => setDateRange(range)}
-                  numberOfMonths={2}
-                  className="pointer-events-auto"
-                  disabled={(date) => date > new Date()}
+                <DraftRangeCalendar
+                  value={dateRange}
+                  resetKey={calendarOpen}
+                  onApply={(range) => { setDateRange(range); setCalendarOpen(false); }}
+                  onCancel={() => setCalendarOpen(false)}
                 />
               </PopoverContent>
             </Popover>

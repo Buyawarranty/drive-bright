@@ -14,6 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { DraftRangeCalendar } from '@/components/admin/shared/DraftRangeCalendar';
 import { Lead, AdminUser } from '@/hooks/useLeads';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
@@ -1042,12 +1043,11 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="range"
-                      selected={bulkDateRange}
-                      onSelect={(range) => { setBulkDateRange(range); if (range?.to) setBulkCalendarOpen(false); }}
-                      numberOfMonths={2}
-                      className="p-3 pointer-events-auto"
+                    <DraftRangeCalendar
+                      value={bulkDateRange}
+                      resetKey={bulkCalendarOpen}
+                      onApply={(range) => { setBulkDateRange(range); setBulkCalendarOpen(false); }}
+                      onCancel={() => setBulkCalendarOpen(false)}
                     />
                   </PopoverContent>
                 </Popover>
@@ -2178,16 +2178,12 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   </Button>
                 </div>
               </div>
-              <CalendarComponent
-                mode="range"
-                defaultMonth={dateRange?.from}
-                selected={dateRange}
-                onSelect={(range) => {
+              <DraftRangeCalendar
+                value={dateRange}
+                onApply={(range) => {
                   setDateRange(range);
                   setQuickDateFilter('custom');
                 }}
-                numberOfMonths={2}
-                className="p-3 pointer-events-auto"
               />
             </PopoverContent>
           </Popover>

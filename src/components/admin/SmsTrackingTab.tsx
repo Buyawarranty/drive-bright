@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
+import { DraftRangeCalendar } from '@/components/admin/shared/DraftRangeCalendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -202,13 +203,9 @@ export const SmsTrackingTab: React.FC = () => {
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="range"
-              selected={dateRange}
-              onSelect={(r) => { setPreset('custom'); setDateRange(r); }}
-              numberOfMonths={2}
-              initialFocus
-              className={cn('p-3 pointer-events-auto')}
+            <DraftRangeCalendar
+              value={dateRange}
+              onApply={(r) => { setPreset('custom'); setDateRange(r); }}
             />
           </PopoverContent>
         </Popover>

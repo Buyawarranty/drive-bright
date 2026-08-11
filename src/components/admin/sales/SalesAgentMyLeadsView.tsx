@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { DraftRangeCalendar } from '@/components/admin/shared/DraftRangeCalendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Search, RefreshCw, CalendarIcon, X, ArrowUpDown,
@@ -353,12 +354,11 @@ export const SalesAgentMyLeadsView: React.FC<SalesAgentMyLeadsViewProps> = ({
                 <Button size="sm" variant="outline" onClick={() => handleQuickFilter(365)}>This Year</Button>
               </div>
             </div>
-            <Calendar
-              mode="range"
-              selected={{ from: dateRange.from, to: dateRange.to }}
-              onSelect={handleDateSelect}
-              numberOfMonths={2}
-              initialFocus
+            <DraftRangeCalendar
+              value={{ from: dateRange.from, to: dateRange.to }}
+              resetKey={isCalendarOpen}
+              onApply={(r) => { handleDateSelect(r as any); setIsCalendarOpen(false); }}
+              onCancel={() => setIsCalendarOpen(false)}
             />
             {hasDateFilter && (
               <div className="p-3 border-t">

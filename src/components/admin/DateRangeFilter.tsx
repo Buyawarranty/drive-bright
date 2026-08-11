@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { DraftRangeCalendar } from '@/components/admin/shared/DraftRangeCalendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CalendarIcon, X } from 'lucide-react';
@@ -214,41 +215,13 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
                 Clear
               </Button>
             </div>
-            <Calendar
-              mode="range"
-              defaultMonth={dateRange?.from || subMonths(new Date(), 1)}
-              selected={draftRange}
-              onDayClick={(day, modifiers) => {
-                if (modifiers?.disabled) return;
-                const from = draftRange?.from;
-                // The first click only starts a fresh draft selection. It does
-                // not inherit today's date (or either end of the applied range).
-                if (!from) {
-                  setDraftRange({ from: day, to: undefined });
-                  return;
-                }
-                const completedRange = day < from
-                  ? { from: day, to: from }
-                  : { from, to: day };
-                setDraftRange(completedRange);
-                onDateRangeChange(completedRange);
-                setOpen(false);
-              }}
-              onSelect={() => { /* handled in onDayClick */ }}
-              numberOfMonths={2}
-              className="pointer-events-auto"
-              classNames={{
-                // Today must not look selected — only the chosen range is filled.
-                day_today:
-                  'font-semibold ring-1 ring-brand-orange text-foreground rounded-md aria-selected:ring-0',
-                day_range_middle:
-                  'aria-selected:bg-brand-orange/20 aria-selected:text-foreground rounded-none',
-              }}
-              disabled={(date) => date > new Date()}
+            <DraftRangeCalendar
+              value={dateRange}
+              resetKey={open}
+              onApply={(range) => { onDateRangeChange(range); setOpen(false); }}
+              onCancel={() => setOpen(false)}
             />
-            <p className="text-xs text-muted-foreground mt-2">
-              Click a start date, then an end date. Clicking again starts a new range.
-            </p>
+
 
           </div>
 
