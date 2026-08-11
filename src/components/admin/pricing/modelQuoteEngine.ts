@@ -1,5 +1,5 @@
 import { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
-import { getExcessTotalAdjustment, getExcessFactor } from '@/lib/pricingMatrix';
+import { getExcessTotalAdjustment, getExcessFactor, getAbsoluteMinimumShape } from '@/lib/pricingMatrix';
 
 
 /**
