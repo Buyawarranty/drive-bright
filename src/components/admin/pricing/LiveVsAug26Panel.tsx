@@ -217,8 +217,8 @@ const LiveVsAug26Panel: React.FC<{
           liveModel={liveModel}
           vehicle={vehicle}
           showRegLookup={false}
-          title="Live age-based builder — Step 2"
-          subtitle="Priced with the figures currently in the Age-based builder below."
+          title="Live age-based builder — Quotes &amp; Orders price"
+          subtitle="Priced with the figures currently in the Age-based builder below. The website Step 3 price is 10% below this figure."
           badgeText="Live builder"
         />
         {aug26Model ? (
@@ -227,8 +227,8 @@ const LiveVsAug26Panel: React.FC<{
             liveModel={aug26Model}
             vehicle={vehicle}
             showRegLookup={false}
-            title={`${selected?.label ?? 'Aug26 pricing'} — Step 2`}
-            subtitle="Priced with the age, mileage, claim-limit and labour factors stored on this saved version."
+            title={`${selected?.label ?? 'Aug26 pricing'} — Quotes & Orders price`}
+            subtitle="Priced with the age, mileage, claim-limit and labour factors stored on this saved version. When pushed live, the website Step 3 price is 10% below this Quotes &amp; Orders price."
             badgeText="Saved version"
           />
         ) : (

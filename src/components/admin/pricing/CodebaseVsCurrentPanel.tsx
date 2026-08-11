@@ -463,16 +463,16 @@ export default function CodebaseVsCurrentPanel({
           liveModel={codeBaseModel}
           vehicle={step2Vehicle}
           showRegLookup={false}
-          title="Original code base 7/2026 — Step 2"
-          subtitle="Flat grid straight from the code base, no vehicle-specific factors."
+          title="Original code base 7/2026 — Quotes &amp; Orders price"
+          subtitle="Flat grid straight from the code base, no vehicle-specific factors. The website Step 3 price is 10% below this figure."
           badgeText="Code base"
         />
         <PriceTestStep2
             onQuoteChange={setRightQuote}
           vehicle={step2Vehicle}
           showRegLookup={false}
-          title={`${liveVersion?.label ?? 'Current live'} — Step 2`}
-          subtitle="Priced with the pricing model currently live."
+          title={`${liveVersion?.label ?? 'Current live'} — Quotes & Orders price`}
+          subtitle="Priced with the pricing model currently live. The website Step 3 price is 10% below this figure."
           badgeText="Live"
         />
       </div>
