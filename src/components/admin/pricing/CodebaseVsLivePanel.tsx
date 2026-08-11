@@ -396,8 +396,8 @@ const CodebaseVsLivePanel: React.FC<{
           vehicle={vehicle}
           showRegLookup={false}
           autoQuoteCeiling={ceiling}
-          title="Code base pricing — Step 2"
-          subtitle="The July 2026 matrix written into the code base, with the variables above applied."
+          title="Code base pricing — Quotes &amp; Orders price"
+          subtitle="The July 2026 matrix written into the code base, with the variables above applied. The website Step 3 price is 10% below this figure."
           badgeText="Code base"
         />
         <PriceTestStep2
@@ -405,8 +405,8 @@ const CodebaseVsLivePanel: React.FC<{
           liveModel={liveModel}
           vehicle={vehicle}
           showRegLookup={false}
-          title="Live pricing — Step 2"
-          subtitle="Exactly what agents sell today, from the live age-based builder figures."
+          title="Live pricing — Quotes &amp; Orders price"
+          subtitle="Exactly what agents sell today, from the live age-based builder figures. The website Step 3 price is 10% below this figure."
           badgeText="Live"
         />
       </div>
