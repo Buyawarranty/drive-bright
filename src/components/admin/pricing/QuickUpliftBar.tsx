@@ -127,16 +127,38 @@ const QuickUpliftBar: React.FC<{
           <Label htmlFor={`uplift-${variantLabel}`} className="text-xs text-muted-foreground">
             Exact %
           </Label>
-          <Input
-            id={`uplift-${variantLabel}`}
-            type="number"
-            min={-50}
-            max={200}
-            step={1}
-            className="h-8 w-24"
-            value={value}
-            onChange={e => onChange(Number(e.target.value) || 0)}
-          />
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              size="icon"
+              variant="outline"
+              className="h-8 w-8"
+              aria-label="Decrease by 1%"
+              onClick={() => onChange(Math.max(-50, value - 1))}
+            >
+              <Minus className="h-3.5 w-3.5" />
+            </Button>
+            <Input
+              id={`uplift-${variantLabel}`}
+              type="number"
+              min={-50}
+              max={200}
+              step={1}
+              className="h-8 w-20 text-center"
+              value={value}
+              onChange={e => onChange(Number(e.target.value) || 0)}
+            />
+            <Button
+              type="button"
+              size="icon"
+              variant="outline"
+              className="h-8 w-8"
+              aria-label="Increase by 1%"
+              onClick={() => onChange(Math.min(200, value + 1))}
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </div>
           {value !== 0 && (
             <Button type="button" size="sm" variant="ghost" onClick={() => onChange(0)}>
               <RotateCcw className="mr-1 h-3.5 w-3.5" />
