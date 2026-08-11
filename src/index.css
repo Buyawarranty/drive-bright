@@ -960,3 +960,8 @@ html, body {
     margin: 0.5rem 1.75rem 1.25rem 0;
   }
 }
+/* Stop floated figures overlapping the next section heading */
+article.prose h2,
+article.prose h3 {
+  clear: both;
+}
