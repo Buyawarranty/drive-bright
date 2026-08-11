@@ -226,9 +226,9 @@ export type AgeBandModel = {
 const CLAIM_LIMIT_COLUMNS = [1000, 2000, 3000] as const;
 const GRID_EXCESSES = [0, 50, 100, 150, 250, 500];
 const MIN_SELLABLE_BY_PERIOD: Record<string, number> = {
-  '12months': 399,
-  '24months': 659,
-  '36months': 938,
+  '12months': 349,
+  '24months': 576,
+  '36months': 821,
 };
 
 /**
@@ -255,7 +255,7 @@ export function buildAdminMatrixFromModel(model: AgeBandModel): Record<string, R
    * IMPORTANT: the grid is the REFERENCE-BAND price, not a sellable price.
    * At quote time the live engine multiplies this cell by the vehicle factor
    * (age band / mileage / powertrain / type) and only THEN applies the
-   * £399/£659/£938 minimum sellable floor (applyBasePriceFloor).
+   * £349/£576/£821 minimum sellable floor (applyBasePriceFloor).
    *
    * So the floor must NOT be baked in here. Scaling the whole reference grid up
    * to the floor and then multiplying by the age factor charged the lift twice —

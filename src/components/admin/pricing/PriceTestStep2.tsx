@@ -14,6 +14,7 @@ import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './
 import {
   getVisibleExcessOptions,
   getExcessFactor,
+  getAbsoluteMinimumShape,
   getExcessMonthlyDelta,
   getExcessTotalAdjustment,
   type PaymentPeriod,
@@ -274,7 +275,7 @@ export default function PriceTestStep2({
   /**
    * Match the published Aug Hybrid engine: retain the normal option-shaped floor,
    * then apply the flat hard bottom only when a quote genuinely falls beneath it.
-   * This prevents the old £399/£659/£938 clamp from swallowing age, claim-limit,
+   * This prevents the old £349/£576/£821 clamp from swallowing age, claim-limit,
    * labour-rate and excess changes in the test replica.
    */
   const minimumFor = (months: number) => {
@@ -287,20 +288,22 @@ export default function PriceTestStep2({
         floorShape *
         getExcessFactor(excess)
     );
-    // Hard bottom anchored on the REFERENCE combo (£2,000 claim / £70 labour /
-    // £150 excess). Anchoring on the cheapest combo inflated the bottom ~1.39× on a
-    // default quote, clamping nearly every vehicle to the same price.
-    const anchorClaimFactor = referenceClaimFactor;
-    const anchorLabourFactor = referenceLabourFactor;
-    const absShape =
-      (anchorClaimFactor > 0 ? claimFactor / anchorClaimFactor : 1) *
-      (anchorLabourFactor > 0 ? labourFactor / anchorLabourFactor : 1) *
-      (getExcessFactor(excess) / getExcessFactor(150));
+    // Hard bottom anchored on the CHEAPEST combo (£1,000 claim / £50 labour /
+    // £500 excess = £349 at 12 months), stepped up a compressed ladder for richer
+    // options. Shared helper so the sandbox, the model engine and the live grid
+    // all agree on the minimum.
     const hardBottom = Math.round(
-      (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 399) * Math.max(1, absShape) * motorbikeFactor
+      (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 349) *
+        getAbsoluteMinimumShape({
+          claimLimit: Number(claimLimit),
+          labourRate: Number(labour),
+          voluntaryExcess: Number(excess),
+        }) *
+        motorbikeFactor
     );
     return Math.max(shapedMinimum, hardBottom);
   };
+
 
   /**
    * Excess is NOT a multiplier any more. It is the SAME flat £/mo difference vs the

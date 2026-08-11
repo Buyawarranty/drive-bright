@@ -118,15 +118,15 @@ const CLAIM_COLUMN_LABELS: Record<number, { title: string; sub: string }> = {
 
 /**
  * Quotes & Orders floor: the sales team discounts from this grid, so an agent
- * price is never allowed under £399 for one year (2/3 year floors follow the
+ * price is never allowed under £349 for one year at the cheapest combo (2/3 year floors follow the
  * ×1.65 / ×2.35 term multipliers).
  * Website prices carry no acquisition cost and are NOT floored — a website
  * price of, say, £250 is fine and shown as-is.
  */
 const MIN_SELLABLE_BY_PERIOD: Record<string, number> = {
-  '12months': 399,
-  '24months': 659,
-  '36months': 938,
+  '12months': 349,
+  '24months': 576,
+  '36months': 821,
 };
 
 

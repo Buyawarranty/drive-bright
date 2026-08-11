@@ -1,5 +1,5 @@
 import { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
-import { getExcessTotalAdjustment, getExcessFactor } from '@/lib/pricingMatrix';
+import { getExcessTotalAdjustment, getExcessFactor, getAbsoluteMinimumShape } from '@/lib/pricingMatrix';
 
 
 /**
@@ -11,7 +11,7 @@ import { getExcessTotalAdjustment, getExcessFactor } from '@/lib/pricingMatrix';
  * vehicle + options, otherwise agents quote something the test model never showed.
  */
 
-/** Never sell below £399 for one year; 2/3 year floors follow the term multipliers. */
+/** Shaped floor per term (the hard bottom below is the £349 absolute minimum). */
 export const MIN_SELLABLE_BY_MONTHS: Record<number, number> = {
   12: 249,
   24: 498,
@@ -19,16 +19,17 @@ export const MIN_SELLABLE_BY_MONTHS: Record<number, number> = {
 };
 
 /**
- * ABSOLUTE hard-bottom minimum per term. 12 months = £399; 24 and 36 months scale
- * from the 12-month figure. Only the cheapest combos get lifted to this; everything
- * above the normal shaped floor stays where it already was.
- * Motorbikes are half (£200). Web journey = grid minus the Step 3 discount.
+ * ABSOLUTE hard-bottom minimum per term. 12 months = £349 for the CHEAPEST combo
+ * (£1,000 claim / £50 labour / £500 excess); 24 and 36 months scale from it.
+ * Richer options step this bottom up via `getAbsoluteMinimumShape`.
+ * Motorbikes are half. Web journey = grid minus the Step 3 discount.
  */
 export const ABSOLUTE_MIN_GRID_BY_MONTHS: Record<number, number> = {
-  12: 399,
-  24: 659,
-  36: 938,
+  12: 349,
+  24: 576,
+  36: 821,
 };
+
 
 
 
@@ -163,7 +164,7 @@ export function priceFromPricingModel(
       totalPrice: 0,
       monthlyPrice: 0,
       payInFullPrice: 0,
-      minSellable: MIN_SELLABLE_BY_MONTHS[months] ?? 399,
+      minSellable: MIN_SELLABLE_BY_MONTHS[months] ?? 249,
       belowMinimum: false,
     };
   }
@@ -227,29 +228,28 @@ export function priceFromPricingModel(
     (refLabourFactor > 0 ? labourFactor / refLabourFactor : 1);
 
   const shapedModelFloor = Math.round(
-    (MIN_SELLABLE_BY_MONTHS[months] ?? 399) *
+    (MIN_SELLABLE_BY_MONTHS[months] ?? 249) *
       motorbikeFactor *
       floorShape *
       getExcessFactor(Number(options.voluntaryExcess))
   );
 
   /**
-   * Hard bottom, anchored on the REFERENCE combo (£2,000 claim / £70 labour /
-   * £150 excess = £399 at 12 months). Anchoring it on the cheapest combo instead
-   * inflated the hard bottom by ~1.39× on a default quote, which clamped every
-   * vehicle up to ~9 years old to the SAME price. Upgrades above the reference
-   * still lift the hard bottom proportionally; cheaper options never go below it.
+   * Hard bottom, anchored on the CHEAPEST combo (£1,000 claim / £50 labour /
+   * £500 excess = £349 at 12 months) and stepped up a compressed ladder for
+   * richer options. Shared with the live grid via `getAbsoluteMinimumShape` so
+   * agents never see two different minimums for the same options.
    */
-  const anchorClaimFactor = refClaimFactor;
-  const anchorLabourFactor = refLabourFactor;
-  const absShape =
-    (anchorClaimFactor > 0 ? claimFactor / anchorClaimFactor : 1) *
-    (anchorLabourFactor > 0 ? labourFactor / anchorLabourFactor : 1) *
-    (getExcessFactor(Number(options.voluntaryExcess)) / getExcessFactor(150));
-
   const absoluteMin = Math.round(
-    (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 399) * Math.max(1, absShape) * motorbikeFactor
+    (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 349) *
+      getAbsoluteMinimumShape({
+        claimLimit: Number(options.claimLimit),
+        labourRate: Number(options.labourRate),
+        voluntaryExcess: Number(options.voluntaryExcess),
+      }) *
+      motorbikeFactor
   );
+
 
 
   const minSellable = Math.max(shapedModelFloor, absoluteMin);
