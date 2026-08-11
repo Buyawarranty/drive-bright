@@ -234,22 +234,21 @@ export function priceFromPricingModel(
   );
 
   /**
-   * Hard bottom, anchored on the REFERENCE combo (£2,000 claim / £70 labour /
-   * £150 excess = £399 at 12 months). Anchoring it on the cheapest combo instead
-   * inflated the hard bottom by ~1.39× on a default quote, which clamped every
-   * vehicle up to ~9 years old to the SAME price. Upgrades above the reference
-   * still lift the hard bottom proportionally; cheaper options never go below it.
+   * Hard bottom, anchored on the CHEAPEST combo (£1,000 claim / £50 labour /
+   * £500 excess = £349 at 12 months) and stepped up a compressed ladder for
+   * richer options. Shared with the live grid via `getAbsoluteMinimumShape` so
+   * agents never see two different minimums for the same options.
    */
-  const anchorClaimFactor = refClaimFactor;
-  const anchorLabourFactor = refLabourFactor;
-  const absShape =
-    (anchorClaimFactor > 0 ? claimFactor / anchorClaimFactor : 1) *
-    (anchorLabourFactor > 0 ? labourFactor / anchorLabourFactor : 1) *
-    (getExcessFactor(Number(options.voluntaryExcess)) / getExcessFactor(150));
-
   const absoluteMin = Math.round(
-    (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 399) * Math.max(1, absShape) * motorbikeFactor
+    (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 349) *
+      getAbsoluteMinimumShape({
+        claimLimit: Number(options.claimLimit),
+        labourRate: Number(options.labourRate),
+        voluntaryExcess: Number(options.voluntaryExcess),
+      }) *
+      motorbikeFactor
   );
+
 
 
   const minSellable = Math.max(shapedModelFloor, absoluteMin);
