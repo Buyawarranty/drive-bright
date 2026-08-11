@@ -60,7 +60,36 @@ serve(async (req) => {
       ? `${vehicleMake} ${vehicleModel}` 
       : null;
 
+    // Duplicate guard: never send the same welcome SMS to a number twice in 30 days
+    const guardUrl = Deno.env.get('SUPABASE_URL');
+    const guardKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (guardUrl && guardKey) {
+      try {
+        const guardClient = createClient(guardUrl, guardKey);
+        const tail = formattedPhone.replace(/\D/g, '').slice(-9);
+        const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        const { data: recent } = await guardClient
+          .from('sms_send_log')
+          .select('id, phone, created_at')
+          .eq('message_type', 'welcome')
+          .eq('success', true)
+          .gte('created_at', since)
+          .like('phone', `%${tail}`)
+          .limit(1);
+        if (recent && recent.length > 0) {
+          console.log('Duplicate welcome SMS suppressed for', formattedPhone);
+          return new Response(
+            JSON.stringify({ success: true, skipped: true, reason: 'duplicate_within_30_days' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } catch (guardError) {
+        console.error('Duplicate guard check failed (continuing):', guardError);
+      }
+    }
+
     console.log('Sending welcome SMS message:', WELCOME_MESSAGE);
+
 
     // Create Basic Auth header
     const authString = btoa(`${clicksendUsername}:${clicksendApiKey}`);
