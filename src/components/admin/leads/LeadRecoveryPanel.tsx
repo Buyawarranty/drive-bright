@@ -196,11 +196,8 @@ export const LeadRecoveryPanel: React.FC = () => {
       // over their whole tenure, so a narrow range would silently drop most of them.
       let reclaimed = 0;
       if (includePrevious && sourceAgent !== ANY_AGENT && sourceAgent !== UNASSIGNED) {
-        const { data: auditRows } = await (supabase.from('lead_assignment_audit') as any)
-          .select('lead_id')
-          .eq('previous_assigned_to_id', sourceAgent)
-          .limit(10000);
-        const ids = Array.from(new Set(((auditRows ?? []) as any[]).map(r => r.lead_id).filter(Boolean)));
+        const ids = await fetchExOwnedLeadIds(sourceAgent);
+
         const seen = new Set(all.map(r => r.id));
         for (let i = 0; i < ids.length; i += 300) {
           const { data } = await (supabase.from('sales_leads') as any)
