@@ -73,6 +73,19 @@ const BlogArticle = () => {
     });
   }, [html, toc]);
 
+  // Split the article at a mid-point <h2> so we can drop a reg CTA into the flow
+  const [htmlPartOne, htmlPartTwo] = useMemo(() => {
+    if (!enrichedHtml) return ['', ''] as [string, string];
+    const positions: number[] = [];
+    const re = /<h2[^>]*>/gi;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(enrichedHtml))) positions.push(m.index);
+    if (positions.length < 4) return [enrichedHtml, ''] as [string, string];
+    const cut = positions[Math.floor(positions.length / 2)];
+    return [enrichedHtml.slice(0, cut), enrichedHtml.slice(cut)] as [string, string];
+  }, [enrichedHtml]);
+
+
   useEffect(() => {
     if (slug) {
       loadPost();
