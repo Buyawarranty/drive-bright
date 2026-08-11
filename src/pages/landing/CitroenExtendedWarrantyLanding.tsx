@@ -30,6 +30,7 @@ import citroenC5Aircross from '@/assets/citroen-models/citroen-c5-aircross-suv-e
 import citroenBerlingo from '@/assets/citroen-models/citroen-berlingo-extended-warranty.jpg';
 import citroenEC4 from '@/assets/citroen-models/citroen-e-c4-ev-extended-warranty.jpg';
 import { SEO_FROM_MONTHLY_PRICE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 const citroenModels = [
   { label: 'C1', examples: '1.0 VTi city car', img: citroenC1, alt: 'Citroen C1 extended warranty cover — 1.0 VTi small city car' },
@@ -111,7 +112,7 @@ const CitroenExtendedWarrantyLanding: React.FC = () => {
       <WebPageSchema name="Citroen Extended Warranty" description="Citroen extended warranty cover from £19/month." url="https://buyawarranty.co.uk/car-extended-warranty/citroen/" />
       <FAQSchema faqs={faqs.map(f => ({ question: f.q, answer: f.a }))} />
       <Helmet>
-        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "Citroen Extended Warranty", "description": "Flexible Citroen warranty cover from \u00a319/month. Covers engine, gearbox, electrics and more across all Citroen models.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/citroen/", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1"}})}</script>
+        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "Citroen Extended Warranty", "description": "Flexible Citroen warranty cover from \u00a319/month. Covers engine, gearbox, electrics and more across all Citroen models.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/citroen/", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT, "bestRating": "5", "worstRating": "1"}})}</script>
       </Helmet>
       <BreadcrumbSchema items={[{ name: 'Home', url: 'https://buyawarranty.co.uk/' }, { name: 'Citroen Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/citroen/' }]} />
 

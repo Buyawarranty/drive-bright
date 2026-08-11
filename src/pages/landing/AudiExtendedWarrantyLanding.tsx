@@ -30,6 +30,7 @@ import audiQ3 from '@/assets/audi-models/audi-q3-extended-warranty.jpg';
 import audiQ5 from '@/assets/audi-models/audi-q5-extended-warranty.jpg';
 import audiQ4Etron from '@/assets/audi-models/audi-q4-etron-ev-extended-warranty.jpg';
 import { SEO_FROM_MONTHLY_PRICE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 const audiModels = [
   { label: 'A1', examples: 'TFSI supermini', img: audiA1, alt: 'Audi A1 extended warranty cover — TFSI supermini' },
@@ -111,7 +112,7 @@ const AudiExtendedWarrantyLanding: React.FC = () => {
       <WebPageSchema name="Audi Extended Warranty" description="Audi extended warranty cover from £19/month." url="https://buyawarranty.co.uk/car-extended-warranty/audi/" />
       <FAQSchema faqs={faqs.map(f => ({ question: f.q, answer: f.a }))} />
       <Helmet>
-        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "Audi Extended Warranty", "description": "Flexible Audi warranty cover from \u00a319/month. Covers engine, gearbox, electrics and more across all Audi models.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/audi/", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1"}})}</script>
+        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "Audi Extended Warranty", "description": "Flexible Audi warranty cover from \u00a319/month. Covers engine, gearbox, electrics and more across all Audi models.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/audi/", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT, "bestRating": "5", "worstRating": "1"}})}</script>
       </Helmet>
       <BreadcrumbSchema items={[{ name: 'Home', url: 'https://buyawarranty.co.uk/' }, { name: 'Audi Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/audi/' }]} />
 

@@ -29,6 +29,7 @@ import peugeot3008Hero from '@/assets/peugeot-3008-extended-warranty-uk.png';
 import peugeotWhyChooseUs from '@/assets/peugeot-why-choose-us.webp';
 import peugeotConfidenceCovered from '@/assets/peugeot-confidence-covered.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 // Peugeot Models covered (grouped by category)
 const peugeotModelCategories = {
@@ -212,7 +213,7 @@ const PeugeotWarrantyLanding: React.FC = () => {
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
     "manufacturer": { "@type": "Organization", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "logo": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "contactPoint": { "@type": "ContactPoint", "telephone": "+44-330-229-5040", "contactType": "customer service", "availableLanguage": "English", "areaServed": "GB" } },
     "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/peugeot-warranty/", "seller": { "@type": "Organization", "name": "Buy A Warranty" }, "priceSpecification": { "@type": "UnitPriceSpecification", "price": String(SEO_FROM_MONTHLY_PRICE), "priceCurrency": "GBP", "unitText": "month", "billingIncrement": 1 } },
-    "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1" },
+    "aggregateRating": { "@type": "AggregateRating", "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT, "bestRating": "5", "worstRating": "1" },
     "review": testimonials.map((t, i) => ({ "@type": "Review", "author": { "@type": "Person", "name": t.name }, "reviewRating": { "@type": "Rating", "ratingValue": t.rating, "bestRating": "5" }, "reviewBody": t.text, "datePublished": new Date(Date.now() - (i + 1) * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] })),
     "category": "Vehicle Extended Warranty",
     "audience": { "@type": "Audience", "audienceType": "Peugeot vehicle owners in the United Kingdom" },

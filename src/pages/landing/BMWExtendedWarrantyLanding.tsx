@@ -37,6 +37,7 @@ import bmwXSeries from '@/assets/bmw-models/bmw-x-series-suv-extended-warranty.j
 import bmw7Series from '@/assets/bmw-models/bmw-7-series-extended-warranty.jpg';
 import bmwISeries from '@/assets/bmw-models/bmw-i-series-ev-hybrid-extended-warranty.jpg';
 import { SEO_FROM_MONTHLY_PRICE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 const bmwModels = [
   { label: '1 Series', examples: '118i, 120d, 116d', img: bmw1Series, alt: 'BMW 1 Series extended warranty cover — 118i, 120d hatchback' },
@@ -160,7 +161,7 @@ const BMWExtendedWarrantyLanding: React.FC = () => {
       <WebPageSchema name="BMW Extended Warranty" description="BMW extended warranty cover from £19/month." url="https://buyawarranty.co.uk/bmw-extended-warranty/" />
       <FAQSchema faqs={faqs.map(f => ({ question: f.q, answer: f.a }))} />
       <Helmet>
-        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "BMW Extended Warranty", "description": "Flexible BMW warranty cover from \u00a319/month. Covers engine, gearbox, electrics and more across all BMW models.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/bmw/", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1"}})}</script>
+        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "BMW Extended Warranty", "description": "Flexible BMW warranty cover from \u00a319/month. Covers engine, gearbox, electrics and more across all BMW models.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/bmw/", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT, "bestRating": "5", "worstRating": "1"}})}</script>
       </Helmet>
       <BreadcrumbSchema items={[{ name: 'Home', url: 'https://buyawarranty.co.uk/' }, { name: 'BMW Extended Warranty', url: 'https://buyawarranty.co.uk/bmw-extended-warranty/' }]} />
 

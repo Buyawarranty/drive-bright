@@ -34,6 +34,7 @@ import kiaSportageHero from '@/assets/kia-sportage-extended-warranty-uk.png';
 import kiaCeedWarranty from '@/assets/kia-ceed-used-car-warranty.png';
 import kiaNiroHighMileage from '@/assets/kia-niro-high-mileage-warranty.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 // Kia Models covered (grouped by category) - 2012 to 2026
 const kiaModelCategories = {
@@ -430,8 +431,7 @@ const KiaWarrantyLanding: React.FC = () => {
     },
     "aggregateRating": {
       "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "reviewCount": "2847",
+      "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT,
       "bestRating": "5",
       "worstRating": "1"
     },
@@ -532,7 +532,7 @@ const KiaWarrantyLanding: React.FC = () => {
       { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "09:00", "closes": "13:00" }
     ],
     "sameAs": ["https://uk.trustpilot.com/review/buyawarranty.co.uk"],
-    "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847" }
+    "aggregateRating": { "@type": "AggregateRating", "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT }
   };
 
   const webPageSchema = {

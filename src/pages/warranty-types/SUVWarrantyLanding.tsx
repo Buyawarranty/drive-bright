@@ -37,6 +37,7 @@ import pandaGarage from '@/assets/panda-garage-service.png';
 import suvWhyChooseUs from '@/assets/orange-suv-with-logo.png';
 import suvHighMileage from '@/assets/land-rover-range-rover-sport-warranty.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 // Popular SUV & 4x4 models covered (2011 - 2024) — grouped by category
 // Popular SUV & 4x4 models covered (2011 - 2024) — grouped by category
@@ -498,8 +499,7 @@ const SUVWarrantyLanding: React.FC = () => {
     },
     "aggregateRating": {
       "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "reviewCount": "2847",
+      "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT,
       "bestRating": "5",
       "worstRating": "1"
     },

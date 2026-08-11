@@ -39,6 +39,7 @@ import toyotaLandCruiserCover from '@/assets/toyota-land-cruiser-additional-cove
 import toyotaRav4Testimonials from '@/assets/toyota-rav4-hybrid-testimonials.png';
 import toyotaCamryCoverage from '@/assets/toyota-camry-uk-coverage.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 // Toyota Models covered (grouped by category) - 2012 to 2026
 const toyotaModelCategories = {
@@ -436,8 +437,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
     },
     "aggregateRating": {
       "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "reviewCount": "2847",
+      "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT,
       "bestRating": "5",
       "worstRating": "1"
     },
@@ -538,7 +538,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
       { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "09:00", "closes": "13:00" }
     ],
     "sameAs": ["https://uk.trustpilot.com/review/buyawarranty.co.uk"],
-    "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847" }
+    "aggregateRating": { "@type": "AggregateRating", "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT }
   };
 
   const webPageSchema = {
