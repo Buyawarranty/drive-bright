@@ -1043,12 +1043,11 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="range"
-                      selected={bulkDateRange}
-                      onSelect={(range) => { setBulkDateRange(range); if (range?.to) setBulkCalendarOpen(false); }}
-                      numberOfMonths={2}
-                      className="p-3 pointer-events-auto"
+                    <DraftRangeCalendar
+                      value={bulkDateRange}
+                      resetKey={bulkCalendarOpen}
+                      onApply={(range) => { setBulkDateRange(range); setBulkCalendarOpen(false); }}
+                      onCancel={() => setBulkCalendarOpen(false)}
                     />
                   </PopoverContent>
                 </Popover>
