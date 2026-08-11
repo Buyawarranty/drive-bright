@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useParams, Link } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
 import { OrganizationSchema } from '@/components/schema/OrganizationSchema';
@@ -289,7 +290,11 @@ const BlogArticle = () => {
   // Always self-referencing and always trailing-slashed so it matches sitemap.xml
   const rawArticleUrl = post.canonical_url || `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}/`;
   const articleUrl = rawArticleUrl.endsWith('/') ? rawArticleUrl : `${rawArticleUrl}/`;
-  const heroImage = post.featured_image_url || getDefaultHeroImage(post.slug);
+  const rawHeroImage = post.featured_image_url || getDefaultHeroImage(post.slug);
+  // Article schema requires absolute image URLs for Google rich results.
+  const heroImage = rawHeroImage?.startsWith('http')
+    ? rawHeroImage
+    : `https://buyawarranty.co.uk${rawHeroImage?.startsWith('/') ? '' : '/'}${rawHeroImage || ''}`;
   const metaDescription = post.seo_description || post.excerpt || quickAnswer;
   const lastModified = post.updated_at || post.published_at;
 
@@ -400,10 +405,10 @@ const BlogArticle = () => {
           { name: post.title, url: `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}/` }
         ]}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      {/* Article + FAQ schema lives in <head> so crawlers pick it up with the meta tags */}
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+      </Helmet>
 
       {/* Editorial serif for headings */}
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
