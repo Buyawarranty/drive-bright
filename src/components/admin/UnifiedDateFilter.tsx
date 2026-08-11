@@ -88,12 +88,12 @@ interface UnifiedDateFilterProps {
 }
 
 function fmtInput(d: Date | undefined): string {
-  return d && isValid(d) ? format(d, 'M/d/yyyy') : '';
+  return d && isValid(d) ? format(d, 'dd/MM/yyyy') : '';
 }
 
 function tryParseInput(raw: string): Date | null {
   const cleaned = raw.trim().replace(/[.\-\s]/g, '/');
-  for (const fmt of ['M/d/yyyy', 'MM/dd/yyyy', 'd/M/yyyy', 'yyyy-MM-dd']) {
+  for (const fmt of ['dd/MM/yyyy', 'd/M/yyyy', 'd/M/yy', 'yyyy-MM-dd']) {
     const p = parse(cleaned, fmt, new Date());
     if (isValid(p)) return p;
   }
@@ -350,7 +350,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
                     onChange={(e) => setStartText(e.target.value)}
                     onBlur={commitStart}
                     onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-                    placeholder="m/d/yyyy"
+                    placeholder="dd/mm/yyyy"
                     className="h-9 mt-1"
                   />
                 </div>
@@ -364,7 +364,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
                     onChange={(e) => setEndText(e.target.value)}
                     onBlur={commitEnd}
                     onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-                    placeholder="m/d/yyyy"
+                    placeholder="dd/mm/yyyy"
                     className="h-9 mt-1"
                   />
                 </div>
