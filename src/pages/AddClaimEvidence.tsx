@@ -110,6 +110,7 @@ const AddClaimEvidence = () => {
       <SEOHead
         title="Add Evidence to Your Claim | Buy a Warranty"
         description="Already submitted a claim? Quickly upload additional evidence — just enter your registration and email."
+        noindex
       />
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-200">

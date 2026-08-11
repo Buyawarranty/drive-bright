@@ -29,7 +29,7 @@ const VolkswagenPPCFooter: React.FC = () => {
             <a
               href="https://wa.me/message/SPQPJ6O3UBF5B1"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
               className="flex items-center text-sm font-semibold text-[#25D366] hover:text-[#20BA5A] transition-colors"
             >
               <MessageCircle className="w-4 h-4 mr-1.5" />

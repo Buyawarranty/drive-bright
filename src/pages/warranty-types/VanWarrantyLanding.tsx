@@ -694,7 +694,7 @@ const VanWarrantyLanding: React.FC = () => {
                       <a
                         href="https://wa.me/443302295040"
                         target="_blank"
-                        rel="noopener noreferrer"
+                        rel="noopener noreferrer nofollow"
                         className="text-green-600 hover:underline font-medium inline-flex items-center gap-1"
                       >
                         <MessageCircle className="w-3.5 h-3.5" />
@@ -1415,7 +1415,7 @@ const VanWarrantyLanding: React.FC = () => {
                 <a
                   href="https://wa.me/443302295040"
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer nofollow"
                   className="inline-flex items-center gap-1.5 text-white font-bold text-base md:text-xl hover:text-white/80 transition-colors"
                 >
                   <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />

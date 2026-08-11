@@ -420,7 +420,7 @@ const SkodaWarranty = () => {
           <a
             href="https://wa.me/message/SPQPJ6O3UBF5B1"
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener noreferrer nofollow"
             className="w-14 h-14 rounded-full shadow-lg flex items-center justify-center bg-[#25D366] hover:bg-[#20BA59] transition-colors"
             aria-label="Contact us on WhatsApp"
           >

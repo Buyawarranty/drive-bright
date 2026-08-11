@@ -47,7 +47,7 @@ const HelpMeChooseModal: React.FC<HelpMeChooseModalProps> = ({ isOpen, onClose }
             <a
               href="https://wa.me/message/SPQPJ6O3UBF5B1"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
               className="w-full flex items-center gap-3 p-4 rounded-xl border border-border hover:bg-muted/30 transition-colors text-left"
             >
               <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">

@@ -148,7 +148,7 @@ const MotorcycleWarranty = () => {
             </nav>
 
             <div className="hidden lg:flex items-center space-x-3">
-              <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer">
+              <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer nofollow">
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -200,7 +200,7 @@ const MotorcycleWarranty = () => {
                   </nav>
 
                   <div className="space-y-4 pt-6 mt-auto">
-                    <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer">
+                    <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer nofollow">
                       <Button variant="outline" className="w-full bg-green-500 text-white border-green-500 hover:bg-green-600 hover:border-green-600 text-lg py-3" onClick={() => setIsMobileMenuOpen(false)}>
                         WhatsApp Us
                       </Button>
@@ -639,7 +639,7 @@ const MotorcycleWarranty = () => {
             <a
               href="https://wa.me/message/SPQPJ6O3UBF5B1"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
               className="fixed bottom-24 right-4 z-40 bg-green-500 text-white p-1 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 flex items-center justify-center"
             >
               <img src={whatsappIconNew} alt="WhatsApp" className="w-12 h-12" />

@@ -420,7 +420,7 @@ const HomepageAlt: React.FC<HomepageAltProps> = ({ onRegistrationSubmit }) => {
             <a 
               href="https://wa.me/message/SPQPJ6O3UBF5B1" 
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
               className="flex items-center gap-2 text-white hover:text-white/80 transition-colors font-medium text-lg"
             >
               <Phone size={20} />

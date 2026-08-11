@@ -100,7 +100,7 @@ const LandRoverExtendedWarrantyLanding: React.FC = () => {
   return (
     <>
       <SEOHead
-        title="Land Rover Extended Warranty from £19/month"
+        title="Land Rover Warranty UK | Discovery & Range Rover Cover"
         description="Protect your Land Rover or Range Rover from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds."
         keywords="Land Rover extended warranty, Range Rover warranty, Range Rover Sport warranty, Defender warranty, Discovery warranty, Velar warranty, Evoque warranty, used Land Rover warranty UK"
         canonical="https://buyawarranty.co.uk/car-extended-warranty/land-rover/"

@@ -19,6 +19,10 @@ export interface RouteMeta {
   ogImage?: string;
   /** Optional Open Graph type override, e.g. "article" for editorial pages. */
   ogType?: string;
+  /** Static <h1> for the crawler-visible fallback body. Defaults to the title minus its brand suffix. */
+  h1?: string;
+  /** Static intro paragraph for the crawler-visible fallback body. Defaults to the description. */
+  intro?: string;
 }
 
 
@@ -92,7 +96,7 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
   },
   {
     path: "/discount-promo-offers/",
-    title: "Discounts & Promo Offers | Buy A Warranty",
+    title: "Car Warranty Discount Codes 2026 | Buy A Warranty",
     description:
       "Latest discounts and promotional offers on car, van, EV and motorbike warranty plans.",
   },
@@ -243,7 +247,7 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
   // ---------------- Main product pages ----------------
   {
     path: "/buy-a-used-car-warranty-reliable-warranties/",
-    title: "Used Car Warranty | Reliable UK Cover | Buy A Warranty",
+    title: "Buy a Car Warranty Online | Trusted UK Cover",
     description:
       "Comprehensive used car warranty cover from 60p a day. Protect your car against unexpected repair bills.",
   },
@@ -361,7 +365,7 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
   },
   {
     path: "/car-extended-warranty/land-rover/",
-    title: "Land Rover Extended Warranty from \u00a319/month",
+    title: "Land Rover Warranty UK | Discovery & Range Rover Cover",
     description:
       "Protect your Land Rover or Range Rover from unexpected repair bills with flexible UK warranty cover from \u00a319/month. Instant online quote in under 60 seconds.",
   },
@@ -373,7 +377,7 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
   },
   {
     path: "/careers/",
-    title: "Vehicle Warranty Sales Executive Jobs UK | Remote PAYE | Buyawarranty Careers",
+    title: "Warranty Sales Jobs UK | Remote PAYE Careers",
     description:
       "Remote UK Vehicle Warranty Sales Executive role. Full-time PAYE, warm leads, uncapped commission, OTE \u00a335,000\u2013\u00a360,000+. Apply to join the Buyawarranty sales team.",
   },

@@ -1395,7 +1395,7 @@ const CarExtendedWarranty: React.FC = () => {
           <a 
             href="https://wa.me/message/SPQPJ6O3UBF5B1" 
             target="_blank" 
-            rel="noopener noreferrer"
+            rel="noopener noreferrer nofollow"
             className="bg-green-500 text-white p-2 rounded-full shadow-lg hover:bg-green-600 transition-all hover:scale-110"
           >
             <MessageCircle className="h-10 w-10" />
@@ -1415,7 +1415,7 @@ const CarExtendedWarranty: React.FC = () => {
           <a 
             href="https://wa.me/message/SPQPJ6O3UBF5B1" 
             target="_blank" 
-            rel="noopener noreferrer"
+            rel="noopener noreferrer nofollow"
             className="flex-1"
           >
             <Button className="w-full bg-green-500 text-white hover:bg-green-600">

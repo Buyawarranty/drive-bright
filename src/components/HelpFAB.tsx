@@ -70,7 +70,7 @@ const HelpFAB: React.FC = () => {
             <a 
               href="https://wa.me/message/SPQPJ6O3UBF5B1"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
               onClick={() => setIsExpanded(false)}
             >

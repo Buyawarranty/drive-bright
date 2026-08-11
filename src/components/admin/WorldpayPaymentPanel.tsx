@@ -209,7 +209,7 @@ const WorldpayPaymentPanel: React.FC<Props> = ({
                 <a
                   className="inline-flex items-center gap-1 text-xs text-red-700 underline"
                   href={`https://wa.me/${customerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi, please pay £${amount} securely here: ${active.payment_url}`)}`}
-                  target="_blank" rel="noreferrer"
+                  target="_blank" rel="noreferrer nofollow"
                 >
                   <Send className="w-3 h-3" /> Send via WhatsApp
                 </a>

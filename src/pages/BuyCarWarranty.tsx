@@ -35,7 +35,7 @@ const BuyCarWarranty: React.FC = () => {
   return (
     <>
       <SEOHead
-        title="Buy a Car Warranty Online - Trusted UK Cover for All Budgets | Buy A Warranty"
+        title="Buy a Car Warranty Online | Trusted UK Cover"
         description="Compare car warranty quotes and get extended cover for your vehicle. Best car warranty UK options for used cars, low monthly costs, and trusted protection. Get a quote today."
         keywords="buy a car warranty online, car warranty UK, extended car warranty, used car warranty, best car warranty provider, affordable car warranty UK, car warranty quotes, car warranty cover, cheap car warranty, car warranty cost, vehicle warranty UK"
         canonical="https://buyawarranty.co.uk/buy-a-warranty-for-my-car-uk-warranties/"
@@ -728,7 +728,7 @@ const BuyCarWarranty: React.FC = () => {
           <a
             href="https://wa.me/message/SPQPJ6O3UBF5B1"
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener noreferrer nofollow"
             className="bg-[#25D366] hover:bg-[#20BA5A] text-white p-1 rounded-full shadow-lg transition-all duration-300 hover:scale-110 flex items-center justify-center"
             onClick={() => trackButtonClick('whatsapp_float_buy_car_warranty')}
           >
