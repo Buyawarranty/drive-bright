@@ -23,6 +23,7 @@ interface BlogPost {
   content: any;
   featured_image_url: string | null;
   published_at: string;
+  updated_at?: string | null;
   read_time_minutes: number;
   seo_title: string | null;
   seo_description: string | null;
@@ -32,6 +33,7 @@ interface BlogPost {
   blog_authors: { name: string; bio: string } | null;
   blog_categories: { name: string } | null;
 }
+
 
 const proseClass = `prose prose-slate prose-base sm:prose-lg max-w-none
   prose-headings:font-bold prose-headings:text-[#001F3F]
@@ -80,14 +82,55 @@ const BlogArticle = () => {
     return items;
   }, [html]);
   const enrichedHtml = useMemo(() => {
-    if (!html || toc.length === 0) return html;
+    if (!html) return html;
     let idx = 0;
-    return html.replace(/<h2([^>]*)>/gi, (_f, attrs) => {
-      const item = toc[idx++];
-      if (!item || /\sid=/.test(attrs)) return `<h2${attrs}>`;
-      return `<h2${attrs} id="${item.id}">`;
+    let out = toc.length
+      ? html.replace(/<h2([^>]*)>/gi, (_f, attrs) => {
+          const item = toc[idx++];
+          if (!item || /\sid=/.test(attrs)) return `<h2${attrs}>`;
+          return `<h2${attrs} id="${item.id}">`;
+        })
+      : html;
+    // Image performance + accessibility hygiene (Core Web Vitals + image search)
+    out = out.replace(/<img([^>]*)>/gi, (_f, attrs: string) => {
+      let a = attrs;
+      if (!/\sloading=/i.test(a)) a += ' loading="lazy"';
+      if (!/\sdecoding=/i.test(a)) a += ' decoding="async"';
+      if (!/\salt=/i.test(a)) a += ' alt=""';
+      return `<img${a}>`;
     });
+    return out;
   }, [html, toc]);
+
+  // FAQ pairs (Q1./A1. style) → FAQPage schema for rich results + AI answer engines
+  const faqItems = useMemo(() => {
+    if (!html) return [] as { question: string; answer: string }[];
+    const items: { question: string; answer: string }[] = [];
+    const re = /<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi;
+    let m: RegExpExecArray | null;
+    const strip = (s: string) =>
+      s.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+    while ((m = re.exec(html))) {
+      const q = strip(m[1]);
+      const a = strip(m[2]);
+      if (!/^Q\d+\./i.test(q)) continue;
+      items.push({
+        question: q.replace(/^Q\d+\.\s*/i, ''),
+        answer: a.replace(/^A\d+\.\s*/i, ''),
+      });
+    }
+    return items;
+  }, [html]);
+
+  // First substantive paragraph — used as the concise "quick answer" for AI overviews
+  const quickAnswer = useMemo(() => {
+    if (!html) return '';
+    const m = html.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+    if (!m) return '';
+    const text = m[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    return text.length > 320 ? `${text.slice(0, 317)}…` : text;
+  }, [html]);
+
 
   // Split the article at a mid-point <h2> so we can drop a reg CTA into the flow
   const [htmlPartOne, htmlPartTwo] = useMemo(() => {
@@ -216,32 +259,75 @@ const BlogArticle = () => {
     );
   }
 
-  // Generate structured data
+  const articleUrl = post.canonical_url || `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}/`;
+  const heroImage = post.featured_image_url || getDefaultHeroImage(post.slug);
+  const metaDescription = post.seo_description || post.excerpt || quickAnswer;
+  const lastModified = post.updated_at || post.published_at;
+
+  // Generate structured data (Article + FAQ + breadcrumb-friendly graph for AI answer engines)
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "headline": post.title,
-    "description": post.excerpt,
-    "image": post.featured_image_url || getDefaultHeroImage(post.slug),
-    "datePublished": post.published_at,
-    "author": {
-      "@type": "Person",
-      "name": post.blog_authors?.name
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Buy a Warranty",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png"
-      }
-    },
-    "wordCount": post.content?.raw?.split(/\s+/).length || 0,
-    "timeRequired": `PT${post.read_time_minutes}M`,
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": post.canonical_url || `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}`
-    }
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        "@id": `${articleUrl}#article`,
+        "headline": post.title,
+        "alternativeHeadline": post.seo_title || post.title,
+        "description": metaDescription,
+        "abstract": quickAnswer || metaDescription,
+        "image": {
+          "@type": "ImageObject",
+          "url": heroImage,
+          "width": 1600,
+          "height": 900,
+        },
+        "datePublished": post.published_at,
+        "dateModified": lastModified,
+        "inLanguage": "en-GB",
+        "isAccessibleForFree": true,
+        "keywords": (post.seo_keywords || []).join(', '),
+        "articleSection": post.blog_categories?.name || 'Warranty Guides',
+        "author": {
+          "@type": "Person",
+          "name": post.blog_authors?.name || 'Buy a Warranty Editorial Team',
+          "worksFor": { "@type": "Organization", "name": "Buy a Warranty" },
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Buy a Warranty",
+          "url": "https://buyawarranty.co.uk/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png"
+          }
+        },
+        "wordCount": post.content?.raw?.split(/\s+/).length || 0,
+        "timeRequired": `PT${post.read_time_minutes}M`,
+        "spatialCoverage": { "@type": "Country", "name": "United Kingdom" },
+        "audience": { "@type": "Audience", "audienceType": "UK car owners and used car buyers", "geographicArea": { "@type": "Country", "name": "United Kingdom" } },
+        "about": [
+          { "@type": "Thing", "name": "Car warranty" },
+          { "@type": "Thing", "name": "Used car ownership costs" },
+        ],
+        "speakable": {
+          "@type": "SpeakableSpecification",
+          "cssSelector": ["h1", ".article-quick-answer"],
+        },
+        "mainEntityOfPage": { "@type": "WebPage", "@id": articleUrl },
+      },
+      ...(faqItems.length
+        ? [{
+            "@type": "FAQPage",
+            "@id": `${articleUrl}#faq`,
+            "inLanguage": "en-GB",
+            "mainEntity": faqItems.map((f) => ({
+              "@type": "Question",
+              "name": f.question,
+              "acceptedAnswer": { "@type": "Answer", "text": f.answer },
+            })),
+          }]
+        : []),
+    ],
   };
 
   // Parse content
@@ -255,16 +341,27 @@ const BlogArticle = () => {
   const publishedDate = new Date(post.published_at).toLocaleDateString('en-GB', {
     year: 'numeric', month: 'long', day: 'numeric'
   });
+  const updatedDate = new Date(lastModified).toLocaleDateString('en-GB', {
+    year: 'numeric', month: 'long', day: 'numeric'
+  });
 
   return (
     <div className="min-h-screen bg-slate-50">
       <SEOHead 
         title={post.seo_title || `${post.title} | The Warranty Hub`}
-        description={post.seo_description || post.excerpt || ''}
+        description={metaDescription}
         keywords={(post.seo_keywords || []).join(', ')}
-        canonical={post.canonical_url || `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}`}
-        ogImage={post.featured_image_url || getDefaultHeroImage(post.slug)}
+        canonical={articleUrl}
+        ogImage={heroImage}
+        ogImageAlt={post.title}
+        ogType="article"
+        publishedTime={post.published_at}
+        modifiedTime={lastModified}
+        articleSection={post.blog_categories?.name || 'Warranty Guides'}
+        articleTags={post.seo_keywords || []}
+        author={post.blog_authors?.name || 'Buy a Warranty'}
       />
+
 
       <OrganizationSchema type="Organization" />
       <BreadcrumbSchema 
@@ -319,6 +416,17 @@ const BlogArticle = () => {
                 </p>
               )}
 
+              {/* Quick answer — the concise, quotable summary AI overviews and voice results pull */}
+              {quickAnswer && (
+                <div className="article-quick-answer mb-8 rounded-xl border-l-4 border-primary bg-primary/5 p-5 sm:p-6">
+                  <p className="mb-1 text-xs font-bold uppercase tracking-widest text-primary">
+                    Quick answer
+                  </p>
+                  <p className="text-base leading-relaxed text-slate-800 sm:text-lg">{quickAnswer}</p>
+                </div>
+              )}
+
+
               {/* Above-the-fold reg entry (same design + journey as the homepage) */}
               <div id="blog-reg-quote-hero" className="mb-8 scroll-mt-24">
                 <BlogRegQuoteCTA
@@ -345,8 +453,14 @@ const BlogArticle = () => {
                 <div className="h-8 w-px bg-slate-200 hidden md:block" />
                 <div className="text-slate-500">
                   <span className="block font-medium text-slate-900">Published</span>
-                  {publishedDate}
+                  <time dateTime={post.published_at}>{publishedDate}</time>
                 </div>
+                <div className="h-8 w-px bg-slate-200 hidden md:block" />
+                <div className="text-slate-500">
+                  <span className="block font-medium text-slate-900">Last updated</span>
+                  <time dateTime={lastModified}>{updatedDate}</time>
+                </div>
+
                 <div className="h-8 w-px bg-slate-200 hidden md:block" />
                 <div className="text-slate-500">
                   <span className="block font-medium text-slate-900">Read Time</span>
@@ -366,17 +480,42 @@ const BlogArticle = () => {
           </header>
 
           {/* Hero Image */}
-          <div className="px-6 md:px-16 -mt-4">
+          <figure className="px-6 md:px-16 -mt-4">
             <div className="relative aspect-[21/9] bg-slate-100 rounded-xl overflow-hidden shadow-xl">
               <img
-                src={post.featured_image_url || getDefaultHeroImage(post.slug)}
-                alt={post.title}
+                src={heroImage}
+                alt={`${post.title} — UK car warranty guide illustration`}
                 width={1600}
                 height={900}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
                 className="absolute inset-0 w-full h-full object-cover"
               />
             </div>
-          </div>
+          </figure>
+
+          {/* Mobile contents — jump links help engagement, dwell time and Google sitelinks */}
+          {toc.length > 1 && (
+            <nav aria-label="Article contents" className="px-6 pt-8 lg:hidden">
+              <details className="rounded-xl border border-slate-200 bg-white p-4">
+                <summary className="cursor-pointer text-sm font-bold uppercase tracking-widest text-slate-500">
+                  In this guide
+                </summary>
+                <ol className="mt-3 space-y-2 text-sm">
+                  {toc.map((item, i) => (
+                    <li key={item.id} className="flex gap-2">
+                      <span className="text-slate-400">{i + 1}.</span>
+                      <a href={`#${item.id}`} className="text-primary underline-offset-2 hover:underline">
+                        {item.text}
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            </nav>
+          )}
+
 
           {/* Content Layout */}
           <div className="px-6 md:px-16 py-12 flex flex-col lg:flex-row gap-12 lg:gap-16">

@@ -17,7 +17,10 @@ export interface RouteMeta {
   description: string;
   /** Optional override for OG image. Falls back to the site default. */
   ogImage?: string;
+  /** Optional Open Graph type override, e.g. "article" for editorial pages. */
+  ogType?: string;
 }
+
 
 const SITE = "https://buyawarranty.co.uk";
 const DEFAULT_OG_IMAGE = `${SITE}/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png`;
