@@ -201,7 +201,9 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     description:
       "Yes, electric cars need an MOT in the UK from age 3, then annually. What is tested, why the battery is not checked, top EV failure reasons and 2026 costs.",
     ogType: "article",
+    ogImage: `${SITE}/__l5e/assets-v1/ca53618a-c7fb-458c-b503-b3eb9d2993a0/do-electric-cars-need-mot-uk-2026-hero.jpg`,
   },
+
   {
     path: "/thewarrantyhub/top-reasons-car-warranty-claims-rejected-uk-2026/",
     title: "Top 7 Reasons UK Warranty Claims Get Rejected (2026)",
