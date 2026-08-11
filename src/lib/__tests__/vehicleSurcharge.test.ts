@@ -54,7 +54,7 @@ describe('Mileage surcharge boundaries', () => {
 
   it('mileage surcharge +£300 for 3yr', () => {
     const r = calculateVehiclePriceAdjustment(makeVehicle({ mileage: '130000', year: '2020' }), 3);
-    expect(r.adjustmentAmount).toBe(200);
+    expect(r.adjustmentAmount).toBe(300);
   });
 });
 
