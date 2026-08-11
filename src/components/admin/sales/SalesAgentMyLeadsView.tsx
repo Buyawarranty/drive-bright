@@ -354,12 +354,11 @@ export const SalesAgentMyLeadsView: React.FC<SalesAgentMyLeadsViewProps> = ({
                 <Button size="sm" variant="outline" onClick={() => handleQuickFilter(365)}>This Year</Button>
               </div>
             </div>
-            <Calendar
-              mode="range"
-              selected={{ from: dateRange.from, to: dateRange.to }}
-              onSelect={handleDateSelect}
-              numberOfMonths={2}
-              initialFocus
+            <DraftRangeCalendar
+              value={{ from: dateRange.from, to: dateRange.to }}
+              resetKey={isCalendarOpen}
+              onApply={(r) => { handleDateSelect(r as any); setIsCalendarOpen(false); }}
+              onCancel={() => setIsCalendarOpen(false)}
             />
             {hasDateFilter && (
               <div className="p-3 border-t">
