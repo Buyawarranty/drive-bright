@@ -192,6 +192,10 @@ export const BlogWritingTab = () => {
             <ShieldCheck className="w-4 h-4" />
             Hero Check
           </TabsTrigger>
+          <TabsTrigger value="search-console" className="flex items-center gap-2">
+            <Globe className="w-4 h-4" />
+            Search Console
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics">
