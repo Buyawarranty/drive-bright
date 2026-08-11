@@ -319,6 +319,17 @@ const BlogArticle = () => {
                 </p>
               )}
 
+              {/* Above-the-fold reg entry (same design + journey as the homepage) */}
+              <div id="blog-reg-quote-hero" className="mb-8 scroll-mt-24">
+                <BlogRegQuoteCTA
+                  compact
+                  heading="Get my quote — enter your reg"
+                  subheading="We pull your vehicle details and mileage automatically. No obligation."
+                />
+              </div>
+
+
+
               <div className="flex flex-wrap items-center gap-6 text-sm py-6 border-t border-slate-100">
                 {post.blog_authors?.name && (
                   <div className="flex items-center gap-3">
