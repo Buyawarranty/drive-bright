@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { TrendingUp, TrendingDown, RotateCcw, Save, Check } from 'lucide-react';
+import { TrendingUp, TrendingDown, RotateCcw, Save, Check, Minus, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 /**
@@ -127,16 +127,38 @@ const QuickUpliftBar: React.FC<{
           <Label htmlFor={`uplift-${variantLabel}`} className="text-xs text-muted-foreground">
             Exact %
           </Label>
-          <Input
-            id={`uplift-${variantLabel}`}
-            type="number"
-            min={-50}
-            max={200}
-            step={1}
-            className="h-8 w-24"
-            value={value}
-            onChange={e => onChange(Number(e.target.value) || 0)}
-          />
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              size="icon"
+              variant="outline"
+              className="h-8 w-8"
+              aria-label="Decrease by 1%"
+              onClick={() => onChange(Math.max(-50, value - 1))}
+            >
+              <Minus className="h-3.5 w-3.5" />
+            </Button>
+            <Input
+              id={`uplift-${variantLabel}`}
+              type="number"
+              min={-50}
+              max={200}
+              step={1}
+              className="h-8 w-20 text-center"
+              value={value}
+              onChange={e => onChange(Number(e.target.value) || 0)}
+            />
+            <Button
+              type="button"
+              size="icon"
+              variant="outline"
+              className="h-8 w-8"
+              aria-label="Increase by 1%"
+              onClick={() => onChange(Math.min(200, value + 1))}
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </div>
           {value !== 0 && (
             <Button type="button" size="sm" variant="ghost" onClick={() => onChange(0)}>
               <RotateCcw className="mr-1 h-3.5 w-3.5" />
@@ -158,7 +180,7 @@ const QuickUpliftBar: React.FC<{
           )}
           <Button type="button" size="sm" onClick={save} disabled={!dirty}>
             <Save className="mr-2 h-4 w-4" />
-            Save draft
+            Save &amp; update prices
           </Button>
         </div>
       </div>
@@ -171,8 +193,8 @@ const QuickUpliftBar: React.FC<{
       )}
       <p className="mt-1 text-xs text-muted-foreground">
         Applies to every claim limit, labour rate, excess and term in this variant, rounded to whole pounds.
-        Minimum price floors still apply. Test the figures below first — saving keeps it as a draft, and customers
-        only see it once you use “Push live” underneath.
+        Minimum price floors still apply. The four example prices below refresh straight away — “Save &amp; update
+        prices” keeps the percentage for next time, and customers only see it once you use “Push live” underneath.
       </p>
     </div>
   );
