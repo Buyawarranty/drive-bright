@@ -27,6 +27,7 @@ import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import evHeroImage from '@/assets/ev-warranty-hero-electric-vehicle.png';
+import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 
 // UK EV Models covered (grouped by manufacturer) - 2012-2026
 const evModelCategories = {
@@ -514,12 +515,12 @@ const EVWarrantyLanding: React.FC = () => {
     "offers": {
       "@type": "Offer",
       "priceCurrency": "GBP",
-      "price": "29",
+      "price": String(SEO_FROM_MONTHLY_PRICE),
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
       "url": "https://buyawarranty.co.uk/warranty-types/ev-warranty/",
       "seller": { "@type": "Organization", "name": "Buy A Warranty" },
-      "priceSpecification": { "@type": "UnitPriceSpecification", "price": "29", "priceCurrency": "GBP", "unitText": "month", "billingIncrement": 1 }
+      "priceSpecification": { "@type": "UnitPriceSpecification", "price": String(SEO_FROM_MONTHLY_PRICE), "priceCurrency": "GBP", "unitText": "month", "billingIncrement": 1 }
     },
     "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1" },
     "review": testimonials.map((t, i) => ({
@@ -588,7 +589,7 @@ const EVWarrantyLanding: React.FC = () => {
     "telephone": "+44-330-229-5040",
     "email": "support@buyawarranty.co.uk",
     "foundingDate": "2016",
-    "priceRange": "£19-£99/month",
+    "priceRange": SEO_PRICE_RANGE,
     "address": { "@type": "PostalAddress", "streetAddress": "71-75 Shelton Street", "addressLocality": "London", "addressRegion": "Greater London", "postalCode": "WC2H 9JQ", "addressCountry": "GB" },
     "geo": { "@type": "GeoCoordinates", "latitude": 51.5142, "longitude": -0.1267 },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
@@ -605,7 +606,7 @@ const EVWarrantyLanding: React.FC = () => {
     "provider": { "@type": "Organization", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk" },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
     "serviceType": "Electric Vehicle Extended Warranty",
-    "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": "19", "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/ev-warranty/" },
+    "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/ev-warranty/" },
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
       "name": "EV Warranty Plans",

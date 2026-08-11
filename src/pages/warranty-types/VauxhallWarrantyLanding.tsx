@@ -28,6 +28,7 @@ import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import vauxhallCorsaHero from '@/assets/vauxhall-extended-warranty-uk.png';
 import vauxhallWhyChooseUs from '@/assets/vauxhall-why-choose-us.webp';
 import vauxhallConfidenceCovered from '@/assets/vauxhall-confidence-covered.png';
+import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 
 // Vauxhall Models covered (grouped by category)
 const vauxhallModelCategories = {
@@ -210,7 +211,7 @@ const VauxhallWarrantyLanding: React.FC = () => {
     "description": "Comprehensive extended warranty for Vauxhall models including Corsa, Astra, Grandland, Mokka, Insignia, Crossland, Corsa-e, Mokka-e. Turbo engines, auto gearbox, EV components covered.",
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
     "manufacturer": { "@type": "Organization", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "logo": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "contactPoint": { "@type": "ContactPoint", "telephone": "+44-330-229-5040", "contactType": "customer service", "availableLanguage": "English", "areaServed": "GB" } },
-    "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": "19", "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/vauxhall-warranty/", "seller": { "@type": "Organization", "name": "Buy A Warranty" }, "priceSpecification": { "@type": "UnitPriceSpecification", "price": "19", "priceCurrency": "GBP", "unitText": "month", "billingIncrement": 1 } },
+    "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/vauxhall-warranty/", "seller": { "@type": "Organization", "name": "Buy A Warranty" }, "priceSpecification": { "@type": "UnitPriceSpecification", "price": String(SEO_FROM_MONTHLY_PRICE), "priceCurrency": "GBP", "unitText": "month", "billingIncrement": 1 } },
     "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1" },
     "review": testimonials.map((t, i) => ({ "@type": "Review", "author": { "@type": "Person", "name": t.name }, "reviewRating": { "@type": "Rating", "ratingValue": t.rating, "bestRating": "5" }, "reviewBody": t.text, "datePublished": new Date(Date.now() - (i + 1) * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] })),
     "category": "Vehicle Extended Warranty",
@@ -222,7 +223,7 @@ const VauxhallWarrantyLanding: React.FC = () => {
     "@type": "Service",
     "name": "Vauxhall Extended Warranty Service",
     "alternateName": "Vauxhall Used Car Warranty",
-    "provider": { "@type": "LocalBusiness", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "telephone": "+44-330-229-5040", "priceRange": "£19-£60/month", "address": { "@type": "PostalAddress", "addressCountry": "GB" } },
+    "provider": { "@type": "LocalBusiness", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "telephone": "+44-330-229-5040", "priceRange": SEO_PRICE_RANGE, "address": { "@type": "PostalAddress", "addressCountry": "GB" } },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
     "description": "Extended warranty coverage for all Vauxhall models including Corsa, Astra, Grandland, Mokka, Insignia, Crossland, and EV models. Covers engine, transmission, electrical systems, turbocharger, and more.",
     "serviceType": "Vehicle Extended Warranty",

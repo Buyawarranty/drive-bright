@@ -31,6 +31,7 @@ import pandaMascot from '@/assets/warranty-panda-mascot.webp';
 import pandaThumbsUp from '@/assets/extended-van-warranty-uk.png';
 import hybridHeroImage from '@/assets/hybrid-warranty-hero-vehicle.png';
 import hybridKiaNiro from '@/assets/hybrid-warranty-kia-niro.png';
+import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 
 // UK Hybrid Models covered (grouped by manufacturer) - 2012-2026
 const hybridModelCategories = {
@@ -532,13 +533,13 @@ const HybridWarrantyLanding: React.FC = () => {
     "offers": {
       "@type": "Offer",
       "priceCurrency": "GBP",
-      "price": "19",
+      "price": String(SEO_FROM_MONTHLY_PRICE),
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
       "url": "https://buyawarranty.co.uk/warranty-types/hybrid-warranty/",
       "seller": { "@type": "Organization", "name": "Buy A Warranty" },
       "itemCondition": "https://schema.org/NewCondition",
-      "priceSpecification": { "@type": "UnitPriceSpecification", "price": "19", "priceCurrency": "GBP", "unitText": "month", "billingIncrement": 1 }
+      "priceSpecification": { "@type": "UnitPriceSpecification", "price": String(SEO_FROM_MONTHLY_PRICE), "priceCurrency": "GBP", "unitText": "month", "billingIncrement": 1 }
     },
     "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1" },
     "review": testimonials.map((t, i) => ({
@@ -562,7 +563,7 @@ const HybridWarrantyLanding: React.FC = () => {
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-330-229-5040",
-      "priceRange": "£19-£99/month",
+      "priceRange": SEO_PRICE_RANGE,
       "address": { "@type": "PostalAddress", "addressCountry": "GB" }
     },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },

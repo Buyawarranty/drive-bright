@@ -27,6 +27,7 @@ import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/extended-van-warranty-uk.png';
 import phevHeroImage from '@/assets/phev-warranty-hero-bmw-x5.png';
 import phevVolvoXC60 from '@/assets/phev-warranty-volvo-xc60.png';
+import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 
 // UK PHEV Models covered (grouped by manufacturer) - 2012-2026
 const phevModelCategories = {
@@ -474,7 +475,7 @@ const PHEVWarrantyLanding: React.FC = () => {
     "description": "UK's specialist PHEV extended warranty from £19/month. Covers BMW 330e, X5 xDrive45e, Mercedes C 300 e, GLC 300 e, Volvo XC60 Recharge, Audi Q5 TFSI e, Kia Niro PHEV, Hyundai Tucson PHEV, Ford Kuga PHEV, VW Golf GTE, Land Rover Range Rover PHEV, and 100+ plug-in hybrid models. Protects electric motors, inverters, on-board chargers, battery management systems, DC-DC converters, and 1,000+ components.",
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
     "manufacturer": { "@type": "Organization", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "logo": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "contactPoint": { "@type": "ContactPoint", "telephone": "+44-330-229-5040", "contactType": "customer service", "availableLanguage": "English", "areaServed": "GB" } },
-    "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": "19", "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/phev-warranty/", "seller": { "@type": "Organization", "name": "Buy A Warranty" }, "itemCondition": "https://schema.org/NewCondition", "priceSpecification": { "@type": "UnitPriceSpecification", "price": "19", "priceCurrency": "GBP", "unitText": "month", "billingIncrement": 1 } },
+    "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/phev-warranty/", "seller": { "@type": "Organization", "name": "Buy A Warranty" }, "itemCondition": "https://schema.org/NewCondition", "priceSpecification": { "@type": "UnitPriceSpecification", "price": String(SEO_FROM_MONTHLY_PRICE), "priceCurrency": "GBP", "unitText": "month", "billingIncrement": 1 } },
     "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1" },
     "review": testimonials.map((t, i) => ({ "@type": "Review", "author": { "@type": "Person", "name": t.name }, "reviewRating": { "@type": "Rating", "ratingValue": t.rating, "bestRating": "5" }, "reviewBody": t.text, "datePublished": new Date(Date.now() - (i + 1) * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] })),
     "category": "Vehicle Extended Warranty",
@@ -485,7 +486,7 @@ const PHEVWarrantyLanding: React.FC = () => {
     "@context": "https://schema.org", "@type": "Service",
     "name": "PHEV Plug-in Hybrid Extended Warranty — UK Specialist Provider",
     "alternateName": ["PHEV Warranty UK", "Plug-in Hybrid Warranty", "Plug-in Hybrid Car Warranty"],
-    "provider": { "@type": "LocalBusiness", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "telephone": "+44-330-229-5040", "priceRange": "£19-£99/month", "address": { "@type": "PostalAddress", "addressCountry": "GB" } },
+    "provider": { "@type": "LocalBusiness", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "telephone": "+44-330-229-5040", "priceRange": SEO_PRICE_RANGE, "address": { "@type": "PostalAddress", "addressCountry": "GB" } },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
     "description": "UK's specialist extended warranty for plug-in hybrid (PHEV) vehicles. Covers BMW 330e, 530e, X1/X3/X5 PHEV; Mercedes A/C/E/GLC/GLE PHEV; Volvo XC40/XC60/XC90 Recharge; Audi A3/Q5/Q7/Q8 TFSI e; Kia Niro/Sportage/Sorento PHEV; Hyundai Tucson/Santa Fe PHEV; Toyota RAV4/Prius PHEV; Ford Kuga PHEV; VW Golf GTE/Tiguan eHybrid/Touareg R; Land Rover Range Rover/Defender PHEV; Peugeot 3008/308/508 Hybrid; Porsche Cayenne/Panamera E-Hybrid; and 100+ PHEV models. Covers electric motors, inverters, on-board chargers, battery management, DC-DC converters, charge ports, regenerative braking, and 1,000+ components.",
     "serviceType": "Vehicle Extended Warranty",

@@ -37,6 +37,7 @@ import pandaMechanic from '@/assets/panda-mechanic.png';
 import pandaGarage from '@/assets/panda-garage-service.png';
 import bmwWhyChooseUs from '@/assets/bmw-extended-used-car-warranty.webp';
 import bmwHighMileage from '@/assets/bmw-i3-warranty.webp';
+import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 
 // BMW Models covered (grouped by category)
 const bmwModelCategories = {
@@ -415,7 +416,7 @@ const BMWWarrantyLanding: React.FC = () => {
     "offers": {
       "@type": "Offer",
       "priceCurrency": "GBP",
-      "price": "29",
+      "price": String(SEO_FROM_MONTHLY_PRICE),
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
       "url": "https://buyawarranty.co.uk/warranty-types/bmw-warranty/",
@@ -426,7 +427,7 @@ const BMWWarrantyLanding: React.FC = () => {
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
         "@type": "UnitPriceSpecification",
-        "price": "29",
+        "price": String(SEO_FROM_MONTHLY_PRICE),
         "priceCurrency": "GBP",
         "unitText": "month",
         "billingIncrement": 1
@@ -470,7 +471,7 @@ const BMWWarrantyLanding: React.FC = () => {
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
-      "priceRange": "£29-£95/month",
+      "priceRange": SEO_PRICE_RANGE,
       "address": {
         "@type": "PostalAddress",
         "addressCountry": "GB"

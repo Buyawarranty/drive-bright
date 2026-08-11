@@ -31,6 +31,7 @@ import vwPassat from '@/assets/volkswagen-models/vw-passat-extended-warranty.png
 import vwTiguan from '@/assets/volkswagen-models/vw-tiguan-extended-warranty.png';
 import vwTransporter from '@/assets/volkswagen-models/vw-transporter-extended-warranty.png';
 import vwIdSeries from '@/assets/volkswagen-models/vw-id-series-ev-extended-warranty.png';
+import { SEO_FROM_MONTHLY_PRICE } from '@/lib/seo/schemaPricing';
 
 const vwModels = [
   { label: 'Golf', examples: 'Golf, GTI, GTD, R', img: vwGolf, alt: 'Volkswagen Golf extended warranty cover — Golf, GTI, GTD and R hatchback' },
@@ -112,7 +113,7 @@ const VolkswagenExtendedWarrantyLanding: React.FC = () => {
       <WebPageSchema name="Volkswagen Extended Warranty" description="Volkswagen extended warranty cover from £19/month." url="https://buyawarranty.co.uk/car-extended-warranty/volkswagen/" />
       <FAQSchema faqs={faqs.map(f => ({ question: f.q, answer: f.a }))} />
       <Helmet>
-        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "Volkswagen Extended Warranty", "description": "Flexible Volkswagen warranty cover from \u00a319/month. Covers engine, gearbox, electrics and more across all VW cars and vans.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/volkswagen/", "priceCurrency": "GBP", "price": "19", "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1"}})}</script>
+        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "Volkswagen Extended Warranty", "description": "Flexible Volkswagen warranty cover from \u00a319/month. Covers engine, gearbox, electrics and more across all VW cars and vans.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/volkswagen/", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1"}})}</script>
       </Helmet>
       <ServiceSchema
         name="Volkswagen Extended Warranty"

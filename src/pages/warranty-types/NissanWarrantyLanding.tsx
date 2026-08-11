@@ -29,6 +29,7 @@ import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import nissanQashqaiHero from '@/assets/nissan-qashqai-extended-warranty-uk.png';
 import nissanJukeWarranty from '@/assets/nissan-juke-used-car-warranty.png';
 import nissanLeafWarranty from '@/assets/nissan-leaf-ev-warranty.png';
+import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 
 // Nissan Models covered (grouped by category)
 const nissanModelCategories = {
@@ -406,7 +407,7 @@ const NissanWarrantyLanding: React.FC = () => {
     "offers": {
       "@type": "Offer",
       "priceCurrency": "GBP",
-      "price": "20",
+      "price": String(SEO_FROM_MONTHLY_PRICE),
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
       "url": "https://buyawarranty.co.uk/warranty-types/nissan-warranty/",
@@ -417,7 +418,7 @@ const NissanWarrantyLanding: React.FC = () => {
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
         "@type": "UnitPriceSpecification",
-        "price": "20",
+        "price": String(SEO_FROM_MONTHLY_PRICE),
         "priceCurrency": "GBP",
         "unitText": "month",
         "billingIncrement": 1
@@ -461,7 +462,7 @@ const NissanWarrantyLanding: React.FC = () => {
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-330-229-5040",
-      "priceRange": "£20-£60/month",
+      "priceRange": SEO_PRICE_RANGE,
       "address": {
         "@type": "PostalAddress",
         "addressCountry": "GB"
