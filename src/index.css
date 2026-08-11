@@ -964,7 +964,22 @@ html, body {
     float: left;
     margin: 0.5rem 1.75rem 1.25rem 0;
   }
+  /* Full-bleed, hero-sized in-body figure */
+  .blog-figure--wide {
+    float: none;
+    width: 100%;
+    max-width: 100%;
+    margin: 1.75rem 0 2rem;
+  }
 }
+.blog-figure--wide img {
+  width: 100%;
+  max-height: none;
+  aspect-ratio: 1400 / 745;
+  object-fit: cover;
+  border-radius: 1rem;
+}
+
 /* Stop floated figures overlapping the next section heading */
 article.prose h2,
 article.prose h3 {
