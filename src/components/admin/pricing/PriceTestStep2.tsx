@@ -148,6 +148,7 @@ export default function PriceTestStep2({
   title,
   subtitle,
   badgeText,
+  adjustmentPct = 0,
   vehicle,
   showRegLookup = true,
   autoQuoteCeiling = null,
@@ -157,6 +158,8 @@ export default function PriceTestStep2({
   title?: string;
   subtitle?: string;
   badgeText?: string;
+  /** Active quick price change applied to this column, in percent (0 = none). */
+  adjustmentPct?: number;
   /** Vehicle resolved elsewhere (e.g. one shared reg box driving both columns). */
   vehicle?: ResolvedTestVehicle | null;
   showRegLookup?: boolean;
@@ -165,6 +168,7 @@ export default function PriceTestStep2({
   /** Reports the priced terms so a parent can show an overall price difference. */
   onQuoteChange?: (snapshot: PriceTestQuoteSnapshot) => void;
 } = {}) {
+
 
 
 
@@ -471,13 +475,25 @@ export default function PriceTestStep2({
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex flex-wrap items-center gap-2">
               <FlaskConical className="h-5 w-5" />
               {title ?? 'Price testing — Step 2 replica'}
+              {adjustmentPct !== 0 && (
+                <Badge className="text-xs">
+                  {adjustmentPct < 0 ? 'Reduction applied' : 'Increase applied'}{' '}
+                  {adjustmentPct > 0 ? '+' : ''}{adjustmentPct}%
+                </Badge>
+              )}
             </CardTitle>
             <CardDescription>
               {subtitle ??
                 'Same layout as Quotes & Orders Step 2, priced with the proposed age × mileage × factor model. Practice only — nothing here saves a quote or changes live pricing.'}
+              {adjustmentPct !== 0 && (
+                <span className="mt-1 block font-medium text-foreground">
+                  A {Math.abs(adjustmentPct)}% {adjustmentPct < 0 ? 'reduction' : 'increase'} is active on
+                  every price shown in this section, and the website Step 3 price follows in proportion.
+                </span>
+              )}
             </CardDescription>
           </div>
           <Badge variant="secondary">{badgeText ?? 'Test environment'}</Badge>
@@ -486,6 +502,7 @@ export default function PriceTestStep2({
           Two figures per model so both can be tested before pushing live: the customer Step 3
           (website) price on top, and the Quotes &amp; Orders (agent) price beneath it.
         </p>
+
 
 
 

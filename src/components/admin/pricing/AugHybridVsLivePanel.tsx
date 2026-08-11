@@ -426,6 +426,7 @@ const AugHybridVsLivePanel: React.FC<{
           autoQuoteCeiling={ceiling}
           title="Aug hybrid test — Quotes &amp; Orders price"
           subtitle="Lower base, compressed risk uplifts, cheaper multi-year terms and an auto-quote ceiling. When pushed live, the website Step 3 price is 10% below this Quotes &amp; Orders price."
+          adjustmentPct={upliftPct}
           badgeText="Hybrid draft"
         />
       </div>
