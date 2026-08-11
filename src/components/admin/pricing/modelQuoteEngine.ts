@@ -19,16 +19,17 @@ export const MIN_SELLABLE_BY_MONTHS: Record<number, number> = {
 };
 
 /**
- * ABSOLUTE hard-bottom minimum per term. 12 months = £399; 24 and 36 months scale
- * from the 12-month figure. Only the cheapest combos get lifted to this; everything
- * above the normal shaped floor stays where it already was.
- * Motorbikes are half (£200). Web journey = grid minus the Step 3 discount.
+ * ABSOLUTE hard-bottom minimum per term. 12 months = £349 for the CHEAPEST combo
+ * (£1,000 claim / £50 labour / £500 excess); 24 and 36 months scale from it.
+ * Richer options step this bottom up via `getAbsoluteMinimumShape`.
+ * Motorbikes are half. Web journey = grid minus the Step 3 discount.
  */
 export const ABSOLUTE_MIN_GRID_BY_MONTHS: Record<number, number> = {
-  12: 399,
-  24: 659,
-  36: 938,
+  12: 349,
+  24: 576,
+  36: 821,
 };
+
 
 
 
