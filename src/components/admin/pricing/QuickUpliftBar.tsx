@@ -180,7 +180,7 @@ const QuickUpliftBar: React.FC<{
           )}
           <Button type="button" size="sm" onClick={save} disabled={!dirty}>
             <Save className="mr-2 h-4 w-4" />
-            Save draft
+            Save &amp; update prices
           </Button>
         </div>
       </div>
