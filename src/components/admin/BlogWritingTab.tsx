@@ -13,7 +13,8 @@ import { AIOptimizationTools } from './blog/AIOptimizationTools';
 import { ContentCalendar } from './blog/ContentCalendar';
 import { HeroImageValidator } from './blog/HeroImageValidator';
 import { BlogAnalyticsTab } from './blog/BlogAnalyticsTab';
-import { PenTool, Search, Image, FolderOpen, BarChart3, Eye, Brain, Calendar, ShieldCheck, LineChart } from 'lucide-react';
+import { SearchConsolePanel } from './blog/SearchConsolePanel';
+import { PenTool, Search, Image, FolderOpen, BarChart3, Eye, Brain, Calendar, ShieldCheck, LineChart, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -191,6 +192,10 @@ export const BlogWritingTab = () => {
             <ShieldCheck className="w-4 h-4" />
             Hero Check
           </TabsTrigger>
+          <TabsTrigger value="search-console" className="flex items-center gap-2">
+            <Globe className="w-4 h-4" />
+            Search Console
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics">
@@ -296,6 +301,10 @@ export const BlogWritingTab = () => {
 
         <TabsContent value="hero-check">
           <HeroImageValidator />
+        </TabsContent>
+
+        <TabsContent value="search-console">
+          <SearchConsolePanel />
         </TabsContent>
       </Tabs>
     </div>
