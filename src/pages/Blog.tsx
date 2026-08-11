@@ -4,6 +4,7 @@ import {
   Search, Calendar, Clock, ArrowRight, ArrowUpRight, Phone, Shield, Check,
   TrendingUp, Zap, Car, HelpCircle, Wrench, BatteryCharging, Mail, Lock, MapPin
 } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -267,7 +268,11 @@ const Blog: React.FC = () => {
     : `https://buyawarranty.co.uk${warrantyCarImage}`;
 
   const latestModified =
-    allPosts.filter(p => !p.isMock && p.date).map(p => p.date).sort().slice(-1)[0] ||
+    allPosts
+      .filter(p => !p.isMock && p.published_at)
+      .map(p => String(p.published_at).slice(0, 10))
+      .sort()
+      .slice(-1)[0] ||
     new Date().toISOString().slice(0, 10);
 
   const blogPostingSchema = {
