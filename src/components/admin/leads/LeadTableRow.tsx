@@ -1035,8 +1035,17 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               </TooltipContent>
             </Tooltip>
           )}
-          {repeatCustomer && <RepeatCustomerBadge info={repeatCustomer} />}
-          {!repeatCustomer && (lead as any).manual_entry && <ManualLeadBadge />}
+          {(() => {
+            // Show the REPEAT CUSTOMER tag either from a matched prior policy or
+            // from the sticky-assignment tag the database stamps on arrival.
+            const tags: string[] = ((lead as any).auto_tags || []) as string[];
+            const stickyTagged = tags.includes('repeat_customer') || tags.includes('same_customer_sticky');
+            const info = repeatCustomer || (stickyTagged
+              ? { policyCount: 1, lastPurchaseAt: null, lastPlanType: null, matchedOn: 'email' as const }
+              : undefined);
+            return info ? <RepeatCustomerBadge info={info} /> : null;
+          })()}
+          {!repeatCustomer && !(((lead as any).auto_tags || []) as string[]).some(t => t === 'repeat_customer' || t === 'same_customer_sticky') && (lead as any).manual_entry && <ManualLeadBadge />}
           {(lead.resubmission_count || 0) > 0 && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
