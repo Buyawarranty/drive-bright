@@ -1615,7 +1615,10 @@ export const UserPermissionsTab = () => {
           </DialogHeader>
           {passwordUser && (() => {
             const isSaved = !!newPassword && savedPassword === newPassword;
-            const fullBlock = `Step 1 — Gateway\nLink: ${loginUrlForRole(passwordUser.role)}\nPassword: SmashSales2026!!\n\nStep 2 — ${passwordUser.first_name || ''} ${passwordUser.last_name || ''}'s login\nUsername: ${passwordUser.email}\nPassword: ${newPassword || '(set a password first)'}`;
+            // Only ever copy the value the login server has confirmed, so the copied
+            // text and the emailed text can never be different passwords.
+            const fullBlock = buildLoginBlock(passwordUser, savedPassword || '(set a password first)');
+            const editedAfterSave = !!savedPassword && newPassword !== savedPassword;
             return (
             <div className="space-y-4">
               {!isSaved && (
@@ -1623,13 +1626,21 @@ export const UserPermissionsTab = () => {
                   <strong>This password is not live yet.</strong> Click <em>Save password</em> (or
                   <em> Save &amp; email login</em>) before you share it — otherwise the staff member
                   will get "invalid login credentials".
+                  {editedAfterSave && (
+                    <div className="mt-2">
+                      The live password is still the last saved one. Save again to make this new
+                      value the live password.
+                    </div>
+                  )}
                 </div>
               )}
               {isSaved && (
                 <div className="rounded-lg border-2 border-emerald-400 bg-emerald-50 p-3 text-sm text-emerald-900">
-                  <strong>Saved.</strong> This exact password now works on the login page.
+                  <strong>Saved and verified.</strong> This exact password works on the login page —
+                  the copied details and the emailed details always carry this same password.
                 </div>
               )}
+
 
               {/* One-click copy-all */}
               <Button
