@@ -92,6 +92,8 @@ const ANALYTICS_QUICK_LINKS = [
   { id: 'daily-breakdown', label: 'Per-day breakdown', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
   { id: 'cover-options', label: 'Cover options mix', className: 'bg-purple-300/50 text-purple-900 border-purple-200/50 hover:bg-purple-400/50' },
   { id: 'demographics', label: 'Age & UK demographics', className: 'bg-fuchsia-300/50 text-fuchsia-900 border-fuchsia-200/50 hover:bg-fuchsia-400/50' },
+  { id: 'price-conversion-aov', label: 'Price, conversion & AOV', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
+
 
   { id: 'filters', label: 'Price analysis per day', className: 'bg-slate-300/50 text-slate-900 border-slate-200/50 hover:bg-slate-400/50' },
   { id: 'key-metrics', label: 'Key metrics', className: 'bg-amber-200/50 text-amber-900 border-amber-100/50 hover:bg-amber-300/50' },
