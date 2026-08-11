@@ -51,11 +51,11 @@ export type PricingVersionConfig = {
   config_checksum?: string | null;
 };
 
-/** The absolute minimum sellable total currently hardcoded in the engine (£399 / £659 / £938). */
+/** The absolute minimum sellable total currently hardcoded in the engine (£349 / £576 / £821 at the cheapest option combo). */
 export const CODE_PRICE_FLOORS: PriceFloors = {
-  '12months': 399,
-  '24months': 659,
-  '36months': 938,
+  '12months': 349,
+  '24months': 576,
+  '36months': 821,
 };
 
 
@@ -78,11 +78,10 @@ export const NEUTRAL_REFERENCE_FACTORS: ReferenceFactors = {
 /**
  * Floors for a stored version (Aug hybrid, Aug 2026, age-based builder, …).
  *
- * The NET sell floor (£399 / £659 / £938 — see `lib/pricing/netFloor.ts`) is a
- * hard bottom: a version may raise a floor, never lower it. Older versions were
- * saved with the retired £349 / £577 / £821 figures, and without this clamp
- * selecting one of those in Price Updates would quietly reintroduce sub-£399
- * pricing on the hybrid/Aug grids.
+ * The NET sell floor (£349 / £576 / £821 — see `lib/pricing/netFloor.ts`) is a
+ * hard bottom: a version may raise a floor, never lower it. Richer claim limits,
+ * labour rates and lower excesses step that bottom up, so a floor-bound vehicle
+ * still moves when the options change.
  */
 export function resolvePriceFloors(config?: PricingVersionConfig | null): PriceFloors {
   const floors = config?.price_floors;
