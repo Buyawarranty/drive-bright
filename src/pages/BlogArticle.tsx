@@ -311,7 +311,7 @@ const BlogArticle = () => {
         ],
         "speakable": {
           "@type": "SpeakableSpecification",
-          "cssSelector": ["h1", ".article-quick-answer"],
+          "cssSelector": ["h1"],
         },
         "mainEntityOfPage": { "@type": "WebPage", "@id": articleUrl },
       },
@@ -416,15 +416,8 @@ const BlogArticle = () => {
                 </p>
               )}
 
-              {/* Quick answer — the concise, quotable summary AI overviews and voice results pull */}
-              {quickAnswer && (
-                <div className="article-quick-answer mb-8 rounded-xl border-l-4 border-primary bg-primary/5 p-5 sm:p-6">
-                  <p className="mb-1 text-xs font-bold uppercase tracking-widest text-primary">
-                    Quick answer
-                  </p>
-                  <p className="text-base leading-relaxed text-slate-800 sm:text-lg">{quickAnswer}</p>
-                </div>
-              )}
+
+
 
 
               {/* Above-the-fold reg entry (same design + journey as the homepage) */}
@@ -562,14 +555,8 @@ const BlogArticle = () => {
 
             {/* Main body */}
             <div className="flex-1 min-w-0 max-w-3xl">
-              {/* Top-of-article reg quote CTA */}
-              <div id="blog-reg-quote" className="mb-10 scroll-mt-24 sm:mb-12">
-                <BlogRegQuoteCTA
-                  compact
-                  heading="Get an instant warranty price"
-                  subheading="Enter your reg — we pull your vehicle details and mileage automatically."
-                />
-              </div>
+
+
 
               {/* Key Takeaways (legacy posts without rich HTML) */}
               {post.excerpt && !(typeof post.content === 'object' && post.content?.html) && (
@@ -591,16 +578,8 @@ const BlogArticle = () => {
                     dangerouslySetInnerHTML={{ __html: htmlPartOne }}
                   />
 
-                  {/* Mid-article reg CTA */}
-                  {htmlPartTwo && (
-                    <div className="my-10 sm:my-12">
-                      <BlogRegQuoteCTA
-                        compact
-                        heading="Still reading? Check your price first"
-                        subheading="Enter your reg — takes 60 seconds and there’s no obligation."
-                      />
-                    </div>
-                  )}
+
+
 
                   {htmlPartTwo && (
                     <article
@@ -620,13 +599,8 @@ const BlogArticle = () => {
                 </article>
               )}
 
-              {/* End-of-article Reg-plate CTA (reg-only journey, same as homepage) */}
-              <div className="my-10 sm:my-12">
-                <BlogRegQuoteCTA
-                  heading="Ready to protect your car?"
-                  subheading="Enter your reg for an instant, no-obligation price — cover can start today."
-                />
-              </div>
+
+
 
 
 
