@@ -67,11 +67,32 @@ export const SEOHead = ({
   articleTags
 
 }: SEOHeadProps) => {
-  const canonicalUrl = canonical || `https://buyawarranty.co.uk${normalisePath(window.location.pathname)}`;
+  const canonicalUrl = canonical || `${SITE_ORIGIN}${normalisePath(window.location.pathname)}`;
+  const ogImageUrl = absoluteUrl(ogImage);
+
+  // index.html ships sitewide fallback tags for non-JS social crawlers. Once a
+  // route sets its own, drop the static duplicates so crawlers (and Google's
+  // first-match parsing) only ever see the page-specific value.
+  useEffect(() => {
+    const selectors = [
+      'meta[name="description"]',
+      'meta[property="og:image"]',
+      'meta[property="og:url"]',
+      'meta[property="og:title"]',
+      'meta[property="og:description"]',
+      'link[rel="canonical"]',
+    ];
+    selectors.forEach((selector) => {
+      const nodes = Array.from(document.head.querySelectorAll(selector));
+      if (nodes.length < 2) return;
+      nodes.filter((node) => !node.hasAttribute('data-rh')).forEach((node) => node.remove());
+    });
+  }, [canonicalUrl, description, ogImageUrl, title]);
 
 
   return (
     <Helmet>
+
       <title>{title}</title>
 
       {/* Basic meta tags */}
