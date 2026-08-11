@@ -88,6 +88,8 @@ export const LeadRecoveryPanel: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [scanBreakdown, setScanBreakdown] = useState<{ inRange: number; exOwned: number } | null>(null);
+
   const [recoverable, setRecoverable] = useState<{ unassigned: number; workable: number; stillOwned: number } | null>(null);
   const [recoverableLoading, setRecoverableLoading] = useState(false);
 
