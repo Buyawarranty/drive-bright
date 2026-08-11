@@ -103,6 +103,127 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
       "Guides, tips and articles to help you drive smarter and protect your vehicle.",
   },
 
+  // ---------------- The Warranty Hub articles ----------------
+  {
+    path: "/thewarrantyhub/toyota-corolla-hybrid-ownership-cost-uk-fuel-savings-vs-warranty-protection/",
+    title: "Toyota Corolla Hybrid Ownership Cost UK | Fuel Savings vs Warranty",
+    description:
+      "Real UK running costs for the Toyota Corolla Hybrid — fuel savings, servicing, common repair bills and when warranty cover pays for itself.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/cheap-car-warranty-in-the-uk-what-is-covered-what-is-not-how-to-choose-smartly/",
+    title: "Cheap Car Warranty UK | What's Covered & How to Choose",
+    description:
+      "What a cheap UK car warranty covers, what it excludes, and how to judge genuine value instead of just the lowest monthly price.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/are-car-warranties-worth-it-best-car-warranty-uk-2026/",
+    title: "Are Car Warranties Worth It? Best Car Warranty UK 2026",
+    description:
+      "Whether a car warranty is worth it in the UK, typical repair bills it offsets, and how to compare the best cover in 2026.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/uk-car-theft-hotspots-2026-riskiest-areas-and-protection/",
+    title: "UK Car Theft Hotspots 2026 | Riskiest Areas & Protection",
+    description:
+      "The UK's riskiest areas for vehicle theft in 2026 and practical steps, devices and cover that protect your car.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/car-warranty-vs-breakdown-cover-vs-insurance-uk-2026/",
+    title: "Car Warranty vs Breakdown Cover vs Insurance UK 2026",
+    description:
+      "How warranty, breakdown cover and insurance differ in the UK, what each one pays for, and which combination UK drivers actually need.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/uk-car-repair-costs-2026-without-warranty/",
+    title: "UK Car Repair Costs 2026 | What Repairs Cost Without Cover",
+    description:
+      "2026 UK repair cost data — gearbox, clutch, turbo, EGR, hybrid battery and more — and what a warranty would have covered.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/used-car-warranty-uk-2026-whats-covered-when-to-buy/",
+    title: "Used Car Warranty UK 2026 | What's Covered & When to Buy",
+    description:
+      "What a used car warranty covers in the UK, the best time to buy cover, claim limits, labour rates and how to make a claim.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/dealership-vs-independent-cover-protect-used-car-uk-2026/",
+    title: "Dealership vs Independent Warranty UK 2026 | Which Is Better",
+    description:
+      "Dealer warranty or independent cover for your used car? Price, claim limits, garage choice and flexibility compared for UK buyers.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/good-mileage-used-car-uk-2026-buyers-guide/",
+    title: "Good Mileage for a Used Car UK | 2026 Buyer's Guide",
+    description:
+      "What counts as good mileage for a used car in the UK, how age and mileage interact, and when higher mileage is still a safe buy.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/auto-warranty-vs-extended-warranty-insurance-uk-2026/",
+    title: "Auto Warranty vs Extended Warranty Insurance UK 2026",
+    description:
+      "The real difference between an auto warranty and extended warranty insurance in the UK, and which protects you better.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/do-electric-cars-need-mot-uk-rules-explained-2026/",
+    title: "Do Electric Cars Need an MOT? UK Rules Explained 2026",
+    description:
+      "Whether EVs need an MOT in the UK, what is tested, what is skipped, and how EV warranty cover works alongside it.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/cheap-car-warranty-uk-2026-what-is-covered-how-to-choose/",
+    title: "Cheap Car Warranty UK 2026 | What's Covered & How to Choose",
+    description:
+      "A 2026 guide to cheap UK car warranties — inclusions, exclusions, claim limits and how to avoid worthless cover.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/top-reasons-car-warranty-claims-rejected-uk-2026/",
+    title: "Top 7 Reasons UK Warranty Claims Get Rejected (2026)",
+    description:
+      "The most common reasons UK car warranty claims are rejected and the simple steps that keep your claim valid.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/12-top-reliable-used-cars-under-15000-uk-2026/",
+    title: "12 Reliable Used Cars Under £15,000 UK (2026)",
+    description:
+      "Twelve dependable used cars under £15,000 in the UK for 2026, with known weak points and running-cost notes.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/is-maintenance-warranty-necessary-used-cars-uk-2026/",
+    title: "Is a Maintenance Warranty Necessary for a Used Car? UK 2026",
+    description:
+      "Whether a maintenance warranty is worth it on a UK used car, what it covers versus servicing, and who benefits most.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/private-car-warranty-uk-2026-safe-without-a-dealer/",
+    title: "Private Car Warranty UK 2026 | Safe to Buy Without a Dealer?",
+    description:
+      "Buying warranty cover for a privately bought car in the UK — eligibility, inspections, waiting periods and what to check first.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/maintenance-warranty-vs-extended-warranty-uk-2026/",
+    title: "Maintenance Warranty vs Extended Warranty UK 2026",
+    description:
+      "Maintenance plan or extended warranty? What each covers in the UK, typical costs and which one suits your car.",
+    ogType: "article",
+  },
+
   // ---------------- Main product pages ----------------
   {
     path: "/buy-a-used-car-warranty-reliable-warranties/",
