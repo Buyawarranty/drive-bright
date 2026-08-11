@@ -175,24 +175,47 @@ export const useNewLeadAlert = () => {
     });
   }, [persistSnoozed]);
 
-  // Resolve the viewing agent's role once — non-sales roles (e.g. claims
-  // agents like claims@) never get a queue at all.
+  // Resolve the viewing agent's role — non-sales roles (e.g. claims agents
+  // like claims@) never get a queue at all.
+  // IMPORTANT: a failed/blocked read must NOT latch `false`, otherwise one
+  // transient network blip permanently kills pop-ups until a hard reload —
+  // that was the main "it works then stops" cause. On failure we retry.
   useEffect(() => {
     let cancelled = false;
     if (!adminId) {
       setAlertsAllowed(null);
       return;
     }
-    (async () => {
-      const { data } = await supabase
+    let attempt = 0;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const resolve = async () => {
+      const { data, error } = await supabase
         .from('admin_users')
         .select('role')
         .eq('id', adminId)
         .maybeSingle();
       if (cancelled) return;
-      setAlertsAllowed(LEAD_ALERT_ROLES.includes(String((data as any)?.role || '')));
-    })();
-    return () => { cancelled = true; };
+      if (error || !data) {
+        // Unknown, not "denied" — retry with backoff (capped at 30s).
+        attempt += 1;
+        timer = setTimeout(resolve, Math.min(30000, 2000 * attempt));
+        return;
+      }
+      attempt = 0;
+      setAlertsAllowed(LEAD_ALERT_ROLES.includes(String((data as any).role || '')));
+    };
+
+    resolve();
+    // Re-resolve when the agent comes back to the tab (session may have been
+    // refreshed while the laptop was asleep).
+    const onFocus = () => { if (!cancelled) resolve(); };
+    window.addEventListener('focus', onFocus);
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+      window.removeEventListener('focus', onFocus);
+    };
   }, [adminId]);
 
   const load = useCallback(async () => {
