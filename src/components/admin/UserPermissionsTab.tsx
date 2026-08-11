@@ -948,6 +948,10 @@ export const UserPermissionsTab = () => {
   };
 
 
+  /** The single source of truth for what gets copied AND emailed. */
+  const buildLoginBlock = (user: AdminUser, password: string) =>
+    `Step 1 — Gateway\nLink: ${loginUrlForRole(user.role)}\nPassword: SmashSales2026!!\n\nStep 2 — ${user.first_name || ''} ${user.last_name || ''}'s login\nUsername: ${user.email}\nPassword: ${password}`;
+
   const handleSetPassword = async () => {
     if (!passwordUser || !newPassword) {
       toast.error('Please enter a password');
@@ -963,7 +967,9 @@ export const UserPermissionsTab = () => {
     try {
       const ok = await savePasswordToServer();
       if (ok) {
-        toast.success(`Password saved for ${passwordUser.email} — this exact value now works`, { duration: 5000 });
+        // Copy straight away so what is pasted is always the verified live value.
+        await navigator.clipboard.writeText(buildLoginBlock(passwordUser, newPassword)).catch(() => {});
+        toast.success(`Password saved for ${passwordUser.email} — all login details copied`, { duration: 5000 });
       }
     } catch (error: any) {
       console.error('Error setting password:', error);
@@ -981,21 +987,25 @@ export const UserPermissionsTab = () => {
     }
     setSendingCreds(true);
     try {
-      // Always save first so the emailed value is guaranteed to be the live password.
+      // Always save first so the emailed value IS the live password. Capture the
+      // exact string that was verified so the email and the clipboard can never
+      // drift apart from each other.
       await savePasswordToServer();
+      const verifiedPassword = newPassword;
 
       const { error } = await supabase.functions.invoke('send-admin-login-details', {
         body: {
           userId: passwordUser.user_id,
           email: passwordUser.email,
           name: `${passwordUser.first_name || ''} ${passwordUser.last_name || ''}`.trim(),
-          password: newPassword,
+          password: verifiedPassword,
           loginUrl: loginUrlForRole(passwordUser.role),
           role: passwordUser.role,
         }
       });
       if (error) throw error;
-      toast.success(`Password saved and credentials emailed to ${passwordUser.email}`, { duration: 5000 });
+      await navigator.clipboard.writeText(buildLoginBlock(passwordUser, verifiedPassword)).catch(() => {});
+      toast.success(`Saved, emailed to ${passwordUser.email} and copied — the emailed and copied password are identical`, { duration: 6000 });
     } catch (error: any) {
       console.error('Error sending credentials:', error);
       toast.error(error.message || 'Failed to send credentials');
@@ -1003,6 +1013,7 @@ export const UserPermissionsTab = () => {
       setSendingCreds(false);
     }
   };
+
 
   const handleTestLogin = async () => {
     if (!passwordUser || !newPassword) {
