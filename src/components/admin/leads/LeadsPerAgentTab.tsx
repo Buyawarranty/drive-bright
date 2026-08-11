@@ -492,11 +492,9 @@ export const LeadsPerAgentTab: React.FC<LeadsPerAgentTabProps> = ({ userRole, cu
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="p-0 w-auto">
-                  <Calendar
-                    mode="range"
-                    selected={{ from: customRange.from, to: customRange.to }}
-                    onSelect={(r: any) => setCustomRange({ from: r?.from, to: r?.to })}
-                    numberOfMonths={2}
+                  <DraftRangeCalendar
+                    value={{ from: customRange.from, to: customRange.to }}
+                    onApply={(r) => setCustomRange({ from: r?.from, to: r?.to })}
                   />
                 </PopoverContent>
               </Popover>
