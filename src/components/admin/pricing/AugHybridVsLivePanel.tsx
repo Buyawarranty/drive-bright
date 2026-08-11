@@ -30,6 +30,13 @@ import PriceSurfaceBadge from './PriceSurfaceBadge';
  * Nothing on this screen saves a quote or changes live pricing.
  */
 
+/**
+ * Aug 2026: every Aug hybrid Quotes & Orders price is 10% higher than the
+ * original hybrid proposal. The website Step 3 price stays "grid minus the web
+ * gap", so it rises in proportion automatically — no separate web change.
+ */
+export const HYBRID_PRICE_UPLIFT_PCT = 10;
+
 const HYBRID_DEFAULTS = {
   referenceBandKey: '6-7',
   /** Proposal starts below August pricing because the August level is not converting. */
@@ -45,6 +52,7 @@ const HYBRID_DEFAULTS = {
   ceiling: 650,
   ceilingOn: true,
 };
+
 
 /** Normalise either the live builder model or the saved editor model into one shape. */
 function baseFrom(liveModel: any, saved: ReturnType<typeof useSavedPricingModel>) {
@@ -92,9 +100,12 @@ const AugHybridVsLivePanel: React.FC<{
   const referenceLive = Number(referenceBand?.oneYear ?? 0);
   /** Exact target wins; otherwise apply the deliberate reduction to the August base. */
   const reducedReference = Math.round(referenceLive * (1 - cfg.baseReductionPct / 100));
-  const effectiveTarget = cfg.targetReference > 0 ? cfg.targetReference : reducedReference;
+  const targetBeforeUplift = cfg.targetReference > 0 ? cfg.targetReference : reducedReference;
+  /** +10% uplift on every hybrid Quotes & Orders price (Aug 2026). */
+  const effectiveTarget = Math.round(targetBeforeUplift * (1 + HYBRID_PRICE_UPLIFT_PCT / 100));
   /** One scale factor moves the whole age curve so the reference vehicle lands on target. */
   const targetScale = referenceLive > 0 ? effectiveTarget / referenceLive : 1;
+
   /** What live's flat multipliers imply as a discount off N × one year. */
   const liveTwoYearDiscountPct = Math.round((1 - base.twoYearMult / 2) * 1000) / 10;
   const liveThreeYearDiscountPct = Math.round((1 - base.threeYearMult / 3) * 1000) / 10;
