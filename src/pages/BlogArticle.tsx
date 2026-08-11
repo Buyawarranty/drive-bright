@@ -97,10 +97,37 @@ const BlogArticle = () => {
       if (!/\sloading=/i.test(a)) a += ' loading="lazy"';
       if (!/\sdecoding=/i.test(a)) a += ' decoding="async"';
       if (!/\salt=/i.test(a)) a += ' alt=""';
+      // Never overflow small screens
+      if (!/\sstyle=/i.test(a)) a += ' style="max-width:100%;height:auto"';
       return `<img${a}>`;
     });
+
+    // Link hygiene: internal links are always followed (dofollow), external links
+    // open safely but are still crawlable — no nofollow/sponsored/ugc anywhere.
+    out = out.replace(/<a\s([^>]*)>/gi, (_f, attrs: string) => {
+      let a = ` ${attrs} `;
+      const hrefMatch = a.match(/href\s*=\s*["']([^"']*)["']/i);
+      const href = hrefMatch ? hrefMatch[1] : '';
+      const isExternal = /^https?:\/\//i.test(href) && !/buyawarranty\.co\.uk/i.test(href);
+
+      // Strip any crawl-blocking rel values
+      a = a.replace(/\srel\s*=\s*["'][^"']*["']/gi, '');
+      if (isExternal) {
+        a = a.replace(/\starget\s*=\s*["'][^"']*["']/gi, '');
+        a += ' rel="noopener" target="_blank"';
+      }
+      return `<a${a.replace(/\s+/g, ' ').replace(/\s$/, '')}>`;
+    });
+
+    // Tables scroll horizontally instead of breaking mobile layout
+    out = out.replace(
+      /<table/gi,
+      '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table'
+    ).replace(/<\/table>/gi, '</table></div>');
+
     return out;
   }, [html, toc]);
+
 
   // FAQ pairs (Q1./A1. style) → FAQPage schema for rich results + AI answer engines
   const faqItems = useMemo(() => {
