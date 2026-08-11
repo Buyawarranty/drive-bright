@@ -302,6 +302,10 @@ export const BlogWritingTab = () => {
         <TabsContent value="hero-check">
           <HeroImageValidator />
         </TabsContent>
+
+        <TabsContent value="search-console">
+          <SearchConsolePanel />
+        </TabsContent>
       </Tabs>
     </div>
   );
