@@ -712,6 +712,10 @@ const BlogArticle = () => {
                       <img
                         src={relatedPost.featured_image_url}
                         alt={relatedPost.title}
+                        width={800}
+                        height={450}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
