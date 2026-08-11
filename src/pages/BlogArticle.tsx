@@ -506,7 +506,7 @@ const BlogArticle = () => {
             <div className="relative aspect-[21/9] bg-slate-100 rounded-xl overflow-hidden shadow-xl">
               <img
                 src={heroImage}
-                alt={`${post.title} — UK car warranty guide illustration`}
+                alt={`${post.title}: UK car warranty guide illustration`}
                 width={1600}
                 height={900}
                 loading="eager"
