@@ -479,22 +479,27 @@ export default function PriceTestStep2({
               <FlaskConical className="h-5 w-5" />
               {title ?? 'Price testing — Step 2 replica'}
               {adjustmentPct !== 0 && (
-                <Badge className="text-xs">
-                  {adjustmentPct < 0 ? 'Reduction applied' : 'Increase applied'}{' '}
-                  {adjustmentPct > 0 ? '+' : ''}{adjustmentPct}%
-                </Badge>
+                <span className="inline-flex items-center gap-2">
+                  <span className="rounded-md bg-primary px-2.5 py-1 text-sm font-bold text-primary-foreground shadow-sm">
+                    {adjustmentPct > 0 ? '+' : ''}{adjustmentPct}%
+                  </span>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-primary">
+                    {adjustmentPct < 0 ? 'Reduction active' : 'Increase active'}
+                  </span>
+                </span>
               )}
             </CardTitle>
             <CardDescription>
               {subtitle ??
                 'Same layout as Quotes & Orders Step 2, priced with the proposed age × mileage × factor model. Practice only — nothing here saves a quote or changes live pricing.'}
               {adjustmentPct !== 0 && (
-                <span className="mt-1 block font-medium text-foreground">
-                  A {Math.abs(adjustmentPct)}% {adjustmentPct < 0 ? 'reduction' : 'increase'} is active on
-                  every price shown in this section, and the website Step 3 price follows in proportion.
+                <span className="mt-2 block rounded-md border-2 border-primary/40 bg-primary/10 px-2.5 py-1.5 text-xs font-semibold text-foreground">
+                  A {Math.abs(adjustmentPct)}% {adjustmentPct < 0 ? 'reduction' : 'increase'} has been added and is
+                  active on every price shown in this section — the website Step 3 price follows in proportion.
                 </span>
               )}
             </CardDescription>
+
           </div>
           <Badge variant="secondary">{badgeText ?? 'Test environment'}</Badge>
         </div>
