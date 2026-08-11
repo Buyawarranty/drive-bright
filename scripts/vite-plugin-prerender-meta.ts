@@ -136,6 +136,15 @@ function buildHtmlForRoute(template: string, route: RouteMeta): string {
     "index, follow, max-snippet:-1, max-image-preview:large",
   );
 
+  // The homepage hero preload only helps the homepage; on every other route it
+  // is an unused ~34KB download competing with that page's real LCP element.
+  if (route.path !== "/") {
+    html = html.replace(
+      /\s*<link\s+rel=["']preload["'][^>]*extended_warranty_uk-car-trustworthy-reviews\.webp[^>]*>/i,
+      "",
+    );
+  }
+
   return html;
 }
 
