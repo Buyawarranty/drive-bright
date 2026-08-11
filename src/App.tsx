@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { refreshManagerPriceBypass } from "@/lib/testPromoBypass";
 
+import { TrustpilotRatingSync } from "@/components/seo/TrustpilotRatingSync";
 import { Toaster } from "@/components/ui/toaster";
 import PricingOverrideLoader from "@/components/PricingOverrideLoader";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -262,6 +263,7 @@ const App = () => {
             <PageViewTracker />
             <PageViewLogger />
             <PricingOverrideLoader />
+            <TrustpilotRatingSync />
             
             
             <div className="min-h-screen flex flex-col w-full">
