@@ -2178,16 +2178,12 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   </Button>
                 </div>
               </div>
-              <CalendarComponent
-                mode="range"
-                defaultMonth={dateRange?.from}
-                selected={dateRange}
-                onSelect={(range) => {
+              <DraftRangeCalendar
+                value={dateRange}
+                onApply={(range) => {
                   setDateRange(range);
                   setQuickDateFilter('custom');
                 }}
-                numberOfMonths={2}
-                className="p-3 pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
