@@ -11,7 +11,7 @@ import { getExcessTotalAdjustment, getExcessFactor, getAbsoluteMinimumShape } fr
  * vehicle + options, otherwise agents quote something the test model never showed.
  */
 
-/** Never sell below £399 for one year; 2/3 year floors follow the term multipliers. */
+/** Shaped floor per term (the hard bottom below is the £349 absolute minimum). */
 export const MIN_SELLABLE_BY_MONTHS: Record<number, number> = {
   12: 249,
   24: 498,
@@ -164,7 +164,7 @@ export function priceFromPricingModel(
       totalPrice: 0,
       monthlyPrice: 0,
       payInFullPrice: 0,
-      minSellable: MIN_SELLABLE_BY_MONTHS[months] ?? 399,
+      minSellable: MIN_SELLABLE_BY_MONTHS[months] ?? 249,
       belowMinimum: false,
     };
   }
@@ -228,7 +228,7 @@ export function priceFromPricingModel(
     (refLabourFactor > 0 ? labourFactor / refLabourFactor : 1);
 
   const shapedModelFloor = Math.round(
-    (MIN_SELLABLE_BY_MONTHS[months] ?? 399) *
+    (MIN_SELLABLE_BY_MONTHS[months] ?? 249) *
       motorbikeFactor *
       floorShape *
       getExcessFactor(Number(options.voluntaryExcess))
