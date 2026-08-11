@@ -311,7 +311,7 @@ const BlogArticle = () => {
         ],
         "speakable": {
           "@type": "SpeakableSpecification",
-          "cssSelector": ["h1", ".article-quick-answer"],
+          "cssSelector": ["h1"],
         },
         "mainEntityOfPage": { "@type": "WebPage", "@id": articleUrl },
       },
