@@ -82,10 +82,17 @@ export const SEOHead = ({
       <meta property="og:image:width" content={ogImageWidth} />
       <meta property="og:image:height" content={ogImageHeight} />
       <meta property="og:image:alt" content={ogImageAlt} />
-      <meta property="og:type" content="website" />
+      <meta property="og:type" content={ogType} />
       <meta property="og:locale" content="en_GB" />
       <meta property="og:site_name" content="Buy A Warranty" />
       <meta property="og:url" content={canonicalUrl} />
+      {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+      {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+      {articleSection && <meta property="article:section" content={articleSection} />}
+      {(articleTags || []).slice(0, 8).map((tag) => (
+        <meta key={tag} property="article:tag" content={tag} />
+      ))}
+
 
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
