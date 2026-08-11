@@ -18,7 +18,15 @@ interface SEOHeadProps {
   author?: string;
   publisher?: string;
   noindex?: boolean;
+  /** Use "article" on editorial pages so Google/Meta/Discover treat it as news-style content */
+  ogType?: string;
+  /** ISO timestamps for article freshness signals (Discover + AI answer engines) */
+  publishedTime?: string;
+  modifiedTime?: string;
+  articleSection?: string;
+  articleTags?: string[];
 }
+
 
 // Canonical URLs always use a single trailing-slash form so that
 // /faq and /faq/ never compete as duplicates in Google's index.
