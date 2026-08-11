@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const SITE_ORIGIN = 'https://buyawarranty.co.uk';
