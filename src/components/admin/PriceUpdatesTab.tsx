@@ -626,7 +626,23 @@ export default function PriceUpdatesTab() {
    * always carries the real live model.
    */
   const savedAgeBandModel = useMemo(() => readSavedAgeBandModel(), [versions]);
-  const effectiveLiveModel = liveEditorModel ?? savedAgeBandModel;
+  /** Last resort: the built-in code figures, which are always complete. */
+  const codeAgeBandModel = useMemo(
+    () => ({
+      bands: PROPOSED_AGE_BANDS,
+      mileageBands: PROPOSED_MILEAGE_BANDS,
+      powertrains: PROPOSED_POWERTRAIN_FACTORS,
+      vehicleTypes: PROPOSED_VEHICLE_TYPE_FACTORS,
+      modelRisks: PROPOSED_MODEL_RISK_FACTORS,
+      modelFloors: PROPOSED_MODEL_FLOORS,
+      claimLimits: PROPOSED_CLAIM_LIMIT_FACTORS,
+      labourRates: PROPOSED_LABOUR_RATE_FACTORS,
+      excessFactors: PROPOSED_EXCESS_FACTORS,
+      websiteDiscountPct: 10,
+    }),
+    []
+  );
+  const effectiveLiveModel = liveEditorModel ?? savedAgeBandModel ?? codeAgeBandModel;
 
   async function handlePublish() {
     if (!selectedId) {
