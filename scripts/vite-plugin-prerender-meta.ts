@@ -91,7 +91,12 @@ function buildHtmlForRoute(template: string, route: RouteMeta): string {
   );
   html = setMeta(html, { kind: "property", key: "og:url" }, canonical);
   html = setMeta(html, { kind: "property", key: "og:image" }, ogImage);
-  html = setMeta(html, { kind: "property", key: "og:type" }, "website");
+  html = setMeta(
+    html,
+    { kind: "property", key: "og:type" },
+    route.ogType ?? (route.path.startsWith("/thewarrantyhub/") ? "article" : "website"),
+  );
+
   html = setMeta(
     html,
     { kind: "property", key: "og:site_name" },
