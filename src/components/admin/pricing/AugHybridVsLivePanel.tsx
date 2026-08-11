@@ -169,13 +169,13 @@ const AugHybridVsLivePanel: React.FC<{
             <div>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <FlaskConical className="h-5 w-5" />
-                Live Vs Test Hybrid Aug
+                Live Vs Test Hybrid Aug — Quotes &amp; Orders price
               </CardTitle>
               <CardDescription>
                 The August test model against live pricing in the same Step 2 screen. Left is exactly what
-                agents sell today; right applies the hybrid variables below. Both columns show the customer
-                Step 3 price on top and the agent Quotes & Orders price beneath it. Sandbox only — nothing
-                saves a quote or changes live prices.
+                agents sell today; right is the Quotes &amp; Orders price that would be pushed live. When live,
+                the website Step 3 price is automatically 10% cheaper than the Quotes &amp; Orders price shown here.
+                Sandbox only — nothing saves a quote or changes live prices.
               </CardDescription>
             </div>
             <PriceSurfaceBadge surface="mixed" />
@@ -360,8 +360,8 @@ const AugHybridVsLivePanel: React.FC<{
           liveModel={liveModel}
           vehicle={vehicle}
           showRegLookup={false}
-          title="Live pricing — price"
-          subtitle="Exactly what agents sell today, from the live age-based builder figures."
+          title="Live pricing — Quotes &amp; Orders price"
+          subtitle="Exactly what agents sell today, from the live age-based builder figures. The website Step 3 price is 10% below this figure."
           badgeText="Live"
         />
         <PriceTestStep2
@@ -370,8 +370,8 @@ const AugHybridVsLivePanel: React.FC<{
           vehicle={vehicle}
           showRegLookup={false}
           autoQuoteCeiling={ceiling}
-          title="Aug hybrid test — price"
-          subtitle="Lower base, compressed risk uplifts, cheaper multi-year terms and an auto-quote ceiling."
+          title="Aug hybrid test — Quotes &amp; Orders price"
+          subtitle="Lower base, compressed risk uplifts, cheaper multi-year terms and an auto-quote ceiling. When pushed live, the website Step 3 price is 10% below this Quotes &amp; Orders price."
           badgeText="Hybrid draft"
         />
       </div>
