@@ -248,6 +248,19 @@ export function prerenderMetaPlugin(): Plugin {
         written += 1;
       }
 
+      // The homepage keeps its own head tags, but its #root is empty too, so give
+      // crawlers the same static heading + intro block.
+      const homeRoute: RouteMeta = {
+        path: "/",
+        title: "Car, Van, EV & Motorbike Warranty Cover UK",
+        description:
+          "Compare and buy extended warranty cover for your car, van, motorbike, hybrid or electric vehicle. Instant online quote from your registration and mileage, flexible claim limits and UK-based claims support.",
+      };
+      const homeHtml = setStaticBody(template, homeRoute);
+      if (homeHtml !== template) {
+        await fs.writeFile(indexPath, homeHtml, "utf8");
+      }
+
       console.log(
         `[prerender-meta] Generated ${written} route HTML files with route-specific meta tags.`,
       );
