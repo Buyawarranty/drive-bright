@@ -1,45 +1,52 @@
-# ORR Test Lab — Simulate agent mode
+# Re-tune Quotes & Orders minimum prices so every option moves
 
-## Goal
-Let a manager pretend to be a specific sales agent (e.g. Freddie, James) and watch synthetic `[ORR_TEST]` leads flow into their New Leads view, trigger the pop-up alert with beep, tick the 2‑minute countdown, and get reclaimed on expiry — exactly as that agent would experience it in production. All frontend; no Supabase, RPC, or schema changes.
+## What's wrong today
 
-## What you'll be able to do
-1. Open **ORR Test Lab**.
-2. Pick an agent from a "Simulate as" dropdown (any active sales / sales_lead user).
-3. The whole admin dashboard immediately renders as if you were that agent — including New Leads scoping, alert pop-ups, countdown badges, "Take this lead" buttons.
-4. In another browser tab (or split view), stay as manager in the Test Lab and press **Create test lead**. The synthetic lead is distributed by the real ORR engine.
-5. Watch it appear in the "simulated" tab within seconds, alert pops with the beep, countdown ticks down. Miss the 120s and see it flip to the next agent when you press **Run sweep**.
-6. Press **Stop simulating** to return to your own view. Nothing was written server-side — impersonation is a client-only UI overlay.
+Two separate clamps are flattening cheap quotes:
 
-## How it works (technical)
-- The app already has `ViewAsContext` and `useImpersonation` used elsewhere to view the CRM as another user. We reuse this. No new hooks, no DB writes.
-- New component `AgentSimulatorBar.tsx` inside the Test Lab:
-  - Loads active `admin_users` where `role in ('sales','sales_lead')` (read-only query, already permitted).
-  - Sets `viewAs` to that agent's id via existing context setter.
-  - Shows a persistent yellow banner while active: "Simulating <Name> — you are seeing what they see. Stop simulating.".
-- `OrrTestLabPage.tsx` gains an "Open real New Leads tab" link so managers can flip between Lab (create/expire/sweep controls) and New Leads (agent-view outcome) in two windows.
-- Manager controls in the Lab (Create test lead, Expire window, Run sweep, Delete all) stay available even while simulating — they're gated by the real admin session, not the impersonation overlay.
+1. **The hard bottom is anchored on the "reference" combo** (£2,000 claim, £70/hr labour, £150 excess) at £399, and the shaping is wrapped in `Math.max(1, shape)`. Any option *cheaper* than the reference (claim £1,000, excess £250/£500, labour £50) gets shape < 1, which is clamped back to 1. Result: £1,000 and £2,000 claim limits land on exactly the same price, and £0 → £500 excess barely moves once a vehicle is floor-bound.
+2. Most cheaper/older vehicles sit **at** that hard bottom, so the flattening is what agents actually see on nearly every quote.
 
-## Files touched (frontend only)
-```text
-src/components/admin/leads/OrrTestLabPage.tsx      # add simulator bar + how-to steps
-src/components/admin/leads/AgentSimulatorBar.tsx   # NEW — agent picker + banner
-```
+## What I'd change
 
-## Not touched
-- No Supabase migrations
-- No edge functions
-- No RPC changes
-- No changes to `OpenRoundRobinTestPanel`, `AllocationMatrix`, alert panels, or the ORR distribution engine
-- No new tables, columns, or policies
+Re-anchor the hard bottom on the **cheapest possible combo** and let the ladder climb from there — nothing clamped.
 
-## Suggested test script
-1. Window A: manager in **ORR Test Lab**, click **Simulate as: Freddie**.
-2. Window B (incognito or second profile, or just a second tab if you don't need two identities): open `?tab=new-leads`.
-3. Window A: click **Create test lead**.
-4. Verify in Window B: pop-up alert fires with beep, row appears with 2:00 countdown, phone shows `TEST123` reg.
-5. Wait / click **Expire window** on the row in Window A.
-6. Window A: click **Run sweep** → row's Assigned-to flips to next agent in the retry ladder.
-7. Window A: **Delete all test leads** to clean up.
+- Cheapest sellable Quotes & Orders total (12 months, £1,000 claim, £50/hr labour, £500 excess): **£349**
+- 24 months: **£576** (×1.65) · 36 months: **£821** (×2.35)
+- Motorbikes: half of the above (£175 / £288 / £411)
+- Website Step 3 stays the Quotes & Orders figure minus the live web gap (10%)
 
-Approve to proceed?
+### Ladder multipliers (relative to the cheapest = 1.00)
+
+| Claim limit | × | Labour | × | Excess | × |
+|---|---|---|---|---|---|
+| £1,000 | 1.00 | £50 | 1.00 | £500 | 1.00 |
+| £2,000 | 1.06 | £70 | 1.03 | £250 | 1.02 |
+| £3,000 | 1.14 | £100 | 1.08 | £150 | 1.045 |
+| £5,000 | 1.26 | £150 | 1.20 | £100 | 1.07 |
+| | | | | £50 | 1.10 |
+| | | | | £0 | 1.14 |
+
+These are deliberately compressed so the popular combo doesn't get more expensive than it is today.
+
+### What that produces at 12 months (floor-bound vehicle)
+
+| Combo | New floor | Today |
+|---|---|---|
+| £1,000 · £50/hr · £500 excess | £349 | £399 |
+| £1,000 · £50/hr · £150 excess | £365 | £399 |
+| £2,000 · £70/hr · £150 excess (reference) | £398 | £399 |
+| £3,000 · £70/hr · £100 excess | £438 | £399 |
+| £5,000 · £150/hr · £0 excess | £602 | £519 |
+
+So: cheapest quote is £349, £1,000 vs £2,000 claim now differ, and every excess tier moves.
+
+## Technical detail
+
+- `src/lib/pricingMatrix.ts` — set `ABSOLUTE_MIN_GRID_BY_PERIOD` to 349 / 576 / 821, move `ABS_MIN_ANCHOR` to the cheapest combo, replace `getClaimLimitFloorFactor` weights with the compressed ladder above, add matching labour/excess ladders, and drop `Math.max(1, shape)`.
+- `src/components/admin/pricing/modelQuoteEngine.ts` — same change to `ABSOLUTE_MIN_GRID_BY_MONTHS` and remove the `Math.max(1, absShape)` clamp so the age-band model matches.
+- `src/lib/pricing/netFloor.ts` — net payable floor follows the same figures, so a 30% agent discount still can't go below £349.
+- Shaped floor (`applyBasePriceFloor`) and `MIN_SELLABLE_BY_MONTHS` (249/498/747) unchanged.
+- Applies to every model on Price updates (July, Aug hybrid, code-base, historical) because they all read these constants.
+
+Nothing in the customer journey pricing formula itself changes — only the minimums and their shaping.
