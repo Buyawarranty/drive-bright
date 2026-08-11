@@ -13,6 +13,8 @@ import { CostEfficiencyPanel } from './scoreboard/CostEfficiencyPanel';
 import { CoverOptionsMixPanel } from './analytics/CoverOptionsMixPanel';
 import { DailyRevenueTrendPanel } from './analytics/DailyRevenueTrendPanel';
 import { CustomerDemographicsPanel } from './analytics/CustomerDemographicsPanel';
+import { PriceConversionAovPanel } from './analytics/PriceConversionAovPanel';
+
 
 import { QuickMonthFilter } from './QuickMonthFilter';
 import { QuickWeekFilter } from './QuickWeekFilter';
