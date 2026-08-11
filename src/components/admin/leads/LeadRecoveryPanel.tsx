@@ -39,6 +39,33 @@ const UNASSIGNED = '__unassigned__';
 const DEAD_STATUSES = new Set(['converted', 'lost', 'fake_lead', 'do_not_contact', 'unsubscribed']);
 
 /**
+ * Every lead id this agent ever owned, from the assignment audit trail.
+ *
+ * PostgREST caps a single request at 1000 rows, so an unpaginated
+ * `.limit(10000)` silently truncated the audit set — and because the returned
+ * slice was in arbitrary order, the "unassigned ex-owned" counter and the scan
+ * saw DIFFERENT subsets. That is why the badge said 143 but the confirm dialog
+ * said 85. Page deterministically (ordered by lead_id) so both agree.
+ */
+async function fetchExOwnedLeadIds(agentId: string): Promise<string[]> {
+  const page = 1000;
+  const ids = new Set<string>();
+  for (let i = 0; i < 50; i += 1) {
+    const { data, error } = await (supabase.from('lead_assignment_audit') as any)
+      .select('lead_id')
+      .eq('previous_assigned_to_id', agentId)
+      .order('lead_id', { ascending: true })
+      .range(i * page, i * page + page - 1);
+    if (error) throw error;
+    const batch = (data ?? []) as { lead_id: string | null }[];
+    batch.forEach(r => { if (r.lead_id) ids.add(r.lead_id); });
+    if (batch.length < page) break;
+  }
+  return Array.from(ids);
+}
+
+
+/**
  * Management-only Lead Recovery panel.
  * Filter leads by a date range and (optionally) the current assigned agent,
  * then reassign the whole set to a chosen agent — refreshes assigned_at so
