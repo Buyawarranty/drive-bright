@@ -40,6 +40,13 @@ import QuickUpliftBar, { applyModelUplift } from './QuickUpliftBar';
 export const HYBRID_PRICE_UPLIFT_PCT = 20;
 
 /**
+ * Flag stamped on a published hybrid model so a later republish knows the base
+ * reduction and spread compression are already baked in and must not be applied
+ * a second time (that compounding made every "+20%" push come out cheaper).
+ */
+export const HYBRID_BASE_MARKER = 'hybridBaseApplied';
+
+/**
  * Aug 2026: 2-year and 3-year Aug hybrid prices carry a further +20% on top of
  * the curve-wide uplift. 12 months is untouched. Applied to the term
  * multipliers, so every claim limit / labour rate / excess combination rises in
