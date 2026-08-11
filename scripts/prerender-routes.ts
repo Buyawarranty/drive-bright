@@ -37,7 +37,7 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
       "Read our cancellation policy. 14-day money back guarantee, refund eligibility and how to cancel your warranty plan.",
   },
   {
-    path: "/cancel-warranty",
+    path: "/cancel-warranty/",
     title: "Cancel Your Warranty | Buy A Warranty",
     description:
       "Need to cancel your warranty? Check refund eligibility and submit a cancellation request online in minutes.",
@@ -333,5 +333,192 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
       "Protect your Vauxhall from unexpected repair bills with flexible UK warranty cover from £19/month. Instant online quote in under 60 seconds.",
     ogImage: `${SITE}/__l5e/assets-v1/9d7591c8-b60e-4b72-95af-0623d578e089/vauxhall-hero-panda-cars.png`,
   },
-];
 
+  // ---------------- Added Aug 2026: static canonical + meta for every sitemap route ----------------
+  {
+    path: "/cancel-warranty/",
+    title: "Cancel Your Warranty | BuyAWarranty",
+    description:
+      "Cancel your used car warranty easily. Understand your cooling off rights, refund process and alternative options.",
+  },
+  {
+    path: "/car-extended-warranty/ford/",
+    title: "Ford Extended Warranty Cover from \u00a319/month | Quote",
+    description:
+      "Protect your Ford from unexpected repair bills with flexible UK warranty cover from \u00a319/month. Instant online quote in under 60 seconds.",
+  },
+  {
+    path: "/car-extended-warranty/hyundai/",
+    title: "Hyundai Extended Warranty | Used Hyundai Cover & Instant Quotes",
+    description:
+      "Extend your Hyundai warranty and protect against expensive repairs. Get instant quotes for used Hyundai cover, including high-mileage cars up to 150,000 miles.",
+  },
+  {
+    path: "/car-extended-warranty/jaguar/",
+    title: "Jaguar Car Extended Warranty | Cover for New & Used Models",
+    description:
+      "Protect your Jaguar with comprehensive extended warranty cover for new and used models. Get instant online quotes, flexible plans and protection from costly repairs.",
+  },
+  {
+    path: "/car-extended-warranty/land-rover/",
+    title: "Land Rover Extended Warranty from \u00a319/month",
+    description:
+      "Protect your Land Rover or Range Rover from unexpected repair bills with flexible UK warranty cover from \u00a319/month. Instant online quote in under 60 seconds.",
+  },
+  {
+    path: "/car-extended-warranty/skoda/",
+    title: "\u0160koda Car Extended Warranty | Cover for New & Used Models",
+    description:
+      "Protect your \u0160koda with comprehensive extended warranty cover for new and used models. Get instant quotes, flexible plans and protection from costly repairs.",
+  },
+  {
+    path: "/careers/",
+    title: "Vehicle Warranty Sales Executive Jobs UK | Remote PAYE | Buyawarranty Careers",
+    description:
+      "Remote UK Vehicle Warranty Sales Executive role. Full-time PAYE, warm leads, uncapped commission, OTE \u00a335,000\u2013\u00a360,000+. Apply to join the Buyawarranty sales team.",
+  },
+  {
+    path: "/warranty-plan/",
+    title: "12 Month Car Warranty UK | Affordable Cover | BuyA Warranty",
+    description:
+      "Get 12 month car warranty protection in the UK with BuyA Warranty. Affordable cover, flexible terms and reliable mechanical breakdown insurance.",
+  },
+  {
+    path: "/warranty-types/audi-warranty/",
+    title: "Audi Extended Warranty UK | Instant Quote | BuyA Warranty",
+    description:
+      "Audi Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/bmw-warranty/",
+    title: "BMW Extended Warranty UK | Get Instant Quote | BuyA Warranty",
+    description:
+      "BMW Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/citroen-warranty/",
+    title: "Citro\u00ebn Extended Warranty UK | From \u00a319/mo | Buy A Warranty",
+    description:
+      "Citro\u00ebn Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/ev-warranty/",
+    title: "EV Warranty UK | Electric Vehicle Cover | BuyA Warranty",
+    description:
+      "EV Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/ford-warranty/",
+    title: "Ford Extended Warranty UK | Get Instant Quote | BuyA Warranty",
+    description:
+      "Ford Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/honda-warranty/",
+    title: "Honda Extended Warranty UK | Get Instant Quote | BuyA Warranty",
+    description:
+      "Honda Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/hybrid-warranty/",
+    title: "Hybrid Warranty UK | BuyA Warranty Protection",
+    description:
+      "Hybrid Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/hyundai-warranty/",
+    title: "Hyundai Extended Warranty UK | Tucson, i30, Kona, IONIQ 5 from \u00a319/mo",
+    description:
+      "Hyundai Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/kia-warranty/",
+    title: "Kia Extended Warranty UK | Get Instant Quote | BuyA Warranty",
+    description:
+      "Kia Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/mercedes-warranty/",
+    title: "Mercedes Extended Warranty UK | Instant Quote | BuyA Warranty",
+    description:
+      "Mercedes Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/mg-warranty/",
+    title: "MG Extended Warranty UK | BuyA Warranty Cover",
+    description:
+      "MG Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/motorbike-motorcycle-warranty/",
+    title: "Motorbike Warranty UK | Full Protection | BuyA Warranty",
+    description:
+      "Motorbike Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/nissan-warranty/",
+    title: "Nissan Extended Warranty UK | Get Your Instant Quote | Buy A Warranty",
+    description:
+      "Nissan Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/peugeot-warranty/",
+    title: "Peugeot Extended Warranty UK | Reliable Cover | BuyA Warranty",
+    description:
+      "Peugeot Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/phev-warranty/",
+    title: "PHEV Warranty UK | Plug-In Hybrid Cover | BuyA Warranty",
+    description:
+      "PHEV Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/skoda-warranty/",
+    title: "Skoda Extended Warranty UK | Get Instant Quote | BuyA Warranty",
+    description:
+      "Skoda Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/suv-warranty/",
+    title: "SUV Extended Warranty UK | 4x4 Cover from \u00a321/mo | BuyAWarranty",
+    description:
+      "SUV Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/toyota-warranty/",
+    title: "Toyota Extended Warranty UK | Get Instant Quote | BuyA Warranty",
+    description:
+      "Toyota Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/vauxhall-warranty/",
+    title: "Vauxhall Extended Warranty UK | Corsa, Astra, Grandland Cover from \u00a319/mo",
+    description:
+      "Vauxhall Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/volkswagen-warranty/",
+    title: "Volkswagen Extended Warranty UK | Trusted Cover | BuyA Warranty",
+    description:
+      "Volkswagen Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/warranty-types/volvo-warranty/",
+    title: "Volvo Extended Warranty UK | Get Instant Quote | BuyA Warranty",
+    description:
+      "Volvo Extended Warranty UK \u2014 UK extended warranty cover from \u00a319/month with unlimited claims, nationwide approved garages and instant online quotes in under 60 seconds.",
+  },
+  {
+    path: "/what-is-covered/",
+    title: "What's Covered | Complete UK Vehicle Warranty Coverage Guide",
+    description:
+      "See exactly what your warranty covers and what we pay. Unlimited claims, parts and labour included. Petrol, diesel, hybrid, EV and motorcycles.",
+  },
+  {
+    path: "/warranty-types/ssangyong-warranty/",
+    title: "SsangYong Extended Warranty UK | Reliable Car Protection Plans",
+    description:
+      "SsangYong extended warranty cover in the UK from \u00a319/month \u2014 Rexton, Korando and Tivoli protection with unlimited claims and instant online quotes.",
+  },
+];

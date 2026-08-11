@@ -570,59 +570,59 @@ const EVWarranty = () => {
               
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 text-center">
                 {[
-                  { name: 'Jaguar', logo: 'https://logo.clearbit.com/jaguar.com' },
-                  { name: 'Land Rover', logo: 'https://logo.clearbit.com/landrover.com' },
-                  { name: 'MG', logo: 'https://logo.clearbit.com/mgmotor.eu' },
-                  { name: 'Mini', logo: 'https://logo.clearbit.com/mini.com' },
+                  { name: 'Jaguar', logo: null },
+                  { name: 'Land Rover', logo: null },
+                  { name: 'MG', logo: null },
+                  { name: 'Mini', logo: null },
                   { name: 'Alfa Romeo', logo: alfaRomeoLogo },
-                  { name: 'Audi', logo: 'https://logo.clearbit.com/audi.com' },
+                  { name: 'Audi', logo: null },
                   { name: 'BMW', logo: bmwLogo },
-                  { name: 'Chevrolet', logo: 'https://logo.clearbit.com/chevrolet.com' },
-                  { name: 'Chrysler', logo: 'https://logo.clearbit.com/chrysler.com' },
-                  { name: 'Citroën', logo: 'https://logo.clearbit.com/citroen.com' },
+                  { name: 'Chevrolet', logo: null },
+                  { name: 'Chrysler', logo: null },
+                  { name: 'Citroën', logo: null },
                   { name: 'Dacia', logo: daciaLogo },
-                  { name: 'Daewoo', logo: 'https://logo.clearbit.com/daewoo.com' },
-                  { name: 'Daihatsu', logo: 'https://logo.clearbit.com/daihatsu.com' },
-                  { name: 'Fiat', logo: 'https://logo.clearbit.com/fiat.com' },
-                  { name: 'Ford', logo: 'https://logo.clearbit.com/ford.com' },
-                  { name: 'Honda', logo: 'https://logo.clearbit.com/honda.com' },
-                  { name: 'Hyundai', logo: 'https://logo.clearbit.com/hyundai.com' },
-                  { name: 'Infiniti', logo: 'https://logo.clearbit.com/infiniti.com' },
-                  { name: 'Isuzu', logo: 'https://logo.clearbit.com/isuzu.com' },
-                  { name: 'Iveco', logo: 'https://logo.clearbit.com/iveco.com' },
-                  { name: 'Jeep', logo: 'https://logo.clearbit.com/jeep.com' },
-                  { name: 'Kia', logo: 'https://logo.clearbit.com/kia.com' },
-                  { name: 'Lexus', logo: 'https://logo.clearbit.com/lexus.com' },
-                  { name: 'Mazda', logo: 'https://logo.clearbit.com/mazda.com' },
-                  { name: 'Mercedes-Benz', logo: 'https://logo.clearbit.com/mercedes-benz.com' },
-                  { name: 'Mitsubishi', logo: 'https://logo.clearbit.com/mitsubishi-motors.com' },
+                  { name: 'Daewoo', logo: null },
+                  { name: 'Daihatsu', logo: null },
+                  { name: 'Fiat', logo: null },
+                  { name: 'Ford', logo: null },
+                  { name: 'Honda', logo: null },
+                  { name: 'Hyundai', logo: null },
+                  { name: 'Infiniti', logo: null },
+                  { name: 'Isuzu', logo: null },
+                  { name: 'Iveco', logo: null },
+                  { name: 'Jeep', logo: null },
+                  { name: 'Kia', logo: null },
+                  { name: 'Lexus', logo: null },
+                  { name: 'Mazda', logo: null },
+                  { name: 'Mercedes-Benz', logo: null },
+                  { name: 'Mitsubishi', logo: null },
                   { name: 'Nissan', logo: nissanLogo },
-                  { name: 'Peugeot', logo: 'https://logo.clearbit.com/peugeot.com' },
+                  { name: 'Peugeot', logo: null },
                   { name: 'Renault', logo: renaultLogo },
                   { name: 'SEAT', logo: seatLogo },
                   { name: 'Škoda', logo: skodaLogo },
-                  { name: 'Smart', logo: 'https://logo.clearbit.com/smart.com' },
+                  { name: 'Smart', logo: null },
                   { name: 'SsangYong', logo: ssangyongLogo },
-                  { name: 'Subaru', logo: 'https://logo.clearbit.com/subaru.com' },
-                  { name: 'Suzuki', logo: 'https://logo.clearbit.com/suzuki.com' },
-                  { name: 'Tesla', logo: 'https://logo.clearbit.com/tesla.com' },
-                  { name: 'Toyota', logo: 'https://logo.clearbit.com/toyota.com' },
-                  { name: 'Volkswagen', logo: 'https://logo.clearbit.com/volkswagen.com' },
-                  { name: 'Volvo', logo: 'https://logo.clearbit.com/volvo.com' },
-                  { name: 'Yamaha', logo: 'https://logo.clearbit.com/yamaha-motor.com' }
+                  { name: 'Subaru', logo: null },
+                  { name: 'Suzuki', logo: null },
+                  { name: 'Tesla', logo: null },
+                  { name: 'Toyota', logo: null },
+                  { name: 'Volkswagen', logo: null },
+                  { name: 'Volvo', logo: null },
+                  { name: 'Yamaha', logo: null }
                 ].map((brand) => (
                    <div key={brand.name} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors flex flex-col items-center gap-3">
-                     <img 
-                       src={brand.logo} 
-                       alt={`${brand.name} EV warranty coverage - UK extended warranty available`} 
-                       className="h-10 w-auto object-contain"
-                       loading="lazy"
-                       width="80"
-                       height="40"
-                       onError={(e) => {
-                         e.currentTarget.style.display = 'none';
-                       }}
-                     />
+                     {brand.logo && (
+                       <img 
+                         src={brand.logo} 
+                         alt={`${brand.name} EV warranty coverage - UK extended warranty available`} 
+                         className="h-10 w-auto object-contain"
+                         loading="lazy"
+                         width="80"
+                         height="40"
+                       />
+                     )}
+
                      <p className="font-semibold text-gray-800">{brand.name}</p>
                    </div>
                 ))}
