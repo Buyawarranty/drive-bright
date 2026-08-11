@@ -31,11 +31,12 @@ import PriceSurfaceBadge from './PriceSurfaceBadge';
  */
 
 /**
- * Aug 2026: every Aug hybrid Quotes & Orders price is 10% higher than the
- * original hybrid proposal. The website Step 3 price stays "grid minus the web
- * gap", so it rises in proportion automatically — no separate web change.
+ * Aug 2026: every Aug hybrid Quotes & Orders price is 20% higher than the
+ * original hybrid proposal (10% initial uplift + a further 10%). The website
+ * Step 3 price stays "grid minus the web gap", so it rises in proportion
+ * automatically — no separate web change.
  */
-export const HYBRID_PRICE_UPLIFT_PCT = 10;
+export const HYBRID_PRICE_UPLIFT_PCT = 20;
 
 /**
  * Aug 2026: 2-year and 3-year Aug hybrid prices carry a further +20% on top of
@@ -114,7 +115,7 @@ const AugHybridVsLivePanel: React.FC<{
   /** Exact target wins; otherwise apply the deliberate reduction to the August base. */
   const reducedReference = Math.round(referenceLive * (1 - cfg.baseReductionPct / 100));
   const targetBeforeUplift = cfg.targetReference > 0 ? cfg.targetReference : reducedReference;
-  /** +10% uplift on every hybrid Quotes & Orders price (Aug 2026). */
+  /** +20% total uplift on every hybrid Quotes & Orders price (Aug 2026). */
   const effectiveTarget = Math.round(targetBeforeUplift * (1 + HYBRID_PRICE_UPLIFT_PCT / 100));
   /** One scale factor moves the whole age curve so the reference vehicle lands on target. */
   const targetScale = referenceLive > 0 ? effectiveTarget / referenceLive : 1;
