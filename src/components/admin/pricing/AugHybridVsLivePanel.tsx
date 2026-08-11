@@ -169,13 +169,13 @@ const AugHybridVsLivePanel: React.FC<{
             <div>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <FlaskConical className="h-5 w-5" />
-                Live Vs Test Hybrid Aug
+                Live Vs Test Hybrid Aug — Quotes &amp; Orders price
               </CardTitle>
               <CardDescription>
                 The August test model against live pricing in the same Step 2 screen. Left is exactly what
-                agents sell today; right applies the hybrid variables below. Both columns show the customer
-                Step 3 price on top and the agent Quotes & Orders price beneath it. Sandbox only — nothing
-                saves a quote or changes live prices.
+                agents sell today; right is the Quotes &amp; Orders price that would be pushed live. When live,
+                the website Step 3 price is automatically 10% cheaper than the Quotes &amp; Orders price shown here.
+                Sandbox only — nothing saves a quote or changes live prices.
               </CardDescription>
             </div>
             <PriceSurfaceBadge surface="mixed" />
