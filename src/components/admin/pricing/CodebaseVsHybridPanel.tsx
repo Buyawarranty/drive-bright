@@ -200,14 +200,13 @@ const CodebaseVsHybridPanel: React.FC<{
             <div>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <FlaskConical className="h-5 w-5" />
-                Code base vs Test Hybrid Aug
+                Code base vs Test Hybrid Aug — Quotes &amp; Orders price
               </CardTitle>
               <CardDescription>
                 The original July 2026 code-base pricing against the August test model in the same Step 2
-                screen. Left is the flat code-base grid (no age, mileage, powertrain or model-risk
-                differentiation); right applies the hybrid variables below. Both columns show the customer
-                Step 3 price on top and the agent Quotes & Orders price beneath it. Sandbox only — nothing saves a
-                quote or changes live prices.
+                screen. Left is the flat code-base grid; right is the Quotes &amp; Orders price that would be
+                pushed live. When live, the website Step 3 price is automatically 10% cheaper than the Quotes
+                &amp; Orders price shown here. Sandbox only — nothing saves a quote or changes live prices.
               </CardDescription>
             </div>
             <PriceSurfaceBadge surface="mixed" />
