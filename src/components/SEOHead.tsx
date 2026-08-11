@@ -127,7 +127,7 @@ export const SEOHead = ({
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={ogTitle || title} />
       <meta name="twitter:description" content={ogDescription || description} />
-      <meta name="twitter:image" content={ogImage} />
+      <meta name="twitter:image" content={ogImageUrl} />
       <meta name="twitter:image:alt" content={ogImageAlt} />
       <meta name="twitter:site" content="@buyawarranty" />
 
