@@ -240,7 +240,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [selectedLeadOwner, setSelectedLeadOwner] = useState<string | null>(null);
   const matchedLeadOwner = useLeadOwner(customerEmail, customerPhone);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
-  const [excessAmount, setExcessAmount] = useState(150);
+  // Landing default matches Step 3: 2 years, £2,000 claim limit, £100 excess, £70/hr
+  const [excessAmount, setExcessAmount] = useState(100);
   const [claimLimit, setClaimLimit] = useState(2000);
 
   // Cover-option variables come from the published pricing model (Admin → Price
