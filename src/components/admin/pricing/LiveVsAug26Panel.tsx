@@ -12,6 +12,7 @@ import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import { usePricingVersions } from '@/hooks/usePricingVersions';
 import PriceSurfaceBadge from './PriceSurfaceBadge';
+import QuickUpliftBar, { applyModelUplift } from './QuickUpliftBar';
 
 
 
@@ -117,10 +118,14 @@ const LiveVsAug26Panel: React.FC<{
   }, [preferred, versionId]);
 
   const selected = versions.find(v => v.id === versionId) ?? preferred;
-  const aug26Model = useMemo(() => versionToModel(selected, saved), [selected, saved]);
+  const [upliftPct, setUpliftPct] = useState(0);
+  const aug26Base = useMemo(() => versionToModel(selected, saved), [selected, saved]);
+  /** Quick percentage uplift on the whole Aug 2026 curve. */
+  const aug26Model = useMemo(() => applyModelUplift(aug26Base, upliftPct), [aug26Base, upliftPct]);
 
   return (
     <div className="space-y-4">
+      <QuickUpliftBar variantLabel="Aug 2026 pricing" value={upliftPct} onChange={setUpliftPct} />
       <SectionPushLiveBar
         sectionLabel="Live vs Aug 2026"
         liveLabel={liveLabel}
