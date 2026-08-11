@@ -203,13 +203,9 @@ export const SmsTrackingTab: React.FC = () => {
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="range"
-              selected={dateRange}
-              onSelect={(r) => { setPreset('custom'); setDateRange(r); }}
-              numberOfMonths={2}
-              initialFocus
-              className={cn('p-3 pointer-events-auto')}
+            <DraftRangeCalendar
+              value={dateRange}
+              onApply={(r) => { setPreset('custom'); setDateRange(r); }}
             />
           </PopoverContent>
         </Popover>
