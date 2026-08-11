@@ -547,9 +547,15 @@ export const LeadRecoveryPanel: React.FC = () => {
             <AlertDialogTitle>Reassign {rows.length} lead{rows.length === 1 ? '' : 's'} to {targetName}?</AlertDialogTitle>
             <AlertDialogDescription>
               These leads will move to {targetName} and appear at the top of their New Leads queue.
+              {scanBreakdown && (
+                <> {' '}Made up of {scanBreakdown.inRange} in the selected date range
+                  {scanBreakdown.exOwned > 0 && <> plus {scanBreakdown.exOwned} unassigned ex-owned (all-time)</>}.
+                </>
+              )}
               {paidCount > 0 && <> {paidCount} paid lead{paidCount === 1 ? '' : 's'} will keep converted status.</>}
               {' '}This cannot be undone in one click.
             </AlertDialogDescription>
+
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
