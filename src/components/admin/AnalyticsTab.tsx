@@ -1582,6 +1582,11 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
         <CustomerDemographicsPanel dateRange={effectiveDateRange} />
 
+        <AnalyticsSectionHeading id="price-conversion-aov" title="Price, conversion & average order value" description="Which quoted price points convert best, where sales actually land, and how AOV is trending." accent="border-emerald-500/60" />
+
+        <PriceConversionAovPanel dateRange={effectiveDateRange} />
+
+
 
 
 
