@@ -12,11 +12,18 @@ import type { RepeatCustomerInfo } from '@/hooks/useRepeatCustomers';
 export const RepeatCustomerBadge: React.FC<{ info?: RepeatCustomerInfo; compact?: boolean }> = ({ info, compact }) => {
   if (!info) return null;
 
+  const matchLabel: Record<string, string> = {
+    reg: 'matched on registration',
+    email: 'matched on email',
+    phone: 'matched on phone number',
+    name: 'matched on full name',
+  };
+
   const detail = [
     info.policyCount > 1 ? `${info.policyCount} previous policies` : '1 previous policy',
     info.lastPurchaseAt ? `last bought ${format(new Date(info.lastPurchaseAt), 'dd/MM/yyyy')}` : null,
     info.lastPlanType ? `plan: ${info.lastPlanType}` : null,
-    info.matchedOn === 'reg' ? 'matched on registration' : 'matched on email',
+    matchLabel[info.matchedOn] || 'matched on email',
   ].filter(Boolean).join(' • ');
 
   return (
