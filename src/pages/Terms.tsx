@@ -142,7 +142,7 @@ const Terms = () => {
         title="Car Warranty Terms UK | Full Conditions Explained | BuyA Warranty"
         description="Full car warranty terms and conditions explained by BuyA Warranty UK. Clear details on coverage, exclusions, cancellations and your customer rights."
         keywords="terms and conditions, warranty terms, vehicle warranty"
-        canonical={`${window.location.origin}/terms`}
+        canonical="https://buyawarranty.co.uk/terms/"
       />
 
       {/* Header Section */}
