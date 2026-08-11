@@ -34,8 +34,7 @@ Updated: just now
 - [Price Updates (test → live)](mem://features/admin/price-updates-test-to-live) — Management-only Price Updates tab; Quotes & Orders grid is source of truth, website = minus 10% rounded
 - [Price Updates Never Retroactive](mem://pricing/price-updates-never-retroactive) — New price models only affect new quotes; old sales, customer management and portal keep stored prices
 - [Minimum Price Ladder £349](mem://pricing/minimum-price-ladder-349) — Hard bottom per term + claim/labour/excess ladder; never clamp the shape to 1
-- [Minimum Price Floor](mem://pricing/minimum-price-floor) — Hard £249/£498/£747 floor for 12/24/36mo
-- [Hard-bottom Anchor](mem://pricing/hard-bottom-anchor-reference) — £349/£577/£821 anchored on £2k claim / £70 labour / £150 excess, never the cheapest combo
+- [Minimum Price Floor](mem://pricing/minimum-price-floor) — Shaped £249/£498/£747 floor for 12/24/36mo (sits under the £349 hard bottom)
 - [2yr/3yr +20% Uplift](mem://pricing/two-three-year-uplift-jul-2026) — Jul 2026 base matrix + floors raised 20% for 24/36mo only; 12mo untouched
 - [Vehicle Surcharge Hierarchy](mem://pricing/vehicle-surcharge-hierarchy-v3) — Premium brand and mileage/age pricing formulas
 - [£5,000 Claim Limit Locked](mem://pricing/claim-limit-5000-manager-authorisation) — Agents need manager authorisation per reg to sell £5,000 cover on Quotes & Orders
