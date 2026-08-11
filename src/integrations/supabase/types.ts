@@ -9892,6 +9892,12 @@ export type Database = {
           priority_score: number | null
           queue: string | null
           quote_amount: number | null
+          quote_source: string | null
+          quoted_at: string | null
+          quoted_claim_limit: number | null
+          quoted_excess: number | null
+          quoted_labour_rate: number | null
+          quoted_term: string | null
           reason: string | null
           recovery_outcome: string | null
           recovery_worked_at: string | null
@@ -9995,6 +10001,12 @@ export type Database = {
           priority_score?: number | null
           queue?: string | null
           quote_amount?: number | null
+          quote_source?: string | null
+          quoted_at?: string | null
+          quoted_claim_limit?: number | null
+          quoted_excess?: number | null
+          quoted_labour_rate?: number | null
+          quoted_term?: string | null
           reason?: string | null
           recovery_outcome?: string | null
           recovery_worked_at?: string | null
@@ -10098,6 +10110,12 @@ export type Database = {
           priority_score?: number | null
           queue?: string | null
           quote_amount?: number | null
+          quote_source?: string | null
+          quoted_at?: string | null
+          quoted_claim_limit?: number | null
+          quoted_excess?: number | null
+          quoted_labour_rate?: number | null
+          quoted_term?: string | null
           reason?: string | null
           recovery_outcome?: string | null
           recovery_worked_at?: string | null
