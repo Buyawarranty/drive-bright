@@ -229,9 +229,9 @@ const LeadAlertCard: React.FC<CardProps> = ({
   onCollapse,
 }) => {
   const navigate = useNavigate();
-  // Repeat customer? (already bought from us — matched on email or reg)
+  // Repeat customer? (already bought from us — matched on email, phone, reg or name)
   const repeatInfo = useIsRepeatCustomer(
-    useMemo(() => ({ id: lead.id, email: lead.email, vehicle_reg: lead.vehicle_reg, created_at: (lead as any).created_at }), [lead.id, lead.email, lead.vehicle_reg, (lead as any).created_at])
+    useMemo(() => ({ id: lead.id, email: lead.email, vehicle_reg: lead.vehicle_reg, phone: (lead as any).phone, first_name: (lead as any).first_name, last_name: (lead as any).last_name, created_at: (lead as any).created_at }), [lead])
   );
   const [now, setNow] = useState(() => Date.now());
   const [copiedPhone, setCopiedPhone] = useState(false);
