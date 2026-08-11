@@ -45,7 +45,7 @@ const PrivacyPolicy = () => {
 
             {/* Desktop CTA Buttons - Show on desktop */}
             <div className="hidden lg:flex items-center space-x-3">
-              <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer">
+              <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer nofollow">
                 <button className="bg-[#25D366] text-white border-[#25D366] hover:bg-[#1da851] hover:border-[#1da851] px-3 py-2 rounded-md text-sm font-medium transition-colors">
                   WhatsApp Us
                 </button>
@@ -83,7 +83,7 @@ const PrivacyPolicy = () => {
                   Contact Us
                 </Link>
                 <div className="flex flex-col space-y-3 pt-4 border-t border-gray-200">
-                  <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer">
+                  <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer nofollow">
                     <button className="w-full bg-[#25D366] text-white px-4 py-2 rounded-md text-sm font-medium">
                       WhatsApp Us
                     </button>

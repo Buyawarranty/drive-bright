@@ -728,7 +728,7 @@ const BuyCarWarranty: React.FC = () => {
           <a
             href="https://wa.me/message/SPQPJ6O3UBF5B1"
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener noreferrer nofollow"
             className="bg-[#25D366] hover:bg-[#20BA5A] text-white p-1 rounded-full shadow-lg transition-all duration-300 hover:scale-110 flex items-center justify-center"
             onClick={() => trackButtonClick('whatsapp_float_buy_car_warranty')}
           >

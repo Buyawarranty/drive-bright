@@ -106,7 +106,7 @@ const WarrantyPlan = () => {
 
             {/* Desktop CTA Buttons - Show on desktop */}
             <div className="hidden lg:flex items-center space-x-3">
-              <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer">
+              <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer nofollow">
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -189,7 +189,7 @@ const WarrantyPlan = () => {
 
                   {/* CTA Buttons */}
                   <div className="space-y-4 pt-6 mt-auto">
-                    <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer">
+                    <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer nofollow">
                       <Button 
                         variant="outline" 
                         className="w-full bg-green-500 text-white border-green-500 hover:bg-green-600 hover:border-green-600 text-lg py-3"

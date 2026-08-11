@@ -74,7 +74,7 @@ const MotorbikeWarranty = () => {
 
             {/* Desktop CTA Buttons - Show on desktop */}
             <div className="hidden lg:flex items-center space-x-3">
-              <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer">
+              <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer nofollow">
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -150,7 +150,7 @@ const MotorbikeWarranty = () => {
 
                   {/* CTA Buttons */}
                   <div className="space-y-4 pt-6 mt-auto">
-                    <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer">
+                    <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer nofollow">
                       <Button 
                         variant="outline" 
                         className="w-full bg-green-500 text-white border-green-500 hover:bg-green-600 hover:border-green-600 text-lg py-3"
@@ -603,7 +603,7 @@ const MotorbikeWarranty = () => {
             <a
               href="https://wa.me/message/SPQPJ6O3UBF5B1"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
               className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#20BA5A] text-white p-1 rounded-full shadow-lg transition-all duration-300 hover:scale-110 flex items-center justify-center"
               onClick={() => trackButtonClick('motorbike_whatsapp_float')}
             >

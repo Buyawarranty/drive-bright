@@ -113,7 +113,7 @@ const StickyNavigation: React.FC = () => {
               <a 
                 href="https://wa.me/message/SPQPJ6O3UBF5B1" 
                 target="_blank" 
-                rel="noopener noreferrer"
+                rel="noopener noreferrer nofollow"
                 className="inline-flex items-center px-3 xl:px-4 py-2 bg-[#25D366] text-white text-sm xl:text-base font-semibold rounded-lg hover:bg-[#20BA5A] transition-colors whitespace-nowrap"
               >
                 WhatsApp Us

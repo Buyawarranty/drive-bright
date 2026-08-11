@@ -621,7 +621,7 @@ const JaguarWarranty = () => {
             <a
               href="https://wa.me/message/SPQPJ6O3UBF5B1"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
               className="bg-[#25D366] p-1 rounded-full shadow-lg hover:bg-[#128C7E] transition-all hover:scale-110 flex items-center justify-center"
               aria-label="WhatsApp us"
             >

@@ -481,7 +481,7 @@ const CancelWarranty = () => {
             </div>
 
             <p className="text-[#333] text-center mb-5">
-              Message us on <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer" className="text-[#009A44] font-semibold hover:underline">WhatsApp</a> or call <a href="tel:03302295040" className="text-[#009A44] font-semibold hover:underline">0330 229 5040</a> if you would like to continue your cover.
+              Message us on <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer nofollow" className="text-[#009A44] font-semibold hover:underline">WhatsApp</a> or call <a href="tel:03302295040" className="text-[#009A44] font-semibold hover:underline">0330 229 5040</a> if you would like to continue your cover.
             </p>
 
             {!showStayForm ? (
@@ -658,7 +658,7 @@ const CancelWarranty = () => {
               <a
                 href="https://wa.me/443302295040?text=Hi%2C%20I%20have%20a%20question%20about%20cancelling%20my%20warranty"
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="noopener noreferrer nofollow"
                 className="flex items-center gap-2 text-[#009A44] hover:underline font-medium"
               >
                 <MessageCircle className="w-4 h-4" /> WhatsApp Us
