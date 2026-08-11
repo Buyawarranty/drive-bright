@@ -37,6 +37,19 @@ import PriceSurfaceBadge from './PriceSurfaceBadge';
  */
 export const HYBRID_PRICE_UPLIFT_PCT = 10;
 
+/**
+ * Aug 2026: 2-year and 3-year Aug hybrid prices carry a further +20% on top of
+ * the curve-wide uplift. 12 months is untouched. Applied to the term
+ * multipliers, so every claim limit / labour rate / excess combination rises in
+ * proportion and the website Step 3 price follows automatically.
+ */
+export const HYBRID_TERM_UPLIFT_PCT: Record<24 | 36, number> = { 24: 20, 36: 20 };
+
+/** Multiplier with the term uplift folded in, rounded to whole pence of factor. */
+export function upliftTermMult(mult: number, months: 24 | 36): number {
+  return Math.round(mult * (1 + HYBRID_TERM_UPLIFT_PCT[months] / 100) * 100) / 100;
+}
+
 const HYBRID_DEFAULTS = {
   referenceBandKey: '6-7',
   /** Proposal starts below August pricing because the August level is not converting. */
