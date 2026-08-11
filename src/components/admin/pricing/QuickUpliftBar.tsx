@@ -193,8 +193,8 @@ const QuickUpliftBar: React.FC<{
       )}
       <p className="mt-1 text-xs text-muted-foreground">
         Applies to every claim limit, labour rate, excess and term in this variant, rounded to whole pounds.
-        Minimum price floors still apply. Test the figures below first — saving keeps it as a draft, and customers
-        only see it once you use “Push live” underneath.
+        Minimum price floors still apply. The four example prices below refresh straight away — “Save &amp; update
+        prices” keeps the percentage for next time, and customers only see it once you use “Push live” underneath.
       </p>
     </div>
   );
