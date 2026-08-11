@@ -579,6 +579,10 @@ const BlogArticle = () => {
           </section>
         )}
       </div>
+
+      {/* Mobile sticky CTA */}
+      <BlogStickyQuoteBar />
+      <div className="h-16 lg:hidden" aria-hidden="true" />
     </div>
   );
 };
