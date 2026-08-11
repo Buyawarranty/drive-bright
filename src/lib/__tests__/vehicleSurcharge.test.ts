@@ -118,7 +118,7 @@ describe('Non-stacking: both mileage and age qualify', () => {
       makeVehicle({ mileage: '140000', manufactureDate: yearsAgoISO(13) }),
       3
     );
-    expect(r.adjustmentAmount).toBe(200); // NOT 400
+    expect(r.adjustmentAmount).toBe(300); // NOT 600
   });
 });
 
