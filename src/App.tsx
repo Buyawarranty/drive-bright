@@ -262,6 +262,7 @@ const App = () => {
             <PageViewTracker />
             <PageViewLogger />
             <PricingOverrideLoader />
+            <TrustpilotRatingSync />
             
             
             <div className="min-h-screen flex flex-col w-full">
