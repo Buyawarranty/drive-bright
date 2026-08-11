@@ -307,11 +307,29 @@ export const useNewLeadAlert = () => {
     setQueue(actionable);
   }, [adminId, alertsAllowed]);
 
+  // Keep a stable ref to the latest loader so the realtime channel is created
+  // ONCE per agent and never torn down/rebuilt on every state change.
+  const loadRef = useRef(load);
+  loadRef.current = load;
 
+  // Polling safety net. 15s, plus an immediate refetch whenever the tab
+  // becomes visible again or the network comes back — timers are frozen while
+  // a laptop sleeps, which is why the queue used to look "stuck".
   useEffect(() => {
     load();
-    const t = setInterval(load, 20000);
-    return () => clearInterval(t);
+    const t = setInterval(() => loadRef.current(), 15000);
+    const wake = () => {
+      if (document.visibilityState === 'visible') loadRef.current();
+    };
+    document.addEventListener('visibilitychange', wake);
+    window.addEventListener('focus', wake);
+    window.addEventListener('online', wake);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener('visibilitychange', wake);
+      window.removeEventListener('focus', wake);
+      window.removeEventListener('online', wake);
+    };
   }, [load]);
 
   useEffect(() => {
@@ -319,41 +337,52 @@ export const useNewLeadAlert = () => {
     return () => clearInterval(t);
   }, []);
 
+  // Realtime push. Only `sales_leads` is in the realtime publication —
+  // binding to lead_quick_notes / lead_call_logs (which are NOT published)
+  // made the whole channel error out, silently killing live pop-ups until the
+  // next poll. Own-note/own-call dismissal is handled by the loader instead.
   useEffect(() => {
     if (!adminId || alertsAllowed !== true) return;
-    const channel = supabase
-      .channel(`new-lead-alert-${adminId}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'sales_leads', filter: `assigned_to=eq.${adminId}` },
-        () => load()
-      )
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'lead_quick_notes', filter: `created_by=eq.${adminId}` },
-        (payload) => {
-          const leadId = (payload.new as any)?.lead_id;
-          if (leadId) dismissLead(leadId);
-          load();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'lead_call_logs', filter: `agent_id=eq.${adminId}` },
-        (payload) => {
-          // Any call this agent logs for a lead silences that lead's pop-up
-          // — they've clearly seen it and are actioning it.
-          const leadId = (payload.new as any)?.lead_id;
-          if (leadId) dismissLead(leadId);
-          load();
-        }
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
+    let disposed = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let retry: ReturnType<typeof setTimeout> | null = null;
+    let attempt = 0;
+
+    const connect = () => {
+      if (disposed) return;
+      channel = supabase
+        .channel(`new-lead-alert-${adminId}-${Date.now()}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'sales_leads', filter: `assigned_to=eq.${adminId}` },
+          () => loadRef.current()
+        )
+        .subscribe((status) => {
+          if (disposed) return;
+          if (status === 'SUBSCRIBED') {
+            attempt = 0;
+            loadRef.current();
+            return;
+          }
+          // A dropped socket (sleep, wifi change, expired token) must
+          // reconnect — otherwise alerts stop for the rest of the session.
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+            attempt += 1;
+            const ch = channel;
+            channel = null;
+            if (ch) supabase.removeChannel(ch);
+            retry = setTimeout(connect, Math.min(30000, 2000 * attempt));
+          }
+        });
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adminId, alertsAllowed, load]);
+
+    connect();
+    return () => {
+      disposed = true;
+      if (retry) clearTimeout(retry);
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [adminId, alertsAllowed]);
 
   const dismissLead = useCallback((leadId: string) => {
     setDismissedIds((prev) => {
