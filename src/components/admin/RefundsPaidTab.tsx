@@ -483,15 +483,11 @@ export const RefundsPaidTab: React.FC<{
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-4 z-50" align="start">
-                <Calendar
-                  initialFocus
-                  mode="range"
-                  defaultMonth={dateRange?.from || subMonths(new Date(), 1)}
-                  selected={dateRange}
-                  onSelect={(range) => setDateRange(range)}
-                  numberOfMonths={2}
-                  className="pointer-events-auto"
-                  disabled={(date) => date > new Date()}
+                <DraftRangeCalendar
+                  value={dateRange}
+                  resetKey={calendarOpen}
+                  onApply={(range) => { setDateRange(range); setCalendarOpen(false); }}
+                  onCancel={() => setCalendarOpen(false)}
                 />
               </PopoverContent>
             </Popover>
