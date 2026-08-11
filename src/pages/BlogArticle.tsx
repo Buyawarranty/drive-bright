@@ -290,7 +290,11 @@ const BlogArticle = () => {
   // Always self-referencing and always trailing-slashed so it matches sitemap.xml
   const rawArticleUrl = post.canonical_url || `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}/`;
   const articleUrl = rawArticleUrl.endsWith('/') ? rawArticleUrl : `${rawArticleUrl}/`;
-  const heroImage = post.featured_image_url || getDefaultHeroImage(post.slug);
+  const rawHeroImage = post.featured_image_url || getDefaultHeroImage(post.slug);
+  // Article schema requires absolute image URLs for Google rich results.
+  const heroImage = rawHeroImage?.startsWith('http')
+    ? rawHeroImage
+    : `https://buyawarranty.co.uk${rawHeroImage?.startsWith('/') ? '' : '/'}${rawHeroImage || ''}`;
   const metaDescription = post.seo_description || post.excerpt || quickAnswer;
   const lastModified = post.updated_at || post.published_at;
 
