@@ -497,33 +497,66 @@ export function applyBasePriceFloor(
 /**
  * ABSOLUTE minimum sellable total — hard-bottom-only version.
  *
- * £399 is the floor for the cheapest reachable 12-month combo. 24 and 36 month
- * floors scale with the term (×1.65 / ×2.35). Only quotes that fall below this
- * level get lifted; everything above the normal shaped floor stays where it was.
- * Motorbikes are half-price; web journey is grid minus the live Step 3 discount.
+ * Anchored on the CHEAPEST reachable combo (£1,000 claim / £50 hr labour /
+ * £500 excess) = £349 at 12 months, so the bottom of the range is a real price
+ * instead of a clamp. Every richer option steps the hard bottom UP a compressed
+ * ladder, which keeps £1,000 vs £2,000 claim limits and all six excess tiers on
+ * visibly different prices even when a vehicle is floor-bound.
+ *
+ * 24 / 36 month floors scale with the term (×1.65 / ×2.35). Motorbikes are half
+ * price; the web journey is the grid minus the live Step 3 discount.
  *
  * These same figures are the NET payable floor (see `lib/pricing/netFloor.ts`),
  * so an agent discount or a manual payment confirmation cannot land below them.
  */
-export const ABSOLUTE_MIN_GRID_TOTAL_12M = 399;
+export const ABSOLUTE_MIN_GRID_TOTAL_12M = 349;
 
 /** Flat term multipliers for the absolute minimum. */
 const ABSOLUTE_MIN_GRID_BY_PERIOD: Record<PaymentPeriod, number> = {
-  '12months': 399,
-  '24months': 659,
-  '36months': 938,
+  '12months': 349,
+  '24months': 576,
+  '36months': 821,
 };
 
 /**
- * The REFERENCE combo the £399 anchor is defined against:
- * £2,000 claim limit, £70/hr labour, £150 excess. Anchoring on the cheapest combo
- * instead inflated the hard bottom on a default quote, which clamped almost every
- * vehicle to the same price. Options better than the reference lift the absolute
- * minimum proportionally; cheaper options never drop below it.
+ * The CHEAPEST combo the £349 anchor is defined against. Everything else costs
+ * more, so the shape multiplier is always >= 1 by construction — no clamping.
  */
-const ABS_MIN_ANCHOR = { claimLimit: 2000, labourRate: 70, voluntaryExcess: 150 };
+const ABS_MIN_ANCHOR = { claimLimit: 1000, labourRate: 50, voluntaryExcess: 500 };
 
+/**
+ * Compressed ladders relative to the cheapest combo (= 1.00). Deliberately
+ * flatter than the full pricing factors so the popular combo (£2,000 / £70 /
+ * £150 = ~£398) does not get more expensive than the old £399 bottom.
+ */
+const ABS_MIN_CLAIM_LADDER: Record<number, number> = {
+  1000: 1, 2000: 1.06, 3000: 1.14, 5000: 1.26,
+  // retired wire values (750 = £1,000, 1250 = £2,000)
+  750: 1, 1250: 1.06,
+};
+const ABS_MIN_LABOUR_LADDER: Record<number, number> = {
+  50: 1, 70: 1.03, 100: 1.08, 150: 1.2,
+};
+const ABS_MIN_EXCESS_LADDER: Record<number, number> = {
+  500: 1, 250: 1.02, 150: 1.045, 100: 1.07, 50: 1.1, 0: 1.14,
+};
 
+/**
+ * Multiplier on the term's hard bottom for a given option combination.
+ * Shared with the age-band model engine and the Price Updates sandboxes so
+ * every surface lands on the same minimum.
+ */
+export function getAbsoluteMinimumShape(params: {
+  voluntaryExcess?: number;
+  claimLimit?: number;
+  labourRate?: number;
+}): number {
+  return (
+    nearestMultiplier(ABS_MIN_CLAIM_LADDER, params.claimLimit ?? ABS_MIN_ANCHOR.claimLimit) *
+    nearestMultiplier(ABS_MIN_LABOUR_LADDER, params.labourRate ?? ABS_MIN_ANCHOR.labourRate) *
+    nearestMultiplier(ABS_MIN_EXCESS_LADDER, params.voluntaryExcess ?? ABS_MIN_ANCHOR.voluntaryExcess)
+  );
+}
 
 export function getAbsoluteMinimumTotal(params: {
   paymentPeriod: PaymentPeriod;
@@ -535,40 +568,16 @@ export function getAbsoluteMinimumTotal(params: {
 }): number {
   const { paymentPeriod, isMotorbike, surface = 'customer' } = params;
 
-  const claimLimit = params.claimLimit ?? ABS_MIN_ANCHOR.claimLimit;
-  const labourRate = params.labourRate ?? ABS_MIN_ANCHOR.labourRate;
-  const excess = params.voluntaryExcess ?? ABS_MIN_ANCHOR.voluntaryExcess;
-
-  const anchorClaim = getClaimLimitFloorFactor(ABS_MIN_ANCHOR.claimLimit);
-  const anchorLabour = getLabourRateFactor(ABS_MIN_ANCHOR.labourRate);
-  const anchorExcess = getExcessFactor(ABS_MIN_ANCHOR.voluntaryExcess);
-
-  const shape =
-    (anchorClaim > 0 ? getClaimLimitFloorFactor(claimLimit) / anchorClaim : 1) *
-    (anchorLabour > 0 ? getLabourRateFactor(labourRate) / anchorLabour : 1) *
-    (anchorExcess > 0 ? getExcessFactor(excess) / anchorExcess : 1);
+  const shape = getAbsoluteMinimumShape(params);
 
   const gridMin =
     ABSOLUTE_MIN_GRID_BY_PERIOD[paymentPeriod] *
-    Math.max(1, shape) *
+    shape *
     (isMotorbike ? MOTORBIKE_PRICE_MULTIPLIER : 1);
 
   return Math.ceil(surface === 'admin' ? gridMin : gridMin * getCustomerSurfaceFactor());
 }
 
-/**
- * Relative claim-limit weighting used only for shaping the absolute minimum.
- * £1,000 is the anchor; higher limits raise the floor proportionally.
- */
-function getClaimLimitFloorFactor(claimLimit: number): number {
-  const weights: Record<number, number> = { 1000: 1, 2000: 1.12, 3000: 1.22, 5000: 1.4 };
-  const keys = Object.keys(weights).map(Number).sort((a, b) => a - b);
-  const nearest = keys.reduce(
-    (best, k) => (Math.abs(k - claimLimit) < Math.abs(best - claimLimit) ? k : best),
-    keys[0],
-  );
-  return weights[nearest] ?? 1;
-}
 
 
 
