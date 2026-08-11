@@ -14,6 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { DraftRangeCalendar } from '@/components/admin/shared/DraftRangeCalendar';
 import { Lead, AdminUser } from '@/hooks/useLeads';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
