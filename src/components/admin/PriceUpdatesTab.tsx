@@ -581,7 +581,10 @@ export default function PriceUpdatesTab() {
       twoYearMult: model.twoYearMult === undefined ? undefined : Number(model.twoYearMult),
       threeYearMult: model.threeYearMult === undefined ? undefined : Number(model.threeYearMult),
       payInFullFactor: model.payInFullFactor === undefined ? undefined : Number(model.payInFullFactor),
-    };
+      // Carried through so a later hybrid republish does not re-apply the base
+      // reduction on top of an already-reduced curve (that made prices fall).
+      ...(model.hybridBaseApplied ? { hybridBaseApplied: true } : {}),
+    } as VehicleFactorModel & { hybridBaseApplied?: boolean };
 
     const discount = effectiveDiscountPct(
       Number(websiteDiscountPct ?? model.websiteDiscountPct ?? discountPct ?? 10)
