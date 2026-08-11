@@ -17,7 +17,7 @@ import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import { buildAdminMatrixFromModel } from './AgeBandPricingPreview';
 import PriceSurfaceBadge from './PriceSurfaceBadge';
-import QuickUpliftBar, { applyModelUplift } from './QuickUpliftBar';
+import QuickUpliftBar, { applyModelUplift, readSavedUplift } from './QuickUpliftBar';
 
 
 /**
@@ -114,7 +114,7 @@ const AugHybridVsLivePanel: React.FC<{
   const [vehicle, setVehicle] = useState<ResolvedTestVehicle | null>(null);
   const [leftQuote, setLeftQuote] = useState<PriceTestQuoteSnapshot | null>(null);
   const [rightQuote, setRightQuote] = useState<PriceTestQuoteSnapshot | null>(null);
-  const [upliftPct, setUpliftPct] = useState(0);
+  const [upliftPct, setUpliftPct] = useState(() => readSavedUplift('Aug hybrid test'));
   const [cfg, setCfg] = useState(HYBRID_DEFAULTS);
   const set = <K extends keyof typeof HYBRID_DEFAULTS>(key: K, value: (typeof HYBRID_DEFAULTS)[K]) =>
     setCfg(c => ({ ...c, [key]: value }));
