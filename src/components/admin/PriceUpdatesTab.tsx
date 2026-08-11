@@ -31,8 +31,18 @@ import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
 import AgeBandPricingPreview, {
   AGE_BAND_PRICING_STORAGE_KEY,
   buildAdminMatrixFromModel,
+  PROPOSED_AGE_BANDS,
+  PROPOSED_MILEAGE_BANDS,
+  PROPOSED_POWERTRAIN_FACTORS,
+  PROPOSED_VEHICLE_TYPE_FACTORS,
+  PROPOSED_MODEL_RISK_FACTORS,
+  PROPOSED_MODEL_FLOORS,
+  PROPOSED_CLAIM_LIMIT_FACTORS,
+  PROPOSED_LABOUR_RATE_FACTORS,
+  PROPOSED_EXCESS_FACTORS,
   type AgeBandModel,
 } from '@/components/admin/pricing/AgeBandPricingPreview';
+
 import { clampToNetFloor, clampWebToNetFloor } from '@/lib/pricing/netFloor';
 
 
@@ -614,6 +624,36 @@ export default function PriceUpdatesTab() {
     }
   }
 
+  /**
+   * WHAT "LIVE PRICING (LEFT)" MEANS IN EVERY COMPARISON PANEL.
+   *
+   * `liveEditorModel` is only populated once the age-band builder has been
+   * rendered (it reports its figures upward). A manager who opens a comparison
+   * tab straight away therefore had an empty left-hand model, so the pre-flight
+   * check reported "Vehicle risk figures — Missing" and refused the push even
+   * though live pricing was perfectly complete. Fall back to the saved
+   * age-band figures (the same source the builder loads from) so the left side
+   * always carries the real live model.
+   */
+  const savedAgeBandModel = useMemo(() => readSavedAgeBandModel(), [versions]);
+  /** Last resort: the built-in code figures, which are always complete. */
+  const codeAgeBandModel = useMemo(
+    () => ({
+      bands: PROPOSED_AGE_BANDS,
+      mileageBands: PROPOSED_MILEAGE_BANDS,
+      powertrains: PROPOSED_POWERTRAIN_FACTORS,
+      vehicleTypes: PROPOSED_VEHICLE_TYPE_FACTORS,
+      modelRisks: PROPOSED_MODEL_RISK_FACTORS,
+      modelFloors: PROPOSED_MODEL_FLOORS,
+      claimLimits: PROPOSED_CLAIM_LIMIT_FACTORS,
+      labourRates: PROPOSED_LABOUR_RATE_FACTORS,
+      excessFactors: PROPOSED_EXCESS_FACTORS,
+      websiteDiscountPct: 10,
+    }),
+    []
+  );
+  const effectiveLiveModel = liveEditorModel ?? savedAgeBandModel ?? codeAgeBandModel;
+
   async function handlePublish() {
     if (!selectedId) {
       try {
@@ -896,19 +936,19 @@ export default function PriceUpdatesTab() {
 
 
         <TabsContent value="hybrid" className="space-y-6 mt-4">
-          <AugHybridVsLivePanel liveModel={liveEditorModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
+          <AugHybridVsLivePanel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
         </TabsContent>
 
         <TabsContent value="codebase-live" className="space-y-6 mt-4">
-          <CodebaseVsLivePanel liveModel={liveEditorModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
+          <CodebaseVsLivePanel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
         </TabsContent>
 
         <TabsContent value="codebase-hybrid" className="space-y-6 mt-4">
-          <CodebaseVsHybridPanel liveModel={liveEditorModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
+          <CodebaseVsHybridPanel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
         </TabsContent>
 
         <TabsContent value="compare" className="space-y-6 mt-4">
-          <LiveVsAug26Panel liveModel={liveEditorModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
+          <LiveVsAug26Panel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
           <AgeBandPricingPreview
             onBuildDraft={handleBuildDraftFromModel}
             onModelChange={setLiveEditorModel}
@@ -927,7 +967,7 @@ export default function PriceUpdatesTab() {
                 key: 'builder',
                 label: 'Age-based builder figures',
                 description: 'Publishes the bands and factors currently in the builder below.',
-                getModel: () => liveEditorModel ?? readSavedAgeBandModel(),
+                getModel: () => effectiveLiveModel,
               },
             ]}
           />
@@ -958,7 +998,7 @@ export default function PriceUpdatesTab() {
                 key: 'aug26',
                 label: 'Aug 2026 builder figures',
                 description: 'Publishes the saved Aug 2026 figures.',
-                getModel: () => liveEditorModel ?? readSavedAgeBandModel(),
+                getModel: () => effectiveLiveModel,
               },
             ]}
           />
