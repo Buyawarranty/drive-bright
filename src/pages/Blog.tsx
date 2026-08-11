@@ -262,16 +262,70 @@ const Blog: React.FC = () => {
 
   const realPostCount = allPosts.filter(p => !p.isMock).length;
 
+  const hubAbsoluteImage = warrantyCarImage.startsWith('http')
+    ? warrantyCarImage
+    : `https://buyawarranty.co.uk${warrantyCarImage}`;
+
+  const latestModified =
+    allPosts.filter(p => !p.isMock && p.date).map(p => p.date).sort().slice(-1)[0] ||
+    new Date().toISOString().slice(0, 10);
+
+  const blogPostingSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': 'https://buyawarranty.co.uk/thewarrantyhub/',
+    },
+    headline: 'Guides & News for UK Car Owners | The Warranty Hub | Buyawarranty',
+    description: 'Guides, tips and articles to help you drive smarter and protect your UK vehicle.',
+    image: {
+      '@type': 'ImageObject',
+      url: hubAbsoluteImage,
+      width: 1200,
+      height: 630,
+    },
+    url: 'https://buyawarranty.co.uk/thewarrantyhub/',
+    inLanguage: 'en-GB',
+    isAccessibleForFree: true,
+    author: {
+      '@type': 'Person',
+      name: 'David Yash',
+      jobTitle: 'Automotive Specialist',
+      url: 'https://buyawarranty.co.uk/thewarrantyhub/',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Buyawarranty',
+      url: 'https://buyawarranty.co.uk/',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png',
+      },
+    },
+    datePublished: '2026-08-01',
+    dateModified: latestModified,
+    audience: { '@type': 'Audience', geographicArea: { '@type': 'Country', name: 'United Kingdom' } },
+  };
+
   return (
     <>
       <SEOHead
         title="Guides & News for UK Car Owners | The Warranty Hub | Buyawarranty"
         description="Independent car warranty advice, buying guides, EV cover explained, claims help and consumer news for UK drivers. Updated regularly by the Buyawarranty team."
         canonical="https://buyawarranty.co.uk/thewarrantyhub/"
-        ogImage={warrantyCarImage}
+        ogImage={hubAbsoluteImage}
+        ogType="article"
+        publishedTime="2026-08-01"
+        modifiedTime={latestModified}
+        author="David Yash | Automotive Specialist"
       />
-      <script type="application/ld+json">{JSON.stringify(collectionSchema)}</script>
-      <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(blogPostingSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(collectionSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+      </Helmet>
+
 
       <main className="bg-white text-[#0f1b3d]">
         {/* HERO */}
