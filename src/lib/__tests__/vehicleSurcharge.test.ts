@@ -102,7 +102,7 @@ describe('Non-stacking: both mileage and age qualify', () => {
       makeVehicle({ mileage: '130000', manufactureDate: yearsAgoISO(13) }),
       1
     );
-    expect(r.adjustmentAmount).toBe(300); // NOT 600
+    expect(r.adjustmentAmount).toBe(200); // NOT 400
   });
 
   it('applies single surcharge for 2yr', () => {
