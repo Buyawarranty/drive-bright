@@ -453,8 +453,14 @@ const BlogArticle = () => {
                 <div className="h-8 w-px bg-slate-200 hidden md:block" />
                 <div className="text-slate-500">
                   <span className="block font-medium text-slate-900">Published</span>
-                  {publishedDate}
+                  <time dateTime={post.published_at}>{publishedDate}</time>
                 </div>
+                <div className="h-8 w-px bg-slate-200 hidden md:block" />
+                <div className="text-slate-500">
+                  <span className="block font-medium text-slate-900">Last updated</span>
+                  <time dateTime={lastModified}>{updatedDate}</time>
+                </div>
+
                 <div className="h-8 w-px bg-slate-200 hidden md:block" />
                 <div className="text-slate-500">
                   <span className="block font-medium text-slate-900">Read Time</span>
