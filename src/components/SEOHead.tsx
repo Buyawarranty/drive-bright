@@ -51,7 +51,13 @@ export const SEOHead = ({
   ICBM: icbm,
   author = 'Buy A Warranty',
   publisher = 'BUY A WARRANTY LIMITED',
-  noindex = false
+  noindex = false,
+  ogType = 'website',
+  publishedTime,
+  modifiedTime,
+  articleSection,
+  articleTags
+
 }: SEOHeadProps) => {
   const canonicalUrl = canonical || `https://buyawarranty.co.uk${normalisePath(window.location.pathname)}`;
 
