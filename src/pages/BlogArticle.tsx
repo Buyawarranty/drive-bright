@@ -9,6 +9,7 @@ import { ArrowLeft, User, Share2, CheckCircle2, Info } from 'lucide-react';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import GooglePreferredSourceCTA from '@/components/GooglePreferredSourceCTA';
 import BlogRegQuoteCTA from '@/components/blog/BlogRegQuoteCTA';
+import BlogStickyQuoteBar from '@/components/blog/BlogStickyQuoteBar';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import defaultBlogHero from '@/assets/blog/used-car-warranty-uk-hero-2026.png.asset.json';
