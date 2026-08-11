@@ -937,6 +937,8 @@ html, body {
 .blog-figure img {
   width: 100%;
   height: auto;
+  max-height: 34vh;
+  object-fit: cover;
   display: block;
   border-radius: 0.75rem;
   box-shadow: 0 8px 24px -12px hsl(var(--foreground) / 0.35);
@@ -949,6 +951,9 @@ html, body {
 }
 /* Desktop: sits alongside the copy, never wider than 35% of the section */
 @media (min-width: 768px) {
+  .blog-figure img {
+    max-height: none;
+  }
   .blog-figure {
     float: right;
     width: 35%;
