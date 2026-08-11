@@ -39,6 +39,33 @@ const UNASSIGNED = '__unassigned__';
 const DEAD_STATUSES = new Set(['converted', 'lost', 'fake_lead', 'do_not_contact', 'unsubscribed']);
 
 /**
+ * Every lead id this agent ever owned, from the assignment audit trail.
+ *
+ * PostgREST caps a single request at 1000 rows, so an unpaginated
+ * `.limit(10000)` silently truncated the audit set — and because the returned
+ * slice was in arbitrary order, the "unassigned ex-owned" counter and the scan
+ * saw DIFFERENT subsets. That is why the badge said 143 but the confirm dialog
+ * said 85. Page deterministically (ordered by lead_id) so both agree.
+ */
+async function fetchExOwnedLeadIds(agentId: string): Promise<string[]> {
+  const page = 1000;
+  const ids = new Set<string>();
+  for (let i = 0; i < 50; i += 1) {
+    const { data, error } = await (supabase.from('lead_assignment_audit') as any)
+      .select('lead_id')
+      .eq('previous_assigned_to_id', agentId)
+      .order('lead_id', { ascending: true })
+      .range(i * page, i * page + page - 1);
+    if (error) throw error;
+    const batch = (data ?? []) as { lead_id: string | null }[];
+    batch.forEach(r => { if (r.lead_id) ids.add(r.lead_id); });
+    if (batch.length < page) break;
+  }
+  return Array.from(ids);
+}
+
+
+/**
  * Management-only Lead Recovery panel.
  * Filter leads by a date range and (optionally) the current assigned agent,
  * then reassign the whole set to a chosen agent — refreshes assigned_at so
@@ -61,6 +88,8 @@ export const LeadRecoveryPanel: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [scanBreakdown, setScanBreakdown] = useState<{ inRange: number; exOwned: number } | null>(null);
+
   const [recoverable, setRecoverable] = useState<{ unassigned: number; workable: number; stillOwned: number } | null>(null);
   const [recoverableLoading, setRecoverableLoading] = useState(false);
 
@@ -101,11 +130,8 @@ export const LeadRecoveryPanel: React.FC = () => {
     (async () => {
       setRecoverableLoading(true);
       try {
-        const { data: auditRows } = await (supabase.from('lead_assignment_audit') as any)
-          .select('lead_id')
-          .eq('previous_assigned_to_id', sourceAgent)
-          .limit(10000);
-        const ids = Array.from(new Set(((auditRows ?? []) as any[]).map(r => r.lead_id).filter(Boolean)));
+        const ids = await fetchExOwnedLeadIds(sourceAgent);
+
         let unassigned = 0;
         let workable = 0;
         for (let i = 0; i < ids.length; i += 300) {
@@ -172,11 +198,8 @@ export const LeadRecoveryPanel: React.FC = () => {
       // over their whole tenure, so a narrow range would silently drop most of them.
       let reclaimed = 0;
       if (includePrevious && sourceAgent !== ANY_AGENT && sourceAgent !== UNASSIGNED) {
-        const { data: auditRows } = await (supabase.from('lead_assignment_audit') as any)
-          .select('lead_id')
-          .eq('previous_assigned_to_id', sourceAgent)
-          .limit(10000);
-        const ids = Array.from(new Set(((auditRows ?? []) as any[]).map(r => r.lead_id).filter(Boolean)));
+        const ids = await fetchExOwnedLeadIds(sourceAgent);
+
         const seen = new Set(all.map(r => r.id));
         for (let i = 0; i < ids.length; i += 300) {
           const { data } = await (supabase.from('sales_leads') as any)
@@ -192,10 +215,12 @@ export const LeadRecoveryPanel: React.FC = () => {
 
 
       setRows(all);
+      setScanBreakdown({ inRange: all.length - reclaimed, exOwned: reclaimed });
       if (all.length === 0) toast.info('No leads matched that filter');
       else toast.success(
         `Found ${all.length} lead${all.length === 1 ? '' : 's'}${reclaimed ? ` (incl. ${reclaimed} unassigned ex-owned)` : ''}`,
       );
+
     } catch (e: any) {
       console.error('[LeadRecovery] scan', e);
       toast.error(e?.message || 'Scan failed');
@@ -266,6 +291,8 @@ export const LeadRecoveryPanel: React.FC = () => {
         `Reassigned ${moved} lead${moved === 1 ? '' : 's'} across ${targetAgents.length} agent${targetAgents.length === 1 ? '' : 's'}`,
       );
       setRows([]);
+      setScanBreakdown(null);
+
       setConfirmOpen(false);
     } catch (e: any) {
       console.error('[LeadRecovery] recover', e);
@@ -522,9 +549,15 @@ export const LeadRecoveryPanel: React.FC = () => {
             <AlertDialogTitle>Reassign {rows.length} lead{rows.length === 1 ? '' : 's'} to {targetName}?</AlertDialogTitle>
             <AlertDialogDescription>
               These leads will move to {targetName} and appear at the top of their New Leads queue.
+              {scanBreakdown && (
+                <> {' '}Made up of {scanBreakdown.inRange} in the selected date range
+                  {scanBreakdown.exOwned > 0 && <> plus {scanBreakdown.exOwned} unassigned ex-owned (all-time)</>}.
+                </>
+              )}
               {paidCount > 0 && <> {paidCount} paid lead{paidCount === 1 ? '' : 's'} will keep converted status.</>}
               {' '}This cannot be undone in one click.
             </AlertDialogDescription>
+
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
