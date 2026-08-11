@@ -46,7 +46,7 @@ export const LeadsMobileCards: React.FC<LeadsMobileCardsProps> = ({
 }) => {
   const [expanded, setExpanded] = useState<string | null>(null);
   const { repeatByLeadId } = useRepeatCustomers(
-    useMemo(() => leads.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg, created_at: l.created_at })), [leads])
+    useMemo(() => leads.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg, phone: l.phone, first_name: l.first_name, last_name: l.last_name, created_at: l.created_at })), [leads])
   );
 
   if (leads.length === 0) {

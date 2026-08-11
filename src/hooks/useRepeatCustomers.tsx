@@ -4,7 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 /**
  * Flags leads that belong to a REPEAT CUSTOMER — someone who has already
  * bought a warranty from us before (a live/expired policy exists on the
- * `customers` table), matched by normalized email OR registration plate.
+ * `customers` table).
+ *
+ * Matching is deliberately wide: normalized email OR registration plate OR
+ * phone number (last 9 digits) OR full name. A returning customer who uses a
+ * new email address or a different vehicle must still be recognised, which is
+ * the same rule the database uses to keep them with their original agent.
  *
  * Cancelled / refunded orders are excluded so an unwound sale never shows as
  * a prior purchase. Used by the New Leads table and the new-lead pop-ups so
@@ -18,14 +23,17 @@ export interface RepeatCustomerInfo {
   lastPurchaseAt: string | null;
   /** Plan of the most recent prior purchase. */
   lastPlanType: string | null;
-  /** True when the match came from the plate rather than the email. */
-  matchedOn: 'email' | 'reg';
+  /** Which identifier linked the lead to the previous customer record. */
+  matchedOn: 'email' | 'reg' | 'phone' | 'name';
 }
 
 export interface RepeatLeadInput {
   id: string;
   email?: string | null;
   vehicle_reg?: string | null;
+  phone?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
   /**
    * When the lead arrived. Only purchases made BEFORE this count as prior
    * policies — otherwise the lead's own conversion would flag it as "repeat".
@@ -35,9 +43,20 @@ export interface RepeatLeadInput {
 
 const BATCH = 200;
 const EXCLUDED_STATUSES = ['cancelled', 'refunded'];
+/** Names shorter than this (after stripping punctuation) are too weak to match on. */
+const MIN_NAME_LEN = 7;
 
 const normReg = (r?: string | null) => (r || '').toUpperCase().replace(/\s+/g, '');
 const normEmail = (e?: string | null) => (e || '').trim().toLowerCase();
+/** Last 9 digits — matches the DB's phone tail-9 rule (ignores 0/+44 prefixes). */
+const normPhone = (p?: string | null) => {
+  const digits = (p || '').replace(/\D/g, '');
+  return digits.length >= 9 ? digits.slice(-9) : '';
+};
+const normName = (...parts: (string | null | undefined)[]) => {
+  const n = parts.map(p => p || '').join('').toLowerCase().replace(/[^a-z0-9]/g, '');
+  return n.length >= MIN_NAME_LEN ? n : '';
+};
 
 export const useRepeatCustomers = (leads: RepeatLeadInput[]) => {
   const [repeatByLeadId, setRepeatByLeadId] = useState<Record<string, RepeatCustomerInfo>>({});
@@ -53,54 +72,93 @@ export const useRepeatCustomers = (leads: RepeatLeadInput[]) => {
     () => [...new Set(leads.map(l => normReg(l.vehicle_reg)).filter(Boolean))].sort(),
     [leads]
   );
+  const phones = useMemo(
+    () => [...new Set(leads.map(l => normPhone(l.phone)).filter(Boolean))].sort(),
+    [leads]
+  );
+  const names = useMemo(
+    () => [...new Set(leads.map(l => normName(l.first_name, l.last_name)).filter(Boolean))].sort(),
+    [leads]
+  );
 
   const key = useMemo(() => {
-    if (!emails.length && !regs.length) return '';
-    return `${emails.length}:${emails[0] || ''}:${emails[emails.length - 1] || ''}|${regs.length}:${regs[0] || ''}:${regs[regs.length - 1] || ''}`;
-  }, [emails, regs]);
+    if (!emails.length && !regs.length && !phones.length && !names.length) return '';
+    const sig = (arr: string[]) => `${arr.length}:${arr[0] || ''}:${arr[arr.length - 1] || ''}`;
+    return [sig(emails), sig(regs), sig(phones), sig(names)].join('|');
+  }, [emails, regs, phones, names]);
 
   const fetchAll = useCallback(async () => {
     if (!key || lastKeyRef.current === key) return;
     lastKeyRef.current = key;
     setLoading(true);
 
-    type Row = { email: string | null; registration_plate: string | null; signup_date: string | null; plan_type: string | null; status: string | null };
+    type Row = {
+      email: string | null;
+      registration_plate: string | null;
+      phone: string | null;
+      name: string | null;
+      signup_date: string | null;
+      plan_type: string | null;
+      status: string | null;
+    };
+    const COLS = 'email, registration_plate, phone, name, signup_date, plan_type, status';
     const rows: Row[] = [];
 
     try {
       const runs: PromiseLike<void>[] = [];
+      const push = (data: Row[] | null) => { rows.push(...(data || [])); };
+
       for (let i = 0; i < emails.length; i += BATCH) {
-        const batch = emails.slice(i, i + BATCH);
         runs.push(
-          supabase
-            .from('customers')
-            .select('email, registration_plate, signup_date, plan_type, status')
-            .in('email', batch)
-            .limit(BATCH * 4)
-            .then(({ data }) => { rows.push(...((data || []) as Row[])); })
+          supabase.from('customers').select(COLS).in('email', emails.slice(i, i + BATCH)).limit(BATCH * 4)
+            .then(({ data }) => push(data as Row[] | null))
         );
       }
       for (let i = 0; i < regs.length; i += BATCH) {
-        const batch = regs.slice(i, i + BATCH);
         runs.push(
-          supabase
-            .from('customers')
-            .select('email, registration_plate, signup_date, plan_type, status')
-            .in('registration_plate', batch)
-            .limit(BATCH * 4)
-            .then(({ data }) => { rows.push(...((data || []) as Row[])); })
+          supabase.from('customers').select(COLS).in('registration_plate', regs.slice(i, i + BATCH)).limit(BATCH * 4)
+            .then(({ data }) => push(data as Row[] | null))
+        );
+      }
+      // Phone and name can't be matched with a normalized `in()` server-side, so we
+      // pull candidates with an OR of suffix / name filters in small batches.
+      for (let i = 0; i < phones.length; i += 25) {
+        const batch = phones.slice(i, i + 25);
+        const or = batch.map(p => `phone.ilike.%${p}`).join(',');
+        runs.push(
+          supabase.from('customers').select(COLS).or(or).limit(500)
+            .then(({ data }) => push(data as Row[] | null))
+        );
+      }
+      for (let i = 0; i < names.length; i += 25) {
+        const batch = names.slice(i, i + 25);
+        const or = batch
+          .map(n => leads.find(l => normName(l.first_name, l.last_name) === n))
+          .filter(Boolean)
+          .map(l => `name.ilike.%${(l!.first_name || '').trim()}%${(l!.last_name || '').trim()}%`)
+          .join(',');
+        if (!or) continue;
+        runs.push(
+          supabase.from('customers').select(COLS).or(or).limit(500)
+            .then(({ data }) => push(data as Row[] | null))
         );
       }
       await Promise.all(runs);
 
       const byEmail = new Map<string, Row[]>();
       const byReg = new Map<string, Row[]>();
+      const byPhone = new Map<string, Row[]>();
+      const byName = new Map<string, Row[]>();
+      const add = (map: Map<string, Row[]>, k: string, r: Row) => {
+        if (!k) return;
+        map.set(k, [...(map.get(k) || []), r]);
+      };
       rows.forEach((r) => {
         if (EXCLUDED_STATUSES.includes((r.status || '').toLowerCase())) return;
-        const e = normEmail(r.email);
-        const p = normReg(r.registration_plate);
-        if (e) byEmail.set(e, [...(byEmail.get(e) || []), r]);
-        if (p) byReg.set(p, [...(byReg.get(p) || []), r]);
+        add(byEmail, normEmail(r.email), r);
+        add(byReg, normReg(r.registration_plate), r);
+        add(byPhone, normPhone(r.phone), r);
+        add(byName, normName(r.name), r);
       });
 
       const summarize = (matches: Row[], matchedOn: RepeatCustomerInfo['matchedOn']): RepeatCustomerInfo => {
@@ -118,8 +176,6 @@ export const useRepeatCustomers = (leads: RepeatLeadInput[]) => {
 
       const next: Record<string, RepeatCustomerInfo> = {};
       leads.forEach((l) => {
-        const e = normEmail(l.email);
-        const p = normReg(l.vehicle_reg);
         // A purchase only counts as a PRIOR policy if it happened before this
         // lead came in. This stops the lead's own sale (converted today) from
         // making the customer look like a returning buyer.
@@ -130,10 +186,22 @@ export const useRepeatCustomers = (leads: RepeatLeadInput[]) => {
             if (cutoff == null) return true;
             return new Date(m.signup_date).getTime() < cutoff;
           });
+
+        const e = normEmail(l.email);
+        const p = normReg(l.vehicle_reg);
+        const ph = normPhone(l.phone);
+        const nm = normName(l.first_name, l.last_name);
+
         const emailMatches = prior(e ? byEmail.get(e) : undefined);
+        const phoneMatches = prior(ph ? byPhone.get(ph) : undefined);
         const regMatches = prior(p ? byReg.get(p) : undefined);
+        const nameMatches = prior(nm ? byName.get(nm) : undefined);
+
+        // Strongest signal first: email → phone → registration → name.
         if (emailMatches.length) next[l.id] = summarize(emailMatches, 'email');
+        else if (phoneMatches.length) next[l.id] = summarize(phoneMatches, 'phone');
         else if (regMatches.length) next[l.id] = summarize(regMatches, 'reg');
+        else if (nameMatches.length) next[l.id] = summarize(nameMatches, 'name');
       });
 
       setRepeatByLeadId(next);
@@ -142,7 +210,7 @@ export const useRepeatCustomers = (leads: RepeatLeadInput[]) => {
     } finally {
       setLoading(false);
     }
-  }, [key, emails, regs, leads]);
+  }, [key, emails, regs, phones, names, leads]);
 
   useEffect(() => {
     if (!key) return;

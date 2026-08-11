@@ -168,7 +168,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   const { activityByEmail } = useCustomerActivity(leadEmails);
   const { repeatByLeadId } = useRepeatCustomers(
     useMemo(
-      () => leadsWithReservation.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg, created_at: l.created_at })),
+      () => leadsWithReservation.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg, phone: l.phone, first_name: l.first_name, last_name: l.last_name, created_at: l.created_at })),
       [leadsWithReservation]
     )
   );
