@@ -873,45 +873,45 @@ const CarExtendedWarranty: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 text-center">
               {[
                 { name: 'Alfa Romeo', logo: alfaRomeoLogo },
-                { name: 'Audi', logo: 'https://logo.clearbit.com/audi.com', link: '/car-extended-warranty/audi/' },
+                { name: 'Audi', logo: null, link: '/car-extended-warranty/audi/' },
                 { name: 'BMW', logo: bmwLogo, link: '/car-extended-warranty/bmw/' },
-                { name: 'Chevrolet', logo: 'https://logo.clearbit.com/chevrolet.com' },
-                { name: 'Chrysler', logo: 'https://logo.clearbit.com/chrysler.com' },
-                { name: 'Citroën', logo: 'https://logo.clearbit.com/citroen.com' },
+                { name: 'Chevrolet', logo: null },
+                { name: 'Chrysler', logo: null },
+                { name: 'Citroën', logo: null },
                 { name: 'Dacia', logo: daciaLogo },
-                { name: 'Daewoo', logo: 'https://logo.clearbit.com/daewoo.com' },
-                { name: 'Daihatsu', logo: 'https://logo.clearbit.com/daihatsu.com' },
-                { name: 'Fiat', logo: 'https://logo.clearbit.com/fiat.com' },
-                { name: 'Ford', logo: 'https://logo.clearbit.com/ford.com', link: '/car-extended-warranty/ford/' },
-                { name: 'Honda', logo: 'https://logo.clearbit.com/honda.com' },
-                { name: 'Hyundai', logo: 'https://logo.clearbit.com/hyundai.com', link: '/car-extended-warranty/hyundai/' },
-                { name: 'Infiniti', logo: 'https://logo.clearbit.com/infiniti.com' },
-                { name: 'Isuzu', logo: 'https://logo.clearbit.com/isuzu.com' },
-                { name: 'Iveco', logo: 'https://logo.clearbit.com/iveco.com' },
-                { name: 'Jaguar', logo: 'https://logo.clearbit.com/jaguar.com', link: '/car-extended-warranty/jaguar/' },
-                { name: 'Jeep', logo: 'https://logo.clearbit.com/jeep.com' },
-                { name: 'Kia', logo: 'https://logo.clearbit.com/kia.com' },
-                { name: 'Land Rover', logo: 'https://logo.clearbit.com/landrover.com', link: '/car-extended-warranty/land-rover/' },
-                { name: 'Lexus', logo: 'https://logo.clearbit.com/lexus.com' },
-                { name: 'Mazda', logo: 'https://logo.clearbit.com/mazda.com' },
-                { name: 'Mercedes-Benz', logo: 'https://logo.clearbit.com/mercedes-benz.com', link: '/car-extended-warranty/mercedes-benz/' },
-                { name: 'MG', logo: 'https://logo.clearbit.com/mgmotor.eu' },
-                { name: 'Mini', logo: 'https://logo.clearbit.com/mini.com' },
-                { name: 'Mitsubishi', logo: 'https://logo.clearbit.com/mitsubishi-motors.com' },
+                { name: 'Daewoo', logo: null },
+                { name: 'Daihatsu', logo: null },
+                { name: 'Fiat', logo: null },
+                { name: 'Ford', logo: null, link: '/car-extended-warranty/ford/' },
+                { name: 'Honda', logo: null },
+                { name: 'Hyundai', logo: null, link: '/car-extended-warranty/hyundai/' },
+                { name: 'Infiniti', logo: null },
+                { name: 'Isuzu', logo: null },
+                { name: 'Iveco', logo: null },
+                { name: 'Jaguar', logo: null, link: '/car-extended-warranty/jaguar/' },
+                { name: 'Jeep', logo: null },
+                { name: 'Kia', logo: null },
+                { name: 'Land Rover', logo: null, link: '/car-extended-warranty/land-rover/' },
+                { name: 'Lexus', logo: null },
+                { name: 'Mazda', logo: null },
+                { name: 'Mercedes-Benz', logo: null, link: '/car-extended-warranty/mercedes-benz/' },
+                { name: 'MG', logo: null },
+                { name: 'Mini', logo: null },
+                { name: 'Mitsubishi', logo: null },
                 { name: 'Nissan', logo: nissanLogo, link: '/car-extended-warranty/nissan/' },
-                { name: 'Peugeot', logo: 'https://logo.clearbit.com/peugeot.com' },
+                { name: 'Peugeot', logo: null },
                 { name: 'Renault', logo: renaultLogo },
                 { name: 'SEAT', logo: seatLogo },
                 { name: 'Škoda', logo: skodaLogo, link: '/car-extended-warranty/skoda/' },
-                { name: 'Smart', logo: 'https://logo.clearbit.com/smart.com' },
+                { name: 'Smart', logo: null },
                 { name: 'SsangYong', logo: ssangyongLogo },
-                { name: 'Subaru', logo: 'https://logo.clearbit.com/subaru.com' },
-                { name: 'Suzuki', logo: 'https://logo.clearbit.com/suzuki.com' },
-                { name: 'Tesla', logo: 'https://logo.clearbit.com/tesla.com' },
-                { name: 'Toyota', logo: 'https://logo.clearbit.com/toyota.com' },
-                { name: 'Volkswagen', logo: 'https://logo.clearbit.com/volkswagen.com', link: '/car-extended-warranty/volkswagen/' },
-                { name: 'Volvo', logo: 'https://logo.clearbit.com/volvo.com' },
-                { name: 'Yamaha', logo: 'https://logo.clearbit.com/yamaha-motor.com' }
+                { name: 'Subaru', logo: null },
+                { name: 'Suzuki', logo: null },
+                { name: 'Tesla', logo: null },
+                { name: 'Toyota', logo: null },
+                { name: 'Volkswagen', logo: null, link: '/car-extended-warranty/volkswagen/' },
+                { name: 'Volvo', logo: null },
+                { name: 'Yamaha', logo: null }
               ].map((brand) => (
                 brand.link ? (
                   <Link 
@@ -919,32 +919,31 @@ const CarExtendedWarranty: React.FC = () => {
                     to={brand.link} 
                     className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors flex flex-col items-center gap-3 cursor-pointer"
                   >
-                    <img 
-                      src={brand.logo} 
-                      alt={`${brand.name} car warranty coverage - UK extended warranty available`} 
-                      className="h-10 w-auto object-contain"
-                      loading="lazy"
-                      width="80"
-                      height="40"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
+                    {brand.logo && (
+                      <img 
+                        src={brand.logo} 
+                        alt={`${brand.name} car warranty coverage - UK extended warranty available`} 
+                        className="h-10 w-auto object-contain"
+                        loading="lazy"
+                        width="80"
+                        height="40"
+                      />
+                    )}
                     <p className="font-semibold text-gray-800">{brand.name}</p>
                   </Link>
                 ) : (
                   <div key={brand.name} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors flex flex-col items-center gap-3">
-                    <img 
-                      src={brand.logo} 
-                      alt={`${brand.name} car warranty coverage - UK extended warranty available`} 
-                      className="h-10 w-auto object-contain"
-                      loading="lazy"
-                      width="80"
-                      height="40"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
+                    {brand.logo && (
+                      <img 
+                        src={brand.logo} 
+                        alt={`${brand.name} car warranty coverage - UK extended warranty available`} 
+                        className="h-10 w-auto object-contain"
+                        loading="lazy"
+                        width="80"
+                        height="40"
+                      />
+                    )}
+
                     <p className="font-semibold text-gray-800">{brand.name}</p>
                   </div>
                 )

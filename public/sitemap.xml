@@ -124,12 +124,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://buyawarranty.co.uk/thewarrantyhub/audi-a6-vs-bmw-5-series-uk-reliability-and-value-2026/</loc>
-    <lastmod>2026-05-18</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://buyawarranty.co.uk/thewarrantyhub/good-mileage-used-car-uk-2026-buyers-guide/</loc>
     <lastmod>2026-08-11</lastmod>
     <changefreq>monthly</changefreq>
@@ -294,6 +288,11 @@
   </url>
   <url>
     <loc>https://buyawarranty.co.uk/warranty-types/skoda-warranty/</loc>
+    <lastmod>2026-03-17</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://buyawarranty.co.uk/warranty-types/ssangyong-warranty/</loc>
     <lastmod>2026-03-17</lastmod>
     <priority>0.8</priority>
   </url>
