@@ -391,8 +391,8 @@ const CodebaseVsHybridPanel: React.FC<{
           liveModel={codeBaseModel}
           vehicle={vehicle}
           showRegLookup={false}
-          title="Code base pricing — Step 2"
-          subtitle="The July 2026 matrix written into the code base: one flat grid per term."
+          title="Code base pricing — Quotes &amp; Orders price"
+          subtitle="The July 2026 matrix written into the code base: one flat grid per term. The website Step 3 price is 10% below this figure."
           badgeText="Code base"
         />
         <PriceTestStep2
@@ -401,8 +401,8 @@ const CodebaseVsHybridPanel: React.FC<{
           vehicle={vehicle}
           showRegLookup={false}
           autoQuoteCeiling={ceiling}
-          title="Aug hybrid test — Step 2"
-          subtitle="Lower base, compressed risk uplifts, cheaper multi-year terms and an auto-quote ceiling."
+          title="Aug hybrid test — Quotes &amp; Orders price"
+          subtitle="Lower base, compressed risk uplifts, cheaper multi-year terms and an auto-quote ceiling. When pushed live, the website Step 3 price is 10% below this Quotes &amp; Orders price."
           badgeText="Hybrid draft"
         />
       </div>
