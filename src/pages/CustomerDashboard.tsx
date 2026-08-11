@@ -1061,7 +1061,9 @@ const CustomerDashboard = () => {
           title="Car Warranty Dashboard UK | Manage Policy | BuyA Warranty"
           description="Manage your policy easily in the BuyA Warranty customer dashboard. Track your UK car warranty, claims and renewals in one secure place."
           keywords="customer dashboard, warranty portal, policy documents, account management, vehicle warranty"
+          noindex
         />
+        <h1 className="sr-only">BuyAWarranty customer dashboard sign in</h1>
         {/* Minimal Header */}
         <div className="bg-white border-b border-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

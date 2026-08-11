@@ -352,7 +352,9 @@ const Auth = () => {
         title="Sign In | BuyAWarranty Customer Portal"
         description="Access your warranty account or create a new one. Manage your policies, view documents, and get support for your vehicle warranty."
         keywords="sign in, login, customer portal, warranty account, vehicle warranty"
+        noindex
       />
+      <h1 className="sr-only">Sign in to your BuyAWarranty customer account</h1>
       
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-50">
