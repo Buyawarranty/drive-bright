@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 interface LocalBusinessSchemaProps {
   name?: string;
@@ -85,8 +86,7 @@ export const LocalBusinessSchema = ({
       ],
       "aggregateRating": {
         "@type": "AggregateRating",
-        "ratingValue": "4.7",
-        "reviewCount": "30",
+        "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT,
         "bestRating": "5",
         "worstRating": "1"
       },

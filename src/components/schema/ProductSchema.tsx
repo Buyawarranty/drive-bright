@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 interface ProductSchemaProps {
   name: string;
@@ -57,8 +58,7 @@ export const ProductSchema = ({
       }),
       "aggregateRating": {
         "@type": "AggregateRating",
-        "ratingValue": "5",
-        "reviewCount": "100",
+        "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT,
         "bestRating": "5",
         "worstRating": "1"
       }

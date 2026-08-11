@@ -30,6 +30,7 @@ import audiWhyChooseUs from '@/assets/audi-used-car-warranty-uk.webp';
 import audiHighMileage from '@/assets/audi-warranty-cover-uk.webp';
 import audiMobileQuote from '@/assets/audi-warranty-mobile-quote.webp';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 // Audi Models covered (grouped by category)
 const audiModelCategories = {
@@ -307,7 +308,7 @@ const AudiWarrantyLanding: React.FC = () => {
         "billingIncrement": 1
       }
     },
-    "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1" },
+    "aggregateRating": { "@type": "AggregateRating", "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT, "bestRating": "5", "worstRating": "1" },
     "review": testimonials.map((t, i) => ({
       "@type": "Review",
       "author": { "@type": "Person", "name": t.name },

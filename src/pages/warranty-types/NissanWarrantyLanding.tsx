@@ -30,6 +30,7 @@ import nissanQashqaiHero from '@/assets/nissan-qashqai-extended-warranty-uk.png'
 import nissanJukeWarranty from '@/assets/nissan-juke-used-car-warranty.png';
 import nissanLeafWarranty from '@/assets/nissan-leaf-ev-warranty.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 // Nissan Models covered (grouped by category)
 const nissanModelCategories = {
@@ -426,8 +427,7 @@ const NissanWarrantyLanding: React.FC = () => {
     },
     "aggregateRating": {
       "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "reviewCount": "2847",
+      "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT,
       "bestRating": "5",
       "worstRating": "1"
     },

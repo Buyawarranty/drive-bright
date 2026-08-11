@@ -33,6 +33,7 @@ import skodaOctaviaHero from '@/assets/skoda-octavia-extended-warranty-uk.png';
 import skodaKodiaqWarranty from '@/assets/skoda-kodiaq-used-car-warranty.png';
 import skodaEnyaqHighMileage from '@/assets/skoda-enyaq-high-mileage-warranty.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 // Škoda Models covered (grouped by category) - 2012 to 2026
 const skodaModelCategories = {
@@ -418,8 +419,7 @@ const SkodaWarrantyLanding: React.FC = () => {
     },
     "aggregateRating": {
       "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "reviewCount": "2847",
+      "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT,
       "bestRating": "5",
       "worstRating": "1"
     },
@@ -533,8 +533,7 @@ const SkodaWarrantyLanding: React.FC = () => {
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
     "aggregateRating": {
       "@type": "AggregateRating",
-      "ratingValue": "4.7",
-      "reviewCount": "30",
+      "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT,
       "bestRating": "5",
       "worstRating": "1"
     },

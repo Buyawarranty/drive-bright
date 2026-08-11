@@ -38,6 +38,7 @@ import pandaGarage from '@/assets/panda-garage-service.png';
 import bmwWhyChooseUs from '@/assets/bmw-extended-used-car-warranty.webp';
 import bmwHighMileage from '@/assets/bmw-i3-warranty.webp';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 // BMW Models covered (grouped by category)
 const bmwModelCategories = {
@@ -435,8 +436,7 @@ const BMWWarrantyLanding: React.FC = () => {
     },
     "aggregateRating": {
       "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "reviewCount": "2847",
+      "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT,
       "bestRating": "5",
       "worstRating": "1"
     },

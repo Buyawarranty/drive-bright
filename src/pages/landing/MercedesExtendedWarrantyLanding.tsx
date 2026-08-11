@@ -30,6 +30,7 @@ import mercGLC from '@/assets/mercedes-models/mercedes-glc-suv-extended-warranty
 import mercS from '@/assets/mercedes-models/mercedes-s-class-extended-warranty.png';
 import mercEQ from '@/assets/mercedes-models/mercedes-eq-ev-extended-warranty.png';
 import { SEO_FROM_MONTHLY_PRICE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 const mercedesModels = [
   { label: 'A-Class', examples: 'A180, A200, A220d', img: mercA, alt: 'Mercedes-Benz A-Class extended warranty cover — A180, A200 hatchback' },
@@ -111,7 +112,7 @@ const MercedesExtendedWarrantyLanding: React.FC = () => {
       <WebPageSchema name="Mercedes-Benz Extended Warranty" description="Mercedes-Benz extended warranty cover from £19/month." url="https://buyawarranty.co.uk/car-extended-warranty/mercedes-benz/" />
       <FAQSchema faqs={faqs.map(f => ({ question: f.q, answer: f.a }))} />
       <Helmet>
-        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "Mercedes-Benz Extended Warranty", "description": "Flexible Mercedes-Benz warranty cover from \u00a319/month. Covers engine, gearbox, electrics and more across all Mercedes models.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/mercedes-benz/", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1"}})}</script>
+        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "Mercedes-Benz Extended Warranty", "description": "Flexible Mercedes-Benz warranty cover from \u00a319/month. Covers engine, gearbox, electrics and more across all Mercedes models.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/mercedes-benz/", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT, "bestRating": "5", "worstRating": "1"}})}</script>
       </Helmet>
       <BreadcrumbSchema items={[{ name: 'Home', url: 'https://buyawarranty.co.uk/' }, { name: 'Mercedes-Benz Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/mercedes-benz/' }]} />
 

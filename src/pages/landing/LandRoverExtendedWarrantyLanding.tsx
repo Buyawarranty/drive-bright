@@ -30,6 +30,7 @@ import rangeRoverEvoque from '@/assets/landrover-models/range-rover-evoque-exten
 import landRoverDefender from '@/assets/landrover-models/land-rover-defender-extended-warranty.jpg';
 import landRoverDiscovery from '@/assets/landrover-models/land-rover-discovery-extended-warranty.jpg';
 import { SEO_FROM_MONTHLY_PRICE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 const landRoverModels = [
   { label: 'Range Rover', examples: 'P400, P530, D350', img: rangeRover, alt: 'Range Rover extended warranty cover — P400, P530, D350 full-size luxury SUV' },
@@ -111,7 +112,7 @@ const LandRoverExtendedWarrantyLanding: React.FC = () => {
       <WebPageSchema name="Land Rover Extended Warranty" description="Land Rover and Range Rover extended warranty cover from £19/month." url="https://buyawarranty.co.uk/car-extended-warranty/land-rover/" />
       <FAQSchema faqs={faqs.map(f => ({ question: f.q, answer: f.a }))} />
       <Helmet>
-        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "Land Rover Extended Warranty", "description": "Flexible Land Rover & Range Rover warranty cover from \u00a319/month. Covers engine, gearbox, electrics and 4x4 systems.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/land-rover/", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1"}})}</script>
+        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "Land Rover Extended Warranty", "description": "Flexible Land Rover & Range Rover warranty cover from \u00a319/month. Covers engine, gearbox, electrics and 4x4 systems.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/land-rover/", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT, "bestRating": "5", "worstRating": "1"}})}</script>
       </Helmet>
       <BreadcrumbSchema items={[{ name: 'Home', url: 'https://buyawarranty.co.uk/' }, { name: 'Land Rover Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/land-rover/' }]} />
 

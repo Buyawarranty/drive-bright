@@ -28,6 +28,7 @@ import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import evHeroImage from '@/assets/ev-warranty-hero-electric-vehicle.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 // UK EV Models covered (grouped by manufacturer) - 2012-2026
 const evModelCategories = {
@@ -522,7 +523,7 @@ const EVWarrantyLanding: React.FC = () => {
       "seller": { "@type": "Organization", "name": "Buy A Warranty" },
       "priceSpecification": { "@type": "UnitPriceSpecification", "price": String(SEO_FROM_MONTHLY_PRICE), "priceCurrency": "GBP", "unitText": "month", "billingIncrement": 1 }
     },
-    "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1" },
+    "aggregateRating": { "@type": "AggregateRating", "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT, "bestRating": "5", "worstRating": "1" },
     "review": testimonials.map((t, i) => ({
       "@type": "Review",
       "author": { "@type": "Person", "name": t.name },

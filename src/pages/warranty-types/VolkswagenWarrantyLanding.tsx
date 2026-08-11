@@ -36,6 +36,7 @@ import pandaGarage from '@/assets/panda-garage-service.png';
 import vwWhyChooseUs from '@/assets/vw-why-choose-us.webp';
 import vwHighMileage from '@/assets/vw-confidence-covered.webp';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 // VW Models covered (grouped by category)
 const vwModelCategories = {
@@ -415,7 +416,7 @@ const VolkswagenWarrantyLanding: React.FC = () => {
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": { "@type": "UnitPriceSpecification", "price": String(SEO_FROM_MONTHLY_PRICE), "priceCurrency": "GBP", "unitText": "month", "billingIncrement": 1 }
     },
-    "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1" },
+    "aggregateRating": { "@type": "AggregateRating", "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT, "bestRating": "5", "worstRating": "1" },
     "review": testimonials.map((t, i) => ({
       "@type": "Review",
       "author": { "@type": "Person", "name": t.name },

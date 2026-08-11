@@ -34,6 +34,7 @@ import { saveWithTimestamp } from '@/utils/localStorage';
 import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
 import { getVehicleIdentificationGap } from '@/lib/vehicleIdentification';
 import { SALES_PHONE } from '@/constants/contact';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 interface VehicleData {
   regNumber: string;
@@ -109,8 +110,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
     },
     "aggregateRating": {
       "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "reviewCount": "2500"
+      "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT
     }
   };
 

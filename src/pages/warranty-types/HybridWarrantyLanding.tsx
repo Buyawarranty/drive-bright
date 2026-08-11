@@ -32,6 +32,7 @@ import pandaThumbsUp from '@/assets/extended-van-warranty-uk.png';
 import hybridHeroImage from '@/assets/hybrid-warranty-hero-vehicle.png';
 import hybridKiaNiro from '@/assets/hybrid-warranty-kia-niro.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 // UK Hybrid Models covered (grouped by manufacturer) - 2012-2026
 const hybridModelCategories = {
@@ -541,7 +542,7 @@ const HybridWarrantyLanding: React.FC = () => {
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": { "@type": "UnitPriceSpecification", "price": String(SEO_FROM_MONTHLY_PRICE), "priceCurrency": "GBP", "unitText": "month", "billingIncrement": 1 }
     },
-    "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1" },
+    "aggregateRating": { "@type": "AggregateRating", "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT, "bestRating": "5", "worstRating": "1" },
     "review": testimonials.map((t, i) => ({
       "@type": "Review",
       "author": { "@type": "Person", "name": t.name },

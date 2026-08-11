@@ -31,6 +31,7 @@ import vanHeroImage from '@/assets/uk-extended-used-van-warranty.png';
 import fordTransitVan from '@/assets/uk-van-warranty-ford-transit.webp';
 import vanIcon from '@/assets/van-icon.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
+import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
 // UK Van Models covered (grouped by manufacturer) - 2012-2026
 const vanModelCategories = {
@@ -480,8 +481,7 @@ const VanWarrantyLanding: React.FC = () => {
     },
     "aggregateRating": {
       "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "reviewCount": "2847",
+      "ratingValue": TRUSTPILOT_RATING_VALUE, "reviewCount": TRUSTPILOT_REVIEW_COUNT,
       "bestRating": "5",
       "worstRating": "1"
     },
