@@ -41,6 +41,20 @@ interface SEOHeadProps {
 const normalisePath = (pathname: string) =>
   pathname === '/' || pathname.endsWith('/') ? pathname : `${pathname}/`;
 
+// Any canonical passed in by a page is normalised to the live origin with a
+// single trailing slash, so no page can ship a preview/localhost canonical or a
+// slash variant that competes with the URL Google actually crawls.
+const normaliseCanonical = (raw?: string) => {
+  if (!raw) return undefined;
+  try {
+    const url = new URL(raw, SITE_ORIGIN);
+    return `${SITE_ORIGIN}${normalisePath(url.pathname)}${url.search}`;
+  } catch {
+    return undefined;
+  }
+};
+
+
 
 export const SEOHead = ({
   title = "Car Warranty UK | Instant Quotes | Buy A Warranty",
