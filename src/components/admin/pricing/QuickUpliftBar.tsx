@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { TrendingUp, TrendingDown, RotateCcw, Save, Check } from 'lucide-react';
+import { TrendingUp, TrendingDown, RotateCcw, Save, Check, Minus, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 /**
