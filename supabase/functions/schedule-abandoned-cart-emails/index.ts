@@ -6,16 +6,30 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// 6-step Confused.com-style cadence. Each cart can receive every reminder
-// whose delay has elapsed (so missed cycles still send on the next cron tick).
+// Trimmed 3-step cadence (was 6). Anything beyond a week without a reply is spam.
 const REMINDER_TRIGGERS = [
   'reminder_1h',
   'reminder_2d',
   'reminder_7d',
-  'reminder_14d',
-  'reminder_18d',
-  'reminder_21d',
 ] as const;
+
+// ---- Per-PERSON frequency caps (the old logic capped per cart, so a customer
+// who re-quoted 11 times got 11 full cadences). ----
+const MIN_HOURS_BETWEEN_EMAILS = 48;   // never two marketing emails inside 48h
+const MAX_EMAILS_PER_30_DAYS = 3;      // hard ceiling per recipient per month
+const DEDUPE_WINDOW_DAYS = 60;         // same trigger never repeats within 60 days
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+
+/** Reject malformed addresses instead of retrying them forever. */
+const isValidEmail = (raw?: string | null): boolean => {
+  const e = (raw || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(e)) return false;
+  if (e.endsWith('.')) return false;
+  if (e.includes('..')) return false;
+  if (/[£$%^*()<>,;:'"\\/]/.test(e)) return false;
+  return true;
+};
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -29,7 +43,7 @@ const handler = async (req: Request): Promise<Response> => {
       auth: { persistSession: false }
     });
 
-    console.log('Processing abandoned cart reminder cadence (6-step)...');
+    console.log('Processing abandoned cart reminders (3-step, per-recipient capped)...');
 
     // Load active reminder templates (delay map)
     const { data: templates, error: tplErr } = await supabase
@@ -49,8 +63,8 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Pull unconverted carts within the cadence window (22 days covers 21-day final email)
-    const windowStart = new Date(Date.now() - 22 * 24 * 60 * 60 * 1000).toISOString();
+    // Pull unconverted carts within the cadence window (8 days covers the 7-day final email)
+    const windowStart = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
     const { data: abandonedCarts, error: cartsError } = await supabase
       .from('abandoned_carts')
       .select('*')
@@ -65,93 +79,151 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    console.log(`Found ${abandonedCarts.length} candidate carts`);
+    // ---- Collapse to ONE cart per recipient: the newest quote wins. ----
+    const newestCartByEmail = new Map<string, any>();
+    let invalidEmails = 0;
+    for (const cart of abandonedCarts) {
+      if (!isValidEmail(cart.email)) { invalidEmails++; continue; }
+      const key = cart.email.trim().toLowerCase();
+      const existing = newestCartByEmail.get(key);
+      if (!existing || new Date(cart.created_at) > new Date(existing.created_at)) {
+        newestCartByEmail.set(key, cart);
+      }
+    }
+    const candidates = Array.from(newestCartByEmail.entries());
+    console.log(`${abandonedCarts.length} carts → ${candidates.length} unique recipients (${invalidEmails} invalid addresses skipped)`);
 
-    // Bulk-load unsubscribed emails for this batch
-    const emails = Array.from(new Set(
-      abandonedCarts.map(c => (c.email || '').trim().toLowerCase()).filter(e => e.includes('@'))
-    ));
+    const emails = candidates.map(([e]) => e);
+
+    // Bulk-load unsubscribes / non-marketing preferences
     const { data: unsubRows } = await supabase
       .from('email_unsubscribes')
       .select('email')
       .in('email', emails);
-    const unsubSet = new Set((unsubRows || []).map((r: any) => r.email));
+    const unsubSet = new Set((unsubRows || []).map((r: any) => (r.email || '').trim().toLowerCase()));
+
+    const { data: prefRows } = await supabase
+      .from('marketing_audience')
+      .select('email, frequency, is_subscribed')
+      .in('email', emails);
+    const prefByEmail = new Map<string, { frequency?: string | null; is_subscribed?: boolean | null }>();
+    (prefRows || []).forEach((r: any) => prefByEmail.set((r.email || '').trim().toLowerCase(), r));
+
+    // Bulk-load recent send history PER RECIPIENT (not per cart)
+    const historyStart = new Date(Date.now() - DEDUPE_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
+    const { data: historyRows } = await supabase
+      .from('triggered_emails_log')
+      .select('email, trigger_type, created_at')
+      .in('email', emails)
+      .gte('created_at', historyStart);
+
+    const historyByEmail = new Map<string, { trigger_type: string; created_at: string }[]>();
+    (historyRows || []).forEach((r: any) => {
+      const key = (r.email || '').trim().toLowerCase();
+      const list = historyByEmail.get(key) || [];
+      list.push({ trigger_type: r.trigger_type, created_at: r.created_at });
+      historyByEmail.set(key, list);
+    });
 
     let emailsSent = 0;
     let errorsCount = 0;
+    let cappedCount = 0;
     const now = Date.now();
+    const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
 
-    for (const cart of abandonedCarts) {
+    for (const [email, cart] of candidates) {
       try {
-        if (!cart.email || !cart.email.includes('@')) continue;
-        if (unsubSet.has(cart.email.trim().toLowerCase())) continue;
+        if (unsubSet.has(email)) continue;
+
+        // Respect customer-chosen frequency: 'off' and 'essentials' get no cart chasing.
+        const pref = prefByEmail.get(email);
+        if (pref && (pref.is_subscribed === false || pref.frequency === 'off' || pref.frequency === 'essentials')) {
+          continue;
+        }
+
         // Only carts that actually reached pricing or checkout
         if (cart.step_abandoned !== 3 && cart.step_abandoned !== 4) continue;
 
-        // Fetch all reminder emails already sent for this cart
-        const { data: alreadySent } = await supabase
-          .from('triggered_emails_log')
-          .select('trigger_type')
-          .eq('cart_id', cart.id)
-          .in('trigger_type', REMINDER_TRIGGERS as unknown as string[]);
-        const sentSet = new Set((alreadySent || []).map((r: any) => r.trigger_type));
+        const history = historyByEmail.get(email) || [];
+        const sentTriggers = new Set(history.map(h => h.trigger_type));
+        const sentTimes = history.map(h => new Date(h.created_at).getTime());
+
+        // Cap 1: max N marketing emails per recipient per 30 days
+        if (sentTimes.filter(t => t >= thirtyDaysAgo).length >= MAX_EMAILS_PER_30_DAYS) {
+          cappedCount++;
+          continue;
+        }
+
+        // Cap 2: minimum quiet period since the last marketing email
+        const lastSent = sentTimes.length ? Math.max(...sentTimes) : 0;
+        if (lastSent && now - lastSent < MIN_HOURS_BETWEEN_EMAILS * 60 * 60 * 1000) {
+          cappedCount++;
+          continue;
+        }
 
         const cartTime = new Date(cart.created_at).getTime();
         const metadata = cart.cart_metadata || {};
 
+        // Send at most ONE email per recipient per run: the latest due step they
+        // haven't already had. Never a burst.
+        let dueTrigger: string | null = null;
         for (const trigger of REMINDER_TRIGGERS) {
-          if (sentSet.has(trigger)) continue;
+          if (sentTriggers.has(trigger)) continue;           // per-person dedupe
           const delayMinutes = delayByTrigger.get(trigger);
           if (delayMinutes === undefined) continue;
           if (now < cartTime + delayMinutes * 60 * 1000) continue; // not yet due
+          dueTrigger = trigger;                               // keep last (furthest) due step
+        }
+        if (!dueTrigger) continue;
 
-          const emailPayload = {
-            cartId: cart.id,
-            email: cart.email,
-            firstName: cart.full_name?.split(' ')[0] || 'there',
-            lastName: cart.full_name?.split(' ').slice(1).join(' ') || '',
-            phone: cart.phone || '',
-            vehicleReg: cart.vehicle_reg,
-            vehicleMake: cart.vehicle_make,
-            vehicleModel: cart.vehicle_model,
-            vehicleYear: cart.vehicle_year || '',
-            vehicleType: cart.vehicle_type,
-            mileage: cart.mileage || '0',
-            fuelType: '',
-            transmission: '',
-            triggerType: trigger,
-            planName: cart.plan_name,
-            paymentType: cart.payment_type,
-            stepAbandoned: cart.step_abandoned, // ← step 3 → step 3, step 4 → checkout
-            voluntaryExcess: metadata.voluntary_excess ?? metadata.excess,
-            claimLimit: metadata.claim_limit ?? metadata.claimLimit,
-            labourRate: metadata.labourRate ?? metadata.labour_rate,
-            boostAddon: metadata.boostAddon ?? metadata.boost_addon,
-            protectionAddons: metadata.protection_addons,
-          };
+        const emailPayload = {
+          cartId: cart.id,
+          email: cart.email,
+          firstName: cart.full_name?.split(' ')[0] || 'there',
+          lastName: cart.full_name?.split(' ').slice(1).join(' ') || '',
+          phone: cart.phone || '',
+          vehicleReg: cart.vehicle_reg,
+          vehicleMake: cart.vehicle_make,
+          vehicleModel: cart.vehicle_model,
+          vehicleYear: cart.vehicle_year || '',
+          vehicleType: cart.vehicle_type,
+          mileage: cart.mileage || '0',
+          fuelType: '',
+          transmission: '',
+          triggerType: dueTrigger,
+          planName: cart.plan_name,
+          paymentType: cart.payment_type,
+          stepAbandoned: cart.step_abandoned,
+          voluntaryExcess: metadata.voluntary_excess ?? metadata.excess,
+          claimLimit: metadata.claim_limit ?? metadata.claimLimit,
+          labourRate: metadata.labourRate ?? metadata.labour_rate,
+          boostAddon: metadata.boostAddon ?? metadata.boost_addon,
+          protectionAddons: metadata.protection_addons,
+        };
 
-          console.log(`Sending ${trigger} for cart ${cart.id} (step ${cart.step_abandoned})`);
-          const emailResponse = await supabase.functions.invoke('send-abandoned-cart-email', {
-            body: emailPayload,
-          });
+        console.log(`Sending ${dueTrigger} to ${email} (cart ${cart.id}, step ${cart.step_abandoned})`);
+        const emailResponse = await supabase.functions.invoke('send-abandoned-cart-email', {
+          body: emailPayload,
+        });
 
-          if (emailResponse.error) {
-            console.error(`Error sending ${trigger} for cart ${cart.id}:`, emailResponse.error);
-            errorsCount++;
-          } else {
-            emailsSent++;
-          }
+        if (emailResponse.error) {
+          console.error(`Error sending ${dueTrigger} to ${email}:`, emailResponse.error);
+          errorsCount++;
+        } else {
+          emailsSent++;
         }
       } catch (cartErr) {
-        console.error('Error processing cart:', cart.id, cartErr);
+        console.error('Error processing recipient:', email, cartErr);
         errorsCount++;
       }
     }
 
     return new Response(JSON.stringify({
       success: true,
-      message: `Processed ${abandonedCarts.length} carts`,
+      message: `Processed ${candidates.length} recipients from ${abandonedCarts.length} carts`,
       emailsSent,
+      cappedByFrequency: cappedCount,
+      invalidEmailsSkipped: invalidEmails,
       errors: errorsCount,
     }), {
       status: 200,
