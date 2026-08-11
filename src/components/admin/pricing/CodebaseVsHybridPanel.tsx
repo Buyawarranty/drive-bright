@@ -205,11 +205,12 @@ const CodebaseVsHybridPanel: React.FC<{
               <CardDescription>
                 The original July 2026 code-base pricing against the August test model in the same Step 2
                 screen. Left is the flat code-base grid (no age, mileage, powertrain or model-risk
-                differentiation); right applies the hybrid variables below. Sandbox only — nothing saves a
+                differentiation); right applies the hybrid variables below. Both columns show the customer
+                Step 3 price on top and the agent Quotes & Orders price beneath it. Sandbox only — nothing saves a
                 quote or changes live prices.
               </CardDescription>
             </div>
-            <PriceSurfaceBadge surface="quotes" />
+            <PriceSurfaceBadge surface="mixed" />
           </div>
         </CardHeader>
 

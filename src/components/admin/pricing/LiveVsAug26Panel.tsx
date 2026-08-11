@@ -151,11 +151,12 @@ const LiveVsAug26Panel: React.FC<{
               </CardTitle>
               <CardDescription>
                 The same Step 2 quote screen twice — left priced with the live Age-based builder figures,
-                right priced with a saved pricing version. Change any variable on either side to see the
-                effect. Nothing here saves a quote or changes live prices.
+                right priced with a saved pricing version. Both columns show the customer Step 3 price on
+                top and the agent Quotes & Orders price beneath it. Nothing here saves a quote or changes
+                live prices.
               </CardDescription>
             </div>
-            <PriceSurfaceBadge surface="quotes" />
+            <PriceSurfaceBadge surface="mixed" />
           </div>
         </CardHeader>
 

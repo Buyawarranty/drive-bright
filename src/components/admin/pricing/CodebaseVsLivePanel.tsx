@@ -202,11 +202,12 @@ const CodebaseVsLivePanel: React.FC<{
               <CardDescription>
                 The original July 2026 pricing written into the code base against live pricing, in the same
                 Step 2 screen agents use. Right is exactly what agents sell today; left is the flat code-base
-                grid with the variables below applied. Sandbox only — nothing saves a quote or changes live
+                grid with the variables below applied. Both columns show the customer Step 3 price on top and
+                the agent Quotes & Orders price beneath it. Sandbox only — nothing saves a quote or changes live
                 prices.
               </CardDescription>
             </div>
-            <PriceSurfaceBadge surface="quotes" />
+            <PriceSurfaceBadge surface="mixed" />
           </div>
         </CardHeader>
 

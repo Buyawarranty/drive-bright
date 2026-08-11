@@ -173,11 +173,12 @@ const AugHybridVsLivePanel: React.FC<{
               </CardTitle>
               <CardDescription>
                 The August test model against live pricing in the same Step 2 screen. Left is exactly what
-                agents sell today; right applies the hybrid variables below. Sandbox only — nothing saves a
-                quote or changes live prices.
+                agents sell today; right applies the hybrid variables below. Both columns show the customer
+                Step 3 price on top and the agent Quotes & Orders price beneath it. Sandbox only — nothing
+                saves a quote or changes live prices.
               </CardDescription>
             </div>
-            <PriceSurfaceBadge surface="quotes" />
+            <PriceSurfaceBadge surface="mixed" />
           </div>
         </CardHeader>
 
