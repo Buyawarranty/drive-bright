@@ -389,7 +389,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           .eq('attempt_status', 'attempted');
       } catch { /* non-blocking */ }
 
-      // Schedule SMS to be sent 10 minutes after quote submission
+      // Schedule SMS to be sent 90 seconds after quote submission
       // (guarded: only one welcome SMS per number per 30 days)
       try {
         const digits = phone.replace(/\D/g, '');
@@ -406,7 +406,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           console.log('Welcome SMS already queued/sent for this number — skipping');
         } else {
           console.log('Scheduling delayed SMS for:', phone);
-          const sendAfter = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+          const sendAfter = new Date(Date.now() + 90 * 1000).toISOString();
           const { error: scheduleError } = await supabase
             .from('scheduled_sms')
             .insert({
