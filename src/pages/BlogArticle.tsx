@@ -578,16 +578,8 @@ const BlogArticle = () => {
                     dangerouslySetInnerHTML={{ __html: htmlPartOne }}
                   />
 
-                  {/* Mid-article reg CTA */}
-                  {htmlPartTwo && (
-                    <div className="my-10 sm:my-12">
-                      <BlogRegQuoteCTA
-                        compact
-                        heading="Still reading? Check your price first"
-                        subheading="Enter your reg — takes 60 seconds and there’s no obligation."
-                      />
-                    </div>
-                  )}
+
+
 
                   {htmlPartTwo && (
                     <article
