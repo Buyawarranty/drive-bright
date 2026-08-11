@@ -133,6 +133,27 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     ogType: "article",
   },
   {
+    path: "/thewarrantyhub/what-is-cat-n-car-uk-write-off-categories-guide-2026/",
+    title: "What Is a Cat N Car? UK Write-Off Categories Guide 2026",
+    description:
+      "Cat N, Cat S, Cat B and Cat A explained for UK buyers in 2026, what they mean for value, insurance and warranty cover.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/top-10-stolen-cars-uk-2026-trends-and-security/",
+    title: "Top 10 Stolen Cars UK 2026 | Theft Trends and Security",
+    description:
+      "The models UK thieves target most in 2026, how keyless relay theft works, and the security measures that actually stop it.",
+    ogType: "article",
+  },
+  {
+    path: "/thewarrantyhub/electric-car-running-costs-uk-2026-tax-insurance-servicing/",
+    title: "Electric Car Running Costs UK 2026 | Tax, Insurance, Servicing",
+    description:
+      "What an EV really costs to run in the UK in 2026, covering VED, home and public charging, insurance, servicing and repairs.",
+    ogType: "article",
+  },
+  {
     path: "/thewarrantyhub/car-warranty-vs-breakdown-cover-vs-insurance-uk-2026/",
     title: "Car Warranty vs Breakdown Cover vs Insurance UK 2026",
     description:
