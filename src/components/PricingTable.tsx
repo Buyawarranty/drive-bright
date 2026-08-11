@@ -999,6 +999,46 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return Math.ceil(totalPrice / 12);
   };
 
+  // Record the price the customer was actually shown, plus the cover options that
+  // produced it, so conversion and average order value can be measured per price
+  // point. Debounced so dragging through options writes once, not on every tick.
+  useEffect(() => {
+    const email = vehicleData?.email?.trim();
+    if (!email || !email.includes('@') || !totalPrice || totalPrice <= 0) return;
+
+    const timer = setTimeout(() => {
+      supabase.functions
+        .invoke('track-abandoned-cart', {
+          body: {
+            full_name: vehicleData?.firstName
+              ? `${vehicleData.firstName}${vehicleData?.lastName ? ' ' + vehicleData.lastName : ''}`.trim()
+              : email,
+            email,
+            phone: vehicleData?.phone?.trim() || undefined,
+            vehicle_reg: vehicleData?.regNumber,
+            vehicle_make: vehicleData?.make,
+            vehicle_model: vehicleData?.model,
+            vehicle_year: vehicleData?.year,
+            vehicle_type: vehicleData?.vehicleType,
+            mileage: vehicleData?.mileage,
+            step_abandoned: 3,
+            payment_type: paymentType,
+            total_price: totalPrice,
+            voluntary_excess: voluntaryExcess,
+            claim_limit: selectedClaimLimit,
+            labour_rate: selectedLabourRate,
+            boost_addon: boostAddon,
+            protection_addons: selectedProtectionAddOns,
+          },
+        })
+        .catch(err => console.error('Quoted-price tracking failed (non-blocking):', err));
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [totalPrice, paymentType, voluntaryExcess, selectedClaimLimit, selectedLabourRate, boostAddon, selectedProtectionAddOns, vehicleData?.email]);
+
+
+
   const getPlanSavings = (plan: Plan) => {
     if (paymentType === '12months') return null;
     
