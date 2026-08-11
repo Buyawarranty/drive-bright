@@ -396,7 +396,7 @@ const BlogArticle = () => {
             {/* Main body */}
             <div className="flex-1 min-w-0 max-w-3xl">
               {/* Top-of-article reg quote CTA */}
-              <div className="mb-10 sm:mb-12">
+              <div id="blog-reg-quote" className="mb-10 scroll-mt-24 sm:mb-12">
                 <BlogRegQuoteCTA
                   compact
                   heading="Get an instant warranty price"
@@ -417,22 +417,32 @@ const BlogArticle = () => {
 
               {/* Article content */}
               {enrichedHtml ? (
-                <article
-                  className="prose prose-slate prose-lg max-w-none
-                    prose-headings:font-bold prose-headings:text-[#001F3F]
-                    prose-h2:font-extrabold prose-h2:text-3xl md:prose-h2:text-4xl prose-h2:mt-14 prose-h2:mb-5 prose-h2:scroll-mt-24
-                    prose-h3:text-2xl prose-h3:mt-10 prose-h3:mb-3
-                    prose-p:text-slate-700 prose-p:leading-[1.8]
-                    prose-a:text-primary hover:prose-a:text-primary/80 prose-a:font-medium
-                    prose-strong:text-[#001F3F]
-                    prose-li:text-slate-700 prose-li:leading-relaxed
-                    prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-slate-50 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:not-italic prose-blockquote:rounded-r-lg prose-blockquote:text-[#001F3F] prose-blockquote:font-medium
-                    prose-img:rounded-xl prose-img:shadow-md prose-img:my-8
-                    prose-table:text-sm prose-th:bg-slate-100 prose-th:text-[#001F3F] prose-td:align-top
-                    [&_h2]:font-[Playfair_Display,Georgia,serif]"
-                  style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-                  dangerouslySetInnerHTML={{ __html: enrichedHtml }}
-                />
+                <>
+                  <article
+                    className={proseClass}
+                    style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                    dangerouslySetInnerHTML={{ __html: htmlPartOne }}
+                  />
+
+                  {/* Mid-article reg CTA */}
+                  {htmlPartTwo && (
+                    <div className="my-10 sm:my-12">
+                      <BlogRegQuoteCTA
+                        compact
+                        heading="Still reading? Check your price first"
+                        subheading="Enter your reg — takes 60 seconds and there’s no obligation."
+                      />
+                    </div>
+                  )}
+
+                  {htmlPartTwo && (
+                    <article
+                      className={proseClass}
+                      style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                      dangerouslySetInnerHTML={{ __html: htmlPartTwo }}
+                    />
+                  )}
+                </>
               ) : (
                 <article className="prose prose-slate prose-lg max-w-none">
                   <div className="text-slate-700" style={{ lineHeight: '1.8' }}>
@@ -443,10 +453,15 @@ const BlogArticle = () => {
                 </article>
               )}
 
-              {/* Inline Reg-plate CTA (reg-only journey, same as homepage) */}
+              {/* End-of-article Reg-plate CTA (reg-only journey, same as homepage) */}
               <div className="my-10 sm:my-12">
-                <BlogRegQuoteCTA />
+                <BlogRegQuoteCTA
+                  heading="Ready to protect your car?"
+                  subheading="Enter your reg for an instant, no-obligation price — cover can start today."
+                />
               </div>
+
+
 
 
               {/* Google Preferred Source CTA */}
