@@ -27,14 +27,14 @@ describe('Mileage surcharge boundaries', () => {
     expect(r.adjustmentAmount).toBe(0);
   });
 
-  it('120,001 miles DOES trigger surcharge (+£100 for 1yr)', () => {
+  it('120,001 miles DOES trigger surcharge (+£200 for 1yr)', () => {
     const r = calculateVehiclePriceAdjustment(makeVehicle({ mileage: '120001', year: '2020' }), 1);
-    expect(r.adjustmentAmount).toBe(100);
+    expect(r.adjustmentAmount).toBe(200);
   });
 
   it('150,000 miles DOES trigger surcharge', () => {
     const r = calculateVehiclePriceAdjustment(makeVehicle({ mileage: '150000', year: '2020' }), 1);
-    expect(r.adjustmentAmount).toBe(100);
+    expect(r.adjustmentAmount).toBe(200);
   });
 
   it('150,001 miles is over eligibility limit (blocked)', () => {
@@ -42,17 +42,17 @@ describe('Mileage surcharge boundaries', () => {
     expect(r.isValid).toBe(false);
   });
 
-  it('mileage surcharge +£100 for 1yr', () => {
+  it('mileage surcharge +£200 for 1yr', () => {
     const r = calculateVehiclePriceAdjustment(makeVehicle({ mileage: '130000', year: '2020' }), 1);
-    expect(r.adjustmentAmount).toBe(100);
+    expect(r.adjustmentAmount).toBe(200);
   });
 
-  it('mileage surcharge +£150 for 2yr', () => {
+  it('mileage surcharge +£250 for 2yr', () => {
     const r = calculateVehiclePriceAdjustment(makeVehicle({ mileage: '130000', year: '2020' }), 2);
-    expect(r.adjustmentAmount).toBe(150);
+    expect(r.adjustmentAmount).toBe(250);
   });
 
-  it('mileage surcharge +£200 for 3yr', () => {
+  it('mileage surcharge +£300 for 3yr', () => {
     const r = calculateVehiclePriceAdjustment(makeVehicle({ mileage: '130000', year: '2020' }), 3);
     expect(r.adjustmentAmount).toBe(200);
   });
@@ -71,28 +71,28 @@ describe('Age surcharge boundaries', () => {
 
   it('12 years and 1 day old DOES trigger surcharge', () => {
     const r = calculateVehiclePriceAdjustment(makeVehicle({ mileage: '50000', manufactureDate: yearsAgoISO(12, 1) }), 1);
-    expect(r.adjustmentAmount).toBe(100);
+    expect(r.adjustmentAmount).toBe(200);
   });
 
   it('14 years 364 days old DOES trigger surcharge (just under 15)', () => {
     // Use year-based fallback for exact 15-year boundary (manufactureDate precision issues)
     const r = calculateVehiclePriceAdjustment(makeVehicle({ mileage: '50000', manufactureDate: yearsAgoISO(14, 364) }), 1);
-    expect(r.adjustmentAmount).toBe(100);
-  });
-
-  it('age surcharge +£100 for 1yr', () => {
-    const r = calculateVehiclePriceAdjustment(makeVehicle({ mileage: '50000', manufactureDate: yearsAgoISO(13) }), 1);
-    expect(r.adjustmentAmount).toBe(100);
-  });
-
-  it('age surcharge +£150 for 2yr', () => {
-    const r = calculateVehiclePriceAdjustment(makeVehicle({ mileage: '50000', manufactureDate: yearsAgoISO(13) }), 2);
-    expect(r.adjustmentAmount).toBe(150);
-  });
-
-  it('age surcharge +£200 for 3yr', () => {
-    const r = calculateVehiclePriceAdjustment(makeVehicle({ mileage: '50000', manufactureDate: yearsAgoISO(13) }), 3);
     expect(r.adjustmentAmount).toBe(200);
+  });
+
+  it('age surcharge +£200 for 1yr', () => {
+    const r = calculateVehiclePriceAdjustment(makeVehicle({ mileage: '50000', manufactureDate: yearsAgoISO(13) }), 1);
+    expect(r.adjustmentAmount).toBe(200);
+  });
+
+  it('age surcharge +£250 for 2yr', () => {
+    const r = calculateVehiclePriceAdjustment(makeVehicle({ mileage: '50000', manufactureDate: yearsAgoISO(13) }), 2);
+    expect(r.adjustmentAmount).toBe(250);
+  });
+
+  it('age surcharge +£300 for 3yr', () => {
+    const r = calculateVehiclePriceAdjustment(makeVehicle({ mileage: '50000', manufactureDate: yearsAgoISO(13) }), 3);
+    expect(r.adjustmentAmount).toBe(300);
   });
 });
 
@@ -102,7 +102,7 @@ describe('Non-stacking: both mileage and age qualify', () => {
       makeVehicle({ mileage: '130000', manufactureDate: yearsAgoISO(13) }),
       1
     );
-    expect(r.adjustmentAmount).toBe(100); // NOT 200
+    expect(r.adjustmentAmount).toBe(300); // NOT 600
   });
 
   it('applies single surcharge for 2yr', () => {
@@ -110,7 +110,7 @@ describe('Non-stacking: both mileage and age qualify', () => {
       makeVehicle({ mileage: '130000', manufactureDate: yearsAgoISO(14) }),
       2
     );
-    expect(r.adjustmentAmount).toBe(150); // NOT 300
+    expect(r.adjustmentAmount).toBe(250); // NOT 500
   });
 
   it('applies single surcharge for 3yr', () => {
