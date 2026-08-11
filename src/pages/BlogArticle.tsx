@@ -480,17 +480,42 @@ const BlogArticle = () => {
           </header>
 
           {/* Hero Image */}
-          <div className="px-6 md:px-16 -mt-4">
+          <figure className="px-6 md:px-16 -mt-4">
             <div className="relative aspect-[21/9] bg-slate-100 rounded-xl overflow-hidden shadow-xl">
               <img
-                src={post.featured_image_url || getDefaultHeroImage(post.slug)}
-                alt={post.title}
+                src={heroImage}
+                alt={`${post.title} — UK car warranty guide illustration`}
                 width={1600}
                 height={900}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
                 className="absolute inset-0 w-full h-full object-cover"
               />
             </div>
-          </div>
+          </figure>
+
+          {/* Mobile contents — jump links help engagement, dwell time and Google sitelinks */}
+          {toc.length > 1 && (
+            <nav aria-label="Article contents" className="px-6 pt-8 lg:hidden">
+              <details className="rounded-xl border border-slate-200 bg-white p-4">
+                <summary className="cursor-pointer text-sm font-bold uppercase tracking-widest text-slate-500">
+                  In this guide
+                </summary>
+                <ol className="mt-3 space-y-2 text-sm">
+                  {toc.map((item, i) => (
+                    <li key={item.id} className="flex gap-2">
+                      <span className="text-slate-400">{i + 1}.</span>
+                      <a href={`#${item.id}`} className="text-primary underline-offset-2 hover:underline">
+                        {item.text}
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            </nav>
+          )}
+
 
           {/* Content Layout */}
           <div className="px-6 md:px-16 py-12 flex flex-col lg:flex-row gap-12 lg:gap-16">
