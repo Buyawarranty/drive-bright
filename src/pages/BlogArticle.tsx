@@ -555,14 +555,8 @@ const BlogArticle = () => {
 
             {/* Main body */}
             <div className="flex-1 min-w-0 max-w-3xl">
-              {/* Top-of-article reg quote CTA */}
-              <div id="blog-reg-quote" className="mb-10 scroll-mt-24 sm:mb-12">
-                <BlogRegQuoteCTA
-                  compact
-                  heading="Get an instant warranty price"
-                  subheading="Enter your reg — we pull your vehicle details and mileage automatically."
-                />
-              </div>
+
+
 
               {/* Key Takeaways (legacy posts without rich HTML) */}
               {post.excerpt && !(typeof post.content === 'object' && post.content?.html) && (
