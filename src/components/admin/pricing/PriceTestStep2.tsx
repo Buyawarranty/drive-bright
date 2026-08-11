@@ -148,6 +148,7 @@ export default function PriceTestStep2({
   title,
   subtitle,
   badgeText,
+  adjustmentPct = 0,
   vehicle,
   showRegLookup = true,
   autoQuoteCeiling = null,
@@ -157,6 +158,8 @@ export default function PriceTestStep2({
   title?: string;
   subtitle?: string;
   badgeText?: string;
+  /** Active quick price change applied to this column, in percent (0 = none). */
+  adjustmentPct?: number;
   /** Vehicle resolved elsewhere (e.g. one shared reg box driving both columns). */
   vehicle?: ResolvedTestVehicle | null;
   showRegLookup?: boolean;
@@ -165,6 +168,7 @@ export default function PriceTestStep2({
   /** Reports the priced terms so a parent can show an overall price difference. */
   onQuoteChange?: (snapshot: PriceTestQuoteSnapshot) => void;
 } = {}) {
+
 
 
 
