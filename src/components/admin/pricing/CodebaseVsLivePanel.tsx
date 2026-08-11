@@ -407,6 +407,7 @@ const CodebaseVsLivePanel: React.FC<{
           autoQuoteCeiling={ceiling}
           title="Code base pricing — Quotes &amp; Orders price"
           subtitle="The July 2026 matrix written into the code base, with the variables above applied. The website Step 3 price is 10% below this figure."
+          adjustmentPct={upliftPct}
           badgeText="Code base"
         />
         <PriceTestStep2
