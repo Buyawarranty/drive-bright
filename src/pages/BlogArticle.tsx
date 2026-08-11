@@ -286,7 +286,9 @@ const BlogArticle = () => {
     );
   }
 
-  const articleUrl = post.canonical_url || `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}/`;
+  // Always self-referencing and always trailing-slashed so it matches sitemap.xml
+  const rawArticleUrl = post.canonical_url || `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}/`;
+  const articleUrl = rawArticleUrl.endsWith('/') ? rawArticleUrl : `${rawArticleUrl}/`;
   const heroImage = post.featured_image_url || getDefaultHeroImage(post.slug);
   const metaDescription = post.seo_description || post.excerpt || quickAnswer;
   const lastModified = post.updated_at || post.published_at;
