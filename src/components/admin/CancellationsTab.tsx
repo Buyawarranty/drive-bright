@@ -647,8 +647,7 @@ export const CancellationsTab: React.FC<{
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-4 z-50" align="start">
-                <Calendar
-                  initialFocus
+                <DraftRangeCalendar
                   value={dateRange}
                   resetKey={calendarOpen}
                   onApply={(range) => { setDateRange(range); setCalendarOpen(false); }}
