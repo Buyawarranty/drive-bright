@@ -390,27 +390,43 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       } catch { /* non-blocking */ }
 
       // Schedule SMS to be sent 10 minutes after quote submission
+      // (guarded: only one welcome SMS per number per 30 days)
       try {
-        console.log('Scheduling delayed SMS for:', phone);
-        const sendAfter = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-        const { error: scheduleError } = await supabase
+        const digits = phone.replace(/\D/g, '');
+        const tail = digits.slice(-9);
+        const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        const { data: existingSms } = await supabase
           .from('scheduled_sms')
-          .insert({
-            phone: phone.trim(),
-            first_name: firstName.trim() || 'there',
-            vehicle_make: vehicleData?.make || null,
-            vehicle_model: vehicleData?.model || null,
-            send_after: sendAfter,
-          });
-        
-        if (scheduleError) {
-          console.error('Error scheduling SMS:', scheduleError);
+          .select('id')
+          .like('phone', `%${tail}`)
+          .gte('created_at', since)
+          .limit(1);
+
+        if (existingSms && existingSms.length > 0) {
+          console.log('Welcome SMS already queued/sent for this number — skipping');
         } else {
-          console.log('✅ SMS scheduled to send at:', sendAfter);
+          console.log('Scheduling delayed SMS for:', phone);
+          const sendAfter = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+          const { error: scheduleError } = await supabase
+            .from('scheduled_sms')
+            .insert({
+              phone: phone.trim(),
+              first_name: firstName.trim() || 'there',
+              vehicle_make: vehicleData?.make || null,
+              vehicle_model: vehicleData?.model || null,
+              send_after: sendAfter,
+            });
+
+          if (scheduleError) {
+            console.error('Error scheduling SMS:', scheduleError);
+          } else {
+            console.log('✅ SMS scheduled to send at:', sendAfter);
+          }
         }
       } catch (smsError) {
         console.error('Failed to schedule SMS:', smsError);
       }
+
     } catch (error) {
       console.error('Error in quote flow:', error);
       // Mark Step 2 attempt as failed
