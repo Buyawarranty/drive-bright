@@ -31,8 +31,18 @@ import { usePriceUpdatesAccess } from '@/hooks/usePriceUpdatesAccess';
 import AgeBandPricingPreview, {
   AGE_BAND_PRICING_STORAGE_KEY,
   buildAdminMatrixFromModel,
+  PROPOSED_AGE_BANDS,
+  PROPOSED_MILEAGE_BANDS,
+  PROPOSED_POWERTRAIN_FACTORS,
+  PROPOSED_VEHICLE_TYPE_FACTORS,
+  PROPOSED_MODEL_RISK_FACTORS,
+  PROPOSED_MODEL_FLOORS,
+  PROPOSED_CLAIM_LIMIT_FACTORS,
+  PROPOSED_LABOUR_RATE_FACTORS,
+  PROPOSED_EXCESS_FACTORS,
   type AgeBandModel,
 } from '@/components/admin/pricing/AgeBandPricingPreview';
+
 import { clampToNetFloor, clampWebToNetFloor } from '@/lib/pricing/netFloor';
 
 
