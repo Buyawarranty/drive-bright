@@ -32,6 +32,20 @@ interface BlogPost {
   blog_categories: { name: string } | null;
 }
 
+const proseClass = `prose prose-slate prose-base sm:prose-lg max-w-none
+  prose-headings:font-bold prose-headings:text-[#001F3F]
+  prose-h2:font-extrabold prose-h2:text-2xl sm:prose-h2:text-3xl md:prose-h2:text-4xl prose-h2:mt-10 sm:prose-h2:mt-14 prose-h2:mb-4 prose-h2:scroll-mt-24
+  prose-h3:text-xl sm:prose-h3:text-2xl prose-h3:mt-8 sm:prose-h3:mt-10 prose-h3:mb-3
+  prose-p:text-slate-700 prose-p:leading-[1.8]
+  prose-a:text-primary hover:prose-a:text-primary/80 prose-a:font-medium prose-a:break-words
+  prose-strong:text-[#001F3F]
+  prose-li:text-slate-700 prose-li:leading-relaxed
+  prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-slate-50 prose-blockquote:py-2 prose-blockquote:px-4 sm:prose-blockquote:px-6 prose-blockquote:not-italic prose-blockquote:rounded-r-lg prose-blockquote:text-[#001F3F] prose-blockquote:font-medium
+  prose-img:rounded-xl prose-img:shadow-md prose-img:my-6 sm:prose-img:my-8
+  prose-table:text-sm prose-th:bg-slate-100 prose-th:text-[#001F3F] prose-td:align-top
+  [&_h2]:font-[Playfair_Display,Georgia,serif]
+  [&_.overflow-x-auto]:-mx-4 [&_.overflow-x-auto]:px-4 sm:[&_.overflow-x-auto]:mx-0 sm:[&_.overflow-x-auto]:px-0`;
+
 const getDefaultHeroImage = (slug: string) => {
   const comparisonSlugs = ['breakdown', 'insurance', 'compare', 'vs', 'versus'];
   if (comparisonSlugs.some((k) => slug.toLowerCase().includes(k))) {
@@ -39,6 +53,7 @@ const getDefaultHeroImage = (slug: string) => {
   }
   return defaultBlogHero.url;
 };
+
 
 const BlogArticle = () => {
   const { slug } = useParams();
