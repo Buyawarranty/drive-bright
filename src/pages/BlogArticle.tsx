@@ -259,32 +259,75 @@ const BlogArticle = () => {
     );
   }
 
-  // Generate structured data
+  const articleUrl = post.canonical_url || `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}/`;
+  const heroImage = post.featured_image_url || getDefaultHeroImage(post.slug);
+  const metaDescription = post.seo_description || post.excerpt || quickAnswer;
+  const lastModified = post.updated_at || post.published_at;
+
+  // Generate structured data (Article + FAQ + breadcrumb-friendly graph for AI answer engines)
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "headline": post.title,
-    "description": post.excerpt,
-    "image": post.featured_image_url || getDefaultHeroImage(post.slug),
-    "datePublished": post.published_at,
-    "author": {
-      "@type": "Person",
-      "name": post.blog_authors?.name
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Buy a Warranty",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png"
-      }
-    },
-    "wordCount": post.content?.raw?.split(/\s+/).length || 0,
-    "timeRequired": `PT${post.read_time_minutes}M`,
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": post.canonical_url || `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}`
-    }
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        "@id": `${articleUrl}#article`,
+        "headline": post.title,
+        "alternativeHeadline": post.seo_title || post.title,
+        "description": metaDescription,
+        "abstract": quickAnswer || metaDescription,
+        "image": {
+          "@type": "ImageObject",
+          "url": heroImage,
+          "width": 1600,
+          "height": 900,
+        },
+        "datePublished": post.published_at,
+        "dateModified": lastModified,
+        "inLanguage": "en-GB",
+        "isAccessibleForFree": true,
+        "keywords": (post.seo_keywords || []).join(', '),
+        "articleSection": post.blog_categories?.name || 'Warranty Guides',
+        "author": {
+          "@type": "Person",
+          "name": post.blog_authors?.name || 'Buy a Warranty Editorial Team',
+          "worksFor": { "@type": "Organization", "name": "Buy a Warranty" },
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Buy a Warranty",
+          "url": "https://buyawarranty.co.uk/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png"
+          }
+        },
+        "wordCount": post.content?.raw?.split(/\s+/).length || 0,
+        "timeRequired": `PT${post.read_time_minutes}M`,
+        "spatialCoverage": { "@type": "Country", "name": "United Kingdom" },
+        "audience": { "@type": "Audience", "audienceType": "UK car owners and used car buyers", "geographicArea": { "@type": "Country", "name": "United Kingdom" } },
+        "about": [
+          { "@type": "Thing", "name": "Car warranty" },
+          { "@type": "Thing", "name": "Used car ownership costs" },
+        ],
+        "speakable": {
+          "@type": "SpeakableSpecification",
+          "cssSelector": ["h1", ".article-quick-answer"],
+        },
+        "mainEntityOfPage": { "@type": "WebPage", "@id": articleUrl },
+      },
+      ...(faqItems.length
+        ? [{
+            "@type": "FAQPage",
+            "@id": `${articleUrl}#faq`,
+            "inLanguage": "en-GB",
+            "mainEntity": faqItems.map((f) => ({
+              "@type": "Question",
+              "name": f.question,
+              "acceptedAnswer": { "@type": "Answer", "text": f.answer },
+            })),
+          }]
+        : []),
+    ],
   };
 
   // Parse content
@@ -298,16 +341,27 @@ const BlogArticle = () => {
   const publishedDate = new Date(post.published_at).toLocaleDateString('en-GB', {
     year: 'numeric', month: 'long', day: 'numeric'
   });
+  const updatedDate = new Date(lastModified).toLocaleDateString('en-GB', {
+    year: 'numeric', month: 'long', day: 'numeric'
+  });
 
   return (
     <div className="min-h-screen bg-slate-50">
       <SEOHead 
         title={post.seo_title || `${post.title} | The Warranty Hub`}
-        description={post.seo_description || post.excerpt || ''}
+        description={metaDescription}
         keywords={(post.seo_keywords || []).join(', ')}
-        canonical={post.canonical_url || `https://buyawarranty.co.uk/thewarrantyhub/${post.slug}`}
-        ogImage={post.featured_image_url || getDefaultHeroImage(post.slug)}
+        canonical={articleUrl}
+        ogImage={heroImage}
+        ogImageAlt={post.title}
+        ogType="article"
+        publishedTime={post.published_at}
+        modifiedTime={lastModified}
+        articleSection={post.blog_categories?.name || 'Warranty Guides'}
+        articleTags={post.seo_keywords || []}
+        author={post.blog_authors?.name || 'Buy a Warranty'}
       />
+
 
       <OrganizationSchema type="Organization" />
       <BreadcrumbSchema 
