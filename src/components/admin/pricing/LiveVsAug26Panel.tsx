@@ -234,6 +234,7 @@ const LiveVsAug26Panel: React.FC<{
             showRegLookup={false}
             title={`${selected?.label ?? 'Aug26 pricing'} — Quotes & Orders price`}
             subtitle="Priced with the age, mileage, claim-limit and labour factors stored on this saved version. When pushed live, the website Step 3 price is 10% below this Quotes &amp; Orders price."
+            adjustmentPct={upliftPct}
             badgeText="Saved version"
           />
         ) : (
