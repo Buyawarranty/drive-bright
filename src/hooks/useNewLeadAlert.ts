@@ -263,9 +263,12 @@ export const useNewLeadAlert = () => {
       let clean: NewLeadAlertData[] = offered;
       if (nonOffered.length > 0) {
         const ids = nonOffered.map((l) => l.id);
+        // Only THIS agent's own work silences their pop-up. Notes/calls left by
+        // a previous owner (bulk reassign, holiday cover, recontact moves) must
+        // NOT suppress the alert — that was hiding nearly every reassigned lead.
         const [notesRes, callsRes] = await Promise.all([
-          supabase.from('lead_quick_notes').select('lead_id, created_by').in('lead_id', ids),
-          supabase.from('lead_call_logs').select('lead_id').in('lead_id', ids),
+          supabase.from('lead_quick_notes').select('lead_id, created_by').in('lead_id', ids).eq('created_by', adminId),
+          supabase.from('lead_call_logs').select('lead_id').in('lead_id', ids).eq('agent_id', adminId),
         ]);
         const touched = new Set<string>();
         (notesRes.data as any[] | null)?.forEach((r) => {
