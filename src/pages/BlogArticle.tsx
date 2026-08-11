@@ -319,6 +319,17 @@ const BlogArticle = () => {
                 </p>
               )}
 
+              {/* Above-the-fold reg entry (same design + journey as the homepage) */}
+              <div id="blog-reg-quote-hero" className="mb-8 scroll-mt-24">
+                <BlogRegQuoteCTA
+                  compact
+                  heading="Get my quote — enter your reg"
+                  subheading="We pull your vehicle details and mileage automatically. No obligation."
+                />
+              </div>
+
+
+
               <div className="flex flex-wrap items-center gap-6 text-sm py-6 border-t border-slate-100">
                 {post.blog_authors?.name && (
                   <div className="flex items-center gap-3">
@@ -400,11 +411,12 @@ const BlogArticle = () => {
                   <p className="text-xs text-slate-300 mb-4">
                     Get a quote in 30 seconds for your specific vehicle.
                   </p>
-                  <Link to="/">
+                  <a href="https://buyawarranty.co.uk/">
                     <Button className="w-full bg-primary hover:bg-primary/90 text-white text-xs font-bold uppercase tracking-wide">
                       Get My Quote
                     </Button>
-                  </Link>
+                  </a>
+
                 </div>
               </div>
             </aside>
