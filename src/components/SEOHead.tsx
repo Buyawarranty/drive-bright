@@ -107,7 +107,7 @@ export const SEOHead = ({
       {/* Open Graph */}
       <meta property="og:title" content={ogTitle || title} />
       <meta property="og:description" content={ogDescription || description} />
-      <meta property="og:image" content={ogImage} />
+      <meta property="og:image" content={ogImageUrl} />
       <meta property="og:image:width" content={ogImageWidth} />
       <meta property="og:image:height" content={ogImageHeight} />
       <meta property="og:image:alt" content={ogImageAlt} />
