@@ -17,6 +17,7 @@ import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import { buildAdminMatrixFromModel } from './AgeBandPricingPreview';
 import PriceSurfaceBadge from './PriceSurfaceBadge';
+import QuickUpliftBar, { applyModelUplift } from './QuickUpliftBar';
 
 
 /**
@@ -105,6 +106,7 @@ const AugHybridVsLivePanel: React.FC<{
   const [vehicle, setVehicle] = useState<ResolvedTestVehicle | null>(null);
   const [leftQuote, setLeftQuote] = useState<PriceTestQuoteSnapshot | null>(null);
   const [rightQuote, setRightQuote] = useState<PriceTestQuoteSnapshot | null>(null);
+  const [upliftPct, setUpliftPct] = useState(0);
   const [cfg, setCfg] = useState(HYBRID_DEFAULTS);
   const set = <K extends keyof typeof HYBRID_DEFAULTS>(key: K, value: (typeof HYBRID_DEFAULTS)[K]) =>
     setCfg(c => ({ ...c, [key]: value }));
@@ -124,7 +126,7 @@ const AugHybridVsLivePanel: React.FC<{
   const liveTwoYearDiscountPct = Math.round((1 - base.twoYearMult / 2) * 1000) / 10;
   const liveThreeYearDiscountPct = Math.round((1 - base.threeYearMult / 3) * 1000) / 10;
 
-  const hybridModel = useMemo(
+  const hybridModelBeforeUplift = useMemo(
     () => ({
       ...base,
       bands: base.bands.map((b: any) => ({
@@ -145,10 +147,17 @@ const AugHybridVsLivePanel: React.FC<{
     [base, targetScale, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
   );
 
+  /** Quick percentage uplift on the whole variant curve. */
+  const hybridModel = useMemo(
+    () => applyModelUplift(hybridModelBeforeUplift, upliftPct),
+    [hybridModelBeforeUplift, upliftPct]
+  );
+
   const ceiling = cfg.ceilingOn ? cfg.ceiling : null;
 
   return (
     <div className="space-y-4">
+      <QuickUpliftBar variantLabel="Aug hybrid test" value={upliftPct} onChange={setUpliftPct} />
       <SectionPushLiveBar
         sectionLabel="Live Vs Test Hybrid Aug"
         liveLabel={liveLabel}
