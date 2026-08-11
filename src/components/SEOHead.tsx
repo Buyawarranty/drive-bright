@@ -1,4 +1,12 @@
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+
+const SITE_ORIGIN = 'https://buyawarranty.co.uk';
+
+/** Social + AI crawlers need absolute image URLs. */
+const absoluteUrl = (url: string) =>
+  url.startsWith('http') ? url : `${SITE_ORIGIN}${url.startsWith('/') ? '' : '/'}${url}`;
+
 
 interface SEOHeadProps {
   title?: string;
