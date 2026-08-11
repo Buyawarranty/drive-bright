@@ -23,6 +23,7 @@ interface BlogPost {
   content: any;
   featured_image_url: string | null;
   published_at: string;
+  updated_at?: string | null;
   read_time_minutes: number;
   seo_title: string | null;
   seo_description: string | null;
@@ -32,6 +33,7 @@ interface BlogPost {
   blog_authors: { name: string; bio: string } | null;
   blog_categories: { name: string } | null;
 }
+
 
 const proseClass = `prose prose-slate prose-base sm:prose-lg max-w-none
   prose-headings:font-bold prose-headings:text-[#001F3F]
