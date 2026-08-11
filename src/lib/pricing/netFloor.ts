@@ -6,9 +6,10 @@
  *   - this net floor caps the *final payable* amount (after agent discounts,
  *     manual price overrides and manual/external payment confirmation)
  *
- * Agreed values (10/08/2026): £399 / £659 / £938 for 12 / 24 / 36 months,
+ * Agreed values (11/08/2026): £349 / £576 / £821 for 12 / 24 / 36 months at the
+ * cheapest combo (£1,000 claim / £50 labour / £500 excess),
  * halved for motorbikes, and shaped up when the customer picks a richer
- * claim limit / labour rate / lower excess than the reference combo.
+ * claim limit / labour rate / lower excess than that cheapest combo.
  *
  * Exemptions:
  *   - Management (admin / super_admin / sales_manager) may go below, logged
@@ -21,9 +22,9 @@ import { getAbsoluteMinimumTotal, type PaymentPeriod, type PricingSurface } from
 
 /** Flat net floor by term, before option shaping and motorbike halving. */
 export const NET_FLOOR_BY_PERIOD: Record<PaymentPeriod, number> = {
-  '12months': 399,
-  '24months': 659,
-  '36months': 938,
+  '12months': 349,
+  '24months': 576,
+  '36months': 821,
 };
 
 export interface NetFloorParams {

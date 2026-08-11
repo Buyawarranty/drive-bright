@@ -14,6 +14,7 @@ import RegLookupBar, { mapVehicleToBandKeys, type ResolvedTestVehicle } from './
 import {
   getVisibleExcessOptions,
   getExcessFactor,
+  getAbsoluteMinimumShape,
   getExcessMonthlyDelta,
   getExcessTotalAdjustment,
   type PaymentPeriod,
