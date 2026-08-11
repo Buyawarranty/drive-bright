@@ -220,14 +220,24 @@ export const LeadRecoveryPanel: React.FC = () => {
       else toast.success(
         `Found ${all.length} lead${all.length === 1 ? '' : 's'}${reclaimed ? ` (incl. ${reclaimed} unassigned ex-owned)` : ''}`,
       );
+      return all;
 
     } catch (e: any) {
       console.error('[LeadRecovery] scan', e);
       toast.error(e?.message || 'Scan failed');
+      return [] as LeadRow[];
     } finally {
       setScanning(false);
     }
   }, [fromDate, toDate, sourceAgent, includePrevious]);
+
+  /** One-click: scan with the current filters, then open the confirm dialog. */
+  const scanThenConfirm = useCallback(async () => {
+    if (targetAgents.length === 0) { toast.error('Pick who to assign to'); return; }
+    const found = await scan();
+    if (found && found.length > 0) setConfirmOpen(true);
+  }, [scan, targetAgents]);
+
 
 
   /** Leads per calendar day in the scanned range (oldest first). */
@@ -429,17 +439,25 @@ export const LeadRecoveryPanel: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          <Button onClick={scanThenConfirm} disabled={scanning || loading || targetAgents.length === 0}>
+            {scanning || loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ArrowRightLeft className="h-4 w-4 mr-2" />}
+            {targetAgents.length === 0
+              ? 'Pick agents to assign'
+              : `Assign leads to ${targetName}`}
+          </Button>
           <Button onClick={scan} disabled={scanning} variant="secondary">
             {scanning ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
             Scan {rangeText}
           </Button>
           <Button
+            variant="outline"
             onClick={() => setConfirmOpen(true)}
             disabled={rows.length === 0 || targetAgents.length === 0 || loading || scanning}
           >
             {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ArrowRightLeft className="h-4 w-4 mr-2" />}
-            Update leads
+            Update leads{rows.length > 0 ? ` (${rows.length})` : ''}
           </Button>
+
           <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
             <Checkbox checked={resetStatus} onCheckedChange={(v) => setResetStatus(!!v)} />
             Reset status to "new" (unpaid only)
