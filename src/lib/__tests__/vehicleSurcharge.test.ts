@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { describe, it, expect } from 'vitest';
 import { calculateVehiclePriceAdjustment, VehicleData } from '../vehicleValidation';
 
 // Helper to create a standard vehicle with specific mileage and age
