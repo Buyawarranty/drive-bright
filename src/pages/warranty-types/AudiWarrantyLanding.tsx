@@ -29,6 +29,7 @@ import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import audiWhyChooseUs from '@/assets/audi-used-car-warranty-uk.webp';
 import audiHighMileage from '@/assets/audi-warranty-cover-uk.webp';
 import audiMobileQuote from '@/assets/audi-warranty-mobile-quote.webp';
+import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 
 // Audi Models covered (grouped by category)
 const audiModelCategories = {
@@ -292,7 +293,7 @@ const AudiWarrantyLanding: React.FC = () => {
     "offers": {
       "@type": "Offer",
       "priceCurrency": "GBP",
-      "price": "25",
+      "price": String(SEO_FROM_MONTHLY_PRICE),
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
       "url": "https://buyawarranty.co.uk/warranty-types/audi-warranty/",
@@ -300,7 +301,7 @@ const AudiWarrantyLanding: React.FC = () => {
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
         "@type": "UnitPriceSpecification",
-        "price": "25",
+        "price": String(SEO_FROM_MONTHLY_PRICE),
         "priceCurrency": "GBP",
         "unitText": "month",
         "billingIncrement": 1
@@ -335,7 +336,7 @@ const AudiWarrantyLanding: React.FC = () => {
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
-      "priceRange": "£25-£95/month",
+      "priceRange": SEO_PRICE_RANGE,
       "address": { "@type": "PostalAddress", "addressCountry": "GB", "addressRegion": "United Kingdom" },
       "geo": { "@type": "GeoCoordinates", "latitude": "51.5074", "longitude": "-0.1278" },
       "openingHoursSpecification": {

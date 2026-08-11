@@ -38,6 +38,7 @@ import toyotaPriusCoverage from '@/assets/toyota-prius-transparent-coverage.png'
 import toyotaLandCruiserCover from '@/assets/toyota-land-cruiser-additional-cover.png';
 import toyotaRav4Testimonials from '@/assets/toyota-rav4-hybrid-testimonials.png';
 import toyotaCamryCoverage from '@/assets/toyota-camry-uk-coverage.png';
+import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 
 // Toyota Models covered (grouped by category) - 2012 to 2026
 const toyotaModelCategories = {
@@ -419,7 +420,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
     "offers": {
       "@type": "Offer",
       "priceCurrency": "GBP",
-      "price": "19",
+      "price": String(SEO_FROM_MONTHLY_PRICE),
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
       "url": "https://buyawarranty.co.uk/warranty-types/toyota-warranty/",
@@ -427,7 +428,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
         "@type": "UnitPriceSpecification",
-        "price": "19",
+        "price": String(SEO_FROM_MONTHLY_PRICE),
         "priceCurrency": "GBP",
         "unitText": "month",
         "billingIncrement": 1
@@ -461,7 +462,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
-      "priceRange": "£19-£85/month",
+      "priceRange": SEO_PRICE_RANGE,
       "address": { "@type": "PostalAddress", "addressCountry": "GB" }
     },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
@@ -518,7 +519,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
     "url": "https://buyawarranty.co.uk",
     "telephone": "+44-800-917-9270",
     "email": "support@buyawarranty.co.uk",
-    "priceRange": "£19-£85/month",
+    "priceRange": SEO_PRICE_RANGE,
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "124 City Road",

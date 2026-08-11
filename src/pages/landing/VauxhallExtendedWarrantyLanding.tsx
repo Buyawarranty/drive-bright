@@ -29,6 +29,7 @@ import vauxhallMokka from '@/assets/vauxhall-models/vauxhall-mokka-extended-warr
 import vauxhallCrossland from '@/assets/vauxhall-models/vauxhall-crossland-extended-warranty.jpg';
 import vauxhallGrandland from '@/assets/vauxhall-models/vauxhall-grandland-extended-warranty.jpg';
 import vauxhallMokkaE from '@/assets/vauxhall-models/vauxhall-mokka-e-ev-extended-warranty.jpg';
+import { SEO_FROM_MONTHLY_PRICE } from '@/lib/seo/schemaPricing';
 
 const vauxhallModels = [
   { label: 'Corsa', examples: 'Supermini hatchback', img: vauxhallCorsa, alt: 'Vauxhall Corsa extended warranty cover — supermini hatchback' },
@@ -110,7 +111,7 @@ const VauxhallExtendedWarrantyLanding: React.FC = () => {
       <WebPageSchema name="Vauxhall Extended Warranty" description="Vauxhall extended warranty cover from £19/month." url="https://buyawarranty.co.uk/car-extended-warranty/vauxhall/" />
       <FAQSchema faqs={faqs.map(f => ({ question: f.q, answer: f.a }))} />
       <Helmet>
-        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "Vauxhall Extended Warranty", "description": "Flexible Vauxhall warranty cover from \u00a319/month. Covers engine, gearbox, electrics and more across all Vauxhall models.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/vauxhall/", "priceCurrency": "GBP", "price": "19", "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1"}})}</script>
+        <script type="application/ld+json">{JSON.stringify({"@context": "https://schema.org", "@type": "Product", "name": "Vauxhall Extended Warranty", "description": "Flexible Vauxhall warranty cover from \u00a319/month. Covers engine, gearbox, electrics and more across all Vauxhall models.", "brand": {"@type": "Brand", "name": "Buy A Warranty"}, "category": "Vehicle Extended Warranty", "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png", "offers": {"@type": "Offer", "url": "https://buyawarranty.co.uk/car-extended-warranty/vauxhall/", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "availability": "https://schema.org/InStock", "seller": {"@type": "Organization", "name": "Buy A Warranty"}}, "aggregateRating": {"@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1"}})}</script>
       </Helmet>
       <BreadcrumbSchema items={[{ name: 'Home', url: 'https://buyawarranty.co.uk/' }, { name: 'Vauxhall Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/vauxhall/' }]} />
 

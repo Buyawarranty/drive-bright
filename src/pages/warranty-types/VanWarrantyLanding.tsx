@@ -30,6 +30,7 @@ import trustpilotBadge from '@/assets/trustpilot-badge.png';
 import vanHeroImage from '@/assets/uk-extended-used-van-warranty.png';
 import fordTransitVan from '@/assets/uk-van-warranty-ford-transit.webp';
 import vanIcon from '@/assets/van-icon.png';
+import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 
 // UK Van Models covered (grouped by manufacturer) - 2012-2026
 const vanModelCategories = {
@@ -463,7 +464,7 @@ const VanWarrantyLanding: React.FC = () => {
     "offers": {
       "@type": "Offer",
       "priceCurrency": "GBP",
-      "price": "19",
+      "price": String(SEO_FROM_MONTHLY_PRICE),
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
       "url": "https://buyawarranty.co.uk/warranty-types/vans-warranty/",
@@ -471,7 +472,7 @@ const VanWarrantyLanding: React.FC = () => {
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
         "@type": "UnitPriceSpecification",
-        "price": "19",
+        "price": String(SEO_FROM_MONTHLY_PRICE),
         "priceCurrency": "GBP",
         "unitText": "month",
         "billingIncrement": 1
@@ -524,7 +525,7 @@ const VanWarrantyLanding: React.FC = () => {
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
-      "priceRange": "£19-£95/month",
+      "priceRange": SEO_PRICE_RANGE,
       "address": { "@type": "PostalAddress", "addressCountry": "GB" }
     },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },

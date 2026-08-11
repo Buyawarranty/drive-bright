@@ -36,6 +36,7 @@ import pandaMechanic from '@/assets/panda-mechanic.png';
 import pandaGarage from '@/assets/panda-garage-service.png';
 import suvWhyChooseUs from '@/assets/orange-suv-with-logo.png';
 import suvHighMileage from '@/assets/land-rover-range-rover-sport-warranty.png';
+import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 
 // Popular SUV & 4x4 models covered (2011 - 2024) — grouped by category
 // Popular SUV & 4x4 models covered (2011 - 2024) — grouped by category
@@ -478,7 +479,7 @@ const SUVWarrantyLanding: React.FC = () => {
     "offers": {
       "@type": "Offer",
       "priceCurrency": "GBP",
-      "price": "29",
+      "price": String(SEO_FROM_MONTHLY_PRICE),
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
       "url": "https://buyawarranty.co.uk/warranty-types/suv-warranty/",
@@ -489,7 +490,7 @@ const SUVWarrantyLanding: React.FC = () => {
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
         "@type": "UnitPriceSpecification",
-        "price": "29",
+        "price": String(SEO_FROM_MONTHLY_PRICE),
         "priceCurrency": "GBP",
         "unitText": "month",
         "billingIncrement": 1
@@ -533,7 +534,7 @@ const SUVWarrantyLanding: React.FC = () => {
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
-      "priceRange": "£29-£95/month",
+      "priceRange": SEO_PRICE_RANGE,
       "address": {
         "@type": "PostalAddress",
         "addressCountry": "GB"

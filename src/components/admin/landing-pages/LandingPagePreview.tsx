@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Monitor, Tablet, Smartphone, Code, Eye, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { SEO_FROM_MONTHLY_PRICE } from '@/lib/seo/schemaPricing';
 
 interface LandingPagePreviewProps {
   pageId: string;
@@ -116,7 +117,7 @@ export const LandingPagePreview = ({ pageId }: LandingPagePreviewProps) => {
         "offers": {
           "@type": "Offer",
           "priceCurrency": "GBP",
-          "price": "35",
+          "price": String(SEO_FROM_MONTHLY_PRICE),
           "availability": "https://schema.org/InStock"
         }
       });

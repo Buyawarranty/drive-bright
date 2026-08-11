@@ -29,6 +29,7 @@ import citroenC5HighMileage from '@/assets/citroen-c5-aircross-high-mileage-uk.p
 import citroenEC4Electric from '@/assets/citroen-ec4-electric-warranty-uk.png';
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
+import { SEO_FROM_MONTHLY_PRICE } from '@/lib/seo/schemaPricing';
 
 // Citroën UK models 2012–2026
 const citroenModelCategories = {
@@ -334,7 +335,7 @@ const CitroenWarrantyLanding: React.FC = () => {
     "description": "Comprehensive extended warranty coverage for all Citroën models including C3, C4, C5 Aircross, Berlingo, ë-C4 and more. Covers engine, gearbox, electrical systems, turbocharger, and more. Nationwide UK coverage.",
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
     "manufacturer": { "@type": "Organization", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "contactPoint": { "@type": "ContactPoint", "telephone": "+44-800-917-9270", "contactType": "customer service", "areaServed": "GB" } },
-    "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": "19", "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/citroen-warranty/", "seller": { "@type": "Organization", "name": "Buy A Warranty" }, "priceSpecification": { "@type": "UnitPriceSpecification", "price": "19", "priceCurrency": "GBP", "unitText": "month" } },
+    "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": String(SEO_FROM_MONTHLY_PRICE), "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/citroen-warranty/", "seller": { "@type": "Organization", "name": "Buy A Warranty" }, "priceSpecification": { "@type": "UnitPriceSpecification", "price": String(SEO_FROM_MONTHLY_PRICE), "priceCurrency": "GBP", "unitText": "month" } },
     "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5" },
     "review": testimonials.map((t, i) => ({ "@type": "Review", "author": { "@type": "Person", "name": t.name }, "reviewRating": { "@type": "Rating", "ratingValue": t.rating, "bestRating": "5" }, "reviewBody": t.text, "datePublished": new Date(Date.now() - (i + 1) * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] })),
     "category": "Vehicle Extended Warranty",

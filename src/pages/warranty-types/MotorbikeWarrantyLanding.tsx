@@ -34,6 +34,7 @@ import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import motorcycleHeroImage from '@/assets/motorcycle-hero.png';
 import motorcyclePanda from '@/assets/panda-motorcycle-warranty.png';
 import motorcycleCoverage from '@/assets/motorbike-warranty-uk-repair-cover.png';
+import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 
 // UK Motorbike Models covered (grouped by manufacturer) - 2012-2026
 const motorbikeModelCategories = {
@@ -529,12 +530,12 @@ const MotorbikeWarrantyLanding: React.FC = () => {
     "offers": {
       "@type": "Offer",
       "priceCurrency": "GBP",
-      "price": "18",
+      "price": String(SEO_FROM_MONTHLY_PRICE),
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
       "url": "https://buyawarranty.co.uk/warranty-types/motorbike-motorcycle-warranty/",
       "seller": { "@type": "Organization", "name": "Buy A Warranty" },
-      "priceSpecification": { "@type": "UnitPriceSpecification", "price": "18", "priceCurrency": "GBP", "unitText": "month", "billingIncrement": 1 }
+      "priceSpecification": { "@type": "UnitPriceSpecification", "price": String(SEO_FROM_MONTHLY_PRICE), "priceCurrency": "GBP", "unitText": "month", "billingIncrement": 1 }
     },
     "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5", "worstRating": "1" },
     "review": testimonials.map((t, i) => ({
@@ -558,7 +559,7 @@ const MotorbikeWarrantyLanding: React.FC = () => {
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
-      "priceRange": "£18-£75/month",
+      "priceRange": SEO_PRICE_RANGE,
       "address": { "@type": "PostalAddress", "addressCountry": "GB" }
     },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
