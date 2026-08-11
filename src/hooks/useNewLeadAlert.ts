@@ -123,7 +123,7 @@ const MAX_ALERT_AGE_MS = 12 * 60 * 60 * 1000;
 // Only lead-working roles ever see new-lead pop-ups. Claims agents/managers
 // (and any other non-sales role) are HARD excluded — they don't work leads and
 // the cards were covering their claims screens.
-const LEAD_ALERT_ROLES = ['sales', 'sales_lead', 'sales_manager'];
+const LEAD_ALERT_ROLES = ['sales', 'sales_lead', 'sales_manager', 'admin', 'super_admin'];
 
 export const useNewLeadAlert = () => {
   const adminId = useCurrentAdminId();
@@ -263,9 +263,12 @@ export const useNewLeadAlert = () => {
       let clean: NewLeadAlertData[] = offered;
       if (nonOffered.length > 0) {
         const ids = nonOffered.map((l) => l.id);
+        // Only THIS agent's own work silences their pop-up. Notes/calls left by
+        // a previous owner (bulk reassign, holiday cover, recontact moves) must
+        // NOT suppress the alert — that was hiding nearly every reassigned lead.
         const [notesRes, callsRes] = await Promise.all([
-          supabase.from('lead_quick_notes').select('lead_id, created_by').in('lead_id', ids),
-          supabase.from('lead_call_logs').select('lead_id').in('lead_id', ids),
+          supabase.from('lead_quick_notes').select('lead_id, created_by').in('lead_id', ids).eq('created_by', adminId),
+          supabase.from('lead_call_logs').select('lead_id').in('lead_id', ids).eq('agent_id', adminId),
         ]);
         const touched = new Set<string>();
         (notesRes.data as any[] | null)?.forEach((r) => {
