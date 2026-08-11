@@ -36,12 +36,7 @@ export const ProductSchema = ({
       },
       "image": image,
       "category": category,
-      ...(areaServed && {
-        "areaServed": {
-          "@type": "Country",
-          "name": areaServed === 'GB' ? 'United Kingdom' : areaServed
-        }
-      }),
+      
       ...(price && {
         "offers": {
           "@type": "Offer",

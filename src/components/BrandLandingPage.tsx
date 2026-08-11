@@ -95,6 +95,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
   const schemaMarkup = {
     "@context": "https://schema.org",
     "@type": "Product",
+      "image": ["https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"],
     "name": `${brandName} Extended Warranty`,
     "description": metaDescription,
     "brand": {

@@ -458,6 +458,7 @@ const SUVWarrantyLanding: React.FC = () => {
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
+      "image": ["https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"],
     "name": "SUV & 4x4 Extended Warranty UK",
     "description": "Comprehensive extended warranty for popular UK SUVs and 4x4s from 2011 to 2024 — Nissan Qashqai, Ford Kuga, Hyundai Tucson, Kia Sportage, VW Tiguan, Range Rover Sport, BMW X5, Audi Q5, Mercedes GLC, Volvo XC60, Jeep Wrangler, Land Rover Discovery and many more. Covers engine, gearbox, 4x4 transfer box, electrics and hybrid/EV components. Nationwide UK coverage with any VAT-registered garage.",
     "brand": {
@@ -474,8 +475,7 @@ const SUVWarrantyLanding: React.FC = () => {
         "telephone": "+44-800-917-9270",
         "contactType": "customer service",
         "availableLanguage": "English",
-        "areaServed": "GB"
-      }
+        }
     },
     "offers": {
       "@type": "Offer",
@@ -535,10 +535,7 @@ const SUVWarrantyLanding: React.FC = () => {
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
       "priceRange": SEO_PRICE_RANGE,
-      "address": {
-        "@type": "PostalAddress",
-        "addressCountry": "GB"
-      }
+      "address": { "@type": "PostalAddress", "streetAddress": "Suite A, Cavendish House, 233-235 High Street", "addressLocality": "Guildford", "addressRegion": "Surrey", "postalCode": "GU1 3BJ", "addressCountry": "GB" }
     },
     "areaServed": {
       "@type": "Country",

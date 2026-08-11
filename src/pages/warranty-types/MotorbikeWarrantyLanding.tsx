@@ -518,6 +518,7 @@ const MotorbikeWarrantyLanding: React.FC = () => {
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
+      "image": ["https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"],
     "name": "Motorcycle Extended Warranty UK",
     "description": "Comprehensive extended warranty coverage for all motorcycle makes and models including Honda, Yamaha, Kawasaki, Suzuki, Triumph, BMW Motorrad, Ducati, KTM, Harley-Davidson, Royal Enfield and Aprilia. Covers engine, gearbox, electrics, braking systems and more. Nationwide UK coverage with any VAT-registered garage.",
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
@@ -526,7 +527,7 @@ const MotorbikeWarrantyLanding: React.FC = () => {
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "logo": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
-      "contactPoint": { "@type": "ContactPoint", "telephone": "+44-800-917-9270", "contactType": "customer service", "availableLanguage": "English", "areaServed": "GB" }
+      "contactPoint": { "@type": "ContactPoint", "telephone": "+44-800-917-9270", "contactType": "customer service", "availableLanguage": "English", }
     },
     "offers": {
       "@type": "Offer",
@@ -561,7 +562,7 @@ const MotorbikeWarrantyLanding: React.FC = () => {
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
       "priceRange": SEO_PRICE_RANGE,
-      "address": { "@type": "PostalAddress", "addressCountry": "GB" }
+      "address": { "@type": "PostalAddress", "streetAddress": "Suite A, Cavendish House, 233-235 High Street", "addressLocality": "Guildford", "addressRegion": "Surrey", "postalCode": "GU1 3BJ", "addressCountry": "GB" }
     },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
     "description": "Extended warranty coverage for all motorcycle makes including Honda, Yamaha, Kawasaki, Suzuki, Triumph, BMW Motorrad, Ducati, KTM, and Harley-Davidson. Covers engine, transmission, electrical systems, braking, and more.",

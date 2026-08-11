@@ -446,6 +446,7 @@ const VanWarrantyLanding: React.FC = () => {
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
+      "image": ["https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"],
     "name": "UK van warranty — platinum complete cover",
     "description": "Comprehensive extended warranty for UK commercial vans. Covers engine, turbo, gearbox, DPF, EGR, electrics and more. Ford Transit, Mercedes Sprinter, VW Transporter, Vauxhall Vivaro and all major makes. Claim limits from £1,000 to £5,000. Zero excess available. From £19/month.",
     "brand": { "@type": "Brand", "name": "Buy A Warranty" },
@@ -459,8 +460,7 @@ const VanWarrantyLanding: React.FC = () => {
         "telephone": "+44-800-917-9270",
         "contactType": "customer service",
         "availableLanguage": "English",
-        "areaServed": "GB"
-      }
+        }
     },
     "offers": {
       "@type": "Offer",
@@ -526,7 +526,7 @@ const VanWarrantyLanding: React.FC = () => {
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
       "priceRange": SEO_PRICE_RANGE,
-      "address": { "@type": "PostalAddress", "addressCountry": "GB" }
+      "address": { "@type": "PostalAddress", "streetAddress": "Suite A, Cavendish House, 233-235 High Street", "addressLocality": "Guildford", "addressRegion": "Surrey", "postalCode": "GU1 3BJ", "addressCountry": "GB" }
     },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
     "description": "Extended warranty for all UK commercial vans. Ford Transit, Mercedes Sprinter, VW Transporter, Vauxhall Vivaro, Renault Master and more.",

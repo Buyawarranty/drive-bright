@@ -69,6 +69,7 @@ const EVWarranty = () => {
     const productSchema = {
       "@context": "https://schema.org",
       "@type": "Product",
+      "image": ["https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png"],
       "name": "Electric Vehicle Extended Warranty",
       "description": "Comprehensive extended warranty for electric, hybrid and PHEV vehicles with flexible payment options",
       "brand": {
