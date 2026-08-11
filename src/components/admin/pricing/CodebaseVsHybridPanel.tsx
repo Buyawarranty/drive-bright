@@ -16,7 +16,7 @@ import {
 import { EXCESSES } from '@/hooks/usePricingVersions';
 import { buildCodeBaseClaimTiers } from '@/lib/pricing/codeBaseClaimTiers';
 import PriceTestStep2 from './PriceTestStep2';
-import { HYBRID_PRICE_UPLIFT_PCT } from './AugHybridVsLivePanel';
+import { HYBRID_PRICE_UPLIFT_PCT, upliftTermMult } from './AugHybridVsLivePanel';
 
 import PriceDiffBanner from './PriceDiffBanner';
 import type { PriceTestQuoteSnapshot } from './PriceTestStep2';
@@ -153,8 +153,8 @@ const CodebaseVsHybridPanel: React.FC<{
         ...r,
         factor: spread(r.factor, cfg.riskSpread),
       })),
-      twoYearMult: Math.round(2 * (1 - cfg.twoYearDiscountPct / 100) * 100) / 100,
-      threeYearMult: Math.round(3 * (1 - cfg.threeYearDiscountPct / 100) * 100) / 100,
+      twoYearMult: upliftTermMult(Math.round(2 * (1 - cfg.twoYearDiscountPct / 100) * 100) / 100, 24),
+      threeYearMult: upliftTermMult(Math.round(3 * (1 - cfg.threeYearDiscountPct / 100) * 100) / 100, 36),
     }),
     [base, targetScale, cfg.mileageSpread, cfg.riskSpread, cfg.twoYearDiscountPct, cfg.threeYearDiscountPct]
   );
