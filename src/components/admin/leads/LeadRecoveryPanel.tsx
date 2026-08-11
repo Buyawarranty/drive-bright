@@ -220,14 +220,24 @@ export const LeadRecoveryPanel: React.FC = () => {
       else toast.success(
         `Found ${all.length} lead${all.length === 1 ? '' : 's'}${reclaimed ? ` (incl. ${reclaimed} unassigned ex-owned)` : ''}`,
       );
+      return all;
 
     } catch (e: any) {
       console.error('[LeadRecovery] scan', e);
       toast.error(e?.message || 'Scan failed');
+      return [] as LeadRow[];
     } finally {
       setScanning(false);
     }
   }, [fromDate, toDate, sourceAgent, includePrevious]);
+
+  /** One-click: scan with the current filters, then open the confirm dialog. */
+  const scanThenConfirm = useCallback(async () => {
+    if (targetAgents.length === 0) { toast.error('Pick who to assign to'); return; }
+    const found = await scan();
+    if (found && found.length > 0) setConfirmOpen(true);
+  }, [scan, targetAgents]);
+
 
 
   /** Leads per calendar day in the scanned range (oldest first). */
