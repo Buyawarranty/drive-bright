@@ -416,15 +416,8 @@ const BlogArticle = () => {
                 </p>
               )}
 
-              {/* Quick answer — the concise, quotable summary AI overviews and voice results pull */}
-              {quickAnswer && (
-                <div className="article-quick-answer mb-8 rounded-xl border-l-4 border-primary bg-primary/5 p-5 sm:p-6">
-                  <p className="mb-1 text-xs font-bold uppercase tracking-widest text-primary">
-                    Quick answer
-                  </p>
-                  <p className="text-base leading-relaxed text-slate-800 sm:text-lg">{quickAnswer}</p>
-                </div>
-              )}
+
+
 
 
               {/* Above-the-fold reg entry (same design + journey as the homepage) */}
