@@ -599,13 +599,8 @@ const BlogArticle = () => {
                 </article>
               )}
 
-              {/* End-of-article Reg-plate CTA (reg-only journey, same as homepage) */}
-              <div className="my-10 sm:my-12">
-                <BlogRegQuoteCTA
-                  heading="Ready to protect your car?"
-                  subheading="Enter your reg for an instant, no-obligation price — cover can start today."
-                />
-              </div>
+
+
 
 
 
