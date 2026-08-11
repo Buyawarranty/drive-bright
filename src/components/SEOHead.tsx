@@ -81,27 +81,43 @@ export const SEOHead = ({
   articleTags
 
 }: SEOHeadProps) => {
-  const canonicalUrl = canonical || `${SITE_ORIGIN}${normalisePath(window.location.pathname)}`;
+  const canonicalUrl =
+    normaliseCanonical(canonical) || `${SITE_ORIGIN}${normalisePath(window.location.pathname)}`;
   const ogImageUrl = absoluteUrl(ogImage);
 
-  // index.html ships sitewide fallback tags for non-JS social crawlers. Once a
-  // route sets its own, drop the static duplicates so crawlers (and Google's
-  // first-match parsing) only ever see the page-specific value.
-  useEffect(() => {
-    const selectors = [
-      'meta[name="description"]',
-      'meta[property="og:image"]',
-      'meta[property="og:url"]',
-      'meta[property="og:title"]',
-      'meta[property="og:description"]',
-      'link[rel="canonical"]',
-    ];
-    selectors.forEach((selector) => {
-      const nodes = Array.from(document.head.querySelectorAll(selector));
-      if (nodes.length < 2) return;
-      nodes.filter((node) => !node.hasAttribute('data-rh')).forEach((node) => node.remove());
-    });
+  // index.html ships sitewide fallback tags for non-JS social crawlers, and some
+  // routes render their own <Helmet> head tags alongside this component. Once a
+  // route sets its own value, drop every duplicate so crawlers only ever see a
+  // single canonical / og:url per page (Semrush "Multiple canonical URLs").
+  useLayoutEffect(() => {
+    const dedupe = () => {
+      const selectors = [
+        'meta[name="description"]',
+        'meta[property="og:image"]',
+        'meta[property="og:url"]',
+        'meta[property="og:title"]',
+        'meta[property="og:description"]',
+        'link[rel="canonical"]',
+      ];
+      selectors.forEach((selector) => {
+        const nodes = Array.from(document.head.querySelectorAll(selector));
+        if (nodes.length < 2) return;
+        // Prefer the tag this component owns (react-helmet marks its nodes),
+        // then keep exactly one node and drop the rest.
+        const preferred = nodes.find((node) => node.hasAttribute('data-rh')) ?? nodes[0];
+        nodes.filter((node) => node !== preferred).forEach((node) => node.remove());
+      });
+    };
+
+    dedupe();
+    // Helmet writes to <head> asynchronously, and other routes may inject their
+    // own tags after this render — keep collapsing duplicates as they appear.
+    const observer = new MutationObserver(dedupe);
+    observer.observe(document.head, { childList: true });
+    return () => observer.disconnect();
   }, [canonicalUrl, description, ogImageUrl, title]);
+
+
 
 
   return (
