@@ -205,7 +205,7 @@ const DiscountsOffers: React.FC = () => {
   return (
     <>
       <SEOHead
-        title="Buy A Warranty Discount Codes & Promo Codes 2026 | Save on Car Warranties UK"
+        title="Car Warranty Discount Codes 2026 | Buy A Warranty"
         description="Active Buy A Warranty promo codes & discount codes for 2026. Save up to £50 on car, van, EV & motorbike warranties. Copy a promo code and apply at checkout — limited availability."
         keywords="buy a warranty discount code, buyawarranty promo code, car warranty promo code UK, buy a warranty voucher code, vehicle warranty discount code, warranty coupon code, buy a warranty offers, car warranty deal UK, buyawarranty discount, warranty promo code 2026, car warranty discount, promo code car warranty"
         canonical="https://buyawarranty.co.uk/discount-promo-offers/"

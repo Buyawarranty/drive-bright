@@ -35,7 +35,7 @@ const BuyCarWarranty: React.FC = () => {
   return (
     <>
       <SEOHead
-        title="Buy a Car Warranty Online - Trusted UK Cover for All Budgets | Buy A Warranty"
+        title="Buy a Car Warranty Online | Trusted UK Cover"
         description="Compare car warranty quotes and get extended cover for your vehicle. Best car warranty UK options for used cars, low monthly costs, and trusted protection. Get a quote today."
         keywords="buy a car warranty online, car warranty UK, extended car warranty, used car warranty, best car warranty provider, affordable car warranty UK, car warranty quotes, car warranty cover, cheap car warranty, car warranty cost, vehicle warranty UK"
         canonical="https://buyawarranty.co.uk/buy-a-warranty-for-my-car-uk-warranties/"

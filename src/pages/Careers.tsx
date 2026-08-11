@@ -98,7 +98,7 @@ const Careers: React.FC = () => {
   return (
     <main className="min-h-screen bg-[#F9FAFB] text-[#111827]">
       <SEOHead
-        title="Vehicle Warranty Sales Executive Jobs UK | Remote PAYE | Buyawarranty Careers"
+        title="Warranty Sales Jobs UK | Remote PAYE Careers"
         description="Remote UK Vehicle Warranty Sales Executive role. Full-time PAYE, warm leads, uncapped commission, OTE £35,000–£60,000+. Apply to join the Buyawarranty sales team."
         keywords="warranty sales jobs, remote sales jobs UK, telesales jobs, vehicle warranty sales executive, PAYE sales jobs, work from home sales UK, uncapped commission sales, buyawarranty careers"
         canonical={CAREERS_URL}
