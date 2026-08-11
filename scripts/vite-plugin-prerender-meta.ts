@@ -116,9 +116,29 @@ function buildHtmlForRoute(template: string, route: RouteMeta): string {
     route.description,
   );
   html = setMeta(html, { kind: "name", key: "twitter:image" }, ogImage);
+  html = setMeta(html, { kind: "name", key: "twitter:image:alt" }, route.title);
+  html = setMeta(html, { kind: "name", key: "twitter:site" }, "@buyawarranty");
+
+  // Indexing directives for search + AI answer engines
+  html = setMeta(
+    html,
+    { kind: "name", key: "robots" },
+    "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  );
+  html = setMeta(
+    html,
+    { kind: "name", key: "googlebot" },
+    "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1",
+  );
+  html = setMeta(
+    html,
+    { kind: "name", key: "bingbot" },
+    "index, follow, max-snippet:-1, max-image-preview:large",
+  );
 
   return html;
 }
+
 
 function normalizeRoutePath(p: string): string {
   // Drop leading slash, ensure no trailing slash for path joins
