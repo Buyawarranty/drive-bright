@@ -535,10 +535,7 @@ const SUVWarrantyLanding: React.FC = () => {
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
       "priceRange": SEO_PRICE_RANGE,
-      "address": {
-        "@type": "PostalAddress",
-        "addressCountry": "GB"
-      }
+      "address": { "@type": "PostalAddress", "streetAddress": "Suite A, Cavendish House, 233-235 High Street", "addressLocality": "Guildford", "addressRegion": "Surrey", "postalCode": "GU1 3BJ", "addressCountry": "GB" }
     },
     "areaServed": {
       "@type": "Country",

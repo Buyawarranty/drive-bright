@@ -225,7 +225,7 @@ const PeugeotWarrantyLanding: React.FC = () => {
     "@type": "Service",
     "name": "Peugeot Extended Warranty Service",
     "alternateName": "Peugeot Used Car Warranty",
-    "provider": { "@type": "LocalBusiness", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "telephone": "+44-330-229-5040", "priceRange": SEO_PRICE_RANGE, "address": { "@type": "PostalAddress", "addressCountry": "GB" } },
+    "provider": { "@type": "LocalBusiness", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "telephone": "+44-330-229-5040", "priceRange": SEO_PRICE_RANGE, "address": { "@type": "PostalAddress", "streetAddress": "Suite A, Cavendish House, 233-235 High Street", "addressLocality": "Guildford", "addressRegion": "Surrey", "postalCode": "GU1 3BJ", "addressCountry": "GB" } },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
     "description": "Extended warranty coverage for all Peugeot models including 208, 308, 3008, 5008, 508, and EV models. Covers PureTech engine, EAT8 transmission, electrical systems, and more.",
     "serviceType": "Vehicle Extended Warranty",

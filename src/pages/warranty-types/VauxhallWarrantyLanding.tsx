@@ -225,7 +225,7 @@ const VauxhallWarrantyLanding: React.FC = () => {
     "@type": "Service",
     "name": "Vauxhall Extended Warranty Service",
     "alternateName": "Vauxhall Used Car Warranty",
-    "provider": { "@type": "LocalBusiness", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "telephone": "+44-330-229-5040", "priceRange": SEO_PRICE_RANGE, "address": { "@type": "PostalAddress", "addressCountry": "GB" } },
+    "provider": { "@type": "LocalBusiness", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk", "telephone": "+44-330-229-5040", "priceRange": SEO_PRICE_RANGE, "address": { "@type": "PostalAddress", "streetAddress": "Suite A, Cavendish House, 233-235 High Street", "addressLocality": "Guildford", "addressRegion": "Surrey", "postalCode": "GU1 3BJ", "addressCountry": "GB" } },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
     "description": "Extended warranty coverage for all Vauxhall models including Corsa, Astra, Grandland, Mokka, Insignia, Crossland, and EV models. Covers engine, transmission, electrical systems, turbocharger, and more.",
     "serviceType": "Vehicle Extended Warranty",

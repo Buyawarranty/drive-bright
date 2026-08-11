@@ -77,11 +77,7 @@ export const LandingPagePreview = ({ pageId }: LandingPagePreviewProps) => {
         "name": page.local_business_name,
         "telephone": page.local_business_phone,
         "email": page.local_business_email,
-        "address": {
-          "@type": "PostalAddress",
-          "addressCountry": "GB",
-          "addressRegion": "United Kingdom"
-        },
+        "address": { "@type": "PostalAddress", "streetAddress": "Suite A, Cavendish House, 233-235 High Street", "addressLocality": "Guildford", "addressRegion": "Surrey", "postalCode": "GU1 3BJ", "addressCountry": "GB" },
         "geo": {
           "@type": "GeoCoordinates",
           "latitude": 51.5074,
