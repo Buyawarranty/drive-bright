@@ -32,12 +32,13 @@ import QuickUpliftBar, { applyModelUplift } from './QuickUpliftBar';
  */
 
 /**
- * Aug 2026: every Aug hybrid Quotes & Orders price is 20% higher than the
- * original hybrid proposal (10% initial uplift + a further 10%). The website
+ * Aug 2026: every Aug hybrid Quotes & Orders price carries a +45% uplift on the
+ * reduced hybrid base, so a single push lands roughly 16% above today's live
+ * grid — recovering the drift caused by earlier compounding pushes. The website
  * Step 3 price stays "grid minus the web gap", so it rises in proportion
  * automatically — no separate web change.
  */
-export const HYBRID_PRICE_UPLIFT_PCT = 20;
+export const HYBRID_PRICE_UPLIFT_PCT = 45;
 
 /**
  * Flag stamped on a published hybrid model so a later republish knows the base
