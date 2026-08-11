@@ -128,11 +128,8 @@ export const LeadRecoveryPanel: React.FC = () => {
     (async () => {
       setRecoverableLoading(true);
       try {
-        const { data: auditRows } = await (supabase.from('lead_assignment_audit') as any)
-          .select('lead_id')
-          .eq('previous_assigned_to_id', sourceAgent)
-          .limit(10000);
-        const ids = Array.from(new Set(((auditRows ?? []) as any[]).map(r => r.lead_id).filter(Boolean)));
+        const ids = await fetchExOwnedLeadIds(sourceAgent);
+
         let unassigned = 0;
         let workable = 0;
         for (let i = 0; i < ids.length; i += 300) {
