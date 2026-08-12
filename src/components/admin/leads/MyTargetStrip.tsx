@@ -228,7 +228,7 @@ export const MyTargetStrip: React.FC = () => {
             Each agent this month — same figures as the Sales Scoreboard
           </div>
           {breakdown.map(r => {
-            const rev = Number(r.revenue) || 0;
+            const rev = revenueOf(r);
             const tgt = r.revenue_target != null ? Number(r.revenue_target) : null;
             const p = tgt ? Math.min((rev / tgt) * 100, 100) : 0;
             const colour = getAgentColor(r.agent_name, r.admin_user_id);
