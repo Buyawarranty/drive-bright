@@ -1233,15 +1233,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       }),
     });
     
+    // Same permanent floor on the legacy grid path.
+    const flooredTotal = Math.max(Math.ceil(result.totalPrice), Math.ceil(ABSOLUTE_MIN_TOTAL));
+    const flooredMonthly = Math.max(result.monthlyPrice, Math.ceil(flooredTotal / 12));
     // Calculate pay-in-full based on monthly × 12 for consistency (avoids rounding discrepancies)
-    const contractTotal = result.monthlyPrice * 12;
+    const contractTotal = flooredMonthly * 12;
     const payInFullPrice = includePayInFullDiscount 
       ? Math.ceil(contractTotal * 0.90)
       : contractTotal;
     
     return { 
-      totalPrice: result.totalPrice, 
-      monthlyPrice: result.monthlyPrice,
+      totalPrice: flooredTotal, 
+      monthlyPrice: flooredMonthly,
       payInFullPrice,
       wasPrice: result.wasPrice,
       savings: result.savings
