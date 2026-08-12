@@ -183,6 +183,8 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   agentLiveLeadCounts,
   sourceFilter = 'all',
   onSourceFilterChange,
+  ageWindow = 'last_60',
+  onAgeWindowChange,
   showRecoveredPill = false,
   userRole,
 
