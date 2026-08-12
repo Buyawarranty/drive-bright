@@ -282,7 +282,7 @@ export default function PriceTestStep2({
    * This prevents the old £349/£576/£821 clamp from swallowing age, claim-limit,
    * labour-rate and excess changes in the test replica.
    */
-  const minimumFor = (months: number) => {
+  const minimumFor = (months: number, forExcess: number = excess) => {
     const floorShape =
       (referenceClaimFactor > 0 ? claimFactor / referenceClaimFactor : 1) *
       (referenceLabourFactor > 0 ? labourFactor / referenceLabourFactor : 1);
@@ -290,7 +290,7 @@ export default function PriceTestStep2({
       (MIN_SELLABLE_BY_MONTHS[months] ?? 249) *
         motorbikeFactor *
         floorShape *
-        getExcessFactor(excess)
+        getExcessFactor(forExcess)
     );
     // Hard bottom anchored on the CHEAPEST combo (£1,000 claim / £50 labour /
     // £500 excess = £349 at 12 months), stepped up a compressed ladder for richer
@@ -301,7 +301,7 @@ export default function PriceTestStep2({
         getAbsoluteMinimumShape({
           claimLimit: Number(claimLimit),
           labourRate: Number(labour),
-          voluntaryExcess: Number(excess),
+          voluntaryExcess: Number(forExcess),
         }) *
         motorbikeFactor
     );
@@ -314,6 +314,7 @@ export default function PriceTestStep2({
       : 0;
     return Math.max(shapedMinimum, hardBottom, modelAbsoluteMin);
   };
+
 
 
   /**
