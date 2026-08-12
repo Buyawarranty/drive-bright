@@ -322,6 +322,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     loading: concessionLoading,
   } = useConcessionAllowance(currentAdminId);
   const { isManagement } = useIsManagement();
+  const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
   // Free bonus months currently selected. 'peryear' gives 1 free month per year of cover
   // (12mo -> 1, 24mo -> 2, 36mo -> 3).
   const coverYears = Math.max(1, Math.round((parseInt(paymentType, 10) || 12) / 12));
