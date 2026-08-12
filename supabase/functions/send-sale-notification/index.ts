@@ -41,22 +41,65 @@ serve(async (req: Request) => {
     const phone = customerPhone || 'N/A';
     const warranty = warrantyReference || 'Pending';
 
-    // Fetch customer for claim_limit / excess / labour_rate (fall back to policy)
-    let saleExtras: { claim_limit?: number|null; voluntary_excess?: number|null; labour_rate?: number|null; payment_type?: string|null; duration_months?: number|null } = {};
+    // Fetch the full customer/sale record so managers get every sale + vehicle field.
+    // Scoped by registration plate first (one customer can hold several vehicles).
+    let saleExtras: Record<string, any> = {};
     try {
-      const { data: custRow } = await supabase
-        .from('customers')
-        .select('claim_limit, voluntary_excess, labour_rate, payment_type')
-        .ilike('email', customerEmail)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const normalizedReg = String(regPlate || '').toUpperCase().replace(/\s/g, '');
+      const cols = 'claim_limit, voluntary_excess, labour_rate, payment_type, plan_type, mileage, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, vehicle_transmission, registration_plate, signup_date, discount_code, discount_amount, original_amount, final_amount, warranty_number, warranty_reference_number, purchase_source, acquisition_source, seasonal_bonus_months, deposit_amount, balance_due_amount, payment_status, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, flat_number, building_name, building_number, street, town, county, postcode, country, first_name, last_name, phone';
+      let custRow: any = null;
+      if (normalizedReg) {
+        const { data } = await supabase
+          .from('customers')
+          .select(cols)
+          .eq('registration_plate', normalizedReg)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        custRow = data;
+      }
+      if (!custRow) {
+        const { data } = await supabase
+          .from('customers')
+          .select(cols)
+          .ilike('email', customerEmail)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        custRow = data;
+      }
       if (custRow) saleExtras = custRow as any;
     } catch (_) { /* ignore */ }
     const claimLimitDisplay = saleExtras.claim_limit ? `£${Number(saleExtras.claim_limit).toLocaleString()}` : 'Not set';
     const excessDisplay = saleExtras.voluntary_excess != null ? `£${Number(saleExtras.voluntary_excess).toFixed(2)}` : 'Not set';
     const labourRateDisplay = saleExtras.labour_rate ? `£${Number(saleExtras.labour_rate).toFixed(2)}/hr` : 'Not set';
     const durationDisplay = durationLabel(durationMonths, saleExtras.payment_type, plan);
+
+    const money = (v: any) => (v == null || v === '' ? null : `£${Number(v).toFixed(2)}`);
+    const orDash = (v: any) => (v == null || v === '' ? '—' : String(v));
+    const mileageDisplay = saleExtras.mileage != null && saleExtras.mileage !== ''
+      ? `${Number(String(saleExtras.mileage).replace(/[^0-9]/g, '') || 0).toLocaleString()} miles`
+      : '—';
+    const addressDisplay = [
+      saleExtras.flat_number, saleExtras.building_name, saleExtras.building_number,
+      saleExtras.street, saleExtras.town, saleExtras.county, saleExtras.postcode, saleExtras.country,
+    ].filter(Boolean).join(', ') || '—';
+    const addOns = ([
+      ['Tyre cover', saleExtras.tyre_cover],
+      ['Wear & tear', saleExtras.wear_tear],
+      ['Europe cover', saleExtras.europe_cover],
+      ['Transfer cover', saleExtras.transfer_cover],
+      ['Breakdown recovery', saleExtras.breakdown_recovery],
+      ['Vehicle rental', saleExtras.vehicle_rental],
+      ['MOT fee', saleExtras.mot_fee],
+      ['MOT repair', saleExtras.mot_repair],
+      ['Lost key', saleExtras.lost_key],
+      ['Consequential', saleExtras.consequential],
+    ] as [string, any][]).filter(([, on]) => !!on).map(([l]) => l);
+    const addOnsDisplay = addOns.length ? addOns.join(', ') : 'None';
+    const row = (label: string, value: string, highlight = false) =>
+      `<tr><td style="padding: 8px; background: ${highlight ? '#fde68a' : '#f3f4f6'};"><strong>${label}:</strong></td><td style="padding: 8px;${highlight ? ' font-weight: 700;' : ''}">${value}</td></tr>`;
+
 
     // Determine sale type (G/F/Web/S)
     // Check if there's an agent assigned via sales_leads
