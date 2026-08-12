@@ -174,6 +174,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     customer?: boolean;
     w2k?: boolean;
     email?: boolean;
+    loginVerified?: boolean;
+    emailError?: string | null;
   }>({});
 
   // Fetch admin users for assignee dropdown
@@ -677,7 +679,17 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
         customer: data?.customerCreated,
         w2k: data?.w2kSent,
         email: data?.emailSent,
+        loginVerified: data?.loginVerified,
+        emailError: data?.emailError ?? null,
       });
+
+      if (sendWelcomeEmail && !data?.emailSent) {
+        toast({
+          title: "Welcome email and login not sent",
+          description: data?.emailError || "Use Resend welcome email on the customer record to send their login details.",
+          variant: "destructive",
+        });
+      }
       
       setExternalPaymentStep('complete');
       onPaymentConfirmed?.();
@@ -1497,10 +1509,20 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                 {sendWelcomeEmail && (
                   <div className={cn("p-3 rounded-lg border flex items-center gap-2", completionStatus.email ? "bg-emerald-50 border-emerald-200" : "bg-slate-50 border-slate-200")}>
                     <CheckCircle2 className={cn("w-4 h-4", completionStatus.email ? "text-emerald-600" : "text-slate-400")} />
-                    <span>Welcome Email</span>
+                    <span>Welcome Email{completionStatus.email && completionStatus.loginVerified === false ? ' (login link only)' : ''}</span>
                   </div>
                 )}
               </div>
+
+              {sendWelcomeEmail && !completionStatus.email && (
+                <div className="mt-4 text-left text-sm rounded-lg border border-red-300 bg-red-50 p-3 text-red-800">
+                  <strong>The customer has not received their welcome email or login details.</strong>
+                  <p className="mt-1">
+                    {completionStatus.emailError || 'Sending failed.'} Open the customer record and use
+                    “Resend welcome email” to send their login details.
+                  </p>
+                </div>
+              )}
 
               <Button onClick={resetForm} size="lg" className="mt-8">Create Another</Button>
             </div>

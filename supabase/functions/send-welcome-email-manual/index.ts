@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { logCustomerEmail } from '../_shared/log-email.ts';
 import { getLatestPolicyDocs } from '../_shared/latestPolicyDocs.ts';
+import { verifyPassword } from '../_shared/verify-password.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -311,7 +312,8 @@ const handler = async (req: Request): Promise<Response> => {
       .maybeSingle();
 
     const hasResetPassword = latestWelcomeEmail?.password_reset_by_user || false;
-    const shouldIncludeLoginDetails = !hasResetPassword;
+    let shouldIncludeLoginDetails = !hasResetPassword;
+    let loginVerified = false;
     
     console.log(JSON.stringify({ 
       evt: "password.reset.check", 
@@ -420,6 +422,56 @@ const handler = async (req: Request): Promise<Response> => {
         userId = existingUser.id;
       }
     }
+
+    // Never email a password we haven't proven works on the Auth server.
+    // Root cause of "invalid login details": a stale reused temporary password,
+    // or an update that silently didn't apply. Verify, and force-reset once.
+    if (shouldIncludeLoginDetails && tempPassword) {
+      let verified = await verifyPassword(customer.email, tempPassword);
+      console.log(JSON.stringify({ evt: "password.verify.first", rid, verified }));
+
+      if (!verified) {
+        // Find the user (createUser path may have failed) and force a fresh password
+        let targetId = userId;
+        if (!targetId) {
+          let page = 1;
+          while (!targetId && page <= 10) {
+            const { data: userList } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+            if (!userList?.users?.length) break;
+            const found = userList.users.find(u => u.email?.toLowerCase() === customer.email.toLowerCase());
+            if (found) targetId = found.id;
+            page++;
+          }
+        }
+
+        if (targetId) {
+          const freshPassword = generateRandomPassword();
+          const { error: forceErr } = await supabase.auth.admin.updateUserById(targetId, {
+            password: freshPassword,
+            email_confirm: true,
+          });
+          if (!forceErr) {
+            verified = await verifyPassword(customer.email, freshPassword);
+            if (verified) {
+              tempPassword = freshPassword;
+              userId = targetId;
+            }
+          }
+          console.log(JSON.stringify({ evt: "password.force.reset", rid, ok: !forceErr, verified }));
+        } else {
+          console.log(JSON.stringify({ evt: "password.verify.no.user", rid }));
+        }
+      }
+
+      loginVerified = verified;
+      if (!verified) {
+        // Don't hand out a password that doesn't work — send the reset-link version instead
+        shouldIncludeLoginDetails = false;
+        tempPassword = '';
+        console.log(JSON.stringify({ evt: "password.unverified.fallback.reset.link", rid }));
+      }
+    }
+
 
     // Link the customer policy to the user account
     if (userId && !policy.user_id) {
@@ -702,7 +754,8 @@ const handler = async (req: Request): Promise<Response> => {
             
             <p style="color: #333;">
               <strong>Email:</strong> ${customer.email}<br>
-              Use your existing password to access your account.
+              Use your existing password to access your account. Forgotten it?
+              <a href="https://buyawarranty.co.uk/forgot-password" style="color: #ff6b35;">Reset your password here</a>.
             </p>
           </div>
           `}
@@ -903,7 +956,10 @@ const handler = async (req: Request): Promise<Response> => {
       policyId: policy.id,
       warrantyNumber: policy.warranty_number,
       email: customer.email,
-      attachmentsIncluded: attachments.length
+      attachmentsIncluded: attachments.length,
+      loginDetailsIncluded: shouldIncludeLoginDetails,
+      loginVerified
+
     }), {
       status: 200,
       headers: { "content-type": "application/json", ...corsHeaders },

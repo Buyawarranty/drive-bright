@@ -412,28 +412,53 @@ serve(async (req) => {
     // This ensures external payment customers get the same experience as website buyers
     // CRITICAL: Use send-welcome-email-manual which reads from DB for accurate data
     let emailSent = false;
-    try {
-      logStep("Sending welcome email with dashboard credentials via send-welcome-email-manual");
-      const { error: emailError } = await supabase.functions.invoke('send-welcome-email-manual', {
-        body: {
-          policyId,
-          customerId,
+    let loginVerified = false;
+    let emailError: string | null = null;
+
+    if (!customerEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(customerEmail))) {
+      emailError = 'No valid customer email on the order, so no welcome email or login could be sent';
+      logStep("Skipping welcome email — invalid customer email", { customerEmail });
+    } else {
+      // One retry: a transient failure must not leave the customer without logins
+      for (let attempt = 1; attempt <= 2 && !emailSent; attempt++) {
+        try {
+          logStep("Sending welcome email with dashboard credentials", { attempt });
+          const { data: emailData, error: invokeError } = await supabase.functions.invoke(
+            'send-welcome-email-manual',
+            { body: { policyId, customerId } }
+          );
+
+          if (!invokeError && emailData?.ok !== false) {
+            emailSent = true;
+            loginVerified = !!emailData?.loginVerified;
+            emailError = null;
+            await supabase
+              .from('customer_policies')
+              .update({ email_sent_status: 'sent' })
+              .eq('id', policyId);
+            logStep("Welcome email sent successfully", { loginVerified });
+          } else {
+            emailError = invokeError?.message || emailData?.error || 'Welcome email failed';
+            logStep("Warning: Welcome email failed", { attempt, emailError });
+          }
+        } catch (emailErr: any) {
+          emailError = emailErr?.message || String(emailErr);
+          logStep("Warning: Welcome email threw", { attempt, emailError });
         }
-      });
-      
-      if (!emailError) {
-        emailSent = true;
+
+        if (!emailSent && attempt === 1) {
+          await new Promise((r) => setTimeout(r, 1500));
+        }
+      }
+
+      if (!emailSent) {
         await supabase
           .from('customer_policies')
-          .update({ email_sent_status: 'sent' })
+          .update({ email_sent_status: 'failed' })
           .eq('id', policyId);
-        logStep("Welcome email sent successfully");
-      } else {
-        logStep("Warning: Welcome email failed", emailError);
       }
-    } catch (emailErr) {
-      logStep("Warning: Welcome email failed", emailErr);
     }
+
 
     // Now that the payment is verified, send the full agent sale notification to
     // managers (amount, warranty number, cover details all populated). Earlier the
@@ -489,6 +514,9 @@ serve(async (req) => {
       policyUpdated: !!existingPolicy,
       
       emailSent,
+      loginVerified,
+      emailError,
+
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
