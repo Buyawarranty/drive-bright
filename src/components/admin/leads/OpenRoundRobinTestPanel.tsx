@@ -813,11 +813,34 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
         <div className="px-5 py-4">
         {queuedLeads.length > 0 && (
-          <div className="mb-3 rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-            <strong className="text-foreground">{queuedLeads.length}</strong> practice lead{queuedLeads.length === 1 ? '' : 's'} waiting —
-            everyone currently holds one. They release automatically as windows free up, so no one has to race.
+          <div className="mb-3 rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs text-muted-foreground space-y-2">
+            <div>
+              <strong className="text-foreground">{queuedLeads.length}</strong> practice lead{queuedLeads.length === 1 ? '' : 's'} waiting —
+              everyone currently holds one. They release automatically as windows free up, so no one has to race.
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs"
+                onClick={() => claimQueuedLead(queuedLeads[0].id)}
+                title={
+                  cadence.allowSelfAssign
+                    ? 'Manager permission granted — you may take a waiting lead'
+                    : 'Blocked: only a manager can allow agents to take a waiting lead themselves'
+                }
+              >
+                <Lock className="h-3 w-3 mr-1.5" /> Take a waiting lead myself
+              </Button>
+              <span className={cn('text-[11px] font-medium', cadence.allowSelfAssign ? 'text-emerald-700' : 'text-rose-700')}>
+                {cadence.allowSelfAssign
+                  ? 'Self-assign allowed by a manager'
+                  : 'Self-assign blocked — the rotation decides who gets the lead'}
+              </span>
+            </div>
           </div>
         )}
+
 
 
 
