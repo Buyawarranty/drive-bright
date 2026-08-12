@@ -5268,18 +5268,19 @@ Questions? Call 0330 229 5040`;
                                 : 'border-gray-300 bg-gray-50 text-gray-700'
                           )}
                         >
-                          <span>Minimum warranty price £{ABSOLUTE_MIN_TOTAL}</span>
+                          <span>Minimum sale price for any warranty £{ABSOLUTE_MIN_TOTAL}</span>
                           {absoluteMinBlocked ? (
                             <span className="font-bold">
-                              — this total (£{displayedTotalPrice}) is below the minimum. Sale blocked unless you switch on
-                              Price match and upload the competitor quote — contact your manager if you cannot get evidence.
-
+                              — £{Math.min(displayedTotalPrice, displayedPayInFullPrice)} is below the minimum, so this sale is
+                              blocked. Percentage discounts, typed amounts and pay-in-full all count towards it. Switch on
+                              Price match and upload the competitor quote, or ask your manager.
                             </span>
                           ) : priceMatchEvidenced && isUnderAbsoluteMin(displayedTotalPrice) ? (
                             <span>— allowed: evidenced price match on file.</span>
                           ) : (
-                            <span className="font-normal">— no warranty can be sold below this, price match with evidence only.</span>
+                            <span className="font-normal">— whatever discount is applied, no warranty can be sold below this; price match with evidence only.</span>
                           )}
+
                         </div>
 
 
