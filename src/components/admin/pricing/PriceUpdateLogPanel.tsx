@@ -143,6 +143,21 @@ export default function PriceUpdateLogPanel({
                         {v.status}
                       </Badge>
                     )}
+                    {move !== null && (
+                      <Badge
+                        variant="outline"
+                        className={
+                          move > 0
+                            ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                            : move < 0
+                              ? 'border-orange-300 bg-orange-50 text-orange-800'
+                              : 'text-muted-foreground'
+                        }
+                      >
+                        {move > 0 ? '+' : move < 0 ? '−' : ''}
+                        {Math.abs(move)}% {move === 0 ? 'no change' : 'vs previous'}
+                      </Badge>
+                    )}
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
                     {v.published_at ? 'Pushed live' : 'Saved'} {whenLabel(v)}
