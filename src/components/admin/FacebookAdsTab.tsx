@@ -14,7 +14,10 @@ import { DateRangeFilter } from './DateRangeFilter';
 const AUTO_REFRESH_INTERVAL = 60 * 60 * 1000; // 1 hour
 
 export const FacebookAdsTab: React.FC = () => {
-  const [dateRange, setDateRange] = useState<string>('last7');
+  const [metricsRange, setMetricsRange] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 6),
+    to: new Date(),
+  });
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [leadsDateRange, setLeadsDateRange] = useState<DateRange | undefined>({
     from: new Date(),
@@ -22,22 +25,20 @@ export const FacebookAdsTab: React.FC = () => {
   });
   const queryClient = useQueryClient();
 
-  const dateFrom = useMemo(() => {
-    const now = new Date();
-    switch (dateRange) {
-      case 'today': return startOfDay(now);
-      case 'yesterday': return startOfDay(subDays(now, 1));
-      case 'last7': return startOfDay(subDays(now, 7));
-      case 'last30': return startOfDay(subDays(now, 30));
-      case 'last90': return startOfDay(subDays(now, 90));
-      default: return startOfDay(subDays(now, 7));
-    }
-  }, [dateRange]);
+  const dateFrom = useMemo(
+    () => startOfDay(metricsRange?.from ?? subDays(new Date(), 6)),
+    [metricsRange]
+  );
 
-  const dateTo = useMemo(() => {
-    if (dateRange === 'yesterday') return endOfDay(subDays(new Date(), 1));
-    return endOfDay(new Date());
-  }, [dateRange]);
+  const dateTo = useMemo(
+    () => endOfDay(metricsRange?.to ?? metricsRange?.from ?? new Date()),
+    [metricsRange]
+  );
+
+  const rangeKey = useMemo(
+    () => `${dateFrom.toISOString()}_${dateTo.toISOString()}`,
+    [dateFrom, dateTo]
+  );
 
   // Auto-refresh every hour
   useEffect(() => {
@@ -63,7 +64,7 @@ export const FacebookAdsTab: React.FC = () => {
 
   // Fetch Facebook page views - use server-side count + paginated fetch for breakdowns
   const { data: fbPageViews, isLoading: pvLoading } = useQuery({
-    queryKey: ['fb-page-views', dateRange],
+    queryKey: ['fb-page-views', rangeKey],
     queryFn: async () => {
       // Get accurate total count via server
       const { count: totalCount, error: countError } = await supabase
@@ -100,7 +101,7 @@ export const FacebookAdsTab: React.FC = () => {
 
   // Fetch Facebook leads (abandoned carts with fbclid in metadata)
   const { data: fbLeads, isLoading: leadsLoading } = useQuery({
-    queryKey: ['fb-leads', dateRange],
+    queryKey: ['fb-leads', rangeKey],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('abandoned_carts')
@@ -159,7 +160,7 @@ export const FacebookAdsTab: React.FC = () => {
 
   // Fetch Step 2 attempts in the period
   const { data: step2Attempts, isLoading: attemptsLoading } = useQuery({
-    queryKey: ['fb-step2-attempts', dateRange],
+    queryKey: ['fb-step2-attempts', rangeKey],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('step2_submission_attempts')
@@ -174,7 +175,7 @@ export const FacebookAdsTab: React.FC = () => {
 
   // Fetch PAID customers attributed to Facebook Ads
   const { data: fbPaidCustomers, isLoading: paidLoading } = useQuery({
-    queryKey: ['fb-paid-customers', dateRange],
+    queryKey: ['fb-paid-customers', rangeKey],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('customers')
@@ -207,7 +208,7 @@ export const FacebookAdsTab: React.FC = () => {
 
   // Fetch lead reconciliation data: sales_leads with social_ad source + terminal-blocked logs
   const { data: fbReconciliation } = useQuery({
-    queryKey: ['fb-reconciliation', dateRange],
+    queryKey: ['fb-reconciliation', rangeKey],
     queryFn: async () => {
       const { data: socialLeads, error: slErr } = await supabase
         .from('sales_leads')
@@ -438,18 +439,27 @@ export const FacebookAdsTab: React.FC = () => {
             <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="yesterday">Yesterday</SelectItem>
-              <SelectItem value="last7">Last 7 days</SelectItem>
-              <SelectItem value="last30">Last 30 days</SelectItem>
-              <SelectItem value="last90">Last 90 days</SelectItem>
-            </SelectContent>
-          </Select>
+          <Button
+            variant={metricsRange?.from && metricsRange?.to &&
+              startOfDay(metricsRange.from).getTime() === startOfDay(new Date()).getTime() &&
+              startOfDay(metricsRange.to).getTime() === startOfDay(new Date()).getTime() ? 'default' : 'outline'}
+            size="sm"
+            className="text-xs"
+            onClick={() => setMetricsRange({ from: new Date(), to: new Date() })}
+          >
+            Today
+          </Button>
+          <Button
+            variant={metricsRange?.from && metricsRange?.to &&
+              startOfDay(metricsRange.from).getTime() === startOfDay(subDays(new Date(), 1)).getTime() &&
+              startOfDay(metricsRange.to).getTime() === startOfDay(subDays(new Date(), 1)).getTime() ? 'default' : 'outline'}
+            size="sm"
+            className="text-xs"
+            onClick={() => { const y = subDays(new Date(), 1); setMetricsRange({ from: y, to: y }); }}
+          >
+            Yesterday
+          </Button>
+          <DateRangeFilter dateRange={metricsRange} onDateRangeChange={setMetricsRange} />
         </div>
       </div>
 
