@@ -75,3 +75,13 @@ export function withPricingAsOf<T>(
   }
 }
 
+
+/**
+ * Cached history loader — every screen that values a historic sale needs the
+ * same list, and it only changes when a new model is published.
+ */
+let historyPromise: Promise<PricingVersionSnapshot[]> | null = null;
+export function getPricingVersionHistoryCached(): Promise<PricingVersionSnapshot[]> {
+  if (!historyPromise) historyPromise = loadPricingVersionHistory();
+  return historyPromise;
+}

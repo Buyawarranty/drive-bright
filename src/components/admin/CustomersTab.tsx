@@ -2071,38 +2071,125 @@ export const CustomersTab = ({
             processedData.map((c: any) => c.email?.toLowerCase()).filter(Boolean)
           )) as string[];
 
+          const normReg = (r?: string | null) => (r || '').toUpperCase().replace(/\s+/g, '');
+          const tail9 = (p?: string | null) => {
+            const digits = (p || '').replace(/\D/g, '');
+            return digits.length >= 9 ? digits.slice(-9) : '';
+          };
+
           const leadDateMap: Record<string, string> = {};
           // email -> earliest lead id, used to look up first agent contact
           const leadIdMap: Record<string, string> = {};
-          if (customerEmails.length > 0) {
-            const batches: string[][] = [];
-            for (let i = 0; i < customerEmails.length; i += 300) {
-              batches.push(customerEmails.slice(i, i + 300));
+          // Fallbacks: the same customer often comes back with a different email
+          // address, so a lead is also matched on registration plate and on the
+          // last 9 digits of the phone number.
+          const leadDateByReg: Record<string, string> = {};
+          const leadIdByReg: Record<string, string> = {};
+          const leadDateByPhone: Record<string, string> = {};
+          const leadIdByPhone: Record<string, string> = {};
+
+          const absorb = (rows: any[] | null | undefined) => {
+            for (const lead of rows || []) {
+              const created = lead.created_at as string;
+              const key = lead.email?.toLowerCase();
+              if (key && (!leadDateMap[key] || new Date(created) < new Date(leadDateMap[key]))) {
+                leadDateMap[key] = created;
+                leadIdMap[key] = lead.id;
+              }
+              const reg = normReg(lead.vehicle_reg);
+              if (reg && (!leadDateByReg[reg] || new Date(created) < new Date(leadDateByReg[reg]))) {
+                leadDateByReg[reg] = created;
+                leadIdByReg[reg] = lead.id;
+              }
+              const ph = tail9(lead.phone);
+              if (ph && (!leadDateByPhone[ph] || new Date(created) < new Date(leadDateByPhone[ph]))) {
+                leadDateByPhone[ph] = created;
+                leadIdByPhone[ph] = lead.id;
+              }
             }
+          };
+
+          const chunk = (arr: string[], size = 300) => {
+            const out: string[][] = [];
+            for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+            return out;
+          };
+
+          const leadSelect = 'id, email, phone, vehicle_reg, created_at';
+
+          if (customerEmails.length > 0) {
             const results = await Promise.all(
-              batches.map((batch) =>
+              chunk(customerEmails).map((batch) =>
                 supabase
                   .from('sales_leads')
-                  .select('id, email, created_at')
+                  .select(leadSelect)
                   .in('email', batch)
                   .order('created_at', { ascending: true })
               )
             );
-            for (const { data: leadsData } of results) {
-              for (const lead of leadsData || []) {
-                const key = lead.email?.toLowerCase();
-                if (key && !leadDateMap[key]) {
-                  leadDateMap[key] = lead.created_at;
-                  leadIdMap[key] = (lead as any).id;
-                }
-              }
-            }
+            for (const { data: leadsData } of results) absorb(leadsData as any[]);
           }
+
+          // Registration-plate pass for customers still without a lead date.
+          const regVariants = Array.from(new Set(
+            processedData
+              .filter((c: any) => {
+                const key = c.email?.toLowerCase();
+                return !(key && leadDateMap[key]);
+              })
+              .flatMap((c: any) => {
+                const raw = (c.registration_plate || '').trim();
+                if (!raw) return [] as string[];
+                return [raw, raw.toUpperCase(), normReg(raw)];
+              })
+              .filter(Boolean)
+          )) as string[];
+          if (regVariants.length > 0) {
+            const regResults = await Promise.all(
+              chunk(regVariants).map((batch) =>
+                supabase
+                  .from('sales_leads')
+                  .select(leadSelect)
+                  .in('vehicle_reg', batch)
+                  .order('created_at', { ascending: true })
+              )
+            );
+            for (const { data: leadsData } of regResults) absorb(leadsData as any[]);
+          }
+
+          // Phone pass for whatever is still unmatched.
+          const phoneVariants = Array.from(new Set(
+            processedData
+              .filter((c: any) => {
+                const key = c.email?.toLowerCase();
+                const reg = normReg(c.registration_plate);
+                return !(key && leadDateMap[key]) && !(reg && leadDateByReg[reg]);
+              })
+              .map((c: any) => (c.phone || '').trim())
+              .filter(Boolean)
+          )) as string[];
+          if (phoneVariants.length > 0) {
+            const phoneResults = await Promise.all(
+              chunk(phoneVariants).map((batch) =>
+                supabase
+                  .from('sales_leads')
+                  .select(leadSelect)
+                  .in('phone', batch)
+                  .order('created_at', { ascending: true })
+              )
+            );
+            for (const { data: leadsData } of phoneResults) absorb(leadsData as any[]);
+          }
+
 
           // First initial contact = earliest logged call, quick note or status
           // change against that lead. Whichever happened first counts.
           const firstContactByLeadId: Record<string, string> = {};
-          const leadIds = Object.values(leadIdMap).filter(Boolean);
+          const leadIds = Array.from(new Set([
+            ...Object.values(leadIdMap),
+            ...Object.values(leadIdByReg),
+            ...Object.values(leadIdByPhone),
+          ].filter(Boolean)));
           if (leadIds.length > 0) {
             const idBatches: string[][] = [];
             for (let i = 0; i < leadIds.length; i += 300) {
@@ -2131,13 +2218,25 @@ export const CustomersTab = ({
 
           const withLeadDates = processedData.map((c: any) => {
             const key = c.email?.toLowerCase();
-            const leadId = key ? leadIdMap[key] : undefined;
+            const reg = normReg(c.registration_plate);
+            const ph = tail9(c.phone);
+            const leadDate =
+              (key && leadDateMap[key]) ||
+              (reg && leadDateByReg[reg]) ||
+              (ph && leadDateByPhone[ph]) ||
+              null;
+            const leadId =
+              (key && leadIdMap[key]) ||
+              (reg && leadIdByReg[reg]) ||
+              (ph && leadIdByPhone[ph]) ||
+              undefined;
             return {
               ...c,
-              lead_date: (key && leadDateMap[key]) || null,
+              lead_date: leadDate,
               first_contact_date: (leadId && firstContactByLeadId[leadId]) || null,
             };
           });
+
 
 
           const { recoveredRows, recoveredCount } = await recoverMissingPhones(withLeadDates);
