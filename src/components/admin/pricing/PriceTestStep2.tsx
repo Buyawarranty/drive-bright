@@ -26,6 +26,7 @@ import {
 
 import { calculateAddOnPrice } from '@/lib/addOnsUtils';
 import { getExclusionReason, EXCLUSION_MESSAGE } from '@/lib/vehicleExclusions';
+import { GLOBAL_ABSOLUTE_MIN_TOTAL } from '@/lib/pricing/netFloor';
 import {
   JOURNEY_DURATIONS,
   JOURNEY_EXCESS_OPTIONS,
