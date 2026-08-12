@@ -5086,12 +5086,7 @@ Buyawarranty.co.uk`,
               >
                 QOP / RP vs sold
               </TableHead>
-              <TableHead
-                className="bg-purple-50 whitespace-nowrap"
-                title="Discount given on this order — quoted price at the point of sale versus the amount collected."
-              >
-                Discount
-              </TableHead>
+
               {showPaymentColumn && <TableHead>Payment</TableHead>}
               <TableHead className="text-center bg-amber-50 min-w-[130px]" title="Upload a screenshot of the price comparison shown to the customer">Price Comp. Proof</TableHead>
 
