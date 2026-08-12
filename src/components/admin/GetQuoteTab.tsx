@@ -496,12 +496,74 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     // Aug hybrid (and any model carrying its own minimum) never quotes below £399.
     absoluteMinTotal: (pricingModel as any)?.absoluteMinTotal || 0,
   });
+  /**
+   * Only offer excess tiers that actually price ABOVE the minimum. A higher
+   * excess makes the warranty cheaper, so on a low-priced vehicle it lands on the
+   * floor and the customer would carry a bigger excess for exactly the same money.
+   * Those tiers are dropped from the selector.
+   */
+  const sellableExcessOptions = React.useMemo(() => {
+    const ageYears = (() => {
+      const manufacture = (vehicleData as any)?.manufactureDate || (vehicleData as any)?.registrationDate;
+      if (manufacture) {
+        const d = new Date(manufacture);
+        if (!isNaN(d.getTime())) return (Date.now() - d.getTime()) / (365.25 * 24 * 3600 * 1000);
+      }
+      const y = parseInt(String(vehicleData?.year || ''), 10);
+      return y ? new Date().getFullYear() - y : null;
+    })();
+    if (ageYears == null || !pricingModel) return excessOptions;
+    const mileageNum = parseInt(String(mileage || '').replace(/[^0-9]/g, '')) || null;
+    const fits = excessOptions.filter((candidate) => {
+      const q = priceFromPricingModel(
+        pricingModel,
+        {
+          ageYears,
+          mileage: mileageNum,
+          fuelType: vehicleData?.fuelType,
+          vehicleType: vehicleData?.vehicleType,
+          make: vehicleData?.make,
+          model: (vehicleData as any)?.model,
+        },
+        {
+          paymentPeriod: paymentType,
+          voluntaryExcess: candidate,
+          claimLimit: getDisplayClaimLimitValue(claimLimit),
+          labourRate,
+        },
+      );
+      if (!q || q.referral) return true; // nothing to judge — keep the option
+      const floorForCandidate = getNetPayableFloor({
+        paymentPeriod: paymentType,
+        voluntaryExcess: candidate,
+        claimLimit,
+        labourRate,
+        isMotorbike: isMotorbikeQuote,
+        surface: 'admin',
+        absoluteMinTotal: (pricingModel as any)?.absoluteMinTotal || 0,
+      });
+      return Math.ceil(q.totalPrice) >= Math.ceil(floorForCandidate);
+    });
+    // Never leave the agent with no choice: keep the lowest excess (highest price)
+    // if every tier would land on the floor.
+    return fits.length ? fits : excessOptions.slice(0, 1);
+  }, [excessOptions, pricingModel, vehicleData, mileage, paymentType, claimLimit, labourRate, isMotorbikeQuote]);
+
+  // If the picked excess no longer fits the minimum, fall back to a tier that does.
+  useEffect(() => {
+    if (sellableExcessOptions.length && !sellableExcessOptions.includes(excessAmount)) {
+      setExcessAmount(sellableExcessOptions.includes(150) ? 150 : sellableExcessOptions[0]);
+    }
+  }, [sellableExcessOptions, excessAmount]);
+
+
   const priceMatchEvidenced = priceMatchMode && !!priceMatchProofPath && !!priceMatchCompetitor.trim();
   const isUnderAbsoluteMin = (total: unknown) => {
     if (isManagementRole) return false; // Management may sell below the net floor (logged)
     const v = typeof total === 'number' ? total : parseFloat(String(total ?? '').replace(/[^0-9.]/g, ''));
     return Number.isFinite(v) && v > 0 && v < ABSOLUTE_MIN_TOTAL - 0.01;
   };
+
 
   
 
@@ -1183,9 +1245,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       pricingTrace.reason = '';
       // PERMANENT floor: the quoted total can never sit under the minimum
       // sellable price for this term/claim limit/labour rate/excess combo.
+      // The floor is NET PAYABLE, so when the 10% pay-in-full discount is on we
+      // gross the instalment total up until the discounted price clears it.
+      const netFloor = Math.ceil(ABSOLUTE_MIN_TOTAL);
+      const grossFloor = includePayInFullDiscount ? Math.ceil(netFloor / 0.9) : netFloor;
       const totalPrice = Math.max(
         Math.ceil(modelQuote.totalPrice + addOnPrice),
-        Math.ceil(ABSOLUTE_MIN_TOTAL),
+        grossFloor,
       );
       const monthlyPrice = Math.ceil(totalPrice / 12);
       const contractTotal = monthlyPrice * 12;
@@ -1193,11 +1259,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         totalPrice,
         monthlyPrice,
         payInFullPrice: includePayInFullDiscount
-          ? Math.ceil(contractTotal * 0.90)
+          ? Math.max(netFloor, Math.ceil(contractTotal * 0.90))
           : contractTotal,
         wasPrice: totalPrice + (MARKETING_SAVINGS[paymentType] || 0),
         savings: MARKETING_SAVINGS[paymentType] || 0,
       };
+
     }
     pricingTrace.usedLegacy = true;
     pricingTrace.reason = modelVehicleAge == null
@@ -1235,14 +1302,20 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       }),
     });
     
-    // Same permanent floor on the legacy grid path.
-    const flooredTotal = Math.max(Math.ceil(result.totalPrice), Math.ceil(ABSOLUTE_MIN_TOTAL));
+    // Same permanent floor on the legacy grid path — net payable, so the
+    // pay-in-full price is grossed up rather than dipping under the minimum.
+    const legacyNetFloor = Math.ceil(ABSOLUTE_MIN_TOTAL);
+    const legacyGrossFloor = includePayInFullDiscount
+      ? Math.ceil(legacyNetFloor / 0.9)
+      : legacyNetFloor;
+    const flooredTotal = Math.max(Math.ceil(result.totalPrice), legacyGrossFloor);
     const flooredMonthly = Math.max(result.monthlyPrice, Math.ceil(flooredTotal / 12));
     // Calculate pay-in-full based on monthly × 12 for consistency (avoids rounding discrepancies)
     const contractTotal = flooredMonthly * 12;
     const payInFullPrice = includePayInFullDiscount 
-      ? Math.ceil(contractTotal * 0.90)
+      ? Math.max(legacyNetFloor, Math.ceil(contractTotal * 0.90))
       : contractTotal;
+
     
     return { 
       totalPrice: flooredTotal, 
@@ -4568,7 +4641,7 @@ Questions? Call 0330 229 5040`;
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Excess Amount</Label>
                   <div className="grid grid-cols-3 gap-2">
-                    {excessOptions.map((excess) => {
+                    {sellableExcessOptions.map((excess) => {
                       const meta = JOURNEY_EXCESS_OPTIONS.find(o => o.value === excess);
                       const delta = getExcessMonthlyDelta(
                         paymentType as PaymentPeriod,
