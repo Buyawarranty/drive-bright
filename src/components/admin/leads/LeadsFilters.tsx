@@ -21,6 +21,8 @@ import { supabase } from '@/integrations/supabase/client';
 export type AssignmentFilter = 'all' | 'all_leads' | 'total' | 'awaiting_contact' | 'assigned';
 export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent' | 'reminder_soonest' | 'reminder_latest';
 export type SourceFilter = 'all' | 'google_ad' | 'social_ad' | 'bing_ad' | 'website';
+/** How far back the leads feed reaches. Agents default to the last 60 days. */
+export type AgeWindow = 'last_60' | 'all';
 
 interface SalesUser {
   id: string;
