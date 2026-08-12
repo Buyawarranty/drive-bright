@@ -262,7 +262,7 @@ const AugHybridVsLivePanel: React.FC<{
           <div className="rounded-lg border bg-muted/30 p-4">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <div>
-                <div className="text-sm font-semibold">Hybrid variables</div>
+                <div className="text-sm font-semibold">Price builder — how the test prices are worked out</div>
                 <p className="text-xs text-muted-foreground">
                   Applies to the <strong>Aug hybrid test</strong> preview on this page only, and is saved for
                   next time you open this tab. Live Quotes &amp; Orders and website prices only change when you
@@ -274,56 +274,152 @@ const AugHybridVsLivePanel: React.FC<{
               </Button>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <div>
-                <Label className="text-xs">Reference age band</Label>
-                <select
-                  className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm"
-                  value={cfg.referenceBandKey}
-                  onChange={e => set('referenceBandKey', e.target.value)}
-                >
-                  {base.bands.map((b: any) => (
-                    <option key={b.key} value={b.key}>{b.label}</option>
-                  ))}
-                </select>
+            <div className="space-y-5">
+              <div className="rounded-md border bg-background p-3">
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Step 1 · Which vehicle age do we price from?
+                </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Live one-year base {referenceLive ? formatGBP(referenceLive) : '—'}
+                  Everything else is worked out from this one age band, then the same shape is applied to
+                  every other age.
                 </p>
+                <div className="mt-3 grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label className="text-xs">Age band</Label>
+                    <select
+                      className="mt-1 h-9 w-full rounded-md border bg-background px-2 text-sm"
+                      value={cfg.referenceBandKey}
+                      onChange={e => set('referenceBandKey', e.target.value)}
+                    >
+                      {base.bands.map((b: any) => (
+                        <option key={b.key} value={b.key}>{b.label}</option>
+                      ))}
+                    </select>
+                    <p className="mt-1 text-xs text-muted-foreground">{'Live 1-year price today '}{referenceLive ? formatGBP(referenceLive) : '—'}</p>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <Label className="text-xs">Reduction from August base (%)</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={50}
-                  className="mt-1 h-9"
-                  value={cfg.baseReductionPct}
-                  onChange={e => set('baseReductionPct', Math.min(50, Math.max(0, Number(e.target.value) || 0)))}
-                />
+              <div className="rounded-md border bg-background p-3">
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Step 2 · Starting price for a 1-year warranty
+                </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Target reference {effectiveTarget ? formatGBP(effectiveTarget) : '—'} vs August {formatGBP(referenceLive)}
+                  Either take a percentage off today's price, or type the exact price you want that age band
+                  to quote. Use one or the other — the exact price wins if it is filled in.
                 </p>
+                <div className="mt-3 grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label className="text-xs">Take this much off today's price (%)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={50}
+                      className="mt-1 h-9"
+                      value={cfg.baseReductionPct}
+                      onChange={e => set('baseReductionPct', Math.min(50, Math.max(0, Number(e.target.value) || 0)))}
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">{'This age band would quote '}{effectiveTarget ? formatGBP(effectiveTarget) : '—'}{' for 1 year, versus '}{formatGBP(referenceLive)}{' live'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Or set the exact 1-year price (£, optional)</Label>
+                    <Input
+                      type="number"
+                      className="mt-1 h-9"
+                      placeholder={reducedReference ? String(reducedReference) : 'Leave blank to use the %'}
+                      value={cfg.targetReference || ''}
+                      onChange={e => set('targetReference', Number(e.target.value) || 0)}
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Every other age moves by the same {targetScale.toFixed(3)}× — leave blank to use the
+                      percentage instead.
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <Label className="text-xs">Exact one-year target (optional)</Label>
-                <Input
-                  type="number"
-                  className="mt-1 h-9"
-                  placeholder={reducedReference ? String(reducedReference) : 'Reduced base'}
-                  value={cfg.targetReference || ''}
-                  onChange={e => set('targetReference', Number(e.target.value) || 0)}
-                />
+              <div className="rounded-md border bg-background p-3">
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Step 3 · How much cheaper are 2 and 3 years?
+                </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Whole age curve scaled by {targetScale.toFixed(3)} — blank uses the reduction
+                  A saving off simply buying the 1-year price twice or three times — the reward for
+                  committing to a longer term.
                 </p>
+                <div className="mt-3 grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label className="text-xs">2-year saving (%)</Label>
+                    <Input
+                      type="number"
+                      className="mt-1 h-9"
+                      value={cfg.twoYearDiscountPct}
+                      onChange={e => set('twoYearDiscountPct', Number(e.target.value) || 0)}
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">{'2 years costs '}{hybridModel.twoYearMult.toFixed(2)}{'× the 1-year price (live '}{base.twoYearMult.toFixed(2)}{'×, '}{liveTwoYearDiscountPct}{'% off)'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs">3-year saving (%)</Label>
+                    <Input
+                      type="number"
+                      className="mt-1 h-9"
+                      value={cfg.threeYearDiscountPct}
+                      onChange={e => set('threeYearDiscountPct', Number(e.target.value) || 0)}
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">{'3 years costs '}{hybridModel.threeYearMult.toFixed(2)}{'× the 1-year price (live '}{base.threeYearMult.toFixed(2)}{'×, '}{liveThreeYearDiscountPct}{'% off)'}</p>
+                  </div>
+                </div>
               </div>
 
+              <div className="rounded-md border bg-background p-3">
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Step 4 · How harshly do we price risky cars?
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Higher-risk models and high-mileage cars normally cost more. Pull these sliders below 1 to
+                  soften those increases (cheaper, easier to sell); above 1 to charge more for them. 0 prices
+                  every car the same.
+                </p>
+                <div className="mt-3 grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label className="text-xs">
+                      Risky models: {cfg.riskSpread < 1 ? 'softer' : cfg.riskSpread > 1 ? 'harsher' : 'as now'} (×
+                      {cfg.riskSpread.toFixed(2)})
+                    </Label>
+                    <Slider
+                      className="mt-3"
+                      min={0}
+                      max={2}
+                      step={0.05}
+                      value={[cfg.riskSpread]}
+                      onValueChange={v => set('riskSpread', v[0])}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">
+                      High mileage: {cfg.mileageSpread < 1 ? 'softer' : cfg.mileageSpread > 1 ? 'harsher' : 'as now'} (×
+                      {cfg.mileageSpread.toFixed(2)})
+                    </Label>
+                    <Slider
+                      className="mt-3"
+                      min={0}
+                      max={2}
+                      step={0.05}
+                      value={[cfg.mileageSpread]}
+                      onValueChange={v => set('mileageSpread', v[0])}
+                    />
+                  </div>
+                </div>
+              </div>
 
-              <div>
-                <Label className="text-xs">Auto-quote ceiling (one-year equivalent)</Label>
-                <div className="mt-1 flex items-center gap-2">
+              <div className="rounded-md border bg-background p-3">
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Step 5 · Most we will quote automatically
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  If a 1-year price works out above this, the customer is referred to an agent instead of
+                  being shown a price that rarely converts.
+                </p>
+                <div className="mt-3 flex max-w-xs items-center gap-2">
                   <Input
                     type="number"
                     className="h-9"
@@ -339,68 +435,9 @@ const AugHybridVsLivePanel: React.FC<{
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {cfg.ceilingOn
-                    ? 'Above this the quote refers out. Fixed pound figure — the Change price % does not move it, so a price rise refers more vehicles out.'
-                    : 'Ceiling off — every price is quoted'}
+                    ? 'This is a fixed pound figure — the Change price % above does not move it, so a price rise refers more vehicles out.'
+                    : 'Off — every price is quoted, however high.'}
                 </p>
-              </div>
-
-              <div>
-                <Label className="text-xs">Model-risk spread ×{cfg.riskSpread.toFixed(2)}</Label>
-                <Slider
-                  className="mt-3"
-                  min={0}
-                  max={2}
-                  step={0.05}
-                  value={[cfg.riskSpread]}
-                  onValueChange={v => set('riskSpread', v[0])}
-                />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Below 1 reduces high-risk uplifts while preserving low-risk discounts.
-                </p>
-              </div>
-
-              <div>
-                <Label className="text-xs">Mileage spread ×{cfg.mileageSpread.toFixed(2)}</Label>
-                <Slider
-                  className="mt-3"
-                  min={0}
-                  max={2}
-                  step={0.05}
-                  value={[cfg.mileageSpread]}
-                  onValueChange={v => set('mileageSpread', v[0])}
-                />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Below 1 reduces high-mileage uplifts while preserving lower-mileage discounts.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs">2-year discount % (off 2× one year)</Label>
-                  <Input
-                    type="number"
-                    className="mt-1 h-9"
-                    value={cfg.twoYearDiscountPct}
-                    onChange={e => set('twoYearDiscountPct', Number(e.target.value) || 0)}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    ×{hybridModel.twoYearMult.toFixed(2)} vs live ×{base.twoYearMult.toFixed(2)} (live ={' '}
-                    {liveTwoYearDiscountPct}% off)
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-xs">3-year discount % (off 3× one year)</Label>
-                  <Input
-                    type="number"
-                    className="mt-1 h-9"
-                    value={cfg.threeYearDiscountPct}
-                    onChange={e => set('threeYearDiscountPct', Number(e.target.value) || 0)}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    ×{hybridModel.threeYearMult.toFixed(2)} vs live ×{base.threeYearMult.toFixed(2)} (live ={' '}
-                    {liveThreeYearDiscountPct}% off)
-                  </p>
-                </div>
               </div>
             </div>
 
