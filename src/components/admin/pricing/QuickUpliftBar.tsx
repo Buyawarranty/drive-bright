@@ -113,21 +113,28 @@ const QuickUpliftBar: React.FC<{
 }> = ({ variantLabel, value, onChange }) => {
   const [savedPct, setSavedPct] = useState(() => readSavedUplift(variantLabel));
   useEffect(() => setSavedPct(readSavedUplift(variantLabel)), [variantLabel]);
+  useEffect(() => {
+    const sync = () => setSavedPct(readSavedUplift(variantLabel));
+    window.addEventListener(UPLIFT_SAVED_EVENT, sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener(UPLIFT_SAVED_EVENT, sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, [variantLabel]);
 
+  /** The figure is kept the moment it is chosen, so nothing is ever lost on
+   *  revisiting the tab. This button simply confirms it out loud. */
   const dirty = value !== savedPct;
 
   const save = () => {
-    try {
-      localStorage.setItem(storageKey(variantLabel), String(value));
-      setSavedPct(value);
-      toast.success(
-        value === 0
-          ? `${variantLabel}: price change cleared and saved as a draft`
-          : `${variantLabel}: ${value > 0 ? '+' : ''}${value}% saved as a draft — push live when you are happy`
-      );
-    } catch {
-      toast.error('Could not save the draft on this browser');
-    }
+    writeSavedUplift(variantLabel, value);
+    setSavedPct(value);
+    toast.success(
+      value === 0
+        ? `${variantLabel}: price change cleared and saved as a draft`
+        : `${variantLabel}: ${value > 0 ? '+' : ''}${value}% saved as a draft — push live when you are happy`
+    );
   };
 
   return (
