@@ -549,6 +549,14 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     return fits.length ? fits : excessOptions.slice(0, 1);
   }, [excessOptions, pricingModel, vehicleData, mileage, paymentType, claimLimit, labourRate, isMotorbikeQuote]);
 
+  // If the picked excess no longer fits the minimum, fall back to a tier that does.
+  useEffect(() => {
+    if (sellableExcessOptions.length && !sellableExcessOptions.includes(excessAmount)) {
+      setExcessAmount(sellableExcessOptions.includes(150) ? 150 : sellableExcessOptions[0]);
+    }
+  }, [sellableExcessOptions, excessAmount]);
+
+
   const priceMatchEvidenced = priceMatchMode && !!priceMatchProofPath && !!priceMatchCompetitor.trim();
   const isUnderAbsoluteMin = (total: unknown) => {
     if (isManagementRole) return false; // Management may sell below the net floor (logged)
