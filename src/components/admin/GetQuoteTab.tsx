@@ -239,6 +239,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [customerDob, setCustomerDob] = useState('');
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [selectedLeadOwner, setSelectedLeadOwner] = useState<string | null>(null);
+  const [selectedLeadOwnerId, setSelectedLeadOwnerId] = useState<string | null>(null);
   const matchedLeadOwner = useLeadOwner(customerEmail, customerPhone);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   // Landing default matches Step 3: 2 years, £2,000 claim limit, £100 excess, £70/hr
@@ -789,6 +790,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const handleLeadSelect = (lead: LeadData) => {
     setSelectedLeadId(lead.id);
     setSelectedLeadOwner(lead.owner_name || null);
+    setSelectedLeadOwnerId(lead.assigned_to || null);
     setCustomerEmail(lead.email);
     setCustomerFirstName(lead.first_name || '');
     setCustomerLastName(lead.last_name || '');
@@ -911,6 +913,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         if (lead.email || lead.first_name || lead.phone) {
           setAutoLeadMatched(true);
           const owner = lead.assigned_to ? adminUsersMap.get(lead.assigned_to) : null;
+          setSelectedLeadOwnerId(lead.assigned_to || null);
           setSelectedLeadOwner(owner ? `${owner.first_name || ''} ${owner.last_name || ''}`.trim() || owner.email : null);
           if (filled) {
             toast({
@@ -3799,6 +3802,25 @@ Questions? Call 0330 229 5040`;
                 </div>
               </CardHeader>
               <CardContent className="p-4 space-y-4">
+                {(() => {
+                  const otherOwnerId = selectedLeadId
+                    ? (selectedLeadOwnerId && selectedLeadOwnerId !== currentAdminId ? selectedLeadOwnerId : null)
+                    : (matchedLeadOwner.ownerId && matchedLeadOwner.ownerId !== currentAdminId ? matchedLeadOwner.ownerId : null);
+                  if (!otherOwnerId) return null;
+                  const ownerLabel = (selectedLeadId ? selectedLeadOwner : matchedLeadOwner.ownerName) || 'another agent';
+                  return (
+                    <div className="flex items-start gap-2 rounded-md border-2 border-amber-400 bg-amber-50 px-3 py-2 text-sm">
+                      <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5 text-amber-600" />
+                      <div className="text-amber-900">
+                        <p className="font-semibold">This lead already belongs to {ownerLabel}.</p>
+                        <p className="text-xs">
+                          Quoting or calling it doubles up on {ownerLabel}'s work — the quote credits you, the lead stays with them.
+                          Only continue if {ownerLabel} asked you to, or get a manager to reassign the lead first.
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
                 <div className="flex flex-col gap-4 max-w-2xl">
                   <div className="space-y-3">
                 {/* Registration — yellow UK plate */}

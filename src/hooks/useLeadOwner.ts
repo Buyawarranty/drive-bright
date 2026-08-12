@@ -4,6 +4,7 @@ import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
 export interface LeadOwnerInfo {
   ownerName: string | null;
+  ownerId: string | null;
   leadFound: boolean;
   loading: boolean;
 }
@@ -75,5 +76,5 @@ export const useLeadOwner = (email?: string | null, phone?: string | null): Lead
     ? [user.first_name, user.last_name].filter(Boolean).join(' ').trim() || user.email
     : null;
 
-  return { ownerName, leadFound, loading };
+  return { ownerName, ownerId: assignedTo, leadFound, loading };
 };
