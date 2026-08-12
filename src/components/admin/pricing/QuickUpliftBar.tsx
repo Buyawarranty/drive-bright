@@ -40,6 +40,58 @@ export function readSavedUplift(variantLabel: string): number {
   }
 }
 
+/** Fired whenever a variant's percentage is stored, so every panel showing the
+ *  same variant stays in step without a page refresh. */
+export const UPLIFT_SAVED_EVENT = 'bw:pricing-uplift-saved';
+
+/** Store the percentage for a variant on this machine. */
+export function writeSavedUplift(variantLabel: string, pct: number) {
+  try {
+    localStorage.setItem(storageKey(variantLabel), String(pct));
+    window.dispatchEvent(
+      new CustomEvent(UPLIFT_SAVED_EVENT, { detail: { variantLabel, pct } })
+    );
+  } catch {
+    /* private browsing — the figure simply will not persist */
+  }
+}
+
+/**
+ * The percentage for one pricing variant, remembered between visits.
+ * Whatever a manager selects is kept immediately, so reopening the Price
+ * updates tab always shows the same figure they left set.
+ */
+export function useUpliftPct(variantLabel: string): [number, (pct: number) => void] {
+  const [pct, setPct] = useState(() => readSavedUplift(variantLabel));
+
+  useEffect(() => setPct(readSavedUplift(variantLabel)), [variantLabel]);
+
+  useEffect(() => {
+    const sync = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail;
+      if (detail?.variantLabel === variantLabel && Number.isFinite(Number(detail.pct))) {
+        setPct(Number(detail.pct));
+      } else if (!detail) {
+        setPct(readSavedUplift(variantLabel));
+      }
+    };
+    window.addEventListener(UPLIFT_SAVED_EVENT, sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener(UPLIFT_SAVED_EVENT, sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, [variantLabel]);
+
+  const set = (next: number) => {
+    const clean = Number.isFinite(next) ? next : 0;
+    setPct(clean);
+    writeSavedUplift(variantLabel, clean);
+  };
+
+  return [pct, set];
+}
+
 /** Scale the one-year age curve of a builder model by a percentage uplift. */
 export function applyModelUplift<T extends { bands?: any[] }>(model: T, pct: number): T {
   if (!model || !pct) return model;
@@ -61,21 +113,28 @@ const QuickUpliftBar: React.FC<{
 }> = ({ variantLabel, value, onChange }) => {
   const [savedPct, setSavedPct] = useState(() => readSavedUplift(variantLabel));
   useEffect(() => setSavedPct(readSavedUplift(variantLabel)), [variantLabel]);
+  useEffect(() => {
+    const sync = () => setSavedPct(readSavedUplift(variantLabel));
+    window.addEventListener(UPLIFT_SAVED_EVENT, sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener(UPLIFT_SAVED_EVENT, sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, [variantLabel]);
 
+  /** The figure is kept the moment it is chosen, so nothing is ever lost on
+   *  revisiting the tab. This button simply confirms it out loud. */
   const dirty = value !== savedPct;
 
   const save = () => {
-    try {
-      localStorage.setItem(storageKey(variantLabel), String(value));
-      setSavedPct(value);
-      toast.success(
-        value === 0
-          ? `${variantLabel}: price change cleared and saved as a draft`
-          : `${variantLabel}: ${value > 0 ? '+' : ''}${value}% saved as a draft — push live when you are happy`
-      );
-    } catch {
-      toast.error('Could not save the draft on this browser');
-    }
+    writeSavedUplift(variantLabel, value);
+    setSavedPct(value);
+    toast.success(
+      value === 0
+        ? `${variantLabel}: price change cleared and saved as a draft`
+        : `${variantLabel}: ${value > 0 ? '+' : ''}${value}% saved as a draft — push live when you are happy`
+    );
   };
 
   return (
@@ -171,14 +230,12 @@ const QuickUpliftBar: React.FC<{
           {dirty ? (
             <Badge variant="secondary" className="text-xs">Unsaved</Badge>
           ) : (
-            savedPct !== 0 && (
-              <Badge variant="secondary" className="text-xs">
-                <Check className="mr-1 h-3 w-3" />
-                Draft saved {savedPct > 0 ? '+' : ''}{savedPct}%
-              </Badge>
-            )
+            <Badge variant="secondary" className="text-xs">
+              <Check className="mr-1 h-3 w-3" />
+              {savedPct === 0 ? 'Saved — no change' : `Saved ${savedPct > 0 ? '+' : ''}${savedPct}% for next visit`}
+            </Badge>
           )}
-          <Button type="button" size="sm" onClick={save} disabled={!dirty}>
+          <Button type="button" size="sm" onClick={save}>
             <Save className="mr-2 h-4 w-4" />
             Save &amp; update prices
           </Button>
