@@ -514,6 +514,9 @@ serve(async (req) => {
       policyUpdated: !!existingPolicy,
       
       emailSent,
+      loginVerified,
+      emailError,
+
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
