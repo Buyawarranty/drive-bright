@@ -1590,6 +1590,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
         <PriceConversionAovPanel dateRange={effectiveDateRange} />
 
+        <AnalyticsSectionHeading id="leads-to-sales" title="Leads to sales ratio" description="Leads in versus sales made per day, with ad spend against the value of those sales." accent="border-amber-500/60" />
+
+        <LeadsToSalesRatioPanel />
+
 
 
 
