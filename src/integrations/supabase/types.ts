@@ -11414,50 +11414,73 @@ export type Database = {
       trade_warranty_signups: {
         Row: {
           additional_information: string | null
+          approved_at: string | null
           contact_name: string | null
           created_at: string
           current_warranty_provider: string | null
+          dealer_id: string | null
           dealership_name: string | null
+          decision_notes: string | null
           email_address: string
           heard_about_us: string | null
           id: string
           interested_in: string | null
           monthly_vehicle_sales: string | null
           phone_number: string
+          rejected_at: string | null
+          reviewed_by: string | null
           status: Database["public"]["Enums"]["trade_warranty_signup_status"]
           updated_at: string
         }
         Insert: {
           additional_information?: string | null
+          approved_at?: string | null
           contact_name?: string | null
           created_at?: string
           current_warranty_provider?: string | null
+          dealer_id?: string | null
           dealership_name?: string | null
+          decision_notes?: string | null
           email_address: string
           heard_about_us?: string | null
           id?: string
           interested_in?: string | null
           monthly_vehicle_sales?: string | null
           phone_number: string
+          rejected_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["trade_warranty_signup_status"]
           updated_at?: string
         }
         Update: {
           additional_information?: string | null
+          approved_at?: string | null
           contact_name?: string | null
           created_at?: string
           current_warranty_provider?: string | null
+          dealer_id?: string | null
           dealership_name?: string | null
+          decision_notes?: string | null
           email_address?: string
           heard_about_us?: string | null
           id?: string
           interested_in?: string | null
           monthly_vehicle_sales?: string | null
           phone_number?: string
+          rejected_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["trade_warranty_signup_status"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "trade_warranty_signups_dealer_id_fkey"
+            columns: ["dealer_id"]
+            isOneToOne: false
+            referencedRelation: "dealers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trader_pricing_config: {
         Row: {
@@ -13293,7 +13316,13 @@ export type Database = {
         | "unpaid_leave"
         | "training"
         | "wfh"
-      trade_warranty_signup_status: "new" | "contacted" | "qualified" | "closed"
+      trade_warranty_signup_status:
+        | "new"
+        | "contacted"
+        | "qualified"
+        | "closed"
+        | "approved"
+        | "rejected"
       user_role:
         | "admin"
         | "customer"
@@ -13533,7 +13562,14 @@ export const Constants = {
         "training",
         "wfh",
       ],
-      trade_warranty_signup_status: ["new", "contacted", "qualified", "closed"],
+      trade_warranty_signup_status: [
+        "new",
+        "contacted",
+        "qualified",
+        "closed",
+        "approved",
+        "rejected",
+      ],
       user_role: [
         "admin",
         "customer",
