@@ -53,6 +53,7 @@ const LEAD_SOURCES: { key: string; label: string; color: string; aliases: string
   { key: 'social_ad', label: 'Meta',     color: '#1877F2', aliases: ['facebook', 'meta'] },
   { key: 'google_ad', label: 'Google',   color: '#EA4335', aliases: ['google'] },
   { key: 'bing_ad',   label: 'Bing',     color: '#0F7A8A', aliases: ['bing', 'microsoft'] },
+  { key: 'tiktok_ad', label: 'TikTok',   color: '#111827', aliases: ['tiktok'] },
 ];
 
 
