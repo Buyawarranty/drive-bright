@@ -956,7 +956,10 @@ const handler = async (req: Request): Promise<Response> => {
       policyId: policy.id,
       warrantyNumber: policy.warranty_number,
       email: customer.email,
-      attachmentsIncluded: attachments.length
+      attachmentsIncluded: attachments.length,
+      loginDetailsIncluded: shouldIncludeLoginDetails,
+      loginVerified
+
     }), {
       status: 200,
       headers: { "content-type": "application/json", ...corsHeaders },
