@@ -52,6 +52,7 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   const [isPrintLetterOpen, setIsPrintLetterOpen] = useState(false);
   
   const [isEditInfoOpen, setIsEditInfoOpen] = useState(false);
+  const { isManagement } = useIsManagement();
 
   const previousLeadIdRef = useRef<string | null>(null);
 
