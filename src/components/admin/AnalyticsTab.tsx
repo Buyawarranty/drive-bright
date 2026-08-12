@@ -14,6 +14,7 @@ import { CoverOptionsMixPanel } from './analytics/CoverOptionsMixPanel';
 import { DailyRevenueTrendPanel } from './analytics/DailyRevenueTrendPanel';
 import { CustomerDemographicsPanel } from './analytics/CustomerDemographicsPanel';
 import { PriceConversionAovPanel } from './analytics/PriceConversionAovPanel';
+import { LeadsToSalesRatioPanel } from './analytics/LeadsToSalesRatioPanel';
 
 
 import { QuickMonthFilter } from './QuickMonthFilter';
@@ -95,6 +96,7 @@ const ANALYTICS_QUICK_LINKS = [
   { id: 'cover-options', label: 'Cover options mix', className: 'bg-purple-300/50 text-purple-900 border-purple-200/50 hover:bg-purple-400/50' },
   { id: 'demographics', label: 'Age & UK demographics', className: 'bg-fuchsia-300/50 text-fuchsia-900 border-fuchsia-200/50 hover:bg-fuchsia-400/50' },
   { id: 'price-conversion-aov', label: 'Price, conversion & AOV', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
+  { id: 'leads-to-sales', label: 'Leads to sales ratio', className: 'bg-amber-300/50 text-amber-900 border-amber-200/50 hover:bg-amber-400/50' },
 
 
   { id: 'filters', label: 'Price analysis per day', className: 'bg-slate-300/50 text-slate-900 border-slate-200/50 hover:bg-slate-400/50' },
@@ -1587,6 +1589,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         <AnalyticsSectionHeading id="price-conversion-aov" title="Price, conversion & average order value" description="Which quoted price points convert best, where sales actually land, and how AOV is trending." accent="border-emerald-500/60" />
 
         <PriceConversionAovPanel dateRange={effectiveDateRange} />
+
+        <AnalyticsSectionHeading id="leads-to-sales" title="Leads to sales ratio" description="Leads in versus sales made per day, with ad spend against the value of those sales." accent="border-amber-500/60" />
+
+        <LeadsToSalesRatioPanel />
 
 
 
