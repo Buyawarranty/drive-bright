@@ -23,6 +23,7 @@ import { MarkAsPaidDialog } from './MarkAsPaidDialog';
 import { UnifiedNotesPanel } from './notes/UnifiedNotesPanel';
 import { PrintableWarrantyLetter } from '../PrintableWarrantyLetter';
 import { LeadDuplicatesPanel } from './LeadDuplicatesPanel';
+import { EditLeadInfoDialog } from './EditLeadInfoDialog';
 
 interface LeadDetailsPanelProps {
   lead: Lead;
