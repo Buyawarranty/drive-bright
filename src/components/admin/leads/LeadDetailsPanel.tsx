@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { 
   Phone, Mail, MessageSquare, Car, User, 
   ChevronDown, ChevronUp, 
-  CreditCard, Printer, Award, History as HistoryIcon
+  CreditCard, Printer, Award, History as HistoryIcon, PencilLine
 } from 'lucide-react';
 import { LeadHistoryTimeline } from './LeadHistoryTimeline';
 
