@@ -80,6 +80,7 @@ import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { useIsManagement } from '@/hooks/useIsManagement';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { getVehicleIdentificationGap } from '@/lib/vehicleIdentification';
+import { isNorthernIrelandPlate } from '@/lib/niPlate';
 import { useSavedPricingModel } from './pricing/useSavedPricingModel';
 
 
@@ -4159,6 +4160,14 @@ Questions? Call 0330 229 5040`;
                   <Ban className={`h-4 w-4 ${vehicleIdBlocked ? 'text-destructive' : 'text-amber-600'}`} />
                   <AlertDescription className={`text-sm ${vehicleIdBlocked ? 'text-destructive' : 'text-amber-800'}`}>
                     <strong>Vehicle not fully recognised.</strong> {vehicleIdGap.agentMessage}
+                    {isNorthernIrelandPlate(vehicleData?.regNumber) && (
+                      <div className="mt-1.5 rounded border border-amber-300 bg-white/70 p-2 text-[13px] text-amber-900">
+                        <strong>Northern Ireland plate.</strong> There is no NI vehicle or MOT lookup, so
+                        confirm the make, model, year and mileage with the customer (mileage is typed in
+                        here, not pulled from an MOT). Once the vehicle is confirmed a manager can
+                        authorise it and the sale can be completed as normal.
+                      </div>
+                    )}
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       {vehicleIdBlocked ? (
                         isManagementRole ? (
