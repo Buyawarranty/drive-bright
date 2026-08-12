@@ -1179,7 +1179,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     if (modelQuote && !modelQuote.referral && modelVehicleAge != null) {
       pricingTrace.usedLegacy = false;
       pricingTrace.reason = '';
-      const totalPrice = Math.ceil(modelQuote.totalPrice + addOnPrice);
+      // PERMANENT floor: the quoted total can never sit under the minimum
+      // sellable price for this term/claim limit/labour rate/excess combo.
+      const totalPrice = Math.max(
+        Math.ceil(modelQuote.totalPrice + addOnPrice),
+        Math.ceil(ABSOLUTE_MIN_TOTAL),
+      );
       const monthlyPrice = Math.ceil(totalPrice / 12);
       const contractTotal = monthlyPrice * 12;
       return {
