@@ -107,16 +107,22 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
       if (cartsError) throw cartsError;
       setApplications(carts || []);
 
-      // Check for existing customer with same email + reg plate
-      const { data: customer, error: customerError } = await supabase
+      // Check for existing customer on the SAME reg plate — orders are keyed by
+      // reg, so the same email on another vehicle is a separate order, not a clash.
+      const regPlateForLookup = (lead.vehicle_reg || '').toUpperCase().replace(/\s/g, '');
+      let customerQuery = supabase
         .from('customers')
         .select('id, name, email, registration_plate, plan_type, status, created_at')
-        .eq('email', lead.email.toLowerCase())
-        .maybeSingle();
+        .eq('email', lead.email.toLowerCase());
+      if (regPlateForLookup) {
+        customerQuery = customerQuery.eq('registration_plate', regPlateForLookup);
+      }
+      const { data: customer, error: customerError } = await customerQuery.maybeSingle();
 
       if (!customerError && customer) {
         setExistingCustomer(customer);
       }
+
 
       // Pre-populate from current lead data or latest application
       const latestApp = carts?.[0];
