@@ -121,9 +121,10 @@ export default function PriceUpdateLogPanel({
           <p className="text-sm text-muted-foreground">No price models recorded yet.</p>
         )}
 
-        {rows.map(v => {
+        {rows.map((v, i) => {
           const isLive = v.status === 'live';
           const sample = sampleGridPrice(v);
+          const move = pctVsPrevious(v, rows[i + 1]);
           return (
             <div
               key={v.id}
