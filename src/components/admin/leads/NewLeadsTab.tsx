@@ -294,6 +294,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [agentFilter, setAgentFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
+  // Feed age window: agents default to the last 60 days of leads; "All" shows everything.
+  const [ageWindow, setAgeWindow] = useState<AgeWindow>('last_60');
   const [reminderLeadIds, setReminderLeadIds] = useState<Set<string>>(new Set());
   const [reminderTimesMap, setReminderTimesMap] = useState<Record<string, string>>({});
   const [notSpokenTagId, setNotSpokenTagId] = useState<string | null>(null);
