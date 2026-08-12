@@ -416,20 +416,32 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       return;
     }
 
-    // Check for existing policy
+    // Check for an existing live policy on THIS vehicle only. Orders are keyed
+    // by registration plate, so the same customer can hold two orders at once
+    // on different vehicles without a clash warning.
     setExistingPolicyWarning(null);
-    const { data: existingPolicy } = await supabase
-      .from('customer_policies')
-      .select('id, policy_number, status')
+    const normalizedReg = (vehicleData.regNumber || '').toUpperCase().replace(/\s/g, '');
+    const { data: sameRegCustomers } = await supabase
+      .from('customers')
+      .select('id')
       .eq('email', customerEmail.toLowerCase())
-      .eq('status', 'active')
-      .maybeSingle();
+      .eq('registration_plate', normalizedReg);
 
-    if (existingPolicy) {
-      setExistingPolicyWarning(
-        `Warning: This customer already has an active policy (${existingPolicy.policy_number}). Creating a new one may cause issues.`
-      );
+    if (sameRegCustomers && sameRegCustomers.length > 0) {
+      const { data: existingPolicy } = await supabase
+        .from('customer_policies')
+        .select('id, policy_number, status')
+        .in('customer_id', sameRegCustomers.map(c => c.id))
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (existingPolicy) {
+        setExistingPolicyWarning(
+          `Warning: this customer already has an active policy (${existingPolicy.policy_number}) on ${vehicleData.regNumber}. Creating another one for the same vehicle may cause issues.`
+        );
+      }
     }
+
 
     // Pre-fill editable fields
     setEditableFirstName(customerFirstName);
