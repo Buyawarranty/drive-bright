@@ -199,18 +199,23 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
         }
       }
       
-      // Fallback to year-based calculation if no manufactureDate
+      // Fallback to year-based calculation if no manufactureDate.
+      // Only applied when a plausible year came back — Northern Ireland and
+      // imported vehicles often return no year, and a missing year must never
+      // be treated as a 2,000-year-old vehicle.
       if (vehicleAgePrecise === null) {
         const currentYear = now.getFullYear();
         const vehicleYear = parseInt(data.yearOfManufacture || data.year || '0', 10);
+        const hasPlausibleYear = Number.isFinite(vehicleYear) && vehicleYear > 1950 && vehicleYear <= currentYear + 1;
         const vehicleAge = currentYear - vehicleYear;
 
-        if (vehicleAge > 15) {
+        if (hasPlausibleYear && vehicleAge > 15) {
           setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
           setIsLookingUp(false);
           return;
         }
       }
+
 
       // Mileage always comes from the last MOT odometer reading. When there is
       // no reading we assume a typical mileage and confirm it at checkout.
