@@ -790,6 +790,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const handleLeadSelect = (lead: LeadData) => {
     setSelectedLeadId(lead.id);
     setSelectedLeadOwner(lead.owner_name || null);
+    setSelectedLeadOwnerId(lead.assigned_to || null);
     setCustomerEmail(lead.email);
     setCustomerFirstName(lead.first_name || '');
     setCustomerLastName(lead.last_name || '');
@@ -912,6 +913,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         if (lead.email || lead.first_name || lead.phone) {
           setAutoLeadMatched(true);
           const owner = lead.assigned_to ? adminUsersMap.get(lead.assigned_to) : null;
+          setSelectedLeadOwnerId(lead.assigned_to || null);
           setSelectedLeadOwner(owner ? `${owner.first_name || ''} ${owner.last_name || ''}`.trim() || owner.email : null);
           if (filled) {
             toast({
