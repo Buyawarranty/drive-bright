@@ -78,6 +78,7 @@ import BumperPaymentPanel from './BumperPaymentPanel';
 import { useAgentDiscountCap } from '@/hooks/useAgentDiscountCap';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { getVehicleIdentificationGap } from '@/lib/vehicleIdentification';
 import { useSavedPricingModel } from './pricing/useSavedPricingModel';
 
