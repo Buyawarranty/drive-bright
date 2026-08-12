@@ -1,5 +1,6 @@
 import { mapVehicleToBandKeys, type ResolvedTestVehicle } from './RegLookupBar';
 import { getExcessTotalAdjustment, getExcessFactor, getAbsoluteMinimumShape } from '@/lib/pricingMatrix';
+import { GLOBAL_ABSOLUTE_MIN_TOTAL } from '@/lib/pricing/netFloor';
 
 
 /**
