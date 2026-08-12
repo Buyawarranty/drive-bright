@@ -2185,7 +2185,11 @@ export const CustomersTab = ({
           // First initial contact = earliest logged call, quick note or status
           // change against that lead. Whichever happened first counts.
           const firstContactByLeadId: Record<string, string> = {};
-          const leadIds = Object.values(leadIdMap).filter(Boolean);
+          const leadIds = Array.from(new Set([
+            ...Object.values(leadIdMap),
+            ...Object.values(leadIdByReg),
+            ...Object.values(leadIdByPhone),
+          ].filter(Boolean)));
           if (leadIds.length > 0) {
             const idBatches: string[][] = [];
             for (let i = 0; i < leadIds.length; i += 300) {
@@ -2214,13 +2218,25 @@ export const CustomersTab = ({
 
           const withLeadDates = processedData.map((c: any) => {
             const key = c.email?.toLowerCase();
-            const leadId = key ? leadIdMap[key] : undefined;
+            const reg = normReg(c.registration_plate);
+            const ph = tail9(c.phone);
+            const leadDate =
+              (key && leadDateMap[key]) ||
+              (reg && leadDateByReg[reg]) ||
+              (ph && leadDateByPhone[ph]) ||
+              null;
+            const leadId =
+              (key && leadIdMap[key]) ||
+              (reg && leadIdByReg[reg]) ||
+              (ph && leadIdByPhone[ph]) ||
+              undefined;
             return {
               ...c,
-              lead_date: (key && leadDateMap[key]) || null,
+              lead_date: leadDate,
               first_contact_date: (leadId && firstContactByLeadId[leadId]) || null,
             };
           });
+
 
 
           const { recoveredRows, recoveredCount } = await recoverMissingPhones(withLeadDates);
