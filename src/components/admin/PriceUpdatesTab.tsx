@@ -873,7 +873,9 @@ export default function PriceUpdatesTab() {
           versions={versions}
           busy={busy}
           onRevert={handleRestoreVersion}
+          onSaveNote={async (id, notes) => { await saveVersion(id, { notes }); }}
         />
+
       </div>
 
 
