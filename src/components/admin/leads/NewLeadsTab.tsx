@@ -3,6 +3,7 @@ import { isToday, isPast } from 'date-fns';
 import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { RepeatCustomerBanner } from './RepeatCustomerBanner';
+import { MyTargetStrip } from './MyTargetStrip';
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
 import { QuotesSentPanel } from '@/components/admin/QuotesSentPanel';
 import { ConvertedSalesLogPanel } from './ConvertedSalesLogPanel';
@@ -1574,6 +1575,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   return (
     <div className="space-y-4">
       {/* MissedCallAlertBar now mounted globally in AdminDashboard so it shows on every tab */}
+      <MyTargetStrip />
       <RepeatCustomerBanner
         leads={teamFilteredFreshLeads}
         currentAdminId={currentAdminId}
