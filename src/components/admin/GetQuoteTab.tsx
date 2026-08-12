@@ -4292,7 +4292,7 @@ Questions? Call 0330 229 5040`;
 
               </CardHeader>
 
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 pb-56">
                 {/* Customer Info */}
                 <div ref={customerInfoRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 scroll-mt-24">
                   <div className="space-y-2">
