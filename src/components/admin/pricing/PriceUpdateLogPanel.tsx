@@ -37,12 +37,32 @@ export default function PriceUpdateLogPanel({
   versions,
   busy,
   onRevert,
+  onSaveNote,
 }: {
   versions: PricingVersion[];
   busy?: boolean;
   onRevert: (v: PricingVersion) => void;
+  /** Save the performance note against this price model. */
+  onSaveNote?: (id: string, notes: string) => Promise<void>;
 }) {
   const [showAll, setShowAll] = useState(false);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [openNotes, setOpenNotes] = useState<Record<string, boolean>>({});
+
+  const saveNote = async (id: string, current: string) => {
+    if (!onSaveNote) return;
+    setSavingId(id);
+    try {
+      await onSaveNote(id, (drafts[id] ?? current ?? '').trim());
+      toast.success('Note saved');
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not save the note');
+    } finally {
+      setSavingId(null);
+    }
+  };
+
 
   const rows = useMemo(() => {
     const sorted = [...versions].sort((a, b) => {
