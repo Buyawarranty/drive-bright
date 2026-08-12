@@ -252,16 +252,31 @@ export function priceFromPricingModel(
 
 
 
-  const minSellable = Math.max(shapedModelFloor, absoluteMin);
+  /** Per-model absolute minimum (e.g. Aug hybrid = £399 net payable). */
+  const modelAbsoluteMin =
+    Number((model as any).absoluteMinTotal) > 0
+      ? Math.round(Number((model as any).absoluteMinTotal) * motorbikeFactor)
+      : 0;
+
+  const minSellable = Math.max(shapedModelFloor, absoluteMin, modelAbsoluteMin);
 
   const belowMinimum = total < minSellable;
   if (belowMinimum) total = minSellable;
 
-
+  /**
+   * The minimum is a NET PAYABLE floor: the pay-in-full price (after the
+   * pay-in-full discount) can never fall below it, so we gross the instalment
+   * total up until the discounted price clears the floor.
+   */
+  const payInFullFactor = Number(model.payInFullFactor ?? 0.9);
+  if (payInFullFactor > 0 && Math.round(total * payInFullFactor) < minSellable) {
+    total = Math.ceil(minSellable / payInFullFactor);
+  }
 
   // We only ever offer 12 monthly instalments, whatever the cover term.
   const monthlyPrice = Math.ceil(total / 12);
-  const payInFullPrice = Math.round(total * Number(model.payInFullFactor ?? 0.9));
+  const payInFullPrice = Math.max(minSellable, Math.round(total * payInFullFactor));
+
 
 
   return {
