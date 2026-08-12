@@ -100,6 +100,8 @@ interface LeadsFiltersProps {
   agentLiveLeadCounts?: Record<string, number>;
   sourceFilter?: SourceFilter;
   onSourceFilterChange?: (source: SourceFilter) => void;
+  ageWindow?: AgeWindow;
+  onAgeWindowChange?: (w: AgeWindow) => void;
   userRole?: string;
 
   // Pagination + selection controls (merged from LeadsTableControlBar to save a row)
