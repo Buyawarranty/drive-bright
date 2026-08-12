@@ -30,11 +30,13 @@ import { TimeToContactCell } from './TimeToContactCell';
 import { UnsubscribeLeadButton } from './UnsubscribeLeadButton';
 import { RepeatCustomerBadge } from './RepeatCustomerBadge';
 import { ManualLeadBadge } from './ManualLeadBadge';
+import { EditLeadInfoDialog } from './EditLeadInfoDialog';
+import { useIsManagement } from '@/hooks/useIsManagement';
 
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, Clock,
   Tag, AlertTriangle, FileText, StickyNote, NotebookPen,
-  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw, Award, Globe, Copy, Check
+  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, RotateCw, Award, Globe, Copy, Check, PencilLine
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -500,6 +502,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
+  // Managers only: quick edit of the lead's contact / vehicle details.
+  const { isManagement } = useIsManagement();
+  const [editInfoOpen, setEditInfoOpen] = useState(false);
   const navigate = useNavigate();
   const { byAgent: agentTeamMap } = useAgentTeams();
   const allAdminUsersMap = useAllAdminUsersMap(lead.assigned_to);
@@ -1064,6 +1069,29 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               : undefined);
             return info ? <RepeatCustomerBadge info={info} /> : null;
           })()}
+          {isManagement === true && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 flex-shrink-0 text-muted-foreground hover:text-foreground"
+                  onClick={(e) => { e.stopPropagation(); setEditInfoOpen(true); }}
+                  aria-label="Edit lead information"
+                >
+                  <PencilLine className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">Edit lead information</TooltipContent>
+            </Tooltip>
+          )}
+          {isManagement === true && editInfoOpen && (
+            <EditLeadInfoDialog
+              lead={lead}
+              open={editInfoOpen}
+              onOpenChange={setEditInfoOpen}
+            />
+          )}
           {!repeatCustomer && !(((lead as any).auto_tags || []) as string[]).some(t => t === 'repeat_customer' || t === 'same_customer_sticky') && (lead as any).manual_entry && <ManualLeadBadge />}
           {(lead.resubmission_count || 0) > 0 && (
             <Tooltip delayDuration={100}>
