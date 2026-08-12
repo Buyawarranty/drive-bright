@@ -6574,61 +6574,14 @@ Please log in and change your password after first login.`;
                     )}
                    </TableCell>
                    <TableCell className="bg-sky-50/40">
-                     <ReferencePriceCell order={customer as any} />
+                     <div className="flex flex-col gap-1">
+                       <ReferencePriceCell order={customer as any} />
+                       {(customer as any).discount_code && (
+                         <span className="text-[11px] text-muted-foreground">code {(customer as any).discount_code}</span>
+                       )}
+                     </div>
                    </TableCell>
-                  <TableCell className="bg-purple-50/40">
-                    {(() => {
-                      const disc = getRecordedOrderDiscount(customer);
-                      const code = (customer as any).discount_code as string | null;
-                      // A manual confirmation where original == final and nothing was
-                      // stored is NOT proof of a full-price sale — the agent simply
-                      // never recorded the quote. Only automated checkout (Stripe /
-                      // Bumper) can be trusted to have the real quoted price.
-                      const automated = !!(customer as any).stripe_session_id || !!(customer as any).bumper_order_id;
-                      const unrecorded = (!disc || disc.amount <= 0)
-                        && !automated
-                        && !(Number((customer as any).discount_amount) > 0);
 
-                      if (unrecorded) {
-                        return (
-                          <div className="flex flex-col gap-1">
-                            <Badge
-                              variant="outline"
-                              className="text-xs whitespace-nowrap border-amber-300 text-amber-700 bg-amber-50"
-                              title="Manual payment confirmed without recording the quoted price — the real discount is unknown. Edit the order and set the quoted price."
-                            >
-                              Not recorded
-                            </Badge>
-                            {code && <span className="text-[11px] text-muted-foreground">code {code}</span>}
-                          </div>
-                        );
-                      }
-
-                      if (!disc) return <span className="text-xs text-muted-foreground">—</span>;
-                      if (disc.amount <= 0) {
-                        return (
-                          <div className="flex flex-col gap-1">
-                            <span className="text-xs text-muted-foreground whitespace-nowrap" title="Sold at the quoted price.">
-                              Full price
-                            </span>
-                            {code && <span className="text-[11px] text-muted-foreground">code {code}</span>}
-                          </div>
-                        );
-                      }
-                      return (
-                        <div className="flex flex-col gap-1">
-                          <Badge
-                            variant="outline"
-                            className={`text-xs whitespace-nowrap ${discountBandClass(disc.pct)}`}
-                            title={`Quoted £${disc.quoted.toFixed(2)} · collected £${disc.paid.toFixed(2)} · £${disc.amount.toFixed(2)} off`}
-                          >
-                            {disc.pct.toFixed(1)}% off
-                          </Badge>
-                          {code && <span className="text-[11px] text-muted-foreground">code {code}</span>}
-                        </div>
-                      );
-                    })()}
-                  </TableCell>
 
                   {showPaymentColumn && (
                     <TableCell>
