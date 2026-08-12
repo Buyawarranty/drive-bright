@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { Search, Eye, Users, ShoppingCart, TrendingUp, MousePointerClick, RefreshCw, Clock, PoundSterling } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,7 +15,10 @@ const AUTO_REFRESH_INTERVAL = 60 * 60 * 1000; // 1 hour
 const QUERY_KEYS = ['tiktok-page-views', 'tiktok-leads', 'tiktok-paid-customers', 'tiktok-leads-summary', 'tiktok-reconciliation'];
 
 export const TikTokAdsTab: React.FC = () => {
-  const [dateRange, setDateRange] = useState<string>('last7');
+  const [metricsRange, setMetricsRange] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 6),
+    to: new Date(),
+  });
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [leadsDateRange, setLeadsDateRange] = useState<DateRange | undefined>({
     from: new Date(),
@@ -24,22 +26,20 @@ export const TikTokAdsTab: React.FC = () => {
   });
   const queryClient = useQueryClient();
 
-  const dateFrom = useMemo(() => {
-    const now = new Date();
-    switch (dateRange) {
-      case 'today': return startOfDay(now);
-      case 'yesterday': return startOfDay(subDays(now, 1));
-      case 'last7': return startOfDay(subDays(now, 7));
-      case 'last30': return startOfDay(subDays(now, 30));
-      case 'last90': return startOfDay(subDays(now, 90));
-      default: return startOfDay(subDays(now, 7));
-    }
-  }, [dateRange]);
+  const dateFrom = useMemo(
+    () => startOfDay(metricsRange?.from ?? subDays(new Date(), 6)),
+    [metricsRange]
+  );
 
-  const dateTo = useMemo(() => {
-    if (dateRange === 'yesterday') return endOfDay(subDays(new Date(), 1));
-    return endOfDay(new Date());
-  }, [dateRange]);
+  const dateTo = useMemo(
+    () => endOfDay(metricsRange?.to ?? metricsRange?.from ?? new Date()),
+    [metricsRange]
+  );
+
+  const rangeKey = useMemo(
+    () => `${dateFrom.toISOString()}_${dateTo.toISOString()}`,
+    [dateFrom, dateTo]
+  );
 
   const refreshAll = () => {
     QUERY_KEYS.forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
@@ -54,7 +54,7 @@ export const TikTokAdsTab: React.FC = () => {
 
   // TikTok page views (ttclid present or utm_source tiktok)
   const { data: tiktokPageViews, isLoading: pvLoading } = useQuery({
-    queryKey: ['tiktok-page-views', dateRange],
+    queryKey: ['tiktok-page-views', rangeKey],
     queryFn: async () => {
       const { count: totalCount, error: countError } = await supabase
         .from('page_views')
@@ -89,7 +89,7 @@ export const TikTokAdsTab: React.FC = () => {
 
   // TikTok leads (abandoned carts with ttclid or tiktok utm_source)
   const { data: tiktokLeads, isLoading: leadsLoading } = useQuery({
-    queryKey: ['tiktok-leads', dateRange],
+    queryKey: ['tiktok-leads', rangeKey],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('abandoned_carts')
@@ -145,7 +145,7 @@ export const TikTokAdsTab: React.FC = () => {
 
   // Paid customers attributed to TikTok Ads
   const { data: tiktokPaidCustomers, isLoading: paidLoading } = useQuery({
-    queryKey: ['tiktok-paid-customers', dateRange],
+    queryKey: ['tiktok-paid-customers', rangeKey],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('customers')
@@ -162,7 +162,7 @@ export const TikTokAdsTab: React.FC = () => {
   });
 
   const { data: tiktokReconciliation } = useQuery({
-    queryKey: ['tiktok-reconciliation', dateRange],
+    queryKey: ['tiktok-reconciliation', rangeKey],
     queryFn: async () => {
       const { data: leads, error } = await supabase
         .from('sales_leads')
@@ -214,6 +214,61 @@ export const TikTokAdsTab: React.FC = () => {
     return Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, 10);
   }, [tiktokPageViews]);
 
+  // Top landing pages for this channel's traffic
+  const pageBreakdown = useMemo(() => {
+    const rows = tiktokPageViews?.rows || [];
+    const counts: Record<string, number> = {};
+    rows.forEach((pv) => {
+      const path = pv.page_path || '/';
+      counts[path] = (counts[path] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15)
+      .map(([path, views]) => ({ path, views }));
+  }, [tiktokPageViews]);
+
+  // Daily funnel: visitors → leads → paid sales → revenue
+  const dailyFunnel = useMemo(() => {
+    const days: Record<string, { visitors: Set<string>; views: number; leads: number; conversions: number; sales: number; revenue: number }> = {};
+    const ensure = (day: string) => {
+      if (!days[day]) days[day] = { visitors: new Set(), views: 0, leads: 0, conversions: 0, sales: 0, revenue: 0 };
+      return days[day];
+    };
+
+    (tiktokPageViews?.rows || []).forEach((pv) => {
+      const d = ensure(format(new Date(pv.created_at), 'yyyy-MM-dd'));
+      d.views++;
+      if (pv.visitor_id) d.visitors.add(pv.visitor_id);
+    });
+
+    (tiktokLeads || []).forEach((lead: any) => {
+      const d = ensure(format(new Date(lead.created_at), 'yyyy-MM-dd'));
+      d.leads++;
+      if (lead.is_converted) d.conversions++;
+    });
+
+    (tiktokPaidCustomers || []).forEach((c: any) => {
+      if (!c.signup_date) return;
+      const d = ensure(format(new Date(c.signup_date), 'yyyy-MM-dd'));
+      d.sales++;
+      d.revenue += Number(c.final_amount) || 0;
+    });
+
+    return Object.entries(days)
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([date, data]) => ({
+        date,
+        visitors: data.visitors.size,
+        views: data.views,
+        leads: data.leads,
+        conversions: data.conversions,
+        sales: data.sales,
+        revenue: data.revenue,
+        formRate: data.visitors.size > 0 ? ((data.leads / data.visitors.size) * 100).toFixed(1) : '0',
+      }));
+  }, [tiktokPageViews, tiktokLeads, tiktokPaidCustomers]);
+
   const isLoading = pvLoading || leadsLoading || paidLoading;
 
   return (
@@ -229,18 +284,27 @@ export const TikTokAdsTab: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="yesterday">Yesterday</SelectItem>
-              <SelectItem value="last7">Last 7 days</SelectItem>
-              <SelectItem value="last30">Last 30 days</SelectItem>
-              <SelectItem value="last90">Last 90 days</SelectItem>
-            </SelectContent>
-          </Select>
+          <Button
+            variant={metricsRange?.from && metricsRange?.to &&
+              startOfDay(metricsRange.from).getTime() === startOfDay(new Date()).getTime() &&
+              startOfDay(metricsRange.to).getTime() === startOfDay(new Date()).getTime() ? 'default' : 'outline'}
+            size="sm"
+            className="text-xs"
+            onClick={() => setMetricsRange({ from: new Date(), to: new Date() })}
+          >
+            Today
+          </Button>
+          <Button
+            variant={metricsRange?.from && metricsRange?.to &&
+              startOfDay(metricsRange.from).getTime() === startOfDay(subDays(new Date(), 1)).getTime() &&
+              startOfDay(metricsRange.to).getTime() === startOfDay(subDays(new Date(), 1)).getTime() ? 'default' : 'outline'}
+            size="sm"
+            className="text-xs"
+            onClick={() => { const y = subDays(new Date(), 1); setMetricsRange({ from: y, to: y }); }}
+          >
+            Yesterday
+          </Button>
+          <DateRangeFilter dateRange={metricsRange} onDateRangeChange={setMetricsRange} />
           <Button variant="outline" size="sm" onClick={refreshAll}>
             <RefreshCw className="h-4 w-4 mr-1" />
             Refresh
@@ -391,6 +455,78 @@ export const TikTokAdsTab: React.FC = () => {
                   <TableRow key={campaign}>
                     <TableCell>{campaign}</TableCell>
                     <TableCell className="text-right font-medium">{count.toLocaleString()}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Daily funnel */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Daily TikTok funnel</CardTitle>
+          <CardDescription>Visitors → leads → paid sales → revenue by day</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {dailyFunnel.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">No data in this period</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Visitors</TableHead>
+                  <TableHead className="text-right">Page views</TableHead>
+                  <TableHead className="text-right">Leads</TableHead>
+                  <TableHead className="text-right">Paid sales</TableHead>
+                  <TableHead className="text-right">Revenue</TableHead>
+                  <TableHead className="text-right">Form rate</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {dailyFunnel.map((row) => (
+                  <TableRow key={row.date}>
+                    <TableCell className="font-medium">{format(new Date(row.date), 'dd MMM yyyy')}</TableCell>
+                    <TableCell className="text-right">{row.visitors}</TableCell>
+                    <TableCell className="text-right">{row.views}</TableCell>
+                    <TableCell className="text-right">{row.leads}</TableCell>
+                    <TableCell className="text-right font-semibold text-green-700">{row.sales}</TableCell>
+                    <TableCell className="text-right font-semibold text-green-700">{row.revenue > 0 ? `£${row.revenue.toFixed(0)}` : '-'}</TableCell>
+                    <TableCell className="text-right">
+                      <Badge variant="outline" className="text-xs">{row.formRate}%</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Top pages */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Top pages (TikTok traffic)</CardTitle>
+          <CardDescription>Which pages TikTok visitors are landing on</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {pageBreakdown.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">No page view data in this period</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Page</TableHead>
+                  <TableHead className="text-right">Views</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pageBreakdown.map((row) => (
+                  <TableRow key={row.path}>
+                    <TableCell className="font-mono text-sm">{row.path}</TableCell>
+                    <TableCell className="text-right">{row.views}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
