@@ -5260,7 +5260,7 @@ Questions? Call 0330 229 5040`;
                         {/* Absolute floor notice — always visible, turns red when breached */}
                         <div
                           className={cn(
-                            'rounded-lg border px-3 py-2 text-xs font-semibold flex items-center gap-2 flex-wrap',
+                            'rounded-lg border px-3 py-2 text-xs font-semibold flex flex-col gap-2',
                             absoluteMinBlocked
                               ? 'border-red-400 bg-red-50 text-red-900'
                               : priceMatchEvidenced && isUnderAbsoluteMin(displayedTotalPrice)
@@ -5268,20 +5268,64 @@ Questions? Call 0330 229 5040`;
                                 : 'border-gray-300 bg-gray-50 text-gray-700'
                           )}
                         >
-                          <span>Minimum sale price for any warranty £{ABSOLUTE_MIN_TOTAL}</span>
-                          {absoluteMinBlocked ? (
-                            <span className="font-bold">
-                              — £{Math.min(displayedTotalPrice, displayedPayInFullPrice)} is below the minimum, so this sale is
-                              blocked. Percentage discounts, typed amounts and pay-in-full all count towards it. Switch on
-                              Price match and upload the competitor quote, or ask your manager.
-                            </span>
-                          ) : priceMatchEvidenced && isUnderAbsoluteMin(displayedTotalPrice) ? (
-                            <span>— allowed: evidenced price match on file.</span>
-                          ) : (
-                            <span className="font-normal">— whatever discount is applied, no warranty can be sold below this; price match with evidence only.</span>
-                          )}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span>Minimum sale price for any warranty £{ABSOLUTE_MIN_TOTAL}</span>
+                            {absoluteMinBlocked ? (
+                              <span className="font-bold">
+                                — £{Math.min(displayedTotalPrice, displayedPayInFullPrice)} is below the minimum, so this sale is
+                                blocked. Percentage discounts, typed amounts and pay-in-full all count towards it. Upload a price
+                                match, or ask your manager for authorisation.
+                              </span>
+                            ) : priceMatchEvidenced && isUnderAbsoluteMin(displayedTotalPrice) ? (
+                              <span>— allowed: evidenced price match on file.</span>
+                            ) : (
+                              <span className="font-normal">— whatever discount is applied, no warranty can be sold below this; price match with evidence only.</span>
+                            )}
+                          </div>
 
+                          {absoluteMinBlocked && (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Button
+                                type="button"
+                                size="sm"
+                                className="h-7 text-[11px] font-semibold bg-sky-700 hover:bg-sky-800 text-white"
+                                onClick={() => {
+                                  setPriceMatchMode(true);
+                                  toast({
+                                    title: 'Price match on — upload the competitor quote',
+                                    description: `Add the competitor name, their price and upload their quote as proof. With evidence on file you can go below £${ABSOLUTE_MIN_TOTAL}.`,
+                                  });
+                                  setTimeout(() => {
+                                    document
+                                      .getElementById('price-match-panel')
+                                      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                  }, 120);
+                                }}
+                              >
+                                Upload price match
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-[11px] font-semibold bg-white"
+                                onClick={() => {
+                                  setDiscountAuthRequestPrice(
+                                    String(Math.min(displayedTotalPrice, displayedPayInFullPrice) || ''),
+                                  );
+                                  setDiscountAuthOpen(true);
+                                }}
+                              >
+                                Ask manager for authorisation
+                              </Button>
+                              <span className="font-normal text-[11px]">
+                                No competitor quote? Send the request — your manager sees it straight away and you get a green
+                                go-ahead banner once approved.
+                              </span>
+                            </div>
+                          )}
                         </div>
+
 
 
 
@@ -5428,7 +5472,7 @@ Questions? Call 0330 229 5040`;
                     )}
 
                     {priceMatchMode && (
-                      <div className="space-y-3 p-4 rounded-lg border-2 border-sky-300 bg-sky-50/70">
+                      <div id="price-match-panel" className="space-y-3 p-4 rounded-lg border-2 border-sky-300 bg-sky-50/70">
                         <div className="flex items-start gap-2">
                           <Info className="w-4 h-4 text-sky-700 mt-0.5 shrink-0" />
                           <p className="text-xs text-sky-900 leading-relaxed">
