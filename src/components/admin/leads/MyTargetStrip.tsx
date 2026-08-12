@@ -36,6 +36,7 @@ export const MyTargetStrip: React.FC = () => {
   const { effectiveAdminUserId } = useViewAs();
   const { isManagement } = useIsManagement();
   const [rows, setRows] = useState<Row[]>([]);
+  const [fallbackRevenue, setFallbackRevenue] = useState<Record<string, number> | null>(null);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
 
@@ -45,7 +46,35 @@ export const MyTargetStrip: React.FC = () => {
       p_start: startOfMonth(month).toISOString(),
       p_end: endOfMonth(month).toISOString(),
     });
-    setRows(((data || []) as unknown as Row[]));
+    const list = ((data || []) as unknown as Row[]);
+    setRows(list);
+
+    // Safety net: if the scoreboard reports zero revenue for everyone (which can
+    // happen when the RPC month window misses same-day sales), recount straight
+    // from customers using the same sale-credit rules so we never show a false £0.
+    const total = list.reduce((s, r) => s + (Number(r.revenue) || 0), 0);
+    if (list.length > 0 && total === 0) {
+      const ids = list.map(r => r.admin_user_id);
+      const start = startOfMonth(month);
+      const end = endOfMonth(month);
+      const { data: sales } = await supabase
+        .from('customers')
+        .select('final_amount, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, assigned_to')
+        .eq('is_deleted', false)
+        .ilike('status', 'active')
+        .gte('signup_date', start.toISOString())
+        .lte('signup_date', end.toISOString())
+        .limit(5000);
+      const map: Record<string, number> = {};
+      (sales || []).forEach((s: any) => {
+        const aid = s.sale_credit_admin_user_id || s.payment_confirmed_by || s.quote_sent_by || s.assigned_to;
+        if (!aid || !ids.includes(aid)) return;
+        map[aid] = (map[aid] || 0) + (Number(s.final_amount) || 0);
+      });
+      setFallbackRevenue(map);
+    } else {
+      setFallbackRevenue(null);
+    }
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [month.getFullYear(), month.getMonth()]);
@@ -65,6 +94,12 @@ export const MyTargetStrip: React.FC = () => {
     };
   }, [load]);
 
+  const revenueOf = useCallback(
+    (r: Row) => (fallbackRevenue ? (fallbackRevenue[r.admin_user_id] || 0) : Number(r.revenue) || 0),
+    [fallbackRevenue],
+  );
+
+
   const me = useMemo(() => {
     // When impersonating, show that agent. Otherwise the row flagged is_self.
     const mine = effectiveAdminUserId
@@ -74,23 +109,24 @@ export const MyTargetStrip: React.FC = () => {
     if (mine) {
       return {
         scope: 'agent' as const,
-        revenue: Number(mine.revenue) || 0,
+        revenue: revenueOf(mine),
         target: mine.revenue_target != null ? Number(mine.revenue_target) : null,
       };
     }
 
     if (rows.length) {
-      const revenue = rows.reduce((s, r) => s + (Number(r.revenue) || 0), 0);
+      const revenue = rows.reduce((s, r) => s + revenueOf(r), 0);
       const target = rows.reduce((s, r) => s + (Number(r.revenue_target) || 0), 0);
       return { scope: 'team' as const, revenue, target: target || null };
     }
     return null;
-  }, [rows, effectiveAdminUserId]);
+  }, [rows, effectiveAdminUserId, revenueOf]);
 
   const breakdown = useMemo(
-    () => [...rows].sort((a, b) => (Number(b.revenue) || 0) - (Number(a.revenue) || 0)),
-    [rows],
+    () => [...rows].sort((a, b) => revenueOf(b) - revenueOf(a)),
+    [rows, revenueOf],
   );
+
 
   if (loading) return null;
   if (!me) return null;
@@ -192,7 +228,7 @@ export const MyTargetStrip: React.FC = () => {
             Each agent this month — same figures as the Sales Scoreboard
           </div>
           {breakdown.map(r => {
-            const rev = Number(r.revenue) || 0;
+            const rev = revenueOf(r);
             const tgt = r.revenue_target != null ? Number(r.revenue_target) : null;
             const p = tgt ? Math.min((rev / tgt) * 100, 100) : 0;
             const colour = getAgentColor(r.agent_name, r.admin_user_id);
