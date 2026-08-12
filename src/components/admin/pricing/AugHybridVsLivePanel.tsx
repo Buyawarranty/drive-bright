@@ -48,6 +48,14 @@ export const HYBRID_PRICE_UPLIFT_PCT = 45;
 export const HYBRID_BASE_MARKER = 'hybridBaseApplied';
 
 /**
+ * ABSOLUTE MINIMUM FOR AUG HYBRID.
+ * No Aug hybrid warranty may ever be sold or quoted below £399 in total,
+ * whatever the term, claim limit, labour rate, excess or discount.
+ * Motorbikes halve with the rest of their pricing.
+ */
+export const HYBRID_ABSOLUTE_MIN_TOTAL = 399;
+
+/**
  * Aug 2026: 2-year and 3-year Aug hybrid prices carry a further +20% on top of
  * the curve-wide uplift. 12 months is untouched. Applied to the term
  * multipliers, so every claim limit / labour rate / excess combination rises in
@@ -149,6 +157,7 @@ const AugHybridVsLivePanel: React.FC<{
     () => ({
       ...base,
       [HYBRID_BASE_MARKER]: true,
+      absoluteMinTotal: HYBRID_ABSOLUTE_MIN_TOTAL,
       bands: base.bands.map((b: any) => ({
         ...b,
         oneYear: b.oneYear === null ? null : Math.round(b.oneYear * targetScale),

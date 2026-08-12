@@ -148,6 +148,7 @@ const CodebaseVsHybridPanel: React.FC<{
     () => ({
       ...base,
       [HYBRID_BASE_MARKER]: true,
+      absoluteMinTotal: HYBRID_ABSOLUTE_MIN_TOTAL,
       bands: base.bands.map((b: any) => ({
         ...b,
         oneYear: b.oneYear === null ? null : Math.round(b.oneYear * targetScale),

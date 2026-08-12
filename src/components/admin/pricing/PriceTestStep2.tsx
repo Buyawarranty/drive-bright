@@ -305,7 +305,14 @@ export default function PriceTestStep2({
         }) *
         motorbikeFactor
     );
-    return Math.max(shapedMinimum, hardBottom);
+    /**
+     * Per-model absolute minimum (Aug hybrid = £399 total on any warranty).
+     * Nothing in that model may quote below it, whatever the options.
+     */
+    const modelAbsoluteMin = Number((liveModel as any)?.absoluteMinTotal) > 0
+      ? Math.round(Number((liveModel as any).absoluteMinTotal) * motorbikeFactor)
+      : 0;
+    return Math.max(shapedMinimum, hardBottom, modelAbsoluteMin);
   };
 
 
