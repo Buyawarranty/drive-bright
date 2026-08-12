@@ -252,11 +252,14 @@ export function priceFromPricingModel(
 
 
 
-  /** Per-model absolute minimum (e.g. Aug hybrid = £399 net payable). */
-  const modelAbsoluteMin =
-    Number((model as any).absoluteMinTotal) > 0
-      ? Math.round(Number((model as any).absoluteMinTotal) * motorbikeFactor)
-      : 0;
+  /**
+   * Absolute minimum: £399 on EVERY model and plan (Aug hybrid or otherwise),
+   * or higher if a model carries its own. Halves for motorbikes.
+   */
+  const modelAbsoluteMin = Math.round(
+    Math.max(Number((model as any).absoluteMinTotal) || 0, GLOBAL_ABSOLUTE_MIN_TOTAL) *
+      motorbikeFactor,
+  );
 
   const minSellable = Math.max(shapedModelFloor, absoluteMin, modelAbsoluteMin);
 
