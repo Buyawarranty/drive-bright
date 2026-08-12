@@ -496,12 +496,66 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     // Aug hybrid (and any model carrying its own minimum) never quotes below £399.
     absoluteMinTotal: (pricingModel as any)?.absoluteMinTotal || 0,
   });
+  /**
+   * Only offer excess tiers that actually price ABOVE the minimum. A higher
+   * excess makes the warranty cheaper, so on a low-priced vehicle it lands on the
+   * floor and the customer would carry a bigger excess for exactly the same money.
+   * Those tiers are dropped from the selector.
+   */
+  const sellableExcessOptions = React.useMemo(() => {
+    const ageYears = (() => {
+      const manufacture = (vehicleData as any)?.manufactureDate || (vehicleData as any)?.registrationDate;
+      if (manufacture) {
+        const d = new Date(manufacture);
+        if (!isNaN(d.getTime())) return (Date.now() - d.getTime()) / (365.25 * 24 * 3600 * 1000);
+      }
+      const y = parseInt(String(vehicleData?.year || ''), 10);
+      return y ? new Date().getFullYear() - y : null;
+    })();
+    if (ageYears == null || !pricingModel) return excessOptions;
+    const mileageNum = parseInt(String(mileage || '').replace(/[^0-9]/g, '')) || null;
+    const fits = excessOptions.filter((candidate) => {
+      const q = priceFromPricingModel(
+        pricingModel,
+        {
+          ageYears,
+          mileage: mileageNum,
+          fuelType: vehicleData?.fuelType,
+          vehicleType: vehicleData?.vehicleType,
+          make: vehicleData?.make,
+          model: (vehicleData as any)?.model,
+        },
+        {
+          paymentPeriod: paymentType,
+          voluntaryExcess: candidate,
+          claimLimit: getDisplayClaimLimitValue(claimLimit),
+          labourRate,
+        },
+      );
+      if (!q || q.referral) return true; // nothing to judge — keep the option
+      const floorForCandidate = getNetPayableFloor({
+        paymentPeriod: paymentType,
+        voluntaryExcess: candidate,
+        claimLimit,
+        labourRate,
+        isMotorbike: isMotorbikeQuote,
+        surface: 'admin',
+        absoluteMinTotal: (pricingModel as any)?.absoluteMinTotal || 0,
+      });
+      return Math.ceil(q.totalPrice) >= Math.ceil(floorForCandidate);
+    });
+    // Never leave the agent with no choice: keep the lowest excess (highest price)
+    // if every tier would land on the floor.
+    return fits.length ? fits : excessOptions.slice(0, 1);
+  }, [excessOptions, pricingModel, vehicleData, mileage, paymentType, claimLimit, labourRate, isMotorbikeQuote]);
+
   const priceMatchEvidenced = priceMatchMode && !!priceMatchProofPath && !!priceMatchCompetitor.trim();
   const isUnderAbsoluteMin = (total: unknown) => {
     if (isManagementRole) return false; // Management may sell below the net floor (logged)
     const v = typeof total === 'number' ? total : parseFloat(String(total ?? '').replace(/[^0-9.]/g, ''));
     return Number.isFinite(v) && v > 0 && v < ABSOLUTE_MIN_TOTAL - 0.01;
   };
+
 
   
 
