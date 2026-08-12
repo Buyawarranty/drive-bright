@@ -65,11 +65,12 @@ export function getNetPayableFloor(params: NetFloorParams): number {
     isMotorbike: params.isMotorbike,
     surface: params.surface ?? 'admin',
   });
-  const modelMin = Number(params.absoluteMinTotal) > 0
-    ? Number(params.absoluteMinTotal) * (params.isMotorbike ? 0.5 : 1)
-    : 0;
+  const modelMin =
+    Math.max(Number(params.absoluteMinTotal) || 0, GLOBAL_ABSOLUTE_MIN_TOTAL) *
+    (params.isMotorbike ? 0.5 : 1);
   return Math.max(shaped, modelMin);
 }
+
 
 /** True when `amount` is a real number that falls under the net floor. */
 export function isUnderNetFloor(amount: unknown, params: NetFloorParams): boolean {
