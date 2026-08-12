@@ -1366,8 +1366,33 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     : Math.ceil(Number(currentPrice.monthlyPrice || 0) * 12);
   const displayedPayInFullPrice = currentPrice.payInFullPrice || (includePayInFullDiscount ? Math.ceil(displayedTotalPrice * 0.9) : displayedTotalPrice);
   const displayedPayInFullSavings = Math.max(displayedTotalPrice - displayedPayInFullPrice, 0);
-  // Hard block: total under the absolute £349 minimum without evidenced price match
-  const absoluteMinBlocked = isUnderAbsoluteMin(displayedTotalPrice) && !priceMatchEvidenced;
+  // Hard block: total under the absolute minimum (never below £399) without an
+  // evidenced price match. The NET amount counts — a pay-in-full discount on top
+  // may not drop the payable figure under the floor either.
+  const absoluteMinBlocked =
+    (isUnderAbsoluteMin(displayedTotalPrice) || isUnderAbsoluteMin(displayedPayInFullPrice)) &&
+    !priceMatchEvidenced;
+
+  /**
+   * Instant feedback: the moment an agent types or discounts their way under the
+   * minimum sale price, tell them — they should not discover it only on confirm.
+   * Fires once per breach (resets when the price comes back above the floor).
+   */
+  const minPriceToastShownRef = useRef(false);
+  useEffect(() => {
+    if (absoluteMinBlocked) {
+      if (minPriceToastShownRef.current) return;
+      minPriceToastShownRef.current = true;
+      toast({
+        title: `Minimum sale price for any warranty is £${ABSOLUTE_MIN_TOTAL}`,
+        description: `£${displayedPayInFullPrice < displayedTotalPrice ? displayedPayInFullPrice : displayedTotalPrice} is below the minimum. Percentage discounts, manual amounts and pay-in-full cannot take a warranty under £${ABSOLUTE_MIN_TOTAL} — use Price match with a competitor quote, or ask your manager.`,
+        variant: 'destructive',
+      });
+    } else {
+      minPriceToastShownRef.current = false;
+    }
+  }, [absoluteMinBlocked, ABSOLUTE_MIN_TOTAL, displayedTotalPrice, displayedPayInFullPrice]);
+
 
   // Feed the quote total back into the excess visibility brackets (£250 unlocks
   // from £300, £500 from £500) so Q&O matches Step 3 exactly.
@@ -5243,18 +5268,19 @@ Questions? Call 0330 229 5040`;
                                 : 'border-gray-300 bg-gray-50 text-gray-700'
                           )}
                         >
-                          <span>Minimum warranty price £{ABSOLUTE_MIN_TOTAL}</span>
+                          <span>Minimum sale price for any warranty £{ABSOLUTE_MIN_TOTAL}</span>
                           {absoluteMinBlocked ? (
                             <span className="font-bold">
-                              — this total (£{displayedTotalPrice}) is below the minimum. Sale blocked unless you switch on
-                              Price match and upload the competitor quote — contact your manager if you cannot get evidence.
-
+                              — £{Math.min(displayedTotalPrice, displayedPayInFullPrice)} is below the minimum, so this sale is
+                              blocked. Percentage discounts, typed amounts and pay-in-full all count towards it. Switch on
+                              Price match and upload the competitor quote, or ask your manager.
                             </span>
                           ) : priceMatchEvidenced && isUnderAbsoluteMin(displayedTotalPrice) ? (
                             <span>— allowed: evidenced price match on file.</span>
                           ) : (
-                            <span className="font-normal">— no warranty can be sold below this, price match with evidence only.</span>
+                            <span className="font-normal">— whatever discount is applied, no warranty can be sold below this; price match with evidence only.</span>
                           )}
+
                         </div>
 
 
