@@ -1240,14 +1240,20 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       }),
     });
     
-    // Same permanent floor on the legacy grid path.
-    const flooredTotal = Math.max(Math.ceil(result.totalPrice), Math.ceil(ABSOLUTE_MIN_TOTAL));
+    // Same permanent floor on the legacy grid path — net payable, so the
+    // pay-in-full price is grossed up rather than dipping under the minimum.
+    const legacyNetFloor = Math.ceil(ABSOLUTE_MIN_TOTAL);
+    const legacyGrossFloor = includePayInFullDiscount
+      ? Math.ceil(legacyNetFloor / 0.9)
+      : legacyNetFloor;
+    const flooredTotal = Math.max(Math.ceil(result.totalPrice), legacyGrossFloor);
     const flooredMonthly = Math.max(result.monthlyPrice, Math.ceil(flooredTotal / 12));
     // Calculate pay-in-full based on monthly × 12 for consistency (avoids rounding discrepancies)
     const contractTotal = flooredMonthly * 12;
     const payInFullPrice = includePayInFullDiscount 
-      ? Math.ceil(contractTotal * 0.90)
+      ? Math.max(legacyNetFloor, Math.ceil(contractTotal * 0.90))
       : contractTotal;
+
     
     return { 
       totalPrice: flooredTotal, 
