@@ -102,9 +102,8 @@ export const useRepeatCustomers = (leads: RepeatLeadInput[]) => {
       plan_type: string | null;
       status: string | null;
       warranty_number?: string | null;
-      policy_number?: string | null;
     };
-    const COLS = 'id, email, registration_plate, phone, name, signup_date, plan_type, status, warranty_number, policy_number';
+    const COLS = 'id, email, registration_plate, phone, name, signup_date, plan_type, status, warranty_number';
     const rows: Row[] = [];
 
     try {
