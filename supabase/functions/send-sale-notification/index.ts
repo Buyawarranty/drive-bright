@@ -181,27 +181,44 @@ serve(async (req: Request) => {
         </div>
         <h3 style="color: #333; margin-top: 20px;">Customer Details</h3>
         <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${name}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${customerEmail}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${phone}</td></tr>
+          ${row('Name', name)}
+          ${row('Email', customerEmail)}
+          ${row('Phone', phone || orDash(saleExtras.phone))}
+          ${row('Address', addressDisplay)}
         </table>
         <h3 style="color: #333; margin-top: 20px;">Sale Details</h3>
         <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Warranty:</strong></td><td style="padding: 8px;">${warranty}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${plan}</td></tr>
-          <tr><td style="padding: 8px; background: #fde68a;"><strong>Warranty Duration:</strong></td><td style="padding: 8px; font-weight: 700;">${durationDisplay}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment:</strong></td><td style="padding: 8px;">${payment}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Sale Amount:</strong></td><td style="padding: 8px; font-weight: 700;">${saleValueDisplay}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">${claimLimitDisplay}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Voluntary Excess:</strong></td><td style="padding: 8px;">${excessDisplay}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Labour Rate:</strong></td><td style="padding: 8px;">${labourRateDisplay}</td></tr>
+          ${row('Warranty', warranty)}
+          ${row('Warranty number', orDash(saleExtras.warranty_number || saleExtras.warranty_reference_number))}
+          ${row('Plan', plan || orDash(saleExtras.plan_type))}
+          ${row('Warranty Duration', durationDisplay, true)}
+          ${saleExtras.seasonal_bonus_months ? row('Bonus months', `+${saleExtras.seasonal_bonus_months}`) : ''}
+          ${row('Payment', payment)}
+          ${row('Payment status', orDash(saleExtras.payment_status))}
+          ${row('Sale Amount', saleValueDisplay, true)}
+          ${saleExtras.original_amount != null ? row('Quoted / original amount', money(saleExtras.original_amount) || '—') : ''}
+          ${saleExtras.final_amount != null ? row('Final amount charged', money(saleExtras.final_amount) || '—') : ''}
+          ${saleExtras.discount_amount ? row('Discount given', `${money(saleExtras.discount_amount)}${saleExtras.original_amount ? ` (${Math.round((Number(saleExtras.discount_amount) / Number(saleExtras.original_amount)) * 100)}%)` : ''}`) : ''}
+          ${saleExtras.discount_code ? row('Discount code', String(saleExtras.discount_code)) : ''}
+          ${saleExtras.deposit_amount ? row('Deposit taken', money(saleExtras.deposit_amount) || '—') : ''}
+          ${saleExtras.balance_due_amount ? row('Balance outstanding', money(saleExtras.balance_due_amount) || '—', true) : ''}
+          ${row('Claim Limit', claimLimitDisplay)}
+          ${row('Voluntary Excess', excessDisplay)}
+          ${row('Labour Rate', labourRateDisplay)}
+          ${row('Add-ons', addOnsDisplay)}
+          ${row('Purchase source', orDash(saleExtras.purchase_source || saleExtras.acquisition_source))}
         </table>
         <h3 style="color: #333; margin-top: 20px;">Vehicle Details</h3>
         <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Registration:</strong></td><td style="padding: 8px;">${reg}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Make:</strong></td><td style="padding: 8px;">${vehicleMake || 'Unknown'}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Model:</strong></td><td style="padding: 8px;">${vehicleModel || 'Unknown'}</td></tr>
+          ${row('Registration', reg)}
+          ${row('Make', vehicleMake || orDash(saleExtras.vehicle_make))}
+          ${row('Model', vehicleModel || orDash(saleExtras.vehicle_model))}
+          ${row('Year', orDash(saleExtras.vehicle_year))}
+          ${row('Mileage', mileageDisplay, true)}
+          ${row('Fuel type', orDash(saleExtras.vehicle_fuel_type))}
+          ${row('Transmission', orDash(saleExtras.vehicle_transmission))}
         </table>
+
         <h3 style="color: #333; margin-top: 20px;">⏱️ Timing</h3>
         <table style="width: 100%; border-collapse: collapse;">
           ${leadCreatedAt ? `<tr><td style="padding: 8px; background: #f3f4f6;"><strong>Lead Submitted:</strong></td><td style="padding: 8px;">${leadCreatedAt}</td></tr>` : ''}
