@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import { History, RotateCcw, Check } from 'lucide-react';
+import { History, RotateCcw, Check, StickyNote, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 import type { PricingVersion } from '@/hooks/usePricingVersions';
+
 
 /**
  * PRICE UPDATE LOG
