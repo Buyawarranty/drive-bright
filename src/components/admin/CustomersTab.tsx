@@ -3,7 +3,7 @@ import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell'
 import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { getRecordedOrderDiscount, discountBandClass } from '@/lib/pricing/orderDiscount';
+
 import { ReferencePriceCell } from '@/components/admin/customers/ReferencePriceCell';
 import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
