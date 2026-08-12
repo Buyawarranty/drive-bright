@@ -78,6 +78,7 @@ import BumperPaymentPanel from './BumperPaymentPanel';
 import { useAgentDiscountCap } from '@/hooks/useAgentDiscountCap';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { getVehicleIdentificationGap } from '@/lib/vehicleIdentification';
 import { useSavedPricingModel } from './pricing/useSavedPricingModel';
 
@@ -321,6 +322,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     loading: concessionLoading,
   } = useConcessionAllowance(currentAdminId);
   const { isManagement } = useIsManagement();
+  const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
   // Free bonus months currently selected. 'peryear' gives 1 free month per year of cover
   // (12mo -> 1, 24mo -> 2, 36mo -> 3).
   const coverYears = Math.max(1, Math.round((parseInt(paymentType, 10) || 12) / 12));
@@ -4290,7 +4292,7 @@ Questions? Call 0330 229 5040`;
 
               </CardHeader>
 
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 pb-56">
                 {/* Customer Info */}
                 <div ref={customerInfoRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 scroll-mt-24">
                   <div className="space-y-2">
@@ -5934,8 +5936,12 @@ Questions? Call 0330 229 5040`;
                     Math.ceil(Number(basePrice.monthlyPrice || 0) * 12) || Number(basePrice.totalPrice || 0);
                   const web = getWebReferencePrice(undiscountedGridTotal);
                   return (
-                <div className="sticky bottom-0 z-40 mt-4 pb-2">
-                  <div className="rounded-xl border border-gray-200 border-t-4 border-t-emerald-500 bg-white px-3 py-3 shadow-[0_-8px_24px_-10px_rgba(0,0,0,0.18)]">
+                <div className={cn(
+                  "fixed bottom-0 z-50 px-4 lg:px-6 pb-2 pt-1",
+                  sidebarCollapsed ? "lg:left-14" : "lg:left-64",
+                  "left-0 right-0"
+                )}>
+                  <div className="max-w-6xl mx-auto rounded-xl border border-gray-200 border-t-4 border-t-emerald-500 bg-white px-3 py-3 shadow-[0_-8px_24px_-10px_rgba(0,0,0,0.18)]">
 
                     <div className="grid grid-cols-2 gap-2.5 xl:grid-cols-4">
 
