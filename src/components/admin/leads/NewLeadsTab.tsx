@@ -1575,6 +1575,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   return (
     <div className="space-y-4">
       {/* MissedCallAlertBar now mounted globally in AdminDashboard so it shows on every tab */}
+      <MyTargetStrip />
       <RepeatCustomerBanner
         leads={teamFilteredFreshLeads}
         currentAdminId={currentAdminId}
