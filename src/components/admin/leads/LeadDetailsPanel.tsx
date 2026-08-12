@@ -24,6 +24,7 @@ import { UnifiedNotesPanel } from './notes/UnifiedNotesPanel';
 import { PrintableWarrantyLetter } from '../PrintableWarrantyLetter';
 import { LeadDuplicatesPanel } from './LeadDuplicatesPanel';
 import { EditLeadInfoDialog } from './EditLeadInfoDialog';
+import { useIsManagement } from '@/hooks/useIsManagement';
 
 interface LeadDetailsPanelProps {
   lead: Lead;
@@ -279,17 +280,19 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                   <p className="text-sm font-medium mt-0.5">{format(new Date(lead.created_at), 'dd MMM yyyy, HH:mm')}</p>
                 </div>
               </div>
-              <div className="mt-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8"
-                  onClick={(e) => { e.stopPropagation(); setIsEditInfoOpen(true); }}
-                >
-                  <PencilLine className="h-3.5 w-3.5 mr-1.5" />
-                  Edit lead details
-                </Button>
-              </div>
+              {isManagement === true && (
+                <div className="mt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8"
+                    onClick={(e) => { e.stopPropagation(); setIsEditInfoOpen(true); }}
+                  >
+                    <PencilLine className="h-3.5 w-3.5 mr-1.5" />
+                    Edit lead details
+                  </Button>
+                </div>
+              )}
               {/* Plan Selection Summary - Show what customer selected */}
               {(lead.plan_name || lead.step_abandoned) && (
                 <div className="mt-3 pt-3 border-t border-border/50">
