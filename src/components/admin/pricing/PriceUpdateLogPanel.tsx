@@ -98,51 +98,99 @@ export default function PriceUpdateLogPanel({
           return (
             <div
               key={v.id}
-              className={`flex flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between ${
-                isLive ? 'border-primary bg-primary/5' : 'bg-card'
-              }`}
+              className={`rounded-lg border p-3 ${isLive ? 'border-primary bg-primary/5' : 'bg-card'}`}
             >
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold truncate">{v.label}</span>
-                  {isLive ? (
-                    <Badge className="gap-1">
-                      <Check className="h-3 w-3" /> Live now
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="capitalize">
-                      {v.status}
-                    </Badge>
-                  )}
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold truncate">{v.label}</span>
+                    {isLive ? (
+                      <Badge className="gap-1">
+                        <Check className="h-3 w-3" /> Live now
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="capitalize">
+                        {v.status}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {v.published_at ? 'Pushed live' : 'Saved'} {whenLabel(v)}
+                    {sample !== null && <> · 2yr £100 excess / £2,000 limit: £{sample}</>}
+                    {' · website −'}
+                    {Math.round(Number(v.step3_discount_pct) > 0 ? Number(v.step3_discount_pct) : 10)}%
+                  </div>
                 </div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {v.published_at ? 'Pushed live' : 'Saved'} {whenLabel(v)}
-                  {sample !== null && <> · 2yr £100 excess / £2,000 limit: £{sample}</>}
-                  {' · website −'}
-                  {Math.round(Number(v.step3_discount_pct) > 0 ? Number(v.step3_discount_pct) : 10)}%
-                </div>
-                {v.notes && (
-                  <div className="mt-1 text-xs text-muted-foreground line-clamp-2">{v.notes}</div>
-                )}
-              </div>
 
-              <div className="shrink-0">
-                {isLive ? (
-                  <span className="text-xs font-medium text-primary">Currently live</span>
-                ) : (
+                <div className="flex shrink-0 items-center gap-2">
                   <Button
                     type="button"
                     size="sm"
-                    variant="outline"
-                    disabled={busy}
-                    onClick={() => onRevert(v)}
+                    variant="ghost"
+                    onClick={() => setOpenNotes(s => ({ ...s, [v.id]: !s[v.id] }))}
                   >
-                    <RotateCcw className="mr-1 h-4 w-4" />
-                    Revert price
+                    <StickyNote className="mr-1 h-4 w-4" />
+                    {openNotes[v.id] ? 'Hide note' : v.notes ? 'Edit note' : 'Add note'}
                   </Button>
-                )}
+                  {isLive ? (
+                    <span className="text-xs font-medium text-primary">Currently live</span>
+                  ) : (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={busy}
+                      onClick={() => onRevert(v)}
+                    >
+                      <RotateCcw className="mr-1 h-4 w-4" />
+                      Revert price
+                    </Button>
+                  )}
+                </div>
               </div>
+
+              {/* Performance notes — what this price model did, in plain words. */}
+              {v.notes && !openNotes[v.id] && (
+                <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900 whitespace-pre-wrap">
+                  {v.notes}
+                </div>
+              )}
+
+              {openNotes[v.id] && (
+                <div className="mt-2 space-y-2">
+                  <Textarea
+                    rows={3}
+                    placeholder="How did this price perform? e.g. 12 sales in 4 days, average order £512, conversion held at 8% — kept the 2yr uplift."
+                    value={drafts[v.id] ?? v.notes ?? ''}
+                    onChange={e => setDrafts(s => ({ ...s, [v.id]: e.target.value }))}
+                    className="text-sm"
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={savingId === v.id || !onSaveNote}
+                      onClick={() => saveNote(v.id, v.notes ?? '')}
+                    >
+                      {savingId === v.id && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+                      Save note
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setDrafts(s => ({ ...s, [v.id]: v.notes ?? '' }));
+                        setOpenNotes(s => ({ ...s, [v.id]: false }));
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
+
           );
         })}
 
