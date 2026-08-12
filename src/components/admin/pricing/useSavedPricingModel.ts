@@ -98,6 +98,7 @@ export function useSavedPricingModel(opts?: { preferLive?: boolean }) {
           ...(live.twoYearMult !== undefined ? { twoYearMult: live.twoYearMult } : {}),
           ...(live.threeYearMult !== undefined ? { threeYearMult: live.threeYearMult } : {}),
           ...(live.payInFullFactor !== undefined ? { payInFullFactor: live.payInFullFactor } : {}),
+          ...(live.absoluteMinTotal ? { absoluteMinTotal: live.absoluteMinTotal } : {}),
         };
       }
     }
@@ -120,6 +121,8 @@ export function useSavedPricingModel(opts?: { preferLive?: boolean }) {
       twoYearMult: Number(saved.twoYearMult ?? 1.65),
       threeYearMult: Number(saved.threeYearMult ?? 2.35),
       payInFullFactor: Number(saved.payInFullFactor ?? 0.9),
+      /** Model-level absolute minimum total (Aug hybrid = £399). 0 = use standard floors. */
+      absoluteMinTotal: Number(saved.absoluteMinTotal) > 0 ? Number(saved.absoluteMinTotal) : 0,
       /** Changes whenever the saved figures are re-read — handy as a render key. */
       revision: tick,
     };

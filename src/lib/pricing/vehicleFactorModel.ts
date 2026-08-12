@@ -34,6 +34,11 @@ export type VehicleFactorModel = {
   twoYearMult?: number;
   threeYearMult?: number;
   payInFullFactor?: number;
+  /**
+   * Model-level absolute minimum total payable for ANY warranty in this model
+   * (Aug hybrid = £399). Halves for motorbikes. 0/undefined = standard floors.
+   */
+  absoluteMinTotal?: number;
 };
 
 
