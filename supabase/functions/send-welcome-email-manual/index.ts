@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { logCustomerEmail } from '../_shared/log-email.ts';
 import { getLatestPolicyDocs } from '../_shared/latestPolicyDocs.ts';
+import { verifyPassword } from '../_shared/verify-password.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -311,7 +312,8 @@ const handler = async (req: Request): Promise<Response> => {
       .maybeSingle();
 
     const hasResetPassword = latestWelcomeEmail?.password_reset_by_user || false;
-    const shouldIncludeLoginDetails = !hasResetPassword;
+    let shouldIncludeLoginDetails = !hasResetPassword;
+    let loginVerified = false;
     
     console.log(JSON.stringify({ 
       evt: "password.reset.check", 
@@ -752,7 +754,8 @@ const handler = async (req: Request): Promise<Response> => {
             
             <p style="color: #333;">
               <strong>Email:</strong> ${customer.email}<br>
-              Use your existing password to access your account.
+              Use your existing password to access your account. Forgotten it?
+              <a href="https://buyawarranty.co.uk/forgot-password" style="color: #ff6b35;">Reset your password here</a>.
             </p>
           </div>
           `}
