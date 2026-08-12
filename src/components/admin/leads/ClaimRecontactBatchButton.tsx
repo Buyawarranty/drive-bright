@@ -120,7 +120,7 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
         return;
       }
       if (claimed === 0) {
-        toast.info('No unassigned leads older than 30 days available right now');
+        toast.info('No unassigned leads older than 60 days available right now');
         return;
       }
       const remainingBit = remaining > 0
