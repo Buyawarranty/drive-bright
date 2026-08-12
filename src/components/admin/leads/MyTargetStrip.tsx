@@ -1,56 +1,98 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Target } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Target, ChevronDown, ChevronUp } from 'lucide-react';
 import { differenceInCalendarDays, endOfMonth, format, startOfMonth } from 'date-fns';
-import { useScoreboardData } from '@/hooks/useScoreboardData';
-import { useAgentScoresForMonth } from '@/hooks/useAgentScoresForMonth';
+import { supabase } from '@/integrations/supabase/client';
 import { useViewAs } from '@/contexts/ViewAsContext';
+import { useIsManagement } from '@/hooks/useIsManagement';
+import { getAgentColor } from '@/lib/agentColors';
 
-const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
+const gbp = (n: number) => `£${Math.round(n || 0).toLocaleString('en-GB')}`;
+
+interface Row {
+  team_id: string;
+  team_name: string;
+  admin_user_id: string;
+  agent_name: string;
+  revenue: number;
+  sales_count: number;
+  pct_achieved: number | null;
+  revenue_target: number | null;
+  is_self: boolean;
+}
 
 /**
  * Read-only "my monthly target" strip for the New Leads page.
  *
- * Deliberately simple: no edit controls, no team figures, no navigation away.
- * Days are plain calendar days left in the month — working days are rota
- * dependent and only confuse the daily number.
+ * Uses the SAME source as the Sales Scoreboard (`get_team_scoreboard`) so the
+ * revenue and targets here can never drift from the scoreboard figures.
+ * Managers additionally get an expandable per-agent breakdown.
  */
 export const MyTargetStrip: React.FC = () => {
   const now = new Date();
   const month = startOfMonth(now);
-  const { currentAdminUserId, agents: liveAgents, loading: liveLoading } = useScoreboardData();
-  const { agents: monthAgents, loading: monthLoading } = useAgentScoresForMonth(month);
   const { effectiveAdminUserId } = useViewAs();
+  const { isManagement } = useIsManagement();
+  const [rows, setRows] = useState<Row[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
 
-  // Impersonation ("viewing as Freddie") must show that agent's target, not the
-  // manager's. Managers with no sales row of their own see the team total.
-  const myId = effectiveAdminUserId || currentAdminUserId;
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase.rpc('get_team_scoreboard', {
+      p_start: startOfMonth(month).toISOString(),
+      p_end: endOfMonth(month).toISOString(),
+    });
+    setRows(((data || []) as unknown as Row[]));
+    setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [month.getFullYear(), month.getMonth()]);
+
+  useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('my-target-strip-targets')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_targets' }, () => load())
+      .subscribe();
+    const onFocus = () => load();
+    window.addEventListener('focus', onFocus);
+    return () => {
+      supabase.removeChannel(channel);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [load]);
 
   const me = useMemo(() => {
-    const mine = myId ? monthAgents.find(a => a.id === myId) : undefined;
-    const live = myId ? liveAgents.find(a => a.id === myId) : undefined;
+    // When impersonating, show that agent. Otherwise the row flagged is_self.
+    const mine = effectiveAdminUserId
+      ? rows.find(r => r.admin_user_id === effectiveAdminUserId)
+      : rows.find(r => r.is_self);
 
-    if (mine || live) {
+    if (mine) {
       return {
         scope: 'agent' as const,
-        revenue: mine?.revenue ?? live?.revenue ?? 0,
-        target: live?.revenueTarget ?? mine?.revenueTarget ?? null,
+        revenue: Number(mine.revenue) || 0,
+        target: mine.revenue_target != null ? Number(mine.revenue_target) : null,
       };
     }
 
-    // Not a sales agent (manager/admin) — show the whole team's progress.
-    if (monthAgents.length || liveAgents.length) {
-      const revenue = monthAgents.reduce((sum, a) => sum + (a.revenue || 0), 0);
-      const target = (liveAgents.length ? liveAgents : monthAgents)
-        .reduce((sum, a) => sum + (a.revenueTarget || 0), 0);
+    if (rows.length) {
+      const revenue = rows.reduce((s, r) => s + (Number(r.revenue) || 0), 0);
+      const target = rows.reduce((s, r) => s + (Number(r.revenue_target) || 0), 0);
       return { scope: 'team' as const, revenue, target: target || null };
     }
-
     return null;
-  }, [myId, monthAgents, liveAgents]);
+  }, [rows, effectiveAdminUserId]);
 
-  if (liveLoading || monthLoading) return null;
+  const breakdown = useMemo(
+    () => [...rows].sort((a, b) => (Number(b.revenue) || 0) - (Number(a.revenue) || 0)),
+    [rows],
+  );
+
+  if (loading) return null;
   if (!me) return null;
 
   const daysLeft = Math.max(0, differenceInCalendarDays(endOfMonth(now), now));
@@ -77,7 +119,6 @@ export const MyTargetStrip: React.FC = () => {
   const remaining = Math.max(target - revenue, 0);
   const perDay = remaining > 0 && daysLeft > 0 ? Math.ceil(remaining / daysLeft) : 0;
 
-  // Expected pace by today: how far through the month we are.
   const totalDays = endOfMonth(now).getDate();
   const expectedPct = (now.getDate() / totalDays) * 100;
   const state =
@@ -127,10 +168,55 @@ export const MyTargetStrip: React.FC = () => {
           )}
         </div>
 
-        <Badge variant="outline" className={`ml-auto text-xs ${state.cls}`}>
-          {state.label}
-        </Badge>
+        <div className="ml-auto flex items-center gap-2">
+          {isManagement === true && breakdown.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => setOpen(o => !o)}
+            >
+              {open ? <ChevronUp className="h-3.5 w-3.5 mr-1" /> : <ChevronDown className="h-3.5 w-3.5 mr-1" />}
+              {open ? 'Hide agent breakdown' : 'Agent breakdown'}
+            </Button>
+          )}
+          <Badge variant="outline" className={`text-xs ${state.cls}`}>
+            {state.label}
+          </Badge>
+        </div>
       </div>
+
+      {isManagement === true && open && (
+        <div className="mt-3 pt-3 border-t space-y-1.5">
+          <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
+            Each agent this month — same figures as the Sales Scoreboard
+          </div>
+          {breakdown.map(r => {
+            const rev = Number(r.revenue) || 0;
+            const tgt = r.revenue_target != null ? Number(r.revenue_target) : null;
+            const p = tgt ? Math.min((rev / tgt) * 100, 100) : 0;
+            const colour = getAgentColor(r.agent_name);
+            return (
+              <div key={r.admin_user_id} className="flex items-center gap-3 text-xs">
+                <span className="flex items-center gap-1.5 min-w-[150px] font-medium">
+                  <span className={`inline-block h-2 w-2 rounded-full ${colour?.dot || 'bg-muted-foreground'}`} />
+                  {r.agent_name}
+                </span>
+                <span className="text-muted-foreground min-w-[70px]">{r.team_name}</span>
+                <span className="font-semibold min-w-[70px]">{gbp(rev)}</span>
+                <span className="text-muted-foreground min-w-[80px]">
+                  of {tgt ? gbp(tgt) : '—'}
+                </span>
+                <Progress value={p} className="h-1.5 w-24" />
+                <span className="min-w-[40px] text-right font-medium">{tgt ? `${p.toFixed(0)}%` : '—'}</span>
+                <span className="text-muted-foreground">
+                  {Number(r.sales_count) || 0} sale{(Number(r.sales_count) || 0) === 1 ? '' : 's'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
