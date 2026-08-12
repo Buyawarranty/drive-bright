@@ -3832,6 +3832,26 @@ Questions? Call 0330 229 5040`;
                         Existing lead{matchedLeadOwner.ownerName ? ` · ${matchedLeadOwner.ownerName}'s lead` : ' · Unassigned lead'}
                       </Badge>
                     ) : null}
+                    {/* Last recorded MOT mileage for the imported lead's vehicle */}
+                    {(selectedLeadId || matchedLeadOwner.leadFound) && (
+                      step1MotMileageResolved ? (
+                        <Badge variant="outline" className="gap-1 border-[#0F1B3D]/30 bg-[#0F1B3D]/5 text-[#0F1B3D]">
+                          <Gauge className="h-3 w-3" />
+                          Last MOT: {Number(step1MotMileageResolved).toLocaleString('en-GB')} miles
+                          {step1MotDate ? ` · ${new Date(step1MotDate).toLocaleDateString('en-GB')}` : ''}
+                        </Badge>
+                      ) : step1MotLoading ? (
+                        <Badge variant="outline" className="gap-1 text-muted-foreground">
+                          <Gauge className="h-3 w-3" />
+                          Checking last MOT mileage…
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="gap-1 text-muted-foreground">
+                          <Gauge className="h-3 w-3" />
+                          No MOT mileage on record
+                        </Badge>
+                      )
+                    )}
                   </div>
                 </div>
               </CardHeader>
