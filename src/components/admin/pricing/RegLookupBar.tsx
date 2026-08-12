@@ -181,7 +181,13 @@ const RegLookupBar: React.FC<{
   return (
     <div className={compact ? 'space-y-2' : 'rounded-lg border bg-muted/30 p-4 space-y-2'}>
       {!compact && (
-        <div className="text-sm font-semibold">Look up a real vehicle (same DVLA + MOT data as the homepage)</div>
+        <div>
+          <div className="text-sm font-semibold">Try it on a real car</div>
+          <p className="text-xs text-muted-foreground">
+            Enter any registration to price a genuine vehicle with the same DVLA and MOT data the website
+            uses, so you can see exactly what a customer would be quoted. Nothing is saved.
+          </p>
+        </div>
       )}
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex items-stretch overflow-hidden rounded-lg border-2 border-black shadow-sm">
