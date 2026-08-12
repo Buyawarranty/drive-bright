@@ -3,6 +3,7 @@ import { isToday, isPast } from 'date-fns';
 import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { RepeatCustomerBanner } from './RepeatCustomerBanner';
+import { MyTargetStrip } from './MyTargetStrip';
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
 import { QuotesSentPanel } from '@/components/admin/QuotesSentPanel';
 import { ConvertedSalesLogPanel } from './ConvertedSalesLogPanel';
