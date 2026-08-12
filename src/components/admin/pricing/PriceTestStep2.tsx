@@ -457,10 +457,39 @@ export default function PriceTestStep2({
    * £250/£500 tiers unlock on the excess-neutral (£100 baseline) term total, so
    * picking a cheaper excess can never hide the option just selected.
    */
-  const visibleExcesses = useMemo(
+  const journeyExcesses = useMemo(
     () => getVisibleExcessOptions(term.period, claimLimit, calc?.baseTermTotal ?? null),
     [term.period, claimLimit, calc?.baseTermTotal],
   );
+
+  /**
+   * Only offer excess tiers that genuinely price ABOVE the minimum. A higher
+   * excess makes the warranty cheaper, so on a low-priced vehicle it would land
+   * on the floor and quote the same money as a lower excess — the customer would
+   * be taking a bigger excess for nothing. Those tiers are dropped instead.
+   */
+  const visibleExcesses = useMemo(() => {
+    const base = calc?.baseTermTotal;
+    if (!base) return journeyExcesses;
+    const fits = journeyExcesses.filter((candidate) => {
+      let total = base + getExcessTotalAdjustment(term.period as PaymentPeriod, candidate, base);
+      if (discount) {
+        total -=
+          discount.kind === 'flat'
+            ? Math.min(discount.value, total)
+            : Math.round((total * discount.value) / 100);
+      }
+      total = Math.round(total + addOnTotalFor(term.months));
+      const min = minimumFor(term.months, candidate);
+      const net = payInFullFactor > 0 ? Math.round(total * payInFullFactor) : total;
+      return total >= min && net >= min;
+    });
+    // Never leave the agent with nothing to pick: keep the cheapest-excess option
+    // (the one closest to the floor) if every tier clamps.
+    return fits.length ? fits : journeyExcesses.slice(0, 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [journeyExcesses, calc?.baseTermTotal, term, discount, addOns, claimLimit, labour, motorbikeFactor, payInFullFactor, liveModel]);
+
 
 
   /** Add-ons exactly as Step 3/4 lists them for this term. */
