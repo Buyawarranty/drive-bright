@@ -93,6 +93,7 @@ export const useRepeatCustomers = (leads: RepeatLeadInput[]) => {
     setLoading(true);
 
     type Row = {
+      id: string;
       email: string | null;
       registration_plate: string | null;
       phone: string | null;
@@ -100,8 +101,10 @@ export const useRepeatCustomers = (leads: RepeatLeadInput[]) => {
       signup_date: string | null;
       plan_type: string | null;
       status: string | null;
+      warranty_number?: string | null;
+      policy_number?: string | null;
     };
-    const COLS = 'email, registration_plate, phone, name, signup_date, plan_type, status';
+    const COLS = 'id, email, registration_plate, phone, name, signup_date, plan_type, status, warranty_number, policy_number';
     const rows: Row[] = [];
 
     try {
