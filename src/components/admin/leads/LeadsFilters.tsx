@@ -649,6 +649,19 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
         {/* Spacer */}
         <div className="flex-1" />
 
+        {/* Feed age window — default: last 60 days of leads */}
+        {onAgeWindowChange && (
+          <Select value={ageWindow} onValueChange={(v) => onAgeWindowChange(v as AgeWindow)}>
+            <SelectTrigger className="h-8 w-[150px] text-xs rounded-lg border-2 border-border">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end" className="bg-popover border shadow-lg z-50">
+              <SelectItem value="last_60">Last 60 days (default)</SelectItem>
+              <SelectItem value="all">All leads</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+
         {/* Total leads + pagination */}
         {onPageSizeChange && (
           <div className="flex items-center gap-2">
