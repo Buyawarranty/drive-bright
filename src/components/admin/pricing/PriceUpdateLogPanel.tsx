@@ -26,6 +26,35 @@ function sampleGridPrice(v: PricingVersion): number | null {
   return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
 }
 
+/** Average of every Quotes & Orders cell, so the percentage move is the whole
+ *  curve rather than one sample cell. */
+function averageGridPrice(v: PricingVersion): number | null {
+  const m: any = v.admin_matrix;
+  if (!m) return null;
+  const values: number[] = [];
+  for (const term of Object.values(m) as any[]) {
+    if (!term || typeof term !== 'object') continue;
+    for (const excess of Object.values(term) as any[]) {
+      if (!excess || typeof excess !== 'object') continue;
+      for (const cell of Object.values(excess) as any[]) {
+        const n = Number(cell);
+        if (Number.isFinite(n) && n > 0) values.push(n);
+      }
+    }
+  }
+  if (!values.length) return null;
+  return values.reduce((a, b) => a + b, 0) / values.length;
+}
+
+/** Percentage move of this price model against the one saved before it. */
+function pctVsPrevious(current: PricingVersion, previous?: PricingVersion): number | null {
+  if (!previous) return null;
+  const a = averageGridPrice(previous);
+  const b = averageGridPrice(current);
+  if (!a || !b) return null;
+  return Math.round(((b - a) / a) * 1000) / 10;
+}
+
 function whenLabel(v: PricingVersion): string {
   const iso = v.published_at || v.updated_at || v.created_at;
   if (!iso) return '—';
