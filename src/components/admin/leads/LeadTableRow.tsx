@@ -834,6 +834,14 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               if (!msclkid && !metadata?.utm_source) parts.push('(no MSCLKID captured)');
               return <span className="text-[11px] font-bold text-teal-700 cursor-help" title={parts.join('\n') + utmBlock}>B</span>;
             }
+            if ((src as string) === 'tiktok_ad') {
+              const ttclid = (metadata as any)?.ttclid;
+              const parts = ['TikTok Ads'];
+              if (ttclid) parts.push(`TTCLID: ${ttclid}`);
+              if (!ttclid && !metadata?.utm_source) parts.push('(no TTCLID captured)');
+              return <span className="text-[11px] font-bold text-zinc-800 cursor-help" title={parts.join('\n') + utmBlock}>T</span>;
+            }
+
             const organicTip = 'Organic' + utmBlock;
             return <span className={`text-[11px] font-medium cursor-help ${utmLines.length ? 'text-foreground' : 'text-muted-foreground'}`} title={organicTip}>O</span>;
           })()}
