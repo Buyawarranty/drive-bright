@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { UserCheck, ChevronDown, ChevronUp } from 'lucide-react';
+import { UserCheck, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,6 +45,9 @@ export const RepeatCustomerBanner: React.FC<RepeatCustomerBannerProps> = ({
   onSelectLead,
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const [dismissed, setDismissed] = useState(() => {
+    try { return sessionStorage.getItem('repeatCustomerBannerDismissed') === '1'; } catch { return false; }
+  });
   const { repeatByLeadId } = useRepeatCustomers(
     leads.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg, phone: (l as any).phone, first_name: (l as any).first_name, last_name: (l as any).last_name, created_at: (l as any).created_at }))
   );
@@ -61,7 +64,7 @@ export const RepeatCustomerBanner: React.FC<RepeatCustomerBannerProps> = ({
     });
   }, [leads, repeatByLeadId, isManager, currentAdminId]);
 
-  if (matches.length === 0) return null;
+  if (matches.length === 0 || dismissed) return null;
 
   const visible = expanded ? matches : matches.slice(0, 3);
 
@@ -119,6 +122,17 @@ export const RepeatCustomerBanner: React.FC<RepeatCustomerBannerProps> = ({
             </Button>
           )}
         </div>
+        <button
+          type="button"
+          aria-label="Close repeat customer notice"
+          className="ml-auto flex-shrink-0 rounded-md p-1 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
+          onClick={() => {
+            setDismissed(true);
+            try { sessionStorage.setItem('repeatCustomerBannerDismissed', '1'); } catch {}
+          }}
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
     </div>
   );
