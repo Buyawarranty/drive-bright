@@ -16,7 +16,7 @@ import {
 import { EXCESSES } from '@/hooks/usePricingVersions';
 import { buildCodeBaseClaimTiers } from '@/lib/pricing/codeBaseClaimTiers';
 import PriceTestStep2 from './PriceTestStep2';
-import { HYBRID_PRICE_UPLIFT_PCT, HYBRID_BASE_MARKER, upliftTermMult } from './AugHybridVsLivePanel';
+import { HYBRID_PRICE_UPLIFT_PCT, HYBRID_BASE_MARKER, HYBRID_ABSOLUTE_MIN_TOTAL, upliftTermMult } from './AugHybridVsLivePanel';
 
 import PriceDiffBanner from './PriceDiffBanner';
 import type { PriceTestQuoteSnapshot } from './PriceTestStep2';
