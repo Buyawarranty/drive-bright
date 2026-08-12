@@ -27,6 +27,7 @@ import { buildAdminMatrixFromModel } from './AgeBandPricingPreview';
 import PriceSurfaceBadge from './PriceSurfaceBadge';
 import QuickUpliftBar, { applyModelUplift, useUpliftPct } from './QuickUpliftBar';
 import { useStickyCfg } from './useStickyCfg';
+import HybridSummaryChips from './HybridSummaryChips';
 
 
 /**
@@ -392,18 +393,7 @@ const CodebaseVsHybridPanel: React.FC<{
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Badge variant="outline">
-                Reference target {effectiveTarget ? formatGBP(effectiveTarget) : '—'}
-                {cfg.targetReference > 0 ? ' (exact)' : ` (${cfg.baseReductionPct}% below August)`}
-              </Badge>
-              <Badge variant="outline">
-                {cfg.ceilingOn ? `Ceiling ${formatGBP(cfg.ceiling)}` : 'No ceiling'}
-              </Badge>
-              <Badge variant="outline">
-                Multi-year discount {cfg.twoYearDiscountPct}% / {cfg.threeYearDiscountPct}%
-              </Badge>
-            </div>
+            <HybridSummaryChips cfg={cfg} set={set} effectiveTarget={effectiveTarget} />
           </div>
         </CardContent>
       </Card>
