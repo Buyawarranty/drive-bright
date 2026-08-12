@@ -50,6 +50,7 @@ import DraftPricingScope from '@/components/admin/pricing/DraftPricingScope';
 import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
 import CodebaseVsCurrentPanel from '@/components/admin/pricing/CodebaseVsCurrentPanel';
 import ClaimLimit5kAuthToggle from '@/components/admin/pricing/ClaimLimit5kAuthToggle';
+import PriceUpdateLogPanel from '@/components/admin/pricing/PriceUpdateLogPanel';
 import ExcludedVehiclesPanel from '@/components/admin/pricing/ExcludedVehiclesPanel';
 import FullyExcludedListCard from '@/components/admin/pricing/FullyExcludedListCard';
 import PriceSurfaceBadge from '@/components/admin/pricing/PriceSurfaceBadge';
@@ -866,6 +867,15 @@ export default function PriceUpdatesTab() {
         </h2>
         <ClaimLimit5kAuthToggle />
       </div>
+
+      <div id="price-update-log" className="scroll-mt-4">
+        <PriceUpdateLogPanel
+          versions={versions}
+          busy={busy}
+          onRevert={handleRestoreVersion}
+        />
+      </div>
+
 
 
 
