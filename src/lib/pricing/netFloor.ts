@@ -35,6 +35,11 @@ export interface NetFloorParams {
   isMotorbike?: boolean;
   /** 'admin' = Quotes & Orders grid, 'customer' = website Steps 3/4. */
   surface?: PricingSurface;
+  /**
+   * Per-model absolute minimum total (Aug hybrid = £399 on ANY warranty).
+   * Applied as a hard bottom on top of the shaped floor; halves for motorbikes.
+   */
+  absoluteMinTotal?: number;
 }
 
 /**
@@ -43,7 +48,7 @@ export interface NetFloorParams {
  * never sit above or below the quoted floor by accident.
  */
 export function getNetPayableFloor(params: NetFloorParams): number {
-  return getAbsoluteMinimumTotal({
+  const shaped = getAbsoluteMinimumTotal({
     paymentPeriod: params.paymentPeriod,
     voluntaryExcess: params.voluntaryExcess,
     claimLimit: params.claimLimit,
@@ -51,6 +56,10 @@ export function getNetPayableFloor(params: NetFloorParams): number {
     isMotorbike: params.isMotorbike,
     surface: params.surface ?? 'admin',
   });
+  const modelMin = Number(params.absoluteMinTotal) > 0
+    ? Number(params.absoluteMinTotal) * (params.isMotorbike ? 0.5 : 1)
+    : 0;
+  return Math.max(shaped, modelMin);
 }
 
 /** True when `amount` is a real number that falls under the net floor. */

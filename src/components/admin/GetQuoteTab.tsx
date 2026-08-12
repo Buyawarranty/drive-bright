@@ -493,6 +493,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     labourRate,
     isMotorbike: isMotorbikeQuote,
     surface: 'admin',
+    // Aug hybrid (and any model carrying its own minimum) never quotes below £399.
+    absoluteMinTotal: (pricingModel as any)?.absoluteMinTotal || 0,
   });
   const priceMatchEvidenced = priceMatchMode && !!priceMatchProofPath && !!priceMatchCompetitor.trim();
   const isUnderAbsoluteMin = (total: unknown) => {

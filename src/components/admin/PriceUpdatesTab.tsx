@@ -444,6 +444,8 @@ export default function PriceUpdatesTab() {
       twoYearMult: m.twoYearMult === undefined ? undefined : Number(m.twoYearMult),
       threeYearMult: m.threeYearMult === undefined ? undefined : Number(m.threeYearMult),
       payInFullFactor: m.payInFullFactor === undefined ? undefined : Number(m.payInFullFactor),
+      // Model-level absolute minimum (Aug hybrid = £399 on any warranty).
+      absoluteMinTotal: Number(m.absoluteMinTotal) > 0 ? Number(m.absoluteMinTotal) : undefined,
     };
 
   }
@@ -595,6 +597,10 @@ export default function PriceUpdatesTab() {
       // Carried through so a later hybrid republish does not re-apply the base
       // reduction on top of an already-reduced curve (that made prices fall).
       ...(model.hybridBaseApplied ? { hybridBaseApplied: true } : {}),
+      // Carried through so the pushed-live hybrid keeps its £399 absolute minimum.
+      ...(Number((model as any).absoluteMinTotal) > 0
+        ? { absoluteMinTotal: Number((model as any).absoluteMinTotal) }
+        : {}),
     } as VehicleFactorModel & { hybridBaseApplied?: boolean };
 
     const discount = effectiveDiscountPct(
