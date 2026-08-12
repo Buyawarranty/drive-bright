@@ -20,12 +20,21 @@
  */
 import { getAbsoluteMinimumTotal, type PaymentPeriod, type PricingSurface } from '@/lib/pricingMatrix';
 
+/**
+ * GLOBAL absolute minimum (12/08/2026): no warranty plan, on any pricing model
+ * or surface, may ever be sold for less than £399 in total. Halves for
+ * motorbikes (£199.50) exactly like every other floor. The rest of each model's
+ * pricing is untouched — this only lifts anything that lands beneath it.
+ */
+export const GLOBAL_ABSOLUTE_MIN_TOTAL = 399;
+
 /** Flat net floor by term, before option shaping and motorbike halving. */
 export const NET_FLOOR_BY_PERIOD: Record<PaymentPeriod, number> = {
   '12months': 349,
   '24months': 576,
   '36months': 821,
 };
+
 
 export interface NetFloorParams {
   paymentPeriod: PaymentPeriod;
@@ -56,11 +65,12 @@ export function getNetPayableFloor(params: NetFloorParams): number {
     isMotorbike: params.isMotorbike,
     surface: params.surface ?? 'admin',
   });
-  const modelMin = Number(params.absoluteMinTotal) > 0
-    ? Number(params.absoluteMinTotal) * (params.isMotorbike ? 0.5 : 1)
-    : 0;
+  const modelMin =
+    Math.max(Number(params.absoluteMinTotal) || 0, GLOBAL_ABSOLUTE_MIN_TOTAL) *
+    (params.isMotorbike ? 0.5 : 1);
   return Math.max(shaped, modelMin);
 }
+
 
 /** True when `amount` is a real number that falls under the net floor. */
 export function isUnderNetFloor(amount: unknown, params: NetFloorParams): boolean {

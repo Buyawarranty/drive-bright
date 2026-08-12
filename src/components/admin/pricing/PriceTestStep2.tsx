@@ -26,6 +26,7 @@ import {
 
 import { calculateAddOnPrice } from '@/lib/addOnsUtils';
 import { getExclusionReason, EXCLUSION_MESSAGE } from '@/lib/vehicleExclusions';
+import { GLOBAL_ABSOLUTE_MIN_TOTAL } from '@/lib/pricing/netFloor';
 import {
   JOURNEY_DURATIONS,
   JOURNEY_EXCESS_OPTIONS,
@@ -309,9 +310,10 @@ export default function PriceTestStep2({
      * Per-model absolute minimum (Aug hybrid = £399 total on any warranty).
      * Nothing in that model may quote below it, whatever the options.
      */
-    const modelAbsoluteMin = Number((liveModel as any)?.absoluteMinTotal) > 0
-      ? Math.round(Number((liveModel as any).absoluteMinTotal) * motorbikeFactor)
-      : 0;
+    const modelAbsoluteMin = Math.round(
+      Math.max(Number((liveModel as any)?.absoluteMinTotal) || 0, GLOBAL_ABSOLUTE_MIN_TOTAL) *
+        motorbikeFactor,
+    );
     return Math.max(shapedMinimum, hardBottom, modelAbsoluteMin);
   };
 
