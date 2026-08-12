@@ -2927,33 +2927,45 @@ Questions? Call 0330 229 5040`;
     return data;
   };
 
-  // Check for existing active policy on this vehicle
+  // Check for existing active policy on this vehicle.
+  // Orders are identified by REGISTRATION PLATE — the same customer (same name
+  // or email) may hold several orders at once, one per vehicle. Only a live
+  // policy on the SAME reg is a clash.
   const checkExistingPolicy = async () => {
     if (!vehicleData?.regNumber) return null;
-    
-    const { data: existingPolicy } = await supabase
-      .from('customer_policies')
-      .select('id, policy_number, email, status, policy_start_date')
-      .eq('status', 'active')
-      .ilike('email', customerEmail)
-      .maybeSingle();
-    
-    // Also check customers table for active policy on same reg
+
+    const normalizedReg = vehicleData.regNumber.toUpperCase().replace(/\s/g, '');
+
+    // Any active customer record on this exact reg (whoever owns it)
     const { data: existingCustomerPolicy } = await supabase
       .from('customers')
       .select('id, name, email, registration_plate, status')
-      .eq('registration_plate', vehicleData.regNumber.toUpperCase())
+      .eq('registration_plate', normalizedReg)
       .eq('status', 'Active')
       .maybeSingle();
-    
-    if (existingPolicy) {
-      return `An active policy (${existingPolicy.policy_number}) already exists for this email.`;
+
+    if (existingCustomerPolicy) {
+      // Same reg, different customer → genuine conflict
+      if ((existingCustomerPolicy.email || '').toLowerCase() !== customerEmail.toLowerCase()) {
+        return `This vehicle (${vehicleData.regNumber}) is already covered under ${existingCustomerPolicy.name}'s policy (${existingCustomerPolicy.email}).`;
+      }
+
+      // Same reg, same customer → check whether that reg's policy is still live
+      const { data: policies } = await supabase
+        .from('customer_policies')
+        .select('id, policy_number, status')
+        .eq('customer_id', existingCustomerPolicy.id)
+        .eq('status', 'active')
+        .limit(1);
+
+      if (policies && policies.length > 0) {
+        return `An active policy (${policies[0].policy_number}) already exists for this customer on ${vehicleData.regNumber}.`;
+      }
     }
-    if (existingCustomerPolicy && existingCustomerPolicy.email.toLowerCase() !== customerEmail.toLowerCase()) {
-      return `This vehicle (${vehicleData.regNumber}) is already covered under ${existingCustomerPolicy.name}'s policy (${existingCustomerPolicy.email}).`;
-    }
+
     return null;
   };
+
 
   // Open payment confirmation dialog with validation
   const handleOpenConfirmPaymentDialog = async () => {
