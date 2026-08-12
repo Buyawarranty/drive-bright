@@ -426,24 +426,44 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
   const queuedLeads = useMemo(() => leads.filter((lead) => lead.status === 'queued'), [leads]);
 
+  /** Everyone holding a live lead means the next arrival has to wait. */
+  const allAgentsBusy = useMemo(() => {
+    const now = Date.now();
+    const busy = new Set(leads.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo));
+    return DUMMY_AGENTS.every((agent) => busy.has(agent.id));
+  }, [leads, tick]);
+
+  /**
+   * A new enquiry is offered by the rotation — never handed to whoever pressed the
+   * button. If every agent is busy it waits instead of landing on a live call.
+   */
   const createTestLead = useCallback(() => {
     const now = Date.now();
-    const viewer = getAgent(simulatedAgentId);
 
     setLeads((current) => {
       const leadNumber = current.length + 1;
-      const viewerBusy = current.some((lead) => isHeldLive(lead, now) && lead.assignedTo === viewer.id);
+      const busy = new Set(current.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string));
+
+      let offeredTo: DummyAgent | null = null;
+      for (let step = 0; step < DUMMY_AGENTS.length; step += 1) {
+        const candidate = DUMMY_AGENTS[(nextAgentIndexRef.current + step) % DUMMY_AGENTS.length];
+        if (!busy.has(candidate.id)) {
+          nextAgentIndexRef.current = (nextAgentIndexRef.current + step + 1) % DUMMY_AGENTS.length;
+          offeredTo = candidate;
+          break;
+        }
+      }
 
       const draft: DummyLead = {
         id: `dummy-orr-${now}-${Math.random().toString(36).slice(2, 7)}`,
         firstName: 'TEST',
         lastName: `Lead ${String(leadNumber).padStart(2, '0')}`,
         email: `test.lead${leadNumber}@example.com`,
-        status: viewerBusy ? 'queued' : 'new',
+        status: offeredTo ? 'new' : 'queued',
         displayStatus: 'new',
-        assignedTo: viewerBusy ? null : viewer.id,
-        attemptCount: viewerBusy ? 0 : 1,
-        deadlineAt: viewerBusy ? now : now + cadence.claimWindowSeconds * 1000,
+        assignedTo: offeredTo ? offeredTo.id : null,
+        attemptCount: offeredTo ? 1 : 0,
+        deadlineAt: offeredTo ? now + cadenceRef.current.claimWindowSeconds * 1000 : now,
         vehicleReg: 'TEST123',
         phone: '07902222222',
         createdAt: now,
@@ -454,30 +474,61 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         redTeamAt: null,
         followUpDay: 0,
         chaseComplete: false,
-
-
-        history: viewerBusy
-          ? ['Created — waiting in the open pool (you already hold a lead)']
-          : [`Created — attempt 1 assigned to ${viewer.name}`],
+        history: offeredTo
+          ? [`Created — attempt 1 offered to ${offeredTo.name} by the rotation`]
+          : ['Created — every agent is on a call, waiting in the open pool queue'],
       };
 
       window.setTimeout(() => {
         toast(
-          viewerBusy
+          offeredTo
             ? {
-                title: 'Waiting in the queue',
-                description: `${viewer.name} already holds a live practice lead. It releases as soon as that window ends.`,
+                title: `Offered to ${offeredTo.name}`,
+                description: `The rotation picked the next free agent — ${Math.round(cadenceRef.current.claimWindowSeconds)} seconds to make the first call.`,
               }
             : {
-                title: 'Lead taken',
-                description: `Practice lead assigned to ${viewer.name} — 2 minutes to make the first call.`,
+                title: 'Everyone is busy — lead is waiting',
+                description: 'No agent is free, so the lead waits in the queue and is released to the first agent who frees up.',
               },
         );
       }, 0);
 
       return [draft, ...current];
     });
-  }, [simulatedAgentId, toast]);
+  }, [toast]);
+
+  /**
+   * Self-claiming a waiting lead. Blocked unless a manager has switched the
+   * permission on, so nobody can pull leads out of the queue for themselves.
+   */
+  const claimQueuedLead = (leadId: string) => {
+    if (!cadence.allowSelfAssign) {
+      toast({
+        title: 'You cannot assign this lead to yourself',
+        description: 'Waiting leads are handed out by the rotation. A manager has to grant self-assign permission first.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    const viewer = getAgent(simulatedAgentId);
+    const now = Date.now();
+    setLeads((current) =>
+      current.map((lead) =>
+        lead.id === leadId
+          ? {
+              ...lead,
+              status: 'new',
+              assignedTo: viewer.id,
+              attemptCount: Math.max(1, lead.attemptCount),
+              deadlineAt: now + cadence.claimWindowSeconds * 1000,
+              history: [...lead.history, `Self-assigned by ${viewer.name} with manager permission`],
+            }
+          : lead,
+      ),
+    );
+    toast({ title: 'Lead claimed', description: `${viewer.name} took a waiting lead with manager permission.` });
+  };
+
 
   // A dial only logs an attempt. It never marks the lead as spoken to and never
   // hands ownership over — the agent must pick an outcome status (Spoken to,
