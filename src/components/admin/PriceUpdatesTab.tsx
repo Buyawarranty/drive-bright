@@ -868,6 +868,15 @@ export default function PriceUpdatesTab() {
         <ClaimLimit5kAuthToggle />
       </div>
 
+      <div id="price-update-log" className="scroll-mt-4">
+        <PriceUpdateLogPanel
+          versions={versions}
+          busy={busy}
+          onRevert={handleRestoreVersion}
+        />
+      </div>
+
+
 
 
       <Tabs defaultValue={tabOrder[0] || 'compare'} className="w-full">
