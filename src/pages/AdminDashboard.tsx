@@ -998,6 +998,7 @@ const AdminDashboardInner: React.FC<{
       )}
       <WorkingWeekReminderBanner userRole={displayRole} />
       <DiscountAuthBanner userRole={displayRole} />
+      <DiscountAuthPopup userRole={displayRole} />
 
       
       
