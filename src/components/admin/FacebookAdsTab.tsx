@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { Facebook, Eye, Users, ShoppingCart, TrendingUp, MousePointerClick, RefreshCw, Clock, ArrowRight, PoundSterling, Target, AlertTriangle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
