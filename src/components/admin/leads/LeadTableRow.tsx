@@ -857,8 +857,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </TableCell>
       )}
 
-        </TableCell>
-      )}
+
 
       {/* Status */}
       {!isLeadGenView && (
