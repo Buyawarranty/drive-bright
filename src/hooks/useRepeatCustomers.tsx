@@ -147,6 +147,11 @@ export const useRepeatCustomers = (leads: RepeatLeadInput[]) => {
       }
       await Promise.all(runs);
 
+      // The same customer record is returned by several of the parallel lookups
+      // (email + reg + phone + name), so collapse to one row per record first —
+      // otherwise a single previous policy is counted four or five times.
+      const uniqueRows = [...new Map(rows.filter(r => r?.id).map(r => [r.id, r])).values()];
+
       const byEmail = new Map<string, Row[]>();
       const byReg = new Map<string, Row[]>();
       const byPhone = new Map<string, Row[]>();
@@ -155,7 +160,7 @@ export const useRepeatCustomers = (leads: RepeatLeadInput[]) => {
         if (!k) return;
         map.set(k, [...(map.get(k) || []), r]);
       };
-      rows.forEach((r) => {
+      uniqueRows.forEach((r) => {
         if (EXCLUDED_STATUSES.includes((r.status || '').toLowerCase())) return;
         add(byEmail, normEmail(r.email), r);
         add(byReg, normReg(r.registration_plate), r);
@@ -163,7 +168,18 @@ export const useRepeatCustomers = (leads: RepeatLeadInput[]) => {
         add(byName, normName(r.name), r);
       });
 
-      const summarize = (matches: Row[], matchedOn: RepeatCustomerInfo['matchedOn']): RepeatCustomerInfo => {
+      /** One policy = one warranty number, or one plate bought on one day. */
+      const dedupePolicies = (matches: Row[]) =>
+        [...new Map(
+          matches.map(m => [
+            (m.warranty_number || '').trim() ||
+              `${normReg(m.registration_plate)}|${(m.signup_date || '').slice(0, 10)}`,
+            m,
+          ])
+        ).values()];
+
+      const summarize = (rawMatches: Row[], matchedOn: RepeatCustomerInfo['matchedOn']): RepeatCustomerInfo => {
+        const matches = dedupePolicies(rawMatches);
         const dates = matches.map(m => m.signup_date).filter(Boolean) as string[];
         dates.sort();
         const last = dates[dates.length - 1] || null;
