@@ -239,6 +239,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [customerDob, setCustomerDob] = useState('');
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [selectedLeadOwner, setSelectedLeadOwner] = useState<string | null>(null);
+  const [selectedLeadOwnerId, setSelectedLeadOwnerId] = useState<string | null>(null);
   const matchedLeadOwner = useLeadOwner(customerEmail, customerPhone);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   // Landing default matches Step 3: 2 years, £2,000 claim limit, £100 excess, £70/hr
