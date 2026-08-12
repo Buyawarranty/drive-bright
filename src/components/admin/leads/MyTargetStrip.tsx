@@ -195,11 +195,11 @@ export const MyTargetStrip: React.FC = () => {
             const rev = Number(r.revenue) || 0;
             const tgt = r.revenue_target != null ? Number(r.revenue_target) : null;
             const p = tgt ? Math.min((rev / tgt) * 100, 100) : 0;
-            const colour = getAgentColor(r.agent_name);
+            const colour = getAgentColor(r.agent_name, r.admin_user_id);
             return (
               <div key={r.admin_user_id} className="flex items-center gap-3 text-xs">
                 <span className="flex items-center gap-1.5 min-w-[150px] font-medium">
-                  <span className={`inline-block h-2 w-2 rounded-full ${colour?.dot || 'bg-muted-foreground'}`} />
+                  <span className={`inline-block h-2 w-2 rounded-full ${colour || 'bg-muted-foreground'}`} />
                   {r.agent_name}
                 </span>
                 <span className="text-muted-foreground min-w-[70px]">{r.team_name}</span>
