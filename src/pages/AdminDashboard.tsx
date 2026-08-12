@@ -34,6 +34,7 @@ import { recordTabVisit } from '@/hooks/useTabUsage';
 import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
 import { DiscountAuthBanner } from '@/components/admin/DiscountAuthBanner';
+import { DiscountAuthPopup } from '@/components/admin/DiscountAuthPopup';
 import { GlobalAutoDistributeBar } from '@/components/admin/leads/GlobalAutoDistributeBar';
 import { QuickGrantAccessBar } from '@/components/admin/QuickGrantAccessBar';
 
@@ -998,6 +999,7 @@ const AdminDashboardInner: React.FC<{
       )}
       <WorkingWeekReminderBanner userRole={displayRole} />
       <DiscountAuthBanner userRole={displayRole} />
+      <DiscountAuthPopup userRole={displayRole} />
 
       
       
