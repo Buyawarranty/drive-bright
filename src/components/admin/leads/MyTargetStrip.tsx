@@ -5,6 +5,7 @@ import { Target } from 'lucide-react';
 import { differenceInCalendarDays, endOfMonth, format, startOfMonth } from 'date-fns';
 import { useScoreboardData } from '@/hooks/useScoreboardData';
 import { useAgentScoresForMonth } from '@/hooks/useAgentScoresForMonth';
+import { useViewAs } from '@/contexts/ViewAsContext';
 
 const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
 
@@ -20,30 +21,51 @@ export const MyTargetStrip: React.FC = () => {
   const month = startOfMonth(now);
   const { currentAdminUserId, agents: liveAgents, loading: liveLoading } = useScoreboardData();
   const { agents: monthAgents, loading: monthLoading } = useAgentScoresForMonth(month);
+  const { effectiveAdminUserId } = useViewAs();
+
+  // Impersonation ("viewing as Freddie") must show that agent's target, not the
+  // manager's. Managers with no sales row of their own see the team total.
+  const myId = effectiveAdminUserId || currentAdminUserId;
 
   const me = useMemo(() => {
-    if (!currentAdminUserId) return null;
-    const mine = monthAgents.find(a => a.id === currentAdminUserId);
-    const live = liveAgents.find(a => a.id === currentAdminUserId);
-    if (!mine && !live) return null;
-    return {
-      revenue: mine?.revenue ?? live?.revenue ?? 0,
-      target: live?.revenueTarget ?? mine?.revenueTarget ?? null,
-    };
-  }, [currentAdminUserId, monthAgents, liveAgents]);
+    const mine = myId ? monthAgents.find(a => a.id === myId) : undefined;
+    const live = myId ? liveAgents.find(a => a.id === myId) : undefined;
 
-  if (liveLoading || monthLoading || !me) return null;
+    if (mine || live) {
+      return {
+        scope: 'agent' as const,
+        revenue: mine?.revenue ?? live?.revenue ?? 0,
+        target: live?.revenueTarget ?? mine?.revenueTarget ?? null,
+      };
+    }
+
+    // Not a sales agent (manager/admin) — show the whole team's progress.
+    if (monthAgents.length || liveAgents.length) {
+      const revenue = monthAgents.reduce((sum, a) => sum + (a.revenue || 0), 0);
+      const target = (liveAgents.length ? liveAgents : monthAgents)
+        .reduce((sum, a) => sum + (a.revenueTarget || 0), 0);
+      return { scope: 'team' as const, revenue, target: target || null };
+    }
+
+    return null;
+  }, [myId, monthAgents, liveAgents]);
+
+  if (liveLoading || monthLoading) return null;
+  if (!me) return null;
 
   const daysLeft = Math.max(0, differenceInCalendarDays(endOfMonth(now), now));
   const monthName = format(month, 'MMMM');
+  const scopeLabel = me.scope === 'team' ? 'Team target' : 'My target';
 
   if (!me.target) {
     return (
       <div className="rounded-xl border bg-card px-4 py-2.5 flex items-center gap-2 text-sm">
         <Target className="h-4 w-4 text-muted-foreground" />
-        <span className="font-semibold">My target · {monthName}</span>
+        <span className="font-semibold">{scopeLabel} · {monthName}</span>
         <span className="text-muted-foreground">
-          No target set yet — ask your manager to set your monthly target.
+          {me.scope === 'team'
+            ? 'No team targets set yet — set monthly targets on the Sales Scoreboard.'
+            : 'No target set yet — ask your manager to set your monthly target.'}
         </span>
       </div>
     );
@@ -71,7 +93,7 @@ export const MyTargetStrip: React.FC = () => {
         <div className="flex items-center gap-2 min-w-[150px]">
           <Target className="h-4 w-4 text-primary" />
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            My target · {monthName}
+            {scopeLabel} · {monthName}
           </span>
         </div>
 
