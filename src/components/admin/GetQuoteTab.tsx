@@ -4633,7 +4633,7 @@ Questions? Call 0330 229 5040`;
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Excess Amount</Label>
                   <div className="grid grid-cols-3 gap-2">
-                    {excessOptions.map((excess) => {
+                    {sellableExcessOptions.map((excess) => {
                       const meta = JOURNEY_EXCESS_OPTIONS.find(o => o.value === excess);
                       const delta = getExcessMonthlyDelta(
                         paymentType as PaymentPeriod,
