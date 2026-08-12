@@ -1183,9 +1183,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       pricingTrace.reason = '';
       // PERMANENT floor: the quoted total can never sit under the minimum
       // sellable price for this term/claim limit/labour rate/excess combo.
+      // The floor is NET PAYABLE, so when the 10% pay-in-full discount is on we
+      // gross the instalment total up until the discounted price clears it.
+      const netFloor = Math.ceil(ABSOLUTE_MIN_TOTAL);
+      const grossFloor = includePayInFullDiscount ? Math.ceil(netFloor / 0.9) : netFloor;
       const totalPrice = Math.max(
         Math.ceil(modelQuote.totalPrice + addOnPrice),
-        Math.ceil(ABSOLUTE_MIN_TOTAL),
+        grossFloor,
       );
       const monthlyPrice = Math.ceil(totalPrice / 12);
       const contractTotal = monthlyPrice * 12;
@@ -1193,11 +1197,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         totalPrice,
         monthlyPrice,
         payInFullPrice: includePayInFullDiscount
-          ? Math.ceil(contractTotal * 0.90)
+          ? Math.max(netFloor, Math.ceil(contractTotal * 0.90))
           : contractTotal,
         wasPrice: totalPrice + (MARKETING_SAVINGS[paymentType] || 0),
         savings: MARKETING_SAVINGS[paymentType] || 0,
       };
+
     }
     pricingTrace.usedLegacy = true;
     pricingTrace.reason = modelVehicleAge == null
