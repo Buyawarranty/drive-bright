@@ -1366,8 +1366,33 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     : Math.ceil(Number(currentPrice.monthlyPrice || 0) * 12);
   const displayedPayInFullPrice = currentPrice.payInFullPrice || (includePayInFullDiscount ? Math.ceil(displayedTotalPrice * 0.9) : displayedTotalPrice);
   const displayedPayInFullSavings = Math.max(displayedTotalPrice - displayedPayInFullPrice, 0);
-  // Hard block: total under the absolute £349 minimum without evidenced price match
-  const absoluteMinBlocked = isUnderAbsoluteMin(displayedTotalPrice) && !priceMatchEvidenced;
+  // Hard block: total under the absolute minimum (never below £399) without an
+  // evidenced price match. The NET amount counts — a pay-in-full discount on top
+  // may not drop the payable figure under the floor either.
+  const absoluteMinBlocked =
+    (isUnderAbsoluteMin(displayedTotalPrice) || isUnderAbsoluteMin(displayedPayInFullPrice)) &&
+    !priceMatchEvidenced;
+
+  /**
+   * Instant feedback: the moment an agent types or discounts their way under the
+   * minimum sale price, tell them — they should not discover it only on confirm.
+   * Fires once per breach (resets when the price comes back above the floor).
+   */
+  const minPriceToastShownRef = useRef(false);
+  useEffect(() => {
+    if (absoluteMinBlocked) {
+      if (minPriceToastShownRef.current) return;
+      minPriceToastShownRef.current = true;
+      toast({
+        title: `Minimum sale price for any warranty is £${ABSOLUTE_MIN_TOTAL}`,
+        description: `£${displayedPayInFullPrice < displayedTotalPrice ? displayedPayInFullPrice : displayedTotalPrice} is below the minimum. Percentage discounts, manual amounts and pay-in-full cannot take a warranty under £${ABSOLUTE_MIN_TOTAL} — use Price match with a competitor quote, or ask your manager.`,
+        variant: 'destructive',
+      });
+    } else {
+      minPriceToastShownRef.current = false;
+    }
+  }, [absoluteMinBlocked, ABSOLUTE_MIN_TOTAL, displayedTotalPrice, displayedPayInFullPrice]);
+
 
   // Feed the quote total back into the excess visibility brackets (£250 unlocks
   // from £300, £500 from £500) so Q&O matches Step 3 exactly.
