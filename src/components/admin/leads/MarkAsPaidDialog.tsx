@@ -209,8 +209,11 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
         existingCust = byRegAndEmail;
       }
       
-      // If not found, try by email only
-      if (!existingCust) {
+      // Only fall back to email-only matching when we have no reg plate.
+      // With a reg plate present, no match means this is a second, separate
+      // order for the same customer — insert a new record instead of
+      // overwriting their other vehicle's order.
+      if (!existingCust && !regPlate) {
         const { data: byEmail } = await supabase
           .from('customers')
           .select('id')
@@ -218,6 +221,7 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
           .maybeSingle();
         existingCust = byEmail;
       }
+
 
       const customerData = {
         name: customerName || lead.email.split('@')[0],
