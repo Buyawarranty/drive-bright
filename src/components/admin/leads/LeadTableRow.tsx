@@ -802,12 +802,12 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           </Select>
       </TableCell>}
 
-      {/* Source indicator — O/F/G — admin/super_admin only */}
+      {/* Source indicator — labelled chip (Google / Meta / Bing / TikTok / Organic) — admin/super_admin only */}
       {showSourceColumn && (
         <TableCell className="text-center">
           {(() => {
-            const src = lead.lead_source;
-            const metadata = lead.cart_metadata as { gclid?: string; fbclid?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_term?: string; utm_content?: string } | null;
+            const src = String(lead.lead_source || '');
+            const metadata = lead.cart_metadata as { gclid?: string; fbclid?: string; msclkid?: string; ttclid?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_term?: string; utm_content?: string } | null;
             const utmLines: string[] = [];
             if (metadata?.utm_source)   utmLines.push(`UTM Source: ${metadata.utm_source}`);
             if (metadata?.utm_medium)   utmLines.push(`UTM Medium: ${metadata.utm_medium}`);
@@ -815,38 +815,49 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             if (metadata?.utm_term)     utmLines.push(`UTM Term: ${metadata.utm_term}`);
             if (metadata?.utm_content)  utmLines.push(`UTM Content: ${metadata.utm_content}`);
             const utmBlock = utmLines.length ? `\n${utmLines.join('\n')}` : '';
+
+            const chip = (label: string, cls: string, tipParts: string[]) => (
+              <span
+                className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide border cursor-help ${cls}`}
+                title={tipParts.join('\n') + utmBlock}
+              >
+                {label}
+              </span>
+            );
+
             if (src === 'google_ad') {
               const gclid = metadata?.gclid;
-              const tip = (gclid ? `Google Ads\nGCLID: ${gclid}` : 'Google Ads (no GCLID captured)') + utmBlock;
-              return <span className="text-[11px] font-bold text-emerald-700 cursor-help" title={tip}>G</span>;
+              return chip('Google', 'bg-emerald-100 text-emerald-800 border-emerald-300',
+                gclid ? ['Google Ads', `GCLID: ${gclid}`] : ['Google Ads (no GCLID captured)']);
             }
             if (src === 'social_ad') {
               const fbclid = metadata?.fbclid;
-              const parts = ['Facebook Ads'];
+              const parts = ['Facebook / Meta Ads'];
               if (fbclid) parts.push(`FBCLID: ${fbclid}`);
               if (!fbclid && !metadata?.utm_source) parts.push('(no FBCLID captured)');
-              return <span className="text-[11px] font-bold text-blue-700 cursor-help" title={parts.join('\n') + utmBlock}>F</span>;
+              return chip('Meta', 'bg-blue-100 text-blue-800 border-blue-300', parts);
             }
             if (src === 'bing_ad') {
-              const msclkid = (metadata as any)?.msclkid;
-              const parts = ['Bing Ads'];
+              const msclkid = metadata?.msclkid;
+              const parts = ['Bing / Microsoft Ads'];
               if (msclkid) parts.push(`MSCLKID: ${msclkid}`);
               if (!msclkid && !metadata?.utm_source) parts.push('(no MSCLKID captured)');
-              return <span className="text-[11px] font-bold text-teal-700 cursor-help" title={parts.join('\n') + utmBlock}>B</span>;
+              return chip('Bing', 'bg-teal-100 text-teal-800 border-teal-300', parts);
             }
-            if ((src as string) === 'tiktok_ad') {
-              const ttclid = (metadata as any)?.ttclid;
+            if (src === 'tiktok_ad') {
+              const ttclid = metadata?.ttclid;
               const parts = ['TikTok Ads'];
               if (ttclid) parts.push(`TTCLID: ${ttclid}`);
               if (!ttclid && !metadata?.utm_source) parts.push('(no TTCLID captured)');
-              return <span className="text-[11px] font-bold text-zinc-800 cursor-help" title={parts.join('\n') + utmBlock}>T</span>;
+              return chip('TikTok', 'bg-zinc-200 text-zinc-900 border-zinc-400', parts);
             }
 
-            const organicTip = 'Organic' + utmBlock;
-            return <span className={`text-[11px] font-medium cursor-help ${utmLines.length ? 'text-foreground' : 'text-muted-foreground'}`} title={organicTip}>O</span>;
+            return chip('Organic', 'bg-muted text-muted-foreground border-border', ['Organic / direct']);
           })()}
         </TableCell>
       )}
+
+
 
       {/* Status */}
       {!isLeadGenView && (
