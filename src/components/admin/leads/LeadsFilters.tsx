@@ -21,6 +21,8 @@ import { supabase } from '@/integrations/supabase/client';
 export type AssignmentFilter = 'all' | 'all_leads' | 'total' | 'awaiting_contact' | 'assigned';
 export type SortOption = 'newest' | 'oldest' | 'latest_submitted' | 'contacted' | 'follow_up' | 'quote_sent' | 'reminder_soonest' | 'reminder_latest';
 export type SourceFilter = 'all' | 'google_ad' | 'social_ad' | 'bing_ad' | 'website';
+/** How far back the leads feed reaches. Agents default to the last 60 days. */
+export type AgeWindow = 'last_60' | 'all';
 
 interface SalesUser {
   id: string;
@@ -98,6 +100,8 @@ interface LeadsFiltersProps {
   agentLiveLeadCounts?: Record<string, number>;
   sourceFilter?: SourceFilter;
   onSourceFilterChange?: (source: SourceFilter) => void;
+  ageWindow?: AgeWindow;
+  onAgeWindowChange?: (w: AgeWindow) => void;
   userRole?: string;
 
   // Pagination + selection controls (merged from LeadsTableControlBar to save a row)
@@ -179,6 +183,8 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   agentLiveLeadCounts,
   sourceFilter = 'all',
   onSourceFilterChange,
+  ageWindow = 'last_60',
+  onAgeWindowChange,
   showRecoveredPill = false,
   userRole,
 
@@ -642,6 +648,19 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
 
         {/* Spacer */}
         <div className="flex-1" />
+
+        {/* Feed age window — default: last 60 days of leads */}
+        {onAgeWindowChange && (
+          <Select value={ageWindow} onValueChange={(v) => onAgeWindowChange(v as AgeWindow)}>
+            <SelectTrigger className="h-8 w-[150px] text-xs rounded-lg border-2 border-border">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end" className="bg-popover border shadow-lg z-50">
+              <SelectItem value="last_60">Last 60 days (default)</SelectItem>
+              <SelectItem value="all">All leads</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
 
         {/* Total leads + pagination */}
         {onPageSizeChange && (

@@ -22,7 +22,7 @@ import { OpenLeadPoolBar } from './OpenLeadPoolBar';
 import { OvernightQueueBanner } from './OvernightQueueBanner';
 import { useOvernightQueue } from '@/hooks/useOvernightQueue';
 import { CallbackBanner } from './CallbackBanner';
-import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter } from './LeadsFilters';
+import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter, AgeWindow } from './LeadsFilters';
 import { useActiveCheckoutStruggles, buildStruggleByLeadId } from '@/hooks/useActiveCheckoutStruggles';
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { LiveLeadTrackingPanel } from './LiveLeadTrackingPanel';
@@ -294,6 +294,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [agentFilter, setAgentFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
+  // Feed age window: agents default to the last 60 days of leads; "All" shows everything.
+  const [ageWindow, setAgeWindow] = useState<AgeWindow>('last_60');
   const [reminderLeadIds, setReminderLeadIds] = useState<Set<string>>(new Set());
   const [reminderTimesMap, setReminderTimesMap] = useState<Record<string, string>>({});
   const [notSpokenTagId, setNotSpokenTagId] = useState<string | null>(null);
@@ -758,6 +760,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       result = result.filter(lead => lead.lead_source === sourceFilter);
     }
 
+    // Apply the feed age window (default: last 60 days). Skipped while searching so
+    // an agent looking up an older customer by name/phone/reg always finds them.
+    if (ageWindow === 'last_60' && !debouncedSearchTerm) {
+      const cutoff = Date.now() - 60 * 24 * 60 * 60 * 1000;
+      result = result.filter(lead => {
+        const submitted = getLeadSubmissionDate(lead).getTime();
+        const activity = lead.last_activity_date ? new Date(lead.last_activity_date).getTime() : 0;
+        return Math.max(submitted, activity) >= cutoff;
+      });
+    }
+
     // Apply date range filter — but skip it when actively searching, viewing reminders,
     // or viewing "Back in this period" (those rows are matched on their return activity,
     // not their original created_at) so callback and returning leads stay findable
@@ -838,7 +851,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
 
     return result;
-  }, [statusFilteredLeads, visibleLeads, leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter, showFakeLeads, selectedFilters, wasContactedInRange]);
+  }, [statusFilteredLeads, visibleLeads, leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, ageWindow, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter, showFakeLeads, selectedFilters, wasContactedInRange]);
   const isRecoveredLead = useCallback((lead: Lead) => {
     // A lead is "recovered/unworked" only if it came from an abandoned cart,
     // was never assigned to any agent, and never completed step 2
@@ -2037,6 +2050,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             agentLiveLeadCounts={agentLiveLeadCounts}
             sourceFilter={sourceFilter}
             onSourceFilterChange={canSeeSourceFilter ? setSourceFilter : undefined}
+            ageWindow={ageWindow}
+            onAgeWindowChange={setAgeWindow}
             showRecoveredPill={isAdminOrSuperAdmin || userRole === 'lead_gen'}
             userRole={userRole}
             // Pagination + selection controls merged into the filter bar
