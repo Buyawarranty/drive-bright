@@ -378,10 +378,20 @@ export default function PriceTestStep2({
     const belowMinimum = total < minSellable;
     if (belowMinimum) total = minSellable;
 
+    /**
+     * The minimum is a NET PAYABLE floor: after the pay-in-full discount the
+     * customer still cannot pay less than it, so gross the instalment total up
+     * until the discounted price clears the floor.
+     */
+    if (payInFullFactor > 0 && Math.round(total * payInFullFactor) < minSellable) {
+      total = Math.ceil(minSellable / payInFullFactor);
+    }
+
     // We only offer 12 monthly instalments today, regardless of the cover term.
     // Whole pounds only — we never quote pence on an instalment.
     const monthly = Math.ceil(total / 12);
-    const payInFullTotal = Math.round(total * payInFullFactor);
+    const payInFullTotal = Math.max(minSellable, Math.round(total * payInFullFactor));
+
     const days = term.months * 30.42 + freeMonths * 30.42;
     return {
       annualBase,
