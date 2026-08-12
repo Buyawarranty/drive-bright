@@ -109,23 +109,24 @@ export const MyTargetStrip: React.FC = () => {
     if (mine) {
       return {
         scope: 'agent' as const,
-        revenue: Number(mine.revenue) || 0,
+        revenue: revenueOf(mine),
         target: mine.revenue_target != null ? Number(mine.revenue_target) : null,
       };
     }
 
     if (rows.length) {
-      const revenue = rows.reduce((s, r) => s + (Number(r.revenue) || 0), 0);
+      const revenue = rows.reduce((s, r) => s + revenueOf(r), 0);
       const target = rows.reduce((s, r) => s + (Number(r.revenue_target) || 0), 0);
       return { scope: 'team' as const, revenue, target: target || null };
     }
     return null;
-  }, [rows, effectiveAdminUserId]);
+  }, [rows, effectiveAdminUserId, revenueOf]);
 
   const breakdown = useMemo(
-    () => [...rows].sort((a, b) => (Number(b.revenue) || 0) - (Number(a.revenue) || 0)),
-    [rows],
+    () => [...rows].sort((a, b) => revenueOf(b) - revenueOf(a)),
+    [rows, revenueOf],
   );
+
 
   if (loading) return null;
   if (!me) return null;
