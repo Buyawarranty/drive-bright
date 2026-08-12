@@ -3213,15 +3213,35 @@ Questions? Call 0330 229 5040`;
 
       // === ATOMIC TRANSACTION START ===
       
-      // 1. Check for existing customer by email (case insensitive)
+      // 1. Find the existing customer record for THIS ORDER.
+      // An order is keyed by registration plate: the same person (same name or
+      // email) can hold two orders side by side on different vehicles, so we
+      // only reuse a record when the reg matches too. Otherwise we create a
+      // second record and the two orders can be confirmed back to back with
+      // no clash and no overwriting.
       const finalEmail = editableCustomerEmail || customerEmail;
-      const { data: existingCustomer } = await supabase
-        .from('customers')
-        .select('id, name, email, registration_plate')
-        .ilike('email', finalEmail)
-        .maybeSingle();
+      const orderReg = (editableRegNumber || vehicleData?.regNumber || '').toUpperCase().replace(/\s/g, '');
 
-      // 1b. Check for existing policy — reuse warranty number if found
+      let existingCustomer: { id: string; name: string; email: string; registration_plate: string | null } | null = null;
+      if (orderReg) {
+        const { data: byEmailAndReg } = await supabase
+          .from('customers')
+          .select('id, name, email, registration_plate')
+          .ilike('email', finalEmail)
+          .eq('registration_plate', orderReg)
+          .maybeSingle();
+        existingCustomer = byEmailAndReg || null;
+      } else {
+        const { data: byEmailOnly } = await supabase
+          .from('customers')
+          .select('id, name, email, registration_plate')
+          .ilike('email', finalEmail)
+          .maybeSingle();
+        existingCustomer = byEmailOnly || null;
+      }
+
+      // 1b. Reuse the warranty number only for the SAME vehicle's policy —
+      // a second vehicle must get its own warranty number.
       let existingPolicyRecord: { id: string; warranty_number: string | null; policy_number: string } | null = null;
       if (existingCustomer) {
         const { data: policies } = await supabase
@@ -3234,12 +3254,13 @@ Questions? Call 0330 229 5040`;
         
         if (policies && policies.length > 0) {
           existingPolicyRecord = policies[0];
-          console.log('Found existing policy, reusing warranty number:', existingPolicyRecord.warranty_number);
+          console.log('Found existing policy for same reg, reusing warranty number:', existingPolicyRecord.warranty_number);
         }
       }
 
       // Use existing warranty number if available, otherwise use the generated one
       const finalWarrantyReference = existingPolicyRecord?.warranty_number || warrantyReference;
+
 
       let customerId: string;
       
