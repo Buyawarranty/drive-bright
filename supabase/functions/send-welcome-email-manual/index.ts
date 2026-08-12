@@ -421,6 +421,56 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Never email a password we haven't proven works on the Auth server.
+    // Root cause of "invalid login details": a stale reused temporary password,
+    // or an update that silently didn't apply. Verify, and force-reset once.
+    if (shouldIncludeLoginDetails && tempPassword) {
+      let verified = await verifyPassword(customer.email, tempPassword);
+      console.log(JSON.stringify({ evt: "password.verify.first", rid, verified }));
+
+      if (!verified) {
+        // Find the user (createUser path may have failed) and force a fresh password
+        let targetId = userId;
+        if (!targetId) {
+          let page = 1;
+          while (!targetId && page <= 10) {
+            const { data: userList } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+            if (!userList?.users?.length) break;
+            const found = userList.users.find(u => u.email?.toLowerCase() === customer.email.toLowerCase());
+            if (found) targetId = found.id;
+            page++;
+          }
+        }
+
+        if (targetId) {
+          const freshPassword = generateRandomPassword();
+          const { error: forceErr } = await supabase.auth.admin.updateUserById(targetId, {
+            password: freshPassword,
+            email_confirm: true,
+          });
+          if (!forceErr) {
+            verified = await verifyPassword(customer.email, freshPassword);
+            if (verified) {
+              tempPassword = freshPassword;
+              userId = targetId;
+            }
+          }
+          console.log(JSON.stringify({ evt: "password.force.reset", rid, ok: !forceErr, verified }));
+        } else {
+          console.log(JSON.stringify({ evt: "password.verify.no.user", rid }));
+        }
+      }
+
+      loginVerified = verified;
+      if (!verified) {
+        // Don't hand out a password that doesn't work — send the reset-link version instead
+        shouldIncludeLoginDetails = false;
+        tempPassword = '';
+        console.log(JSON.stringify({ evt: "password.unverified.fallback.reset.link", rid }));
+      }
+    }
+
+
     // Link the customer policy to the user account
     if (userId && !policy.user_id) {
       await supabase
