@@ -30,6 +30,7 @@ import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { cn } from '@/lib/utils';
 import type { LeadStatus } from '@/hooks/useLeads';
+import { OrrLogicExplainer, DEFAULT_ORR_CADENCE, type OrrCadenceConfig } from './OrrLogicExplainer';
 
 type DummyLeadStatus = 'queued' | 'new' | 'reassigned' | 'dormant';
 
@@ -254,7 +255,7 @@ const isHeldLive = (lead: DummyLead, now: number) =>
  * One-at-a-time ORR engine: an agent may only ever hold ONE dummy lead.
  * Expired leads roll to the next free agent; if everyone is busy the lead waits in the queue.
  */
-const advance = (input: DummyLead[], startIndex: number, now: number) => {
+const advance = (input: DummyLead[], startIndex: number, now: number, cfg: OrrCadenceConfig) => {
   const leads = input.map((lead) => ({ ...lead }));
   let index = startIndex;
   let reassigned = 0;
@@ -280,10 +281,10 @@ const advance = (input: DummyLead[], startIndex: number, now: number) => {
     .sort((a, b) => a.createdAt - b.createdAt);
 
   for (const lead of pending) {
-    if (lead.status !== 'queued' && lead.attemptCount >= MAX_ATTEMPTS) {
+    if (lead.status !== 'queued' && lead.attemptCount >= cfg.maxAttempts) {
       lead.status = 'dormant';
       lead.assignedTo = null;
-      lead.history = [...lead.history, 'Moved to Dormant – No Contact after 7 unanswered attempts'];
+      lead.history = [...lead.history, `Moved to Dormant – No Contact after ${cfg.maxAttempts} unanswered attempts`];
       dormant += 1;
       continue;
     }
@@ -293,7 +294,12 @@ const advance = (input: DummyLead[], startIndex: number, now: number) => {
       if (lead.status !== 'queued') {
         lead.status = 'queued';
         lead.assignedTo = null;
-        lead.history = [...lead.history, 'All agents busy — waiting in the open pool queue'];
+        lead.history = [
+          ...lead.history,
+          cfg.whenAllBusy === 'queue'
+            ? 'All agents busy — waiting in the open pool queue (oldest first, released as soon as someone frees up)'
+            : 'All agents busy — kept circulating round the rotation until someone frees up',
+        ];
       }
       continue;
     }
@@ -303,7 +309,7 @@ const advance = (input: DummyLead[], startIndex: number, now: number) => {
     lead.displayStatus = 'new';
     lead.assignedTo = agent.id;
     lead.attemptCount = attempt;
-    lead.deadlineAt = now + CLAIM_WINDOW_MS;
+    lead.deadlineAt = now + cfg.claimWindowSeconds * 1000;
     lead.history = [...lead.history, `Attempt ${attempt} assigned to ${agent.name}`];
     reassigned += 1;
   }
@@ -397,7 +403,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           (lead) => lead.status !== 'dormant' && (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)),
         );
         if (!needsWork) return current;
-        const result = advance(current, nextAgentIndexRef.current, now);
+        const result = advance(current, nextAgentIndexRef.current, now, cadenceRef.current);
         nextAgentIndexRef.current = result.index;
         return result.leads;
       });
@@ -429,7 +435,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         displayStatus: 'new',
         assignedTo: viewerBusy ? null : viewer.id,
         attemptCount: viewerBusy ? 0 : 1,
-        deadlineAt: viewerBusy ? now : now + CLAIM_WINDOW_MS,
+        deadlineAt: viewerBusy ? now : now + cadence.claimWindowSeconds * 1000,
         vehicleReg: 'TEST123',
         phone: '07902222222',
         createdAt: now,
@@ -513,15 +519,15 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         const dials = lead.dials + 1;
         const dayDials = lead.dayDials + 1;
         const inChase = lead.followUpDay > 0;
-        const maxDials = inChase ? FOLLOW_UP_DAILY_DIALS : maxDialsForLead(lead.createdAt);
+        const maxDials = inChase ? cadence.followUpDailyDials : maxDialsForLead(lead.createdAt, cadence);
         const exhausted = dayDials >= maxDials;
-        const nextWin = nextCallWindow(now + 60_000);
+        const nextWin = nextCallWindow(now + 60_000, cadence);
         const nextDay = lead.followUpDay + 1;
-        const chaseOver = exhausted && nextDay > FOLLOW_UP_DAYS;
-        const nextDayAt = atHour(now, CALL_WINDOWS[0].startH, 1);
+        const chaseOver = exhausted && nextDay > cadence.followUpDays;
+        const nextDayAt = atHour(now, callWindows(cadence)[0].startH, 1);
 
         const notes: string[] = [
-          `No answer — dial ${dayDials} of ${maxDials} today (${dials} total)${inChase ? ` · follow-up day ${lead.followUpDay} of ${FOLLOW_UP_DAYS}` : ''}`,
+          `No answer — dial ${dayDials} of ${maxDials} today (${dials} total)${inChase ? ` · follow-up day ${lead.followUpDay} of ${cadence.followUpDays}` : ''}`,
         ];
         if (!exhausted) {
           notes.push(`Next attempt due ${nextWin.label} at ${formatTimeOfDay(nextWin.at)}`);
@@ -531,14 +537,14 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           toastTitle = 'Follow-up finished';
           toastBody = 'Seven days of chasing are done with no contact. No further dials are scheduled.';
         } else if (!inChase) {
-          notes.push(`Day's attempts used — handing over to Team Red at ${formatTimeOfDay(atHour(now, RED_TEAM_HANDOVER_HOUR))}`);
-          notes.push(`Seven-day follow-up starts tomorrow — up to ${FOLLOW_UP_DAILY_DIALS} dials a day while the lead is uncontacted and unowned`);
+          notes.push(`Day's attempts used — handing over to Team Red at ${formatTimeOfDay(atHour(now, cadence.redTeamHandoverHour))}`);
+          notes.push(`Seven-day follow-up starts tomorrow — up to ${cadence.followUpDailyDials} dials a day while the lead is uncontacted and unowned`);
           toastTitle = 'Attempts used — moving to Team Red';
-          toastBody = `Day one is done. The seven-day follow-up starts tomorrow at ${formatTimeOfDay(nextDayAt)} with up to ${FOLLOW_UP_DAILY_DIALS} dials a day.`;
+          toastBody = `Day one is done. The seven-day follow-up starts tomorrow at ${formatTimeOfDay(nextDayAt)} with up to ${cadence.followUpDailyDials} dials a day.`;
         } else {
-          notes.push(`Follow-up day ${lead.followUpDay} done — day ${nextDay} of ${FOLLOW_UP_DAYS} resumes at ${formatTimeOfDay(nextDayAt)}`);
+          notes.push(`Follow-up day ${lead.followUpDay} done — day ${nextDay} of ${cadence.followUpDays} resumes at ${formatTimeOfDay(nextDayAt)}`);
           toastTitle = `Follow-up day ${lead.followUpDay} done`;
-          toastBody = `Both dials used. Day ${nextDay} of ${FOLLOW_UP_DAYS} resumes at ${formatTimeOfDay(nextDayAt)}.`;
+          toastBody = `Both dials used. Day ${nextDay} of ${cadence.followUpDays} resumes at ${formatTimeOfDay(nextDayAt)}.`;
         }
 
         return {
@@ -549,7 +555,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           followUpDay: exhausted && !chaseOver ? nextDay : lead.followUpDay,
           chaseComplete: chaseOver,
           nextCallAt: chaseOver ? null : exhausted ? nextDayAt : nextWin.at,
-          redTeamAt: !inChase && exhausted ? atHour(now, RED_TEAM_HANDOVER_HOUR) : lead.redTeamAt,
+          redTeamAt: !inChase && exhausted ? atHour(now, cadence.redTeamHandoverHour) : lead.redTeamAt,
           history: [...lead.history, ...notes],
         };
       }),
@@ -564,7 +570,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
     const now = Date.now();
     setLeads((current) => {
-      const result = advance(current, nextAgentIndexRef.current, now);
+      const result = advance(current, nextAgentIndexRef.current, now, cadenceRef.current);
       nextAgentIndexRef.current = result.index;
       window.setTimeout(
         () =>
@@ -863,11 +869,11 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                           ) : lead.followUpDay > 0 ? (
                             <div className="mt-1.5 rounded border border-purple-300 bg-purple-50 px-2 py-1">
                               <div className="text-[11px] font-semibold text-purple-900">
-                                Follow-up day {lead.followUpDay} of {FOLLOW_UP_DAYS}
+                                Follow-up day {lead.followUpDay} of {cadence.followUpDays}
                                 {lead.nextCallAt ? ` · next call ${formatTimeOfDay(lead.nextCallAt)}` : ''}
                               </div>
                               <div className="text-[10px] text-purple-800/80">
-                                Dial {lead.dayDials} of {FOLLOW_UP_DAILY_DIALS} today · chased while uncontacted and unowned
+                                Dial {lead.dayDials} of {cadence.followUpDailyDials} today · chased while uncontacted and unowned
                               </div>
                             </div>
                           ) : lead.redTeamAt ? (
@@ -876,7 +882,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                                 Moving to Team Red at {formatTimeOfDay(lead.redTeamAt)}
                               </div>
                               <div className="text-[10px] text-red-700/80">
-                                Seven-day follow-up starts tomorrow · up to {FOLLOW_UP_DAILY_DIALS} dials a day
+                                Seven-day follow-up starts tomorrow · up to {cadence.followUpDailyDials} dials a day
                               </div>
                             </div>
                           ) : lead.nextCallAt ? (
@@ -885,7 +891,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                                 Next call due {formatTimeOfDay(lead.nextCallAt)}
                               </div>
                               <div className="text-[10px] text-amber-800/80">
-                                Dial {lead.dayDials} of {maxDialsForLead(lead.createdAt)} today
+                                Dial {lead.dayDials} of {maxDialsForLead(lead.createdAt, cadence)} today
 
                               </div>
                             </div>
