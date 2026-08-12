@@ -305,7 +305,9 @@ const CodebaseVsLivePanel: React.FC<{
                   />
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {cfg.ceilingOn ? 'Above this the quote refers out' : 'Ceiling off — every price is quoted'}
+                  {cfg.ceilingOn
+                    ? 'Above this the quote refers out. Fixed pound figure — the Change price % does not move it, so a price rise refers more vehicles out.'
+                    : 'Ceiling off — every price is quoted'}
                 </p>
               </div>
 
