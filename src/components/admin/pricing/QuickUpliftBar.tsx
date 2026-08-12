@@ -230,14 +230,12 @@ const QuickUpliftBar: React.FC<{
           {dirty ? (
             <Badge variant="secondary" className="text-xs">Unsaved</Badge>
           ) : (
-            savedPct !== 0 && (
-              <Badge variant="secondary" className="text-xs">
-                <Check className="mr-1 h-3 w-3" />
-                Draft saved {savedPct > 0 ? '+' : ''}{savedPct}%
-              </Badge>
-            )
+            <Badge variant="secondary" className="text-xs">
+              <Check className="mr-1 h-3 w-3" />
+              {savedPct === 0 ? 'Saved — no change' : `Saved ${savedPct > 0 ? '+' : ''}${savedPct}% for next visit`}
+            </Badge>
           )}
-          <Button type="button" size="sm" onClick={save} disabled={!dirty}>
+          <Button type="button" size="sm" onClick={save}>
             <Save className="mr-2 h-4 w-4" />
             Save &amp; update prices
           </Button>
