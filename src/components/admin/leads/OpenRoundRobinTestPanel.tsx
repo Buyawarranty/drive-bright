@@ -745,6 +745,18 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         </div>
       </section>
 
+      {/* Rules, timings and editable variables */}
+      <OrrLogicExplainer config={cadence} onChange={setCadence} teamLabel={theme.label} />
+
+      {allAgentsBusy && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">
+          <span className="font-semibold">Every agent is on a call.</span>{' '}
+          {cadence.whenAllBusy === 'queue'
+            ? 'New enquiries wait in the open pool queue, oldest first, and go to the first agent who frees up — never to whoever clicks fastest.'
+            : 'New enquiries keep circulating round the rotation until an agent frees up and answers the offer.'}
+        </div>
+      )}
+
 
       {/* Agent preview */}
       <div className="rounded-xl border border-border bg-card shadow-sm p-4 flex items-center justify-between gap-4 flex-wrap">
