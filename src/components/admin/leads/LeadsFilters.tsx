@@ -77,10 +77,13 @@ interface LeadsFiltersProps {
     source_google?: number;
     source_facebook?: number;
     source_bing?: number;
+    source_tiktok?: number;
     source_organic?: number;
     source_google_live?: number;
     source_facebook_live?: number;
     source_bing_live?: number;
+    source_tiktok_live?: number;
+
     source_organic_live?: number;
   };
   showRecoveredPill?: boolean;
