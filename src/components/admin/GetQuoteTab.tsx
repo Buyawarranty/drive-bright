@@ -5472,7 +5472,7 @@ Questions? Call 0330 229 5040`;
                     )}
 
                     {priceMatchMode && (
-                      <div className="space-y-3 p-4 rounded-lg border-2 border-sky-300 bg-sky-50/70">
+                      <div id="price-match-panel" className="space-y-3 p-4 rounded-lg border-2 border-sky-300 bg-sky-50/70">
                         <div className="flex items-start gap-2">
                           <Info className="w-4 h-4 text-sky-700 mt-0.5 shrink-0" />
                           <p className="text-xs text-sky-900 leading-relaxed">
