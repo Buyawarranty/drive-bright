@@ -26,6 +26,35 @@ function sampleGridPrice(v: PricingVersion): number | null {
   return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
 }
 
+/** Average of every Quotes & Orders cell, so the percentage move is the whole
+ *  curve rather than one sample cell. */
+function averageGridPrice(v: PricingVersion): number | null {
+  const m: any = v.admin_matrix;
+  if (!m) return null;
+  const values: number[] = [];
+  for (const term of Object.values(m) as any[]) {
+    if (!term || typeof term !== 'object') continue;
+    for (const excess of Object.values(term) as any[]) {
+      if (!excess || typeof excess !== 'object') continue;
+      for (const cell of Object.values(excess) as any[]) {
+        const n = Number(cell);
+        if (Number.isFinite(n) && n > 0) values.push(n);
+      }
+    }
+  }
+  if (!values.length) return null;
+  return values.reduce((a, b) => a + b, 0) / values.length;
+}
+
+/** Percentage move of this price model against the one saved before it. */
+function pctVsPrevious(current: PricingVersion, previous?: PricingVersion): number | null {
+  if (!previous) return null;
+  const a = averageGridPrice(previous);
+  const b = averageGridPrice(current);
+  if (!a || !b) return null;
+  return Math.round(((b - a) / a) * 1000) / 10;
+}
+
 function whenLabel(v: PricingVersion): string {
   const iso = v.published_at || v.updated_at || v.created_at;
   if (!iso) return '—';
@@ -92,9 +121,10 @@ export default function PriceUpdateLogPanel({
           <p className="text-sm text-muted-foreground">No price models recorded yet.</p>
         )}
 
-        {rows.map(v => {
+        {rows.map((v, i) => {
           const isLive = v.status === 'live';
           const sample = sampleGridPrice(v);
+          const move = pctVsPrevious(v, rows[i + 1]);
           return (
             <div
               key={v.id}
@@ -111,6 +141,21 @@ export default function PriceUpdateLogPanel({
                     ) : (
                       <Badge variant="outline" className="capitalize">
                         {v.status}
+                      </Badge>
+                    )}
+                    {move !== null && (
+                      <Badge
+                        variant="outline"
+                        className={
+                          move > 0
+                            ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                            : move < 0
+                              ? 'border-orange-300 bg-orange-50 text-orange-800'
+                              : 'text-muted-foreground'
+                        }
+                      >
+                        {move > 0 ? '+' : move < 0 ? '−' : ''}
+                        {Math.abs(move)}% {move === 0 ? 'no change' : 'vs previous'}
                       </Badge>
                     )}
                   </div>
