@@ -41,22 +41,65 @@ serve(async (req: Request) => {
     const phone = customerPhone || 'N/A';
     const warranty = warrantyReference || 'Pending';
 
-    // Fetch customer for claim_limit / excess / labour_rate (fall back to policy)
-    let saleExtras: { claim_limit?: number|null; voluntary_excess?: number|null; labour_rate?: number|null; payment_type?: string|null; duration_months?: number|null } = {};
+    // Fetch the full customer/sale record so managers get every sale + vehicle field.
+    // Scoped by registration plate first (one customer can hold several vehicles).
+    let saleExtras: Record<string, any> = {};
     try {
-      const { data: custRow } = await supabase
-        .from('customers')
-        .select('claim_limit, voluntary_excess, labour_rate, payment_type')
-        .ilike('email', customerEmail)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const normalizedReg = String(regPlate || '').toUpperCase().replace(/\s/g, '');
+      const cols = 'claim_limit, voluntary_excess, labour_rate, payment_type, plan_type, mileage, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, vehicle_transmission, registration_plate, signup_date, discount_code, discount_amount, original_amount, final_amount, warranty_number, warranty_reference_number, purchase_source, acquisition_source, seasonal_bonus_months, deposit_amount, balance_due_amount, payment_status, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, flat_number, building_name, building_number, street, town, county, postcode, country, first_name, last_name, phone';
+      let custRow: any = null;
+      if (normalizedReg) {
+        const { data } = await supabase
+          .from('customers')
+          .select(cols)
+          .eq('registration_plate', normalizedReg)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        custRow = data;
+      }
+      if (!custRow) {
+        const { data } = await supabase
+          .from('customers')
+          .select(cols)
+          .ilike('email', customerEmail)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        custRow = data;
+      }
       if (custRow) saleExtras = custRow as any;
     } catch (_) { /* ignore */ }
     const claimLimitDisplay = saleExtras.claim_limit ? `£${Number(saleExtras.claim_limit).toLocaleString()}` : 'Not set';
     const excessDisplay = saleExtras.voluntary_excess != null ? `£${Number(saleExtras.voluntary_excess).toFixed(2)}` : 'Not set';
     const labourRateDisplay = saleExtras.labour_rate ? `£${Number(saleExtras.labour_rate).toFixed(2)}/hr` : 'Not set';
     const durationDisplay = durationLabel(durationMonths, saleExtras.payment_type, plan);
+
+    const money = (v: any) => (v == null || v === '' ? null : `£${Number(v).toFixed(2)}`);
+    const orDash = (v: any) => (v == null || v === '' ? '—' : String(v));
+    const mileageDisplay = saleExtras.mileage != null && saleExtras.mileage !== ''
+      ? `${Number(String(saleExtras.mileage).replace(/[^0-9]/g, '') || 0).toLocaleString()} miles`
+      : '—';
+    const addressDisplay = [
+      saleExtras.flat_number, saleExtras.building_name, saleExtras.building_number,
+      saleExtras.street, saleExtras.town, saleExtras.county, saleExtras.postcode, saleExtras.country,
+    ].filter(Boolean).join(', ') || '—';
+    const addOns = ([
+      ['Tyre cover', saleExtras.tyre_cover],
+      ['Wear & tear', saleExtras.wear_tear],
+      ['Europe cover', saleExtras.europe_cover],
+      ['Transfer cover', saleExtras.transfer_cover],
+      ['Breakdown recovery', saleExtras.breakdown_recovery],
+      ['Vehicle rental', saleExtras.vehicle_rental],
+      ['MOT fee', saleExtras.mot_fee],
+      ['MOT repair', saleExtras.mot_repair],
+      ['Lost key', saleExtras.lost_key],
+      ['Consequential', saleExtras.consequential],
+    ] as [string, any][]).filter(([, on]) => !!on).map(([l]) => l);
+    const addOnsDisplay = addOns.length ? addOns.join(', ') : 'None';
+    const row = (label: string, value: string, highlight = false) =>
+      `<tr><td style="padding: 8px; background: ${highlight ? '#fde68a' : '#f3f4f6'};"><strong>${label}:</strong></td><td style="padding: 8px;${highlight ? ' font-weight: 700;' : ''}">${value}</td></tr>`;
+
 
     // Determine sale type (G/F/Web/S)
     // Check if there's an agent assigned via sales_leads
@@ -138,27 +181,44 @@ serve(async (req: Request) => {
         </div>
         <h3 style="color: #333; margin-top: 20px;">Customer Details</h3>
         <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${name}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${customerEmail}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${phone}</td></tr>
+          ${row('Name', name)}
+          ${row('Email', customerEmail)}
+          ${row('Phone', phone || orDash(saleExtras.phone))}
+          ${row('Address', addressDisplay)}
         </table>
         <h3 style="color: #333; margin-top: 20px;">Sale Details</h3>
         <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Warranty:</strong></td><td style="padding: 8px;">${warranty}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan:</strong></td><td style="padding: 8px;">${plan}</td></tr>
-          <tr><td style="padding: 8px; background: #fde68a;"><strong>Warranty Duration:</strong></td><td style="padding: 8px; font-weight: 700;">${durationDisplay}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment:</strong></td><td style="padding: 8px;">${payment}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Sale Amount:</strong></td><td style="padding: 8px; font-weight: 700;">${saleValueDisplay}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">${claimLimitDisplay}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Voluntary Excess:</strong></td><td style="padding: 8px;">${excessDisplay}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Labour Rate:</strong></td><td style="padding: 8px;">${labourRateDisplay}</td></tr>
+          ${row('Warranty', warranty)}
+          ${row('Warranty number', orDash(saleExtras.warranty_number || saleExtras.warranty_reference_number))}
+          ${row('Plan', plan || orDash(saleExtras.plan_type))}
+          ${row('Warranty Duration', durationDisplay, true)}
+          ${saleExtras.seasonal_bonus_months ? row('Bonus months', `+${saleExtras.seasonal_bonus_months}`) : ''}
+          ${row('Payment', payment)}
+          ${row('Payment status', orDash(saleExtras.payment_status))}
+          ${row('Sale Amount', saleValueDisplay, true)}
+          ${saleExtras.original_amount != null ? row('Quoted / original amount', money(saleExtras.original_amount) || '—') : ''}
+          ${saleExtras.final_amount != null ? row('Final amount charged', money(saleExtras.final_amount) || '—') : ''}
+          ${saleExtras.discount_amount ? row('Discount given', `${money(saleExtras.discount_amount)}${saleExtras.original_amount ? ` (${Math.round((Number(saleExtras.discount_amount) / Number(saleExtras.original_amount)) * 100)}%)` : ''}`) : ''}
+          ${saleExtras.discount_code ? row('Discount code', String(saleExtras.discount_code)) : ''}
+          ${saleExtras.deposit_amount ? row('Deposit taken', money(saleExtras.deposit_amount) || '—') : ''}
+          ${saleExtras.balance_due_amount ? row('Balance outstanding', money(saleExtras.balance_due_amount) || '—', true) : ''}
+          ${row('Claim Limit', claimLimitDisplay)}
+          ${row('Voluntary Excess', excessDisplay)}
+          ${row('Labour Rate', labourRateDisplay)}
+          ${row('Add-ons', addOnsDisplay)}
+          ${row('Purchase source', orDash(saleExtras.purchase_source || saleExtras.acquisition_source))}
         </table>
         <h3 style="color: #333; margin-top: 20px;">Vehicle Details</h3>
         <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Registration:</strong></td><td style="padding: 8px;">${reg}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Make:</strong></td><td style="padding: 8px;">${vehicleMake || 'Unknown'}</td></tr>
-          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Model:</strong></td><td style="padding: 8px;">${vehicleModel || 'Unknown'}</td></tr>
+          ${row('Registration', reg)}
+          ${row('Make', vehicleMake || orDash(saleExtras.vehicle_make))}
+          ${row('Model', vehicleModel || orDash(saleExtras.vehicle_model))}
+          ${row('Year', orDash(saleExtras.vehicle_year))}
+          ${row('Mileage', mileageDisplay, true)}
+          ${row('Fuel type', orDash(saleExtras.vehicle_fuel_type))}
+          ${row('Transmission', orDash(saleExtras.vehicle_transmission))}
         </table>
+
         <h3 style="color: #333; margin-top: 20px;">⏱️ Timing</h3>
         <table style="width: 100%; border-collapse: collapse;">
           ${leadCreatedAt ? `<tr><td style="padding: 8px; background: #f3f4f6;"><strong>Lead Submitted:</strong></td><td style="padding: 8px;">${leadCreatedAt}</td></tr>` : ''}
