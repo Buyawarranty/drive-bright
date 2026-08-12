@@ -22,7 +22,7 @@ import SectionPushLiveBar from './SectionPushLiveBar';
 import RegLookupBar, { type ResolvedTestVehicle } from './RegLookupBar';
 import { useSavedPricingModel } from './useSavedPricingModel';
 import PriceSurfaceBadge from './PriceSurfaceBadge';
-import QuickUpliftBar, { applyModelUplift, readSavedUplift } from './QuickUpliftBar';
+import QuickUpliftBar, { applyModelUplift, useUpliftPct } from './QuickUpliftBar';
 
 
 /**
@@ -125,7 +125,7 @@ const CodebaseVsLivePanel: React.FC<{
   const [vehicle, setVehicle] = useState<ResolvedTestVehicle | null>(null);
   const [leftQuote, setLeftQuote] = useState<PriceTestQuoteSnapshot | null>(null);
   const [rightQuote, setRightQuote] = useState<PriceTestQuoteSnapshot | null>(null);
-  const [upliftPct, setUpliftPct] = useState(() => readSavedUplift('Code base test'));
+  const [upliftPct, setUpliftPct] = useUpliftPct('Code base test');
   const [cfg, setCfg] = useState(DEFAULTS);
   const set = <K extends keyof typeof DEFAULTS>(key: K, value: (typeof DEFAULTS)[K]) =>
     setCfg(c => ({ ...c, [key]: value }));
