@@ -50,6 +50,8 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   const [isMarkPaidDialogOpen, setIsMarkPaidDialogOpen] = useState(false);
   const [isPrintLetterOpen, setIsPrintLetterOpen] = useState(false);
   
+  const [isEditInfoOpen, setIsEditInfoOpen] = useState(false);
+
   const previousLeadIdRef = useRef<string | null>(null);
 
   // Reset state when switching leads
