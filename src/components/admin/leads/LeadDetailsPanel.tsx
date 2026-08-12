@@ -443,6 +443,14 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
           voluntaryExcess: lead.cart_metadata?.voluntary_excess,
         }}
       />
+
+      {/* Edit lead details — open to every staff user */}
+      <EditLeadInfoDialog
+        lead={lead}
+        open={isEditInfoOpen}
+        onOpenChange={setIsEditInfoOpen}
+        onSaved={onRefresh}
+      />
     </div>
   );
 };
