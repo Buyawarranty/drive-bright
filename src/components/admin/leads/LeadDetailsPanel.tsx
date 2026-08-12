@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { 
   Phone, Mail, MessageSquare, Car, User, 
   ChevronDown, ChevronUp, 
-  CreditCard, Printer, Award, History as HistoryIcon
+  CreditCard, Printer, Award, History as HistoryIcon, PencilLine
 } from 'lucide-react';
 import { LeadHistoryTimeline } from './LeadHistoryTimeline';
 
@@ -23,6 +23,7 @@ import { MarkAsPaidDialog } from './MarkAsPaidDialog';
 import { UnifiedNotesPanel } from './notes/UnifiedNotesPanel';
 import { PrintableWarrantyLetter } from '../PrintableWarrantyLetter';
 import { LeadDuplicatesPanel } from './LeadDuplicatesPanel';
+import { EditLeadInfoDialog } from './EditLeadInfoDialog';
 
 interface LeadDetailsPanelProps {
   lead: Lead;
@@ -49,6 +50,8 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   const [isMarkPaidDialogOpen, setIsMarkPaidDialogOpen] = useState(false);
   const [isPrintLetterOpen, setIsPrintLetterOpen] = useState(false);
   
+  const [isEditInfoOpen, setIsEditInfoOpen] = useState(false);
+
   const previousLeadIdRef = useRef<string | null>(null);
 
   // Reset state when switching leads
@@ -276,6 +279,17 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                   <p className="text-sm font-medium mt-0.5">{format(new Date(lead.created_at), 'dd MMM yyyy, HH:mm')}</p>
                 </div>
               </div>
+              <div className="mt-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8"
+                  onClick={(e) => { e.stopPropagation(); setIsEditInfoOpen(true); }}
+                >
+                  <PencilLine className="h-3.5 w-3.5 mr-1.5" />
+                  Edit lead details
+                </Button>
+              </div>
               {/* Plan Selection Summary - Show what customer selected */}
               {(lead.plan_name || lead.step_abandoned) && (
                 <div className="mt-3 pt-3 border-t border-border/50">
@@ -428,6 +442,14 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
           claimLimit: lead.cart_metadata?.claim_limit,
           voluntaryExcess: lead.cart_metadata?.voluntary_excess,
         }}
+      />
+
+      {/* Edit lead details — open to every staff user */}
+      <EditLeadInfoDialog
+        lead={lead}
+        open={isEditInfoOpen}
+        onOpenChange={setIsEditInfoOpen}
+        onSaved={onRefresh}
       />
     </div>
   );
