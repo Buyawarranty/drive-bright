@@ -26,6 +26,7 @@ import { useSavedPricingModel } from './useSavedPricingModel';
 import { buildAdminMatrixFromModel } from './AgeBandPricingPreview';
 import PriceSurfaceBadge from './PriceSurfaceBadge';
 import QuickUpliftBar, { applyModelUplift, useUpliftPct } from './QuickUpliftBar';
+import { useStickyCfg } from './useStickyCfg';
 
 
 /**
@@ -121,7 +122,7 @@ const CodebaseVsHybridPanel: React.FC<{
   const [leftQuote, setLeftQuote] = useState<PriceTestQuoteSnapshot | null>(null);
   const [rightQuote, setRightQuote] = useState<PriceTestQuoteSnapshot | null>(null);
   const [upliftPct, setUpliftPct] = useUpliftPct('Aug hybrid test');
-  const [cfg, setCfg] = useState(HYBRID_DEFAULTS);
+  const [cfg, setCfg] = useStickyCfg('codebase-vs-hybrid', HYBRID_DEFAULTS);
   const set = <K extends keyof typeof HYBRID_DEFAULTS>(key: K, value: (typeof HYBRID_DEFAULTS)[K]) =>
     setCfg(c => ({ ...c, [key]: value }));
 
@@ -248,7 +249,14 @@ const CodebaseVsHybridPanel: React.FC<{
 
           <div className="rounded-lg border bg-muted/30 p-4">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <div className="text-sm font-semibold">Hybrid variables</div>
+              <div>
+                <div className="text-sm font-semibold">Hybrid variables</div>
+                <p className="text-xs text-muted-foreground">
+                  Applies to the <strong>Aug hybrid test</strong> preview on this page only, and is saved for
+                  next time you open this tab. Live Quotes &amp; Orders and website prices only change when you
+                  use <strong>Push live</strong> above and choose the Aug hybrid candidate.
+                </p>
+              </div>
               <Button variant="outline" size="sm" onClick={() => setCfg(HYBRID_DEFAULTS)}>
                 <RotateCcw className="mr-2 h-4 w-4" /> Reset to default
               </Button>
