@@ -135,29 +135,18 @@ interface DummyLead {
 }
 
 
-const CLAIM_WINDOW_MS = 120_000;
-const MAX_ATTEMPTS = 7;
-
 /**
- * Day-one calling cadence (Team Blue):
- *  - 9:00–11:00   first call as the lead comes in
- *  - 12:00–14:00  lunchtime attempt
- *  - 17:00–18:00  end-of-day attempt
- * Max 3 dials in a full day; only 2 if the lead arrives after 12:00.
- * Once the day's attempts are used the lead is handed to Team Red at 18:00.
+ * Day-one calling cadence — every figure below is driven by the manager-editable
+ * variables in the "How Open Round Robin works" section, so the practice run can
+ * be re-timed without touching code.
  */
-const CALL_WINDOWS = [
-  { key: 'morning', label: 'Morning (9–11am)', startH: 9, endH: 11 },
-  { key: 'lunch', label: 'Lunchtime (12–2pm)', startH: 12, endH: 14 },
-  { key: 'evening', label: 'End of day (5–6pm)', startH: 17, endH: 18 },
-] as const;
+const hourLabel = (h: number) => `${h % 12 === 0 ? 12 : h % 12}${h < 12 ? 'am' : 'pm'}`;
 
-const RED_TEAM_HANDOVER_HOUR = 18;
-
-/** After day one the lead is chased for seven days, twice a day at most. */
-const FOLLOW_UP_DAYS = 7;
-const FOLLOW_UP_DAILY_DIALS = 2;
-
+const callWindows = (cfg: OrrCadenceConfig) => [
+  { key: 'morning', label: `Morning (${hourLabel(cfg.morningStart)}–${hourLabel(cfg.morningEnd)})`, startH: cfg.morningStart, endH: cfg.morningEnd },
+  { key: 'lunch', label: `Lunchtime (${hourLabel(cfg.lunchStart)}–${hourLabel(cfg.lunchEnd)})`, startH: cfg.lunchStart, endH: cfg.lunchEnd },
+  { key: 'evening', label: `End of day (${hourLabel(cfg.eveningStart)}–${hourLabel(cfg.eveningEnd)})`, startH: cfg.eveningStart, endH: cfg.eveningEnd },
+];
 
 const atHour = (ref: number, hour: number, dayOffset = 0) => {
   const d = new Date(ref);
@@ -166,19 +155,22 @@ const atHour = (ref: number, hour: number, dayOffset = 0) => {
   return d.getTime();
 };
 
-/** 3 dials if the lead arrived before midday, otherwise 2. */
-const maxDialsForLead = (createdAt: number) => (new Date(createdAt).getHours() < 12 ? 3 : 2);
+/** Full-day allowance if the lead arrived before midday, otherwise the shorter one. */
+const maxDialsForLead = (createdAt: number, cfg: OrrCadenceConfig) =>
+  new Date(createdAt).getHours() < 12 ? cfg.maxDialsFullDay : cfg.maxDialsAfterMidday;
 
 /** The next calling window that starts after `from` (rolls to tomorrow morning). */
-const nextCallWindow = (from: number) => {
-  for (const win of CALL_WINDOWS) {
+const nextCallWindow = (from: number, cfg: OrrCadenceConfig) => {
+  const windows = callWindows(cfg);
+  for (const win of windows) {
     const start = atHour(from, win.startH);
     const end = atHour(from, win.endH);
     if (from < start) return { label: win.label, at: start };
     if (from < end) return { label: win.label, at: from };
   }
-  return { label: `${CALL_WINDOWS[0].label} tomorrow`, at: atHour(from, CALL_WINDOWS[0].startH, 1) };
+  return { label: `${windows[0].label} tomorrow`, at: atHour(from, windows[0].startH, 1) };
 };
+
 
 const DUMMY_AGENTS: DummyAgent[] = [
   { id: 'dummy-james', name: 'James Reed', extension: '201', order: 1 },
