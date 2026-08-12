@@ -834,7 +834,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               if (!msclkid && !metadata?.utm_source) parts.push('(no MSCLKID captured)');
               return <span className="text-[11px] font-bold text-teal-700 cursor-help" title={parts.join('\n') + utmBlock}>B</span>;
             }
-            if (src === 'tiktok_ad') {
+            if ((src as string) === 'tiktok_ad') {
               const ttclid = (metadata as any)?.ttclid;
               const parts = ['TikTok Ads'];
               if (ttclid) parts.push(`TTCLID: ${ttclid}`);
