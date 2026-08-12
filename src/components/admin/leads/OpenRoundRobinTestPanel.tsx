@@ -377,6 +377,14 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   const [simulatedAgentId, setSimulatedAgentId] = useState(DUMMY_AGENTS[0].id);
   const [tick, setTick] = useState(0);
 
+  // Manager-editable timing / frequency rules for this practice run.
+  const [cadence, setCadence] = useState<OrrCadenceConfig>(DEFAULT_ORR_CADENCE);
+  const cadenceRef = useRef(cadence);
+  useEffect(() => {
+    cadenceRef.current = cadence;
+  }, [cadence]);
+
+
 
   // Real self-service pause toggle — mirrors the real agent pause state
   const currentAdminId = useCurrentAdminId();
