@@ -80,6 +80,9 @@ export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
   const [leadTime, setLeadTime] = useState(1440);
   const [saving, setSaving] = useState(false);
   const [soundMuted, setSoundMuted] = useState(isAlertsMuted());
+  const [claimPickerOpen, setClaimPickerOpen] = useState(false);
+  const [claimQuery, setClaimQuery] = useState('');
+  const [drafts, setDrafts] = useState<DraftReminder[]>([]);
 
   React.useEffect(() => subscribeAlertsMuted(() => setSoundMuted(isAlertsMuted())), []);
 
@@ -89,20 +92,70 @@ export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
     return map;
   }, [claims]);
 
+  const filteredClaims = useMemo(() => {
+    const q = claimQuery.trim().toLowerCase();
+    const list = q ? claims.filter(c => searchTextFor(c).includes(q)) : claims;
+    return list.slice(0, 100);
+  }, [claims, claimQuery]);
+
+  const nextDefaultDue = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setMinutes(0, 0, 0);
+    return toLocalInput(d);
+  };
+
+  const resetForm = () => {
+    setTitle(''); setNotes(''); setClaimId('none'); setKind('claim');
+    setDueLocal(nextDefaultDue()); setLeadTime(1440);
+  };
+
+  const currentDraft = (): DraftReminder | null => {
+    if (!title.trim()) { toast.error('Give the reminder a title'); return null; }
+    if (!dueLocal) { toast.error('Pick a date and time'); return null; }
+    return { key: `${Date.now()}-${Math.random()}`, kind, title: title.trim(), notes, claimId, dueLocal, leadTime };
+  };
+
+  const handleAddAnother = () => {
+    const d = currentDraft();
+    if (!d) return;
+    setDrafts(prev => [...prev, d]);
+    resetForm();
+    toast.success('Added to the list — fill in the next reminder');
+  };
+
+  const saveOne = (d: DraftReminder) => create({
+    reminder_kind: d.kind,
+    title: d.title,
+    notes: d.notes,
+    claim_id: d.claimId === 'none' ? null : d.claimId,
+    due_at: new Date(d.dueLocal).toISOString(),
+    lead_time_minutes: d.leadTime,
+  });
+
   const handleSave = async () => {
-    if (!title.trim()) { toast.error('Give the reminder a title'); return; }
-    if (!dueLocal) { toast.error('Pick a date and time'); return; }
+    const queued = [...drafts];
+    const hasForm = title.trim().length > 0;
+    if (hasForm) {
+      const d = currentDraft();
+      if (!d) return;
+      queued.push(d);
+    }
+    if (queued.length === 0) { toast.error('Give the reminder a title'); return; }
     setSaving(true);
-    const ok = await create({
-      reminder_kind: kind,
-      title,
-      notes,
-      claim_id: claimId === 'none' ? null : claimId,
-      due_at: new Date(dueLocal).toISOString(),
-      lead_time_minutes: leadTime,
-    });
+    let okCount = 0;
+    for (const d of queued) {
+      // Sequential so each reminder lands in order and failures are attributable.
+      const ok = await saveOne(d);
+      if (ok) okCount += 1;
+    }
     setSaving(false);
-    if (ok) { setTitle(''); setNotes(''); setClaimId('none'); }
+    if (okCount > 0) {
+      setDrafts([]);
+      resetForm();
+      if (queued.length > 1) toast.success(`${okCount} reminders set`);
+    }
+
   };
 
   const renderRow = (r: ClaimReminder, isDone = false) => {
