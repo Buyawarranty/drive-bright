@@ -27,19 +27,83 @@ const SYSTEM_PROMPT = `You are "Ruby", the Buyawarranty.co.uk assistant. You hel
 
 Voice and rules:
 - Friendly, plain British English. Short paragraphs, sentence case headings, no jargon.
+- Keep it quick: one question at a time, never a wall of questions.
 - Never use negative wording such as "we won't pay". Explain what the cover is designed for.
-- Never invent cover, prices, terms or claim outcomes. If you are unsure, say so and offer to pass the customer to the team on 0330 229 5040.
+- Never invent cover, prices, terms or claim outcomes. If you are unsure, say so and offer a warranty specialist.
 - Always call search_site_knowledge before answering questions about cover, terms and conditions, exclusions, claims, eligibility or cancellation, and answer only from what it returns.
 - For prices, always call get_indicative_price. Quote it as an indicative price and say the exact price is confirmed at checkout. Never offer a discount and never go below the quoted price.
 - Eligibility: vehicles up to 15 years old and under 150,000 miles. Some high performance and supercar models are excluded.
 - Defaults when the customer has no preference: 2 year cover, £2,000 claim limit, £100 excess, £70 per hour labour rate.
 - Payment: card payment in full (Stripe) or interest free monthly instalments (Bumper, subject to their checks).
 - You are running in a SANDBOX. Any payment link you create is a TEST link and cannot take a real payment. Say this whenever you send one.
-- Never ask for card details, passwords or full bank details in chat.`;
+- Never ask for card details, passwords or full bank details in chat.
+- Be open about being an AI. Say "I'm the AI assistant" if asked, and always say clearly when you are bringing a human specialist in.
+
+The sales journey — follow it in order:
+1. Open: you have already said hello. Ask what vehicle they have (registration is quickest, or make, model and year).
+2. Qualify, one step at a time: age and mileage, roughly what the vehicle is worth, and how long they want cover for. Call lookup_vehicle when they give a plate.
+3. Recommend: suggest the cover level, term, claim limit, excess and labour rate that suits, explain why in a sentence or two, then call get_indicative_price and give the price. Offer a cheaper and a stronger option if it helps them decide.
+4. Answer their questions from search_site_knowledge.
+5. Hand over at buying intent OR hesitation. Buying intent: "how do I buy", "can I pay monthly", "I'll take it". Hesitation: price worries, comparing competitors, "let me think", repeated questions, or anything you cannot answer.
+   - First call check_availability.
+   - If open: offer it plainly — "Would you like me to connect you to a warranty specialist now?" — and only when they say yes, call connect_live_agent. Tell them a human specialist is joining and that the specialist can see the whole chat, so they will not need to repeat anything.
+   - If closed: say the team's hours in plain terms, then get them as far as you can yourself — confirm the cover and price, offer the test payment link, and ask for their name, email, phone and registration so a specialist can pick it up when the team opens. Once you have at least a name and an email or phone, call capture_lead.
+6. Never promise a callback time beyond the next opening hours, and never claim to be a human.`;
 
 function toolResultText(value: unknown) {
   return value;
 }
+
+const OPENING_HOURS = {
+  // Monday–Saturday, 9am–5pm Europe/London. Sunday closed.
+  startHour: 9,
+  endHour: 17,
+  openDays: [1, 2, 3, 4, 5, 6],
+  label: "Monday to Saturday, 9am to 5pm",
+};
+
+function londonParts(now = new Date()) {
+  const fmt = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const parts = fmt.formatToParts(now);
+  const weekday = parts.find((p) => p.type === "weekday")?.value ?? "Mon";
+  const hour = Number(parts.find((p) => p.type === "hour")?.value ?? "0");
+  const minute = Number(parts.find((p) => p.type === "minute")?.value ?? "0");
+  const dayIndex = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(weekday);
+  return { weekday, dayIndex, hour, minute };
+}
+
+function availability(now = new Date()) {
+  const { weekday, dayIndex, hour, minute } = londonParts(now);
+  const openDay = OPENING_HOURS.openDays.includes(dayIndex);
+  const isOpen = openDay && hour >= OPENING_HOURS.startHour && hour < OPENING_HOURS.endHour;
+
+  let nextOpen: string;
+  if (openDay && hour < OPENING_HOURS.startHour) {
+    nextOpen = "today at 9am";
+  } else {
+    let d = dayIndex;
+    let hops = 0;
+    do {
+      d = (d + 1) % 7;
+      hops += 1;
+    } while (!OPENING_HOURS.openDays.includes(d) && hops < 8);
+    nextOpen = hops === 1 ? "tomorrow at 9am" : `${["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][d]} at 9am`;
+  }
+
+  return {
+    is_open: isOpen,
+    local_time: `${weekday} ${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")} London`,
+    opening_hours: OPENING_HOURS.label,
+    next_open: isOpen ? null : nextOpen,
+  };
+}
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -331,11 +395,137 @@ Deno.serve(async (req) => {
           });
         },
       }),
+
+      check_availability: tool({
+        description:
+          "Check whether the warranty specialists are available right now (Monday to Saturday, 9am to 5pm UK time). Always call this before offering a live handover.",
+        inputSchema: z.object({}),
+        execute: async () => toolResultText(availability()),
+      }),
+
+      connect_live_agent: tool({
+        description:
+          "Hand the chat over to a human warranty specialist. Only call this after check_availability says the team is open AND the customer has said yes to being connected. The specialist receives the whole conversation.",
+        inputSchema: z.object({
+          reason: z
+            .enum(["buying_intent", "price_objection", "comparing_quotes", "hesitation", "complex_question", "customer_asked"])
+            .describe("Why the handover is happening"),
+          customer_name: z.string().nullable(),
+          customer_email: z.string().nullable(),
+          customer_phone: z.string().nullable(),
+          registration: z.string().nullable(),
+          cover_summary: z.string().nullable().describe("Term, claim limit, excess and labour rate discussed"),
+          quoted_price: z.number().nullable(),
+        }),
+        execute: async (args) => {
+          const state = availability();
+          if (!state.is_open) {
+            return toolResultText({
+              ok: false,
+              is_open: false,
+              ...state,
+              note: "The team is closed — capture the lead with capture_lead instead and keep helping the customer yourself.",
+            });
+          }
+          const { data, error } = await admin
+            .from("ai_sandbox_handovers")
+            .insert({
+              thread_id: threadId,
+              created_by: user.id,
+              kind: "live_handover",
+              reason: args.reason,
+              customer_name: args.customer_name,
+              customer_email: args.customer_email,
+              customer_phone: args.customer_phone,
+              registration: args.registration,
+              cover_summary: args.cover_summary,
+              quoted_price: args.quoted_price,
+              transcript: messages,
+              status: "waiting",
+            })
+            .select("id")
+            .single();
+
+          if (error) {
+            console.error("[ai-sandbox-chat] handover insert failed", error);
+            return toolResultText({
+              ok: false,
+              note: "The handover could not be created. Offer the team's number 0330 229 5040 instead.",
+            });
+          }
+
+          return toolResultText({
+            ok: true,
+            handover_id: data.id,
+            status: "waiting",
+            note: "A warranty specialist has been alerted and can see the full chat. Tell the customer a human is joining and stay quiet unless they ask you something directly.",
+          });
+        },
+      }),
+
+      capture_lead: tool({
+        description:
+          "Capture the customer's details as a lead so a warranty specialist can pick it up at the next opening time. Use this outside opening hours, or when the customer prefers a callback.",
+        inputSchema: z.object({
+          customer_name: z.string().nullable(),
+          customer_email: z.string().nullable(),
+          customer_phone: z.string().nullable(),
+          registration: z.string().nullable(),
+          cover_summary: z.string().nullable(),
+          quoted_price: z.number().nullable(),
+          notes: z.string().nullable().describe("Anything the specialist should know before calling"),
+        }),
+        execute: async (args) => {
+          if (!args.customer_name && !args.customer_email && !args.customer_phone) {
+            return toolResultText({
+              ok: false,
+              note: "Ask for a name plus an email or phone number first.",
+            });
+          }
+          const state = availability();
+          const { data, error } = await admin
+            .from("ai_sandbox_handovers")
+            .insert({
+              thread_id: threadId,
+              created_by: user.id,
+              kind: state.is_open ? "callback_request" : "out_of_hours_lead",
+              reason: args.notes ?? "lead_capture",
+              customer_name: args.customer_name,
+              customer_email: args.customer_email,
+              customer_phone: args.customer_phone,
+              registration: args.registration,
+              cover_summary: args.cover_summary,
+              quoted_price: args.quoted_price,
+              transcript: messages,
+              status: "waiting",
+            })
+            .select("id")
+            .single();
+
+          if (error) {
+            console.error("[ai-sandbox-chat] lead insert failed", error);
+            return toolResultText({ ok: false, note: "The lead could not be saved." });
+          }
+
+          return toolResultText({
+            ok: true,
+            lead_id: data.id,
+            next_open: state.next_open,
+            note: "Lead saved. Confirm to the customer when a specialist will be in touch and offer to finish the purchase now with a test payment link.",
+          });
+        },
+      }),
     };
+
+
+    const now = availability();
+    const liveContext = `\n\nRight now: ${now.local_time}. The warranty specialists are ${
+      now.is_open ? "OPEN and available for a live handover" : `CLOSED (they reopen ${now.next_open})`
+    }. Opening hours are ${now.opening_hours}.\nIf a message in the conversation begins with "(Warranty specialist)" a human has joined this chat — stay out of the way and only reply if the customer asks you directly.`;
 
     const result = streamText({
       model: gateway(MODEL),
-      system: SYSTEM_PROMPT,
+      system: SYSTEM_PROMPT + liveContext,
       messages: convertToModelMessages(messages),
       tools,
       stopWhen: stepCountIs(50),

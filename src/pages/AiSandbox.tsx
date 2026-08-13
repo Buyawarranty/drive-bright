@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Plus, Trash2, MessageSquare } from 'lucide-react';
+import { Plus, Trash2, MessageSquare, PhoneCall } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,14 @@ import SandboxChatWindow from '@/components/ai-sandbox/SandboxChatWindow';
 import rubyLogo from '@/assets/ai-sandbox-ruby.png';
 
 type Thread = { id: string; title: string; updated_at: string };
+type QueueItem = {
+  id: string;
+  thread_id: string;
+  kind: string;
+  reason: string | null;
+  customer_name: string | null;
+  quoted_price: number | null;
+};
 
 export default function AiSandbox() {
   const { threadId } = useParams<{ threadId?: string }>();
@@ -16,6 +24,7 @@ export default function AiSandbox() {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [queue, setQueue] = useState<QueueItem[]>([]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -36,6 +45,23 @@ export default function AiSandbox() {
     setThreads(data ?? []);
     return (data ?? []) as Thread[];
   }, []);
+
+  const loadQueue = useCallback(async () => {
+    const { data } = await supabase
+      .from('ai_sandbox_handovers')
+      .select('id, thread_id, kind, reason, customer_name, quoted_price')
+      .eq('status', 'waiting')
+      .order('created_at', { ascending: false })
+      .limit(10);
+    setQueue((data as QueueItem[]) ?? []);
+  }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+    loadQueue();
+    const interval = window.setInterval(loadQueue, 15000);
+    return () => window.clearInterval(interval);
+  }, [userId, loadQueue]);
 
   const createThread = useCallback(async () => {
     if (!userId) return;
@@ -143,6 +169,30 @@ export default function AiSandbox() {
             </div>
           ))}
         </nav>
+        {queue.length > 0 && (
+          <div className="border-t border-border p-3">
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-amber-700">
+              <PhoneCall className="h-3.5 w-3.5" /> Waiting for a specialist ({queue.length})
+            </p>
+            <div className="space-y-1">
+              {queue.map((q) => (
+                <button
+                  key={q.id}
+                  onClick={() => navigate(`/ai-sandbox/${q.thread_id}`)}
+                  className="w-full rounded-md border border-amber-300 bg-amber-50 px-2 py-1.5 text-left text-xs text-amber-900 hover:bg-amber-100"
+                >
+                  <span className="block truncate font-medium">
+                    {q.customer_name || (q.kind === 'live_handover' ? 'Live handover' : 'Out of hours lead')}
+                  </span>
+                  <span className="block truncate opacity-80">
+                    {(q.reason ?? '').replace(/_/g, ' ')}
+                    {q.quoted_price ? ` · £${Math.round(q.quoted_price)}` : ''}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </aside>
 
       <main className="flex min-h-0 min-w-0 flex-1 flex-col">
