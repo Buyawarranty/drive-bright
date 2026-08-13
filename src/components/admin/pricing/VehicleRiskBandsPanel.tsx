@@ -71,6 +71,16 @@ function newId(prefix: string) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
+/** Identity of a vehicle rule: same make + model + fuel is the same vehicle. */
+function assignmentKey(a: { make?: string | null; model?: string | null; fuel?: string | null }) {
+  return [
+    (a.make || '').trim().toLowerCase(),
+    (a.model || '').trim().toLowerCase(),
+    (a.fuel || 'any').trim().toLowerCase(),
+  ].join('|');
+}
+
+
 const VehicleRiskBandsPanel: React.FC = () => {
   const [config, setConfig] = useState<RiskBandConfig>(() => loadRiskBandConfig());
   const [dirty, setDirty] = useState(false);
