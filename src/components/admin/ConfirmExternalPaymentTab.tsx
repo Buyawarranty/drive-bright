@@ -1033,18 +1033,37 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                       )}
                     </div>
                   </div>
-                  <Button
-                    onClick={handleOpenConfirmDialog}
-                    disabled={!vehicleData || !customerFirstName || !customerLastName || !customerEmail}
-                    className="w-full py-6 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-xl shadow-lg"
-                  >
-                    <CheckCircle2 className="w-5 h-5 mr-2" />
-                    Confirm External Payment
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                  <p className="text-center text-slate-500 text-xs mt-3">
-                    Activates the policy and emails the customer.
-                  </p>
+                  {(() => {
+                    const missing: string[] = [];
+                    if (!vehicleData) missing.push('vehicle lookup');
+                    if (!customerFirstName) missing.push('first name');
+                    if (!customerLastName) missing.push('last name');
+                    if (!customerEmail) missing.push('email address');
+                    return (
+                      <>
+                        <Button
+                          onClick={handleOpenConfirmDialog}
+                          disabled={missing.length > 0}
+                          title={missing.length > 0 ? `Add: ${missing.join(', ')}` : undefined}
+                          className="w-full py-6 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-xl shadow-lg disabled:opacity-100 disabled:bg-slate-700 disabled:text-slate-300"
+                        >
+                          <CheckCircle2 className="w-5 h-5 mr-2" />
+                          Confirm External Payment
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                        {missing.length > 0 ? (
+                          <p className="text-center text-amber-300 text-xs mt-3 font-semibold">
+                            ⚠️ Still needed before you can activate: {missing.join(', ')}
+                          </p>
+                        ) : (
+                          <p className="text-center text-slate-500 text-xs mt-3">
+                            Activates the policy and emails the customer.
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
+
                 </div>
               </aside>
             </div>
