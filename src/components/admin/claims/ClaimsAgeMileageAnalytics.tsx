@@ -103,9 +103,11 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
       claims: b.claims,
       totalCost: Math.round(b.totalCost),
       avgCost: b.paidCount > 0 ? Math.round(b.totalCost / b.paidCount) : 0,
+      costPerClaim: b.claims > 0 ? Math.round(b.totalCost / b.claims) : 0,
       paidCount: b.paidCount,
     }));
   }, [claims, vehicleMap]);
+
 
   // --- Mileage analytics ---
   const mileageData = useMemo(() => {
