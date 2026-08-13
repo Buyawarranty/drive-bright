@@ -346,7 +346,18 @@ export default function AgeBandPricingPreview({
   const [busy, setBusy] = useState(false);
   const [newFloorVehicle, setNewFloorVehicle] = useState('');
   const [newFloorTreatment, setNewFloorTreatment] = useState('Premium floor');
-  const [newFloorPrice, setNewFloorPrice] = useState('');
+  const [newFloorPrice, setNewFloorPrice] = useState('599');
+  const [newFloorTier, setNewFloorTier] = useState<string>('premium');
+
+  /** Picking a named tier fills in the treatment and the floor price. */
+  function selectTier(key: string) {
+    setNewFloorTier(key);
+    const preset = PREMIUM_TIER_PRESETS.find(t => t.key === key);
+    if (!preset || preset.key === 'custom') return;
+    setNewFloorTreatment('Premium floor');
+    setNewFloorPrice(String(preset.price));
+  }
+
   const [lookupReg, setLookupReg] = useState('');
   const [lookupBusy, setLookupBusy] = useState(false);
   const [lookupNote, setLookupNote] = useState('');
