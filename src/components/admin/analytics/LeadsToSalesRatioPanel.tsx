@@ -189,10 +189,24 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
           <CardTitle>Leads to sales ratio</CardTitle>
           <CardDescription className="mt-1">
             Leads in, sales made, ad spend and the value of those sales for every day in the selected range.
-            Ad spend is recorded monthly and spread evenly across the days of that month.
+            Ad spend is recorded monthly and spread evenly across the days of that month. Lead cost is charged at
+            the average of £{leadCost} a lead.
           </CardDescription>
         </div>
-        <DateRangeFilter dateRange={dateRange} onDateRangeChange={setDateRange} />
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            Average lead cost £
+            <Input
+              type="number"
+              min={0}
+              step={1}
+              value={leadCost}
+              onChange={(e) => setLeadCost(Math.max(0, Number(e.target.value) || 0))}
+              className="h-8 w-20"
+            />
+          </label>
+          <DateRangeFilter dateRange={dateRange} onDateRangeChange={setDateRange} />
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-2">
@@ -202,14 +216,19 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
           <Badge variant="secondary">Average day {totals.avgDailyConversion.toFixed(1)}%</Badge>
           <Badge variant="secondary">Sales value {money(totals.revenue)}</Badge>
           <Badge variant="secondary">Ad spend {money(totals.spend)}</Badge>
+          <Badge variant="secondary">Lead cost @ £{leadCost} {money(totals.leadCostTotal)}</Badge>
           <Badge variant="secondary">Cost per lead {money(totals.costPerLead)}</Badge>
           <Badge variant="secondary">Cost per sale {money(totals.costPerSale)}</Badge>
+          <Badge variant={totals.leadCostPerSale > 0 && totals.aov > totals.leadCostPerSale ? 'default' : 'outline'}>
+            Lead cost per sale {money(totals.leadCostPerSale)}
+          </Badge>
           <Badge variant={totals.roas >= 3 ? 'default' : 'outline'}>
             Return on spend {totals.roas.toFixed(2)}x
           </Badge>
           <Badge variant="outline">AOV {money(totals.aov)}</Badge>
           <Badge variant="outline">{totals.dayCount} days</Badge>
         </div>
+
 
         {/* Does more leads mean more sales? */}
         <div className="rounded-lg border bg-muted/40 p-3 space-y-2">
