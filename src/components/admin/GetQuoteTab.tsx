@@ -501,6 +501,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     absoluteMinTotal: (pricingModel as any)?.absoluteMinTotal || 0,
   });
   /**
+   * The minimum is per TERM (and per cover options), not one figure for every
+   * warranty — so every message names the term it applies to.
+   */
+  const MIN_TERM_LABEL =
+    paymentType === '36months' ? '3 year' : paymentType === '24months' ? '2 year' : '1 year';
+
+  /**
    * Only offer excess tiers that actually price ABOVE the minimum. A higher
    * excess makes the warranty cheaper, so on a low-priced vehicle it lands on the
    * floor and the customer would carry a bigger excess for exactly the same money.
@@ -1388,8 +1395,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       if (minPriceToastShownRef.current) return;
       minPriceToastShownRef.current = true;
       toast({
-        title: `Minimum sale price for any warranty is £${ABSOLUTE_MIN_TOTAL}`,
-        description: `£${displayedPayInFullPrice < displayedTotalPrice ? displayedPayInFullPrice : displayedTotalPrice} is below the minimum. Percentage discounts, manual amounts and pay-in-full cannot take a warranty under £${ABSOLUTE_MIN_TOTAL} — use Price match with a competitor quote, or ask your manager.`,
+        title: `Minimum sale price for a ${MIN_TERM_LABEL} warranty is £${ABSOLUTE_MIN_TOTAL}`,
+        description: `£${displayedPayInFullPrice < displayedTotalPrice ? displayedPayInFullPrice : displayedTotalPrice} is below the minimum for this ${MIN_TERM_LABEL} cover. Percentage discounts, manual amounts and pay-in-full cannot take a ${MIN_TERM_LABEL} warranty under £${ABSOLUTE_MIN_TOTAL} — use Price match with a competitor quote, or ask your manager.`,
         variant: 'destructive',
       });
     } else {
@@ -1940,8 +1947,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
     if (absoluteMinBlocked) {
       toast({
-        title: `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL}`,
-        description: `No warranty can be sold under £${ABSOLUTE_MIN_TOTAL}. Switch on Price match and upload the competitor quote to go lower — contact your manager if you cannot get evidence.`,
+        title: `Minimum ${MIN_TERM_LABEL} warranty price is £${ABSOLUTE_MIN_TOTAL}`,
+        description: `No ${MIN_TERM_LABEL} warranty can be sold under £${ABSOLUTE_MIN_TOTAL} with these cover options. Switch on Price match and upload the competitor quote to go lower — contact your manager if you cannot get evidence.`,
         variant: "destructive",
       });
       return;
@@ -3263,8 +3270,8 @@ Questions? Call 0330 229 5040`;
     // evidenced price match (competitor quote uploaded).
     if (isUnderAbsoluteMin(paymentAmount) && !priceMatchEvidenced) {
       toast({
-        title: `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL}`,
-        description: `No warranty can be sold under £${ABSOLUTE_MIN_TOTAL}. Switch on Price match and upload the competitor quote to go lower — contact your manager if you cannot get evidence.`,
+        title: `Minimum ${MIN_TERM_LABEL} warranty price is £${ABSOLUTE_MIN_TOTAL}`,
+        description: `No ${MIN_TERM_LABEL} warranty can be sold under £${ABSOLUTE_MIN_TOTAL} with these cover options. Switch on Price match and upload the competitor quote to go lower — contact your manager if you cannot get evidence.`,
         variant: "destructive",
       });
       return;
@@ -5273,7 +5280,7 @@ Questions? Call 0330 229 5040`;
                           )}
                         >
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span>Minimum sale price for any warranty £{ABSOLUTE_MIN_TOTAL}</span>
+                            <span>Minimum sale price for a {MIN_TERM_LABEL} warranty £{ABSOLUTE_MIN_TOTAL}</span>
                             {absoluteMinBlocked ? (
                               <span className="font-bold">
                                 — £{Math.min(displayedTotalPrice, displayedPayInFullPrice)} is below the minimum, so this sale is
@@ -5283,7 +5290,7 @@ Questions? Call 0330 229 5040`;
                             ) : priceMatchEvidenced && isUnderAbsoluteMin(displayedTotalPrice) ? (
                               <span>— allowed: evidenced price match on file.</span>
                             ) : (
-                              <span className="font-normal">— whatever discount is applied, no warranty can be sold below this; price match with evidence only.</span>
+                              <span className="font-normal">— applies to this {MIN_TERM_LABEL} cover with the options selected; other terms have their own minimum. Whatever discount is applied, it cannot go below this; price match with evidence only.</span>
                             )}
                           </div>
 
@@ -5630,14 +5637,14 @@ Questions? Call 0330 229 5040`;
                               ⚠️ Evidence required — attach the competitor quote (image or PDF) before completing the order.
                             </p>
                             <p className="text-[11px] text-amber-800">
-                              Going below the £{ABSOLUTE_MIN_TOTAL} minimum is only allowed with uploaded price match evidence.
+                              Going below the £{ABSOLUTE_MIN_TOTAL} {MIN_TERM_LABEL} minimum is only allowed with uploaded price match evidence.
                               If you cannot get the evidence, contact your manager for authorisation before selling.
                             </p>
                           </div>
                         )}
                         {priceMatchProofPath && isUnderAbsoluteMin(displayedTotalPrice) && (
                           <p className="text-xs font-semibold text-sky-800">
-                            Evidence on file — this price match is allowed below the £{ABSOLUTE_MIN_TOTAL} minimum.
+                            Evidence on file — this price match is allowed below the £{ABSOLUTE_MIN_TOTAL} {MIN_TERM_LABEL} minimum.
                           </p>
                         )}
 
@@ -7956,8 +7963,8 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                                 priceMatchEvidenced ? "text-sky-700" : "text-red-600"
                               )}>
                                 {priceMatchEvidenced
-                                  ? `Below the £${ABSOLUTE_MIN_TOTAL} minimum — allowed: evidenced price match on file.`
-                                  : `Minimum warranty price is £${ABSOLUTE_MIN_TOTAL} — sale blocked. Use Price match with an uploaded competitor quote to go lower, or contact your manager.`}
+                                  ? `Below the £${ABSOLUTE_MIN_TOTAL} ${MIN_TERM_LABEL} minimum — allowed: evidenced price match on file.`
+                                  : `Minimum ${MIN_TERM_LABEL} warranty price is £${ABSOLUTE_MIN_TOTAL} — sale blocked. Use Price match with an uploaded competitor quote to go lower, or contact your manager.`}
                               </p>
                             )}
 
