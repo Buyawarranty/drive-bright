@@ -79,7 +79,7 @@ export function retrieveGrounded(query: string, limit = 5) {
   const covered = new Set(top.flatMap((c) => c.matched));
   const coverage = terms.length ? covered.size / terms.length : 0;
 
-  const confident = best >= 1.6 && coverage >= 0.5 && top.length > 0;
+  const confident = best >= 2 && coverage >= 0.75 && top.length > 0;
 
   return {
     confident,
