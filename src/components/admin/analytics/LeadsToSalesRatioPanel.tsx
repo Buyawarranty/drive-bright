@@ -169,6 +169,9 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
         roas: spend > 0 ? revenue / spend : 0,
         aov: sales > 0 ? revenue / sales : 0,
         dayCount: withRatio.length,
+        leadCostTotal: leads * leadCost,
+        leadCostPerSale: sales > 0 ? (leads * leadCost) / sales : 0,
+
         correlation,
         quietConv,
         busyConv,
