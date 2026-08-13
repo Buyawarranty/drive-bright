@@ -196,6 +196,32 @@ const VehicleRiskBandsPanel: React.FC = () => {
   );
   const clashIds = useMemo(() => new Set(excludedClashes.map(c => c.id)), [excludedClashes]);
 
+  /**
+   * Same vehicle listed in two different bands. Only one can ever win at quote
+   * time (first row of equal specificity), so flag it as a mistake to clean up.
+   */
+  const duplicateClashes = useMemo(() => {
+    const groups = new Map<string, typeof config.assignments>();
+    config.assignments.filter(a => a.enabled).forEach(a => {
+      const k = assignmentKey(a);
+      groups.set(k, [...(groups.get(k) || []), a]);
+    });
+    return [...groups.values()]
+      .filter(rows => rows.length > 1 && new Set(rows.map(r => r.bandId)).size > 1)
+      .map(rows => ({
+        key: assignmentKey(rows[0]),
+        label: `${rows[0].make || '(all makes)'} ${rows[0].model || '(all models)'}`.trim(),
+        winner: bandById.get(rows[0].bandId)?.name || 'first row',
+        others: rows.slice(1).map(r => bandById.get(r.bandId)?.name || 'band').join(', '),
+        ids: rows.map(r => r.id),
+      }));
+  }, [config.assignments, bandById]);
+  const duplicateIds = useMemo(
+    () => new Set(duplicateClashes.flatMap(d => d.ids)),
+    [duplicateClashes]
+  );
+
+
   /** £500 base worked through each band for car / van / motorbike, for confirmation. */
   const typeFactorCheck = useMemo(() => {
     const base = 500;
