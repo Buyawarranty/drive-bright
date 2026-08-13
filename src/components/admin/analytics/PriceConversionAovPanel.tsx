@@ -228,23 +228,38 @@ export const PriceConversionAovPanel: React.FC<Props> = ({ dateRange }) => {
               </CardDescription>
 
             </div>
-            <div className="flex gap-1">
-              {(['all', '12months', '24months', '36months'] as const).map(t => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTermFilter(t)}
-                  className={cn(
-                    'px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors',
-                    termFilter === t
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-muted text-muted-foreground border-border hover:bg-muted/70',
-                  )}
-                >
-                  {t === 'all' ? 'All terms' : t.replace('months', ' months')}
-                </button>
-              ))}
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                Fixed costs
+                <input
+                  type="number"
+                  min={0}
+                  max={95}
+                  value={costPct}
+                  onChange={e => setCostPct(Math.min(95, Math.max(0, Number(e.target.value) || 0)))}
+                  className="w-16 rounded-md border border-border bg-background px-2 py-1 text-right text-xs text-foreground"
+                />
+                % of sale
+              </label>
+              <div className="flex gap-1">
+                {(['all', '12months', '24months', '36months'] as const).map(t => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTermFilter(t)}
+                    className={cn(
+                      'px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors',
+                      termFilter === t
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-muted text-muted-foreground border-border hover:bg-muted/70',
+                    )}
+                  >
+                    {t === 'all' ? 'All terms' : t.replace('months', ' months')}
+                  </button>
+                ))}
+              </div>
             </div>
+
           </div>
         </CardHeader>
         <CardContent>
