@@ -206,6 +206,16 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
         sales,
         revenue,
         spend,
+        googleCost: withRatio.reduce((s, d) => s + d.googleCost, 0),
+        metaCost: withRatio.reduce((s, d) => s + d.metaCost, 0),
+        bingCost: withRatio.reduce((s, d) => s + d.bingCost, 0),
+        tiktokCost: withRatio.reduce((s, d) => s + d.tiktokCost, 0),
+        paidCost: withRatio.reduce((s, d) => s + d.paidCost, 0),
+        googleLeads: withRatio.reduce((s, d) => s + d.googleLeads, 0),
+        metaLeads: withRatio.reduce((s, d) => s + d.metaLeads, 0),
+        bingLeads: withRatio.reduce((s, d) => s + d.bingLeads, 0),
+        tiktokLeads: withRatio.reduce((s, d) => s + d.tiktokLeads, 0),
+
         conversion: leads > 0 ? (sales / leads) * 100 : 0,
         avgDailyConversion: n
           ? active.reduce((s, d) => s + d.conversion, 0) / n
