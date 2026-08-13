@@ -183,7 +183,55 @@ export const DEFAULT_RISK_BAND_ASSIGNMENTS: RiskBandAssignment[] = [
   { id: 'a-bmw-msport', bandId: 'high', make: 'BMW', model: 'M Sport', enabled: true },
   { id: 'a-audi-sline', bandId: 'high', make: 'Audi', model: 'S Line', enabled: true },
   { id: 'a-merc-amgline', bandId: 'high', make: 'Mercedes', model: 'AMG Line', enabled: true },
+
+  /**
+   * PREMIUM PRELOAD — "premium" is not its own category; premium makes/models
+   * live in the High / Very high bands so they pick up that band's factor and
+   * its 1-year minimum (£599 / £849, halved for motorbikes). Whole-make rows
+   * are used where the entire range is premium; model rows where only some
+   * variants are.
+   */
+  // High model risk — premium mainstream / entry-premium
+  { id: 'p-bmw', bandId: 'high', make: 'BMW', model: '', enabled: true },
+  { id: 'p-audi', bandId: 'high', make: 'Audi', model: '', enabled: true },
+  { id: 'p-mercedes', bandId: 'high', make: 'Mercedes-Benz', model: '', enabled: true },
+  { id: 'p-volvo', bandId: 'high', make: 'Volvo', model: '', enabled: true },
+  { id: 'p-lexus', bandId: 'high', make: 'Lexus', model: '', enabled: true },
+  { id: 'p-jaguar', bandId: 'high', make: 'Jaguar', model: '', enabled: true },
+  { id: 'p-mini', bandId: 'high', make: 'MINI', model: '', enabled: true },
+  { id: 'p-alfa', bandId: 'high', make: 'Alfa Romeo', model: '', enabled: true },
+  { id: 'p-ds', bandId: 'high', make: 'DS', model: '', enabled: true },
+  { id: 'p-cupra', bandId: 'high', make: 'Cupra', model: '', enabled: true },
+  { id: 'p-genesis', bandId: 'high', make: 'Genesis', model: '', enabled: true },
+  { id: 'p-tesla', bandId: 'high', make: 'Tesla', model: '', enabled: true },
+  { id: 'p-polestar', bandId: 'high', make: 'Polestar', model: '', enabled: true },
+
+  // Very high model risk — air suspension, complex electronics, large premium SUVs
+  { id: 'p-lr', bandId: 'severe', make: 'Land Rover', model: '', enabled: true },
+  { id: 'p-rr', bandId: 'severe', make: 'Range Rover', model: '', enabled: true },
+  { id: 'p-porsche', bandId: 'severe', make: 'Porsche', model: '', enabled: true },
+  { id: 'p-bmw-x5', bandId: 'severe', make: 'BMW', model: 'X5', enabled: true },
+  { id: 'p-bmw-x6', bandId: 'severe', make: 'BMW', model: 'X6', enabled: true },
+  { id: 'p-bmw-x7', bandId: 'severe', make: 'BMW', model: 'X7', enabled: true },
+  { id: 'p-bmw-7', bandId: 'severe', make: 'BMW', model: '7 Series', enabled: true },
+  { id: 'p-bmw-i7', bandId: 'severe', make: 'BMW', model: 'i7', enabled: true },
+  { id: 'p-bmw-ix', bandId: 'severe', make: 'BMW', model: 'iX', enabled: true },
+  { id: 'p-audi-q7', bandId: 'severe', make: 'Audi', model: 'Q7', enabled: true },
+  { id: 'p-audi-q8', bandId: 'severe', make: 'Audi', model: 'Q8', enabled: true },
+  { id: 'p-audi-a8', bandId: 'severe', make: 'Audi', model: 'A8', enabled: true },
+  { id: 'p-audi-etron', bandId: 'severe', make: 'Audi', model: 'e-tron', enabled: true },
+  { id: 'p-merc-gle', bandId: 'severe', make: 'Mercedes-Benz', model: 'GLE', enabled: true },
+  { id: 'p-merc-gls', bandId: 'severe', make: 'Mercedes-Benz', model: 'GLS', enabled: true },
+  { id: 'p-merc-s', bandId: 'severe', make: 'Mercedes-Benz', model: 'S Class', enabled: true },
+  { id: 'p-merc-eqs', bandId: 'severe', make: 'Mercedes-Benz', model: 'EQS', enabled: true },
+  { id: 'p-merc-gclass', bandId: 'severe', make: 'Mercedes-Benz', model: 'G Class', enabled: true },
+  { id: 'p-volvo-xc90', bandId: 'severe', make: 'Volvo', model: 'XC90', enabled: true },
+  { id: 'p-jag-fpace', bandId: 'severe', make: 'Jaguar', model: 'F-Pace', enabled: true },
+  { id: 'p-jag-xj', bandId: 'severe', make: 'Jaguar', model: 'XJ', enabled: true },
+  { id: 'p-tesla-x', bandId: 'severe', make: 'Tesla', model: 'Model X', enabled: true },
+  { id: 'p-tesla-s', bandId: 'severe', make: 'Tesla', model: 'Model S', enabled: true },
 ];
+
 
 export const DEFAULT_RISK_BAND_CONFIG: RiskBandConfig = {
   bands: DEFAULT_RISK_BANDS,
