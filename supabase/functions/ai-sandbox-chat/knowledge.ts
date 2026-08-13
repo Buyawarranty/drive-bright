@@ -29,7 +29,9 @@ function idf(term: string): number {
     df = KB.filter((c) => `${c.section}\n${c.text}`.toLowerCase().includes(term)).length;
     DF.set(term, df);
   }
-  if (df === 0) return 0;
+  // A word that appears nowhere in the approved material is maximally
+  // distinctive: it must count against confidence, never be ignored.
+  if (df === 0) return Math.log(KB.length);
   return Math.max(0, Math.log(KB.length / df));
 }
 
