@@ -284,6 +284,23 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       
       setCustomers(realCustomers);
 
+      // Cancellations / refunds: separate query so archived (is_deleted) records are included.
+      // Customer Management shows those as cancelled, so analytics must count them too.
+      const { data: cancelData, error: cancelError } = await supabase
+        .from('customers')
+        .select('id, name, email, status, final_amount, signup_date, updated_at, deleted_at, cancellation_note_updated_at, is_deleted, warranty_reference_number, is_manual_entry, purchase_source')
+        .in('status', ['Cancelled', 'cancelled', 'Refunded', 'refunded'])
+        .order('updated_at', { ascending: false });
+
+      if (cancelError) {
+        console.error('Error fetching cancellations for analytics:', cancelError);
+        setCancellations([]);
+      } else {
+        setCancellations((cancelData || []).filter(c => !isTestOrder(c.name, c.email)));
+      }
+
+
+
       // Fetch admin users separately so a permissions issue here does not blank the whole analytics tab
       const { data: usersData, error: usersError } = await supabase
         .from('admin_users')
