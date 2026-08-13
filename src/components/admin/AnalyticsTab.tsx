@@ -2085,6 +2085,44 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                 </div>
               </div>
 
+              <div className="p-4 rounded-lg border border-teal-200 bg-teal-50/30 space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Search className="h-4 w-4 text-teal-600" />
+                  <span className="font-semibold text-sm text-teal-700">Bing Ads lead</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Orders</span>
+                  <span className="font-bold text-lg">{sourceMetrics.salesBing.count}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Revenue</span>
+                  <span className="font-bold text-lg text-teal-600">£{sourceMetrics.salesBing.revenue.toLocaleString('en-GB')}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-teal-200">
+                  <span className="text-xs font-medium">AOV</span>
+                  <span className="font-bold text-teal-700">£{sourceMetrics.salesBing.aov}</span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-lg border border-zinc-300 bg-zinc-50 space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Music2 className="h-4 w-4 text-zinc-700" />
+                  <span className="font-semibold text-sm text-zinc-800">TikTok Ads lead</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Orders</span>
+                  <span className="font-bold text-lg">{sourceMetrics.salesTiktok.count}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Revenue</span>
+                  <span className="font-bold text-lg text-zinc-800">£{sourceMetrics.salesTiktok.revenue.toLocaleString('en-GB')}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-zinc-300">
+                  <span className="text-xs font-medium">AOV</span>
+                  <span className="font-bold text-zinc-900">£{sourceMetrics.salesTiktok.aov}</span>
+                </div>
+              </div>
+
               <div className="p-4 rounded-lg border border-sky-200 bg-sky-50/30 space-y-2">
                 <div className="flex items-center gap-2 mb-1">
                   <Globe className="h-4 w-4 text-sky-600" />
@@ -2103,6 +2141,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                   <span className="font-bold text-sky-700">£{sourceMetrics.salesOrganic.aov}</span>
                 </div>
               </div>
+
             </div>
           </div>
         </CardContent>
