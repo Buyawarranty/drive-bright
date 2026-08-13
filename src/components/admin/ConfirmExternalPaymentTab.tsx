@@ -102,6 +102,12 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const { toast } = useToast();
   const { isManagement } = useIsManagement();
   const isManagementRole = isManagement === true;
+  const { user } = useAuth();
+  const { myApproved: approvedAuthRequest } = useDiscountAuthRequests();
+  const [authReason, setAuthReason] = useState('');
+  const [authSent, setAuthSent] = useState(false);
+  const [sendingAuth, setSendingAuth] = useState(false);
+
   
   // Vehicle lookup state
   const [regNumber, setRegNumber] = useState('');
