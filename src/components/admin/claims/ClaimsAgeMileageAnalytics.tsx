@@ -381,17 +381,18 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Age Band Breakdown</CardTitle>
-              <CardDescription className="text-xs">Claims, total cost, and average cost per age band</CardDescription>
+              <CardDescription className="text-xs">Avg payout = total paid ÷ settled claims. Per claim = total paid ÷ all claims.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-1.5">
-                <div className="grid grid-cols-4 text-xs font-medium text-muted-foreground border-b pb-1">
-                  <span>Age</span><span className="text-right">Claims</span><span className="text-right">Total Cost</span><span className="text-right">Avg Cost</span>
+                <div className="grid grid-cols-5 text-xs font-medium text-muted-foreground border-b pb-1">
+                  <span>Age</span><span className="text-right">Claims</span><span className="text-right">Settled</span><span className="text-right">Total Paid</span><span className="text-right">Avg Payout</span>
                 </div>
                 {ageData.filter(d => d.claims > 0).map(d => (
-                  <div key={d.band} className="grid grid-cols-4 text-sm">
+                  <div key={d.band} className="grid grid-cols-5 text-sm">
                     <span className="font-medium">{d.band}</span>
                     <span className="text-right">{d.claims}</span>
+                    <span className="text-right">{d.paidCount}</span>
                     <span className="text-right">£{d.totalCost.toLocaleString()}</span>
                     <span className={`text-right ${d.avgCost > 500 ? 'text-red-600 font-medium' : ''}`}>£{d.avgCost.toLocaleString()}</span>
                   </div>
@@ -405,22 +406,26 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Mileage Band Breakdown</CardTitle>
-              <CardDescription className="text-xs">Claims, total cost, and average cost per mileage band</CardDescription>
+              <CardDescription className="text-xs">Avg payout = total paid ÷ settled claims. Per claim = total paid ÷ all claims.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-1.5">
-                <div className="grid grid-cols-4 text-xs font-medium text-muted-foreground border-b pb-1">
-                  <span>Mileage</span><span className="text-right">Claims</span><span className="text-right">Total Cost</span><span className="text-right">Avg Cost</span>
+                <div className="grid grid-cols-5 text-xs font-medium text-muted-foreground border-b pb-1">
+                  <span>Mileage</span><span className="text-right">Claims</span><span className="text-right">Settled</span><span className="text-right">Total Paid</span><span className="text-right">Avg Payout</span>
                 </div>
                 {mileageData.filter(d => d.claims > 0).map(d => (
-                  <div key={d.band} className="grid grid-cols-4 text-sm">
+                  <div key={d.band} className="grid grid-cols-5 text-sm">
                     <span className="font-medium">{d.band}</span>
                     <span className="text-right">{d.claims}</span>
+                    <span className="text-right">{d.paidCount}</span>
                     <span className="text-right">£{d.totalCost.toLocaleString()}</span>
                     <span className={`text-right ${d.avgCost > 500 ? 'text-red-600 font-medium' : ''}`}>£{d.avgCost.toLocaleString()}</span>
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+
             </CardContent>
           </Card>
         )}
