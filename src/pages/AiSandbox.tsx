@@ -151,7 +151,7 @@ export default function AiSandbox() {
         <p className="mt-2 text-sm text-muted-foreground">
           The AI sandbox is staff only. Sign in to the admin area, then come back to this page.
         </p>
-        <Button className="mt-4" onClick={() => navigate('/admin')}>
+        <Button className="mt-4" onClick={() => navigate('/admin-dashboard')}>
           Go to staff sign in
         </Button>
       </div>
