@@ -10,7 +10,7 @@
  *  1. The gap is read from the published pricing version (`web_discount_pct`),
  *     clamped to 0–10%, so it can be tuned without a code change.
  *  2. The minimum price floor binds on the WEB price, not just the grid price.
- *     A 10% gap must never take a quote below £349 / £576 / £821 (halved for
+ *     A 10% gap must never take a quote below £349 / £699 / £999 (halved for
  *     motorbikes), and promo codes stack on top of an already-floored number.
  */
 

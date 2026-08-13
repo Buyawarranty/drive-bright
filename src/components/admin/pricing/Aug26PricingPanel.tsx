@@ -51,7 +51,7 @@ const Aug26PricingPanel: React.FC = () => {
   const webDiscount = selected?.step3_discount_pct ?? 10;
   /**
    * Net sell floor for this version. `resolvePriceFloors` clamps to the agreed
-   * £349 / £576 / £821 bottom (cheapest option combo), so an older version saved
+   * £349 / £699 / £999 bottom (cheapest option combo), so an older version saved
    * with a lower figure is displayed — and priced — at the current floor.
    */
   const floors = useMemo(

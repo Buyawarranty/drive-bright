@@ -280,7 +280,7 @@ export default function PriceTestStep2({
   /**
    * Match the published Aug Hybrid engine: retain the normal option-shaped floor,
    * then apply the flat hard bottom only when a quote genuinely falls beneath it.
-   * This prevents the old £349/£576/£821 clamp from swallowing age, claim-limit,
+   * This prevents the old £349/£699/£999 clamp from swallowing age, claim-limit,
    * labour-rate and excess changes in the test replica.
    */
   const minimumFor = (months: number, forExcess: number = excess) => {

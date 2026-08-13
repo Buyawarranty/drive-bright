@@ -482,7 +482,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     ? Math.round(priceMatchCompetitorPrice * (1 - PRICE_MATCH_MAX_PCT / 100))
     : null;
 
-  // NET floor: no warranty may ever be SOLD below £349 / £576 / £821 (12/24/36mo)
+  // NET floor: no warranty may ever be SOLD below £349 / £699 / £999 (12/24/36mo)
   // on Quotes & Orders — after discounts, manual overrides and manual payments.
   // Shaped up when the customer picks a richer claim limit / labour rate / lower
   // excess, halved for motorbikes. Exceptions: Management, and an evidenced
