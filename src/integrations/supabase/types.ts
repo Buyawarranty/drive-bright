@@ -1229,6 +1229,74 @@ export type Database = {
           },
         ]
       }
+      ai_sandbox_handovers: {
+        Row: {
+          claimed_at: string | null
+          claimed_by: string | null
+          cover_summary: string | null
+          created_at: string
+          created_by: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          id: string
+          kind: string
+          quoted_price: number | null
+          reason: string | null
+          registration: string | null
+          status: string
+          thread_id: string
+          transcript: Json
+          updated_at: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          claimed_by?: string | null
+          cover_summary?: string | null
+          created_at?: string
+          created_by: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          kind?: string
+          quoted_price?: number | null
+          reason?: string | null
+          registration?: string | null
+          status?: string
+          thread_id: string
+          transcript?: Json
+          updated_at?: string
+        }
+        Update: {
+          claimed_at?: string | null
+          claimed_by?: string | null
+          cover_summary?: string | null
+          created_at?: string
+          created_by?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          kind?: string
+          quoted_price?: number | null
+          reason?: string | null
+          registration?: string | null
+          status?: string
+          thread_id?: string
+          transcript?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_sandbox_handovers_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "ai_sandbox_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_sandbox_messages: {
         Row: {
           content: string
