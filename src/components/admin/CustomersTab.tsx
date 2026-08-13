@@ -3981,7 +3981,13 @@ Buyawarranty.co.uk`,
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        const detail = (data as any)?.error || error.message;
+        throw new Error(detail);
+      }
+      if (data && (data as any).ok === false) {
+        throw new Error((data as any).error || 'Welcome email could not be sent');
+      }
       
       toast.success('Welcome email sent successfully!');
       fetchCustomers(); // Refresh to update status
