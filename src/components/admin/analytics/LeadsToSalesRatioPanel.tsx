@@ -248,9 +248,10 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
           <CardTitle>Leads to sales ratio</CardTitle>
           <CardDescription className="mt-1">
             Leads in, sales made, ad spend and the value of those sales for every day in the selected range.
-            Ad spend is recorded monthly and spread evenly across the days of that month. Lead cost is charged at
-            the average of £{leadCost} a lead.
+            Ad spend is recorded monthly and spread evenly across the days of that month. Channel cost per day is
+            that day's Google, Meta, Bing and TikTok leads charged at £{leadCost} a lead.
           </CardDescription>
+
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
