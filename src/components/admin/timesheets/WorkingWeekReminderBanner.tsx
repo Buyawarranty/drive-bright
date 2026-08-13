@@ -7,6 +7,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { isAlertsMuted } from '@/lib/alertSoundPreference';
 
 const ROLES_REQUIRED = ['sales', 'sales_lead', 'sales_manager', 'lead_gen', 'claims_agent', 'claims_manager'];
 
@@ -55,6 +56,34 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
       cancelled = true;
     };
   }, [isReminderDay, applicable, adminId, saturday, sunday, weekKey]);
+
+  // Beep when the pop-up appears (respects the global mute preference).
+  useEffect(() => {
+    if (!open || isAlertsMuted()) return;
+    try {
+      const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
+      const beep = (at: number, freq: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime + at);
+        gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + at + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + at + 0.22);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + at);
+        osc.stop(ctx.currentTime + at + 0.25);
+      };
+      beep(0, 880);
+      beep(0.3, 1100);
+      setTimeout(() => ctx.close?.(), 1200);
+    } catch {
+      // audio blocked — silent fallback
+    }
+  }, [open]);
 
   const closeForWeek = () => {
     localStorage.setItem(`wwrota-answered-${weekKey}`, '1');
@@ -117,15 +146,20 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CalendarClock className="h-5 w-5" />
-            Are you working this weekend?
+            🗓️ Are you working this weekend?
           </DialogTitle>
           <DialogDescription>Tap the days you're working — it's saved right here.</DialogDescription>
         </DialogHeader>
+
+        <div className="rounded-lg border-2 border-destructive bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">
+          ⚠️ IMPORTANT FOR DISTRIBUTION OF LEADS — No confirmation, no leads!
+        </div>
 
         <div className="flex gap-3">
           {dayButton(saturday)}
           {dayButton(sunday)}
         </div>
+
 
         <div className="flex gap-2 pt-2">
           <Button variant="ghost" onClick={closeForWeek} className="flex-1">
