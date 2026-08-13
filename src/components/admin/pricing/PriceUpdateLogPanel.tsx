@@ -63,6 +63,63 @@ function whenLabel(v: PricingVersion): string {
   return Number.isFinite(d.getTime()) ? format(d, 'dd/MM/yyyy HH:mm') : '—';
 }
 
+type DayStat = { date: string; revenue: number; orders: number };
+
+/**
+ * Sales taken each day, so every log entry can show what the money did while
+ * that price model was live. Cancelled and refunded orders are left out and
+ * signup_date is the date of the sale.
+ */
+function useDailySales(fromISO: string | null) {
+  const [days, setDays] = useState<Record<string, DayStat>>({});
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!fromISO) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const map: Record<string, DayStat> = {};
+        let offset = 0;
+        // Paginate so we never silently stop at the 1,000-row default.
+        for (let page = 0; page < 20; page++) {
+          const { data, error } = await supabase
+            .from('customers')
+            .select('id, final_amount, signup_date, status')
+            .gte('signup_date', fromISO)
+            .order('signup_date', { ascending: true })
+            .range(offset, offset + 999);
+          if (error) throw error;
+          (data || []).forEach((c: any) => {
+            const status = (c.status || '').toLowerCase();
+            if (status.includes('cancelled') || status.includes('refunded')) return;
+            if (!c.signup_date) return;
+            const key = format(new Date(c.signup_date), 'yyyy-MM-dd');
+            const bucket = (map[key] ||= { date: key, revenue: 0, orders: 0 });
+            bucket.revenue += Number(c.final_amount) || 0;
+            bucket.orders += 1;
+          });
+          if (!data || data.length < 1000) break;
+          offset += 1000;
+        }
+        if (!cancelled) setDays(map);
+      } catch {
+        // leave the panel showing prices only
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fromISO]);
+
+  return { days, loading };
+}
+
+const money = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
+
 export default function PriceUpdateLogPanel({
   versions,
   busy,
