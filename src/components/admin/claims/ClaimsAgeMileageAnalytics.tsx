@@ -425,10 +425,8 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
               </div>
             </CardContent>
           </Card>
-
-            </CardContent>
-          </Card>
         )}
+
       </div>
     </div>
   );
