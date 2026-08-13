@@ -516,24 +516,31 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   };
 
   // Sub-categorize website sales by ad channel — check both purchase_source AND click IDs
-  const getWebsiteChannel = (customer: Customer): 'google' | 'facebook' | 'pure' => {
+  const getWebsiteChannel = (customer: Customer): 'google' | 'facebook' | 'bing' | 'tiktok' | 'pure' => {
     const source = customer.purchase_source?.toLowerCase() || '';
+    const utm = (customer as any).utm_source?.toLowerCase?.() || '';
     const hasGclid = !!(customer.gclid && String(customer.gclid).trim() !== '');
     if (source === 'google_ads' || hasGclid) return 'google';
-    if (source === 'facebook_ads') return 'facebook';
+    if (source === 'facebook_ads' || utm.includes('facebook') || utm.includes('meta')) return 'facebook';
+    if (source === 'bing_ads' || utm.includes('bing') || utm.includes('microsoft')) return 'bing';
+    if (source === 'tiktok_ads' || utm.includes('tiktok')) return 'tiktok';
     return 'pure';
   };
 
   // Sub-categorize Sales Team (ADM) sales by the lead's original acquisition source.
   // Sales team sales are admin-entered, so purchase_source is quote_link/external —
   // attribution lives on acquisition_source (copied from the originating lead).
-  const getSalesTeamLeadSource = (customer: Customer): 'google' | 'facebook' | 'organic' => {
+  const getSalesTeamLeadSource = (customer: Customer): 'google' | 'facebook' | 'bing' | 'tiktok' | 'organic' => {
     const acq = customer.acquisition_source?.toLowerCase() || '';
+    const utm = (customer as any).utm_source?.toLowerCase?.() || '';
     const hasGclid = !!(customer.gclid && String(customer.gclid).trim() !== '');
-    if (acq === 'google_ads' || hasGclid) return 'google';
-    if (acq === 'facebook_ads') return 'facebook';
+    if (acq === 'google_ads' || acq === 'google_ad' || hasGclid) return 'google';
+    if (acq === 'facebook_ads' || acq === 'social_ad' || utm.includes('facebook') || utm.includes('meta')) return 'facebook';
+    if (acq === 'bing_ads' || acq === 'bing_ad' || utm.includes('bing') || utm.includes('microsoft')) return 'bing';
+    if (acq === 'tiktok_ads' || acq === 'tiktok_ad' || utm.includes('tiktok')) return 'tiktok';
     return 'organic';
   };
+
 
   // Calculate metrics with safe defaults - EXCLUDING cancelled/refunded from revenue
   const totalCustomers = filteredCustomers.length;
