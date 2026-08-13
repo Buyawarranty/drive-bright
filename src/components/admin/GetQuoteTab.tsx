@@ -5379,6 +5379,22 @@ Questions? Call 0330 229 5040`;
                     </div>
                   )}
 
+                  {/* Always-on explainer: the base floor per term, discount included */}
+                  <div className="rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-[11px] text-slate-700">
+                    <p className="font-bold text-slate-900">Base floor — minimum sale price, including any discount</p>
+                    <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 font-semibold">
+                      <span>1 year — £{Math.max(NET_FLOOR_BY_PERIOD['12months'], globalMinFloor)}</span>
+                      <span>2 year — £{Math.max(NET_FLOOR_BY_PERIOD['24months'], globalMinFloor)}</span>
+                      <span>3 year — £{Math.max(NET_FLOOR_BY_PERIOD['36months'], globalMinFloor)}</span>
+                    </div>
+                    <p className="mt-1 font-normal">
+                      These are the lowest totals you can sell at after discount — unless it's a price match with the
+                      competitor quote uploaded. Richer claim limits, a higher labour rate or a lower excess lift the
+                      floor above these figures; motorbikes are half. Staff only — customers never see this.
+                    </p>
+                  </div>
+
+
 
                   <div className="space-y-2.5 pt-1">
                     <div className="flex items-center justify-between gap-3 flex-wrap">
