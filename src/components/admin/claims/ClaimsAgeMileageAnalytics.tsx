@@ -103,9 +103,11 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
       claims: b.claims,
       totalCost: Math.round(b.totalCost),
       avgCost: b.paidCount > 0 ? Math.round(b.totalCost / b.paidCount) : 0,
+      costPerClaim: b.claims > 0 ? Math.round(b.totalCost / b.claims) : 0,
       paidCount: b.paidCount,
     }));
   }, [claims, vehicleMap]);
+
 
   // --- Mileage analytics ---
   const mileageData = useMemo(() => {
@@ -132,9 +134,11 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
       claims: b.claims,
       totalCost: Math.round(b.totalCost),
       avgCost: b.paidCount > 0 ? Math.round(b.totalCost / b.paidCount) : 0,
+      costPerClaim: b.claims > 0 ? Math.round(b.totalCost / b.claims) : 0,
       paidCount: b.paidCount,
     }));
   }, [claims, vehicleMap]);
+
 
   const hasAgeData = ageData.some(d => d.claims > 0);
   const hasMileageData = mileageData.some(d => d.claims > 0);
@@ -150,13 +154,24 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
     );
   }
 
-  // Find insights
+  // Find insights.
+  // Cost comparisons only use bands with enough settled claims to be meaningful,
+  // so a band with 1–2 payouts can never be crowned "costliest".
+  const MIN_SETTLED = 5;
+  const pickCostliest = (rows: typeof ageData) => {
+    const reliable = rows.filter(d => d.paidCount >= MIN_SETTLED);
+    const pool = reliable.length > 0 ? reliable : rows.filter(d => d.paidCount > 0);
+    const winner = [...pool].sort((a, b) => b.avgCost - a.avgCost)[0];
+    return winner ? { ...winner, lowSample: winner.paidCount < MIN_SETTLED } : undefined;
+  };
+
   const mostClaimsAge = [...ageData].sort((a, b) => b.claims - a.claims)[0];
   const leastClaimsAge = [...ageData].filter(d => d.claims > 0).sort((a, b) => a.claims - b.claims)[0];
-  const costliestAge = [...ageData].filter(d => d.avgCost > 0).sort((a, b) => b.avgCost - a.avgCost)[0];
+  const costliestAge = pickCostliest(ageData);
   const mostClaimsMileage = [...mileageData].sort((a, b) => b.claims - a.claims)[0];
   const leastClaimsMileage = [...mileageData].filter(d => d.claims > 0).sort((a, b) => a.claims - b.claims)[0];
-  const costliestMileage = [...mileageData].filter(d => d.avgCost > 0).sort((a, b) => b.avgCost - a.avgCost)[0];
+  const costliestMileage = pickCostliest(mileageData);
+
 
   return (
     <div className="space-y-6">
@@ -165,6 +180,12 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
         <h3 className="text-lg font-semibold">Claims by Vehicle Age & Mileage</h3>
         <Badge variant="secondary" className="text-xs">Marketing Insights</Badge>
       </div>
+
+      <p className="text-xs text-muted-foreground -mt-4">
+        Claim counts include every claim. Cost figures only include claims that have actually been paid out,
+        so "total cost" divided by claim count will not equal the average per settled claim. Volume and cost are
+        separate measures — a band can have very few claims while another band has the highest average payout.
+      </p>
 
       {/* Insight Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -178,7 +199,10 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{mostClaimsAge.band}</p>
-              <p className="text-xs text-muted-foreground">{mostClaimsAge.claims} claims · £{mostClaimsAge.totalCost.toLocaleString()} total cost</p>
+              <p className="text-xs text-muted-foreground">
+                {mostClaimsAge.claims} claims · £{mostClaimsAge.totalCost.toLocaleString()} paid across {mostClaimsAge.paidCount} settled
+              </p>
+              <p className="text-xs text-muted-foreground">£{mostClaimsAge.costPerClaim.toLocaleString()} per claim overall</p>
             </CardContent>
           </Card>
         )}
@@ -193,7 +217,9 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{leastClaimsAge.band}</p>
-              <p className="text-xs text-muted-foreground">{leastClaimsAge.claims} claims · lower risk segment</p>
+              <p className="text-xs text-muted-foreground">
+                {leastClaimsAge.claims} claims · lowest volume, not necessarily lowest cost
+              </p>
             </CardContent>
           </Card>
         )}
@@ -203,12 +229,17 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-amber-500" />
-                Costliest Age Band
+                Highest Average Payout by Age
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{costliestAge.band}</p>
-              <p className="text-xs text-muted-foreground">£{costliestAge.avgCost.toLocaleString()} avg cost · higher repair risk</p>
+              <p className="text-xs text-muted-foreground">
+                £{costliestAge.avgCost.toLocaleString()} average across {costliestAge.paidCount} settled claims
+              </p>
+              {costliestAge.lowSample && (
+                <p className="text-xs text-amber-600">Small sample — treat as indicative only</p>
+              )}
             </CardContent>
           </Card>
         )}
@@ -223,7 +254,10 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{mostClaimsMileage.band}</p>
-              <p className="text-xs text-muted-foreground">{mostClaimsMileage.claims} claims · £{mostClaimsMileage.totalCost.toLocaleString()} total cost</p>
+              <p className="text-xs text-muted-foreground">
+                {mostClaimsMileage.claims} claims · £{mostClaimsMileage.totalCost.toLocaleString()} paid across {mostClaimsMileage.paidCount} settled
+              </p>
+              <p className="text-xs text-muted-foreground">£{mostClaimsMileage.costPerClaim.toLocaleString()} per claim overall</p>
             </CardContent>
           </Card>
         )}
@@ -238,7 +272,9 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{leastClaimsMileage.band}</p>
-              <p className="text-xs text-muted-foreground">{leastClaimsMileage.claims} claims · lower risk segment</p>
+              <p className="text-xs text-muted-foreground">
+                {leastClaimsMileage.claims} claims · lowest volume, not necessarily lowest cost
+              </p>
             </CardContent>
           </Card>
         )}
@@ -248,16 +284,22 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-orange-500" />
-                Costliest Mileage Band
+                Highest Average Payout by Mileage
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">{costliestMileage.band}</p>
-              <p className="text-xs text-muted-foreground">£{costliestMileage.avgCost.toLocaleString()} avg cost · higher repair risk</p>
+              <p className="text-xs text-muted-foreground">
+                £{costliestMileage.avgCost.toLocaleString()} average across {costliestMileage.paidCount} settled claims
+              </p>
+              {costliestMileage.lowSample && (
+                <p className="text-xs text-amber-600">Small sample — treat as indicative only</p>
+              )}
             </CardContent>
           </Card>
         )}
       </div>
+
 
       {/* Age Chart */}
       {hasAgeData && (
@@ -339,17 +381,18 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Age Band Breakdown</CardTitle>
-              <CardDescription className="text-xs">Claims, total cost, and average cost per age band</CardDescription>
+              <CardDescription className="text-xs">Avg payout = total paid ÷ settled claims. Per claim = total paid ÷ all claims.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-1.5">
-                <div className="grid grid-cols-4 text-xs font-medium text-muted-foreground border-b pb-1">
-                  <span>Age</span><span className="text-right">Claims</span><span className="text-right">Total Cost</span><span className="text-right">Avg Cost</span>
+                <div className="grid grid-cols-5 text-xs font-medium text-muted-foreground border-b pb-1">
+                  <span>Age</span><span className="text-right">Claims</span><span className="text-right">Settled</span><span className="text-right">Total Paid</span><span className="text-right">Avg Payout</span>
                 </div>
                 {ageData.filter(d => d.claims > 0).map(d => (
-                  <div key={d.band} className="grid grid-cols-4 text-sm">
+                  <div key={d.band} className="grid grid-cols-5 text-sm">
                     <span className="font-medium">{d.band}</span>
                     <span className="text-right">{d.claims}</span>
+                    <span className="text-right">{d.paidCount}</span>
                     <span className="text-right">£{d.totalCost.toLocaleString()}</span>
                     <span className={`text-right ${d.avgCost > 500 ? 'text-red-600 font-medium' : ''}`}>£{d.avgCost.toLocaleString()}</span>
                   </div>
@@ -363,17 +406,18 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Mileage Band Breakdown</CardTitle>
-              <CardDescription className="text-xs">Claims, total cost, and average cost per mileage band</CardDescription>
+              <CardDescription className="text-xs">Avg payout = total paid ÷ settled claims. Per claim = total paid ÷ all claims.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-1.5">
-                <div className="grid grid-cols-4 text-xs font-medium text-muted-foreground border-b pb-1">
-                  <span>Mileage</span><span className="text-right">Claims</span><span className="text-right">Total Cost</span><span className="text-right">Avg Cost</span>
+                <div className="grid grid-cols-5 text-xs font-medium text-muted-foreground border-b pb-1">
+                  <span>Mileage</span><span className="text-right">Claims</span><span className="text-right">Settled</span><span className="text-right">Total Paid</span><span className="text-right">Avg Payout</span>
                 </div>
                 {mileageData.filter(d => d.claims > 0).map(d => (
-                  <div key={d.band} className="grid grid-cols-4 text-sm">
+                  <div key={d.band} className="grid grid-cols-5 text-sm">
                     <span className="font-medium">{d.band}</span>
                     <span className="text-right">{d.claims}</span>
+                    <span className="text-right">{d.paidCount}</span>
                     <span className="text-right">£{d.totalCost.toLocaleString()}</span>
                     <span className={`text-right ${d.avgCost > 500 ? 'text-red-600 font-medium' : ''}`}>£{d.avgCost.toLocaleString()}</span>
                   </div>
@@ -382,6 +426,7 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
             </CardContent>
           </Card>
         )}
+
       </div>
     </div>
   );
