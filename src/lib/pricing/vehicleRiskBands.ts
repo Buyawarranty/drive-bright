@@ -190,6 +190,7 @@ export const DEFAULT_RISK_BAND_CONFIG: RiskBandConfig = {
   assignments: DEFAULT_RISK_BAND_ASSIGNMENTS,
   vehicleTypes: DEFAULT_VEHICLE_TYPE_FACTORS,
   defaultBandId: 'normal',
+  globalMinTotal: DEFAULT_GLOBAL_MIN_TOTAL,
 };
 
 export function clampBandFactor(value: number): number {
@@ -321,6 +322,13 @@ export function applyRiskBand(
     }
   }
 
+  // GLOBAL floor last — never below the global minimum on any model or surface.
+  const globalFloor = globalMinTotalFor(config, vehicleType);
+  if (price < globalFloor) {
+    price = globalFloor;
+    floorApplied = true;
+  }
+
   return { price, referral: false, blocked: false, blockMessage: null, floorApplied, factorUsed, band };
 }
 
@@ -365,6 +373,8 @@ export function loadRiskBandConfig(): RiskBandConfig {
         ),
       },
       defaultBandId: String(parsed.defaultBandId || 'normal'),
+      globalMinTotal:
+        Number(parsed.globalMinTotal) > 0 ? Math.round(Number(parsed.globalMinTotal)) : DEFAULT_GLOBAL_MIN_TOTAL,
     };
   } catch {
     return DEFAULT_RISK_BAND_CONFIG;
