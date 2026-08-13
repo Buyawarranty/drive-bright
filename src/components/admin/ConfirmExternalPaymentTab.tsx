@@ -1353,10 +1353,16 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                   </div>
                 </section>
 
-                <div className="flex justify-end gap-3">
+                <div className="sticky bottom-0 z-20 -mx-1 px-1 py-3 bg-white/95 backdrop-blur border-t border-slate-200 flex flex-wrap items-center justify-end gap-3">
+                  {discountBlocked && (
+                    <span className="text-xs font-semibold text-destructive mr-auto">
+                      Blocked: minimum you can confirm yourself is £{minAllowedAmount.toFixed(2)}
+                    </span>
+                  )}
                   <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>Cancel</Button>
                   <Button onClick={handleProceedToPreview} size="lg" disabled={discountBlocked} title={discountBlocked ? 'Blocked — contact management to authorise this discount' : undefined}>{discountBlocked ? 'Contact management to confirm' : <>Review & Confirm <ArrowRight className="w-4 h-4 ml-2" /></>}</Button>
                 </div>
+
               </div>
 
               {/* Sticky summary (mirrors form view) */}
