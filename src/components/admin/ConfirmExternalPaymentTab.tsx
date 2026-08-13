@@ -521,10 +521,16 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       return;
     }
 
-    if (!customerFirstName.trim() || !customerLastName.trim() || !customerEmail.trim()) {
+    const missingCustomerFields = [
+      !customerFirstName.trim() && 'first name',
+      !customerLastName.trim() && 'last name',
+      !customerEmail.trim() && 'email',
+    ].filter(Boolean) as string[];
+
+    if (missingCustomerFields.length > 0) {
       toast({
-        title: "Customer Details Required",
-        description: "Please enter customer first name, last name and email",
+        title: "Customer details required",
+        description: `Please add the customer's ${missingCustomerFields.join(', ')} — the lead record doesn't have ${missingCustomerFields.length === 1 ? 'it' : 'them'}.`,
         variant: "destructive",
       });
       return;
