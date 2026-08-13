@@ -353,6 +353,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // Price match override — agent matches a competitor quote (max 10% cheaper)
   const PRICE_MATCH_MAX_PCT = 10;
   const [priceMatchMode, setPriceMatchMode] = useState(false);
+  const [min399NoteDismissed, setMin399NoteDismissed] = useState(false);
   const [priceMatchProofPath, setPriceMatchProofPath] = useState<string | null>(null);
   const [priceMatchProofName, setPriceMatchProofName] = useState<string | null>(null);
   const [priceMatchUploading, setPriceMatchUploading] = useState(false);
@@ -5333,6 +5334,48 @@ Questions? Call 0330 229 5040`;
                     );
                   })()}
 
+                  {/* Note: anything under £399 needs an uploaded price match */}
+                  {Math.min(displayedTotalPrice, displayedPayInFullPrice) < 399 && !min399NoteDismissed && (
+                    <div className={cn(
+                      'relative flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 pr-9 text-xs font-semibold',
+                      priceMatchEvidenced
+                        ? 'border-sky-300 bg-sky-50 text-sky-900'
+                        : 'border-amber-400 bg-amber-50 text-amber-900'
+                    )}>
+                      <AlertTriangle className="h-4 w-4 shrink-0" />
+                      <span>
+                        Note: £399 is the cheapest warranty available, except for a price match.
+                        {' '}
+                        {priceMatchEvidenced
+                          ? `Price match evidence is on file, so £${Math.min(displayedTotalPrice, displayedPayInFullPrice)} is allowed.`
+                          : `Please upload the competitor quote as a price match to sell at £${Math.min(displayedTotalPrice, displayedPayInFullPrice)}.`}
+                      </span>
+                      {!priceMatchEvidenced && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="h-7 text-[11px] font-semibold bg-sky-700 hover:bg-sky-800 text-white"
+                          onClick={() => {
+                            setPriceMatchMode(true);
+                            setTimeout(() => {
+                              document.getElementById('price-match-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 80);
+                          }}
+                        >
+                          Upload price match
+                        </Button>
+                      )}
+                      <button
+                        type="button"
+                        aria-label="Close note"
+                        onClick={() => setMin399NoteDismissed(true)}
+                        className="absolute right-2 top-2 rounded p-0.5 text-current/70 hover:bg-black/5"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
+
 
                   <div className="space-y-2.5 pt-1">
                     <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -6180,39 +6223,8 @@ Questions? Call 0330 229 5040`;
                 )}>
                   <div className="max-w-6xl mx-auto rounded-xl border border-gray-200 border-t-4 border-t-emerald-500 bg-white px-3 py-3 shadow-[0_-8px_24px_-10px_rgba(0,0,0,0.18)]">
 
-                    {/* Note banner: anything under £399 needs an uploaded price match */}
-                    {Math.min(displayedTotalPrice, displayedPayInFullPrice) < 399 && (
-                      <div className={cn(
-                        'mb-2.5 flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold',
-                        priceMatchEvidenced
-                          ? 'border-sky-300 bg-sky-50 text-sky-900'
-                          : 'border-amber-400 bg-amber-50 text-amber-900'
-                      )}>
-                        <AlertTriangle className="h-4 w-4 shrink-0" />
-                        <span>
-                          Note: £399 is the cheapest warranty available, except for a price match.
-                          {' '}
-                          {priceMatchEvidenced
-                            ? 'Price match evidence is on file, so £' + Math.min(displayedTotalPrice, displayedPayInFullPrice) + ' is allowed.'
-                            : 'Please upload the competitor quote as a price match to sell at £' + Math.min(displayedTotalPrice, displayedPayInFullPrice) + '.'}
-                        </span>
-                        {!priceMatchEvidenced && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            className="h-7 text-[11px] font-semibold bg-sky-700 hover:bg-sky-800 text-white"
-                            onClick={() => {
-                              setPriceMatchMode(true);
-                              setTimeout(() => {
-                                document.getElementById('price-match-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                              }, 80);
-                            }}
-                          >
-                            Upload price match
-                          </Button>
-                        )}
-                      </div>
-                    )}
+
+
 
                     <div className="grid grid-cols-2 gap-2.5 xl:grid-cols-4">
 
