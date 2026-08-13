@@ -1,12 +1,12 @@
 ---
 name: Quotes & Orders minimum price ladder (£349 cheapest, Aug 2026)
-description: Hard bottom is £349/£576/£821 at the CHEAPEST combo (£1,000 claim, £50 labour, £500 excess) and steps up a compressed ladder — never clamped
+description: Hard bottom is £349/£699/£999 at the CHEAPEST combo (£1,000 claim, £50 labour, £500 excess) and steps up a compressed ladder — never clamped
 type: feature
 ---
 The absolute/net minimum for Quotes & Orders is anchored on the **cheapest
 reachable combo** (£1,000 claim limit, £50/hr labour, £500 excess):
 
-- 12 months **£349** · 24 months **£576** · 36 months **£821** · motorbikes half
+- 12 months **£349** · 24 months **£699** · 36 months **£999** · motorbikes half
 - Website Step 3 = these figures minus the live web gap (10%)
 
 Every richer option steps the hard bottom UP a compressed ladder
