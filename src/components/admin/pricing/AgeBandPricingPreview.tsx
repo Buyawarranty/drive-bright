@@ -1209,13 +1209,28 @@ export default function AgeBandPricingPreview({
               )}
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Vehicle / derivative</Label>
+              <Label className="text-xs">Make, model, or make + model</Label>
               <Input
                 className="h-9 w-56"
-                placeholder="Type a make and model, or use a plate"
+                placeholder="Jaguar · F-Type · Jaguar F-Type"
                 value={newFloorVehicle}
                 onChange={e => setNewFloorVehicle(e.target.value)}
               />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs">Premium tier</Label>
+              <select
+                className="h-9 w-56 rounded-md border border-input bg-background px-2 text-sm"
+                value={newFloorTier}
+                onChange={e => selectTier(e.target.value)}
+              >
+                {PREMIUM_TIER_PRESETS.map(t => (
+                  <option key={t.key} value={t.key}>
+                    {t.key === 'custom' ? t.label : `${t.label} — £${t.price}`}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-1">
@@ -1223,7 +1238,10 @@ export default function AgeBandPricingPreview({
               <select
                 className="h-9 w-56 rounded-md border border-input bg-background px-2 text-sm"
                 value={newFloorTreatment}
-                onChange={e => setNewFloorTreatment(e.target.value)}
+                onChange={e => {
+                  setNewFloorTreatment(e.target.value);
+                  setNewFloorTier('custom');
+                }}
               >
                 {TREATMENT_OPTIONS.map(t => (
                   <option key={t} value={t}>
@@ -1241,12 +1259,21 @@ export default function AgeBandPricingPreview({
                   newFloorTreatment !== 'Premium floor' && newFloorTreatment !== 'Premium EV floor'
                 }
                 value={newFloorPrice}
-                onChange={e => setNewFloorPrice(e.target.value)}
+                onChange={e => {
+                  setNewFloorPrice(e.target.value);
+                  setNewFloorTier('custom');
+                }}
               />
             </div>
             <Button size="sm" onClick={addFloor}>
               Add vehicle
             </Button>
+            <p className="w-full text-xs text-muted-foreground">
+              Enter a <strong>make</strong> ("Jaguar") to floor every car of that make, or a{' '}
+              <strong>make + model</strong> ("Jaguar F-Type") to lift only that derivative. The most
+              specific matching rule always wins, so a model rule overrides the make baseline, and any
+              "not covered" rule beats a priced floor.
+            </p>
             {newFloorVehicle.trim() && (
               <p className="w-full text-xs text-muted-foreground">
                 {newFloorMatch
@@ -1254,6 +1281,7 @@ export default function AgeBandPricingPreview({
                   : 'No existing rule covers this name yet — adding it creates a new rule.'}
               </p>
             )}
+
           </div>
 
           <div className="space-y-2 rounded-md border border-dashed p-3">
