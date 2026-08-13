@@ -21,11 +21,29 @@ interface DayRow {
   sales: number;
   revenue: number;
   spend: number;
+  googleLeads: number;
+  metaLeads: number;
+  bingLeads: number;
+  tiktokLeads: number;
+  googleCost: number;
+  metaCost: number;
+  bingCost: number;
+  tiktokCost: number;
+  paidCost: number;
 }
 
 const money = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
 
 const DEFAULT_LEAD_COST = 21;
+
+// Paid channels we charge lead cost against (organic/website/phone leads are free).
+const CHANNEL_BY_SOURCE: Record<string, 'google' | 'meta' | 'bing' | 'tiktok'> = {
+  google_ad: 'google',
+  social_ad: 'meta',
+  bing_ad: 'bing',
+  tiktok_ad: 'tiktok',
+};
+
 
 export const LeadsToSalesRatioPanel: React.FC = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
