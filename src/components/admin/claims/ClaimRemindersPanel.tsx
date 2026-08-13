@@ -6,8 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import {
-  Bell, BellOff, AlarmClock, Check, Trash2, Plus, Clock, RotateCcw, Volume2, VolumeX,
+  Bell, BellOff, AlarmClock, Check, Trash2, Plus, Clock, RotateCcw, Volume2, VolumeX, ChevronsUpDown, X,
 } from 'lucide-react';
 import { format, formatDistanceToNowStrict, isPast } from 'date-fns';
 import {
@@ -19,7 +21,10 @@ import { toast } from 'sonner';
 interface ClaimOption {
   id: string;
   name?: string | null;
+  customerName?: string | null;
+  email?: string | null;
   vehicle_registration?: string | null;
+  registration?: string | null;
 }
 
 interface Props {
@@ -33,11 +38,29 @@ const kindTone: Record<string, string> = {
   other: 'bg-slate-100 text-slate-800 border-slate-300',
 };
 
+const regOf = (c: ClaimOption) => (c.vehicle_registration || c.registration || '').toString();
+const nameOf = (c: ClaimOption) => (c.name || c.customerName || '').toString();
+
 const labelFor = (c: ClaimOption) =>
-  `${c.name || 'Unnamed'}${c.vehicle_registration ? ` · ${c.vehicle_registration}` : ''}`;
+  `${nameOf(c) || 'Unnamed'}${regOf(c) ? ` · ${regOf(c).toUpperCase()}` : ''}`;
+
+/** Searchable text for a claim: name, registration and email. */
+const searchTextFor = (c: ClaimOption) =>
+  [nameOf(c), regOf(c), (c.email || '').toString()].filter(Boolean).join(' ').toLowerCase();
 
 /** Local datetime string (yyyy-MM-ddTHH:mm) for the datetime-local input. */
 const toLocalInput = (d: Date) => format(d, "yyyy-MM-dd'T'HH:mm");
+
+interface DraftReminder {
+  key: string;
+  kind: ReminderKind;
+  title: string;
+  notes: string;
+  claimId: string;
+  dueLocal: string;
+  leadTime: number;
+}
+
 
 export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
   const {
@@ -57,6 +80,9 @@ export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
   const [leadTime, setLeadTime] = useState(1440);
   const [saving, setSaving] = useState(false);
   const [soundMuted, setSoundMuted] = useState(isAlertsMuted());
+  const [claimPickerOpen, setClaimPickerOpen] = useState(false);
+  const [claimQuery, setClaimQuery] = useState('');
+  const [drafts, setDrafts] = useState<DraftReminder[]>([]);
 
   React.useEffect(() => subscribeAlertsMuted(() => setSoundMuted(isAlertsMuted())), []);
 
@@ -66,20 +92,70 @@ export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
     return map;
   }, [claims]);
 
+  const filteredClaims = useMemo(() => {
+    const q = claimQuery.trim().toLowerCase();
+    const list = q ? claims.filter(c => searchTextFor(c).includes(q)) : claims;
+    return list.slice(0, 100);
+  }, [claims, claimQuery]);
+
+  const nextDefaultDue = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setMinutes(0, 0, 0);
+    return toLocalInput(d);
+  };
+
+  const resetForm = () => {
+    setTitle(''); setNotes(''); setClaimId('none'); setKind('claim');
+    setDueLocal(nextDefaultDue()); setLeadTime(1440);
+  };
+
+  const currentDraft = (): DraftReminder | null => {
+    if (!title.trim()) { toast.error('Give the reminder a title'); return null; }
+    if (!dueLocal) { toast.error('Pick a date and time'); return null; }
+    return { key: `${Date.now()}-${Math.random()}`, kind, title: title.trim(), notes, claimId, dueLocal, leadTime };
+  };
+
+  const handleAddAnother = () => {
+    const d = currentDraft();
+    if (!d) return;
+    setDrafts(prev => [...prev, d]);
+    resetForm();
+    toast.success('Added to the list — fill in the next reminder');
+  };
+
+  const saveOne = (d: DraftReminder) => create({
+    reminder_kind: d.kind,
+    title: d.title,
+    notes: d.notes,
+    claim_id: d.claimId === 'none' ? null : d.claimId,
+    due_at: new Date(d.dueLocal).toISOString(),
+    lead_time_minutes: d.leadTime,
+  });
+
   const handleSave = async () => {
-    if (!title.trim()) { toast.error('Give the reminder a title'); return; }
-    if (!dueLocal) { toast.error('Pick a date and time'); return; }
+    const queued = [...drafts];
+    const hasForm = title.trim().length > 0;
+    if (hasForm) {
+      const d = currentDraft();
+      if (!d) return;
+      queued.push(d);
+    }
+    if (queued.length === 0) { toast.error('Give the reminder a title'); return; }
     setSaving(true);
-    const ok = await create({
-      reminder_kind: kind,
-      title,
-      notes,
-      claim_id: claimId === 'none' ? null : claimId,
-      due_at: new Date(dueLocal).toISOString(),
-      lead_time_minutes: leadTime,
-    });
+    let okCount = 0;
+    for (const d of queued) {
+      // Sequential so each reminder lands in order and failures are attributable.
+      const ok = await saveOne(d);
+      if (ok) okCount += 1;
+    }
     setSaving(false);
-    if (ok) { setTitle(''); setNotes(''); setClaimId('none'); }
+    if (okCount > 0) {
+      setDrafts([]);
+      resetForm();
+      if (queued.length > 1) toast.success(`${okCount} reminders set`);
+    }
+
   };
 
   const renderRow = (r: ClaimReminder, isDone = false) => {
@@ -201,16 +277,54 @@ export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
             </div>
             <div>
               <Label className="text-xs">Link to a claim (optional)</Label>
-              <Select value={claimId} onValueChange={setClaimId}>
-                <SelectTrigger><SelectValue placeholder="No claim" /></SelectTrigger>
-                <SelectContent className="max-h-72">
-                  <SelectItem value="none">No claim</SelectItem>
-                  {claims.slice(0, 300).map(c => (
-                    <SelectItem key={c.id} value={c.id}>{labelFor(c)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={claimPickerOpen} onOpenChange={setClaimPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between font-normal"
+                  >
+                    <span className="truncate">
+                      {claimId === 'none' ? 'No claim' : (claimLabels[claimId] || 'Selected claim')}
+                    </span>
+                    <ChevronsUpDown className="h-3.5 w-3.5 opacity-50 shrink-0" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[320px] p-0 pointer-events-auto" align="start">
+                  <Command shouldFilter={false}>
+                    <CommandInput
+                      placeholder="Search reg, name or email…"
+                      value={claimQuery}
+                      onValueChange={setClaimQuery}
+                    />
+                    <CommandList className="max-h-72">
+                      <CommandEmpty>No claim matches that search.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="none"
+                          onSelect={() => { setClaimId('none'); setClaimPickerOpen(false); }}
+                        >
+                          No claim
+                        </CommandItem>
+                        {filteredClaims.map(c => (
+                          <CommandItem
+                            key={c.id}
+                            value={c.id}
+                            onSelect={() => { setClaimId(c.id); setClaimPickerOpen(false); }}
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm truncate">{labelFor(c)}</p>
+                              {c.email && <p className="text-xs text-muted-foreground truncate">{c.email}</p>}
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
+
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -246,11 +360,50 @@ export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          {drafts.length > 0 && (
+            <div className="rounded-lg border bg-muted/40 p-3 space-y-2">
+              <p className="text-xs font-semibold">
+                Ready to save ({drafts.length})
+              </p>
+              {drafts.map(d => (
+                <div key={d.key} className="flex items-center gap-2 text-xs">
+                  <Badge variant="outline" className={`${kindTone[d.kind] || kindTone.other} text-[11px] shrink-0`}>
+                    {KIND_LABELS[d.kind] ?? 'Reminder'}
+                  </Badge>
+                  <span className="font-medium truncate">{d.title}</span>
+                  <span className="text-muted-foreground shrink-0">
+                    {format(new Date(d.dueLocal), 'EEE d MMM, HH:mm')}
+                  </span>
+                  {d.claimId !== 'none' && claimLabels[d.claimId] && (
+                    <span className="text-muted-foreground truncate">· {claimLabels[d.claimId]}</span>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ml-auto h-6 px-2 shrink-0"
+                    onClick={() => setDrafts(prev => prev.filter(x => x.key !== d.key))}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button variant="outline" onClick={handleAddAnother} disabled={saving}>
+              <Plus className="h-4 w-4 mr-1" /> Add another reminder
+            </Button>
             <Button onClick={handleSave} disabled={saving}>
-              <Plus className="h-4 w-4 mr-1" /> {saving ? 'Saving…' : 'Set reminder'}
+              <Plus className="h-4 w-4 mr-1" />
+              {saving
+                ? 'Saving…'
+                : drafts.length > 0
+                  ? `Set ${drafts.length + (title.trim() ? 1 : 0)} reminders`
+                  : 'Set reminder'}
             </Button>
           </div>
+
         </CardContent>
       </Card>
 
