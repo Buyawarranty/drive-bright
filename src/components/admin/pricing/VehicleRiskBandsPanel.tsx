@@ -71,6 +71,16 @@ function newId(prefix: string) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
+/** Identity of a vehicle rule: same make + model + fuel is the same vehicle. */
+function assignmentKey(a: { make?: string | null; model?: string | null; fuel?: string | null }) {
+  return [
+    (a.make || '').trim().toLowerCase(),
+    (a.model || '').trim().toLowerCase(),
+    (a.fuel || 'any').trim().toLowerCase(),
+  ].join('|');
+}
+
+
 const VehicleRiskBandsPanel: React.FC = () => {
   const [config, setConfig] = useState<RiskBandConfig>(() => loadRiskBandConfig());
   const [dirty, setDirty] = useState(false);
@@ -186,6 +196,32 @@ const VehicleRiskBandsPanel: React.FC = () => {
   );
   const clashIds = useMemo(() => new Set(excludedClashes.map(c => c.id)), [excludedClashes]);
 
+  /**
+   * Same vehicle listed in two different bands. Only one can ever win at quote
+   * time (first row of equal specificity), so flag it as a mistake to clean up.
+   */
+  const duplicateClashes = useMemo(() => {
+    const groups = new Map<string, typeof config.assignments>();
+    config.assignments.filter(a => a.enabled).forEach(a => {
+      const k = assignmentKey(a);
+      groups.set(k, [...(groups.get(k) || []), a]);
+    });
+    return [...groups.values()]
+      .filter(rows => rows.length > 1 && new Set(rows.map(r => r.bandId)).size > 1)
+      .map(rows => ({
+        key: assignmentKey(rows[0]),
+        label: `${rows[0].make || '(all makes)'} ${rows[0].model || '(all models)'}`.trim(),
+        winner: bandById.get(rows[0].bandId)?.name || 'first row',
+        others: rows.slice(1).map(r => bandById.get(r.bandId)?.name || 'band').join(', '),
+        ids: rows.map(r => r.id),
+      }));
+  }, [config.assignments, bandById]);
+  const duplicateIds = useMemo(
+    () => new Set(duplicateClashes.flatMap(d => d.ids)),
+    [duplicateClashes]
+  );
+
+
   /** £500 base worked through each band for car / van / motorbike, for confirmation. */
   const typeFactorCheck = useMemo(() => {
     const base = 500;
@@ -265,6 +301,25 @@ const VehicleRiskBandsPanel: React.FC = () => {
       toast.error('Enter a make, a model, or both.');
       return;
     }
+    const bandName = bandById.get(newEntry.bandId)?.name ?? 'band';
+    // A vehicle can only ever sit in ONE band, so an identical make/model/fuel row
+    // is moved to the new band rather than duplicated.
+    const existing = config.assignments.find(a => assignmentKey(a) === assignmentKey({ make, model, fuel: newEntry.fuel }));
+    if (existing) {
+      update({
+        ...config,
+        assignments: config.assignments.map(a =>
+          a.id === existing.id ? { ...a, bandId: newEntry.bandId, enabled: true } : a
+        ),
+      });
+      setNewEntry({ make: '', model: '', bandId: newEntry.bandId, fuel: 'any' });
+      setFilter('');
+      setFuelFilter('all');
+      toast.success(
+        `Already listed — ${[make, model].filter(Boolean).join(' ')} moved to ${bandName}. One band per vehicle, so nothing is duplicated.`
+      );
+      return;
+    }
     update({
       ...config,
       assignments: [
@@ -277,11 +332,11 @@ const VehicleRiskBandsPanel: React.FC = () => {
     // look like nothing saved — clear both so the new entry is always visible.
     setFilter('');
     setFuelFilter('all');
-    const bandName = bandById.get(newEntry.bandId)?.name ?? 'band';
     toast.success(
       `Saved — ${[make, model].filter(Boolean).join(' ')} added to ${bandName}. Push live to apply it to quotes.`
     );
   };
+
 
 
   const save = () => {
@@ -388,6 +443,28 @@ const VehicleRiskBandsPanel: React.FC = () => {
               </AlertDescription>
             </Alert>
           )}
+
+          {duplicateClashes.length > 0 && (
+            <Alert className="border-amber-300 bg-amber-50">
+              <AlertDescription className="text-sm text-amber-900">
+                <strong>
+                  {duplicateClashes.length} vehicle{duplicateClashes.length === 1 ? '' : 's'} listed in more than one
+                  band
+                </strong>{' '}
+                — a vehicle can only ever be in one band, so only the first row prices and the rest are ignored. Keep
+                one row per vehicle.
+                <ul className="mt-2 list-disc pl-5 space-y-0.5">
+                  {duplicateClashes.map(d => (
+                    <li key={d.key}>
+                      <span className="font-medium">{d.label}</span> — pricing uses {d.winner}; ignored: {d.others}
+                    </li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
+
+
 
 
           {/* Global minimum price floor */}
@@ -728,8 +805,10 @@ const VehicleRiskBandsPanel: React.FC = () => {
                     {config.bands.map(b => (
                       <SelectItem key={b.id} value={b.id}>
                         {b.name}
+                        {b.minOneYear ? ` — min £${b.minOneYear} (12mo)` : ''} · ×{b.factor.toFixed(2)}
                       </SelectItem>
                     ))}
+
                   </SelectContent>
                 </Select>
               </div>
@@ -771,8 +850,10 @@ const VehicleRiskBandsPanel: React.FC = () => {
               {visibleAssignments.map(a => {
                 const band = bandById.get(a.bandId);
                 const clashes = clashIds.has(a.id);
+                const duplicated = duplicateIds.has(a.id);
                 return (
-                <div key={a.id} className={`flex flex-wrap items-center gap-3 p-3 ${clashes ? 'bg-destructive/5' : ''}`}>
+                <div key={a.id} className={`flex flex-wrap items-center gap-3 p-3 ${clashes ? 'bg-destructive/5' : duplicated ? 'bg-amber-50' : ''}`}>
+
 
                     <div className="min-w-[180px]">
                       <p className="font-medium">
@@ -808,8 +889,10 @@ const VehicleRiskBandsPanel: React.FC = () => {
                         {config.bands.map(b => (
                           <SelectItem key={b.id} value={b.id}>
                             {b.name}
+                            {b.minOneYear ? ` — min £${b.minOneYear}` : ''}
                           </SelectItem>
                         ))}
+
                       </SelectContent>
                     </Select>
                     <Input
