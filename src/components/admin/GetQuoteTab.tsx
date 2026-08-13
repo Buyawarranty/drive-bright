@@ -2367,7 +2367,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
             coverMonths,
             bonusMonths
           }
-        }
       });
 
       if (emailError) {
@@ -2687,7 +2686,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
             coverMonths,
             bonusMonths,
           },
-        },
       });
       if (error) throw new Error(error.message || 'Failed to send copy');
       setSelfCopySent(true);
@@ -2768,7 +2766,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
             coverMonths,
             bonusMonths: 0,
           }
-        }
       });
 
       if (emailError) {
