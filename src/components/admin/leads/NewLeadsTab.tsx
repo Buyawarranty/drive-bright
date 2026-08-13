@@ -2,7 +2,6 @@ import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { isToday, isPast } from 'date-fns';
 import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
-import { RepeatCustomerBanner } from './RepeatCustomerBanner';
 import { MyTargetStrip } from './MyTargetStrip';
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
 import { QuotesSentPanel } from '@/components/admin/QuotesSentPanel';
@@ -1576,16 +1575,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     <div className="space-y-4">
       {/* MissedCallAlertBar now mounted globally in AdminDashboard so it shows on every tab */}
       <MyTargetStrip />
-      <RepeatCustomerBanner
-        leads={teamFilteredFreshLeads}
-        currentAdminId={currentAdminId}
-        isManager={isCrossTeamManager}
-        agentNameById={(id) => {
-          const u = salesUsers.find(su => su.id === id);
-          if (!u) return undefined;
-          return [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email || undefined;
-        }}
-      />
       <QuotesSentPanel currentAdminId={currentAdminId} currentUserRole={userRole} />
       {/* Header — compact, action-dense, grouped card */}
 
