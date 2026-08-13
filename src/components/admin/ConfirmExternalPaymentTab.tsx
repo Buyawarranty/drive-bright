@@ -356,7 +356,21 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       String(editableRegNumber || regNumber || '').replace(/\s/g, '').toUpperCase() &&
     Number.isFinite(enteredAmount) &&
     enteredAmount >= Number(approvedAuthRequest.requested_price || 0) - 0.01;
-  const discountBlocked = (overDiscountCeiling || underNetFloor) && !isManagementRole && !hasApprovedAuth;
+  // An evidenced price match also lifts the block: competitor named, their price
+  // entered, proof uploaded, and the amount no more than 10% under their quote.
+  const priceMatchReady =
+    blockRoute === 'price_match' &&
+    !!pmCompetitorName &&
+    !!pmCompetitorPrice &&
+    !!pmProofPath &&
+    Number.isFinite(enteredAmount) &&
+    enteredAmount > 0 &&
+    pmFloor !== null &&
+    enteredAmount >= pmFloor - 0.01;
+  const priceMatchApplied = priceMatchReady && !isManagementRole;
+  const discountBlocked =
+    (overDiscountCeiling || underNetFloor) && !isManagementRole && !hasApprovedAuth && !priceMatchReady;
+
 
 
 
