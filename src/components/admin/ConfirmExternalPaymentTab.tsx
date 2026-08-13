@@ -1257,6 +1257,70 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           </p>
                         )}
 
+                        {discountBlocked && (
+                          authSent ? (
+                            <p className="text-xs font-semibold text-amber-600">
+                              Sent for authorisation — management have been alerted. This button unlocks as soon as they approve it.
+                            </p>
+                          ) : (
+                            <div className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2.5">
+                              <Input
+                                value={authReason}
+                                onChange={(e) => setAuthReason(e.target.value)}
+                                placeholder="Reason for manager (e.g. price match, goodwill)"
+                                className="h-8 text-xs"
+                              />
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={sendingAuth || !authReason.trim()}
+                                onClick={async () => {
+                                  setSendingAuth(true);
+                                  try {
+                                    const { error } = await supabase.from('discount_auth_requests').insert({
+                                      requested_by_user_id: user?.id,
+                                      requested_by_name: user?.email || 'Agent',
+                                      registration_plate: (editableRegNumber || regNumber).toUpperCase(),
+                                      mileage: mileage || null,
+                                      vehicle_description: vehicleData
+                                        ? `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || null
+                                        : null,
+                                      customer_name:
+                                        [customerFirstName, customerLastName].filter(Boolean).join(' ') || null,
+                                      base_price: Math.round(quotedTotal),
+                                      requested_price: Math.round(enteredAmount),
+                                      discount_pct: Number(discountPct.toFixed(1)),
+                                      payment_type: paymentType,
+                                      reason: `External payment confirmation — ${authReason.trim()}`,
+                                    });
+                                    if (error) throw error;
+                                    setAuthSent(true);
+                                    toast({
+                                      title: 'Sent for authorisation',
+                                      description: 'Management have been alerted and will approve or decline.',
+                                    });
+                                  } catch (e: any) {
+                                    toast({ title: 'Could not send request', description: e?.message, variant: 'destructive' });
+                                  } finally {
+                                    setSendingAuth(false);
+                                  }
+                                }}
+                              >
+                                {sendingAuth ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : null}
+                                Request manager authorisation
+                              </Button>
+                            </div>
+                          )
+                        )}
+
+                        {hasApprovedAuth && (overDiscountCeiling || underNetFloor) && (
+                          <p className="text-xs font-semibold text-emerald-600">
+                            ✅ Authorised by {approvedAuthRequest?.decided_by_name || 'management'} — you can confirm this payment.
+                          </p>
+                        )}
+
+
+
                         {underNetFloor && isManagementRole && (
                           <p className="text-xs font-semibold text-amber-600">
                             Management override: below the £{netFloorAmount.toFixed(2)} minimum sellable price. This will be logged.
