@@ -112,9 +112,18 @@ export const PriceConversionAovPanel: React.FC<Props> = ({ dateRange }) => {
       const mid = BANDS.find(b => b.key === r.band)!;
       const midPrice = mid.max === Infinity ? 950 : (mid.min + mid.max) / 2;
       const convPct = r.quoted ? (r.won / r.quoted) * 100 : 0;
-      return { ...r, midPrice, convPct, revenuePerQuote: (convPct / 100) * midPrice };
+      const revenuePerQuote = (convPct / 100) * midPrice;
+      return {
+        ...r,
+        midPrice,
+        convPct,
+        revenuePerQuote,
+        marginPerSale: midPrice * (1 - costPct / 100),
+        profitPerQuote: revenuePerQuote * (1 - costPct / 100),
+      };
     });
-  }, [leads]);
+  }, [leads, costPct]);
+
 
   const bestBand = useMemo(() => {
     const scored = curve.filter(r => r.quoted >= 20);
