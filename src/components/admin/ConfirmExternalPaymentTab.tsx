@@ -1511,6 +1511,23 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           </p>
                         )}
 
+                        {priceMatchReady && (overDiscountCeiling || underNetFloor) && (
+                          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2">
+                            <p className="text-xs font-semibold text-emerald-700">
+                              ✅ Price match evidenced — {pmCompetitorName} £{pmCompetitorPrice} ({pmProofName}). You can confirm this payment.
+                            </p>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 px-2 text-xs"
+                              onClick={() => { setPmProofPath(null); setPmProofName(null); }}
+                            >
+                              Change evidence
+                            </Button>
+                          </div>
+                        )}
+
+
 
 
                         {underNetFloor && isManagementRole && (
