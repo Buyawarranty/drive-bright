@@ -199,6 +199,18 @@ Deno.serve(async (req) => {
 
     const gateway = createLovableAiGatewayProvider(lovableKey);
 
+    /** How many warranty specialists are actually on duty in live chat right now. */
+    const specialistsOnline = async (): Promise<number> => {
+      const cutoff = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+      const { count } = await admin
+        .from("ai_sandbox_specialist_presence")
+        .select("user_id", { count: "exact", head: true })
+        .eq("is_online", true)
+        .gte("last_seen_at", cutoff);
+      return count ?? 0;
+    };
+
+
     const tools = {
       search_site_knowledge: tool({
         description:
