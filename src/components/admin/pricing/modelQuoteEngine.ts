@@ -259,6 +259,14 @@ export function priceFromPricingModel(
    */
   const modelAbsoluteMin = Math.round(
     Math.max(Number((model as any).absoluteMinTotal) || 0, GLOBAL_ABSOLUTE_MIN_TOTAL) *
+      // Shaped by the SAME option ladder as the live grid so the absolute minimum
+      // is never a flat clamp: every claim limit, labour rate and excess chip keeps
+      // moving the price even on the cheapest floor-bound vehicles.
+      getAbsoluteMinimumShape({
+        claimLimit: Number(options.claimLimit),
+        labourRate: Number(options.labourRate),
+        voluntaryExcess: Number(options.voluntaryExcess),
+      }) *
       motorbikeFactor,
   );
 

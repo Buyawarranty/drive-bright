@@ -1081,12 +1081,19 @@ export function formatGBP(amount: number, showPence = false): string {
 
 /**
  * Which excesses are available, by warranty price bracket:
- *   under £500  → £0 / £50 / £100 / £150
- *   £500–£3,000 → £0 / £50 / £100 / £150 / £250 / £500
-
+ *   under £300 → £0 / £50 / £100 / £150
+ *   £300+      → adds £250
+ *   £500+      → adds £500
+ *
+ * COHERENCE ONLY — this is the single option-level gate and it exists so an
+ * excess can never approach or exceed the warranty price itself. It is NOT a
+ * margin control: the price floor (term floor / band floor) and the 30% discount
+ * ceiling are what protect margin, and they are enforced on the FINAL price so
+ * an agent can always reshape cover and see the number move.
  */
 export const EXCESS_PRICE_BRACKETS: { minPrice: number; options: number[] }[] = [
   { minPrice: 500, options: [0, 50, 100, 150, 250, 500] },
+  { minPrice: 300, options: [0, 50, 100, 150, 250] },
   { minPrice: 0, options: [0, 50, 100, 150] },
 ];
 
