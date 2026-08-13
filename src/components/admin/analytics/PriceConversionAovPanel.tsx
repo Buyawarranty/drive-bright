@@ -275,7 +275,9 @@ export const PriceConversionAovPanel: React.FC<Props> = ({ dateRange }) => {
                     <th className="py-2 pr-3 text-right">Won</th>
                     <th className="py-2 pr-3 text-right">Conversion</th>
                     <th className="py-2 pr-3 text-right">Revenue per quote</th>
-                    <th className="py-2 w-1/3" />
+                    <th className="py-2 pr-3 text-right">Margin per sale</th>
+                    <th className="py-2 pr-3 text-right">Profit per quote</th>
+                    <th className="py-2 w-1/4" />
                   </tr>
                 </thead>
                 <tbody>
@@ -296,17 +298,22 @@ export const PriceConversionAovPanel: React.FC<Props> = ({ dateRange }) => {
                       <td className="py-2 pr-3 text-right">{r.quoted.toLocaleString('en-GB')}</td>
                       <td className="py-2 pr-3 text-right">{r.won.toLocaleString('en-GB')}</td>
                       <td className="py-2 pr-3 text-right">{r.quoted ? `${r.convPct.toFixed(1)}%` : '—'}</td>
-                      <td className="py-2 pr-3 text-right font-semibold text-foreground">
+                      <td className="py-2 pr-3 text-right">
                         {r.quoted ? gbp(r.revenuePerQuote) : '—'}
+                      </td>
+                      <td className="py-2 pr-3 text-right">{gbp(r.marginPerSale)}</td>
+                      <td className="py-2 pr-3 text-right font-semibold text-foreground">
+                        {r.quoted ? gbp(r.profitPerQuote) : '—'}
                       </td>
                       <td className="py-2">
                         <div className="h-2 rounded-full bg-muted overflow-hidden">
                           <div
-                            className="h-full rounded-full bg-primary"
-                            style={{ width: `${(r.revenuePerQuote / maxRpq) * 100}%` }}
+                            className="h-full rounded-full bg-emerald-600"
+                            style={{ width: `${(r.profitPerQuote / maxProfit) * 100}%` }}
                           />
                         </div>
                       </td>
+
                     </tr>
                   ))}
                 </tbody>
