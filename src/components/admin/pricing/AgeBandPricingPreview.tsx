@@ -123,7 +123,14 @@ export const TREATMENT_OPTIONS = [
 
 /** 4.5 Model-specific floors and referrals. */
 export const PROPOSED_MODEL_FLOORS: ModelFloor[] = [
+  // Generic premium tiers — pick these when the vehicle is a premium/very-high
+  // risk car that has no model-specific row of its own.
+  { key: 'tier-premium', vehicle: 'Premium tier (any premium make)', minOneYear: 599, treatment: 'Premium floor', covered: true },
+  { key: 'tier-very-high', vehicle: 'Very high premium tier (luxury / performance)', minOneYear: 749, treatment: 'Premium floor', covered: true },
+  { key: 'tier-ultra', vehicle: 'Ultra premium tier (flagship luxury)', minOneYear: 899, treatment: 'Premium floor', covered: true },
+
   { key: 'rr-autobiography', vehicle: 'Range Rover Autobiography', minOneYear: 899, treatment: 'Premium floor', covered: true },
+
   { key: 'rr-sport', vehicle: 'Range Rover Sport', minOneYear: 799, treatment: 'Premium floor', covered: true },
   { key: 'rr-velar', vehicle: 'Range Rover Velar', minOneYear: 749, treatment: 'Premium floor', covered: true },
   { key: 'rr-evoque', vehicle: 'Range Rover Evoque', minOneYear: 699, treatment: 'Premium floor', covered: true },
