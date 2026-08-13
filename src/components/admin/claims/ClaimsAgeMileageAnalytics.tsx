@@ -154,13 +154,24 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
     );
   }
 
-  // Find insights
+  // Find insights.
+  // Cost comparisons only use bands with enough settled claims to be meaningful,
+  // so a band with 1–2 payouts can never be crowned "costliest".
+  const MIN_SETTLED = 5;
+  const pickCostliest = (rows: typeof ageData) => {
+    const reliable = rows.filter(d => d.paidCount >= MIN_SETTLED);
+    const pool = reliable.length > 0 ? reliable : rows.filter(d => d.paidCount > 0);
+    const winner = [...pool].sort((a, b) => b.avgCost - a.avgCost)[0];
+    return winner ? { ...winner, lowSample: winner.paidCount < MIN_SETTLED } : undefined;
+  };
+
   const mostClaimsAge = [...ageData].sort((a, b) => b.claims - a.claims)[0];
   const leastClaimsAge = [...ageData].filter(d => d.claims > 0).sort((a, b) => a.claims - b.claims)[0];
-  const costliestAge = [...ageData].filter(d => d.avgCost > 0).sort((a, b) => b.avgCost - a.avgCost)[0];
+  const costliestAge = pickCostliest(ageData);
   const mostClaimsMileage = [...mileageData].sort((a, b) => b.claims - a.claims)[0];
   const leastClaimsMileage = [...mileageData].filter(d => d.claims > 0).sort((a, b) => a.claims - b.claims)[0];
-  const costliestMileage = [...mileageData].filter(d => d.avgCost > 0).sort((a, b) => b.avgCost - a.avgCost)[0];
+  const costliestMileage = pickCostliest(mileageData);
+
 
   return (
     <div className="space-y-6">
