@@ -395,7 +395,128 @@ Deno.serve(async (req) => {
           });
         },
       }),
+
+      check_availability: tool({
+        description:
+          "Check whether the warranty specialists are available right now (Monday to Saturday, 9am to 5pm UK time). Always call this before offering a live handover.",
+        inputSchema: z.object({}),
+        execute: async () => toolResultText(availability()),
+      }),
+
+      connect_live_agent: tool({
+        description:
+          "Hand the chat over to a human warranty specialist. Only call this after check_availability says the team is open AND the customer has said yes to being connected. The specialist receives the whole conversation.",
+        inputSchema: z.object({
+          reason: z
+            .enum(["buying_intent", "price_objection", "comparing_quotes", "hesitation", "complex_question", "customer_asked"])
+            .describe("Why the handover is happening"),
+          customer_name: z.string().nullable(),
+          customer_email: z.string().nullable(),
+          customer_phone: z.string().nullable(),
+          registration: z.string().nullable(),
+          cover_summary: z.string().nullable().describe("Term, claim limit, excess and labour rate discussed"),
+          quoted_price: z.number().nullable(),
+        }),
+        execute: async (args) => {
+          const state = availability();
+          if (!state.is_open) {
+            return toolResultText({
+              ok: false,
+              is_open: false,
+              ...state,
+              note: "The team is closed — capture the lead with capture_lead instead and keep helping the customer yourself.",
+            });
+          }
+          const { data, error } = await admin
+            .from("ai_sandbox_handovers")
+            .insert({
+              thread_id: threadId,
+              created_by: user.id,
+              kind: "live_handover",
+              reason: args.reason,
+              customer_name: args.customer_name,
+              customer_email: args.customer_email,
+              customer_phone: args.customer_phone,
+              registration: args.registration,
+              cover_summary: args.cover_summary,
+              quoted_price: args.quoted_price,
+              transcript: messages,
+              status: "waiting",
+            })
+            .select("id")
+            .single();
+
+          if (error) {
+            console.error("[ai-sandbox-chat] handover insert failed", error);
+            return toolResultText({
+              ok: false,
+              note: "The handover could not be created. Offer the team's number 0330 229 5040 instead.",
+            });
+          }
+
+          return toolResultText({
+            ok: true,
+            handover_id: data.id,
+            status: "waiting",
+            note: "A warranty specialist has been alerted and can see the full chat. Tell the customer a human is joining and stay quiet unless they ask you something directly.",
+          });
+        },
+      }),
+
+      capture_lead: tool({
+        description:
+          "Capture the customer's details as a lead so a warranty specialist can pick it up at the next opening time. Use this outside opening hours, or when the customer prefers a callback.",
+        inputSchema: z.object({
+          customer_name: z.string().nullable(),
+          customer_email: z.string().nullable(),
+          customer_phone: z.string().nullable(),
+          registration: z.string().nullable(),
+          cover_summary: z.string().nullable(),
+          quoted_price: z.number().nullable(),
+          notes: z.string().nullable().describe("Anything the specialist should know before calling"),
+        }),
+        execute: async (args) => {
+          if (!args.customer_name && !args.customer_email && !args.customer_phone) {
+            return toolResultText({
+              ok: false,
+              note: "Ask for a name plus an email or phone number first.",
+            });
+          }
+          const state = availability();
+          const { data, error } = await admin
+            .from("ai_sandbox_handovers")
+            .insert({
+              thread_id: threadId,
+              created_by: user.id,
+              kind: state.is_open ? "callback_request" : "out_of_hours_lead",
+              reason: args.notes ?? "lead_capture",
+              customer_name: args.customer_name,
+              customer_email: args.customer_email,
+              customer_phone: args.customer_phone,
+              registration: args.registration,
+              cover_summary: args.cover_summary,
+              quoted_price: args.quoted_price,
+              transcript: messages,
+              status: "waiting",
+            })
+            .select("id")
+            .single();
+
+          if (error) {
+            console.error("[ai-sandbox-chat] lead insert failed", error);
+            return toolResultText({ ok: false, note: "The lead could not be saved." });
+          }
+
+          return toolResultText({
+            ok: true,
+            lead_id: data.id,
+            next_open: state.next_open,
+            note: "Lead saved. Confirm to the customer when a specialist will be in touch and offer to finish the purchase now with a test payment link.",
+          });
+        },
+      }),
     };
+
 
     const result = streamText({
       model: gateway(MODEL),
