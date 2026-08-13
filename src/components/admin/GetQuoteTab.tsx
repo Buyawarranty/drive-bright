@@ -356,7 +356,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [priceMatchMode, setPriceMatchMode] = useState(false);
   const [min399NoteDismissed, setMin399NoteDismissed] = useState(false);
   /** Global minimum floor from Price updates → Global settings (staff-facing note only). */
-  const globalMinFloor = useMemo(() => globalMinTotalFor(loadRiskBandConfig()), []);
+  const globalMinFloor = React.useMemo(() => globalMinTotalFor(loadRiskBandConfig()), []);
   const [priceMatchProofPath, setPriceMatchProofPath] = useState<string | null>(null);
   const [priceMatchProofName, setPriceMatchProofName] = useState<string | null>(null);
   const [priceMatchUploading, setPriceMatchUploading] = useState(false);
