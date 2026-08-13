@@ -33,7 +33,9 @@ function extract(src) {
     const v = t.slice(1, -1).replace(/\s+/g, ' ').trim();
     if (/[a-z]{3}\s+[a-z]{2}/i.test(v)) out.push(v);
   }
-  return [...new Set(out)];
+  return [...new Set(out)].filter(
+    (l) => l !== ';' && !/^import\b/.test(l) && !/^;$/.test(l) && l.length > 8
+  );
 }
 
 const chunks = [];
