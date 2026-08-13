@@ -112,6 +112,7 @@ const BlogArticle = lazy(() => import("./pages/BlogArticle"));
 const AdminConversionFire = lazy(() => import("./pages/AdminConversionFire"));
 const AdminClaimDetail = lazy(() => import("./pages/AdminClaimDetail"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
+const AiSandbox = lazy(() => import("./pages/AiSandbox"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const CancellationPolicy = lazy(() => import("./pages/CancellationPolicy"));
 const Careers = lazy(() => import("./pages/Careers"));
@@ -287,6 +288,8 @@ const App = () => {
                     <Route path="/auth/" element={<Auth />} />
                     <Route path="/sales-login/" element={<SalesLogin />} />
                     <Route path="/admin/" element={<AdminShellErrorBoundary><AdminDashboard /></AdminShellErrorBoundary>} />
+                    <Route path="/ai-sandbox" element={<AiSandbox />} />
+                    <Route path="/ai-sandbox/:threadId" element={<AiSandbox />} />
                     <Route path="/admin-dashboard/" element={<AdminShellErrorBoundary><AdminDashboard /></AdminShellErrorBoundary>} />
                     <Route path="/admin/claims/:id" element={<AdminShellErrorBoundary><AdminClaimDetail /></AdminShellErrorBoundary>} />
                     <Route path="/admin/claims/:id/" element={<AdminShellErrorBoundary><AdminClaimDetail /></AdminShellErrorBoundary>} />
