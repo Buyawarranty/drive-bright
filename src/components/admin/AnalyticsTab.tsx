@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LabelList, Line, ComposedChart } from 'recharts';
-import { Users, CreditCard, PoundSterling, Globe, Phone, X, Calendar, TrendingUp, TrendingDown, Minus, Target, Facebook } from 'lucide-react';
+import { Users, CreditCard, PoundSterling, Globe, Phone, X, Calendar, TrendingUp, TrendingDown, Minus, Target, Facebook, Search, Music2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ApiConnectivityTest } from './ApiConnectivityTest';
 import { SalesAgeMileageAnalytics } from './SalesAgeMileageAnalytics';
@@ -1388,7 +1388,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4">
               {perYearSummary.map((row, idx) => {
                 const prev = perYearPrevSummary?.[idx];
                 const delta = (curr: number, before?: number) => {
@@ -1878,7 +1878,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </div>
 
           {/* Top-level source split */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4">
             <div className="p-4 rounded-lg border-2 border-blue-300 bg-blue-50/40 space-y-2">
               <div className="flex items-center gap-2 mb-1">
                 <Globe className="h-4 w-4 text-blue-600" />
@@ -1942,7 +1942,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             <p className="text-xs font-medium text-muted-foreground mb-2 mt-2">
               Website (BAW) acquisition channels — sum equals Website tile above
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4">
               <div className="p-4 rounded-lg border border-emerald-200 bg-emerald-50/30 space-y-2">
                 <div className="flex items-center gap-2 mb-1">
                   <Target className="h-4 w-4 text-emerald-600" />
@@ -2046,7 +2046,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             <p className="text-xs font-medium text-muted-foreground mb-2 mt-2">
               Sales Team (ADM) lead source — where the converted lead originally came from (sum equals Sales Team tile above)
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4">
               <div className="p-4 rounded-lg border border-emerald-200 bg-emerald-50/30 space-y-2">
                 <div className="flex items-center gap-2 mb-1">
                   <Target className="h-4 w-4 text-emerald-600" />
