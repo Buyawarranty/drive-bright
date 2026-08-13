@@ -259,7 +259,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     quotedTotal > 0 && Number.isFinite(enteredAmount) && enteredAmount < quotedTotal
       ? ((quotedTotal - enteredAmount) / quotedTotal) * 100
       : 0;
-  // NET payable floor — £349 / £576 / £821 (12/24/36mo), shaped by the options
+  // NET payable floor — £349 / £699 / £999 (12/24/36mo), shaped by the options
   // chosen and halved for motorbikes. Confirming a manual payment used to have no
   // floor at all, so this closes the biggest under-floor leak. Management may go
   // below (logged to price_override_audit).
@@ -538,7 +538,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     if (isConfirming) return;
 
     // Hard stop: never create a policy more than 30% below the quoted price, and
-    // never below the absolute net floor (£349/£576/£821 shaped), unless
+    // never below the absolute net floor (£349/£699/£999 shaped), unless
     // Management are the ones confirming it.
     if (discountBlocked) {
       toast({

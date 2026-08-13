@@ -35,7 +35,7 @@ Updated: just now
 - [Price Updates (test → live)](mem://features/admin/price-updates-test-to-live) — Management-only Price Updates tab; Quotes & Orders grid is source of truth, website = minus 10% rounded
 - [Price Updates Never Retroactive](mem://pricing/price-updates-never-retroactive) — New price models only affect new quotes; old sales, customer management and portal keep stored prices
 - [Aug Hybrid Pricing Drift Impact](mem://pricing/aug-hybrid-pricing-drift-impact) — Root cause, affected window, and quantification of the non-idempotent hybrid pricing drift
-- [Minimum Price Ladder £349](mem://pricing/minimum-price-ladder-349) — Hard bottom per term + claim/labour/excess ladder; never clamp the shape to 1
+- [Minimum Price Ladder £349](mem://pricing/minimum-price-ladder-349) — Hard bottom £349/£699/£999 per term + claim/labour/excess ladder; never clamp the shape to 1
 - [Step 3 & Quotes Landing Defaults](mem://pricing/landing-defaults-step3-and-quotes) — Always 2yr, £2,000 limit, £100 excess, £70/hr on load
 - [Minimum Price Floor](mem://pricing/minimum-price-floor) — Shaped £249/£498/£747 floor for 12/24/36mo (sits under the £349 hard bottom)
 - [2yr/3yr +20% Uplift](mem://pricing/two-three-year-uplift-jul-2026) — Jul 2026 base matrix + floors raised 20% for 24/36mo only; 12mo untouched
