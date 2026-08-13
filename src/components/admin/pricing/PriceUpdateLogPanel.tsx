@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import { History, RotateCcw, Check, StickyNote, Loader2 } from 'lucide-react';
+import { History, RotateCcw, Check, StickyNote, Loader2, BarChart3 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -62,6 +63,63 @@ function whenLabel(v: PricingVersion): string {
   return Number.isFinite(d.getTime()) ? format(d, 'dd/MM/yyyy HH:mm') : '—';
 }
 
+type DayStat = { date: string; revenue: number; orders: number };
+
+/**
+ * Sales taken each day, so every log entry can show what the money did while
+ * that price model was live. Cancelled and refunded orders are left out and
+ * signup_date is the date of the sale.
+ */
+function useDailySales(fromISO: string | null) {
+  const [days, setDays] = useState<Record<string, DayStat>>({});
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!fromISO) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const map: Record<string, DayStat> = {};
+        let offset = 0;
+        // Paginate so we never silently stop at the 1,000-row default.
+        for (let page = 0; page < 20; page++) {
+          const { data, error } = await supabase
+            .from('customers')
+            .select('id, final_amount, signup_date, status')
+            .gte('signup_date', fromISO)
+            .order('signup_date', { ascending: true })
+            .range(offset, offset + 999);
+          if (error) throw error;
+          (data || []).forEach((c: any) => {
+            const status = (c.status || '').toLowerCase();
+            if (status.includes('cancelled') || status.includes('refunded')) return;
+            if (!c.signup_date) return;
+            const key = format(new Date(c.signup_date), 'yyyy-MM-dd');
+            const bucket = (map[key] ||= { date: key, revenue: 0, orders: 0 });
+            bucket.revenue += Number(c.final_amount) || 0;
+            bucket.orders += 1;
+          });
+          if (!data || data.length < 1000) break;
+          offset += 1000;
+        }
+        if (!cancelled) setDays(map);
+      } catch {
+        // leave the panel showing prices only
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fromISO]);
+
+  return { days, loading };
+}
+
+const money = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
+
 export default function PriceUpdateLogPanel({
   versions,
   busy,
@@ -78,6 +136,36 @@ export default function PriceUpdateLogPanel({
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
   const [openNotes, setOpenNotes] = useState<Record<string, boolean>>({});
+  const [openDays, setOpenDays] = useState<Record<string, boolean>>({});
+
+  // Earliest date in the log — everything we need sales for.
+  const earliestISO = useMemo(() => {
+    const times = versions
+      .map(v => new Date(v.published_at || v.updated_at || v.created_at).getTime())
+      .filter(t => Number.isFinite(t) && t > 0);
+    if (!times.length) return null;
+    return new Date(Math.min(...times)).toISOString();
+  }, [versions]);
+
+  const { days: salesByDay, loading: salesLoading } = useDailySales(earliestISO);
+
+  /** Sales for the window this price model was in use (until the next entry). */
+  const windowStats = (v: PricingVersion, newer?: PricingVersion) => {
+    const startISO = v.published_at || v.updated_at || v.created_at;
+    const start = new Date(startISO);
+    if (!Number.isFinite(start.getTime())) return null;
+    const endRaw = newer ? new Date(newer.published_at || newer.updated_at || newer.created_at) : new Date();
+    const end = Number.isFinite(endRaw.getTime()) ? endRaw : new Date();
+    const startKey = format(start, 'yyyy-MM-dd');
+    const endKey = format(end, 'yyyy-MM-dd');
+    const list = Object.values(salesByDay)
+      .filter(d => d.date >= startKey && d.date <= endKey)
+      .sort((a, b) => (a.date < b.date ? 1 : -1));
+    const revenue = list.reduce((s, d) => s + d.revenue, 0);
+    const orders = list.reduce((s, d) => s + d.orders, 0);
+    return { list, revenue, orders, aov: orders ? revenue / orders : 0, startKey, endKey };
+  };
+
 
   const saveNote = async (id: string, current: string) => {
     if (!onSaveNote) return;
@@ -125,6 +213,7 @@ export default function PriceUpdateLogPanel({
           const isLive = v.status === 'live';
           const sample = sampleGridPrice(v);
           const move = pctVsPrevious(v, rows[i + 1]);
+          const stats = windowStats(v, rows[i - 1]);
           return (
             <div
               key={v.id}
@@ -193,6 +282,62 @@ export default function PriceUpdateLogPanel({
                   )}
                 </div>
               </div>
+
+              {/* What the money did while this price model was in use. */}
+              {stats && (
+                <div className="mt-2 rounded-md border bg-muted/30 p-2">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <BarChart3 className="h-3.5 w-3.5 text-primary" />
+                    <span className="font-semibold">
+                      {money(stats.revenue)} revenue
+                    </span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="font-semibold">AOV {money(stats.aov)}</span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-muted-foreground">
+                      {stats.orders} {stats.orders === 1 ? 'sale' : 'sales'} over{' '}
+                      {stats.list.length || 0} {stats.list.length === 1 ? 'day' : 'days'}
+                    </span>
+                    {salesLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                    {stats.list.length > 0 && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="ml-auto h-6 px-2 text-xs"
+                        onClick={() => setOpenDays(s => ({ ...s, [v.id]: !s[v.id] }))}
+                      >
+                        {openDays[v.id] ? 'Hide daily figures' : 'Daily revenue & AOV'}
+                      </Button>
+                    )}
+                  </div>
+
+                  {openDays[v.id] && (
+                    <div className="mt-2 overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="text-left text-muted-foreground">
+                            <th className="py-1 pr-3 font-medium">Day</th>
+                            <th className="py-1 pr-3 font-medium text-right">Sales</th>
+                            <th className="py-1 pr-3 font-medium text-right">Revenue</th>
+                            <th className="py-1 font-medium text-right">AOV</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {stats.list.map(d => (
+                            <tr key={d.date} className="border-t">
+                              <td className="py-1 pr-3">{format(new Date(d.date), 'EEE dd/MM/yyyy')}</td>
+                              <td className="py-1 pr-3 text-right">{d.orders}</td>
+                              <td className="py-1 pr-3 text-right font-medium">{money(d.revenue)}</td>
+                              <td className="py-1 text-right">{money(d.orders ? d.revenue / d.orders : 0)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Performance notes — what this price model did, in plain words. */}
               {v.notes && !openNotes[v.id] && (
