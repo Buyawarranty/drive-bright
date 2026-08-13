@@ -193,7 +193,8 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary">{totals.leads.toLocaleString('en-GB')} leads</Badge>
           <Badge variant="secondary">{totals.sales.toLocaleString('en-GB')} sales</Badge>
-          <Badge variant="secondary">Conversion {totals.conversion.toFixed(1)}%</Badge>
+          <Badge variant="secondary">Lead to sale {totals.conversion.toFixed(1)}%</Badge>
+          <Badge variant="secondary">Average day {totals.avgDailyConversion.toFixed(1)}%</Badge>
           <Badge variant="secondary">Sales value {money(totals.revenue)}</Badge>
           <Badge variant="secondary">Ad spend {money(totals.spend)}</Badge>
           <Badge variant="secondary">Cost per lead {money(totals.costPerLead)}</Badge>
@@ -204,6 +205,39 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
           <Badge variant="outline">AOV {money(totals.aov)}</Badge>
           <Badge variant="outline">{totals.dayCount} days</Badge>
         </div>
+
+        {/* Does more leads mean more sales? */}
+        <div className="rounded-lg border bg-muted/40 p-3 space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold">Do more leads mean more sales?</span>
+            <Badge
+              variant={totals.correlation >= 0.5 ? 'default' : totals.correlation >= 0.2 ? 'secondary' : 'outline'}
+            >
+              {totals.correlation >= 0.7
+                ? 'Yes — strong link'
+                : totals.correlation >= 0.4
+                  ? 'Yes — clear link'
+                  : totals.correlation >= 0.2
+                    ? 'Somewhat'
+                    : totals.correlation <= -0.2
+                      ? 'No — more leads, fewer sales'
+                      : 'No real link'}
+            </Badge>
+            <Badge variant="outline">Correlation {totals.correlation.toFixed(2)}</Badge>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            On the {totals.comparedDays} busiest days we took an average of {totals.busyLeadsAvg.toFixed(1)} leads a
+            day and made {totals.busySalesAvg.toFixed(1)} sales a day ({totals.busyConv.toFixed(1)}% lead to sale).
+            On the {totals.comparedDays} quietest days it was {totals.quietLeadsAvg.toFixed(1)} leads and{' '}
+            {totals.quietSalesAvg.toFixed(1)} sales a day ({totals.quietConv.toFixed(1)}%).{' '}
+            {totals.busyConv >= totals.quietConv + 1
+              ? 'Busy days also convert better, so volume is worth buying.'
+              : totals.quietConv >= totals.busyConv + 1
+                ? 'Quiet days convert better — on busy days leads are being left uncalled, so capacity is the limit, not lead volume.'
+                : 'Conversion holds steady whatever the volume, so extra leads scale sales roughly in line.'}
+          </p>
+        </div>
+
 
         {isLoading ? (
           <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
