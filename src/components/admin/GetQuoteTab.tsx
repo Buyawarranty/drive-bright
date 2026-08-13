@@ -83,6 +83,7 @@ import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { getVehicleIdentificationGap } from '@/lib/vehicleIdentification';
 import { isNorthernIrelandPlate } from '@/lib/niPlate';
 import { useSavedPricingModel } from './pricing/useSavedPricingModel';
+import { invokeWithFreshSession } from '@/lib/invokeWithFreshSession';
 
 
 
