@@ -36,6 +36,9 @@ type SaleRow = { final_amount: number | null; status: string | null; signup_date
 
 export const PriceConversionAovPanel: React.FC<Props> = ({ dateRange }) => {
   const [termFilter, setTermFilter] = useState<'all' | '12months' | '24months' | '36months'>('all');
+  // Fixed costs as a share of the sale value — profit per quote is worked out after these.
+  const [costPct, setCostPct] = useState<number>(45);
+
 
   const from = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : null;
   const to = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : null;
