@@ -1388,7 +1388,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {perYearSummary.map((row, idx) => {
                 const prev = perYearPrevSummary?.[idx];
                 const delta = (curr: number, before?: number) => {
@@ -1878,7 +1878,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </div>
 
           {/* Top-level source split */}
-          <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 rounded-lg border-2 border-blue-300 bg-blue-50/40 space-y-2">
               <div className="flex items-center gap-2 mb-1">
                 <Globe className="h-4 w-4 text-blue-600" />
