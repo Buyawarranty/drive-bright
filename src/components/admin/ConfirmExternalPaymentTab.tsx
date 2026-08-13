@@ -392,8 +392,18 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     setSelectedLeadId(lead.id);
     if (lead.vehicle_reg) setRegNumber(formatRegNumber(lead.vehicle_reg));
     if (lead.email) setCustomerEmail(lead.email);
-    if (lead.first_name) setCustomerFirstName(lead.first_name);
-    if (lead.last_name) setCustomerLastName(lead.last_name);
+    // Many leads store the whole name in first_name with last_name empty.
+    // Split it so the agent isn't blocked by "Customer Details Required".
+    const leadFirst = (lead.first_name || '').trim();
+    const leadLast = (lead.last_name || '').trim();
+    if (!leadLast && leadFirst.includes(' ')) {
+      const parts = leadFirst.split(/\s+/);
+      setCustomerFirstName(parts[0]);
+      setCustomerLastName(parts.slice(1).join(' '));
+    } else {
+      if (leadFirst) setCustomerFirstName(leadFirst);
+      if (leadLast) setCustomerLastName(leadLast);
+    }
     if (lead.phone) setCustomerPhone(lead.phone);
     if (lead.mileage) {
       setMileage(parseInt(lead.mileage.replace(/\D/g, ''), 10).toLocaleString());
