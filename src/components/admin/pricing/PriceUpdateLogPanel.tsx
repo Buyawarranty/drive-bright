@@ -283,6 +283,62 @@ export default function PriceUpdateLogPanel({
                 </div>
               </div>
 
+              {/* What the money did while this price model was in use. */}
+              {stats && (
+                <div className="mt-2 rounded-md border bg-muted/30 p-2">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <BarChart3 className="h-3.5 w-3.5 text-primary" />
+                    <span className="font-semibold">
+                      {money(stats.revenue)} revenue
+                    </span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="font-semibold">AOV {money(stats.aov)}</span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-muted-foreground">
+                      {stats.orders} {stats.orders === 1 ? 'sale' : 'sales'} over{' '}
+                      {stats.list.length || 0} {stats.list.length === 1 ? 'day' : 'days'}
+                    </span>
+                    {salesLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                    {stats.list.length > 0 && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="ml-auto h-6 px-2 text-xs"
+                        onClick={() => setOpenDays(s => ({ ...s, [v.id]: !s[v.id] }))}
+                      >
+                        {openDays[v.id] ? 'Hide daily figures' : 'Daily revenue & AOV'}
+                      </Button>
+                    )}
+                  </div>
+
+                  {openDays[v.id] && (
+                    <div className="mt-2 overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="text-left text-muted-foreground">
+                            <th className="py-1 pr-3 font-medium">Day</th>
+                            <th className="py-1 pr-3 font-medium text-right">Sales</th>
+                            <th className="py-1 pr-3 font-medium text-right">Revenue</th>
+                            <th className="py-1 font-medium text-right">AOV</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {stats.list.map(d => (
+                            <tr key={d.date} className="border-t">
+                              <td className="py-1 pr-3">{format(new Date(d.date), 'EEE dd/MM/yyyy')}</td>
+                              <td className="py-1 pr-3 text-right">{d.orders}</td>
+                              <td className="py-1 pr-3 text-right font-medium">{money(d.revenue)}</td>
+                              <td className="py-1 text-right">{money(d.orders ? d.revenue / d.orders : 0)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Performance notes — what this price model did, in plain words. */}
               {v.notes && !openNotes[v.id] && (
                 <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900 whitespace-pre-wrap">
