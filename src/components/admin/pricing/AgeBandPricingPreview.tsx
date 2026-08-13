@@ -121,6 +121,21 @@ export const TREATMENT_OPTIONS = [
   'Not covered — referral or exclusion',
 ] as const;
 
+/**
+ * Named premium tiers. A rule can be a make only ("Jaguar"), a model only
+ * ("Autobiography") or a make + model ("Jaguar F-Type"); the most specific
+ * matching rule wins, so a make-level tier acts as the baseline and a
+ * make + model rule lifts just that derivative.
+ */
+export const PREMIUM_TIER_PRESETS = [
+  { key: 'premium', label: 'Premium', price: 599 },
+  { key: 'veryhigh', label: 'Very high premium', price: 749 },
+  { key: 'ultra', label: 'Ultra premium', price: 899 },
+  { key: 'custom', label: 'Custom / other treatment', price: 0 },
+] as const;
+
+
+
 /** 4.5 Model-specific floors and referrals. */
 export const PROPOSED_MODEL_FLOORS: ModelFloor[] = [
   // Generic premium tiers — pick these when the vehicle is a premium/very-high
