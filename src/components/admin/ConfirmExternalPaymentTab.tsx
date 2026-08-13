@@ -35,6 +35,9 @@ import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBlockedClaimLimits, getBaseClai
 import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import { useDiscountAuthRequests } from '@/hooks/useDiscountAuthRequests';
+import { useAuth } from '@/hooks/useAuth';
+
 
 interface VehicleData {
   regNumber: string;
@@ -99,6 +102,12 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const { toast } = useToast();
   const { isManagement } = useIsManagement();
   const isManagementRole = isManagement === true;
+  const { user } = useAuth();
+  const { myApproved: approvedAuthRequest } = useDiscountAuthRequests();
+  const [authReason, setAuthReason] = useState('');
+  const [authSent, setAuthSent] = useState(false);
+  const [sendingAuth, setSendingAuth] = useState(false);
+
   
   // Vehicle lookup state
   const [regNumber, setRegNumber] = useState('');
@@ -269,7 +278,16 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const minAllowedAmount = Math.max(ceilingMinAmount, netFloorAmount);
   const overDiscountCeiling = discountPct > DISCOUNT_CEILING_PCT + 0.01;
   const underNetFloor = Number.isFinite(enteredAmount) && enteredAmount > 0 && enteredAmount < netFloorAmount - 0.01;
-  const discountBlocked = (overDiscountCeiling || underNetFloor) && !isManagementRole;
+  // A manager-approved authorisation for this vehicle lifts the block up to the
+  // price they approved (agents no longer hit a dead end).
+  const hasApprovedAuth =
+    !!approvedAuthRequest &&
+    String(approvedAuthRequest.registration_plate || '').replace(/\s/g, '').toUpperCase() ===
+      String(editableRegNumber || regNumber || '').replace(/\s/g, '').toUpperCase() &&
+    Number.isFinite(enteredAmount) &&
+    enteredAmount >= Number(approvedAuthRequest.requested_price || 0) - 0.01;
+  const discountBlocked = (overDiscountCeiling || underNetFloor) && !isManagementRole && !hasApprovedAuth;
+
 
 
 
@@ -1238,6 +1256,70 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                               : `Blocked — that is ${discountPct.toFixed(1)}% off. You cannot confirm this payment. Please contact management to authorise anything below £${minAllowedAmount.toFixed(2)} (max ${DISCOUNT_CEILING_PCT}% off).`}
                           </p>
                         )}
+
+                        {discountBlocked && (
+                          authSent ? (
+                            <p className="text-xs font-semibold text-amber-600">
+                              Sent for authorisation — management have been alerted. This button unlocks as soon as they approve it.
+                            </p>
+                          ) : (
+                            <div className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2.5">
+                              <Input
+                                value={authReason}
+                                onChange={(e) => setAuthReason(e.target.value)}
+                                placeholder="Reason for manager (e.g. price match, goodwill)"
+                                className="h-8 text-xs"
+                              />
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={sendingAuth || !authReason.trim()}
+                                onClick={async () => {
+                                  setSendingAuth(true);
+                                  try {
+                                    const { error } = await supabase.from('discount_auth_requests').insert({
+                                      requested_by_user_id: user?.id,
+                                      requested_by_name: user?.email || 'Agent',
+                                      registration_plate: (editableRegNumber || regNumber).toUpperCase(),
+                                      mileage: mileage || null,
+                                      vehicle_description: vehicleData
+                                        ? `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || null
+                                        : null,
+                                      customer_name:
+                                        [customerFirstName, customerLastName].filter(Boolean).join(' ') || null,
+                                      base_price: Math.round(quotedTotal),
+                                      requested_price: Math.round(enteredAmount),
+                                      discount_pct: Number(discountPct.toFixed(1)),
+                                      payment_type: paymentType,
+                                      reason: `External payment confirmation — ${authReason.trim()}`,
+                                    });
+                                    if (error) throw error;
+                                    setAuthSent(true);
+                                    toast({
+                                      title: 'Sent for authorisation',
+                                      description: 'Management have been alerted and will approve or decline.',
+                                    });
+                                  } catch (e: any) {
+                                    toast({ title: 'Could not send request', description: e?.message, variant: 'destructive' });
+                                  } finally {
+                                    setSendingAuth(false);
+                                  }
+                                }}
+                              >
+                                {sendingAuth ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : null}
+                                Request manager authorisation
+                              </Button>
+                            </div>
+                          )
+                        )}
+
+                        {hasApprovedAuth && (overDiscountCeiling || underNetFloor) && (
+                          <p className="text-xs font-semibold text-emerald-600">
+                            ✅ Authorised by {approvedAuthRequest?.decided_by_name || 'management'} — you can confirm this payment.
+                          </p>
+                        )}
+
+
 
                         {underNetFloor && isManagementRole && (
                           <p className="text-xs font-semibold text-amber-600">
