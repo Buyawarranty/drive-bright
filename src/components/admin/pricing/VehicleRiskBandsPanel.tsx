@@ -444,6 +444,28 @@ const VehicleRiskBandsPanel: React.FC = () => {
             </Alert>
           )}
 
+          {duplicateClashes.length > 0 && (
+            <Alert className="border-amber-300 bg-amber-50">
+              <AlertDescription className="text-sm text-amber-900">
+                <strong>
+                  {duplicateClashes.length} vehicle{duplicateClashes.length === 1 ? '' : 's'} listed in more than one
+                  band
+                </strong>{' '}
+                — a vehicle can only ever be in one band, so only the first row prices and the rest are ignored. Keep
+                one row per vehicle.
+                <ul className="mt-2 list-disc pl-5 space-y-0.5">
+                  {duplicateClashes.map(d => (
+                    <li key={d.key}>
+                      <span className="font-medium">{d.label}</span> — pricing uses {d.winner}; ignored: {d.others}
+                    </li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
+
+
+
 
           {/* Global minimum price floor */}
           <div className="rounded-lg border p-4 bg-muted/30">
