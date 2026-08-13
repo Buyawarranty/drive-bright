@@ -118,6 +118,36 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
     const revenue = withRatio.reduce((s, d) => s + d.revenue, 0);
     const spend = withRatio.reduce((s, d) => s + d.spend, 0);
 
+    // Does more leads actually mean more sales? Pearson correlation across the days in view,
+    // plus a busy-days vs quiet-days conversion split so the answer is readable without stats.
+    const active = withRatio.filter(d => d.leads > 0);
+    const n = active.length;
+    const meanL = n ? active.reduce((s, d) => s + d.leads, 0) / n : 0;
+    const meanS = n ? active.reduce((s, d) => s + d.sales, 0) / n : 0;
+    let cov = 0, varL = 0, varS = 0;
+    active.forEach(d => {
+      cov += (d.leads - meanL) * (d.sales - meanS);
+      varL += (d.leads - meanL) ** 2;
+      varS += (d.sales - meanS) ** 2;
+    });
+    const correlation = varL > 0 && varS > 0 ? cov / Math.sqrt(varL * varS) : 0;
+
+    const sortedByLeads = [...active].sort((a, b) => a.leads - b.leads);
+    const half = Math.floor(sortedByLeads.length / 2);
+    const quiet = sortedByLeads.slice(0, half);
+    const busy = sortedByLeads.slice(sortedByLeads.length - half);
+    const convOf = (arr: typeof withRatio) => {
+      const l = arr.reduce((s, d) => s + d.leads, 0);
+      const sl = arr.reduce((s, d) => s + d.sales, 0);
+      return l > 0 ? (sl / l) * 100 : 0;
+    };
+    const quietConv = convOf(quiet);
+    const busyConv = convOf(busy);
+    const quietLeadsAvg = quiet.length ? quiet.reduce((s, d) => s + d.leads, 0) / quiet.length : 0;
+    const busyLeadsAvg = busy.length ? busy.reduce((s, d) => s + d.leads, 0) / busy.length : 0;
+    const quietSalesAvg = quiet.length ? quiet.reduce((s, d) => s + d.sales, 0) / quiet.length : 0;
+    const busySalesAvg = busy.length ? busy.reduce((s, d) => s + d.sales, 0) / busy.length : 0;
+
     return {
       rows: withRatio,
       totals: {
@@ -126,14 +156,26 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
         revenue,
         spend,
         conversion: leads > 0 ? (sales / leads) * 100 : 0,
+        avgDailyConversion: n
+          ? active.reduce((s, d) => s + d.conversion, 0) / n
+          : 0,
         costPerLead: leads > 0 ? spend / leads : 0,
         costPerSale: sales > 0 ? spend / sales : 0,
         roas: spend > 0 ? revenue / spend : 0,
         aov: sales > 0 ? revenue / sales : 0,
         dayCount: withRatio.length,
+        correlation,
+        quietConv,
+        busyConv,
+        quietLeadsAvg,
+        busyLeadsAvg,
+        quietSalesAvg,
+        busySalesAvg,
+        comparedDays: half,
       },
     };
   }, [data, rangeKey]);
+
 
   return (
     <Card>
