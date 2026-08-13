@@ -41,12 +41,14 @@ export const useMotMileage = (registrationNumber: string | undefined): UseMotMil
 
       try {
         // PERF: use indexed equality (unique index on registration) instead of ilike/wildcards
-        const { data, error: fetchError } = await supabase
+        // Same plate can be stored with and without a space, so never use
+        // maybeSingle() here — two rows would throw instead of returning data.
+        const { data: rows, error: fetchError } = await supabase
           .from('mot_history')
           .select('mot_tests')
           .in('registration', [normalizedReg, spacedReg])
-          .limit(1)
-          .maybeSingle();
+          .limit(2);
+        const data = rows?.find((r) => Array.isArray(r.mot_tests) && r.mot_tests.length > 0) ?? rows?.[0] ?? null;
 
         if (fetchError) {
           console.error('Error fetching MOT mileage:', fetchError);
