@@ -118,6 +118,36 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
     const revenue = withRatio.reduce((s, d) => s + d.revenue, 0);
     const spend = withRatio.reduce((s, d) => s + d.spend, 0);
 
+    // Does more leads actually mean more sales? Pearson correlation across the days in view,
+    // plus a busy-days vs quiet-days conversion split so the answer is readable without stats.
+    const active = withRatio.filter(d => d.leads > 0);
+    const n = active.length;
+    const meanL = n ? active.reduce((s, d) => s + d.leads, 0) / n : 0;
+    const meanS = n ? active.reduce((s, d) => s + d.sales, 0) / n : 0;
+    let cov = 0, varL = 0, varS = 0;
+    active.forEach(d => {
+      cov += (d.leads - meanL) * (d.sales - meanS);
+      varL += (d.leads - meanL) ** 2;
+      varS += (d.sales - meanS) ** 2;
+    });
+    const correlation = varL > 0 && varS > 0 ? cov / Math.sqrt(varL * varS) : 0;
+
+    const sortedByLeads = [...active].sort((a, b) => a.leads - b.leads);
+    const half = Math.floor(sortedByLeads.length / 2);
+    const quiet = sortedByLeads.slice(0, half);
+    const busy = sortedByLeads.slice(sortedByLeads.length - half);
+    const convOf = (arr: typeof withRatio) => {
+      const l = arr.reduce((s, d) => s + d.leads, 0);
+      const sl = arr.reduce((s, d) => s + d.sales, 0);
+      return l > 0 ? (sl / l) * 100 : 0;
+    };
+    const quietConv = convOf(quiet);
+    const busyConv = convOf(busy);
+    const quietLeadsAvg = quiet.length ? quiet.reduce((s, d) => s + d.leads, 0) / quiet.length : 0;
+    const busyLeadsAvg = busy.length ? busy.reduce((s, d) => s + d.leads, 0) / busy.length : 0;
+    const quietSalesAvg = quiet.length ? quiet.reduce((s, d) => s + d.sales, 0) / quiet.length : 0;
+    const busySalesAvg = busy.length ? busy.reduce((s, d) => s + d.sales, 0) / busy.length : 0;
+
     return {
       rows: withRatio,
       totals: {
@@ -126,14 +156,26 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
         revenue,
         spend,
         conversion: leads > 0 ? (sales / leads) * 100 : 0,
+        avgDailyConversion: n
+          ? active.reduce((s, d) => s + d.conversion, 0) / n
+          : 0,
         costPerLead: leads > 0 ? spend / leads : 0,
         costPerSale: sales > 0 ? spend / sales : 0,
         roas: spend > 0 ? revenue / spend : 0,
         aov: sales > 0 ? revenue / sales : 0,
         dayCount: withRatio.length,
+        correlation,
+        quietConv,
+        busyConv,
+        quietLeadsAvg,
+        busyLeadsAvg,
+        quietSalesAvg,
+        busySalesAvg,
+        comparedDays: half,
       },
     };
   }, [data, rangeKey]);
+
 
   return (
     <Card>
@@ -151,7 +193,8 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary">{totals.leads.toLocaleString('en-GB')} leads</Badge>
           <Badge variant="secondary">{totals.sales.toLocaleString('en-GB')} sales</Badge>
-          <Badge variant="secondary">Conversion {totals.conversion.toFixed(1)}%</Badge>
+          <Badge variant="secondary">Lead to sale {totals.conversion.toFixed(1)}%</Badge>
+          <Badge variant="secondary">Average day {totals.avgDailyConversion.toFixed(1)}%</Badge>
           <Badge variant="secondary">Sales value {money(totals.revenue)}</Badge>
           <Badge variant="secondary">Ad spend {money(totals.spend)}</Badge>
           <Badge variant="secondary">Cost per lead {money(totals.costPerLead)}</Badge>
@@ -163,6 +206,39 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
           <Badge variant="outline">{totals.dayCount} days</Badge>
         </div>
 
+        {/* Does more leads mean more sales? */}
+        <div className="rounded-lg border bg-muted/40 p-3 space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold">Do more leads mean more sales?</span>
+            <Badge
+              variant={totals.correlation >= 0.5 ? 'default' : totals.correlation >= 0.2 ? 'secondary' : 'outline'}
+            >
+              {totals.correlation >= 0.7
+                ? 'Yes — strong link'
+                : totals.correlation >= 0.4
+                  ? 'Yes — clear link'
+                  : totals.correlation >= 0.2
+                    ? 'Somewhat'
+                    : totals.correlation <= -0.2
+                      ? 'No — more leads, fewer sales'
+                      : 'No real link'}
+            </Badge>
+            <Badge variant="outline">Correlation {totals.correlation.toFixed(2)}</Badge>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            On the {totals.comparedDays} busiest days we took an average of {totals.busyLeadsAvg.toFixed(1)} leads a
+            day and made {totals.busySalesAvg.toFixed(1)} sales a day ({totals.busyConv.toFixed(1)}% lead to sale).
+            On the {totals.comparedDays} quietest days it was {totals.quietLeadsAvg.toFixed(1)} leads and{' '}
+            {totals.quietSalesAvg.toFixed(1)} sales a day ({totals.quietConv.toFixed(1)}%).{' '}
+            {totals.busyConv >= totals.quietConv + 1
+              ? 'Busy days also convert better, so volume is worth buying.'
+              : totals.quietConv >= totals.busyConv + 1
+                ? 'Quiet days convert better — on busy days leads are being left uncalled, so capacity is the limit, not lead volume.'
+                : 'Conversion holds steady whatever the volume, so extra leads scale sales roughly in line.'}
+          </p>
+        </div>
+
+
         {isLoading ? (
           <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
         ) : (
@@ -173,10 +249,12 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
                 <XAxis dataKey="day" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
                 <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} tickFormatter={(v) => `£${Number(v).toLocaleString('en-GB')}`} />
+                <YAxis yAxisId="pct" hide domain={[0, 'dataMax']} />
                 <Tooltip
                   formatter={(value: number, name: string) => {
                     if (name === 'leads') return [Number(value).toLocaleString('en-GB'), 'Leads in'];
                     if (name === 'sales') return [Number(value).toLocaleString('en-GB'), 'Sales made'];
+                    if (name === 'conversion') return [`${Number(value).toFixed(1)}%`, 'Lead to sale'];
                     if (name === 'revenue') return [money(Number(value)), 'Sales value'];
                     if (name === 'spend') return [money(Number(value)), 'Ad spend'];
                     return [value, name];
@@ -188,14 +266,17 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
                   formatter={(value) =>
                     value === 'leads' ? 'Leads in'
                       : value === 'sales' ? 'Sales made'
-                        : value === 'revenue' ? 'Sales value'
-                          : value === 'spend' ? 'Ad spend' : value
+                        : value === 'conversion' ? 'Lead to sale %'
+                          : value === 'revenue' ? 'Sales value'
+                            : value === 'spend' ? 'Ad spend' : value
                   }
                 />
                 <Bar yAxisId="left" dataKey="leads" fill="#6366f1" radius={[4, 4, 0, 0]} />
                 <Bar yAxisId="left" dataKey="sales" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Line yAxisId="pct" type="monotone" dataKey="conversion" stroke="#0ea5e9" strokeWidth={2} strokeDasharray="4 3" dot={false} />
                 <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#f59e0b" strokeWidth={2.5} dot={false} />
                 <Line yAxisId="right" type="monotone" dataKey="spend" stroke="#ef4444" strokeWidth={2} dot={false} />
+
               </ComposedChart>
             </ResponsiveContainer>
 
