@@ -213,6 +213,7 @@ export default function PriceUpdateLogPanel({
           const isLive = v.status === 'live';
           const sample = sampleGridPrice(v);
           const move = pctVsPrevious(v, rows[i + 1]);
+          const stats = windowStats(v, rows[i - 1]);
           return (
             <div
               key={v.id}
