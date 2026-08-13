@@ -136,6 +136,36 @@ export default function PriceUpdateLogPanel({
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
   const [openNotes, setOpenNotes] = useState<Record<string, boolean>>({});
+  const [openDays, setOpenDays] = useState<Record<string, boolean>>({});
+
+  // Earliest date in the log — everything we need sales for.
+  const earliestISO = useMemo(() => {
+    const times = versions
+      .map(v => new Date(v.published_at || v.updated_at || v.created_at).getTime())
+      .filter(t => Number.isFinite(t) && t > 0);
+    if (!times.length) return null;
+    return new Date(Math.min(...times)).toISOString();
+  }, [versions]);
+
+  const { days: salesByDay, loading: salesLoading } = useDailySales(earliestISO);
+
+  /** Sales for the window this price model was in use (until the next entry). */
+  const windowStats = (v: PricingVersion, newer?: PricingVersion) => {
+    const startISO = v.published_at || v.updated_at || v.created_at;
+    const start = new Date(startISO);
+    if (!Number.isFinite(start.getTime())) return null;
+    const endRaw = newer ? new Date(newer.published_at || newer.updated_at || newer.created_at) : new Date();
+    const end = Number.isFinite(endRaw.getTime()) ? endRaw : new Date();
+    const startKey = format(start, 'yyyy-MM-dd');
+    const endKey = format(end, 'yyyy-MM-dd');
+    const list = Object.values(salesByDay)
+      .filter(d => d.date >= startKey && d.date <= endKey)
+      .sort((a, b) => (a.date < b.date ? 1 : -1));
+    const revenue = list.reduce((s, d) => s + d.revenue, 0);
+    const orders = list.reduce((s, d) => s + d.orders, 0);
+    return { list, revenue, orders, aov: orders ? revenue / orders : 0, startKey, endKey };
+  };
+
 
   const saveNote = async (id: string, current: string) => {
     if (!onSaveNote) return;
