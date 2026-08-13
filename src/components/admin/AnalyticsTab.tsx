@@ -2339,19 +2339,27 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               {monthlyRefunds.map((month) => (
                 <div 
                   key={month.monthKey}
-                  className="flex-shrink-0 min-w-[80px] text-center p-2 bg-muted/30 rounded"
+                  className={`flex-shrink-0 min-w-[80px] text-center p-2 rounded ${month.bulkDay ? 'bg-amber-100/60 border border-amber-300' : 'bg-muted/30'}`}
+                  title={month.bulkDay ? `Includes a bulk tidy-up: 10+ historic orders were marked cancelled on ${month.bulkDay}` : undefined}
                 >
                   <p className="text-xs text-muted-foreground">{month.month}</p>
                   <p className="text-sm font-semibold text-red-600">
                     £{month.refundAmount.toLocaleString()}
                   </p>
                   <p className="text-xs text-muted-foreground">{month.refundCount} cancelled</p>
+                  {month.bulkDay && (
+                    <p className="text-[10px] text-amber-700 font-medium mt-0.5">bulk tidy-up</p>
+                  )}
                 </div>
               ))}
             </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Counted on the date the order was marked cancelled or refunded (including archived orders, so it matches Customer Management).
+              Months flagged <span className="text-amber-700 font-medium">bulk tidy-up</span> contain a single day where 10+ historic orders were
+              switched to cancelled at once — that is back-dated admin housekeeping, not real cancellations for that month.
+            </p>
           </div>
-        </CardContent>
-      </Card>
+
       </>
       )}
 
