@@ -136,19 +136,28 @@ export default function AiSandbox() {
   };
 
   if (checkingAuth) {
-    return <div className="p-8 text-sm text-muted-foreground">Checking access…</div>;
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center p-8 text-sm text-muted-foreground">
+        Checking access…
+      </div>
+    );
   }
 
   if (!userId) {
     return (
-      <div className="mx-auto max-w-md p-8 text-center">
+      <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center p-8 text-center">
+        <Headset className="mb-3 h-8 w-8 text-muted-foreground" />
         <h1 className="text-lg font-semibold">Sign in required</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          The AI sandbox is staff only. Please sign in to the admin area first.
+          The AI sandbox is staff only. Sign in to the admin area, then come back to this page.
         </p>
+        <Button className="mt-4" onClick={() => navigate('/admin')}>
+          Go to staff sign in
+        </Button>
       </div>
     );
   }
+
 
   return (
     <div className="flex h-screen min-h-0 bg-background">
