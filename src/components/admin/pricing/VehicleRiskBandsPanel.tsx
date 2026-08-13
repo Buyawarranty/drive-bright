@@ -777,7 +777,7 @@ const VehicleRiskBandsPanel: React.FC = () => {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Fuel type</Label>
+                <Label className="text-xs">Fuel type (matcher only)</Label>
                 <Select
                   value={newEntry.fuel}
                   onValueChange={v => setNewEntry({ ...newEntry, fuel: v as FuelFilter })}
@@ -793,7 +793,11 @@ const VehicleRiskBandsPanel: React.FC = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-[11px] text-muted-foreground leading-snug">
+                  Narrows which cars this row catches — it never changes the price on its own.
+                </p>
               </div>
+
 
               <div className="space-y-1">
                 <Label className="text-xs">Band</Label>
