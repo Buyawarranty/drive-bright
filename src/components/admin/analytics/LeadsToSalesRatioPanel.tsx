@@ -64,7 +64,7 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
       const [leadsRes, salesRes, spendRes] = await Promise.all([
         supabase
           .from('sales_leads')
-          .select('id, created_at')
+          .select('id, created_at, lead_source')
           .gte('created_at', from.toISOString())
           .lte('created_at', to.toISOString())
           .limit(20000),
