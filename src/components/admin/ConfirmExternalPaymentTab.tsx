@@ -35,6 +35,9 @@ import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBlockedClaimLimits, getBaseClai
 import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import { useDiscountAuthRequests } from '@/hooks/useDiscountAuthRequests';
+import { useAuth } from '@/hooks/useAuth';
+
 
 interface VehicleData {
   regNumber: string;
