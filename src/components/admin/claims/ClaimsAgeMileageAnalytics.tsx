@@ -82,7 +82,7 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
 
   // --- Vehicle Age analytics ---
   const ageData = useMemo(() => {
-    const bands = AGE_BANDS.map(b => ({ ...b, claims: 0, totalCost: 0, paidCount: 0 }));
+    const bands = AGE_BANDS.map(b => ({ ...b, claims: 0, totalCost: 0, paidCount: 0, totalClaimed: 0 }));
 
     claims.forEach(c => {
       const reg = c.vehicle_registration?.toUpperCase();
@@ -96,8 +96,10 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
       const band = bands.find(b => age >= b.min && age <= b.max);
       if (band) {
         band.claims++;
-        if (c.payment_amount && c.payment_amount > 0) {
-          band.totalCost += c.payment_amount;
+        band.totalClaimed += claimedCost(c);
+        const paid = settledCost(c);
+        if (paid > 0) {
+          band.totalCost += paid;
           band.paidCount++;
         }
       }
@@ -107,11 +109,13 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
       band: b.label,
       claims: b.claims,
       totalCost: Math.round(b.totalCost),
+      totalClaimed: Math.round(b.totalClaimed),
       avgCost: b.paidCount > 0 ? Math.round(b.totalCost / b.paidCount) : 0,
       costPerClaim: b.claims > 0 ? Math.round(b.totalCost / b.claims) : 0,
       paidCount: b.paidCount,
     }));
   }, [claims, vehicleMap]);
+
 
 
   // --- Mileage analytics ---
