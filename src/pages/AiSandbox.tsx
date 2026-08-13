@@ -31,16 +31,36 @@ export default function AiSandbox() {
   const { liveCount, meOnline, setOnDuty } = useSandboxSpecialistPresence();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id ?? null);
+    let cancelled = false;
+
+    const apply = (user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> } | null) => {
+      if (cancelled) return;
+      setUserId(user?.id ?? null);
       setDisplayName(
-        (data.user?.user_metadata?.full_name as string | undefined) ??
-          data.user?.email?.split('@')[0] ??
+        (user?.user_metadata?.full_name as string | undefined) ??
+          user?.email?.split('@')[0] ??
           null,
       );
       setCheckingAuth(false);
+    };
+
+    // Listen first: the session is restored asynchronously, so a single getUser()
+    // call on mount can resolve before hydration and wrongly show "Sign in required".
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      apply((session?.user as any) ?? null);
     });
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user) apply(data.session.user as any);
+      else if (!cancelled) setCheckingAuth(false);
+    });
+
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
   }, []);
+
 
 
   const loadThreads = useCallback(async () => {
