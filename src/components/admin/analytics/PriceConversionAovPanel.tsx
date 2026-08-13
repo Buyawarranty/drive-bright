@@ -36,6 +36,9 @@ type SaleRow = { final_amount: number | null; status: string | null; signup_date
 
 export const PriceConversionAovPanel: React.FC<Props> = ({ dateRange }) => {
   const [termFilter, setTermFilter] = useState<'all' | '12months' | '24months' | '36months'>('all');
+  // Fixed costs as a share of the sale value — profit per quote is worked out after these.
+  const [costPct, setCostPct] = useState<number>(45);
+
 
   const from = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : null;
   const to = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : null;
@@ -112,14 +115,23 @@ export const PriceConversionAovPanel: React.FC<Props> = ({ dateRange }) => {
       const mid = BANDS.find(b => b.key === r.band)!;
       const midPrice = mid.max === Infinity ? 950 : (mid.min + mid.max) / 2;
       const convPct = r.quoted ? (r.won / r.quoted) * 100 : 0;
-      return { ...r, midPrice, convPct, revenuePerQuote: (convPct / 100) * midPrice };
+      const revenuePerQuote = (convPct / 100) * midPrice;
+      return {
+        ...r,
+        midPrice,
+        convPct,
+        revenuePerQuote,
+        marginPerSale: midPrice * (1 - costPct / 100),
+        profitPerQuote: revenuePerQuote * (1 - costPct / 100),
+      };
     });
-  }, [leads]);
+  }, [leads, costPct]);
+
 
   const bestBand = useMemo(() => {
     const scored = curve.filter(r => r.quoted >= 20);
     if (!scored.length) return null;
-    return scored.reduce((a, b) => (b.revenuePerQuote > a.revenuePerQuote ? b : a));
+    return scored.reduce((a, b) => (b.profitPerQuote > a.profitPerQuote ? b : a));
   }, [curve]);
 
   /** Sold-price distribution + AOV — works even before the quoted-price data matures. */
@@ -162,7 +174,7 @@ export const PriceConversionAovPanel: React.FC<Props> = ({ dateRange }) => {
   }, [sales]);
 
   const coveragePct = data?.totalLeads ? (leads.length / data.totalLeads) * 100 : 0;
-  const maxRpq = Math.max(1, ...curve.map(r => r.revenuePerQuote));
+  const maxProfit = Math.max(1, ...curve.map(r => r.profitPerQuote));
   const maxSales = Math.max(1, ...soldByBand.map(r => r.sales));
 
   return (
@@ -207,27 +219,47 @@ export const PriceConversionAovPanel: React.FC<Props> = ({ dateRange }) => {
             <div>
               <CardTitle className="text-base">Quoted price vs conversion — what earns most per quote</CardTitle>
               <CardDescription className="text-xs">
-                Revenue per quote = conversion rate × mid-band price. The highest bar is the price point
-                that makes the most money, not the cheapest or the dearest.
+                Every quote is grouped by the price the customer was shown. For each band we work out how
+                often that price is accepted (conversion), then multiply it by the middle price of the band
+                to get the money earned for each quote given out — a cheap price wins more often but earns
+                less each time, a dear price earns more but wins less often. Profit per quote takes the
+                same figure after fixed costs of {costPct}% of the sale value, and the “Best” band is the
+                price point with the highest profit per quote.
               </CardDescription>
+
             </div>
-            <div className="flex gap-1">
-              {(['all', '12months', '24months', '36months'] as const).map(t => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTermFilter(t)}
-                  className={cn(
-                    'px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors',
-                    termFilter === t
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-muted text-muted-foreground border-border hover:bg-muted/70',
-                  )}
-                >
-                  {t === 'all' ? 'All terms' : t.replace('months', ' months')}
-                </button>
-              ))}
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                Fixed costs
+                <input
+                  type="number"
+                  min={0}
+                  max={95}
+                  value={costPct}
+                  onChange={e => setCostPct(Math.min(95, Math.max(0, Number(e.target.value) || 0)))}
+                  className="w-16 rounded-md border border-border bg-background px-2 py-1 text-right text-xs text-foreground"
+                />
+                % of sale
+              </label>
+              <div className="flex gap-1">
+                {(['all', '12months', '24months', '36months'] as const).map(t => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTermFilter(t)}
+                    className={cn(
+                      'px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors',
+                      termFilter === t
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-muted text-muted-foreground border-border hover:bg-muted/70',
+                    )}
+                  >
+                    {t === 'all' ? 'All terms' : t.replace('months', ' months')}
+                  </button>
+                ))}
+              </div>
             </div>
+
           </div>
         </CardHeader>
         <CardContent>
@@ -243,7 +275,9 @@ export const PriceConversionAovPanel: React.FC<Props> = ({ dateRange }) => {
                     <th className="py-2 pr-3 text-right">Won</th>
                     <th className="py-2 pr-3 text-right">Conversion</th>
                     <th className="py-2 pr-3 text-right">Revenue per quote</th>
-                    <th className="py-2 w-1/3" />
+                    <th className="py-2 pr-3 text-right">Margin per sale</th>
+                    <th className="py-2 pr-3 text-right">Profit per quote</th>
+                    <th className="py-2 w-1/4" />
                   </tr>
                 </thead>
                 <tbody>
@@ -264,17 +298,22 @@ export const PriceConversionAovPanel: React.FC<Props> = ({ dateRange }) => {
                       <td className="py-2 pr-3 text-right">{r.quoted.toLocaleString('en-GB')}</td>
                       <td className="py-2 pr-3 text-right">{r.won.toLocaleString('en-GB')}</td>
                       <td className="py-2 pr-3 text-right">{r.quoted ? `${r.convPct.toFixed(1)}%` : '—'}</td>
-                      <td className="py-2 pr-3 text-right font-semibold text-foreground">
+                      <td className="py-2 pr-3 text-right">
                         {r.quoted ? gbp(r.revenuePerQuote) : '—'}
+                      </td>
+                      <td className="py-2 pr-3 text-right">{gbp(r.marginPerSale)}</td>
+                      <td className="py-2 pr-3 text-right font-semibold text-foreground">
+                        {r.quoted ? gbp(r.profitPerQuote) : '—'}
                       </td>
                       <td className="py-2">
                         <div className="h-2 rounded-full bg-muted overflow-hidden">
                           <div
-                            className="h-full rounded-full bg-primary"
-                            style={{ width: `${(r.revenuePerQuote / maxRpq) * 100}%` }}
+                            className="h-full rounded-full bg-emerald-600"
+                            style={{ width: `${(r.profitPerQuote / maxProfit) * 100}%` }}
                           />
                         </div>
                       </td>
+
                     </tr>
                   ))}
                 </tbody>
