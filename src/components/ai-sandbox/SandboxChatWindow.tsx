@@ -105,6 +105,8 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
   const [agentMode, setAgentMode] = useState(false);
   const composerRef = useRef<HTMLDivElement | null>(null);
   const open = isTeamOpenNow();
+  const { liveCount, liveNames } = useSandboxSpecialistPresence();
+
 
   useEffect(() => {
     let active = true;
