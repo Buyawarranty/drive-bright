@@ -518,9 +518,14 @@ Deno.serve(async (req) => {
     };
 
 
+    const now = availability();
+    const liveContext = `\n\nRight now: ${now.local_time}. The warranty specialists are ${
+      now.is_open ? "OPEN and available for a live handover" : `CLOSED (they reopen ${now.next_open})`
+    }. Opening hours are ${now.opening_hours}.\nIf a message in the conversation begins with "(Warranty specialist)" a human has joined this chat — stay out of the way and only reply if the customer asks you directly.`;
+
     const result = streamText({
       model: gateway(MODEL),
-      system: SYSTEM_PROMPT,
+      system: SYSTEM_PROMPT + liveContext,
       messages: convertToModelMessages(messages),
       tools,
       stopWhen: stepCountIs(50),
