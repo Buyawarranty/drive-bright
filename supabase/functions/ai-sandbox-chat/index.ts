@@ -199,16 +199,12 @@ Deno.serve(async (req) => {
     const tools = {
       search_site_knowledge: tool({
         description:
-          "Search Buyawarranty's own website content (FAQ, terms and conditions, warranty plan, claims, cancellation, transfer pages) for the wording to answer a customer question. Always use this before answering product, cover, terms, claims or eligibility questions.",
+          "Search Buyawarranty's APPROVED material (FAQ, terms and conditions, warranty plan, claims, cancellation, transfer pages) for the wording to answer a customer question. This is the ONLY permitted source for anything about cover, exclusions, claim limits, excess, labour rates, eligibility, cancellation or contractual terms. Always call it before answering such a question, and obey the 'confident' flag and 'instruction' it returns: if confident is false, do not answer — offer a warranty specialist instead.",
         inputSchema: z.object({
           query: z.string().describe("The customer's question or the topic to look up"),
         }),
         execute: async ({ query }) => {
-          const results = searchKnowledge(query, 4);
-          return toolResultText({
-            found: results.length,
-            passages: results.map((r) => ({ section: r.section, text: r.text })),
-          });
+          return toolResultText(retrieveGrounded(query, 5));
         },
       }),
 
