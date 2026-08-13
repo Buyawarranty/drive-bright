@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LabelList, Line, ComposedChart } from 'recharts';
-import { Users, CreditCard, PoundSterling, Globe, Phone, X, Calendar, TrendingUp, TrendingDown, Minus, Target, Facebook } from 'lucide-react';
+import { Users, CreditCard, PoundSterling, Globe, Phone, X, Calendar, TrendingUp, TrendingDown, Minus, Target, Facebook, Search, Music2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ApiConnectivityTest } from './ApiConnectivityTest';
 import { SalesAgeMileageAnalytics } from './SalesAgeMileageAnalytics';
@@ -516,24 +516,31 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   };
 
   // Sub-categorize website sales by ad channel — check both purchase_source AND click IDs
-  const getWebsiteChannel = (customer: Customer): 'google' | 'facebook' | 'pure' => {
+  const getWebsiteChannel = (customer: Customer): 'google' | 'facebook' | 'bing' | 'tiktok' | 'pure' => {
     const source = customer.purchase_source?.toLowerCase() || '';
+    const utm = (customer as any).utm_source?.toLowerCase?.() || '';
     const hasGclid = !!(customer.gclid && String(customer.gclid).trim() !== '');
     if (source === 'google_ads' || hasGclid) return 'google';
-    if (source === 'facebook_ads') return 'facebook';
+    if (source === 'facebook_ads' || utm.includes('facebook') || utm.includes('meta')) return 'facebook';
+    if (source === 'bing_ads' || utm.includes('bing') || utm.includes('microsoft')) return 'bing';
+    if (source === 'tiktok_ads' || utm.includes('tiktok')) return 'tiktok';
     return 'pure';
   };
 
   // Sub-categorize Sales Team (ADM) sales by the lead's original acquisition source.
   // Sales team sales are admin-entered, so purchase_source is quote_link/external —
   // attribution lives on acquisition_source (copied from the originating lead).
-  const getSalesTeamLeadSource = (customer: Customer): 'google' | 'facebook' | 'organic' => {
+  const getSalesTeamLeadSource = (customer: Customer): 'google' | 'facebook' | 'bing' | 'tiktok' | 'organic' => {
     const acq = customer.acquisition_source?.toLowerCase() || '';
+    const utm = (customer as any).utm_source?.toLowerCase?.() || '';
     const hasGclid = !!(customer.gclid && String(customer.gclid).trim() !== '');
-    if (acq === 'google_ads' || hasGclid) return 'google';
-    if (acq === 'facebook_ads') return 'facebook';
+    if (acq === 'google_ads' || acq === 'google_ad' || hasGclid) return 'google';
+    if (acq === 'facebook_ads' || acq === 'social_ad' || utm.includes('facebook') || utm.includes('meta')) return 'facebook';
+    if (acq === 'bing_ads' || acq === 'bing_ad' || utm.includes('bing') || utm.includes('microsoft')) return 'bing';
+    if (acq === 'tiktok_ads' || acq === 'tiktok_ad' || utm.includes('tiktok')) return 'tiktok';
     return 'organic';
   };
+
 
   // Calculate metrics with safe defaults - EXCLUDING cancelled/refunded from revenue
   const totalCustomers = filteredCustomers.length;
@@ -558,11 +565,15 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     // Website channel breakdown
     const googleCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'google');
     const facebookCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'facebook');
+    const bingCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'bing');
+    const tiktokCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'tiktok');
     const pureWebsiteCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'pure');
 
     // Sales Team lead-source breakdown
     const salesGoogle = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'google');
     const salesFacebook = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'facebook');
+    const salesBing = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'bing');
+    const salesTiktok = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'tiktok');
     const salesOrganic = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'organic');
 
     const calcStats = (custs: Customer[]) => {
@@ -581,11 +592,16 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       salesTeam: calcStats(salesTeamCustomers),
       google: calcStats(googleCustomers),
       facebook: calcStats(facebookCustomers),
+      bing: calcStats(bingCustomers),
+      tiktok: calcStats(tiktokCustomers),
       pureWebsite: calcStats(pureWebsiteCustomers),
       salesGoogle: calcStats(salesGoogle),
       salesFacebook: calcStats(salesFacebook),
+      salesBing: calcStats(salesBing),
+      salesTiktok: calcStats(salesTiktok),
       salesOrganic: calcStats(salesOrganic),
     };
+
   }, [activeRevenueCustomers]);
 
   // Price metrics by source: lowest, highest, average — respects both date AND source filter
@@ -1926,7 +1942,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             <p className="text-xs font-medium text-muted-foreground mb-2 mt-2">
               Website (BAW) acquisition channels — sum equals Website tile above
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4">
               <div className="p-4 rounded-lg border border-emerald-200 bg-emerald-50/30 space-y-2">
                 <div className="flex items-center gap-2 mb-1">
                   <Target className="h-4 w-4 text-emerald-600" />
@@ -1965,10 +1981,48 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                 </div>
               </div>
 
+              <div className="p-4 rounded-lg border border-teal-200 bg-teal-50/30 space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Search className="h-4 w-4 text-teal-600" />
+                  <span className="font-semibold text-sm text-teal-700">Bing Ads</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Orders</span>
+                  <span className="font-bold text-lg">{sourceMetrics.bing.count}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Revenue</span>
+                  <span className="font-bold text-lg text-teal-600">£{sourceMetrics.bing.revenue.toLocaleString('en-GB')}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-teal-200">
+                  <span className="text-xs font-medium">AOV</span>
+                  <span className="font-bold text-teal-700">£{sourceMetrics.bing.aov}</span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-lg border border-zinc-300 bg-zinc-50 space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Music2 className="h-4 w-4 text-zinc-700" />
+                  <span className="font-semibold text-sm text-zinc-800">TikTok Ads</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Orders</span>
+                  <span className="font-bold text-lg">{sourceMetrics.tiktok.count}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Revenue</span>
+                  <span className="font-bold text-lg text-zinc-800">£{sourceMetrics.tiktok.revenue.toLocaleString('en-GB')}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-zinc-300">
+                  <span className="text-xs font-medium">AOV</span>
+                  <span className="font-bold text-zinc-900">£{sourceMetrics.tiktok.aov}</span>
+                </div>
+              </div>
+
               <div className="p-4 rounded-lg border border-sky-200 bg-sky-50/30 space-y-2">
                 <div className="flex items-center gap-2 mb-1">
                   <Globe className="h-4 w-4 text-sky-600" />
-                  <span className="font-semibold text-sm text-sky-700">Pure Website (Organic)</span>
+                  <span className="font-semibold text-sm text-sky-700">Organic (Pure Website)</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted-foreground">Orders</span>
@@ -1983,6 +2037,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                   <span className="font-bold text-sky-700">£{sourceMetrics.pureWebsite.aov}</span>
                 </div>
               </div>
+
             </div>
           </div>
 
@@ -1991,7 +2046,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             <p className="text-xs font-medium text-muted-foreground mb-2 mt-2">
               Sales Team (ADM) lead source — where the converted lead originally came from (sum equals Sales Team tile above)
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4">
               <div className="p-4 rounded-lg border border-emerald-200 bg-emerald-50/30 space-y-2">
                 <div className="flex items-center gap-2 mb-1">
                   <Target className="h-4 w-4 text-emerald-600" />
@@ -2030,6 +2085,44 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                 </div>
               </div>
 
+              <div className="p-4 rounded-lg border border-teal-200 bg-teal-50/30 space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Search className="h-4 w-4 text-teal-600" />
+                  <span className="font-semibold text-sm text-teal-700">Bing Ads lead</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Orders</span>
+                  <span className="font-bold text-lg">{sourceMetrics.salesBing.count}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Revenue</span>
+                  <span className="font-bold text-lg text-teal-600">£{sourceMetrics.salesBing.revenue.toLocaleString('en-GB')}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-teal-200">
+                  <span className="text-xs font-medium">AOV</span>
+                  <span className="font-bold text-teal-700">£{sourceMetrics.salesBing.aov}</span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-lg border border-zinc-300 bg-zinc-50 space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Music2 className="h-4 w-4 text-zinc-700" />
+                  <span className="font-semibold text-sm text-zinc-800">TikTok Ads lead</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Orders</span>
+                  <span className="font-bold text-lg">{sourceMetrics.salesTiktok.count}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Revenue</span>
+                  <span className="font-bold text-lg text-zinc-800">£{sourceMetrics.salesTiktok.revenue.toLocaleString('en-GB')}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-zinc-300">
+                  <span className="text-xs font-medium">AOV</span>
+                  <span className="font-bold text-zinc-900">£{sourceMetrics.salesTiktok.aov}</span>
+                </div>
+              </div>
+
               <div className="p-4 rounded-lg border border-sky-200 bg-sky-50/30 space-y-2">
                 <div className="flex items-center gap-2 mb-1">
                   <Globe className="h-4 w-4 text-sky-600" />
@@ -2048,6 +2141,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                   <span className="font-bold text-sky-700">£{sourceMetrics.salesOrganic.aov}</span>
                 </div>
               </div>
+
             </div>
           </div>
         </CardContent>
