@@ -174,7 +174,7 @@ export const PriceConversionAovPanel: React.FC<Props> = ({ dateRange }) => {
   }, [sales]);
 
   const coveragePct = data?.totalLeads ? (leads.length / data.totalLeads) * 100 : 0;
-  const maxRpq = Math.max(1, ...curve.map(r => r.revenuePerQuote));
+  const maxProfit = Math.max(1, ...curve.map(r => r.profitPerQuote));
   const maxSales = Math.max(1, ...soldByBand.map(r => r.sales));
 
   return (
