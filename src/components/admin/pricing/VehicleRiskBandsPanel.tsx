@@ -805,8 +805,10 @@ const VehicleRiskBandsPanel: React.FC = () => {
                     {config.bands.map(b => (
                       <SelectItem key={b.id} value={b.id}>
                         {b.name}
+                        {b.minOneYear ? ` — min £${b.minOneYear} (12mo)` : ''} · ×{b.factor.toFixed(2)}
                       </SelectItem>
                     ))}
+
                   </SelectContent>
                 </Select>
               </div>
