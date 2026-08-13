@@ -195,9 +195,11 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
       </div>
 
       <p className="text-xs text-muted-foreground -mt-4">
-        Claim counts include every claim. Cost figures only include claims that have actually been paid out,
-        so "total cost" divided by claim count will not equal the average per settled claim. Volume and cost are
-        separate measures — a band can have very few claims while another band has the highest average payout.
+        Claim counts include every claim. Cost figures use only the amount actually settled on approved and paid
+        claims — garage quotes on declined, appealed or still-open claims are excluded, because those were never
+        paid. That is why total paid divided by claim count will not equal the average per settled claim, and why
+        volume and cost are separate measures: a band can have very few claims while another has the highest
+        average payout.
       </p>
 
       {/* Insight Cards */}
