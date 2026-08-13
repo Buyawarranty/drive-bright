@@ -710,8 +710,20 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
             .update({
               original_amount: Math.round(quotedTotal * 100) / 100,
               discount_amount: givenAway,
+              // Evidenced price match used to get under the floor / ceiling —
+              // stored so Customer management and Vehicle intelligence show it.
+              ...(priceMatchReady
+                ? {
+                    price_comparison_proof_url: pmProofPath,
+                    price_match_applied: true,
+                    price_match_competitor: pmCompetitorName || null,
+                    price_match_competitor_price: pmCompetitorPrice,
+                    price_match_our_price: collected || null,
+                  }
+                : {}),
             })
             .eq('id', data.customerId);
+
         } catch (discErr) {
           console.error('Failed to record discount on manual confirmation:', discErr);
         }
