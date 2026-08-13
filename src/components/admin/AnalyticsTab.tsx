@@ -193,6 +193,9 @@ function AnalyticsSectionHeading({
 export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const isSalesLead = userRole === 'sales_lead';
   const [customers, setCustomers] = useState<Customer[]>([]);
+  // Cancellations/refunds are fetched separately: they must include archived (is_deleted)
+  // records so the numbers reconcile with Customer Management.
+  const [cancellations, setCancellations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const hasLoadedOnceRef = useRef(false);
