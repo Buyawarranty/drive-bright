@@ -5280,7 +5280,7 @@ Questions? Call 0330 229 5040`;
                           )}
                         >
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span>Minimum sale price for a {MIN_TERM_LABEL} warranty £{ABSOLUTE_MIN_TOTAL}</span>
+                            <span>Minimum sale price for this quote £{ABSOLUTE_MIN_TOTAL} — {MIN_TERM_LABEL} · £{claimLimit} claim limit · £{excessAmount} excess · £{labourRate}/hr labour</span>
                             {absoluteMinBlocked ? (
                               <span className="font-bold">
                                 — £{Math.min(displayedTotalPrice, displayedPayInFullPrice)} is below the minimum, so this sale is
@@ -5290,7 +5290,7 @@ Questions? Call 0330 229 5040`;
                             ) : priceMatchEvidenced && isUnderAbsoluteMin(displayedTotalPrice) ? (
                               <span>— allowed: evidenced price match on file.</span>
                             ) : (
-                              <span className="font-normal">— applies to this {MIN_TERM_LABEL} cover with the options selected; other terms have their own minimum. Whatever discount is applied, it cannot go below this; price match with evidence only.</span>
+                              <span className="font-normal">— this figure moves when you change term, claim limit, excess or labour rate: the base floor is £399 (1 year), £699 (2 year), £999 (3 year), then shaped up for richer cover. Whatever discount is applied it cannot go below the figure shown; price match with evidence only.</span>
                             )}
                           </div>
 
