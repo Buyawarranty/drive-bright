@@ -565,11 +565,15 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     // Website channel breakdown
     const googleCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'google');
     const facebookCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'facebook');
+    const bingCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'bing');
+    const tiktokCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'tiktok');
     const pureWebsiteCustomers = websiteCustomers.filter(c => getWebsiteChannel(c) === 'pure');
 
     // Sales Team lead-source breakdown
     const salesGoogle = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'google');
     const salesFacebook = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'facebook');
+    const salesBing = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'bing');
+    const salesTiktok = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'tiktok');
     const salesOrganic = salesTeamCustomers.filter(c => getSalesTeamLeadSource(c) === 'organic');
 
     const calcStats = (custs: Customer[]) => {
@@ -588,11 +592,16 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       salesTeam: calcStats(salesTeamCustomers),
       google: calcStats(googleCustomers),
       facebook: calcStats(facebookCustomers),
+      bing: calcStats(bingCustomers),
+      tiktok: calcStats(tiktokCustomers),
       pureWebsite: calcStats(pureWebsiteCustomers),
       salesGoogle: calcStats(salesGoogle),
       salesFacebook: calcStats(salesFacebook),
+      salesBing: calcStats(salesBing),
+      salesTiktok: calcStats(salesTiktok),
       salesOrganic: calcStats(salesOrganic),
     };
+
   }, [activeRevenueCustomers]);
 
   // Price metrics by source: lowest, highest, average — respects both date AND source filter
