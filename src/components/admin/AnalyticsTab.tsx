@@ -2359,8 +2359,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               switched to cancelled at once — that is back-dated admin housekeeping, not real cancellations for that month.
             </p>
           </div>
-
+        </CardContent>
+      </Card>
       </>
+
       )}
 
 
