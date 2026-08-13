@@ -6,8 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import {
-  Bell, BellOff, AlarmClock, Check, Trash2, Plus, Clock, RotateCcw, Volume2, VolumeX,
+  Bell, BellOff, AlarmClock, Check, Trash2, Plus, Clock, RotateCcw, Volume2, VolumeX, ChevronsUpDown, X,
 } from 'lucide-react';
 import { format, formatDistanceToNowStrict, isPast } from 'date-fns';
 import {
@@ -19,7 +21,10 @@ import { toast } from 'sonner';
 interface ClaimOption {
   id: string;
   name?: string | null;
+  customerName?: string | null;
+  email?: string | null;
   vehicle_registration?: string | null;
+  registration?: string | null;
 }
 
 interface Props {
@@ -33,11 +38,29 @@ const kindTone: Record<string, string> = {
   other: 'bg-slate-100 text-slate-800 border-slate-300',
 };
 
+const regOf = (c: ClaimOption) => (c.vehicle_registration || c.registration || '').toString();
+const nameOf = (c: ClaimOption) => (c.name || c.customerName || '').toString();
+
 const labelFor = (c: ClaimOption) =>
-  `${c.name || 'Unnamed'}${c.vehicle_registration ? ` · ${c.vehicle_registration}` : ''}`;
+  `${nameOf(c) || 'Unnamed'}${regOf(c) ? ` · ${regOf(c).toUpperCase()}` : ''}`;
+
+/** Searchable text for a claim: name, registration and email. */
+const searchTextFor = (c: ClaimOption) =>
+  [nameOf(c), regOf(c), (c.email || '').toString()].filter(Boolean).join(' ').toLowerCase();
 
 /** Local datetime string (yyyy-MM-ddTHH:mm) for the datetime-local input. */
 const toLocalInput = (d: Date) => format(d, "yyyy-MM-dd'T'HH:mm");
+
+interface DraftReminder {
+  key: string;
+  kind: ReminderKind;
+  title: string;
+  notes: string;
+  claimId: string;
+  dueLocal: string;
+  leadTime: number;
+}
+
 
 export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
   const {
