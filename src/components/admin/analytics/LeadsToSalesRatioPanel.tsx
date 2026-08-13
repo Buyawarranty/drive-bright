@@ -249,10 +249,12 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
                 <XAxis dataKey="day" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
                 <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} tickFormatter={(v) => `£${Number(v).toLocaleString('en-GB')}`} />
+                <YAxis yAxisId="pct" hide domain={[0, 'dataMax']} />
                 <Tooltip
                   formatter={(value: number, name: string) => {
                     if (name === 'leads') return [Number(value).toLocaleString('en-GB'), 'Leads in'];
                     if (name === 'sales') return [Number(value).toLocaleString('en-GB'), 'Sales made'];
+                    if (name === 'conversion') return [`${Number(value).toFixed(1)}%`, 'Lead to sale'];
                     if (name === 'revenue') return [money(Number(value)), 'Sales value'];
                     if (name === 'spend') return [money(Number(value)), 'Ad spend'];
                     return [value, name];
@@ -264,14 +266,17 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
                   formatter={(value) =>
                     value === 'leads' ? 'Leads in'
                       : value === 'sales' ? 'Sales made'
-                        : value === 'revenue' ? 'Sales value'
-                          : value === 'spend' ? 'Ad spend' : value
+                        : value === 'conversion' ? 'Lead to sale %'
+                          : value === 'revenue' ? 'Sales value'
+                            : value === 'spend' ? 'Ad spend' : value
                   }
                 />
                 <Bar yAxisId="left" dataKey="leads" fill="#6366f1" radius={[4, 4, 0, 0]} />
                 <Bar yAxisId="left" dataKey="sales" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Line yAxisId="pct" type="monotone" dataKey="conversion" stroke="#0ea5e9" strokeWidth={2} strokeDasharray="4 3" dot={false} />
                 <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#f59e0b" strokeWidth={2.5} dot={false} />
                 <Line yAxisId="right" type="monotone" dataKey="spend" stroke="#ef4444" strokeWidth={2} dot={false} />
+
               </ComposedChart>
             </ResponsiveContainer>
 
