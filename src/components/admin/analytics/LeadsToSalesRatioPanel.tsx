@@ -289,6 +289,24 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
           <Badge variant="outline">{totals.dayCount} days</Badge>
         </div>
 
+        {/* Paid channel lead cost at £{leadCost} a lead */}
+        <div className="flex flex-wrap gap-2">
+          <Badge className="bg-blue-600 text-white hover:bg-blue-600">
+            Google {money(totals.googleCost)} · {totals.googleLeads} leads
+          </Badge>
+          <Badge className="bg-indigo-600 text-white hover:bg-indigo-600">
+            Meta {money(totals.metaCost)} · {totals.metaLeads} leads
+          </Badge>
+          <Badge className="bg-teal-600 text-white hover:bg-teal-600">
+            Bing {money(totals.bingCost)} · {totals.bingLeads} leads
+          </Badge>
+          <Badge className="bg-zinc-900 text-white hover:bg-zinc-900">
+            TikTok {money(totals.tiktokCost)} · {totals.tiktokLeads} leads
+          </Badge>
+          <Badge variant="secondary">All paid channels {money(totals.paidCost)}</Badge>
+        </div>
+
+
 
         {/* Does more leads mean more sales? */}
         <div className="rounded-lg border bg-muted/40 p-3 space-y-2">
