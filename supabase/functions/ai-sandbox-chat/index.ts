@@ -402,10 +402,12 @@ Deno.serve(async (req) => {
 
       check_availability: tool({
         description:
-          "Check whether the warranty specialists are available right now (Monday to Saturday, 9am to 5pm UK time). Always call this before offering a live handover.",
+          "Check whether the warranty specialists are available right now (opening hours plus how many specialists are actually on duty in live chat). Always call this before offering a live handover.",
         inputSchema: z.object({}),
-        execute: async () => toolResultText(availability()),
+        execute: async () =>
+          toolResultText({ ...availability(), specialists_online_now: await specialistsOnline() }),
       }),
+
 
       connect_live_agent: tool({
         description:
