@@ -278,7 +278,16 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const minAllowedAmount = Math.max(ceilingMinAmount, netFloorAmount);
   const overDiscountCeiling = discountPct > DISCOUNT_CEILING_PCT + 0.01;
   const underNetFloor = Number.isFinite(enteredAmount) && enteredAmount > 0 && enteredAmount < netFloorAmount - 0.01;
-  const discountBlocked = (overDiscountCeiling || underNetFloor) && !isManagementRole;
+  // A manager-approved authorisation for this vehicle lifts the block up to the
+  // price they approved (agents no longer hit a dead end).
+  const hasApprovedAuth =
+    !!approvedAuthRequest &&
+    String(approvedAuthRequest.registration_plate || '').replace(/\s/g, '').toUpperCase() ===
+      String(editableRegNumber || regNumber || '').replace(/\s/g, '').toUpperCase() &&
+    Number.isFinite(enteredAmount) &&
+    enteredAmount >= Number(approvedAuthRequest.requested_price || 0) - 0.01;
+  const discountBlocked = (overDiscountCeiling || underNetFloor) && !isManagementRole && !hasApprovedAuth;
+
 
 
 
