@@ -71,7 +71,26 @@ export type RiskBandConfig = {
   vehicleTypes: VehicleTypeFactors;
   /** Band applied when a vehicle matches nothing. */
   defaultBandId: string;
+  /**
+   * GLOBAL minimum total price (1-year equivalent). Applies to every pricing
+   * model, every band and every surface. Staff see a warning in Quotes &
+   * Orders when a quote lands on it; the website simply shows this price with
+   * no warning at all on Steps 3–4.
+   */
+  globalMinTotal: number;
 };
+
+/** Fallback global floor when nothing has been configured yet. */
+export const DEFAULT_GLOBAL_MIN_TOTAL = 399;
+
+/** Global floor in force, with the motorbike half-price rule applied. */
+export function globalMinTotalFor(
+  config: RiskBandConfig,
+  vehicleType: 'car' | 'van' | 'motorbike' = 'car'
+): number {
+  const base = Number(config.globalMinTotal) > 0 ? Number(config.globalMinTotal) : DEFAULT_GLOBAL_MIN_TOTAL;
+  return vehicleType === 'motorbike' ? Math.ceil(base / 2) : Math.round(base);
+}
 
 export const DEFAULT_RISK_BANDS: RiskBand[] = [
   {
