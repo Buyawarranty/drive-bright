@@ -59,7 +59,7 @@ import {
 import { getExcessMonthlyDelta } from '@/lib/pricingMatrix';
 import { JOURNEY_EXCESS_OPTIONS } from '@/lib/pricing/journeyOptions';
 import { MIN_BASE_PRICE_BY_PERIOD } from '@/lib/pricingMatrix';
-import { getNetPayableFloor } from '@/lib/pricing/netFloor';
+import { getNetPayableFloor, NET_FLOOR_BY_PERIOD } from '@/lib/pricing/netFloor';
 
 import { priceFromPricingModel } from './pricing/modelQuoteEngine';
 
