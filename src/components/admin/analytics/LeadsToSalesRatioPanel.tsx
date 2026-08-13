@@ -24,11 +24,16 @@ interface DayRow {
 
 const money = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
 
+const DEFAULT_LEAD_COST = 21;
+
 export const LeadsToSalesRatioPanel: React.FC = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 29),
     to: new Date(),
   });
+  // Average cost of buying a lead — £21 by default, editable if the media buy changes.
+  const [leadCost, setLeadCost] = useState<number>(DEFAULT_LEAD_COST);
+
 
   const from = startOfDay(dateRange?.from || subDays(new Date(), 29));
   const to = endOfDay(dateRange?.to || dateRange?.from || new Date());
