@@ -265,6 +265,25 @@ const VehicleRiskBandsPanel: React.FC = () => {
       toast.error('Enter a make, a model, or both.');
       return;
     }
+    const bandName = bandById.get(newEntry.bandId)?.name ?? 'band';
+    // A vehicle can only ever sit in ONE band, so an identical make/model/fuel row
+    // is moved to the new band rather than duplicated.
+    const existing = config.assignments.find(a => assignmentKey(a) === assignmentKey({ make, model, fuel: newEntry.fuel }));
+    if (existing) {
+      update({
+        ...config,
+        assignments: config.assignments.map(a =>
+          a.id === existing.id ? { ...a, bandId: newEntry.bandId, enabled: true } : a
+        ),
+      });
+      setNewEntry({ make: '', model: '', bandId: newEntry.bandId, fuel: 'any' });
+      setFilter('');
+      setFuelFilter('all');
+      toast.success(
+        `Already listed — ${[make, model].filter(Boolean).join(' ')} moved to ${bandName}. One band per vehicle, so nothing is duplicated.`
+      );
+      return;
+    }
     update({
       ...config,
       assignments: [
@@ -277,11 +296,11 @@ const VehicleRiskBandsPanel: React.FC = () => {
     // look like nothing saved — clear both so the new entry is always visible.
     setFilter('');
     setFuelFilter('all');
-    const bandName = bandById.get(newEntry.bandId)?.name ?? 'band';
     toast.success(
       `Saved — ${[make, model].filter(Boolean).join(' ')} added to ${bandName}. Push live to apply it to quotes.`
     );
   };
+
 
 
   const save = () => {
