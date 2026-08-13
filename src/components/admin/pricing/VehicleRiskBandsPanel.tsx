@@ -31,6 +31,8 @@ import {
   matchRiskBand,
   saveRiskBandConfig,
   DEFAULT_BLOCK_MESSAGE,
+  DEFAULT_GLOBAL_MIN_TOTAL,
+  globalMinTotalFor,
 } from '@/lib/pricing/vehicleRiskBands';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -326,11 +328,13 @@ const VehicleRiskBandsPanel: React.FC = () => {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <CardTitle className="flex items-center gap-2 text-xl">
-                <Layers className="h-5 w-5" /> Vehicle type &amp; model-risk bands
+                <Layers className="h-5 w-5" /> Global settings — vehicle type, model-risk bands &amp; minimum price
               </CardTitle>
               <CardDescription>
-                Group makes and models into bands, set the price factor and minimum price for each band.
-                Applied last: age base × mileage × powertrain × vehicle type × band factor.
+                <strong>These are global settings.</strong> The vehicle type factors, the makes and models in
+                each band and the minimum price floor apply to <strong>every</strong> pricing model — July
+                codebase, Aug hybrid, the age-based builder, Quotes &amp; Orders and Steps 3–4. They are applied
+                last: age base × mileage × powertrain × vehicle type × band factor, then the floors.
               </CardDescription>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -385,6 +389,55 @@ const VehicleRiskBandsPanel: React.FC = () => {
             </Alert>
           )}
 
+
+          {/* Global minimum price floor */}
+          <div className="rounded-lg border p-4 bg-muted/30">
+            <h3 className="font-semibold mb-1">Minimum price floor (global)</h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              The cheapest total we ever quote, on any pricing model and any band. Applied after every
+              factor and after each band's own minimum.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-1">
+                <Label htmlFor="global-min-total">Minimum total (£)</Label>
+                <Input
+                  id="global-min-total"
+                  type="number"
+                  min={0}
+                  step="1"
+                  value={config.globalMinTotal}
+                  onChange={e =>
+                    update({
+                      ...config,
+                      globalMinTotal: Math.max(0, Math.round(Number(e.target.value) || 0)),
+                    })
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  Default £{DEFAULT_GLOBAL_MIN_TOTAL}.
+                </p>
+              </div>
+              <div className="space-y-1">
+                <Label>Cars &amp; vans</Label>
+                <Input value={`£${globalMinTotalFor(config, 'car')}`} disabled />
+                <p className="text-xs text-muted-foreground">Floor as quoted.</p>
+              </div>
+              <div className="space-y-1">
+                <Label>Motorbikes</Label>
+                <Input value={`£${globalMinTotalFor(config, 'motorbike')}`} disabled />
+                <p className="text-xs text-muted-foreground">Half of standard, per the bike rule.</p>
+              </div>
+            </div>
+            <Alert className="mt-3">
+              <AlertDescription className="text-xs">
+                <strong>Staff only:</strong> in Quotes &amp; Orders agents get a note when a price lands on or
+                below £{globalMinTotalFor(config, 'car')} — anything cheaper needs an uploaded price match.
+                <br />
+                <strong>Website:</strong> Steps 3–4 simply show this as the lowest price available, with no
+                warning or mention of a floor to the customer.
+              </AlertDescription>
+            </Alert>
+          </div>
 
           {/* Vehicle type factors */}
           <div>

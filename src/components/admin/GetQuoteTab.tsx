@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { globalMinTotalFor, loadRiskBandConfig } from '@/lib/pricing/vehicleRiskBands';
 import { isVehicleBlockedByRules, MANUAL_REFERRAL_MESSAGE } from '@/lib/pricing/vehicleRules';
 import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling, ChevronRight, Check, Lock as LockIcon, Ban, CalendarDays, Sparkles, LifeBuoy, AlertTriangle } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -354,6 +355,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const PRICE_MATCH_MAX_PCT = 10;
   const [priceMatchMode, setPriceMatchMode] = useState(false);
   const [min399NoteDismissed, setMin399NoteDismissed] = useState(false);
+  /** Global minimum floor from Price updates → Global settings (staff-facing note only). */
+  const globalMinFloor = React.useMemo(() => globalMinTotalFor(loadRiskBandConfig()), []);
   const [priceMatchProofPath, setPriceMatchProofPath] = useState<string | null>(null);
   const [priceMatchProofName, setPriceMatchProofName] = useState<string | null>(null);
   const [priceMatchUploading, setPriceMatchUploading] = useState(false);
@@ -5334,8 +5337,8 @@ Questions? Call 0330 229 5040`;
                     );
                   })()}
 
-                  {/* Note: anything under £399 needs an uploaded price match */}
-                  {Math.min(displayedTotalPrice, displayedPayInFullPrice) < 399 && !min399NoteDismissed && (
+                  {/* Note: anything under the global floor needs an uploaded price match (staff only) */}
+                  {Math.min(displayedTotalPrice, displayedPayInFullPrice) < globalMinFloor && !min399NoteDismissed && (
                     <div className={cn(
                       'relative flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 pr-9 text-xs font-semibold',
                       priceMatchEvidenced
@@ -5344,7 +5347,7 @@ Questions? Call 0330 229 5040`;
                     )}>
                       <AlertTriangle className="h-4 w-4 shrink-0" />
                       <span>
-                        Note: £399 is the cheapest warranty available, except for a price match.
+                        Note: £{globalMinFloor} is the cheapest warranty available, except for a price match.
                         {' '}
                         {priceMatchEvidenced
                           ? `Price match evidence is on file, so £${Math.min(displayedTotalPrice, displayedPayInFullPrice)} is allowed.`

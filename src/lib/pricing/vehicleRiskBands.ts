@@ -71,7 +71,26 @@ export type RiskBandConfig = {
   vehicleTypes: VehicleTypeFactors;
   /** Band applied when a vehicle matches nothing. */
   defaultBandId: string;
+  /**
+   * GLOBAL minimum total price (1-year equivalent). Applies to every pricing
+   * model, every band and every surface. Staff see a warning in Quotes &
+   * Orders when a quote lands on it; the website simply shows this price with
+   * no warning at all on Steps 3–4.
+   */
+  globalMinTotal: number;
 };
+
+/** Fallback global floor when nothing has been configured yet. */
+export const DEFAULT_GLOBAL_MIN_TOTAL = 399;
+
+/** Global floor in force, with the motorbike half-price rule applied. */
+export function globalMinTotalFor(
+  config: RiskBandConfig,
+  vehicleType: 'car' | 'van' | 'motorbike' = 'car'
+): number {
+  const base = Number(config.globalMinTotal) > 0 ? Number(config.globalMinTotal) : DEFAULT_GLOBAL_MIN_TOTAL;
+  return vehicleType === 'motorbike' ? Math.ceil(base / 2) : Math.round(base);
+}
 
 export const DEFAULT_RISK_BANDS: RiskBand[] = [
   {
@@ -171,6 +190,7 @@ export const DEFAULT_RISK_BAND_CONFIG: RiskBandConfig = {
   assignments: DEFAULT_RISK_BAND_ASSIGNMENTS,
   vehicleTypes: DEFAULT_VEHICLE_TYPE_FACTORS,
   defaultBandId: 'normal',
+  globalMinTotal: DEFAULT_GLOBAL_MIN_TOTAL,
 };
 
 export function clampBandFactor(value: number): number {
@@ -302,6 +322,13 @@ export function applyRiskBand(
     }
   }
 
+  // GLOBAL floor last — never below the global minimum on any model or surface.
+  const globalFloor = globalMinTotalFor(config, vehicleType);
+  if (price < globalFloor) {
+    price = globalFloor;
+    floorApplied = true;
+  }
+
   return { price, referral: false, blocked: false, blockMessage: null, floorApplied, factorUsed, band };
 }
 
@@ -346,6 +373,8 @@ export function loadRiskBandConfig(): RiskBandConfig {
         ),
       },
       defaultBandId: String(parsed.defaultBandId || 'normal'),
+      globalMinTotal:
+        Number(parsed.globalMinTotal) > 0 ? Math.round(Number(parsed.globalMinTotal)) : DEFAULT_GLOBAL_MIN_TOTAL,
     };
   } catch {
     return DEFAULT_RISK_BAND_CONFIG;
