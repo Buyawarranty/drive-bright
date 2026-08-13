@@ -100,6 +100,15 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
       sales: 0,
       revenue: 0,
       spend: 0,
+      googleLeads: 0,
+      metaLeads: 0,
+      bingLeads: 0,
+      tiktokLeads: 0,
+      googleCost: 0,
+      metaCost: 0,
+      bingCost: 0,
+      tiktokCost: 0,
+      paidCost: 0,
     }));
     const map = new Map(days.map(d => [d.key, d]));
 
@@ -117,7 +126,13 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
 
     (data?.leads || []).forEach((l: any) => {
       const bucket = map.get(format(new Date(l.created_at), 'yyyy-MM-dd'));
-      if (bucket) bucket.leads += 1;
+      if (!bucket) return;
+      bucket.leads += 1;
+      const channel = CHANNEL_BY_SOURCE[String(l.lead_source || '')];
+      if (channel === 'google') bucket.googleLeads += 1;
+      else if (channel === 'meta') bucket.metaLeads += 1;
+      else if (channel === 'bing') bucket.bingLeads += 1;
+      else if (channel === 'tiktok') bucket.tiktokLeads += 1;
     });
 
     (data?.sales || []).forEach((c: any) => {
@@ -130,12 +145,24 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
       bucket.revenue += Number(c.final_amount) || 0;
     });
 
-    const withRatio = days.map(d => ({
-      ...d,
-      revenue: Math.round(d.revenue * 100) / 100,
-      spend: Math.round(d.spend * 100) / 100,
-      conversion: d.leads > 0 ? Math.round((d.sales / d.leads) * 1000) / 10 : 0,
-    }));
+    const withRatio = days.map(d => {
+      const googleCost = d.googleLeads * leadCost;
+      const metaCost = d.metaLeads * leadCost;
+      const bingCost = d.bingLeads * leadCost;
+      const tiktokCost = d.tiktokLeads * leadCost;
+      return {
+        ...d,
+        revenue: Math.round(d.revenue * 100) / 100,
+        spend: Math.round(d.spend * 100) / 100,
+        googleCost,
+        metaCost,
+        bingCost,
+        tiktokCost,
+        paidCost: googleCost + metaCost + bingCost + tiktokCost,
+        conversion: d.leads > 0 ? Math.round((d.sales / d.leads) * 1000) / 10 : 0,
+      };
+    });
+
 
     const leads = withRatio.reduce((s, d) => s + d.leads, 0);
     const sales = withRatio.reduce((s, d) => s + d.sales, 0);
