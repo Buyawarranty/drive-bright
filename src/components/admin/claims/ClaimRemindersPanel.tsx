@@ -360,11 +360,50 @@ export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          {drafts.length > 0 && (
+            <div className="rounded-lg border bg-muted/40 p-3 space-y-2">
+              <p className="text-xs font-semibold">
+                Ready to save ({drafts.length})
+              </p>
+              {drafts.map(d => (
+                <div key={d.key} className="flex items-center gap-2 text-xs">
+                  <Badge variant="outline" className={`${kindTone[d.kind] || kindTone.other} text-[11px] shrink-0`}>
+                    {KIND_LABELS[d.kind] ?? 'Reminder'}
+                  </Badge>
+                  <span className="font-medium truncate">{d.title}</span>
+                  <span className="text-muted-foreground shrink-0">
+                    {format(new Date(d.dueLocal), 'EEE d MMM, HH:mm')}
+                  </span>
+                  {d.claimId !== 'none' && claimLabels[d.claimId] && (
+                    <span className="text-muted-foreground truncate">· {claimLabels[d.claimId]}</span>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ml-auto h-6 px-2 shrink-0"
+                    onClick={() => setDrafts(prev => prev.filter(x => x.key !== d.key))}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button variant="outline" onClick={handleAddAnother} disabled={saving}>
+              <Plus className="h-4 w-4 mr-1" /> Add another reminder
+            </Button>
             <Button onClick={handleSave} disabled={saving}>
-              <Plus className="h-4 w-4 mr-1" /> {saving ? 'Saving…' : 'Set reminder'}
+              <Plus className="h-4 w-4 mr-1" />
+              {saving
+                ? 'Saving…'
+                : drafts.length > 0
+                  ? `Set ${drafts.length + (title.trim() ? 1 : 0)} reminders`
+                  : 'Set reminder'}
             </Button>
           </div>
+
         </CardContent>
       </Card>
 
