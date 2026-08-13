@@ -151,10 +151,7 @@ export const ClaimsVehicleAnalytics: React.FC<ClaimsVehicleAnalyticsProps> = ({ 
   const totalClaimsAll = makeStats.reduce((s, d) => s + d.claims, 0);
   const totalPaidAll = makeStats.reduce((s, d) => s + d.totalCost, 0);
   const paidMakes = costliestMakes.filter(m => m.totalCost > 0);
-  const modelsByVolume = useMemo(
-    () => [...modelStats].sort((a, b) => b.claims - a.claims),
-    [modelStats]
-  );
+  const modelsByVolume = [...modelStats].sort((a, b) => b.claims - a.claims);
 
   return (
     <div className="space-y-8">
