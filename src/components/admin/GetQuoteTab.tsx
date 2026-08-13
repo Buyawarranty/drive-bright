@@ -2342,8 +2342,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       console.log('📎 Quote link:', sendLink);
 
       // Send the email with HTML template (customer receives it, sales agent is copied on the same email)
-      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-admin-quote', {
-        body: {
+      const { data: emailResult, error: emailError } = await invokeWithFreshSession('send-admin-quote', {
           to: cleanCustomerEmail,
           agentCopyEmail: agentEmail && agentEmail.toLowerCase() !== cleanCustomerEmail ? agentEmail : undefined,
           agentName: agentDisplayName || undefined,
@@ -2663,8 +2662,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         throw new Error("Couldn't verify the quote link for this vehicle. Please regenerate it and try again.");
       }
 
-      const { error } = await supabase.functions.invoke('send-admin-quote', {
-        body: {
+      const { error } = await invokeWithFreshSession('send-admin-quote', {
           to: adminRecipient.email,
           agentName: adminRecipient.name || undefined,
           copyOnly: true,
@@ -2735,8 +2733,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       const resendAgentEmail = resendAgent.email || adminEmail || null;
       const resendAgentName = resendAgent.name || adminName || null;
 
-      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-admin-quote', {
-        body: {
+      const { data: emailResult, error: emailError } = await invokeWithFreshSession('send-admin-quote', {
           to: quote.customer_email,
           agentCopyEmail: resendAgentEmail && resendAgentEmail.toLowerCase() !== (quote.customer_email || '').toLowerCase() ? resendAgentEmail : undefined,
           agentName: resendAgentName || undefined,
