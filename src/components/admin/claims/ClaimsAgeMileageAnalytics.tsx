@@ -4,6 +4,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { supabase } from '@/integrations/supabase/client';
 import { Calendar, Gauge, TrendingUp, TrendingDown, Target } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { settledCost, claimedCost } from './claimCost';
+
 
 interface ClaimData {
   id: string;
