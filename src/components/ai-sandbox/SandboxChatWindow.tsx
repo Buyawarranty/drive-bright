@@ -27,14 +27,15 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-c
 const AGENT_PREFIX = '(Warranty specialist)';
 
 const OPENING_LINE =
-  "Hi — I'm the AI assistant. I can help you find the right warranty in under a minute. What vehicle is it for? Your registration is quickest, or just tell me the make, model and year.";
+  "Hey — I'm Ruby, the AI assistant here (a real specialist can jump in whenever you want one). Give me a minute and I'll find you the right cover. What's the vehicle? Pop the reg in if you've got it, or just the make, model and year.";
 
 const STARTERS = [
   'AB12 CDE, 2018 Ford Focus, 62,000 miles',
-  "What's covered on the Platinum plan?",
+  "What's covered on Platinum?",
   'Can I pay monthly?',
-  "That feels expensive — can I speak to someone?",
+  "Feels a bit pricey — can I talk to someone?",
 ];
+
 
 type Handover = {
   id: string;
