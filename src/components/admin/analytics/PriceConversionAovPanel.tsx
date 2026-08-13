@@ -131,7 +131,7 @@ export const PriceConversionAovPanel: React.FC<Props> = ({ dateRange }) => {
   const bestBand = useMemo(() => {
     const scored = curve.filter(r => r.quoted >= 20);
     if (!scored.length) return null;
-    return scored.reduce((a, b) => (b.revenuePerQuote > a.revenuePerQuote ? b : a));
+    return scored.reduce((a, b) => (b.profitPerQuote > a.profitPerQuote ? b : a));
   }, [curve]);
 
   /** Sold-price distribution + AOV — works even before the quoted-price data matures. */
