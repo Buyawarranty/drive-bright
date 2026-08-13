@@ -146,15 +146,20 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CalendarClock className="h-5 w-5" />
-            Are you working this weekend?
+            🗓️ Are you working this weekend?
           </DialogTitle>
           <DialogDescription>Tap the days you're working — it's saved right here.</DialogDescription>
         </DialogHeader>
+
+        <div className="rounded-lg border-2 border-destructive bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">
+          ⚠️ IMPORTANT FOR DISTRIBUTION OF LEADS — No confirmation, no leads!
+        </div>
 
         <div className="flex gap-3">
           {dayButton(saturday)}
           {dayButton(sunday)}
         </div>
+
 
         <div className="flex gap-2 pt-2">
           <Button variant="ghost" onClick={closeForWeek} className="flex-1">
