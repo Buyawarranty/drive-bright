@@ -1,6 +1,7 @@
 import chunks from "./site-knowledge.json" with { type: "json" };
 
 export type KnowledgeChunk = { source: string; section: string; text: string };
+export type ScoredChunk = KnowledgeChunk & { score: number; matched: string[] };
 
 const KB = chunks as KnowledgeChunk[];
 
@@ -18,24 +19,66 @@ function tokens(q: string): string[] {
     .filter((t) => t.length > 2 && !STOP.has(t));
 }
 
-export function searchKnowledge(query: string, limit = 4): KnowledgeChunk[] {
+function scoreAll(query: string): ScoredChunk[] {
   const terms = tokens(query);
-  if (!terms.length) return KB.slice(0, limit);
+  if (!terms.length) return [];
 
-  const scored = KB.map((chunk) => {
+  return KB.map((chunk) => {
     const haystack = `${chunk.section}\n${chunk.text}`.toLowerCase();
     let score = 0;
+    const matched: string[] = [];
     for (const term of terms) {
       const hits = haystack.split(term).length - 1;
-      if (hits > 0) score += 1 + Math.min(hits, 5) * 0.4;
+      if (hits > 0) {
+        score += 1 + Math.min(hits, 5) * 0.4;
+        matched.push(term);
+      }
     }
-    return { chunk, score };
+    // Reward passages that cover more of the question, not just repeat one word.
+    const coverage = matched.length / terms.length;
+    return { ...chunk, score: score * (0.4 + coverage), matched };
   })
-    .filter((s) => s.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit);
+    .filter((c) => c.score > 0)
+    .sort((a, b) => b.score - a.score);
+}
 
-  return scored.map((s) => s.chunk);
+/** Backwards-compatible simple search. */
+export function searchKnowledge(query: string, limit = 4): KnowledgeChunk[] {
+  return scoreAll(query).slice(0, limit);
+}
+
+/**
+ * Grounded retrieval. Returns the best approved passages plus an explicit
+ * confidence verdict so the assistant can refuse to answer rather than guess
+ * about cover, exclusions, limits or contractual terms.
+ */
+export function retrieveGrounded(query: string, limit = 5) {
+  const terms = tokens(query);
+  const scored = scoreAll(query);
+  const top = scored.slice(0, limit);
+  const best = top[0]?.score ?? 0;
+  // Question words actually found anywhere in the approved material.
+  const covered = new Set(top.flatMap((c) => c.matched));
+  const coverage = terms.length ? covered.size / terms.length : 0;
+
+  const confident = best >= 1.6 && coverage >= 0.5 && top.length > 0;
+
+  return {
+    confident,
+    confidence: Number(best.toFixed(2)),
+    coverage: Number(coverage.toFixed(2)),
+    found: top.length,
+    unmatched_terms: terms.filter((t) => !covered.has(t)),
+    passages: top.map((c) => ({
+      source: c.source,
+      section: c.section,
+      text: c.text,
+      relevance: Number(c.score.toFixed(2)),
+    })),
+    instruction: confident
+      ? "Answer ONLY from these approved passages. Do not add cover, limits, exclusions or terms that are not written above. If the passages do not actually answer the question, treat it as not confident."
+      : "NOT GROUNDED: the approved website, product and terms material does not clearly answer this. Do NOT guess or generalise about cover, exclusions, limits or contractual terms. Say plainly that you want to get it confirmed, then offer to connect a warranty specialist (check_availability first) or take their details for a callback.",
+  };
 }
 
 export const knowledgeSources = [...new Set(KB.map((c) => c.source))];
