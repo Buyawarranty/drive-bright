@@ -6180,39 +6180,8 @@ Questions? Call 0330 229 5040`;
                 )}>
                   <div className="max-w-6xl mx-auto rounded-xl border border-gray-200 border-t-4 border-t-emerald-500 bg-white px-3 py-3 shadow-[0_-8px_24px_-10px_rgba(0,0,0,0.18)]">
 
-                    {/* Note banner: anything under £399 needs an uploaded price match */}
-                    {Math.min(displayedTotalPrice, displayedPayInFullPrice) < 399 && (
-                      <div className={cn(
-                        'mb-2.5 flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold',
-                        priceMatchEvidenced
-                          ? 'border-sky-300 bg-sky-50 text-sky-900'
-                          : 'border-amber-400 bg-amber-50 text-amber-900'
-                      )}>
-                        <AlertTriangle className="h-4 w-4 shrink-0" />
-                        <span>
-                          Note: £399 is the cheapest warranty available, except for a price match.
-                          {' '}
-                          {priceMatchEvidenced
-                            ? 'Price match evidence is on file, so £' + Math.min(displayedTotalPrice, displayedPayInFullPrice) + ' is allowed.'
-                            : 'Please upload the competitor quote as a price match to sell at £' + Math.min(displayedTotalPrice, displayedPayInFullPrice) + '.'}
-                        </span>
-                        {!priceMatchEvidenced && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            className="h-7 text-[11px] font-semibold bg-sky-700 hover:bg-sky-800 text-white"
-                            onClick={() => {
-                              setPriceMatchMode(true);
-                              setTimeout(() => {
-                                document.getElementById('price-match-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                              }, 80);
-                            }}
-                          >
-                            Upload price match
-                          </Button>
-                        )}
-                      </div>
-                    )}
+
+
 
                     <div className="grid grid-cols-2 gap-2.5 xl:grid-cols-4">
 
