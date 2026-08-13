@@ -193,6 +193,9 @@ function AnalyticsSectionHeading({
 export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const isSalesLead = userRole === 'sales_lead';
   const [customers, setCustomers] = useState<Customer[]>([]);
+  // Cancellations/refunds are fetched separately: they must include archived (is_deleted)
+  // records so the numbers reconcile with Customer Management.
+  const [cancellations, setCancellations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const hasLoadedOnceRef = useRef(false);
@@ -280,6 +283,23 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       console.log('Real customers (matching Customer Dashboard):', realCustomers.length);
       
       setCustomers(realCustomers);
+
+      // Cancellations / refunds: separate query so archived (is_deleted) records are included.
+      // Customer Management shows those as cancelled, so analytics must count them too.
+      const { data: cancelData, error: cancelError } = await supabase
+        .from('customers')
+        .select('id, name, email, status, final_amount, signup_date, updated_at, deleted_at, cancellation_note_updated_at, is_deleted, warranty_reference_number, is_manual_entry, purchase_source')
+        .in('status', ['Cancelled', 'cancelled', 'Refunded', 'refunded'])
+        .order('updated_at', { ascending: false });
+
+      if (cancelError) {
+        console.error('Error fetching cancellations for analytics:', cancelError);
+        setCancellations([]);
+      } else {
+        setCancellations((cancelData || []).filter(c => !isTestOrder(c.name, c.email)));
+      }
+
+
 
       // Fetch admin users separately so a permissions issue here does not blank the whole analytics tab
       const { data: usersData, error: usersError } = await supabase
@@ -629,50 +649,91 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     };
   }, [filteredCustomers]);
 
+  // Best-known date the order was actually marked cancelled/refunded.
+  // Order of trust: cancellation note timestamp > archive timestamp > row updated_at.
+  // Never allow a date before the order existed.
+  const cancelDateOf = (c: any): Date => {
+    const raw = c.cancellation_note_updated_at || c.deleted_at || c.updated_at || c.signup_date;
+    const d = new Date(raw);
+    const signup = new Date(c.signup_date);
+    if (!isNaN(signup.getTime()) && d < signup) return signup;
+    return d;
+  };
+
+  // Cancellations that fall inside the selected period, by cancellation date (not signup date).
+  const periodCancellations = useMemo(() => {
+    return cancellations.filter(c => {
+      if (!effectiveDateRange?.from) return true;
+      const when = cancelDateOf(c);
+      const fromStart = new Date(effectiveDateRange.from);
+      fromStart.setHours(0, 0, 0, 0);
+      if (when < fromStart) return false;
+      if (effectiveDateRange.to) {
+        const toEnd = new Date(effectiveDateRange.to);
+        toEnd.setHours(23, 59, 59, 999);
+        if (when > toEnd) return false;
+      }
+      return true;
+    });
+  }, [cancellations, effectiveDateRange]);
+
   // Refund/cancellation metrics calculation
   const refundMetrics = useMemo(() => {
-    const refundedCustomers = filteredCustomers.filter(c => isRefunded(c.status));
-    const totalRefundAmount = refundedCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+    const totalRefundAmount = periodCancellations.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
     const totalSalesCount = filteredCustomers.length;
     const totalSalesRevenue = filteredCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
-    const percentOfSales = totalSalesCount > 0 ? ((refundedCustomers.length / totalSalesCount) * 100) : 0;
+    const percentOfSales = totalSalesCount > 0 ? ((periodCancellations.length / totalSalesCount) * 100) : 0;
     const percentOfRevenue = totalSalesRevenue > 0 ? ((totalRefundAmount / totalSalesRevenue) * 100) : 0;
     return {
-      count: refundedCustomers.length,
-      totalAmount: totalRefundAmount,
+      count: periodCancellations.length,
+      archived: periodCancellations.filter(c => c.is_deleted).length,
+      totalAmount: Math.round(totalRefundAmount),
       percentOfSales: percentOfSales.toFixed(1),
       percentOfRevenue: percentOfRevenue.toFixed(1),
     };
-  }, [filteredCustomers]);
+  }, [periodCancellations, filteredCustomers]);
 
-  // Monthly refund data (last 12 months)
+  // Monthly refund data (last 12 months) — counts every cancelled/refunded order,
+  // including archived ones and zero-value orders.
   const monthlyRefunds = useMemo(() => {
     const months = Array.from({ length: 12 }, (_, i) => {
       const date = new Date();
+      date.setDate(1);
       date.setMonth(date.getMonth() - i);
       return {
         month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         monthKey: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
         refundAmount: 0,
-        refundCount: 0
+        refundCount: 0,
+        dayCounts: new Map<string, number>(),
+        bulkDay: null as string | null,
       };
     }).reverse();
 
-    customers.forEach(customer => {
-      if (isRefunded(customer.status) && customer.final_amount) {
-        // Use updated_at as cancellation date (when status changed), fall back to signup_date
-        const cancelDate = new Date(customer.updated_at || customer.signup_date);
-        const monthKey = `${cancelDate.getFullYear()}-${String(cancelDate.getMonth() + 1).padStart(2, '0')}`;
-        const monthData = months.find(m => m.monthKey === monthKey);
-        if (monthData) {
-          monthData.refundAmount += Number(customer.final_amount) || 0;
-          monthData.refundCount += 1;
-        }
+    cancellations.forEach(customer => {
+      const cancelDate = cancelDateOf(customer);
+      if (isNaN(cancelDate.getTime())) return;
+      const monthKey = `${cancelDate.getFullYear()}-${String(cancelDate.getMonth() + 1).padStart(2, '0')}`;
+      const monthData = months.find(m => m.monthKey === monthKey);
+      if (!monthData) return;
+      monthData.refundAmount += Number(customer.final_amount) || 0;
+      monthData.refundCount += 1;
+      const dayKey = cancelDate.toISOString().slice(0, 10);
+      monthData.dayCounts.set(dayKey, (monthData.dayCounts.get(dayKey) || 0) + 1);
+    });
+
+    // Flag months where a single day holds 10+ status changes — that is a bulk
+    // tidy-up of historic orders, not a real day of cancellations.
+    months.forEach(m => {
+      m.refundAmount = Math.round(m.refundAmount);
+      for (const [day, n] of m.dayCounts.entries()) {
+        if (n >= 10) m.bulkDay = day;
       }
     });
 
     return months;
-  }, [customers]);
+  }, [cancellations]);
+
 
   // Normalize and categorize vehicle fuel types
   const normalizeVehicleType = (fuelType: string | null): string => {
@@ -2278,20 +2339,30 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               {monthlyRefunds.map((month) => (
                 <div 
                   key={month.monthKey}
-                  className="flex-shrink-0 min-w-[80px] text-center p-2 bg-muted/30 rounded"
+                  className={`flex-shrink-0 min-w-[80px] text-center p-2 rounded ${month.bulkDay ? 'bg-amber-100/60 border border-amber-300' : 'bg-muted/30'}`}
+                  title={month.bulkDay ? `Includes a bulk tidy-up: 10+ historic orders were marked cancelled on ${month.bulkDay}` : undefined}
                 >
                   <p className="text-xs text-muted-foreground">{month.month}</p>
                   <p className="text-sm font-semibold text-red-600">
                     £{month.refundAmount.toLocaleString()}
                   </p>
                   <p className="text-xs text-muted-foreground">{month.refundCount} cancelled</p>
+                  {month.bulkDay && (
+                    <p className="text-[10px] text-amber-700 font-medium mt-0.5">bulk tidy-up</p>
+                  )}
                 </div>
               ))}
             </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Counted on the date the order was marked cancelled or refunded (including archived orders, so it matches Customer Management).
+              Months flagged <span className="text-amber-700 font-medium">bulk tidy-up</span> contain a single day where 10+ historic orders were
+              switched to cancelled at once — that is back-dated admin housekeeping, not real cancellations for that month.
+            </p>
           </div>
         </CardContent>
       </Card>
       </>
+
       )}
 
 
