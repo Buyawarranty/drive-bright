@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { PoundSterling, FileText, CheckCircle, TrendingUp } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 import { ClaimsVehicleAnalytics } from './ClaimsVehicleAnalytics';
+import { settledCost } from './claimCost';
 import {
   format,
   startOfWeek, endOfWeek,
@@ -23,6 +24,8 @@ interface ClaimData {
   id: string;
   status: string;
   payment_amount?: number;
+  claimed_amount?: number | null;
+  paid_amount?: number | null;
   created_at: string;
   paid_at?: string;
   approved_at?: string;
@@ -94,8 +97,8 @@ export const ClaimsAnalyticsPanel: React.FC<ClaimsAnalyticsPanelProps> = ({ clai
   const summary = useMemo(() => {
     const total = filteredClaims.length;
     const approved = filteredClaims.filter(c => c.status === 'approved' || c.status === 'paid').length;
-    const paid = filteredClaims.filter(c => c.payment_amount && c.payment_amount > 0);
-    const totalPaid = paid.reduce((s, c) => s + (c.payment_amount || 0), 0);
+    const paid = filteredClaims.filter(c => settledCost(c) > 0);
+    const totalPaid = paid.reduce((s, c) => s + settledCost(c), 0);
     const avgClaim = paid.length > 0 ? totalPaid / paid.length : 0;
     return { total, approved, totalPaid, avgClaim, paidCount: paid.length };
   }, [filteredClaims]);
@@ -114,7 +117,7 @@ export const ClaimsAnalyticsPanel: React.FC<ClaimsAnalyticsPanelProps> = ({ clai
           const d = new Date(c.created_at);
           return isWithinInterval(d, { start: weekStart, end: weekEnd });
         });
-        const paid = inWeek.reduce((s, c) => s + (c.payment_amount || 0), 0);
+        const paid = inWeek.reduce((s, c) => s + settledCost(c), 0);
         return {
           label: format(weekStart, 'dd MMM'),
           totalClaims: inWeek.length,
@@ -132,7 +135,7 @@ export const ClaimsAnalyticsPanel: React.FC<ClaimsAnalyticsPanelProps> = ({ clai
         const entry = years.get(y)!;
         entry.totalClaims++;
         if (c.status === 'approved' || c.status === 'paid') entry.approvedClaims++;
-        entry.totalPaid += c.payment_amount || 0;
+        entry.totalPaid += settledCost(c);
       });
       return Array.from(years.entries())
         .sort(([a], [b]) => a - b)
@@ -151,7 +154,7 @@ export const ClaimsAnalyticsPanel: React.FC<ClaimsAnalyticsPanelProps> = ({ clai
         const d = new Date(c.created_at);
         return isWithinInterval(d, { start: monthStart, end: monthEnd });
       });
-      const paid = inMonth.reduce((s, c) => s + (c.payment_amount || 0), 0);
+      const paid = inMonth.reduce((s, c) => s + settledCost(c), 0);
       return {
         label: format(monthStart, 'MMM yy'),
         totalClaims: inMonth.length,

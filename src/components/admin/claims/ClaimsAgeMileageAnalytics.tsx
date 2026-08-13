@@ -4,15 +4,20 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { supabase } from '@/integrations/supabase/client';
 import { Calendar, Gauge, TrendingUp, TrendingDown, Target } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { settledCost, claimedCost } from './claimCost';
+
 
 interface ClaimData {
   id: string;
   status: string;
   payment_amount?: number;
+  claimed_amount?: number | null;
+  paid_amount?: number | null;
   created_at: string;
   vehicle_registration?: string;
   mileage_at_claim?: number;
 }
+
 
 interface ClaimsAgeMileageAnalyticsProps {
   claims: ClaimData[];
@@ -77,7 +82,7 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
 
   // --- Vehicle Age analytics ---
   const ageData = useMemo(() => {
-    const bands = AGE_BANDS.map(b => ({ ...b, claims: 0, totalCost: 0, paidCount: 0 }));
+    const bands = AGE_BANDS.map(b => ({ ...b, claims: 0, totalCost: 0, paidCount: 0, totalClaimed: 0 }));
 
     claims.forEach(c => {
       const reg = c.vehicle_registration?.toUpperCase();
@@ -91,8 +96,10 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
       const band = bands.find(b => age >= b.min && age <= b.max);
       if (band) {
         band.claims++;
-        if (c.payment_amount && c.payment_amount > 0) {
-          band.totalCost += c.payment_amount;
+        band.totalClaimed += claimedCost(c);
+        const paid = settledCost(c);
+        if (paid > 0) {
+          band.totalCost += paid;
           band.paidCount++;
         }
       }
@@ -102,6 +109,7 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
       band: b.label,
       claims: b.claims,
       totalCost: Math.round(b.totalCost),
+      totalClaimed: Math.round(b.totalClaimed),
       avgCost: b.paidCount > 0 ? Math.round(b.totalCost / b.paidCount) : 0,
       costPerClaim: b.claims > 0 ? Math.round(b.totalCost / b.claims) : 0,
       paidCount: b.paidCount,
@@ -109,9 +117,10 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
   }, [claims, vehicleMap]);
 
 
+
   // --- Mileage analytics ---
   const mileageData = useMemo(() => {
-    const bands = MILEAGE_BANDS.map(b => ({ ...b, claims: 0, totalCost: 0, paidCount: 0 }));
+    const bands = MILEAGE_BANDS.map(b => ({ ...b, claims: 0, totalCost: 0, paidCount: 0, totalClaimed: 0 }));
 
     claims.forEach(c => {
       const reg = c.vehicle_registration?.toUpperCase();
@@ -122,8 +131,10 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
       const band = bands.find(b => miles >= b.min && miles <= b.max);
       if (band) {
         band.claims++;
-        if (c.payment_amount && c.payment_amount > 0) {
-          band.totalCost += c.payment_amount;
+        band.totalClaimed += claimedCost(c);
+        const paid = settledCost(c);
+        if (paid > 0) {
+          band.totalCost += paid;
           band.paidCount++;
         }
       }
@@ -133,7 +144,9 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
       band: b.label,
       claims: b.claims,
       totalCost: Math.round(b.totalCost),
+      totalClaimed: Math.round(b.totalClaimed),
       avgCost: b.paidCount > 0 ? Math.round(b.totalCost / b.paidCount) : 0,
+
       costPerClaim: b.claims > 0 ? Math.round(b.totalCost / b.claims) : 0,
       paidCount: b.paidCount,
     }));
@@ -182,9 +195,11 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
       </div>
 
       <p className="text-xs text-muted-foreground -mt-4">
-        Claim counts include every claim. Cost figures only include claims that have actually been paid out,
-        so "total cost" divided by claim count will not equal the average per settled claim. Volume and cost are
-        separate measures — a band can have very few claims while another band has the highest average payout.
+        Claim counts include every claim. Cost figures use only the amount actually settled on approved and paid
+        claims — garage quotes on declined, appealed or still-open claims are excluded, because those were never
+        paid. That is why total paid divided by claim count will not equal the average per settled claim, and why
+        volume and cost are separate measures: a band can have very few claims while another has the highest
+        average payout.
       </p>
 
       {/* Insight Cards */}

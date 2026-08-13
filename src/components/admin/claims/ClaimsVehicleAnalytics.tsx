@@ -5,11 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Car, AlertTriangle, TrendingDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { normaliseMake, normaliseModelFamily } from './vehicleNormalisation';
+import { settledCost } from './claimCost';
 
 interface ClaimData {
   id: string;
   status: string;
   payment_amount?: number;
+  claimed_amount?: number | null;
+  paid_amount?: number | null;
   created_at: string;
   vehicle_registration?: string;
 }
@@ -62,8 +65,9 @@ export const ClaimsVehicleAnalytics: React.FC<ClaimsVehicleAnalyticsProps> = ({ 
       if (!byMake.has(make)) byMake.set(make, { count: 0, totalCost: 0, paidCount: 0 });
       const entry = byMake.get(make)!;
       entry.count++;
-      if (c.payment_amount && c.payment_amount > 0) {
-        entry.totalCost += c.payment_amount;
+      const paid = settledCost(c);
+      if (paid > 0) {
+        entry.totalCost += paid;
         entry.paidCount++;
       }
     });
@@ -104,8 +108,9 @@ export const ClaimsVehicleAnalytics: React.FC<ClaimsVehicleAnalyticsProps> = ({ 
       if (!byModel.has(key)) byModel.set(key, { count: 0, totalCost: 0, paidCount: 0 });
       const entry = byModel.get(key)!;
       entry.count++;
-      if (c.payment_amount && c.payment_amount > 0) {
-        entry.totalCost += c.payment_amount;
+      const paid = settledCost(c);
+      if (paid > 0) {
+        entry.totalCost += paid;
         entry.paidCount++;
       }
     });
@@ -150,6 +155,11 @@ export const ClaimsVehicleAnalytics: React.FC<ClaimsVehicleAnalyticsProps> = ({ 
         <h3 className="text-lg font-semibold">Vehicle Reliability & Cost Intelligence</h3>
       </div>
 
+      <p className="text-xs text-muted-foreground">
+        Cost figures use the amount actually settled on approved and paid claims only. Garage quotes on
+        declined, appealed or open claims are excluded, so these totals reflect real spend, not exposure.
+      </p>
+
       {/* Top offenders summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
@@ -173,7 +183,7 @@ export const ClaimsVehicleAnalytics: React.FC<ClaimsVehicleAnalyticsProps> = ({ 
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <TrendingDown className="h-4 w-4 text-orange-500" />
-              Most Costly Makes
+              Most Paid Out by Make
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-1.5">
@@ -181,7 +191,7 @@ export const ClaimsVehicleAnalytics: React.FC<ClaimsVehicleAnalyticsProps> = ({ 
               <div key={m.make} className="flex justify-between items-center text-sm">
                 <span className="font-medium">{i + 1}. {m.make}</span>
                 <Badge variant="secondary" className="text-xs">
-                  £{m.totalCost.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  £{m.totalCost.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} paid
                 </Badge>
               </div>
             ))}
@@ -192,7 +202,7 @@ export const ClaimsVehicleAnalytics: React.FC<ClaimsVehicleAnalyticsProps> = ({ 
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Car className="h-4 w-4 text-blue-500" />
-              Highest Avg Claim Cost
+              Highest Avg Payout
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-1.5">
@@ -256,7 +266,7 @@ export const ClaimsVehicleAnalytics: React.FC<ClaimsVehicleAnalyticsProps> = ({ 
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Total Cost by Make & Model</CardTitle>
-          <CardDescription>Top 15 costliest vehicle models</CardDescription>
+          <CardDescription>Top 15 vehicle models by actual amount paid out</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={Math.max(300, modelStats.length * 28)}>
