@@ -1349,6 +1349,38 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
                           <p className="text-xs text-destructive">⚠️ Differs from quoted price (£{currentPrice.totalPrice})</p>
                         )}
+
+                        {/* Minimum sale price notice — always on, so the floor is never a
+                            surprise after the amount is typed. Turns red once breached. */}
+                        <div
+                          className={cn(
+                            'rounded-md border px-2.5 py-2 text-xs font-semibold',
+                            underNetFloor
+                              ? 'border-destructive bg-destructive/5 text-destructive'
+                              : priceMatchReady && enteredAmount < netFloorAmount
+                                ? 'border-sky-300 bg-sky-50 text-sky-900'
+                                : 'border-slate-300 bg-slate-50 text-slate-700'
+                          )}
+                        >
+                          Minimum sale price for this cover £{netFloorAmount.toFixed(2)} —{' '}
+                          {paymentType.replace('months', ' month')} · £{effectiveClaimLimit} claim limit · £
+                          {excessAmount} excess · £{labourRate}/hr labour
+                          {underNetFloor ? (
+                            <span className="block font-bold">
+                              £{Number.isFinite(enteredAmount) ? enteredAmount.toFixed(2) : '0.00'} is below it — this
+                              payment cannot be confirmed. Upload price match evidence or contact management.
+                            </span>
+                          ) : priceMatchReady && enteredAmount < netFloorAmount ? (
+                            <span className="block">Allowed: evidenced price match on file.</span>
+                          ) : (
+                            <span className="block font-normal">
+                              This figure moves with the term, claim limit, excess and labour rate: base £399 (1 year),
+                              £699 (2 year), £999 (3 year), shaped up for richer cover and halved for motorbikes.
+                              Whatever discount is applied, nothing can be confirmed below the figure shown.
+                            </span>
+                          )}
+                        </div>
+
                         {discountBlocked && (
                           <p className="text-xs font-semibold text-destructive">
                             {underNetFloor
@@ -1356,6 +1388,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                               : `Blocked — that is ${discountPct.toFixed(1)}% off. You cannot confirm this payment. Please contact management to authorise anything below £${minAllowedAmount.toFixed(2)} (max ${DISCOUNT_CEILING_PCT}% off).`}
                           </p>
                         )}
+
 
                         {discountBlocked && blockRoute === 'none' && (
                           <div className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2.5">
