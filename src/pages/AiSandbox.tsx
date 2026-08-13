@@ -27,13 +27,21 @@ export default function AiSandbox() {
   const [userId, setUserId] = useState<string | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [displayName, setDisplayName] = useState<string | null>(null);
+  const { liveCount, meOnline, setOnDuty } = useSandboxSpecialistPresence();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUserId(data.user?.id ?? null);
+      setDisplayName(
+        (data.user?.user_metadata?.full_name as string | undefined) ??
+          data.user?.email?.split('@')[0] ??
+          null,
+      );
       setCheckingAuth(false);
     });
   }, []);
+
 
   const loadThreads = useCallback(async () => {
     const { data, error } = await supabase
