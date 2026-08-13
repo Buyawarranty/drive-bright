@@ -177,272 +177,422 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
     const winner = [...pool].sort((a, b) => b.avgCost - a.avgCost)[0];
     return winner ? { ...winner, lowSample: winner.paidCount < MIN_SETTLED } : undefined;
   };
+  const pickMostPaid = (rows: typeof ageData) =>
+    [...rows].filter(d => d.totalCost > 0).sort((a, b) => b.totalCost - a.totalCost)[0];
 
   const mostClaimsAge = [...ageData].sort((a, b) => b.claims - a.claims)[0];
   const leastClaimsAge = [...ageData].filter(d => d.claims > 0).sort((a, b) => a.claims - b.claims)[0];
   const costliestAge = pickCostliest(ageData);
+  const mostPaidAge = pickMostPaid(ageData);
   const mostClaimsMileage = [...mileageData].sort((a, b) => b.claims - a.claims)[0];
   const leastClaimsMileage = [...mileageData].filter(d => d.claims > 0).sort((a, b) => a.claims - b.claims)[0];
   const costliestMileage = pickCostliest(mileageData);
+  const mostPaidMileage = pickMostPaid(mileageData);
 
+  const totalClaims = ageData.reduce((s, d) => s + d.claims, 0) + 0;
+  const totalPaid = ageData.reduce((s, d) => s + d.totalCost, 0);
+  const totalSettled = ageData.reduce((s, d) => s + d.paidCount, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center gap-2">
         <Target className="h-5 w-5 text-orange-500" />
         <h3 className="text-lg font-semibold">Claims by Vehicle Age & Mileage</h3>
         <Badge variant="secondary" className="text-xs">Marketing Insights</Badge>
       </div>
 
-      <p className="text-xs text-muted-foreground -mt-4">
-        Claim counts include every claim. Cost figures use only the amount actually settled on approved and paid
-        claims — garage quotes on declined, appealed or still-open claims are excluded, because those were never
-        paid. That is why total paid divided by claim count will not equal the average per settled claim, and why
-        volume and cost are separate measures: a band can have very few claims while another has the highest
-        average payout.
+      <p className="text-xs text-muted-foreground -mt-6">
+        These are two separate measures and they are reported separately below. <strong>Claims made</strong> counts
+        every claim submitted, whatever the outcome. <strong>Claims paid out</strong> counts only money actually
+        settled on approved and paid claims — garage quotes on declined, appealed or still-open claims are excluded.
+        A band can be top for volume and near the bottom for payout, and vice versa.
       </p>
 
-      {/* Insight Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {mostClaimsAge && mostClaimsAge.claims > 0 && (
-          <Card className="border-l-4 border-l-red-500">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-red-500" />
-                Most Claims by Age
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{mostClaimsAge.band}</p>
-              <p className="text-xs text-muted-foreground">
-                {mostClaimsAge.claims} claims · £{mostClaimsAge.totalCost.toLocaleString()} paid across {mostClaimsAge.paidCount} settled
-              </p>
-              <p className="text-xs text-muted-foreground">£{mostClaimsAge.costPerClaim.toLocaleString()} per claim overall</p>
-            </CardContent>
-          </Card>
-        )}
+      {/* ============ SECTION 1: CLAIMS MADE (VOLUME) ============ */}
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-center gap-2 border-l-4 border-l-slate-400 pl-3">
+          <h4 className="text-base font-semibold">1. Claims made (volume)</h4>
+          <Badge variant="outline" className="text-xs">Every claim submitted · {totalClaims} with age data</Badge>
+        </div>
+        <p className="text-xs text-muted-foreground pl-3">
+          Outcome is ignored here on purpose — declined and open claims still tell you where claims come from.
+          No money figures appear in this section.
+        </p>
 
-        {leastClaimsAge && leastClaimsAge.claims > 0 && leastClaimsAge.band !== mostClaimsAge?.band && (
-          <Card className="border-l-4 border-l-green-500">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingDown className="h-4 w-4 text-green-500" />
-                Fewest Claims by Age
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{leastClaimsAge.band}</p>
-              <p className="text-xs text-muted-foreground">
-                {leastClaimsAge.claims} claims · lowest volume, not necessarily lowest cost
-              </p>
-            </CardContent>
-          </Card>
-        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {mostClaimsAge && mostClaimsAge.claims > 0 && (
+            <Card className="border-l-4 border-l-red-500">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-red-500" />
+                  Most claims by age
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{mostClaimsAge.band}</p>
+                <p className="text-xs text-muted-foreground">{mostClaimsAge.claims} claims submitted</p>
+              </CardContent>
+            </Card>
+          )}
 
-        {costliestAge && costliestAge.avgCost > 0 && (
-          <Card className="border-l-4 border-l-amber-500">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-amber-500" />
-                Highest Average Payout by Age
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{costliestAge.band}</p>
-              <p className="text-xs text-muted-foreground">
-                £{costliestAge.avgCost.toLocaleString()} average across {costliestAge.paidCount} settled claims
-              </p>
-              {costliestAge.lowSample && (
-                <p className="text-xs text-amber-600">Small sample — treat as indicative only</p>
-              )}
-            </CardContent>
-          </Card>
-        )}
+          {leastClaimsAge && leastClaimsAge.claims > 0 && leastClaimsAge.band !== mostClaimsAge?.band && (
+            <Card className="border-l-4 border-l-green-500">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <TrendingDown className="h-4 w-4 text-green-500" />
+                  Fewest claims by age
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{leastClaimsAge.band}</p>
+                <p className="text-xs text-muted-foreground">{leastClaimsAge.claims} claims submitted</p>
+              </CardContent>
+            </Card>
+          )}
 
-        {mostClaimsMileage && mostClaimsMileage.claims > 0 && (
-          <Card className="border-l-4 border-l-purple-500">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-purple-500" />
-                Most Claims by Mileage
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{mostClaimsMileage.band}</p>
-              <p className="text-xs text-muted-foreground">
-                {mostClaimsMileage.claims} claims · £{mostClaimsMileage.totalCost.toLocaleString()} paid across {mostClaimsMileage.paidCount} settled
-              </p>
-              <p className="text-xs text-muted-foreground">£{mostClaimsMileage.costPerClaim.toLocaleString()} per claim overall</p>
-            </CardContent>
-          </Card>
-        )}
+          {mostClaimsMileage && mostClaimsMileage.claims > 0 && (
+            <Card className="border-l-4 border-l-purple-500">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-purple-500" />
+                  Most claims by mileage
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{mostClaimsMileage.band}</p>
+                <p className="text-xs text-muted-foreground">{mostClaimsMileage.claims} claims submitted</p>
+              </CardContent>
+            </Card>
+          )}
 
-        {leastClaimsMileage && leastClaimsMileage.claims > 0 && leastClaimsMileage.band !== mostClaimsMileage?.band && (
-          <Card className="border-l-4 border-l-blue-500">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingDown className="h-4 w-4 text-blue-500" />
-                Fewest Claims by Mileage
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{leastClaimsMileage.band}</p>
-              <p className="text-xs text-muted-foreground">
-                {leastClaimsMileage.claims} claims · lowest volume, not necessarily lowest cost
-              </p>
-            </CardContent>
-          </Card>
-        )}
+          {leastClaimsMileage && leastClaimsMileage.claims > 0 && leastClaimsMileage.band !== mostClaimsMileage?.band && (
+            <Card className="border-l-4 border-l-blue-500">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <TrendingDown className="h-4 w-4 text-blue-500" />
+                  Fewest claims by mileage
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{leastClaimsMileage.band}</p>
+                <p className="text-xs text-muted-foreground">{leastClaimsMileage.claims} claims submitted</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
-        {costliestMileage && costliestMileage.avgCost > 0 && (
-          <Card className="border-l-4 border-l-orange-500">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-orange-500" />
-                Highest Average Payout by Mileage
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{costliestMileage.band}</p>
-              <p className="text-xs text-muted-foreground">
-                £{costliestMileage.avgCost.toLocaleString()} average across {costliestMileage.paidCount} settled claims
-              </p>
-              {costliestMileage.lowSample && (
-                <p className="text-xs text-amber-600">Small sample — treat as indicative only</p>
-              )}
-            </CardContent>
-          </Card>
-        )}
-      </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {hasAgeData && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-orange-500" />
+                  Claims made by vehicle age
+                </CardTitle>
+                <CardDescription>Claim count only — no cost in this chart</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={ageData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="band" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="claims" name="Claims made" radius={[4, 4, 0, 0]}>
+                      {ageData.map((_, i) => (
+                        <Cell key={i} fill={COLORS_AGE[i % COLORS_AGE.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
 
+          {hasMileageData && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Gauge className="h-4 w-4 text-blue-500" />
+                  Claims made by mileage band
+                </CardTitle>
+                <CardDescription>Claim count only — no cost in this chart</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={mileageData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="band" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="claims" name="Claims made" radius={[4, 4, 0, 0]}>
+                      {mileageData.map((_, i) => (
+                        <Cell key={i} fill={COLORS_MILEAGE[i % COLORS_MILEAGE.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
-      {/* Age Chart */}
-      {hasAgeData && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-orange-500" />
-              Claims by Vehicle Age
-            </CardTitle>
-            <CardDescription>
-              Which age bands generate the most claims and cost — older vehicles typically have more and costlier repairs
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={320}>
-              <BarChart data={ageData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="band" tick={{ fontSize: 11 }} />
-                <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} tickFormatter={(v) => `£${v}`} />
-                <Tooltip
-                  formatter={(value: number, name: string) =>
-                    name.includes('£') || name.includes('Cost') ? `£${value.toLocaleString()}` : value
-                  }
-                />
-                <Legend />
-                <Bar yAxisId="left" dataKey="claims" name="Total Claims" radius={[4, 4, 0, 0]}>
-                  {ageData.map((_, i) => (
-                    <Cell key={i} fill={COLORS_AGE[i % COLORS_AGE.length]} />
-                  ))}
-                </Bar>
-                <Bar yAxisId="right" dataKey="totalCost" fill="#3b82f6" name="Total Cost (£)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Mileage Chart */}
-      {hasMileageData && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Gauge className="h-4 w-4 text-blue-500" />
-              Claims by Mileage Band
-            </CardTitle>
-            <CardDescription>
-              How mileage correlates with claim frequency and repair cost — identify high-risk mileage segments
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={320}>
-              <BarChart data={mileageData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="band" tick={{ fontSize: 11 }} />
-                <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} tickFormatter={(v) => `£${v}`} />
-                <Tooltip
-                  formatter={(value: number, name: string) =>
-                    name.includes('£') || name.includes('Cost') ? `£${value.toLocaleString()}` : value
-                  }
-                />
-                <Legend />
-                <Bar yAxisId="left" dataKey="claims" name="Total Claims" radius={[4, 4, 0, 0]}>
-                  {mileageData.map((_, i) => (
-                    <Cell key={i} fill={COLORS_MILEAGE[i % COLORS_MILEAGE.length]} />
-                  ))}
-                </Bar>
-                <Bar yAxisId="right" dataKey="totalCost" fill="#f97316" name="Total Cost (£)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Breakdown Tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {hasAgeData && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Age Band Breakdown</CardTitle>
-              <CardDescription className="text-xs">Avg payout = total paid ÷ settled claims. Per claim = total paid ÷ all claims.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1.5">
-                <div className="grid grid-cols-5 text-xs font-medium text-muted-foreground border-b pb-1">
-                  <span>Age</span><span className="text-right">Claims</span><span className="text-right">Settled</span><span className="text-right">Total Paid</span><span className="text-right">Avg Payout</span>
-                </div>
-                {ageData.filter(d => d.claims > 0).map(d => (
-                  <div key={d.band} className="grid grid-cols-5 text-sm">
-                    <span className="font-medium">{d.band}</span>
-                    <span className="text-right">{d.claims}</span>
-                    <span className="text-right">{d.paidCount}</span>
-                    <span className="text-right">£{d.totalCost.toLocaleString()}</span>
-                    <span className={`text-right ${d.avgCost > 500 ? 'text-red-600 font-medium' : ''}`}>£{d.avgCost.toLocaleString()}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {hasAgeData && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Claims made — age bands</CardTitle>
+                <CardDescription className="text-xs">Share of all claims with a known vehicle year</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1.5">
+                  <div className="grid grid-cols-3 text-xs font-medium text-muted-foreground border-b pb-1">
+                    <span>Age</span><span className="text-right">Claims made</span><span className="text-right">Share</span>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {hasMileageData && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Mileage Band Breakdown</CardTitle>
-              <CardDescription className="text-xs">Avg payout = total paid ÷ settled claims. Per claim = total paid ÷ all claims.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1.5">
-                <div className="grid grid-cols-5 text-xs font-medium text-muted-foreground border-b pb-1">
-                  <span>Mileage</span><span className="text-right">Claims</span><span className="text-right">Settled</span><span className="text-right">Total Paid</span><span className="text-right">Avg Payout</span>
+                  {ageData.filter(d => d.claims > 0).map(d => (
+                    <div key={d.band} className="grid grid-cols-3 text-sm">
+                      <span className="font-medium">{d.band}</span>
+                      <span className="text-right">{d.claims}</span>
+                      <span className="text-right text-muted-foreground">
+                        {totalClaims > 0 ? Math.round((d.claims / totalClaims) * 100) : 0}%
+                      </span>
+                    </div>
+                  ))}
                 </div>
-                {mileageData.filter(d => d.claims > 0).map(d => (
-                  <div key={d.band} className="grid grid-cols-5 text-sm">
-                    <span className="font-medium">{d.band}</span>
-                    <span className="text-right">{d.claims}</span>
-                    <span className="text-right">{d.paidCount}</span>
-                    <span className="text-right">£{d.totalCost.toLocaleString()}</span>
-                    <span className={`text-right ${d.avgCost > 500 ? 'text-red-600 font-medium' : ''}`}>£{d.avgCost.toLocaleString()}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
+          )}
 
-      </div>
+          {hasMileageData && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Claims made — mileage bands</CardTitle>
+                <CardDescription className="text-xs">Share of all claims with a known mileage</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1.5">
+                  <div className="grid grid-cols-3 text-xs font-medium text-muted-foreground border-b pb-1">
+                    <span>Mileage</span><span className="text-right">Claims made</span><span className="text-right">Share</span>
+                  </div>
+                  {(() => {
+                    const totalMileageClaims = mileageData.reduce((s, d) => s + d.claims, 0);
+                    return mileageData.filter(d => d.claims > 0).map(d => (
+                      <div key={d.band} className="grid grid-cols-3 text-sm">
+                        <span className="font-medium">{d.band}</span>
+                        <span className="text-right">{d.claims}</span>
+                        <span className="text-right text-muted-foreground">
+                          {totalMileageClaims > 0 ? Math.round((d.claims / totalMileageClaims) * 100) : 0}%
+                        </span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </section>
+
+      {/* ============ SECTION 2: CLAIMS PAID OUT (MONEY) ============ */}
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-center gap-2 border-l-4 border-l-amber-500 pl-3">
+          <h4 className="text-base font-semibold">2. Claims paid out (settled money)</h4>
+          <Badge variant="outline" className="text-xs">
+            £{Math.round(totalPaid).toLocaleString()} paid across {totalSettled} settled claims
+          </Badge>
+        </div>
+        <p className="text-xs text-muted-foreground pl-3">
+          Approved and paid claims only. Declined, appealed and open claims are excluded entirely, so nothing here
+          can be compared one-to-one with the volume figures above.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {mostPaidAge && (
+            <Card className="border-l-4 border-l-rose-500">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-rose-500" />
+                  Most paid out by age
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{mostPaidAge.band}</p>
+                <p className="text-xs text-muted-foreground">
+                  £{mostPaidAge.totalCost.toLocaleString()} across {mostPaidAge.paidCount} settled claims
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {costliestAge && costliestAge.avgCost > 0 && (
+            <Card className="border-l-4 border-l-amber-500">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-amber-500" />
+                  Highest average payout by age
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{costliestAge.band}</p>
+                <p className="text-xs text-muted-foreground">
+                  £{costliestAge.avgCost.toLocaleString()} average across {costliestAge.paidCount} settled claims
+                </p>
+                {costliestAge.lowSample && (
+                  <p className="text-xs text-amber-600">Small sample — treat as indicative only</p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {mostPaidMileage && (
+            <Card className="border-l-4 border-l-orange-500">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-orange-500" />
+                  Most paid out by mileage
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{mostPaidMileage.band}</p>
+                <p className="text-xs text-muted-foreground">
+                  £{mostPaidMileage.totalCost.toLocaleString()} across {mostPaidMileage.paidCount} settled claims
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {costliestMileage && costliestMileage.avgCost > 0 && (
+            <Card className="border-l-4 border-l-yellow-500">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-yellow-600" />
+                  Highest average payout by mileage
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{costliestMileage.band}</p>
+                <p className="text-xs text-muted-foreground">
+                  £{costliestMileage.avgCost.toLocaleString()} average across {costliestMileage.paidCount} settled claims
+                </p>
+                {costliestMileage.lowSample && (
+                  <p className="text-xs text-amber-600">Small sample — treat as indicative only</p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {hasAgeData && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-amber-500" />
+                  Paid out by vehicle age
+                </CardTitle>
+                <CardDescription>Total settled spend and average payout per settled claim</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={ageData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="band" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `£${v}`} />
+                    <Tooltip formatter={(value: number) => `£${value.toLocaleString()}`} />
+                    <Legend />
+                    <Bar dataKey="totalCost" fill="#ef4444" name="Total paid (£)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="avgCost" fill="#3b82f6" name="Avg payout (£)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {hasMileageData && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Gauge className="h-4 w-4 text-amber-500" />
+                  Paid out by mileage band
+                </CardTitle>
+                <CardDescription>Total settled spend and average payout per settled claim</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={mileageData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="band" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `£${v}`} />
+                    <Tooltip formatter={(value: number) => `£${value.toLocaleString()}`} />
+                    <Legend />
+                    <Bar dataKey="totalCost" fill="#f97316" name="Total paid (£)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="avgCost" fill="#3b82f6" name="Avg payout (£)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {hasAgeData && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Paid out — age bands</CardTitle>
+                <CardDescription className="text-xs">Avg payout = total paid ÷ settled claims</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1.5">
+                  <div className="grid grid-cols-4 text-xs font-medium text-muted-foreground border-b pb-1">
+                    <span>Age</span><span className="text-right">Settled</span><span className="text-right">Total paid</span><span className="text-right">Avg payout</span>
+                  </div>
+                  {ageData.filter(d => d.paidCount > 0).map(d => (
+                    <div key={d.band} className="grid grid-cols-4 text-sm">
+                      <span className="font-medium">{d.band}</span>
+                      <span className="text-right">{d.paidCount}</span>
+                      <span className="text-right">£{d.totalCost.toLocaleString()}</span>
+                      <span className={`text-right ${d.avgCost > 500 ? 'text-red-600 font-medium' : ''}`}>£{d.avgCost.toLocaleString()}</span>
+                    </div>
+                  ))}
+                  {ageData.every(d => d.paidCount === 0) && (
+                    <p className="text-xs text-muted-foreground pt-2">No settled claims in this view yet.</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {hasMileageData && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Paid out — mileage bands</CardTitle>
+                <CardDescription className="text-xs">Avg payout = total paid ÷ settled claims</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1.5">
+                  <div className="grid grid-cols-4 text-xs font-medium text-muted-foreground border-b pb-1">
+                    <span>Mileage</span><span className="text-right">Settled</span><span className="text-right">Total paid</span><span className="text-right">Avg payout</span>
+                  </div>
+                  {mileageData.filter(d => d.paidCount > 0).map(d => (
+                    <div key={d.band} className="grid grid-cols-4 text-sm">
+                      <span className="font-medium">{d.band}</span>
+                      <span className="text-right">{d.paidCount}</span>
+                      <span className="text-right">£{d.totalCost.toLocaleString()}</span>
+                      <span className={`text-right ${d.avgCost > 500 ? 'text-red-600 font-medium' : ''}`}>£{d.avgCost.toLocaleString()}</span>
+                    </div>
+                  ))}
+                  {mileageData.every(d => d.paidCount === 0) && (
+                    <p className="text-xs text-muted-foreground pt-2">No settled claims in this view yet.</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </section>
     </div>
   );
 };
+
