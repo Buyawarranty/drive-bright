@@ -219,9 +219,14 @@ export const PriceConversionAovPanel: React.FC<Props> = ({ dateRange }) => {
             <div>
               <CardTitle className="text-base">Quoted price vs conversion — what earns most per quote</CardTitle>
               <CardDescription className="text-xs">
-                Revenue per quote = conversion rate × mid-band price. The highest bar is the price point
-                that makes the most money, not the cheapest or the dearest.
+                Every quote is grouped by the price the customer was shown. For each band we work out how
+                often that price is accepted (conversion), then multiply it by the middle price of the band
+                to get the money earned for each quote given out — a cheap price wins more often but earns
+                less each time, a dear price earns more but wins less often. Profit per quote takes the
+                same figure after fixed costs of {costPct}% of the sale value, and the “Best” band is the
+                price point with the highest profit per quote.
               </CardDescription>
+
             </div>
             <div className="flex gap-1">
               {(['all', '12months', '24months', '36months'] as const).map(t => (
