@@ -284,12 +284,17 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     const normalizedReg = regNumber.replace(/\s+/g, '').toUpperCase();
     const motPromise = (async () => {
       try {
-        const { data: motRow } = await supabase
+        // A plate can be stored with and without a space, so read rows (not
+        // maybeSingle) — duplicates would otherwise throw and lose the mileage.
+        const spacedReg = normalizedReg.length >= 5
+          ? `${normalizedReg.slice(0, -3)} ${normalizedReg.slice(-3)}`
+          : normalizedReg;
+        const { data: motRows } = await supabase
           .from('mot_history')
           .select('mot_tests')
-          .or(`registration.eq.${normalizedReg},registration.ilike.%${normalizedReg}%`)
-          .limit(1)
-          .maybeSingle();
+          .in('registration', [normalizedReg, spacedReg])
+          .limit(2);
+        const motRow = motRows?.find((r) => Array.isArray(r.mot_tests) && (r.mot_tests as any[]).length > 0) ?? motRows?.[0];
         const rawTests = (motRow?.mot_tests as unknown) ?? [];
         const tests: any[] = Array.isArray(rawTests) ? (rawTests as any[]) : [];
         const latest = tests
