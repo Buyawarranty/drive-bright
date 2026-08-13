@@ -353,6 +353,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // Price match override — agent matches a competitor quote (max 10% cheaper)
   const PRICE_MATCH_MAX_PCT = 10;
   const [priceMatchMode, setPriceMatchMode] = useState(false);
+  const [min399NoteDismissed, setMin399NoteDismissed] = useState(false);
   const [priceMatchProofPath, setPriceMatchProofPath] = useState<string | null>(null);
   const [priceMatchProofName, setPriceMatchProofName] = useState<string | null>(null);
   const [priceMatchUploading, setPriceMatchUploading] = useState(false);
