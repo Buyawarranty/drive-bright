@@ -196,6 +196,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Resolve a usable recipient address: customer record first, then the policy row.
+    const hadCustomerEmail = !!String(customer.email || '').trim();
     const resolvedEmail = String(customer.email || policy.email || '').trim();
     if (!resolvedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resolvedEmail)) {
       console.log(JSON.stringify({ evt: "email.missing", rid, policyId: policy.id, customerId: customer.id }));
@@ -210,14 +211,14 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
     customer.email = resolvedEmail;
+    if (!hadCustomerEmail) {
+      await supabase.from('customers').update({ email: resolvedEmail }).eq('id', customer.id);
+    }
 
     // Keep the policy row in sync so future sends and the customer dashboard work
     if (!policy.email) {
       policy.email = resolvedEmail;
       await supabase.from('customer_policies').update({ email: resolvedEmail }).eq('id', policy.id);
-    }
-    if (!(customer as any).__hadEmail && !policies[0].customers.email) {
-      await supabase.from('customers').update({ email: resolvedEmail }).eq('id', customer.id);
     }
 
 
