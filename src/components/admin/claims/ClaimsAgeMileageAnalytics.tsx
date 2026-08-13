@@ -9,10 +9,13 @@ interface ClaimData {
   id: string;
   status: string;
   payment_amount?: number;
+  claimed_amount?: number | null;
+  paid_amount?: number | null;
   created_at: string;
   vehicle_registration?: string;
   mileage_at_claim?: number;
 }
+
 
 interface ClaimsAgeMileageAnalyticsProps {
   claims: ClaimData[];
