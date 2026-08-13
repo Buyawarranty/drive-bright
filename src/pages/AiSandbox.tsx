@@ -31,16 +31,36 @@ export default function AiSandbox() {
   const { liveCount, meOnline, setOnDuty } = useSandboxSpecialistPresence();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id ?? null);
+    let cancelled = false;
+
+    const apply = (user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> } | null) => {
+      if (cancelled) return;
+      setUserId(user?.id ?? null);
       setDisplayName(
-        (data.user?.user_metadata?.full_name as string | undefined) ??
-          data.user?.email?.split('@')[0] ??
+        (user?.user_metadata?.full_name as string | undefined) ??
+          user?.email?.split('@')[0] ??
           null,
       );
       setCheckingAuth(false);
+    };
+
+    // Listen first: the session is restored asynchronously, so a single getUser()
+    // call on mount can resolve before hydration and wrongly show "Sign in required".
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      apply((session?.user as any) ?? null);
     });
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user) apply(data.session.user as any);
+      else if (!cancelled) setCheckingAuth(false);
+    });
+
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
   }, []);
+
 
 
   const loadThreads = useCallback(async () => {
@@ -116,19 +136,28 @@ export default function AiSandbox() {
   };
 
   if (checkingAuth) {
-    return <div className="p-8 text-sm text-muted-foreground">Checking access…</div>;
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center p-8 text-sm text-muted-foreground">
+        Checking access…
+      </div>
+    );
   }
 
   if (!userId) {
     return (
-      <div className="mx-auto max-w-md p-8 text-center">
+      <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center p-8 text-center">
+        <Headset className="mb-3 h-8 w-8 text-muted-foreground" />
         <h1 className="text-lg font-semibold">Sign in required</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          The AI sandbox is staff only. Please sign in to the admin area first.
+          The AI sandbox is staff only. Sign in to the admin area, then come back to this page.
         </p>
+        <Button className="mt-4" onClick={() => navigate('/admin-dashboard')}>
+          Go to staff sign in
+        </Button>
       </div>
     );
   }
+
 
   return (
     <div className="flex h-screen min-h-0 bg-background">
