@@ -649,50 +649,91 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     };
   }, [filteredCustomers]);
 
+  // Best-known date the order was actually marked cancelled/refunded.
+  // Order of trust: cancellation note timestamp > archive timestamp > row updated_at.
+  // Never allow a date before the order existed.
+  const cancelDateOf = (c: any): Date => {
+    const raw = c.cancellation_note_updated_at || c.deleted_at || c.updated_at || c.signup_date;
+    const d = new Date(raw);
+    const signup = new Date(c.signup_date);
+    if (!isNaN(signup.getTime()) && d < signup) return signup;
+    return d;
+  };
+
+  // Cancellations that fall inside the selected period, by cancellation date (not signup date).
+  const periodCancellations = useMemo(() => {
+    return cancellations.filter(c => {
+      if (!effectiveDateRange?.from) return true;
+      const when = cancelDateOf(c);
+      const fromStart = new Date(effectiveDateRange.from);
+      fromStart.setHours(0, 0, 0, 0);
+      if (when < fromStart) return false;
+      if (effectiveDateRange.to) {
+        const toEnd = new Date(effectiveDateRange.to);
+        toEnd.setHours(23, 59, 59, 999);
+        if (when > toEnd) return false;
+      }
+      return true;
+    });
+  }, [cancellations, effectiveDateRange]);
+
   // Refund/cancellation metrics calculation
   const refundMetrics = useMemo(() => {
-    const refundedCustomers = filteredCustomers.filter(c => isRefunded(c.status));
-    const totalRefundAmount = refundedCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+    const totalRefundAmount = periodCancellations.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
     const totalSalesCount = filteredCustomers.length;
     const totalSalesRevenue = filteredCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
-    const percentOfSales = totalSalesCount > 0 ? ((refundedCustomers.length / totalSalesCount) * 100) : 0;
+    const percentOfSales = totalSalesCount > 0 ? ((periodCancellations.length / totalSalesCount) * 100) : 0;
     const percentOfRevenue = totalSalesRevenue > 0 ? ((totalRefundAmount / totalSalesRevenue) * 100) : 0;
     return {
-      count: refundedCustomers.length,
-      totalAmount: totalRefundAmount,
+      count: periodCancellations.length,
+      archived: periodCancellations.filter(c => c.is_deleted).length,
+      totalAmount: Math.round(totalRefundAmount),
       percentOfSales: percentOfSales.toFixed(1),
       percentOfRevenue: percentOfRevenue.toFixed(1),
     };
-  }, [filteredCustomers]);
+  }, [periodCancellations, filteredCustomers]);
 
-  // Monthly refund data (last 12 months)
+  // Monthly refund data (last 12 months) — counts every cancelled/refunded order,
+  // including archived ones and zero-value orders.
   const monthlyRefunds = useMemo(() => {
     const months = Array.from({ length: 12 }, (_, i) => {
       const date = new Date();
+      date.setDate(1);
       date.setMonth(date.getMonth() - i);
       return {
         month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         monthKey: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
         refundAmount: 0,
-        refundCount: 0
+        refundCount: 0,
+        dayCounts: new Map<string, number>(),
+        bulkDay: null as string | null,
       };
     }).reverse();
 
-    customers.forEach(customer => {
-      if (isRefunded(customer.status) && customer.final_amount) {
-        // Use updated_at as cancellation date (when status changed), fall back to signup_date
-        const cancelDate = new Date(customer.updated_at || customer.signup_date);
-        const monthKey = `${cancelDate.getFullYear()}-${String(cancelDate.getMonth() + 1).padStart(2, '0')}`;
-        const monthData = months.find(m => m.monthKey === monthKey);
-        if (monthData) {
-          monthData.refundAmount += Number(customer.final_amount) || 0;
-          monthData.refundCount += 1;
-        }
+    cancellations.forEach(customer => {
+      const cancelDate = cancelDateOf(customer);
+      if (isNaN(cancelDate.getTime())) return;
+      const monthKey = `${cancelDate.getFullYear()}-${String(cancelDate.getMonth() + 1).padStart(2, '0')}`;
+      const monthData = months.find(m => m.monthKey === monthKey);
+      if (!monthData) return;
+      monthData.refundAmount += Number(customer.final_amount) || 0;
+      monthData.refundCount += 1;
+      const dayKey = cancelDate.toISOString().slice(0, 10);
+      monthData.dayCounts.set(dayKey, (monthData.dayCounts.get(dayKey) || 0) + 1);
+    });
+
+    // Flag months where a single day holds 10+ status changes — that is a bulk
+    // tidy-up of historic orders, not a real day of cancellations.
+    months.forEach(m => {
+      m.refundAmount = Math.round(m.refundAmount);
+      for (const [day, n] of m.dayCounts.entries()) {
+        if (n >= 10) m.bulkDay = day;
       }
     });
 
     return months;
-  }, [customers]);
+  }, [cancellations]);
+
 
   // Normalize and categorize vehicle fuel types
   const normalizeVehicleType = (fuelType: string | null): string => {
