@@ -39,8 +39,7 @@ function rowsToUIMessages(rows: Array<{ id: string; role: string; parts: unknown
 
 export function SandboxChatWindow({ threadId }: { threadId: string }) {
   const [initialMessages, setInitialMessages] = useState<UIMessage[] | null>(null);
-  const [input, setInput] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const composerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -87,16 +86,15 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
   });
 
   useEffect(() => {
-    textareaRef.current?.focus();
+    composerRef.current?.querySelector('textarea')?.focus();
   }, [threadId, status]);
 
   const busy = status === 'submitted' || status === 'streaming';
 
   const send = (text: string) => {
-    const trimmed = text.trim();
+    const trimmed = (text ?? '').trim();
     if (!trimmed || busy) return;
     sendMessage({ text: trimmed });
-    setInput('');
   };
 
   if (initialMessages === null) {
@@ -184,28 +182,14 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
         <ConversationScrollButton />
       </Conversation>
 
-      <div className="mx-auto w-full max-w-3xl p-4">
-        <PromptInput
-          onSubmit={(e) => {
-            e.preventDefault();
-            send(input);
-          }}
-        >
-          <PromptInputTextarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about cover, pricing, claims…"
-          />
+      <div className="mx-auto w-full max-w-3xl p-4" ref={composerRef}>
+        <PromptInput onSubmit={(message) => send(message.text ?? '')}>
+          <PromptInputTextarea placeholder="Ask about cover, pricing, claims…" />
           <PromptInputFooter className="justify-between">
             <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
               Sandbox · test links only
             </Badge>
-            <PromptInputSubmit
-              status={status}
-              disabled={!input.trim() && !busy}
-              onClick={busy ? () => stop() : undefined}
-            />
+            <PromptInputSubmit status={status} onClick={busy ? () => stop() : undefined} />
           </PromptInputFooter>
         </PromptInput>
       </div>
