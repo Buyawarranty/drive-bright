@@ -121,6 +121,21 @@ export const TREATMENT_OPTIONS = [
   'Not covered — referral or exclusion',
 ] as const;
 
+/**
+ * Named premium tiers. A rule can be a make only ("Jaguar"), a model only
+ * ("Autobiography") or a make + model ("Jaguar F-Type"); the most specific
+ * matching rule wins, so a make-level tier acts as the baseline and a
+ * make + model rule lifts just that derivative.
+ */
+export const PREMIUM_TIER_PRESETS = [
+  { key: 'premium', label: 'Premium', price: 599 },
+  { key: 'veryhigh', label: 'Very high premium', price: 749 },
+  { key: 'ultra', label: 'Ultra premium', price: 899 },
+  { key: 'custom', label: 'Custom / other treatment', price: 0 },
+] as const;
+
+
+
 /** 4.5 Model-specific floors and referrals. */
 export const PROPOSED_MODEL_FLOORS: ModelFloor[] = [
   // Generic premium tiers — pick these when the vehicle is a premium/very-high
@@ -331,7 +346,18 @@ export default function AgeBandPricingPreview({
   const [busy, setBusy] = useState(false);
   const [newFloorVehicle, setNewFloorVehicle] = useState('');
   const [newFloorTreatment, setNewFloorTreatment] = useState('Premium floor');
-  const [newFloorPrice, setNewFloorPrice] = useState('');
+  const [newFloorPrice, setNewFloorPrice] = useState('599');
+  const [newFloorTier, setNewFloorTier] = useState<string>('premium');
+
+  /** Picking a named tier fills in the treatment and the floor price. */
+  function selectTier(key: string) {
+    setNewFloorTier(key);
+    const preset = PREMIUM_TIER_PRESETS.find(t => t.key === key);
+    if (!preset || preset.key === 'custom') return;
+    setNewFloorTreatment('Premium floor');
+    setNewFloorPrice(String(preset.price));
+  }
+
   const [lookupReg, setLookupReg] = useState('');
   const [lookupBusy, setLookupBusy] = useState(false);
   const [lookupNote, setLookupNote] = useState('');
@@ -1183,13 +1209,28 @@ export default function AgeBandPricingPreview({
               )}
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Vehicle / derivative</Label>
+              <Label className="text-xs">Make, model, or make + model</Label>
               <Input
                 className="h-9 w-56"
-                placeholder="Type a make and model, or use a plate"
+                placeholder="Jaguar · F-Type · Jaguar F-Type"
                 value={newFloorVehicle}
                 onChange={e => setNewFloorVehicle(e.target.value)}
               />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs">Premium tier</Label>
+              <select
+                className="h-9 w-56 rounded-md border border-input bg-background px-2 text-sm"
+                value={newFloorTier}
+                onChange={e => selectTier(e.target.value)}
+              >
+                {PREMIUM_TIER_PRESETS.map(t => (
+                  <option key={t.key} value={t.key}>
+                    {t.key === 'custom' ? t.label : `${t.label} — £${t.price}`}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-1">
@@ -1197,7 +1238,10 @@ export default function AgeBandPricingPreview({
               <select
                 className="h-9 w-56 rounded-md border border-input bg-background px-2 text-sm"
                 value={newFloorTreatment}
-                onChange={e => setNewFloorTreatment(e.target.value)}
+                onChange={e => {
+                  setNewFloorTreatment(e.target.value);
+                  setNewFloorTier('custom');
+                }}
               >
                 {TREATMENT_OPTIONS.map(t => (
                   <option key={t} value={t}>
@@ -1215,12 +1259,21 @@ export default function AgeBandPricingPreview({
                   newFloorTreatment !== 'Premium floor' && newFloorTreatment !== 'Premium EV floor'
                 }
                 value={newFloorPrice}
-                onChange={e => setNewFloorPrice(e.target.value)}
+                onChange={e => {
+                  setNewFloorPrice(e.target.value);
+                  setNewFloorTier('custom');
+                }}
               />
             </div>
             <Button size="sm" onClick={addFloor}>
               Add vehicle
             </Button>
+            <p className="w-full text-xs text-muted-foreground">
+              Enter a <strong>make</strong> ("Jaguar") to floor every car of that make, or a{' '}
+              <strong>make + model</strong> ("Jaguar F-Type") to lift only that derivative. The most
+              specific matching rule always wins, so a model rule overrides the make baseline, and any
+              "not covered" rule beats a priced floor.
+            </p>
             {newFloorVehicle.trim() && (
               <p className="w-full text-xs text-muted-foreground">
                 {newFloorMatch
@@ -1228,6 +1281,7 @@ export default function AgeBandPricingPreview({
                   : 'No existing rule covers this name yet — adding it creates a new rule.'}
               </p>
             )}
+
           </div>
 
           <div className="space-y-2 rounded-md border border-dashed p-3">
