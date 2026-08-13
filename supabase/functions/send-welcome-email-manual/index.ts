@@ -195,6 +195,33 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
+    // Resolve a usable recipient address: customer record first, then the policy row.
+    const hadCustomerEmail = !!String(customer.email || '').trim();
+    const resolvedEmail = String(customer.email || policy.email || '').trim();
+    if (!resolvedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resolvedEmail)) {
+      console.log(JSON.stringify({ evt: "email.missing", rid, policyId: policy.id, customerId: customer.id }));
+      return new Response(JSON.stringify({
+        ok: false,
+        rid,
+        code: 'MISSING_CUSTOMER_EMAIL',
+        error: 'This customer has no valid email address on their record. Add the email in Customer Management, then resend the welcome email.'
+      }), {
+        status: 422,
+        headers: { "content-type": "application/json", ...corsHeaders },
+      });
+    }
+    customer.email = resolvedEmail;
+    if (!hadCustomerEmail) {
+      await supabase.from('customers').update({ email: resolvedEmail }).eq('id', customer.id);
+    }
+
+    // Keep the policy row in sync so future sends and the customer dashboard work
+    if (!policy.email) {
+      policy.email = resolvedEmail;
+      await supabase.from('customer_policies').update({ email: resolvedEmail }).eq('id', policy.id);
+    }
+
+
     console.log(JSON.stringify({ 
       evt: "data.found", 
       rid, 

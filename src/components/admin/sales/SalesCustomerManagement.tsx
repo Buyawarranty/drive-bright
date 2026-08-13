@@ -492,7 +492,13 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
       const { data, error } = await supabase.functions.invoke('send-welcome-email-manual', {
         body: { policyId, customerId }
       });
-      if (error) throw error;
+      if (error) {
+        const detail = (data as any)?.error || error.message;
+        throw new Error(detail);
+      }
+      if (data && (data as any).ok === false) {
+        throw new Error((data as any).error || 'Welcome email could not be sent');
+      }
       toast.success('Welcome email sent successfully!');
       fetchCustomers();
     } catch (error: any) {
