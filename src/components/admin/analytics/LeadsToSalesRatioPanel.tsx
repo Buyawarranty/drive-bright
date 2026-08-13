@@ -183,7 +183,7 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
         comparedDays: half,
       },
     };
-  }, [data, rangeKey]);
+  }, [data, rangeKey, leadCost]);
 
 
   return (
