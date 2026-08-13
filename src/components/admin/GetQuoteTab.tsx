@@ -5280,7 +5280,7 @@ Questions? Call 0330 229 5040`;
                           )}
                         >
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span>Minimum sale price for a {MIN_TERM_LABEL} warranty £{ABSOLUTE_MIN_TOTAL}</span>
+                            <span>Minimum sale price for this quote £{ABSOLUTE_MIN_TOTAL} — {MIN_TERM_LABEL} · £{claimLimit} claim limit · £{excessAmount} excess · £{labourRate}/hr labour</span>
                             {absoluteMinBlocked ? (
                               <span className="font-bold">
                                 — £{Math.min(displayedTotalPrice, displayedPayInFullPrice)} is below the minimum, so this sale is
