@@ -745,9 +745,13 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
             enteredTotal: collected,
             notes: [
               `Manual payment confirmed via ${paymentSource || 'outside route'} — ${discountPct.toFixed(1)}% off`,
-              underNetFloor
+              underNetFloor && !priceMatchReady
                 ? `MANAGEMENT OVERRIDE — below the £${netFloorAmount.toFixed(2)} net floor for this cover`
                 : '',
+              priceMatchReady
+                ? `PRICE MATCH — ${pmCompetitorName} £${pmCompetitorPrice} (evidence: ${pmProofName || 'uploaded'})`
+                : '',
+
             ].filter(Boolean).join(' · '),
           });
         }
