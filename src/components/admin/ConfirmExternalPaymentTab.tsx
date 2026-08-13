@@ -1033,18 +1033,37 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                       )}
                     </div>
                   </div>
-                  <Button
-                    onClick={handleOpenConfirmDialog}
-                    disabled={!vehicleData || !customerFirstName || !customerLastName || !customerEmail}
-                    className="w-full py-6 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-xl shadow-lg"
-                  >
-                    <CheckCircle2 className="w-5 h-5 mr-2" />
-                    Confirm External Payment
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                  <p className="text-center text-slate-500 text-xs mt-3">
-                    Activates the policy and emails the customer.
-                  </p>
+                  {(() => {
+                    const missing: string[] = [];
+                    if (!vehicleData) missing.push('vehicle lookup');
+                    if (!customerFirstName) missing.push('first name');
+                    if (!customerLastName) missing.push('last name');
+                    if (!customerEmail) missing.push('email address');
+                    return (
+                      <>
+                        <Button
+                          onClick={handleOpenConfirmDialog}
+                          disabled={missing.length > 0}
+                          title={missing.length > 0 ? `Add: ${missing.join(', ')}` : undefined}
+                          className="w-full py-6 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-xl shadow-lg disabled:opacity-100 disabled:bg-slate-700 disabled:text-slate-300"
+                        >
+                          <CheckCircle2 className="w-5 h-5 mr-2" />
+                          Confirm External Payment
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                        {missing.length > 0 ? (
+                          <p className="text-center text-amber-300 text-xs mt-3 font-semibold">
+                            ⚠️ Still needed before you can activate: {missing.join(', ')}
+                          </p>
+                        ) : (
+                          <p className="text-center text-slate-500 text-xs mt-3">
+                            Activates the policy and emails the customer.
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
+
                 </div>
               </aside>
             </div>
@@ -1334,10 +1353,16 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                   </div>
                 </section>
 
-                <div className="flex justify-end gap-3">
+                <div className="sticky bottom-0 z-20 -mx-1 px-1 py-3 bg-white/95 backdrop-blur border-t border-slate-200 flex flex-wrap items-center justify-end gap-3">
+                  {discountBlocked && (
+                    <span className="text-xs font-semibold text-destructive mr-auto">
+                      Blocked: minimum you can confirm yourself is £{minAllowedAmount.toFixed(2)}
+                    </span>
+                  )}
                   <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>Cancel</Button>
                   <Button onClick={handleProceedToPreview} size="lg" disabled={discountBlocked} title={discountBlocked ? 'Blocked — contact management to authorise this discount' : undefined}>{discountBlocked ? 'Contact management to confirm' : <>Review & Confirm <ArrowRight className="w-4 h-4 ml-2" /></>}</Button>
                 </div>
+
               </div>
 
               {/* Sticky summary (mirrors form view) */}
@@ -1472,7 +1497,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                 </div>
               )}
 
-              <div className="flex justify-end gap-3">
+              <div className="sticky bottom-0 z-20 -mx-1 px-1 py-3 bg-white/95 backdrop-blur border-t border-slate-200 flex justify-end gap-3">
                 <Button variant="outline" onClick={() => setExternalPaymentStep('details')}>Back</Button>
                 <Button onClick={handleConfirmPayment} disabled={isConfirming || discountBlocked} size="lg" className="bg-indigo-500 hover:bg-indigo-400" title={discountBlocked ? 'Blocked — contact management to authorise this discount' : undefined}>
                   {isConfirming ? (
