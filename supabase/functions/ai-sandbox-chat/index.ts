@@ -409,8 +409,18 @@ Deno.serve(async (req) => {
           "Hand the chat over to a human warranty specialist. Only call this after check_availability says the team is open AND the customer has said yes to being connected. The specialist receives the whole conversation.",
         inputSchema: z.object({
           reason: z
-            .enum(["buying_intent", "price_objection", "comparing_quotes", "hesitation", "complex_question", "customer_asked"])
-            .describe("Why the handover is happening"),
+            .enum([
+              "buying_intent",
+              "price_objection",
+              "comparing_quotes",
+              "hesitation",
+              "complex_question",
+              "not_in_approved_material",
+              "customer_asked",
+            ])
+            .describe(
+              "Why the handover is happening. Use not_in_approved_material when the approved website, product or terms material did not clearly answer their question.",
+            ),
           customer_name: z.string().nullable(),
           customer_email: z.string().nullable(),
           customer_phone: z.string().nullable(),
