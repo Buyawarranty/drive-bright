@@ -129,6 +129,39 @@ export const DEFAULT_RISK_BANDS: RiskBand[] = [
     tone: 'severe',
     note: 'Materially higher expected cost — air suspension, complex electronics, premium SUVs.',
   },
+  /**
+   * PREMIUM TIERS — same mechanism as the risk bands above (factor + 1-year
+   * minimum), they simply carry a higher floor. "Premium" is therefore not a
+   * separate system: assigning a make/model here sets both its uplift and its
+   * floor in one place.
+   */
+  {
+    id: 'premium',
+    name: 'Premium tier',
+    factor: 1.3,
+    minOneYear: 599,
+    referral: false,
+    tone: 'high',
+    note: 'Premium brand or derivative — floored at £599 for 12 months.',
+  },
+  {
+    id: 'premium-high',
+    name: 'Very high premium tier',
+    factor: 1.5,
+    minOneYear: 749,
+    referral: false,
+    tone: 'severe',
+    note: 'Large premium SUVs, air suspension, complex electronics — floored at £749 for 12 months.',
+  },
+  {
+    id: 'premium-ultra',
+    name: 'Ultra premium tier',
+    factor: 1.7,
+    minOneYear: 899,
+    referral: false,
+    tone: 'severe',
+    note: 'Flagship / performance-adjacent premium still inside appetite — floored at £899 for 12 months.',
+  },
   {
     id: 'blocked',
     name: 'Not covered — decline politely',
@@ -388,19 +421,24 @@ export function loadRiskBandConfig(): RiskBandConfig {
     if (!raw) return DEFAULT_RISK_BAND_CONFIG;
     const parsed = JSON.parse(raw);
     if (!parsed || !Array.isArray(parsed.bands) || !parsed.bands.length) return DEFAULT_RISK_BAND_CONFIG;
+    const savedBands: RiskBand[] = parsed.bands.map((b: RiskBand, i: number) => ({
+      id: b.id || `band-${i}`,
+      name: String(b.name || `Band ${i + 1}`),
+      factor: clampBandFactor(Number(b.factor)),
+      minOneYear:
+        Number.isFinite(Number(b.minOneYear)) && Number(b.minOneYear) > 0 ? Number(b.minOneYear) : null,
+      referral: b.referral === true,
+      blocked: b.blocked === true,
+      blockMessage: b.blocked === true ? String(b.blockMessage || DEFAULT_BLOCK_MESSAGE) : b.blockMessage || undefined,
+      note: b.note || undefined,
+      tone: (['low', 'normal', 'high', 'severe', 'referral', 'blocked'] as const).includes(b.tone) ? b.tone : 'normal',
+    }));
+    // Bands shipped after this config was saved (e.g. the premium tiers) are
+    // appended so a manager never loses access to a new tier.
+    const savedIds = new Set(savedBands.map(b => b.id));
+    const mergedBands = [...savedBands, ...DEFAULT_RISK_BANDS.filter(b => !savedIds.has(b.id))];
     return {
-      bands: parsed.bands.map((b: RiskBand, i: number) => ({
-        id: b.id || `band-${i}`,
-        name: String(b.name || `Band ${i + 1}`),
-        factor: clampBandFactor(Number(b.factor)),
-        minOneYear:
-          Number.isFinite(Number(b.minOneYear)) && Number(b.minOneYear) > 0 ? Number(b.minOneYear) : null,
-        referral: b.referral === true,
-        blocked: b.blocked === true,
-        blockMessage: b.blocked === true ? String(b.blockMessage || DEFAULT_BLOCK_MESSAGE) : b.blockMessage || undefined,
-        note: b.note || undefined,
-        tone: (['low', 'normal', 'high', 'severe', 'referral', 'blocked'] as const).includes(b.tone) ? b.tone : 'normal',
-      })),
+      bands: mergedBands,
       assignments: Array.isArray(parsed.assignments)
         ? parsed.assignments
             .filter((a: RiskBandAssignment) => a && (String(a.make || '').trim() || String(a.model || '').trim()))
