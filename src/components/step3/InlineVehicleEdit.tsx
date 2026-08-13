@@ -38,12 +38,15 @@ const InlineVehicleEdit: React.FC<InlineVehicleEditProps> = ({
       let resolvedMileage = '100000';
 
       try {
-        const { data: motRow } = await supabase
+        const spacedReg = normalizedReg.length >= 5
+          ? `${normalizedReg.slice(0, -3)} ${normalizedReg.slice(-3)}`
+          : normalizedReg;
+        const { data: motRows } = await supabase
           .from('mot_history')
           .select('mot_tests')
-          .or(`registration.eq.${normalizedReg},registration.ilike.%${normalizedReg}%`)
-          .limit(1)
-          .maybeSingle();
+          .in('registration', [normalizedReg, spacedReg])
+          .limit(2);
+        const motRow = motRows?.find((r) => Array.isArray(r.mot_tests) && (r.mot_tests as any[]).length > 0) ?? motRows?.[0];
 
         const raw = motRow?.mot_tests as unknown;
         const tests = Array.isArray(raw) ? (raw as Array<{ odometerValue?: number; completedDate?: string }>) : [];
