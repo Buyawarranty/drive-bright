@@ -108,6 +108,76 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [authSent, setAuthSent] = useState(false);
   const [sendingAuth, setSendingAuth] = useState(false);
 
+  // ---------------------------------------------------------------------------
+  // Price match route out of a blocked confirmation.
+  // An agent stuck under the floor / over the 30% ceiling has two ways forward:
+  // upload evidence of a competitor quote (self-serve, max 10% cheaper than the
+  // competitor), or ask management to authorise it. Same rules and the same
+  // storage bucket as the Quotes & Orders price match.
+  // ---------------------------------------------------------------------------
+  const PRICE_MATCH_MAX_PCT = 10;
+  const PRICE_MATCH_COMPETITORS = [
+    'Best4Warranty',
+    'Click4Warranty',
+    'CoverMe Warranty',
+    'Direct Car Warranty',
+    'MotorEasy',
+    'Warranty Direct',
+    'Warranty First',
+    'Warrantywise',
+    'Other',
+  ];
+  const [blockRoute, setBlockRoute] = useState<'none' | 'price_match' | 'manager'>('none');
+  const [pmCompany, setPmCompany] = useState('');
+  const [pmOtherName, setPmOtherName] = useState('');
+  const [pmPrice, setPmPrice] = useState('');
+  const [pmProofPath, setPmProofPath] = useState<string | null>(null);
+  const [pmProofName, setPmProofName] = useState<string | null>(null);
+  const [pmUploading, setPmUploading] = useState(false);
+
+  const pmCompetitorName = (pmCompany === 'Other' ? pmOtherName : pmCompany).trim();
+  const pmCompetitorPrice = (() => {
+    const v = Math.round(parseFloat(String(pmPrice).replace(/[^0-9.]/g, '')));
+    return Number.isFinite(v) && v > 0 ? v : null;
+  })();
+  /** Lowest price an evidenced match may reach: 10% under the competitor. */
+  const pmFloor = pmCompetitorPrice
+    ? Math.round(pmCompetitorPrice * (1 - PRICE_MATCH_MAX_PCT / 100))
+    : null;
+
+  const handlePriceMatchUpload = async (file: File) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Evidence must be under 10MB', variant: 'destructive' });
+      return;
+    }
+    if (!/^image\//.test(file.type) && file.type !== 'application/pdf') {
+      toast({ title: 'Unsupported file', description: 'Upload an image or PDF', variant: 'destructive' });
+      return;
+    }
+    setPmUploading(true);
+    try {
+      const ext = file.name.split('.').pop() || 'png';
+      const objectPath = `price-match/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage
+        .from('price-comparison-proofs')
+        .upload(objectPath, file, { upsert: true, contentType: file.type });
+      if (error) throw error;
+      if (pmProofPath && pmProofPath !== objectPath) {
+        await supabase.storage.from('price-comparison-proofs').remove([pmProofPath]);
+      }
+      setPmProofPath(objectPath);
+      setPmProofName(file.name);
+      toast({ title: 'Evidence uploaded', description: 'Saved against the customer when you confirm the payment.' });
+    } catch (e: any) {
+      toast({ title: 'Upload failed', description: e?.message || 'Please try again', variant: 'destructive' });
+    } finally {
+      setPmUploading(false);
+    }
+  };
+
+
+
   
   // Vehicle lookup state
   const [regNumber, setRegNumber] = useState('');
@@ -286,7 +356,21 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       String(editableRegNumber || regNumber || '').replace(/\s/g, '').toUpperCase() &&
     Number.isFinite(enteredAmount) &&
     enteredAmount >= Number(approvedAuthRequest.requested_price || 0) - 0.01;
-  const discountBlocked = (overDiscountCeiling || underNetFloor) && !isManagementRole && !hasApprovedAuth;
+  // An evidenced price match also lifts the block: competitor named, their price
+  // entered, proof uploaded, and the amount no more than 10% under their quote.
+  const priceMatchReady =
+    blockRoute === 'price_match' &&
+    !!pmCompetitorName &&
+    !!pmCompetitorPrice &&
+    !!pmProofPath &&
+    Number.isFinite(enteredAmount) &&
+    enteredAmount > 0 &&
+    pmFloor !== null &&
+    enteredAmount >= pmFloor - 0.01;
+  const priceMatchApplied = priceMatchReady && !isManagementRole;
+  const discountBlocked =
+    (overDiscountCeiling || underNetFloor) && !isManagementRole && !hasApprovedAuth && !priceMatchReady;
+
 
 
 
@@ -626,8 +710,20 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
             .update({
               original_amount: Math.round(quotedTotal * 100) / 100,
               discount_amount: givenAway,
+              // Evidenced price match used to get under the floor / ceiling —
+              // stored so Customer management and Vehicle intelligence show it.
+              ...(priceMatchReady
+                ? {
+                    price_comparison_proof_url: pmProofPath,
+                    price_match_applied: true,
+                    price_match_competitor: pmCompetitorName || null,
+                    price_match_competitor_price: pmCompetitorPrice,
+                    price_match_our_price: collected || null,
+                  }
+                : {}),
             })
             .eq('id', data.customerId);
+
         } catch (discErr) {
           console.error('Failed to record discount on manual confirmation:', discErr);
         }
@@ -649,9 +745,13 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
             enteredTotal: collected,
             notes: [
               `Manual payment confirmed via ${paymentSource || 'outside route'} — ${discountPct.toFixed(1)}% off`,
-              underNetFloor
+              underNetFloor && !priceMatchReady
                 ? `MANAGEMENT OVERRIDE — below the £${netFloorAmount.toFixed(2)} net floor for this cover`
                 : '',
+              priceMatchReady
+                ? `PRICE MATCH — ${pmCompetitorName} £${pmCompetitorPrice} (evidence: ${pmProofName || 'uploaded'})`
+                : '',
+
             ].filter(Boolean).join(' · '),
           });
         }
@@ -1257,19 +1357,127 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           </p>
                         )}
 
-                        {discountBlocked && (
+                        {discountBlocked && blockRoute === 'none' && (
+                          <div className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2.5">
+                            <p className="text-xs font-semibold text-slate-600">
+                              Is this a price match? Choose how to get this signed off:
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              <Button size="sm" variant="outline" onClick={() => setBlockRoute('price_match')}>
+                                Upload price match evidence
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => setBlockRoute('manager')}>
+                                Contact management
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+
+                        {discountBlocked && blockRoute === 'price_match' && (
+                          <div className="space-y-2 rounded-lg border border-amber-400/60 bg-amber-50 p-2.5">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-semibold text-amber-700">Price match evidence</p>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 px-2 text-xs"
+                                onClick={() => setBlockRoute('none')}
+                              >
+                                Back
+                              </Button>
+                            </div>
+                            <Select
+                              value={pmCompany}
+                              onValueChange={(v) => { setPmCompany(v); if (v !== 'Other') setPmOtherName(''); }}
+                            >
+                              <SelectTrigger className="h-8 text-xs">
+                                <SelectValue placeholder="Which competitor?" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {PRICE_MATCH_COMPETITORS.map((c) => (
+                                  <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {pmCompany === 'Other' && (
+                              <Input
+                                value={pmOtherName}
+                                onChange={(e) => setPmOtherName(e.target.value)}
+                                placeholder="Competitor name"
+                                className="h-8 text-xs"
+                              />
+                            )}
+                            <Input
+                              type="number"
+                              value={pmPrice}
+                              onChange={(e) => setPmPrice(e.target.value)}
+                              placeholder="Their quoted price (£)"
+                              className="h-8 text-xs"
+                            />
+                            <div className="space-y-1">
+                              <Input
+                                type="file"
+                                accept="image/*,application/pdf"
+                                disabled={pmUploading}
+                                onChange={(e) => {
+                                  const f = e.target.files?.[0];
+                                  if (f) handlePriceMatchUpload(f);
+                                }}
+                                className="h-8 text-xs"
+                              />
+                              {pmUploading && (
+                                <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                                  <Loader2 className="w-3 h-3 animate-spin" /> Uploading…
+                                </p>
+                              )}
+                              {pmProofName && !pmUploading && (
+                                <p className="text-xs font-semibold text-emerald-600">✅ {pmProofName} attached</p>
+                              )}
+                            </div>
+                            {pmFloor !== null && (
+                              <p className="text-xs text-amber-700">
+                                Lowest allowed against a £{pmCompetitorPrice} quote is <strong>£{pmFloor}</strong> (max {PRICE_MATCH_MAX_PCT}% cheaper).
+                              </p>
+                            )}
+                            <p className="text-xs text-slate-500">
+                              Competitor, their price and the uploaded quote are all needed before this unlocks. No evidence? Use Contact management instead.
+                            </p>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 px-2 text-xs"
+                              onClick={() => setBlockRoute('manager')}
+                            >
+                              Contact management instead
+                            </Button>
+                          </div>
+                        )}
+
+                        {discountBlocked && blockRoute === 'manager' && (
                           authSent ? (
                             <p className="text-xs font-semibold text-amber-600">
                               Sent for authorisation — management have been alerted. This button unlocks as soon as they approve it.
                             </p>
                           ) : (
                             <div className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2.5">
+                              <div className="flex items-center justify-between">
+                                <p className="text-xs font-semibold text-slate-600">Manager authorisation</p>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 px-2 text-xs"
+                                  onClick={() => setBlockRoute('none')}
+                                >
+                                  Back
+                                </Button>
+                              </div>
                               <Input
                                 value={authReason}
                                 onChange={(e) => setAuthReason(e.target.value)}
                                 placeholder="Reason for manager (e.g. price match, goodwill)"
                                 className="h-8 text-xs"
                               />
+
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -1318,6 +1526,23 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                             ✅ Authorised by {approvedAuthRequest?.decided_by_name || 'management'} — you can confirm this payment.
                           </p>
                         )}
+
+                        {priceMatchReady && (overDiscountCeiling || underNetFloor) && (
+                          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2">
+                            <p className="text-xs font-semibold text-emerald-700">
+                              ✅ Price match evidenced — {pmCompetitorName} £{pmCompetitorPrice} ({pmProofName}). You can confirm this payment.
+                            </p>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 px-2 text-xs"
+                              onClick={() => { setPmProofPath(null); setPmProofName(null); }}
+                            >
+                              Change evidence
+                            </Button>
+                          </div>
+                        )}
+
 
 
 
