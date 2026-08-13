@@ -655,9 +655,20 @@ export default function PriceTestStep2({
               >
                 <option value="none">None (standard vehicle)</option>
                 {modelFloors.map(f => (
-                  <option key={f.key} value={f.key}>{f.vehicle}</option>
+                  <option key={f.key} value={f.key}>
+                    {f.vehicle}
+                    {f.covered === false
+                      ? ' — not covered'
+                      : f.minOneYear
+                        ? ` — floor £${Math.round(Number(f.minOneYear))}`
+                        : ''}
+                  </option>
                 ))}
               </select>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Model risk only nudges the factor. A premium floor is only applied when you pick a tier here.
+              </p>
+
             </div>
           </div>
         </div>
