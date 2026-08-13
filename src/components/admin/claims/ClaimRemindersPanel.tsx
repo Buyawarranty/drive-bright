@@ -277,16 +277,54 @@ export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
             </div>
             <div>
               <Label className="text-xs">Link to a claim (optional)</Label>
-              <Select value={claimId} onValueChange={setClaimId}>
-                <SelectTrigger><SelectValue placeholder="No claim" /></SelectTrigger>
-                <SelectContent className="max-h-72">
-                  <SelectItem value="none">No claim</SelectItem>
-                  {claims.slice(0, 300).map(c => (
-                    <SelectItem key={c.id} value={c.id}>{labelFor(c)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={claimPickerOpen} onOpenChange={setClaimPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between font-normal"
+                  >
+                    <span className="truncate">
+                      {claimId === 'none' ? 'No claim' : (claimLabels[claimId] || 'Selected claim')}
+                    </span>
+                    <ChevronsUpDown className="h-3.5 w-3.5 opacity-50 shrink-0" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[320px] p-0 pointer-events-auto" align="start">
+                  <Command shouldFilter={false}>
+                    <CommandInput
+                      placeholder="Search reg, name or email…"
+                      value={claimQuery}
+                      onValueChange={setClaimQuery}
+                    />
+                    <CommandList className="max-h-72">
+                      <CommandEmpty>No claim matches that search.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="none"
+                          onSelect={() => { setClaimId('none'); setClaimPickerOpen(false); }}
+                        >
+                          No claim
+                        </CommandItem>
+                        {filteredClaims.map(c => (
+                          <CommandItem
+                            key={c.id}
+                            value={c.id}
+                            onSelect={() => { setClaimId(c.id); setClaimPickerOpen(false); }}
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm truncate">{labelFor(c)}</p>
+                              {c.email && <p className="text-xs text-muted-foreground truncate">{c.email}</p>}
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
+
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
