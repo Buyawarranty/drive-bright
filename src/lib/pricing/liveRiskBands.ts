@@ -16,15 +16,26 @@
 import {
   clampBandFactor,
   matchRiskBand,
+  DEFAULT_RISK_BAND_CONFIG,
   type RiskBandConfig,
 } from './vehicleRiskBands';
 
 /** Term scaling for a band 1-year minimum, mirroring the sellable minimums. */
 const TERM_FLOOR_RATIO: Record<string, number> = {
   '12months': 1,
-  '24months': 659 / 399,
-  '36months': 938 / 399,
+  '24months': 699 / 399,
+  '36months': 999 / 399,
 };
+
+/**
+ * GLOBAL SETTING — the bands are not tied to one pricing version. When no band
+ * config has been pushed live (or the live version predates the bands), the
+ * shipped defaults still apply, so every price model on Price updates picks up
+ * the same band factors and band minimums.
+ */
+function activeBands(): RiskBandConfig {
+  return LIVE_RISK_BANDS ?? DEFAULT_RISK_BAND_CONFIG;
+}
 
 let LIVE_RISK_BANDS: RiskBandConfig | null = null;
 
@@ -46,7 +57,7 @@ export function getLiveRiskBandFactor(
   vehicleName?: string | null,
   fuelType?: string | null
 ): number {
-  const config = LIVE_RISK_BANDS;
+  const config = activeBands();
   const name = String(vehicleName || '').trim();
   if (!config || !name) return 1;
   const match = matchRiskBand(name, name, config, fuelType ?? undefined);
@@ -65,7 +76,7 @@ export function getLiveRiskBandMinPrice(
   paymentPeriod: string,
   fuelType?: string | null
 ): number | null {
-  const config = LIVE_RISK_BANDS;
+  const config = activeBands();
   const name = String(vehicleName || '').trim();
   if (!config || !name) return null;
   const { band } = matchRiskBand(name, name, config, fuelType ?? undefined);
