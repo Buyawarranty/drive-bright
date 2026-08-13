@@ -1341,19 +1341,127 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           </p>
                         )}
 
-                        {discountBlocked && (
+                        {discountBlocked && blockRoute === 'none' && (
+                          <div className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2.5">
+                            <p className="text-xs font-semibold text-slate-600">
+                              Is this a price match? Choose how to get this signed off:
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              <Button size="sm" variant="outline" onClick={() => setBlockRoute('price_match')}>
+                                Upload price match evidence
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => setBlockRoute('manager')}>
+                                Contact management
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+
+                        {discountBlocked && blockRoute === 'price_match' && (
+                          <div className="space-y-2 rounded-lg border border-amber-400/60 bg-amber-50 p-2.5">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-semibold text-amber-700">Price match evidence</p>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 px-2 text-xs"
+                                onClick={() => setBlockRoute('none')}
+                              >
+                                Back
+                              </Button>
+                            </div>
+                            <Select
+                              value={pmCompany}
+                              onValueChange={(v) => { setPmCompany(v); if (v !== 'Other') setPmOtherName(''); }}
+                            >
+                              <SelectTrigger className="h-8 text-xs">
+                                <SelectValue placeholder="Which competitor?" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {PRICE_MATCH_COMPETITORS.map((c) => (
+                                  <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {pmCompany === 'Other' && (
+                              <Input
+                                value={pmOtherName}
+                                onChange={(e) => setPmOtherName(e.target.value)}
+                                placeholder="Competitor name"
+                                className="h-8 text-xs"
+                              />
+                            )}
+                            <Input
+                              type="number"
+                              value={pmPrice}
+                              onChange={(e) => setPmPrice(e.target.value)}
+                              placeholder="Their quoted price (£)"
+                              className="h-8 text-xs"
+                            />
+                            <div className="space-y-1">
+                              <Input
+                                type="file"
+                                accept="image/*,application/pdf"
+                                disabled={pmUploading}
+                                onChange={(e) => {
+                                  const f = e.target.files?.[0];
+                                  if (f) handlePriceMatchUpload(f);
+                                }}
+                                className="h-8 text-xs"
+                              />
+                              {pmUploading && (
+                                <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                                  <Loader2 className="w-3 h-3 animate-spin" /> Uploading…
+                                </p>
+                              )}
+                              {pmProofName && !pmUploading && (
+                                <p className="text-xs font-semibold text-emerald-600">✅ {pmProofName} attached</p>
+                              )}
+                            </div>
+                            {pmFloor !== null && (
+                              <p className="text-xs text-amber-700">
+                                Lowest allowed against a £{pmCompetitorPrice} quote is <strong>£{pmFloor}</strong> (max {PRICE_MATCH_MAX_PCT}% cheaper).
+                              </p>
+                            )}
+                            <p className="text-xs text-slate-500">
+                              Competitor, their price and the uploaded quote are all needed before this unlocks. No evidence? Use Contact management instead.
+                            </p>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 px-2 text-xs"
+                              onClick={() => setBlockRoute('manager')}
+                            >
+                              Contact management instead
+                            </Button>
+                          </div>
+                        )}
+
+                        {discountBlocked && blockRoute === 'manager' && (
                           authSent ? (
                             <p className="text-xs font-semibold text-amber-600">
                               Sent for authorisation — management have been alerted. This button unlocks as soon as they approve it.
                             </p>
                           ) : (
                             <div className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2.5">
+                              <div className="flex items-center justify-between">
+                                <p className="text-xs font-semibold text-slate-600">Manager authorisation</p>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 px-2 text-xs"
+                                  onClick={() => setBlockRoute('none')}
+                                >
+                                  Back
+                                </Button>
+                              </div>
                               <Input
                                 value={authReason}
                                 onChange={(e) => setAuthReason(e.target.value)}
                                 placeholder="Reason for manager (e.g. price match, goodwill)"
                                 className="h-8 text-xs"
                               />
+
                               <Button
                                 size="sm"
                                 variant="outline"
