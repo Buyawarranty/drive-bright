@@ -115,7 +115,7 @@ export const DEFAULT_RISK_BANDS: RiskBand[] = [
     id: 'high',
     name: 'High model risk',
     factor: 1.2,
-    minOneYear: 599,
+    minOneYear: 499,
     referral: false,
     tone: 'high',
     note: 'Higher repair frequency or dearer parts and labour.',
@@ -124,7 +124,7 @@ export const DEFAULT_RISK_BANDS: RiskBand[] = [
     id: 'severe',
     name: 'Very high model risk',
     factor: 1.45,
-    minOneYear: 849,
+    minOneYear: 749,
     referral: false,
     tone: 'severe',
     note: 'Materially higher expected cost — air suspension, complex electronics, premium SUVs.',
@@ -187,7 +187,7 @@ export const DEFAULT_RISK_BAND_ASSIGNMENTS: RiskBandAssignment[] = [
   /**
    * PREMIUM PRELOAD — "premium" is not its own category; premium makes/models
    * live in the High / Very high bands so they pick up that band's factor and
-   * its 1-year minimum (£599 / £849, halved for motorbikes). Whole-make rows
+   * its 1-year minimum (£499 / £749, halved for motorbikes). Whole-make rows
    * are used where the entire range is premium; model rows where only some
    * variants are.
    */
