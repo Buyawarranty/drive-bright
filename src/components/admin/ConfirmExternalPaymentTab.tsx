@@ -108,6 +108,76 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [authSent, setAuthSent] = useState(false);
   const [sendingAuth, setSendingAuth] = useState(false);
 
+  // ---------------------------------------------------------------------------
+  // Price match route out of a blocked confirmation.
+  // An agent stuck under the floor / over the 30% ceiling has two ways forward:
+  // upload evidence of a competitor quote (self-serve, max 10% cheaper than the
+  // competitor), or ask management to authorise it. Same rules and the same
+  // storage bucket as the Quotes & Orders price match.
+  // ---------------------------------------------------------------------------
+  const PRICE_MATCH_MAX_PCT = 10;
+  const PRICE_MATCH_COMPETITORS = [
+    'Best4Warranty',
+    'Click4Warranty',
+    'CoverMe Warranty',
+    'Direct Car Warranty',
+    'MotorEasy',
+    'Warranty Direct',
+    'Warranty First',
+    'Warrantywise',
+    'Other',
+  ];
+  const [blockRoute, setBlockRoute] = useState<'none' | 'price_match' | 'manager'>('none');
+  const [pmCompany, setPmCompany] = useState('');
+  const [pmOtherName, setPmOtherName] = useState('');
+  const [pmPrice, setPmPrice] = useState('');
+  const [pmProofPath, setPmProofPath] = useState<string | null>(null);
+  const [pmProofName, setPmProofName] = useState<string | null>(null);
+  const [pmUploading, setPmUploading] = useState(false);
+
+  const pmCompetitorName = (pmCompany === 'Other' ? pmOtherName : pmCompany).trim();
+  const pmCompetitorPrice = (() => {
+    const v = Math.round(parseFloat(String(pmPrice).replace(/[^0-9.]/g, '')));
+    return Number.isFinite(v) && v > 0 ? v : null;
+  })();
+  /** Lowest price an evidenced match may reach: 10% under the competitor. */
+  const pmFloor = pmCompetitorPrice
+    ? Math.round(pmCompetitorPrice * (1 - PRICE_MATCH_MAX_PCT / 100))
+    : null;
+
+  const handlePriceMatchUpload = async (file: File) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Evidence must be under 10MB', variant: 'destructive' });
+      return;
+    }
+    if (!/^image\//.test(file.type) && file.type !== 'application/pdf') {
+      toast({ title: 'Unsupported file', description: 'Upload an image or PDF', variant: 'destructive' });
+      return;
+    }
+    setPmUploading(true);
+    try {
+      const ext = file.name.split('.').pop() || 'png';
+      const objectPath = `price-match/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage
+        .from('price-comparison-proofs')
+        .upload(objectPath, file, { upsert: true, contentType: file.type });
+      if (error) throw error;
+      if (pmProofPath && pmProofPath !== objectPath) {
+        await supabase.storage.from('price-comparison-proofs').remove([pmProofPath]);
+      }
+      setPmProofPath(objectPath);
+      setPmProofName(file.name);
+      toast({ title: 'Evidence uploaded', description: 'Saved against the customer when you confirm the payment.' });
+    } catch (e: any) {
+      toast({ title: 'Upload failed', description: e?.message || 'Please try again', variant: 'destructive' });
+    } finally {
+      setPmUploading(false);
+    }
+  };
+
+
+
   
   // Vehicle lookup state
   const [regNumber, setRegNumber] = useState('');
