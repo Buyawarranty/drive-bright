@@ -129,6 +129,39 @@ export const DEFAULT_RISK_BANDS: RiskBand[] = [
     tone: 'severe',
     note: 'Materially higher expected cost — air suspension, complex electronics, premium SUVs.',
   },
+  /**
+   * PREMIUM TIERS — same mechanism as the risk bands above (factor + 1-year
+   * minimum), they simply carry a higher floor. "Premium" is therefore not a
+   * separate system: assigning a make/model here sets both its uplift and its
+   * floor in one place.
+   */
+  {
+    id: 'premium',
+    name: 'Premium tier',
+    factor: 1.3,
+    minOneYear: 599,
+    referral: false,
+    tone: 'high',
+    note: 'Premium brand or derivative — floored at £599 for 12 months.',
+  },
+  {
+    id: 'premium-high',
+    name: 'Very high premium tier',
+    factor: 1.5,
+    minOneYear: 749,
+    referral: false,
+    tone: 'severe',
+    note: 'Large premium SUVs, air suspension, complex electronics — floored at £749 for 12 months.',
+  },
+  {
+    id: 'premium-ultra',
+    name: 'Ultra premium tier',
+    factor: 1.7,
+    minOneYear: 899,
+    referral: false,
+    tone: 'severe',
+    note: 'Flagship / performance-adjacent premium still inside appetite — floored at £899 for 12 months.',
+  },
   {
     id: 'blocked',
     name: 'Not covered — decline politely',
