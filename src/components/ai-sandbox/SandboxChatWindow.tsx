@@ -21,20 +21,23 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import rubyLogo from '@/assets/ai-sandbox-ruby.png';
 import { isTeamOpenNow, openingHoursLabel, nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
+import { useSandboxSpecialistPresence } from '@/hooks/useSandboxSpecialistPresence';
+
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-chat`;
 
 const AGENT_PREFIX = '(Warranty specialist)';
 
 const OPENING_LINE =
-  "Hi — I'm the AI assistant. I can help you find the right warranty in under a minute. What vehicle is it for? Your registration is quickest, or just tell me the make, model and year.";
+  "Hey — I'm Ruby, the AI assistant here (a real specialist can jump in whenever you want one). Give me a minute and I'll find you the right cover. What's the vehicle? Pop the reg in if you've got it, or just the make, model and year.";
 
 const STARTERS = [
   'AB12 CDE, 2018 Ford Focus, 62,000 miles',
-  "What's covered on the Platinum plan?",
+  "What's covered on Platinum?",
   'Can I pay monthly?',
-  "That feels expensive — can I speak to someone?",
+  "Feels a bit pricey — can I talk to someone?",
 ];
+
 
 type Handover = {
   id: string;
@@ -104,6 +107,8 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
   const [agentMode, setAgentMode] = useState(false);
   const composerRef = useRef<HTMLDivElement | null>(null);
   const open = isTeamOpenNow();
+  const { liveCount, liveNames } = useSandboxSpecialistPresence();
+
 
   useEffect(() => {
     let active = true;
@@ -250,15 +255,30 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
         ) : (
           <>
             <Bot className="h-3.5 w-3.5" />
-            <span className="font-medium">You are chatting with the AI assistant</span>
+            <span className="font-medium">You're chatting with Ruby, our AI assistant</span>
             <span className="opacity-70">·</span>
-            <Clock className="h-3.5 w-3.5" />
-            <span>
-              {open
-                ? `Specialists available now (${openingHoursLabel})`
-                : `Team closed — reopens ${nextOpeningLabel()}`}
-            </span>
+            {liveCount > 0 ? (
+              <span className="flex items-center gap-1.5 font-medium text-emerald-700">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-emerald-500 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
+                </span>
+                <Headset className="h-3.5 w-3.5" />
+                {liveCount === 1 ? 'A warranty specialist is online now' : `${liveCount} warranty specialists are online now`}
+                {liveNames.length > 0 ? ` (${liveNames.slice(0, 2).join(', ')})` : ''} — just say the word
+              </span>
+            ) : (
+              <>
+                <Clock className="h-3.5 w-3.5" />
+                <span>
+                  {open
+                    ? `Specialists are around ${openingHoursLabel.toLowerCase()} — I can call one in`
+                    : `Team's closed just now — back ${nextOpeningLabel()}`}
+                </span>
+              </>
+            )}
           </>
+
         )}
       </div>
 

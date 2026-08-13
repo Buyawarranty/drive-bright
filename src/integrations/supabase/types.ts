@@ -1338,6 +1338,33 @@ export type Database = {
           },
         ]
       }
+      ai_sandbox_specialist_presence: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          is_online: boolean
+          last_seen_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          is_online?: boolean
+          last_seen_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          is_online?: boolean
+          last_seen_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_sandbox_threads: {
         Row: {
           created_at: string

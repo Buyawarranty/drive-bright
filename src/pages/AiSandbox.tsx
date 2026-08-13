@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Plus, Trash2, MessageSquare, PhoneCall } from 'lucide-react';
+import { Plus, Trash2, MessageSquare, PhoneCall, Headset } from 'lucide-react';
+import { useSandboxSpecialistPresence } from '@/hooks/useSandboxSpecialistPresence';
+
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,13 +27,21 @@ export default function AiSandbox() {
   const [userId, setUserId] = useState<string | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [displayName, setDisplayName] = useState<string | null>(null);
+  const { liveCount, meOnline, setOnDuty } = useSandboxSpecialistPresence();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUserId(data.user?.id ?? null);
+      setDisplayName(
+        (data.user?.user_metadata?.full_name as string | undefined) ??
+          data.user?.email?.split('@')[0] ??
+          null,
+      );
       setCheckingAuth(false);
     });
   }, []);
+
 
   const loadThreads = useCallback(async () => {
     const { data, error } = await supabase
@@ -196,12 +206,34 @@ export default function AiSandbox() {
       </aside>
 
       <main className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-border px-4 py-2.5">
+        <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2.5">
           <h1 className="text-sm font-semibold">Ruby — customer assistant (sandbox)</h1>
-          <Button size="sm" variant="outline" className="md:hidden" onClick={createThread}>
-            <Plus className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant={meOnline ? 'default' : 'outline'}
+              className="h-7 px-2 text-xs"
+              onClick={() => setOnDuty(!meOnline, displayName)}
+              title="Customers see 'a specialist is online now' while you are on duty"
+            >
+              <Headset className="mr-1.5 h-3.5 w-3.5" />
+              {meOnline ? 'On duty for live chats' : 'Go on duty'}
+            </Button>
+            {liveCount > 0 && (
+              <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-700">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-emerald-500 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
+                </span>
+                {liveCount} live
+              </span>
+            )}
+            <Button size="sm" variant="outline" className="md:hidden" onClick={createThread}>
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
         </header>
+
         {threadId ? (
           <SandboxChatWindow key={threadId} threadId={threadId} />
         ) : (

@@ -137,6 +137,8 @@ Updated: just now
 - [Trustpilot Automations](mem://integrations/trustpilot-automation-v2) — BCC timing and trigger blocking
 - [Bumper Credentials](mem://integrations/bumper-agent-credentials) — Agent specific integration variables
 - [Dealer Portal](mem://features/dealer-portal) — Dealer sub-app with auth, quotes, warranties at /dealer-portal/
+- [AI Sandbox Tone & Handover](mem://features/ai-sandbox-tone-and-handover) — Ruby semi-casual voice, never claims to be human, specialist on-duty presence, ringing manager alert
+
 - [Admin Sidebar Tab Order](mem://admin/sidebar-tab-order) — Persist any user-directed reordering of admin side nav tabs; never reorder unprompted
 - [Reassign Preserves History](mem://admin/leads/reassign-preserves-history) — Bulk/offboarding reassign only changes assigned_to; notes, calls, statuses, reminders stay intact; never touch agents outside selected source
 - [Online Sales Always Website](mem://admin/leads/online-sales-always-website) — Converted google_ad/social_ad/bing_ad/website leads are always credited to Website; only management can attach an agent

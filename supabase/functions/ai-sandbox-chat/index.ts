@@ -26,9 +26,12 @@ const TERMS = [12, 24, 36] as const;
 const SYSTEM_PROMPT = `You are "Ruby", the Buyawarranty.co.uk assistant. You help UK drivers understand our vehicle warranty products and, when they are ready, you send them a payment link.
 
 Voice and rules:
-- Friendly, plain British English. Short paragraphs, sentence case headings, no jargon.
-- Keep it quick: one question at a time, never a wall of questions.
+- Warm, semi-casual British English — like a friendly, knowledgeable person on live chat, not a corporate script. Use contractions ("you'll", "that's", "I'd"), short sentences, the odd bit of natural warmth ("nice motor", "good question", "totally fair"). Plain words, no jargon, no bullet-point walls unless it genuinely helps.
+- Be a person to talk to: acknowledge what they said before you ask the next thing, keep it to one question at a time, and mirror their energy. Never sound robotic, never repeat the same phrasing twice in a row.
+- No fake feelings and no over-familiarity: don't claim to own a car, don't say "I love", don't use slang the customer hasn't used, and don't pile on exclamation marks.
+- Honesty is non-negotiable: you are an AI assistant. If asked whether you're a real person, say plainly and cheerfully that you're the AI assistant and you can bring a human specialist in any time. Never imply, hint or play along that you are human, and never take on a human name as a "colleague".
 - Never use negative wording such as "we won't pay". Explain what the cover is designed for.
+
 
 GROUNDING — THE MOST IMPORTANT RULE:
 - You must never invent, guess, infer or "fill in" warranty information. Anything about what is covered, what is excluded, claim limits, excess, labour rates, eligibility, cancellation, transfers, claim outcomes or any contractual term must come word-for-word in substance from the approved material returned by search_site_knowledge.
@@ -42,7 +45,7 @@ GROUNDING — THE MOST IMPORTANT RULE:
 - Payment: card payment in full (Stripe) or interest free monthly instalments (Bumper, subject to their checks).
 - You are running in a SANDBOX. Any payment link you create is a TEST link and cannot take a real payment. Say this whenever you send one.
 - Never ask for card details, passwords or full bank details in chat.
-- Be open about being an AI. Say "I'm the AI assistant" if asked, and always say clearly when you are bringing a human specialist in.
+- Be open about being an AI. Say "I'm the AI assistant" if asked, and always say clearly when you are bringing a human specialist in. If the live context below says a specialist is ONLINE RIGHT NOW, mention it naturally when it helps ("one of our specialists is online right now if you'd rather talk it through with a person") and hand over the moment they say yes.
 
 The sales journey — follow it in order:
 1. Open: you have already said hello. Ask what vehicle they have (registration is quickest, or make, model and year).
@@ -195,6 +198,18 @@ Deno.serve(async (req) => {
     }
 
     const gateway = createLovableAiGatewayProvider(lovableKey);
+
+    /** How many warranty specialists are actually on duty in live chat right now. */
+    const specialistsOnline = async (): Promise<number> => {
+      const cutoff = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+      const { count } = await admin
+        .from("ai_sandbox_specialist_presence")
+        .select("user_id", { count: "exact", head: true })
+        .eq("is_online", true)
+        .gte("last_seen_at", cutoff);
+      return count ?? 0;
+    };
+
 
     const tools = {
       search_site_knowledge: tool({
@@ -399,10 +414,12 @@ Deno.serve(async (req) => {
 
       check_availability: tool({
         description:
-          "Check whether the warranty specialists are available right now (Monday to Saturday, 9am to 5pm UK time). Always call this before offering a live handover.",
+          "Check whether the warranty specialists are available right now (opening hours plus how many specialists are actually on duty in live chat). Always call this before offering a live handover.",
         inputSchema: z.object({}),
-        execute: async () => toolResultText(availability()),
+        execute: async () =>
+          toolResultText({ ...availability(), specialists_online_now: await specialistsOnline() }),
       }),
+
 
       connect_live_agent: tool({
         description:
@@ -530,9 +547,15 @@ Deno.serve(async (req) => {
 
 
     const now = availability();
+    const onlineNow = await specialistsOnline();
     const liveContext = `\n\nRight now: ${now.local_time}. The warranty specialists are ${
       now.is_open ? "OPEN and available for a live handover" : `CLOSED (they reopen ${now.next_open})`
-    }. Opening hours are ${now.opening_hours}.\nIf a message in the conversation begins with "(Warranty specialist)" a human has joined this chat — stay out of the way and only reply if the customer asks you directly.`;
+    }. Opening hours are ${now.opening_hours}. Specialists ONLINE RIGHT NOW in live chat: ${onlineNow}${
+      onlineNow > 0
+        ? " — a real person can pick this chat up within seconds, so offer that whenever the customer hesitates or wants to buy."
+        : " — nobody is sat in live chat this second, so do not promise an instant human; offer a callback or keep helping yourself."
+    }.\nIf a message in the conversation begins with "(Warranty specialist)" a human has joined this chat — stay out of the way and only reply if the customer asks you directly.`;
+
 
     const result = streamText({
       model: gateway(MODEL),
