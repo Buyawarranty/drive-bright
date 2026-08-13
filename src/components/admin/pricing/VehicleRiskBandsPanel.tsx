@@ -759,6 +759,13 @@ const VehicleRiskBandsPanel: React.FC = () => {
                 </Button>
               </div>
             </div>
+            <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+              One row per vehicle, one band per row. Make + model beats make-only, and a fuel-specific row beats an
+              "all fuel types" row. <strong>Fuel type is only a matcher</strong> — it decides which cars a row catches,
+              not what they cost. The price still comes only from the winning row's band, its factor and its floor.
+              There is no separate EV or hybrid uplift.
+            </p>
+
             <div className="grid gap-2 sm:grid-cols-[1fr_1fr_170px_200px_auto] items-end mb-4">
               <div className="space-y-1">
                 <Label className="text-xs">Make</Label>
@@ -777,7 +784,7 @@ const VehicleRiskBandsPanel: React.FC = () => {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Fuel type</Label>
+                <Label className="text-xs">Fuel type (matcher only)</Label>
                 <Select
                   value={newEntry.fuel}
                   onValueChange={v => setNewEntry({ ...newEntry, fuel: v as FuelFilter })}
@@ -793,7 +800,11 @@ const VehicleRiskBandsPanel: React.FC = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-[11px] text-muted-foreground leading-snug">
+                  Narrows which cars this row catches — it never changes the price on its own.
+                </p>
               </div>
+
 
               <div className="space-y-1">
                 <Label className="text-xs">Band</Label>
