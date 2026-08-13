@@ -359,6 +359,11 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
                     if (name === 'conversion') return [`${Number(value).toFixed(1)}%`, 'Lead to sale'];
                     if (name === 'revenue') return [money(Number(value)), 'Sales value'];
                     if (name === 'spend') return [money(Number(value)), 'Ad spend'];
+                    if (name === 'googleCost') return [money(Number(value)), 'Google cost'];
+                    if (name === 'metaCost') return [money(Number(value)), 'Meta cost'];
+                    if (name === 'bingCost') return [money(Number(value)), 'Bing cost'];
+                    if (name === 'tiktokCost') return [money(Number(value)), 'TikTok cost'];
+                    if (name === 'paidCost') return [money(Number(value)), `All channels @ £${leadCost}/lead`];
                     return [value, name];
                   }}
                   labelStyle={{ fontWeight: 'bold' }}
@@ -370,7 +375,12 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
                       : value === 'sales' ? 'Sales made'
                         : value === 'conversion' ? 'Lead to sale %'
                           : value === 'revenue' ? 'Sales value'
-                            : value === 'spend' ? 'Ad spend' : value
+                            : value === 'spend' ? 'Ad spend'
+                              : value === 'googleCost' ? 'Google cost'
+                                : value === 'metaCost' ? 'Meta cost'
+                                  : value === 'bingCost' ? 'Bing cost'
+                                    : value === 'tiktokCost' ? 'TikTok cost'
+                                      : value === 'paidCost' ? `All channels @ £${leadCost}/lead` : value
                   }
                 />
                 <Bar yAxisId="left" dataKey="leads" fill="#6366f1" radius={[4, 4, 0, 0]} />
@@ -378,6 +388,11 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
                 <Line yAxisId="pct" type="monotone" dataKey="conversion" stroke="#0ea5e9" strokeWidth={2} strokeDasharray="4 3" dot={false} />
                 <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#f59e0b" strokeWidth={2.5} dot={false} />
                 <Line yAxisId="right" type="monotone" dataKey="spend" stroke="#ef4444" strokeWidth={2} dot={false} />
+                <Line yAxisId="right" type="monotone" dataKey="paidCost" stroke="#111827" strokeWidth={2.5} strokeDasharray="6 3" dot={false} />
+                <Line yAxisId="right" type="monotone" dataKey="googleCost" stroke="#2563eb" strokeWidth={1.5} dot={false} />
+                <Line yAxisId="right" type="monotone" dataKey="metaCost" stroke="#4f46e5" strokeWidth={1.5} dot={false} />
+                <Line yAxisId="right" type="monotone" dataKey="bingCost" stroke="#0d9488" strokeWidth={1.5} dot={false} />
+                <Line yAxisId="right" type="monotone" dataKey="tiktokCost" stroke="#a855f7" strokeWidth={1.5} dot={false} />
 
               </ComposedChart>
             </ResponsiveContainer>
@@ -391,6 +406,11 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
                     <TableHead className="text-right">Sales</TableHead>
                     <TableHead className="text-right">Conversion</TableHead>
                     <TableHead className="text-right">Ad spend</TableHead>
+                    <TableHead className="text-right">Google</TableHead>
+                    <TableHead className="text-right">Meta</TableHead>
+                    <TableHead className="text-right">Bing</TableHead>
+                    <TableHead className="text-right">TikTok</TableHead>
+                    <TableHead className="text-right">All channels</TableHead>
                     <TableHead className="text-right">Sales value</TableHead>
                     <TableHead className="text-right">Return on spend</TableHead>
                   </TableRow>
@@ -403,11 +423,17 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
                       <TableCell className="text-right">{r.sales}</TableCell>
                       <TableCell className="text-right">{r.conversion.toFixed(1)}%</TableCell>
                       <TableCell className="text-right">{money(r.spend)}</TableCell>
+                      <TableCell className="text-right">{money(r.googleCost)}</TableCell>
+                      <TableCell className="text-right">{money(r.metaCost)}</TableCell>
+                      <TableCell className="text-right">{money(r.bingCost)}</TableCell>
+                      <TableCell className="text-right">{money(r.tiktokCost)}</TableCell>
+                      <TableCell className="text-right font-medium">{money(r.paidCost)}</TableCell>
                       <TableCell className="text-right">{money(r.revenue)}</TableCell>
                       <TableCell className="text-right">
                         {r.spend > 0 ? `${(r.revenue / r.spend).toFixed(2)}x` : '—'}
                       </TableCell>
                     </TableRow>
+
                   ))}
                 </TableBody>
               </Table>
