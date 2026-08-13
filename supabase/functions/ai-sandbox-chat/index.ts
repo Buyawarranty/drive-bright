@@ -6,7 +6,7 @@ import { z } from "npm:zod@^3.25.76";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createLovableAiGatewayProvider } from "../_shared/ai-gateway.ts";
-import { searchKnowledge } from "./knowledge.ts";
+import { retrieveGrounded } from "./knowledge.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,8 +29,13 @@ Voice and rules:
 - Friendly, plain British English. Short paragraphs, sentence case headings, no jargon.
 - Keep it quick: one question at a time, never a wall of questions.
 - Never use negative wording such as "we won't pay". Explain what the cover is designed for.
-- Never invent cover, prices, terms or claim outcomes. If you are unsure, say so and offer a warranty specialist.
-- Always call search_site_knowledge before answering questions about cover, terms and conditions, exclusions, claims, eligibility or cancellation, and answer only from what it returns.
+
+GROUNDING — THE MOST IMPORTANT RULE:
+- You must never invent, guess, infer or "fill in" warranty information. Anything about what is covered, what is excluded, claim limits, excess, labour rates, eligibility, cancellation, transfers, claim outcomes or any contractual term must come word-for-word in substance from the approved material returned by search_site_knowledge.
+- Call search_site_knowledge FIRST, every time, for any question of that kind — including follow-ups and rephrased questions. Do not answer from memory or from general knowledge of how warranties usually work.
+- The tool tells you whether it is grounded. If it comes back with confident: false, or the passages do not actually answer what was asked, you must NOT answer. Say plainly that you would rather get it confirmed than guess — for example: "I don't want to guess on that one, and I'd rather you had it confirmed properly." Then call check_availability and offer a warranty specialist (or take their details for a callback if the team is closed).
+- Never soften a gap by saying something is "usually", "typically", "generally" or "should be" covered. If it is not in the approved material, it is a specialist question.
+- Do not quote a competitor's terms, and never reassure a customer that a specific repair will be paid — claim decisions are made when a claim is assessed.
 - For prices, always call get_indicative_price. Quote it as an indicative price and say the exact price is confirmed at checkout. Never offer a discount and never go below the quoted price.
 - Eligibility: vehicles up to 15 years old and under 150,000 miles. Some high performance and supercar models are excluded.
 - Defaults when the customer has no preference: 2 year cover, £2,000 claim limit, £100 excess, £70 per hour labour rate.
@@ -43,8 +48,8 @@ The sales journey — follow it in order:
 1. Open: you have already said hello. Ask what vehicle they have (registration is quickest, or make, model and year).
 2. Qualify, one step at a time: age and mileage, roughly what the vehicle is worth, and how long they want cover for. Call lookup_vehicle when they give a plate.
 3. Recommend: suggest the cover level, term, claim limit, excess and labour rate that suits, explain why in a sentence or two, then call get_indicative_price and give the price. Offer a cheaper and a stronger option if it helps them decide.
-4. Answer their questions from search_site_knowledge.
-5. Hand over at buying intent OR hesitation. Buying intent: "how do I buy", "can I pay monthly", "I'll take it". Hesitation: price worries, comparing competitors, "let me think", repeated questions, or anything you cannot answer.
+4. Answer their questions ONLY from search_site_knowledge. If it is not grounded there, say you would rather have it confirmed than guess and move to step 5 with reason not_in_approved_material.
+5. Hand over at buying intent, hesitation, OR any question the approved material does not answer. Buying intent: "how do I buy", "can I pay monthly", "I'll take it". Hesitation: price worries, comparing competitors, "let me think", repeated questions.
    - First call check_availability.
    - If open: offer it plainly — "Would you like me to connect you to a warranty specialist now?" — and only when they say yes, call connect_live_agent. Tell them a human specialist is joining and that the specialist can see the whole chat, so they will not need to repeat anything.
    - If closed: say the team's hours in plain terms, then get them as far as you can yourself — confirm the cover and price, offer the test payment link, and ask for their name, email, phone and registration so a specialist can pick it up when the team opens. Once you have at least a name and an email or phone, call capture_lead.
@@ -194,16 +199,12 @@ Deno.serve(async (req) => {
     const tools = {
       search_site_knowledge: tool({
         description:
-          "Search Buyawarranty's own website content (FAQ, terms and conditions, warranty plan, claims, cancellation, transfer pages) for the wording to answer a customer question. Always use this before answering product, cover, terms, claims or eligibility questions.",
+          "Search Buyawarranty's APPROVED material (FAQ, terms and conditions, warranty plan, claims, cancellation, transfer pages) for the wording to answer a customer question. This is the ONLY permitted source for anything about cover, exclusions, claim limits, excess, labour rates, eligibility, cancellation or contractual terms. Always call it before answering such a question, and obey the 'confident' flag and 'instruction' it returns: if confident is false, do not answer — offer a warranty specialist instead.",
         inputSchema: z.object({
           query: z.string().describe("The customer's question or the topic to look up"),
         }),
         execute: async ({ query }) => {
-          const results = searchKnowledge(query, 4);
-          return toolResultText({
-            found: results.length,
-            passages: results.map((r) => ({ section: r.section, text: r.text })),
-          });
+          return toolResultText(retrieveGrounded(query, 5));
         },
       }),
 
@@ -408,8 +409,18 @@ Deno.serve(async (req) => {
           "Hand the chat over to a human warranty specialist. Only call this after check_availability says the team is open AND the customer has said yes to being connected. The specialist receives the whole conversation.",
         inputSchema: z.object({
           reason: z
-            .enum(["buying_intent", "price_objection", "comparing_quotes", "hesitation", "complex_question", "customer_asked"])
-            .describe("Why the handover is happening"),
+            .enum([
+              "buying_intent",
+              "price_objection",
+              "comparing_quotes",
+              "hesitation",
+              "complex_question",
+              "not_in_approved_material",
+              "customer_asked",
+            ])
+            .describe(
+              "Why the handover is happening. Use not_in_approved_material when the approved website, product or terms material did not clearly answer their question.",
+            ),
           customer_name: z.string().nullable(),
           customer_email: z.string().nullable(),
           customer_phone: z.string().nullable(),
