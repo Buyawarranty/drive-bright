@@ -1497,7 +1497,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                 </div>
               )}
 
-              <div className="flex justify-end gap-3">
+              <div className="sticky bottom-0 z-20 -mx-1 px-1 py-3 bg-white/95 backdrop-blur border-t border-slate-200 flex justify-end gap-3">
                 <Button variant="outline" onClick={() => setExternalPaymentStep('details')}>Back</Button>
                 <Button onClick={handleConfirmPayment} disabled={isConfirming || discountBlocked} size="lg" className="bg-indigo-500 hover:bg-indigo-400" title={discountBlocked ? 'Blocked — contact management to authorise this discount' : undefined}>
                   {isConfirming ? (
