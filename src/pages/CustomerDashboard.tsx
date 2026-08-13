@@ -512,7 +512,19 @@ const CustomerDashboard = () => {
       let data: any[] | null = null;
       let error: any = null;
 
-      // Strategy 1: Try by email first (most reliable) - using case-insensitive match
+      // Merge helper — a customer can hold several policies (one per vehicle) and
+      // some rows are missing an email, so we must UNION the strategies rather
+      // than stop at the first one that returns anything.
+      const mergeRows = (rows: any[] | null | undefined) => {
+        if (!rows?.length) return;
+        const byId = new Map<string, any>((data || []).map((r: any) => [r.id, r]));
+        rows.forEach((r: any) => byId.set(r.id, r));
+        data = Array.from(byId.values()).sort(
+          (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      };
+
+      // Strategy 1: by email (case-insensitive)
       if (effectiveEmail) {
         console.log("Strategy 1: Querying by email:", effectiveEmail);
         let query = supabase
@@ -528,12 +540,13 @@ const CustomerDashboard = () => {
         const result = await query.order('created_at', { ascending: false });
         
         console.log("Email query result:", result);
-        data = result.data;
+        mergeRows(result.data);
         error = result.error;
       }
 
-      // Strategy 2: If no results, try by user_id (for normal login)
-      if ((!data || data.length === 0) && user?.id && !isImpersonating) {
+      // Strategy 2: ALSO query by user_id — catches sibling policies whose email
+      // is blank or mistyped (second vehicle on the same account).
+      if (user?.id && !isImpersonating) {
         console.log("Strategy 2: Querying by user_id:", user.id);
         const result = await supabase
           .from('customer_policies')
@@ -543,9 +556,10 @@ const CustomerDashboard = () => {
           .order('created_at', { ascending: false });
         
         console.log("User ID query result:", result);
-        data = result.data;
-        error = result.error;
+        mergeRows(result.data);
+        if (!data?.length) error = result.error;
       }
+
 
       // Strategy 3: When impersonating and email didn't match, try by customer_id
       // This handles cases where the policy email has typos but customer_id is correct
