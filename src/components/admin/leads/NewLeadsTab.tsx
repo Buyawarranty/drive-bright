@@ -2,7 +2,6 @@ import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { isToday, isPast } from 'date-fns';
 import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
-import { RepeatCustomerBanner } from './RepeatCustomerBanner';
 import { MyTargetStrip } from './MyTargetStrip';
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
 import { QuotesSentPanel } from '@/components/admin/QuotesSentPanel';
