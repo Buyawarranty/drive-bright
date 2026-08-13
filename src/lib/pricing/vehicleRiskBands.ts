@@ -421,19 +421,24 @@ export function loadRiskBandConfig(): RiskBandConfig {
     if (!raw) return DEFAULT_RISK_BAND_CONFIG;
     const parsed = JSON.parse(raw);
     if (!parsed || !Array.isArray(parsed.bands) || !parsed.bands.length) return DEFAULT_RISK_BAND_CONFIG;
+    const savedBands: RiskBand[] = parsed.bands.map((b: RiskBand, i: number) => ({
+      id: b.id || `band-${i}`,
+      name: String(b.name || `Band ${i + 1}`),
+      factor: clampBandFactor(Number(b.factor)),
+      minOneYear:
+        Number.isFinite(Number(b.minOneYear)) && Number(b.minOneYear) > 0 ? Number(b.minOneYear) : null,
+      referral: b.referral === true,
+      blocked: b.blocked === true,
+      blockMessage: b.blocked === true ? String(b.blockMessage || DEFAULT_BLOCK_MESSAGE) : b.blockMessage || undefined,
+      note: b.note || undefined,
+      tone: (['low', 'normal', 'high', 'severe', 'referral', 'blocked'] as const).includes(b.tone) ? b.tone : 'normal',
+    }));
+    // Bands shipped after this config was saved (e.g. the premium tiers) are
+    // appended so a manager never loses access to a new tier.
+    const savedIds = new Set(savedBands.map(b => b.id));
+    const mergedBands = [...savedBands, ...DEFAULT_RISK_BANDS.filter(b => !savedIds.has(b.id))];
     return {
-      bands: parsed.bands.map((b: RiskBand, i: number) => ({
-        id: b.id || `band-${i}`,
-        name: String(b.name || `Band ${i + 1}`),
-        factor: clampBandFactor(Number(b.factor)),
-        minOneYear:
-          Number.isFinite(Number(b.minOneYear)) && Number(b.minOneYear) > 0 ? Number(b.minOneYear) : null,
-        referral: b.referral === true,
-        blocked: b.blocked === true,
-        blockMessage: b.blocked === true ? String(b.blockMessage || DEFAULT_BLOCK_MESSAGE) : b.blockMessage || undefined,
-        note: b.note || undefined,
-        tone: (['low', 'normal', 'high', 'severe', 'referral', 'blocked'] as const).includes(b.tone) ? b.tone : 'normal',
-      })),
+      bands: mergedBands,
       assignments: Array.isArray(parsed.assignments)
         ? parsed.assignments
             .filter((a: RiskBandAssignment) => a && (String(a.make || '').trim() || String(a.model || '').trim()))
