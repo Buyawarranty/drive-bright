@@ -358,7 +358,14 @@ Deno.serve(async (req) => {
           query: z.string().describe("The customer's question or the topic to look up"),
         }),
         execute: async ({ query }) => {
-          return toolResultText(retrieveGrounded(query, 5));
+          const grounded: any = retrieveGrounded(query, 5);
+          await logEvent({
+            event_type: "question",
+            topic: query,
+            customer_wording: query,
+            knowledge_confident: grounded?.confident ?? null,
+          });
+          return toolResultText(grounded);
         },
       }),
 
