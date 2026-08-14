@@ -474,9 +474,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setDiscountAuthReason(approvedDiscountRequest.reason || '');
   }, [approvedDiscountRequest, regNumber]);
 
-  // In price match mode the agent may set any price they need to match the
-  // competitor quote, capped at 10% cheaper than the competitor's price.
-  const effectiveMaxDiscountPct = (priceMatchMode || discountAuthBy) ? 100 : baseMaxDiscountPct;
+  // Agents may override any pricing logic (discount %, manual price, excess,
+  // labour rate) as long as the final price stays at or above the per-term
+  // minimum floor. The floor — not a discount cap — is the only hard block.
+  const effectiveMaxDiscountPct = 100;
+
 
   // Parse the competitor's quoted price out of the free-text field (e.g. "WarrantyWise — £520")
   const priceMatchCompetitorPrice = (() => {
@@ -5377,16 +5379,9 @@ Questions? Call 0330 229 5040`;
                           {priceMatchMode ? (
                             <> · <span className="font-semibold text-sky-700">Price match active — any price allowed, maximum 10% cheaper than competitors</span></>
                           ) : (
-                            <>
-                              {effectiveMaxDiscountPct < 100 && (
-                                <> · Your cap: <strong>{effectiveMaxDiscountPct}%</strong></>
-                              )}
-                              {effectiveMaxDiscountPct === 0 && ' · Discounts blocked'}
-                              {blockedByCeiling && (
-                                <> · <span className="font-semibold text-amber-700">Discounts above {DISCOUNT_CEILING_PCT}% need Management authorisation</span></>
-                              )}
-                            </>
+                            <> · <span className="font-semibold text-emerald-700">Any discount allowed down to the minimum price for this term</span></>
                           )}
+
                         </p>
                         <p className="text-[11px] text-muted-foreground mt-0.5">
                           Your cap is judged on your average discount across sales, not each individual sale.
