@@ -89,7 +89,7 @@ const getPeriodRange = (period: Period): { from: Date; to: Date; label: string }
 
 export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRole, currentAdminId }) => {
   const [period, setPeriod] = useState<Period>('this_month');
-  const [groupBy, setGroupBy] = useState<'week' | 'month' | 'flat'>('week');
+  const [groupBy, setGroupBy] = useState<'day' | 'week' | 'month' | 'flat'>('day');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'confirmed' | 'reinstated'>('pending');
   const [loading, setLoading] = useState(true);
   const [leads, setLeads] = useState<FakeLeadRow[]>([]);
@@ -196,17 +196,48 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
 
   const grouped = useMemo(() => {
     if (groupBy === 'flat') return [{ key: 'all', label: '', rows: filteredLeads }];
-    const buckets: Record<string, FakeLeadRow[]> = {};
+    const buckets: Record<string, { sort: string; label: string; rows: FakeLeadRow[] }> = {};
     filteredLeads.forEach(l => {
       const d = l.fake_marked_at ? parseISO(l.fake_marked_at) : parseISO(l.created_at);
-      const key = groupBy === 'week'
-        ? `Week of ${format(startOfWeek(d, { weekStartsOn: 1 }), 'd MMM yyyy')}`
-        : format(startOfMonth(d), 'MMMM yyyy');
-      if (!buckets[key]) buckets[key] = [];
-      buckets[key].push(l);
+      let key: string;
+      let label: string;
+      if (groupBy === 'day') {
+        key = format(d, 'yyyy-MM-dd');
+        label = format(d, 'EEEE d MMMM yyyy');
+      } else if (groupBy === 'week') {
+        const ws = startOfWeek(d, { weekStartsOn: 1 });
+        key = format(ws, 'yyyy-MM-dd');
+        label = `Week of ${format(ws, 'd MMM yyyy')}`;
+      } else {
+        const ms = startOfMonth(d);
+        key = format(ms, 'yyyy-MM');
+        label = format(ms, 'MMMM yyyy');
+      }
+      if (!buckets[key]) buckets[key] = { sort: key, label, rows: [] };
+      buckets[key].rows.push(l);
     });
-    return Object.entries(buckets).map(([key, rows]) => ({ key, label: key, rows }));
+    return Object.values(buckets)
+      .sort((a, b) => (a.sort < b.sort ? 1 : -1))
+      .map(b => ({ key: b.sort, label: b.label, rows: b.rows }));
   }, [filteredLeads, groupBy]);
+
+  /** Marked-as-fake counts per calendar day (newest first) for the selected period. */
+  const dailyCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    filteredLeads.forEach(l => {
+      const d = l.fake_marked_at ? parseISO(l.fake_marked_at) : parseISO(l.created_at);
+      const key = format(d, 'yyyy-MM-dd');
+      map[key] = (map[key] || 0) + 1;
+    });
+    return Object.entries(map)
+      .sort((a, b) => (a[0] < b[0] ? 1 : -1))
+      .map(([key, count]) => ({
+        key,
+        day: format(parseISO(key), 'EEE'),
+        date: format(parseISO(key), 'd MMM yyyy'),
+        count,
+      }));
+  }, [filteredLeads]);
 
   const updateAudit = async (lead: FakeLeadRow, action: 'confirm' | 'reinstate' | 'reset') => {
     try {
@@ -341,6 +372,7 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
             </Tabs>
             <Tabs value={groupBy} onValueChange={(v) => setGroupBy(v as any)}>
               <TabsList className="h-8">
+                <TabsTrigger value="day" className="text-xs px-2">By day</TabsTrigger>
                 <TabsTrigger value="week" className="text-xs px-2">By week</TabsTrigger>
                 <TabsTrigger value="month" className="text-xs px-2">By month</TabsTrigger>
                 <TabsTrigger value="flat" className="text-xs px-2">Flat</TabsTrigger>
@@ -373,6 +405,27 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
                 {m.reinstated > 0 && <span className="ml-1 text-green-700">({m.reinstated} reinstated)</span>}
               </Badge>
             ))}
+          </div>
+        )}
+
+        {/* Marked as fake — per day and date */}
+        {!loading && dailyCounts.length > 0 && (
+          <div className="bg-white rounded-md border p-2">
+            <div className="text-xs font-semibold text-muted-foreground mb-1.5">
+              Marked as fake by day &amp; date
+            </div>
+            <div className="flex gap-1.5 overflow-x-auto pb-1">
+              {dailyCounts.map(d => (
+                <div
+                  key={d.key}
+                  className="shrink-0 rounded-md border px-2 py-1 text-center bg-red-50/60 border-red-200"
+                >
+                  <div className="text-[10px] font-semibold text-red-900">{d.day}</div>
+                  <div className="text-[10px] text-muted-foreground whitespace-nowrap">{d.date}</div>
+                  <div className="text-base font-bold text-red-700 leading-tight">{d.count}</div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
