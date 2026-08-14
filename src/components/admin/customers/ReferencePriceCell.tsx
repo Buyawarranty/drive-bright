@@ -1,6 +1,6 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Gauge } from 'lucide-react';
 import {
   getSoldVsReference,
   referenceGapClass,
@@ -41,13 +41,31 @@ export const ReferencePriceCell: React.FC<{ order: SoldOrderLike | null | undefi
     [order, versions, soldOn]
   );
 
-  if (!ref) return <span className="text-xs text-muted-foreground">—</span>;
+  const priceMatched = !!(order as any)?.price_match_applied;
+  const matchCompetitor = (order as any)?.price_match_competitor || null;
+  const matchCompetitorPrice = Number((order as any)?.price_match_competitor_price) || null;
+
+  const priceMatchTag = priceMatched ? (
+    <Badge
+      variant="outline"
+      className="w-fit text-[11px] whitespace-nowrap border-sky-300 bg-sky-50 text-sky-800"
+      title={`Agent used a price match override${matchCompetitor ? ` against ${matchCompetitor}` : ''}${matchCompetitorPrice ? ` (competitor quote £${Math.round(matchCompetitorPrice)})` : ''}. Competitor evidence is on the customer record.`}
+    >
+      <Gauge className="mr-1 h-3 w-3" />
+      Price match override
+    </Badge>
+  ) : null;
+
+  if (!ref) {
+    return priceMatchTag ?? <span className="text-xs text-muted-foreground">—</span>;
+  }
 
   const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
   const signed = (n: number) => `${n > 0 ? '+' : ''}${n.toFixed(1)}%`;
 
   return (
     <div className="flex flex-col gap-1 min-w-[150px]">
+      {priceMatchTag}
       <div className="flex items-center gap-2 text-[11px] leading-tight">
         <span className="text-slate-600" title="Quotes & Orders (admin grid) price for this reg, claim limit, excess, labour rate and duration, using the prices that were live on the sale date">
           QOP <span className="font-semibold text-slate-900">{gbp(ref.qop)}</span>
