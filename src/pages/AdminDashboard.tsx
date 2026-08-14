@@ -722,7 +722,7 @@ const AdminDashboard = () => {
           return (
             <div className="p-6">
               <h2 className="text-xl font-semibold">Access denied</h2>
-              <p className="text-sm text-muted-foreground mt-1">The Claims tab is restricted to management and claims agents only.</p>
+              <p className="text-sm text-muted-foreground mt-1">Claims data is restricted to super admins and admins only.</p>
             </div>
           );
         }
