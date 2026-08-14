@@ -64,16 +64,20 @@ serve(async (req: Request) => {
       const cols = 'claim_limit, voluntary_excess, labour_rate, payment_type, plan_type, mileage, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, vehicle_transmission, registration_plate, signup_date, discount_code, discount_amount, original_amount, final_amount, warranty_number, warranty_reference_number, purchase_source, acquisition_source, seasonal_bonus_months, deposit_amount, balance_due_amount, payment_status, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, flat_number, building_name, building_number, street, town, county, postcode, country, first_name, last_name, phone';
       let custRow: any = null;
       if (normalizedReg) {
+        // Plates are stored both with and without spaces, so match either.
+        const spaced = normalizedReg.length > 4
+          ? `${normalizedReg.slice(0, normalizedReg.length - 3)} ${normalizedReg.slice(-3)}`
+          : normalizedReg;
         const { data } = await supabase
           .from('customers')
           .select(cols)
-          .eq('registration_plate', normalizedReg)
+          .or(`registration_plate.eq.${normalizedReg},registration_plate.eq.${spaced}`)
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
         custRow = data;
       }
-      if (!custRow) {
+      if (!custRow && customerEmail) {
         const { data } = await supabase
           .from('customers')
           .select(cols)
@@ -83,7 +87,19 @@ serve(async (req: Request) => {
           .maybeSingle();
         custRow = data;
       }
+      // Last resort: pull the cover details off the policy record.
+      if (!custRow && customerEmail) {
+        const { data: pol } = await supabase
+          .from('customer_policies')
+          .select('plan_type, payment_type, payment_amount, warranty_number, claim_limit, voluntary_excess, labour_rate')
+          .ilike('email', customerEmail)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (pol) custRow = pol;
+      }
       if (custRow) saleExtras = custRow as any;
+
     } catch (_) { /* ignore */ }
     const claimLimitDisplay = saleExtras.claim_limit ? `£${Number(saleExtras.claim_limit).toLocaleString()}` : 'Not set';
     const excessDisplay = saleExtras.voluntary_excess != null ? `£${Number(saleExtras.voluntary_excess).toFixed(2)}` : 'Not set';
