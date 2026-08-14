@@ -566,7 +566,7 @@ const HybridWarrantyLanding: React.FC = () => {
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-330-229-5040",
       "priceRange": SEO_PRICE_RANGE,
-      "address": { "@type": "PostalAddress", "streetAddress": "Suite A, Cavendish House, 233-235 High Street", "addressLocality": "Guildford", "addressRegion": "Surrey", "postalCode": "GU1 3BJ", "addressCountry": "GB" }
+      "address": { "@type": "PostalAddress", "streetAddress": "Warranty House, 62 Berkhamsted Avenue", "addressLocality": "Wembley", "addressRegion": "London", "postalCode": "HA9 6DT", "addressCountry": "GB" }
     },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
     "description": "UK's specialist extended warranty for hybrid cars, plug-in hybrids (PHEV), and mild hybrids (MHEV). Covers Toyota Prius, Yaris, Corolla, RAV4 & C-HR Hybrid; Honda Jazz, Civic, CR-V & HR-V e:HEV; Kia Niro, Sportage & Sorento; Hyundai Tucson, Ioniq & Kona Hybrid; BMW 330e, 530e & X5 PHEV; Volvo XC40, XC60 & XC90 Recharge; Mercedes A 250 e, C 300 e & GLC 300 e; Lexus UX, NX & RX; Audi A3, Q5 & Q7 TFSI e; Ford Kuga PHEV & Puma Hybrid; VW Golf GTE & Tiguan eHybrid; Renault, Peugeot, Nissan, Land Rover, MINI & more. Protects electric motors, inverters, battery management systems, DC-DC converters, regenerative braking, e-CVT transmissions, on-board chargers, and 1,000+ mechanical and electrical components. Plans from £19/month with unlimited claims at any VAT-registered garage.",

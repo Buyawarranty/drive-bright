@@ -463,7 +463,7 @@ const NissanWarrantyLanding: React.FC = () => {
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-330-229-5040",
       "priceRange": SEO_PRICE_RANGE,
-      "address": { "@type": "PostalAddress", "streetAddress": "Suite A, Cavendish House, 233-235 High Street", "addressLocality": "Guildford", "addressRegion": "Surrey", "postalCode": "GU1 3BJ", "addressCountry": "GB" }
+      "address": { "@type": "PostalAddress", "streetAddress": "Warranty House, 62 Berkhamsted Avenue", "addressLocality": "Wembley", "addressRegion": "London", "postalCode": "HA9 6DT", "addressCountry": "GB" }
     },
     "areaServed": {
       "@type": "Country",

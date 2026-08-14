@@ -440,7 +440,7 @@ const VolkswagenWarrantyLanding: React.FC = () => {
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
       "priceRange": SEO_PRICE_RANGE,
-      "address": { "@type": "PostalAddress", "streetAddress": "Suite A, Cavendish House, 233-235 High Street", "addressLocality": "Guildford", "addressRegion": "Surrey", "postalCode": "GU1 3BJ", "addressCountry": "GB" }
+      "address": { "@type": "PostalAddress", "streetAddress": "Warranty House, 62 Berkhamsted Avenue", "addressLocality": "Wembley", "addressRegion": "London", "postalCode": "HA9 6DT", "addressCountry": "GB" }
     },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
     "description": "Extended warranty coverage for all Volkswagen models including Golf, Polo, Tiguan, Passat, T-Roc, Touareg, ID.3, ID.4, and ID.5. Covers engine, DSG transmission, electrical systems, turbocharger, and more. Nationwide UK coverage with any VAT-registered garage. 24/7 roadside assistance included.",

@@ -10,10 +10,10 @@ export const SITE_URL = 'https://buyawarranty.co.uk';
 
 export const BUSINESS_POSTAL_ADDRESS = {
   '@type': 'PostalAddress',
-  streetAddress: 'Suite A, Cavendish House, 233-235 High Street',
-  addressLocality: 'Guildford',
-  addressRegion: 'Surrey',
-  postalCode: 'GU1 3BJ',
+  streetAddress: 'Warranty House, 62 Berkhamsted Avenue',
+  addressLocality: 'Wembley',
+  addressRegion: 'London',
+  postalCode: 'HA9 6DT',
   addressCountry: 'GB',
 } as const;
 

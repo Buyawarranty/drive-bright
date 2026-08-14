@@ -35,9 +35,9 @@ export const LocalBusinessSchema = ({
     addressCountry: BUSINESS_POSTAL_ADDRESS.addressCountry,
   },
   geo = {
-    // Guildford, Surrey — matches the registered trading address above.
-    latitude: 51.2362,
-    longitude: -0.5704
+    // Wembley, London — matches the trading address above.
+    latitude: 51.5626,
+    longitude: -0.2789
   },
   openingHours = 'Mo-Fr 09:00-17:30',
   priceRange = '££',

@@ -77,7 +77,7 @@ export const LandingPagePreview = ({ pageId }: LandingPagePreviewProps) => {
         "name": page.local_business_name,
         "telephone": page.local_business_phone,
         "email": page.local_business_email,
-        "address": { "@type": "PostalAddress", "streetAddress": "Suite A, Cavendish House, 233-235 High Street", "addressLocality": "Guildford", "addressRegion": "Surrey", "postalCode": "GU1 3BJ", "addressCountry": "GB" },
+        "address": { "@type": "PostalAddress", "streetAddress": "Warranty House, 62 Berkhamsted Avenue", "addressLocality": "Wembley", "addressRegion": "London", "postalCode": "HA9 6DT", "addressCountry": "GB" },
         "geo": {
           "@type": "GeoCoordinates",
           "latitude": 51.5074,
