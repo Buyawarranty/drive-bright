@@ -3815,7 +3815,21 @@ Questions? Call 0330 229 5040`;
                         <CardDescription className="text-xs">Enter the customer's vehicle registration and mileage</CardDescription>
                       </div>
                     </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        resetForm();
+                        setStep(1);
+                      }}
+                      className="h-8 gap-1.5 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      title="Clear all details and start a new quote"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      Clear / reset
+                    </Button>
                   </div>
+
                   <div className="flex flex-col items-end gap-2">
                     <div className="flex gap-2 flex-wrap justify-end">
                       {onNavigateToTab && (
