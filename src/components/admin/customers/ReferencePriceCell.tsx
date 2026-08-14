@@ -1,6 +1,6 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Gauge } from 'lucide-react';
 import {
   getSoldVsReference,
   referenceGapClass,
