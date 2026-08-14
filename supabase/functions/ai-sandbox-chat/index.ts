@@ -391,6 +391,14 @@ Deno.serve(async (req) => {
             });
           }
           const data = await res.json();
+          await logEvent({
+            event_type: "vehicle_interest",
+            registration: String(registration).replace(/\s/g, "").toUpperCase(),
+            vehicle_make: data?.make ?? null,
+            vehicle_model: data?.model ?? null,
+            vehicle_year: Number(data?.yearOfManufacture ?? data?.year) || null,
+            metadata: data ?? {},
+          });
           return toolResultText({ found: true, vehicle: data });
         },
       }),
