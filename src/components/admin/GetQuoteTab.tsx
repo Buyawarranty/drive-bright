@@ -1986,11 +1986,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         setVehicleData({
           regNumber: regNumber.toUpperCase(),
           mileage: effectiveMileage,
-          make: fallbackMake,
-          model: fallbackModel,
+          make: manualMake.trim() || fallbackMake,
+          model: manualModel.trim() || fallbackModel,
           fuelType: fallbackFuel,
           transmission: '',
-          year: fallbackYear,
+          year: manualYear.trim() || fallbackYear,
           vehicleType: '',
         });
         setEditableCustomerFirstName(customerFirstName || (customerName || '').trim().split(/\s+/)[0] || '');
@@ -2047,11 +2047,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       setVehicleData({
         regNumber: regNumber.toUpperCase(),
         mileage: effectiveMileage,
-        make: data.make,
-        model: data.model || '',
+        make: manualMake.trim() || data.make,
+        model: manualModel.trim() || data.model || '',
         fuelType: data.fuelType || '',
         transmission: data.transmission || '',
-        year: data.yearOfManufacture || data.year || '',
+        year: manualYear.trim() || data.yearOfManufacture || data.year || '',
         vehicleType: data.vehicleType || '',
         registrationDate: data.registrationDate || undefined,
         manufactureDate: data.manufactureDate || undefined,
