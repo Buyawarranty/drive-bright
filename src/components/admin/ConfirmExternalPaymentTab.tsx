@@ -651,6 +651,15 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       return;
     }
 
+    const pmGateSubmit = priceMatchGate();
+    if (pmGateSubmit) {
+      toast({ ...pmGateSubmit, variant: 'destructive' });
+      document.getElementById('price-match-check')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+
+
     if (discountBlocked) {
       toast({
         title: `Blocked — contact management`,
