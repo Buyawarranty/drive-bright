@@ -503,7 +503,7 @@ export function applyBasePriceFloor(
  * ladder, which keeps £1,000 vs £2,000 claim limits and all six excess tiers on
  * visibly different prices even when a vehicle is floor-bound.
  *
- * 24 / 36 month floors scale with the term (×1.65 / ×2.35). Motorbikes are half
+ * 24 / 36 month floors scale with the term (×1.75 / ×2.50). Motorbikes are half
  * price; the web journey is the grid minus the live Step 3 discount.
  *
  * These same figures are the NET payable floor (see `lib/pricing/netFloor.ts`),
@@ -514,8 +514,8 @@ export const ABSOLUTE_MIN_GRID_TOTAL_12M = 399;
 /** Flat term multipliers for the absolute minimum. */
 const ABSOLUTE_MIN_GRID_BY_PERIOD: Record<PaymentPeriod, number> = {
   '12months': 399,
-  '24months': 658,
-  '36months': 938,
+  '24months': 699,
+  '36months': 999,
 };
 
 /**
