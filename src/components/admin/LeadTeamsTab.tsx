@@ -30,6 +30,7 @@ import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
 import { WorkedLeadsRecoveryPanel } from './leads/WorkedLeadsRecoveryPanel';
 
 import { StaffLeadAccessPanel } from './leads/StaffLeadAccessPanel';
+import { ConfirmPaymentBlockPanel } from './leads/ConfirmPaymentBlockPanel';
 
 import { ManagerOverrideAuditPanel } from './leads/ManagerOverrideAuditPanel';
 import { QueueCapacityDashboard } from './leads/QueueCapacityDashboard';
