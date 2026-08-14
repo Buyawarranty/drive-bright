@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import SandboxChatWindow from '@/components/ai-sandbox/SandboxChatWindow';
-import rubyLogo from '@/assets/ai-sandbox-ruby.png';
+import milesAvatar from '@/assets/miles-avatar.png.asset.json';
+import milesPointing from '@/assets/miles-pointing.png.asset.json';
 
 type Thread = { id: string; title: string; updated_at: string };
 type QueueItem = {
@@ -159,7 +160,7 @@ export default function AiSandbox() {
 
       <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-muted/30 md:flex">
         <div className="flex items-center gap-2 p-4">
-          <img src={rubyLogo} alt="" width={28} height={28} className="h-7 w-7" loading="lazy" />
+          <img src={milesAvatar.url} alt="Miles the panda" width={28} height={28} className="h-7 w-7 rounded-full" loading="lazy" />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">AI sandbox</p>
             <Badge variant="outline" className="mt-0.5 text-[10px]">
@@ -227,7 +228,7 @@ export default function AiSandbox() {
 
       <main className="flex min-h-0 min-w-0 flex-1 flex-col">
         <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2.5">
-          <h1 className="text-sm font-semibold">Ruby — customer assistant (sandbox)</h1>
+          <h1 className="text-sm font-semibold">Miles — customer assistant (sandbox)</h1>
           <div className="flex items-center gap-2">
             <Button
               size="sm"
@@ -286,10 +287,10 @@ function SandboxSignIn() {
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-sm flex-col justify-center p-8">
       <div className="flex flex-col items-center text-center">
-        <img src={rubyLogo} alt="" width={40} height={40} className="mb-3 h-10 w-10" />
+        <img src={milesPointing.url} alt="Miles the panda pointing" width={150} height={150} className="mb-3 h-36 w-auto" />
         <h1 className="text-lg font-semibold">Staff sign in</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Sign in here and you&apos;ll go straight into the Ruby chat — no trip to the dashboard.
+          Sign in here and you&apos;ll go straight into the Miles chat — no trip to the dashboard.
         </p>
       </div>
 
