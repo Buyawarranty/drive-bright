@@ -419,13 +419,19 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const { required: claimLimit5kAuthRequired } = useClaimLimit5kAuthRequired();
   const claimLimit5kAllowed = !claimLimit5kAuthRequired || isManagementRole || !!claimLimit5kApproval;
 
-  // Vehicle must be fully identified (make AND model) before an agent can quote.
-  // Only a manager can authorise continuing on a partially identified vehicle.
-  const [vehicleIdManagerAuth, setVehicleIdManagerAuth] = useState<string | null>(null);
+  // Vehicle identification. Staff can always type the make, model, year and
+  // mileage by hand on Step 1, so a partial DVLA/DVSA response is only ever a
+  // prompt to confirm the details — it never blocks a quote or a sale.
   const vehicleIdGap = vehicleData
     ? getVehicleIdentificationGap({ found: true, make: vehicleData.make, model: vehicleData.model })
     : null;
-  const vehicleIdBlocked = !!vehicleIdGap && vehicleIdManagerAuth !== (vehicleData?.regNumber || '');
+  const vehicleIdBlocked = false;
+  // Manual vehicle entry (Step 1) — used when the lookup returns make only,
+  // nothing at all, or for Northern Ireland plates with no lookup available.
+  const [manualMake, setManualMake] = useState('');
+  const [manualModel, setManualModel] = useState('');
+  const [manualYear, setManualYear] = useState('');
+
 
 
 
