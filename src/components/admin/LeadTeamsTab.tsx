@@ -30,6 +30,7 @@ import { LeadRecoveryPanel } from './leads/LeadRecoveryPanel';
 import { WorkedLeadsRecoveryPanel } from './leads/WorkedLeadsRecoveryPanel';
 
 import { StaffLeadAccessPanel } from './leads/StaffLeadAccessPanel';
+import { ConfirmPaymentBlockPanel } from './leads/ConfirmPaymentBlockPanel';
 
 import { ManagerOverrideAuditPanel } from './leads/ManagerOverrideAuditPanel';
 import { QueueCapacityDashboard } from './leads/QueueCapacityDashboard';
@@ -286,6 +287,9 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           and the single toggle that grants it to sales leads.
          ───────────────────────────────────────────────────────────── */}
       {isManagement && <StaffLeadAccessPanel />}
+
+      {/* Quotes & Orders — Confirm external payment price block master switch */}
+      {isManagement && <ConfirmPaymentBlockPanel />}
 
 
       {/* ─────────────────────────────────────────────────────────────
