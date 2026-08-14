@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageCircle, Mail, Clock, Upload, Menu, X, ArrowRight, Phone } from 'lucide-react';
+import { MessageCircle, Mail, Clock, Upload, Menu, X, ArrowRight, Phone, MapPin } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 
