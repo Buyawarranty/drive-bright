@@ -22,33 +22,41 @@ export const useMotMileage = (registrationNumber: string | undefined): UseMotMil
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchMotMileage = async () => {
-      if (!registrationNumber) {
-        setMotMileage(null);
-        setMotDate(null);
-        return;
-      }
+    let cancelled = false;
 
-      // Normalize the registration (remove spaces, uppercase) and also search the
-      // stored UK plate format, e.g. KY14MYA can be stored as KY14 MYA.
-      const normalizedReg = registrationNumber.replace(/\s+/g, '').toUpperCase();
-      const spacedReg = normalizedReg.length > 3
-        ? `${normalizedReg.slice(0, -3)} ${normalizedReg.slice(-3)}`
-        : normalizedReg;
+    const normalizedReg = (registrationNumber || '').replace(/\s+/g, '').toUpperCase();
 
-      setIsLoading(true);
+    // Reg is empty or still being typed — clear state and never leave a spinner up.
+    if (normalizedReg.length < 5) {
+      setMotMileage(null);
+      setMotDate(null);
       setError(null);
+      setIsLoading(false);
+      return;
+    }
 
+    const spacedReg = `${normalizedReg.slice(0, -3)} ${normalizedReg.slice(-3)}`;
+
+    setIsLoading(true);
+    setError(null);
+
+    // Hard ceiling: an agent on the phone must never wait on this.
+    const failSafe = setTimeout(() => {
+      if (!cancelled) setIsLoading(false);
+    }, 8000);
+
+    const timer = setTimeout(async () => {
       try {
-        // PERF: use indexed equality (unique index on registration) instead of ilike/wildcards
-        // Same plate can be stored with and without a space, so never use
+        // PERF: indexed equality (unique index on registration), never ilike.
+        // The same plate can be stored with and without a space, so never use
         // maybeSingle() here — two rows would throw instead of returning data.
         const { data: rows, error: fetchError } = await supabase
           .from('mot_history')
           .select('mot_tests')
           .in('registration', [normalizedReg, spacedReg])
           .limit(2);
-        const data = rows?.find((r) => Array.isArray(r.mot_tests) && r.mot_tests.length > 0) ?? rows?.[0] ?? null;
+
+        if (cancelled) return;
 
         if (fetchError) {
           console.error('Error fetching MOT mileage:', fetchError);
@@ -58,20 +66,10 @@ export const useMotMileage = (registrationNumber: string | undefined): UseMotMil
           return;
         }
 
+        const data = rows?.find((r) => Array.isArray(r.mot_tests) && (r.mot_tests as any[]).length > 0) ?? rows?.[0] ?? null;
 
-        if (!data || !data.mot_tests) {
-          console.log('No MOT history found for:', normalizedReg);
-          setMotMileage(null);
-          setMotDate(null);
-          return;
-        }
-
-        // Parse mot_tests - it's stored as a JSON array
-        // Cast to unknown first to safely type-check
-        const rawMotTests = data.mot_tests as unknown;
-        const motTests: MotTest[] = Array.isArray(rawMotTests) 
-          ? (rawMotTests as MotTest[])
-          : [];
+        const rawMotTests = data?.mot_tests as unknown;
+        const motTests: MotTest[] = Array.isArray(rawMotTests) ? (rawMotTests as MotTest[]) : [];
 
         if (motTests.length === 0) {
           setMotMileage(null);
@@ -79,20 +77,15 @@ export const useMotMileage = (registrationNumber: string | undefined): UseMotMil
           return;
         }
 
-        // Sort by completedDate descending to get the most recent test
-        const sortedTests = [...motTests].sort((a, b) => {
-          const dateA = a.completedDate ? new Date(a.completedDate).getTime() : 0;
-          const dateB = b.completedDate ? new Date(b.completedDate).getTime() : 0;
-          return dateB - dateA;
-        });
+        const testWithMileage = [...motTests]
+          .sort((a, b) => {
+            const dateA = a.completedDate ? new Date(a.completedDate).getTime() : 0;
+            const dateB = b.completedDate ? new Date(b.completedDate).getTime() : 0;
+            return dateB - dateA;
+          })
+          .find((test) => test.odometerValue && test.odometerValue > 0);
 
-        // Find the first test with a valid odometer reading
-        const testWithMileage = sortedTests.find(
-          test => test.odometerValue && test.odometerValue > 0
-        );
-
-        if (testWithMileage && testWithMileage.odometerValue) {
-          console.log('✅ Found MOT mileage:', testWithMileage.odometerValue, 'from', testWithMileage.completedDate);
+        if (testWithMileage?.odometerValue) {
           setMotMileage(testWithMileage.odometerValue);
           setMotDate(testWithMileage.completedDate || null);
         } else {
@@ -100,17 +93,23 @@ export const useMotMileage = (registrationNumber: string | undefined): UseMotMil
           setMotDate(null);
         }
       } catch (err) {
+        if (cancelled) return;
         console.error('Error in useMotMileage:', err);
         setError('Unexpected error fetching MOT data');
         setMotMileage(null);
         setMotDate(null);
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
-    };
+    }, 300); // debounce typing so each keystroke doesn't fire a query
 
-    fetchMotMileage();
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      clearTimeout(failSafe);
+    };
   }, [registrationNumber]);
+
 
   return { motMileage, motDate, isLoading, error };
 };
