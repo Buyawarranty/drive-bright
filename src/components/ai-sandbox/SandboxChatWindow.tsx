@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
-import { Bot, Headset, PhoneCall, Clock } from 'lucide-react';
+import { Headset, PhoneCall, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Conversation,
@@ -19,7 +19,8 @@ import { Tool, ToolHeader, ToolContent, ToolInput, ToolOutput } from '@/componen
 import { Shimmer } from '@/components/ai-elements/shimmer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import rubyLogo from '@/assets/ai-sandbox-ruby.png';
+import milesAvatar from '@/assets/miles-avatar.png.asset.json';
+import milesWaving from '@/assets/miles-waving.png.asset.json';
 import { isTeamOpenNow, openingHoursLabel, nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
 import { useSandboxSpecialistPresence } from '@/hooks/useSandboxSpecialistPresence';
 
@@ -29,7 +30,7 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-c
 const AGENT_PREFIX = '(Warranty specialist)';
 
 const OPENING_LINE =
-  "Hey — I'm Ruby, the AI assistant here (a real specialist can jump in whenever you want one). Give me a minute and I'll find you the right cover. What's the vehicle? Pop the reg in if you've got it, or just the make, model and year.";
+  "Hey — I'm Miles, the AI assistant here (a real specialist can jump in whenever you want one). Give me a minute and I'll find you the right cover. What's the vehicle? Pop the reg in if you've got it, or just the make, model and year.";
 
 const STARTERS = [
   'AB12 CDE, 2018 Ford Focus, 62,000 miles',
@@ -95,8 +96,15 @@ function SenderLabel({ sender }: { sender: Sender }) {
   }
   return (
     <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-      <Bot className="h-3.5 w-3.5" />
-      AI assistant
+      <img
+        src={milesAvatar.url}
+        alt="Miles the panda"
+        width={20}
+        height={20}
+        className="h-5 w-5 rounded-full"
+        loading="lazy"
+      />
+      Miles · AI assistant
     </div>
   );
 }
@@ -254,8 +262,15 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
           </>
         ) : (
           <>
-            <Bot className="h-3.5 w-3.5" />
-            <span className="font-medium">You're chatting with Ruby, our AI assistant</span>
+            <img
+              src={milesAvatar.url}
+              alt="Miles the panda"
+              width={24}
+              height={24}
+              className="h-6 w-6 rounded-full ring-1 ring-border"
+              loading="lazy"
+            />
+            <span className="font-medium">You're chatting with Miles, our AI assistant</span>
             <span className="opacity-70">·</span>
             {liveCount > 0 ? (
               <span className="flex items-center gap-1.5 font-medium text-emerald-700">
@@ -318,7 +333,17 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
 
           {messages.length === 0 && (
             <div className="flex flex-col items-center gap-4 py-8 text-center">
-              <img src={rubyLogo} alt="" width={56} height={56} className="h-14 w-14" loading="lazy" />
+              <img
+                src={milesWaving.url}
+                alt="Miles the panda waving hello"
+                width={160}
+                height={160}
+                className="h-40 w-auto drop-shadow-sm"
+                loading="lazy"
+              />
+              <p className="text-sm font-medium text-foreground">
+                Hi, I&apos;m Miles — ask me anything about your cover
+              </p>
               <div className="flex flex-wrap justify-center gap-2">
                 {STARTERS.map((s) => (
                   <button
