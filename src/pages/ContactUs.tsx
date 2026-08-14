@@ -336,7 +336,7 @@ const ContactUs = () => {
                       We cover vehicles across the whole of the UK — cover is arranged online or over the phone.
                     </p>
                     <a
-                      href="https://www.google.com/maps/search/?api=1&query=Buy+A+Warranty+Suite+A+Cavendish+House+233-235+High+Street+Guildford+GU1+3BJ"
+                      href="https://www.google.com/maps/search/?api=1&query=Warranty+House+62+Berkhamsted+Avenue+Wembley+HA9+6DT"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-brand-orange hover:underline"
