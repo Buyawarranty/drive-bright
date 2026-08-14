@@ -737,6 +737,8 @@ const AdminDashboard = () => {
             userRole={effectiveUserRole}
           />
         );
+      case 'chatbot-data':
+        return <ChatbotDataTab />;
       case 'reviews':
         return <ReviewsTab />;
       case 'contact':
