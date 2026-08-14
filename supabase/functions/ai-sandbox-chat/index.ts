@@ -474,6 +474,22 @@ Deno.serve(async (req) => {
 
           const round = (n: number) => Math.round(n);
 
+          await logEvent({
+            event_type: "price_quoted",
+            quoted_price: round(websitePrice),
+            term_months: term,
+            topic: `${term}mo · £${claim_limit} limit · £${voluntary_excess} excess · £${labour_rate}/hr`,
+            metadata: {
+              vehicle_type,
+              claim_limit,
+              voluntary_excess,
+              labour_rate,
+              pricing_model: version.label,
+            },
+          });
+
+
+
           return toolResultText({
             ok: true,
             pricing_model: version.label,
