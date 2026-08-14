@@ -74,22 +74,28 @@ export const MOTHistorySection: React.FC<MOTHistorySectionProps> = ({
 
   const fetchMOTHistory = async () => {
     if (!registrationNumber) return;
-    
+
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Plates are stored both with and without a space, so match both variants
+      // and never use .single() (two rows would throw instead of returning data).
+      const compact = registrationNumber.replace(/\s+/g, '').toUpperCase();
+      const spaced = compact.length > 3 ? `${compact.slice(0, -3)} ${compact.slice(-3)}` : compact;
+
+      const { data: rows, error } = await supabase
         .from('mot_history')
         .select('*')
-        .eq('registration', registrationNumber.toUpperCase())
-        .single();
+        .in('registration', [compact, spaced])
+        .limit(2);
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching MOT history:', error);
         return;
       }
 
+      const data = rows?.find((r) => Array.isArray(r.mot_tests) && (r.mot_tests as any[]).length > 0) ?? rows?.[0] ?? null;
+
       if (data) {
-        // Convert the JSON mot_tests to proper array
         const processedData: MOTHistory = {
           ...data,
           mot_tests: Array.isArray(data.mot_tests) ? (data.mot_tests as unknown as MOTTest[]) : []
@@ -102,6 +108,7 @@ export const MOTHistorySection: React.FC<MOTHistorySectionProps> = ({
       setLoading(false);
     }
   };
+
 
   const fetchFreshMOTHistory = async () => {
     if (!registrationNumber) return;
