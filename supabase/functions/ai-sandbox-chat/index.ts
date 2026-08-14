@@ -144,7 +144,18 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const threadId: string | undefined = body?.threadId;
-    const messages = body?.messages ?? [];
+    // Be tolerant about the incoming shape: the UI transport sends an array of
+    // UIMessages, but a malformed/legacy payload used to crash streamText with
+    // "messages.some is not a function".
+    const rawMessages = body?.messages ?? body?.message ?? [];
+    const messages: any[] = Array.isArray(rawMessages)
+      ? rawMessages
+      : rawMessages && typeof rawMessages === "object"
+        ? [rawMessages]
+        : [];
+    if (!Array.isArray(rawMessages)) {
+      console.warn("[ai-sandbox-chat] non-array messages payload", typeof rawMessages);
+    }
     if (!threadId) {
       return new Response(JSON.stringify({ error: "threadId is required" }), {
         status: 400,
@@ -557,10 +568,20 @@ Deno.serve(async (req) => {
     }.\nIf a message in the conversation begins with "(Warranty specialist)" a human has joined this chat — stay out of the way and only reply if the customer asks you directly.`;
 
 
+    const modelMessages = convertToModelMessages(
+      messages.filter((m: any) => m && typeof m === "object" && Array.isArray(m.parts)),
+    );
+    if (!Array.isArray(modelMessages) || modelMessages.length === 0) {
+      return new Response(JSON.stringify({ error: "No messages to send" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const result = streamText({
       model: gateway(MODEL),
       system: SYSTEM_PROMPT + liveContext,
-      messages: convertToModelMessages(messages),
+      messages: modelMessages,
       tools,
       stopWhen: stepCountIs(50),
       onError: (e) => console.error("[ai-sandbox-chat] stream error", e),
