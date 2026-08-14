@@ -3,6 +3,7 @@ import { X, Gift, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { CopyablePromoCode } from '@/components/CopyablePromoCode';
 
 interface ReturnDiscountBannerProps {
   firstPurchaseDate: string | null;
