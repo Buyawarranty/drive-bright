@@ -48,21 +48,37 @@ export function useSandboxSpecialistPresence() {
 
   const setOnDuty = useCallback(
     async (online: boolean, displayName?: string | null) => {
-      if (!userId) return;
+      let id = userId;
+      if (!id) {
+        const { data } = await supabase.auth.getUser();
+        id = data.user?.id ?? null;
+        if (id) setUserId(id);
+      }
+      if (!id) {
+        toast.error('Sign in again to go on duty.');
+        return;
+      }
       setMeOnline(online);
-      await supabase.from('ai_sandbox_specialist_presence').upsert(
+      const { error } = await supabase.from('ai_sandbox_specialist_presence').upsert(
         {
-          user_id: userId,
+          user_id: id,
           display_name: displayName ?? null,
           is_online: online,
           last_seen_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' },
       );
+      if (error) {
+        setMeOnline(!online);
+        toast.error(`Could not update duty status: ${error.message}`);
+        return;
+      }
+      toast.success(online ? 'You are on duty for live chats.' : 'You are off duty.');
       load();
     },
     [userId, load],
   );
+
 
   // Heartbeat while on duty so the presence row stays fresh.
   useEffect(() => {
