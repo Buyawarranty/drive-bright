@@ -1618,6 +1618,113 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
                           </p>
                         )}
+
+                        {/* Price match check — required on every confirmation */}
+                        <div className="space-y-2 rounded-lg border-2 border-sky-300 bg-sky-50/70 p-3">
+                          <p className="text-xs font-bold text-sky-900">
+                            Was this sale a price match? *
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant={pmIsPriceMatch === 'yes' ? 'default' : 'outline'}
+                              className="h-7 text-xs font-semibold"
+                              onClick={() => { setPmIsPriceMatch('yes'); setBlockRoute('price_match'); }}
+                            >
+                              Yes — price match
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant={pmIsPriceMatch === 'no' ? 'default' : 'outline'}
+                              className="h-7 text-xs font-semibold"
+                              onClick={() => { setPmIsPriceMatch('no'); setPmFileConfirmed(false); }}
+                            >
+                              No — normal sale
+                            </Button>
+                          </div>
+
+                          {pmIsPriceMatch === 'yes' && (
+                            <div className="space-y-2 pt-1">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <Select
+                                  value={pmCompany}
+                                  onValueChange={(v) => { setPmCompany(v); if (v !== 'Other') setPmOtherName(''); }}
+                                >
+                                  <SelectTrigger className="h-8 text-xs bg-white">
+                                    <SelectValue placeholder="Which competitor?" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {PRICE_MATCH_COMPETITORS.map((c) => (
+                                      <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <Input
+                                  type="number"
+                                  value={pmPrice}
+                                  onChange={(e) => setPmPrice(e.target.value)}
+                                  placeholder="Their quoted price (£)"
+                                  className="h-8 text-xs bg-white"
+                                />
+                              </div>
+                              {pmCompany === 'Other' && (
+                                <Input
+                                  value={pmOtherName}
+                                  onChange={(e) => setPmOtherName(e.target.value)}
+                                  placeholder="Competitor name"
+                                  className="h-8 text-xs bg-white"
+                                />
+                              )}
+                              <div className="space-y-1">
+                                <Label className="text-[11px] font-semibold text-sky-900">
+                                  Price match file (competitor quote — image or PDF) *
+                                </Label>
+                                <Input
+                                  type="file"
+                                  accept="image/*,application/pdf"
+                                  disabled={pmUploading}
+                                  onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    if (f) handlePriceMatchUpload(f);
+                                  }}
+                                  className="h-8 text-xs bg-white"
+                                />
+                                {pmUploading && (
+                                  <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                                    <Loader2 className="w-3 h-3 animate-spin" /> Uploading…
+                                  </p>
+                                )}
+                                {pmProofName && !pmUploading ? (
+                                  <p className="text-xs font-semibold text-emerald-700">✅ {pmProofName} attached</p>
+                                ) : (
+                                  !pmUploading && (
+                                    <p className="text-xs font-bold text-amber-800">
+                                      ⚠️ Upload the price match file before you can confirm this payment.
+                                    </p>
+                                  )
+                                )}
+                              </div>
+                              <label className="flex items-start gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={pmFileConfirmed}
+                                  disabled={!pmProofPath}
+                                  onChange={(e) => setPmFileConfirmed(e.target.checked)}
+                                  className="mt-0.5 h-4 w-4"
+                                />
+                                <span className="text-xs font-semibold text-sky-900">
+                                  I confirm I have received and checked this price match file, and the price agreed
+                                  matches the competitor quote attached.
+                                </span>
+                              </label>
+                              <p className="text-[11px] text-sky-800">
+                                The file is saved to this customer's record in Customer management as soon as the payment is confirmed.
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
