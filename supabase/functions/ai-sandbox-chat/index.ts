@@ -262,7 +262,7 @@ Deno.serve(async (req) => {
         // Existing lead by phone tail-9?
         if (tail9) {
           const { data: byPhone } = await admin.rpc("find_sales_lead_by_phone_tail9", {
-            p_phone: tail9,
+            tail_digits: tail9,
           });
           const existingId = Array.isArray(byPhone) ? byPhone[0]?.id ?? byPhone[0] : byPhone;
           if (existingId) {
