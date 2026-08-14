@@ -4283,45 +4283,25 @@ Questions? Call 0330 229 5040`;
           {step === 2 && vehicleData && (
             <Card>
               {vehicleIdGap && (
-                <Alert className={`m-4 mb-0 border-2 ${vehicleIdBlocked ? 'border-destructive bg-destructive/10' : 'border-amber-500 bg-amber-50'}`}>
-                  <Ban className={`h-4 w-4 ${vehicleIdBlocked ? 'text-destructive' : 'text-amber-600'}`} />
-                  <AlertDescription className={`text-sm ${vehicleIdBlocked ? 'text-destructive' : 'text-amber-800'}`}>
-                    <strong>Vehicle not fully recognised.</strong> {vehicleIdGap.agentMessage}
+                <Alert className="m-4 mb-0 border-2 border-amber-500 bg-amber-50">
+                  <AlertCircle className="h-4 w-4 text-amber-600" />
+                  <AlertDescription className="text-sm text-amber-800">
+                    <strong>Confirm the vehicle details.</strong> {vehicleIdGap.agentMessage}
                     {isNorthernIrelandPlate(vehicleData?.regNumber) && (
                       <div className="mt-1.5 rounded border border-amber-300 bg-white/70 p-2 text-[13px] text-amber-900">
                         <strong>Northern Ireland plate.</strong> There is no NI vehicle or MOT lookup, so
                         confirm the make, model, year and mileage with the customer (mileage is typed in
-                        here, not pulled from an MOT). Once the vehicle is confirmed a manager can
-                        authorise it and the sale can be completed as normal.
+                        here, not pulled from an MOT).
                       </div>
                     )}
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      {vehicleIdBlocked ? (
-                        isManagementRole ? (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => {
-                              setVehicleIdManagerAuth(vehicleData?.regNumber || '');
-                              toast({ title: 'Authorised', description: 'Manager authorisation recorded for this vehicle.' });
-                            }}
-                          >
-                            Authorise this vehicle (manager)
-                          </Button>
-                        ) : (
-                          <span className="font-semibold">
-                            You cannot continue — ask a manager to authorise this vehicle first.
-                          </span>
-                        )
-                      ) : (
-                        <span className="font-semibold text-green-700">
-                          Manager authorised — you may continue with this vehicle.
-                        </span>
-                      )}
+                    <div className="mt-2 text-[13px]">
+                      You can type the make, model and year yourself on Step 1 — quoting and selling are
+                      not blocked.
                     </div>
                   </AlertDescription>
                 </Alert>
               )}
+
 
               {getExclusionReason(vehicleData?.make, vehicleData?.model) && (
                 <Alert className="m-4 mb-0 border-2 border-destructive bg-destructive/10">
