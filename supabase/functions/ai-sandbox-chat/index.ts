@@ -652,6 +652,14 @@ Deno.serve(async (req) => {
             });
           }
 
+          await logEvent({
+            event_type: "handover",
+            topic: args.reason ?? null,
+            registration: args.registration ?? null,
+            quoted_price: args.quoted_price ?? null,
+            detail: args.cover_summary ?? null,
+          });
+
           return toolResultText({
             ok: true,
             handover_id: data.id,
