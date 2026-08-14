@@ -30,7 +30,7 @@ export const WebPageSchema = ({
         "name": "Buy A Warranty"
       },
       "mainEntity": {
-        "@type": "LocalBusiness", "address": { "@type": "PostalAddress", "streetAddress": "Suite A, Cavendish House, 233-235 High Street", "addressLocality": "Guildford", "addressRegion": "Surrey", "postalCode": "GU1 3BJ", "addressCountry": "GB" },
+        "@type": "LocalBusiness", "address": { "@type": "PostalAddress", "streetAddress": "Warranty House, 62 Berkhamsted Avenue", "addressLocality": "Wembley", "addressRegion": "London", "postalCode": "HA9 6DT", "addressCountry": "GB" },
         "name": "Buy A Warranty",
         "description": "Active UK car warranty provider since 2016",
         "foundingDate": "2016",

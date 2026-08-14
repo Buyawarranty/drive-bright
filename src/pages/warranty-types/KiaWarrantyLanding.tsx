@@ -457,7 +457,7 @@ const KiaWarrantyLanding: React.FC = () => {
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
       "priceRange": SEO_PRICE_RANGE,
-      "address": { "@type": "PostalAddress", "streetAddress": "Suite A, Cavendish House, 233-235 High Street", "addressLocality": "Guildford", "addressRegion": "Surrey", "postalCode": "GU1 3BJ", "addressCountry": "GB" }
+      "address": { "@type": "PostalAddress", "streetAddress": "Warranty House, 62 Berkhamsted Avenue", "addressLocality": "Wembley", "addressRegion": "London", "postalCode": "HA9 6DT", "addressCountry": "GB" }
     },
     "areaServed": { "@type": "Country", "name": "United Kingdom" },
     "description": "Extended warranty coverage for all Kia models including Sportage, Ceed, Niro, Sorento, Picanto, Rio, EV6, and EV9. Covers GDi/T-GDi engines, DCT gearboxes, infotainment, and hybrid/EV components.",
