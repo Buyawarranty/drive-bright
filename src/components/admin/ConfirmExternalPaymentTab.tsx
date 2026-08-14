@@ -136,6 +136,11 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [pmProofPath, setPmProofPath] = useState<string | null>(null);
   const [pmProofName, setPmProofName] = useState<string | null>(null);
   const [pmUploading, setPmUploading] = useState(false);
+  // Every confirmation must answer this: was the sale a price match? If yes the
+  // competitor file has to be attached AND the agent has to tick that they have
+  // received and checked it before the payment can be confirmed.
+  const [pmIsPriceMatch, setPmIsPriceMatch] = useState<'unset' | 'yes' | 'no'>('unset');
+  const [pmFileConfirmed, setPmFileConfirmed] = useState(false);
 
   const pmCompetitorName = (pmCompany === 'Other' ? pmOtherName : pmCompany).trim();
   const pmCompetitorPrice = (() => {
