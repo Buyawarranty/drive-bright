@@ -379,6 +379,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [priceMatchOtherName, setPriceMatchOtherName] = useState('');
   const [priceMatchPrice, setPriceMatchPrice] = useState('');
   const [priceMatchSavedTotal, setPriceMatchSavedTotal] = useState<number | null>(null);
+  // Free-entry override: agent types the exact price they need to match plus the
+  // cover variables the competitor quoted (claim limit, excess, labour, term).
+  const [priceMatchOverridePrice, setPriceMatchOverridePrice] = useState('');
+  const [priceMatchVariables, setPriceMatchVariables] = useState('');
   // Keep the stored free-text value (saved to the customer notes) in sync
   const applyPriceMatchCompetitor = (company: string, otherName: string, price: string) => {
     const name = company === 'Other' ? otherName.trim() : company;
@@ -3437,7 +3441,10 @@ Questions? Call 0330 229 5040`;
       if (priceMatchMode) {
         const competitorName = (priceMatchCompany === 'Other' ? priceMatchOtherName : priceMatchCompany).trim();
         customerData.price_match_applied = true;
-        customerData.price_match_competitor = competitorName || priceMatchCompetitor.trim() || null;
+        customerData.price_match_competitor = [
+          competitorName || priceMatchCompetitor.trim() || null,
+          priceMatchVariables.trim() ? `(${priceMatchVariables.trim()})` : null,
+        ].filter(Boolean).join(' ') || null;
         customerData.price_match_competitor_price = priceMatchCompetitorPrice ?? null;
         customerData.price_match_our_price = Number(confirmedAmount) || null;
       }
@@ -5659,6 +5666,57 @@ Questions? Call 0330 229 5040`;
                             Evidence on file — this price match is allowed below the £{ABSOLUTE_MIN_TOTAL} {MIN_TERM_LABEL} minimum.
                           </p>
                         )}
+
+                        {/* Override — enter any price and the competitor's variables */}
+                        <div className="space-y-2 rounded-lg border border-sky-400 bg-white p-3">
+                          <p className="text-[11px] font-bold uppercase tracking-wide text-sky-900">
+                            Price match override — enter any price
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <Label className="text-xs font-semibold text-sky-900">Price to match (£)</Label>
+                              <div className="flex gap-2">
+                                <Input
+                                  type="number"
+                                  inputMode="decimal"
+                                  value={priceMatchOverridePrice}
+                                  onChange={(e) => setPriceMatchOverridePrice(e.target.value)}
+                                  placeholder="Any total price"
+                                  className="bg-white"
+                                />
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  className="text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 shrink-0"
+                                  onClick={() => {
+                                    const total = Math.round(parseFloat(priceMatchOverridePrice) || 0);
+                                    if (!total) {
+                                      toast({ title: 'Enter a price', description: 'Type the total price you need to match.', variant: 'destructive' });
+                                      return;
+                                    }
+                                    handleCustomFullChange(String(total));
+                                    toast({ title: 'Price applied', description: `Total set to £${total}.` });
+                                  }}
+                                >
+                                  Apply
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs font-semibold text-sky-900">Competitor cover variables</Label>
+                              <Input
+                                value={priceMatchVariables}
+                                onChange={(e) => setPriceMatchVariables(e.target.value)}
+                                placeholder="e.g. £2,000 claim limit · £100 excess · £75/hr · 12 months"
+                                className="bg-white"
+                              />
+                            </div>
+                          </div>
+                          <p className="text-[11px] text-sky-800">
+                            Whatever price you set here is used for the quote and the order. Upload the competitor quote above —
+                            it must be confirmed again on Confirm external payment and is saved to the customer record.
+                          </p>
+                        </div>
 
                         {priceMatchFloor && (
                           <p className={cn(

@@ -136,6 +136,11 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [pmProofPath, setPmProofPath] = useState<string | null>(null);
   const [pmProofName, setPmProofName] = useState<string | null>(null);
   const [pmUploading, setPmUploading] = useState(false);
+  // Every confirmation must answer this: was the sale a price match? If yes the
+  // competitor file has to be attached AND the agent has to tick that they have
+  // received and checked it before the payment can be confirmed.
+  const [pmIsPriceMatch, setPmIsPriceMatch] = useState<'unset' | 'yes' | 'no'>('unset');
+  const [pmFileConfirmed, setPmFileConfirmed] = useState(false);
 
   const pmCompetitorName = (pmCompany === 'Other' ? pmOtherName : pmCompany).trim();
   const pmCompetitorPrice = (() => {
@@ -377,6 +382,35 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     priceBlockEnabled &&
     (overDiscountCeiling || underNetFloor) && !isManagementRole && !hasApprovedAuth && !priceMatchReady;
 
+  /**
+   * Price match gate — runs on every confirmation regardless of discount.
+   * Returns a blocking message, or null when we are clear to proceed.
+   */
+  const priceMatchGate = (): { title: string; description: string } | null => {
+    if (pmIsPriceMatch === 'unset') {
+      return {
+        title: 'Price match check needed',
+        description: 'Tell us whether this sale was a price match — answer Yes or No under Payment details.',
+      };
+    }
+    if (pmIsPriceMatch === 'yes') {
+      if (!pmProofPath) {
+        return {
+          title: 'Price match file required',
+          description: 'Upload the competitor quote (image or PDF) for this price match before confirming the payment.',
+        };
+      }
+      if (!pmFileConfirmed) {
+        return {
+          title: 'Confirm the price match file',
+          description: 'Tick to confirm you have received and checked the price match file, then confirm the payment.',
+        };
+      }
+    }
+    return null;
+  };
+
+
 
 
 
@@ -617,6 +651,15 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       return;
     }
 
+    const pmGateSubmit = priceMatchGate();
+    if (pmGateSubmit) {
+      toast({ ...pmGateSubmit, variant: 'destructive' });
+      document.getElementById('price-match-check')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+
+
     if (discountBlocked) {
       toast({
         title: `Blocked — contact management`,
@@ -642,6 +685,13 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const handleConfirmPayment = async () => {
     // Prevent double-click race condition
     if (isConfirming) return;
+
+    // Price match journey: answered, file uploaded and confirmed as received.
+    const pmGate = priceMatchGate();
+    if (pmGate) {
+      toast({ ...pmGate, variant: 'destructive' });
+      return;
+    }
 
     // Hard stop: never create a policy more than 30% below the quoted price, and
     // never below the absolute net floor (£349/£699/£999 shaped), unless
@@ -734,7 +784,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
               discount_amount: givenAway,
               // Evidenced price match used to get under the floor / ceiling —
               // stored so Customer management and Vehicle intelligence show it.
-              ...(priceMatchReady
+              ...((priceMatchReady || (pmIsPriceMatch === 'yes' && pmProofPath))
                 ? {
                     price_comparison_proof_url: pmProofPath,
                     price_match_applied: true,
@@ -1613,6 +1663,113 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
                           </p>
                         )}
+
+                        {/* Price match check — required on every confirmation */}
+                        <div id="price-match-check" className="space-y-2 rounded-lg border-2 border-sky-300 bg-sky-50/70 p-3">
+                          <p className="text-xs font-bold text-sky-900">
+                            Was this sale a price match? *
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant={pmIsPriceMatch === 'yes' ? 'default' : 'outline'}
+                              className="h-7 text-xs font-semibold"
+                              onClick={() => { setPmIsPriceMatch('yes'); setBlockRoute('price_match'); }}
+                            >
+                              Yes — price match
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant={pmIsPriceMatch === 'no' ? 'default' : 'outline'}
+                              className="h-7 text-xs font-semibold"
+                              onClick={() => { setPmIsPriceMatch('no'); setPmFileConfirmed(false); }}
+                            >
+                              No — normal sale
+                            </Button>
+                          </div>
+
+                          {pmIsPriceMatch === 'yes' && (
+                            <div className="space-y-2 pt-1">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <Select
+                                  value={pmCompany}
+                                  onValueChange={(v) => { setPmCompany(v); if (v !== 'Other') setPmOtherName(''); }}
+                                >
+                                  <SelectTrigger className="h-8 text-xs bg-white">
+                                    <SelectValue placeholder="Which competitor?" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {PRICE_MATCH_COMPETITORS.map((c) => (
+                                      <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <Input
+                                  type="number"
+                                  value={pmPrice}
+                                  onChange={(e) => setPmPrice(e.target.value)}
+                                  placeholder="Their quoted price (£)"
+                                  className="h-8 text-xs bg-white"
+                                />
+                              </div>
+                              {pmCompany === 'Other' && (
+                                <Input
+                                  value={pmOtherName}
+                                  onChange={(e) => setPmOtherName(e.target.value)}
+                                  placeholder="Competitor name"
+                                  className="h-8 text-xs bg-white"
+                                />
+                              )}
+                              <div className="space-y-1">
+                                <Label className="text-[11px] font-semibold text-sky-900">
+                                  Price match file (competitor quote — image or PDF) *
+                                </Label>
+                                <Input
+                                  type="file"
+                                  accept="image/*,application/pdf"
+                                  disabled={pmUploading}
+                                  onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    if (f) handlePriceMatchUpload(f);
+                                  }}
+                                  className="h-8 text-xs bg-white"
+                                />
+                                {pmUploading && (
+                                  <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                                    <Loader2 className="w-3 h-3 animate-spin" /> Uploading…
+                                  </p>
+                                )}
+                                {pmProofName && !pmUploading ? (
+                                  <p className="text-xs font-semibold text-emerald-700">✅ {pmProofName} attached</p>
+                                ) : (
+                                  !pmUploading && (
+                                    <p className="text-xs font-bold text-amber-800">
+                                      ⚠️ Upload the price match file before you can confirm this payment.
+                                    </p>
+                                  )
+                                )}
+                              </div>
+                              <label className="flex items-start gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={pmFileConfirmed}
+                                  disabled={!pmProofPath}
+                                  onChange={(e) => setPmFileConfirmed(e.target.checked)}
+                                  className="mt-0.5 h-4 w-4"
+                                />
+                                <span className="text-xs font-semibold text-sky-900">
+                                  I confirm I have received and checked this price match file, and the price agreed
+                                  matches the competitor quote attached.
+                                </span>
+                              </label>
+                              <p className="text-[11px] text-sky-800">
+                                The file is saved to this customer's record in Customer management as soon as the payment is confirmed.
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
