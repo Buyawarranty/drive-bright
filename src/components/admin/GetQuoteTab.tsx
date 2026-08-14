@@ -4935,9 +4935,6 @@ Questions? Call 0330 229 5040`;
                         </div>
                         <div className="min-w-0">
                           <div className="text-sm font-bold text-gray-900">Optional Extended Cover</div>
-                          <p className="text-xs text-muted-foreground">
-                            Use free months as a last resort, not a first offer.
-                          </p>
                         </div>
                       </div>
                       {freeExtendedCover !== 'none' && (
@@ -4950,14 +4947,21 @@ Questions? Call 0330 229 5040`;
                         </div>
                       )}
                     </div>
-                    <p className="text-xs mt-2">
-                      <span className="font-semibold text-emerald-700">IMPORTANT:</span>{' '}
-                      <span className="text-muted-foreground">Click a button below to add free months. This will update the customer's email and quote.</span>
-                    </p>
-                    <div className="mt-2">
-                      <ConcessionAllowanceStrip adminUserId={currentAdminId} />
-                    </div>
+                    <details className="mt-1.5 group">
+                      <summary className="flex cursor-pointer list-none items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+                        <ChevronRight className="w-3.5 h-3.5 transition-transform group-open:rotate-90" />
+                        <span className="truncate">Use free months as a last resort, not a first offer — guidance &amp; your allowance</span>
+                      </summary>
+                      <p className="text-xs mt-2">
+                        <span className="font-semibold text-emerald-700">IMPORTANT:</span>{' '}
+                        <span className="text-muted-foreground">Click a button below to add free months. This will update the customer's email and quote.</span>
+                      </p>
+                      <div className="mt-2">
+                        <ConcessionAllowanceStrip adminUserId={currentAdminId} />
+                      </div>
+                    </details>
                   </div>
+
 
                   <div className="px-4 pb-3">
                     <div className="text-sm font-bold text-gray-900 mb-1">Choose how many free months to add</div>
