@@ -913,9 +913,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       // Refresh from DVLA in the background so make/model/year/fuel are authoritative
       (async () => {
         try {
-          const { data } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-            body: { registrationNumber: newReg, skipAgeCheck: true },
-          });
+          const { data } = await lookupVehicleByReg(newReg, { skipAgeCheck: true });
           if (data?.make) {
             setVehicleData(prev => {
               if (!prev || prev.regNumber.replace(/\s+/g, '').toUpperCase() !== newReg) return prev;
