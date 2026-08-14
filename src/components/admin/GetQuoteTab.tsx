@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { lookupVehicleByReg } from '@/lib/vehicleLookup';
 import { globalMinTotalFor, loadRiskBandConfig } from '@/lib/pricing/vehicleRiskBands';
 import { isVehicleBlockedByRules, MANUAL_REFERRAL_MESSAGE } from '@/lib/pricing/vehicleRules';
 import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling, ChevronRight, Check, Lock as LockIcon, Ban, CalendarDays, Sparkles, LifeBuoy, AlertTriangle } from 'lucide-react';
@@ -912,9 +913,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       // Refresh from DVLA in the background so make/model/year/fuel are authoritative
       (async () => {
         try {
-          const { data } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-            body: { registrationNumber: newReg, skipAgeCheck: true },
-          });
+          const { data } = await lookupVehicleByReg(newReg, { skipAgeCheck: true });
           if (data?.make) {
             setVehicleData(prev => {
               if (!prev || prev.regNumber.replace(/\s+/g, '').toUpperCase() !== newReg) return prev;
@@ -1576,12 +1575,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setAutoPreview((p) => ({ ...p, loading: true, error: null }));
     const t = setTimeout(async () => {
       try {
-        const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-          body: { registrationNumber: clean, skipAgeCheck: true }, // preview only — no hard block here
-        });
+        const { data, error, timedOut } = await lookupVehicleByReg(clean, { skipAgeCheck: true }); // preview only — no hard block here
         if (cancelled) return;
         if (error || !data || data.error || data.found === false || !data.make) {
-          setAutoPreview({ loading: false, error: 'Could not identify vehicle automatically', data: null });
+          setAutoPreview({
+            loading: false,
+            error: timedOut
+              ? 'Vehicle lookup is slow right now — you can continue and enter details manually'
+              : 'Could not identify vehicle automatically',
+            data: null,
+          });
           return;
         }
         const ageYears = getVehicleAge({
@@ -1697,9 +1700,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     }
     setIsSwappingVehicle(true);
     try {
-      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-        body: { registrationNumber: cleanReg, skipAgeCheck: ageOverrideEnabled },
-      });
+      const { data, error } = await lookupVehicleByReg(cleanReg, { skipAgeCheck: ageOverrideEnabled });
 
       if (data?.blocked) {
         toast({
@@ -1817,16 +1818,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
     setIsLookingUp(true);
     try {
-      // Add timeout to prevent infinite loading - 30s for cold starts
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-      
+      // Hard 12s ceiling — never leave an agent on a spinner mid-call.
       const cleanReg = regNumber.replace(/\s/g, '').toUpperCase();
-      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-        body: { registrationNumber: cleanReg, skipAgeCheck: ageOverrideEnabled }
-      });
-      
-      clearTimeout(timeoutId);
+      const { data, error } = await lookupVehicleByReg(cleanReg, { skipAgeCheck: ageOverrideEnabled });
       console.log('[GetQuote] DVLA lookup response:', { data, error });
 
       // Fallback: if DVLA/DVSA API fails or returns no make, reuse the auto-preview
@@ -1961,15 +1955,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
     setIsQuickConfirming(true);
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-      
       const cleanReg2 = regNumber.replace(/\s/g, '').toUpperCase();
-      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-        body: { registrationNumber: cleanReg2, skipAgeCheck: ageOverrideEnabled }
-      });
-      
-      clearTimeout(timeoutId);
+      const { data, error } = await lookupVehicleByReg(cleanReg2, { skipAgeCheck: ageOverrideEnabled });
 
       // Fallback: if API fails, reuse the auto-preview data (already fetched when
       // reg was typed) before falling back to a truly empty vehicle record.
