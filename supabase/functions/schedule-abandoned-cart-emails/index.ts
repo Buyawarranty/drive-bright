@@ -102,6 +102,12 @@ const handler = async (req: Request): Promise<Response> => {
       .in('email', emails);
     const unsubSet = new Set((unsubRows || []).map((r: any) => (r.email || '').trim().toLowerCase()));
 
+    // Hard stop: anyone who already bought must never get a "finish your purchase" email
+    const purchasedSet = await getPurchasedEmails(supabase, emails);
+    if (purchasedSet.size > 0) {
+      console.log(`Skipping ${purchasedSet.size} recipients who have already purchased`);
+    }
+
     const { data: prefRows } = await supabase
       .from('marketing_audience')
       .select('email, frequency, is_subscribed')
