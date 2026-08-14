@@ -281,23 +281,20 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // Excess options come from the SAME canonical journey list as Steps 3/4 — not
   // from the pricing model's excessFactors — because excess is priced as a flat
   // £/mo difference over 12 instalments, identical on both surfaces.
-  // The £250/£500 tiers unlock by warranty price bracket, so the current quote
-  // total feeds the visibility rules (kept in state to avoid a circular read).
+  // NEVER GATE EXCESS IN QUOTES & ORDERS: agents must be able to reshape excess
+  // freely (higher excess = better margin). Margin is protected by the per-term
+  // price floor and the discount ceiling on the FINAL price, not by hiding tiers.
   const [excessPriceBasis, setExcessPriceBasis] = useState<number | undefined>(undefined);
   const excessOptions = React.useMemo(
-    () =>
-      JOURNEY_EXCESS_OPTIONS.map(o => o.value)
-        .filter((ex: number) =>
-          getVisibleExcessOptions(paymentType, claimLimit, excessPriceBasis).includes(ex)
-        )
-        .sort((a: number, b: number) => a - b),
-    [paymentType, claimLimit, excessPriceBasis]
+    () => JOURNEY_EXCESS_OPTIONS.map(o => o.value).sort((a: number, b: number) => a - b),
+    []
   );
   useEffect(() => {
     if (excessOptions.length && !excessOptions.includes(excessAmount)) {
       setExcessAmount(excessOptions.includes(150) ? 150 : excessOptions[0]);
     }
   }, [excessOptions, excessAmount]);
+
 
 
 
@@ -519,64 +516,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     paymentType === '36months' ? '3 year' : paymentType === '24months' ? '2 year' : '1 year';
 
   /**
-   * Only offer excess tiers that actually price ABOVE the minimum. A higher
-   * excess makes the warranty cheaper, so on a low-priced vehicle it lands on the
-   * floor and the customer would carry a bigger excess for exactly the same money.
-   * Those tiers are dropped from the selector.
+   * EVERY excess tier stays sellable. Higher excess = better margin for us, so we
+   * never hide a tier just because its price lands on the per-term floor — the
+   * price simply clamps to that floor (£349 / £576 / £821 net, halved for
+   * motorbikes) while the customer still carries the bigger excess.
    */
-  const sellableExcessOptions = React.useMemo(() => {
-    const ageYears = (() => {
-      const manufacture = (vehicleData as any)?.manufactureDate || (vehicleData as any)?.registrationDate;
-      if (manufacture) {
-        const d = new Date(manufacture);
-        if (!isNaN(d.getTime())) return (Date.now() - d.getTime()) / (365.25 * 24 * 3600 * 1000);
-      }
-      const y = parseInt(String(vehicleData?.year || ''), 10);
-      return y ? new Date().getFullYear() - y : null;
-    })();
-    if (ageYears == null || !pricingModel) return excessOptions;
-    const mileageNum = parseInt(String(mileage || '').replace(/[^0-9]/g, '')) || null;
-    const fits = excessOptions.filter((candidate) => {
-      const q = priceFromPricingModel(
-        pricingModel,
-        {
-          ageYears,
-          mileage: mileageNum,
-          fuelType: vehicleData?.fuelType,
-          vehicleType: vehicleData?.vehicleType,
-          make: vehicleData?.make,
-          model: (vehicleData as any)?.model,
-        },
-        {
-          paymentPeriod: paymentType,
-          voluntaryExcess: candidate,
-          claimLimit: getDisplayClaimLimitValue(claimLimit),
-          labourRate,
-        },
-      );
-      if (!q || q.referral) return true; // nothing to judge — keep the option
-      const floorForCandidate = getNetPayableFloor({
-        paymentPeriod: paymentType,
-        voluntaryExcess: candidate,
-        claimLimit,
-        labourRate,
-        isMotorbike: isMotorbikeQuote,
-        surface: 'admin',
-        absoluteMinTotal: (pricingModel as any)?.absoluteMinTotal || 0,
-      });
-      return Math.ceil(q.totalPrice) >= Math.ceil(floorForCandidate);
-    });
-    // Never leave the agent with no choice: keep the lowest excess (highest price)
-    // if every tier would land on the floor.
-    return fits.length ? fits : excessOptions.slice(0, 1);
-  }, [excessOptions, pricingModel, vehicleData, mileage, paymentType, claimLimit, labourRate, isMotorbikeQuote]);
+  const sellableExcessOptions = excessOptions;
 
-  // If the picked excess no longer fits the minimum, fall back to a tier that does.
-  useEffect(() => {
-    if (sellableExcessOptions.length && !sellableExcessOptions.includes(excessAmount)) {
-      setExcessAmount(sellableExcessOptions.includes(150) ? 150 : sellableExcessOptions[0]);
-    }
-  }, [sellableExcessOptions, excessAmount]);
 
 
   const priceMatchEvidenced = priceMatchMode && !!priceMatchProofPath && !!priceMatchCompetitor.trim();
