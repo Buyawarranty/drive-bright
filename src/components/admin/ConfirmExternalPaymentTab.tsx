@@ -35,6 +35,7 @@ import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBlockedClaimLimits, getBaseClai
 import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import { useConfirmPaymentPriceBlock } from '@/hooks/useConfirmPaymentPriceBlock';
 import { useDiscountAuthRequests } from '@/hooks/useDiscountAuthRequests';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -104,6 +105,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const isManagementRole = isManagement === true;
   const { user } = useAuth();
   const { myApproved: approvedAuthRequest } = useDiscountAuthRequests();
+  const { enabled: priceBlockEnabled } = useConfirmPaymentPriceBlock();
   const [authReason, setAuthReason] = useState('');
   const [authSent, setAuthSent] = useState(false);
   const [sendingAuth, setSendingAuth] = useState(false);
@@ -368,7 +370,11 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     pmFloor !== null &&
     enteredAmount >= pmFloor - 0.01;
   const priceMatchApplied = priceMatchReady && !isManagementRole;
+  // Master switch (Lead Allocation → Confirm payment price block). Off by
+  // default: no agent is blocked from confirming a payment unless management
+  // deliberately turns the block on.
   const discountBlocked =
+    priceBlockEnabled &&
     (overDiscountCeiling || underNetFloor) && !isManagementRole && !hasApprovedAuth && !priceMatchReady;
 
 
