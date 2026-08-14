@@ -5,7 +5,8 @@
  * DVSA/DVLA lookups (plus our mot_history cache) cannot return BOTH a real make
  * and a real model, the journey must stop:
  *  - Website Step 1: customer is asked to call us or request a callback.
- *  - Quotes & Orders: the agent is blocked until a manager authorises it.
+ *  - Quotes & Orders: the agent is prompted to type the missing details in
+ *    manually on Step 1 — nothing is blocked.
  */
 
 export type VehicleIdGapCode = 'not_found' | 'model_missing';
@@ -48,7 +49,7 @@ export const getVehicleIdentificationGap = (data?: LookupLike | null): VehicleId
       detail:
         "We can only give a price once we know the exact make and model. Please give us a call or request a callback and we'll confirm your vehicle and price it for you.",
       agentMessage:
-        'Vehicle not recognised — no make returned. A manager must authorise before you continue or quote.',
+        'Vehicle not recognised — no make returned. Confirm the make, model, year and mileage with the customer and type them into the vehicle details on Step 1.',
     };
   }
 
@@ -59,7 +60,7 @@ export const getVehicleIdentificationGap = (data?: LookupLike | null): VehicleId
       detail:
         "We price each model individually, so we can't quote until the model is confirmed. Please give us a call or request a callback and we'll sort it in a minute.",
       agentMessage:
-        'Model not returned by DVSA/DVLA — make only. A manager must authorise before you continue or quote.',
+        'Model not returned by DVSA/DVLA — make only. Confirm the model with the customer and type it into the vehicle details on Step 1.',
     };
   }
 
