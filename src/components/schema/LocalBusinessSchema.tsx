@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
+import { BUSINESS_POSTAL_ADDRESS, SITE_URL } from '@/lib/seo/businessInfo';
 
 interface LocalBusinessSchemaProps {
   name?: string;
@@ -27,20 +28,21 @@ export const LocalBusinessSchema = ({
   telephone = '+443302295040',
   email = 'support@buyawarranty.co.uk',
   address = {
-    streetAddress: 'United Kingdom',
-    addressLocality: 'London',
-    addressRegion: 'England',
-    postalCode: '',
-    addressCountry: 'GB'
+    streetAddress: BUSINESS_POSTAL_ADDRESS.streetAddress,
+    addressLocality: BUSINESS_POSTAL_ADDRESS.addressLocality,
+    addressRegion: BUSINESS_POSTAL_ADDRESS.addressRegion,
+    postalCode: BUSINESS_POSTAL_ADDRESS.postalCode,
+    addressCountry: BUSINESS_POSTAL_ADDRESS.addressCountry,
   },
   geo = {
-    latitude: 51.5074,
-    longitude: -0.1278
+    // Guildford, Surrey — matches the registered trading address above.
+    latitude: 51.2362,
+    longitude: -0.5704
   },
   openingHours = 'Mo-Fr 09:00-17:30',
   priceRange = '££',
   areaServed = 'GB',
-  url = 'https://buyawarranty.co.uk'
+  url = SITE_URL
 }: LocalBusinessSchemaProps) => {
   useEffect(() => {
     const schema = {
@@ -48,7 +50,7 @@ export const LocalBusinessSchema = ({
       "@type": "LocalBusiness",
       "@id": `${url}#localbusiness`,
       "name": name,
-      "description": "UK's leading car warranty provider offering flexible, affordable vehicle protection with instant quotes and no hidden fees.",
+      "description": "UK car warranty provider offering flexible, affordable vehicle protection with instant online quotes and no hidden fees.",
       "url": url,
       "logo": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
       "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
@@ -67,12 +69,30 @@ export const LocalBusinessSchema = ({
         "latitude": geo.latitude,
         "longitude": geo.longitude
       },
-      "openingHoursSpecification": {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-        "opens": "09:00",
-        "closes": "17:30"
-      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          "opens": "09:00",
+          "closes": "17:30"
+        }
+      ],
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "telephone": "+44-330-229-5040",
+          "contactType": "sales",
+          "areaServed": "GB",
+          "availableLanguage": "en"
+        },
+        {
+          "@type": "ContactPoint",
+          "telephone": "+44-330-229-5045",
+          "contactType": "customer service",
+          "areaServed": "GB",
+          "availableLanguage": "en"
+        }
+      ],
       "priceRange": priceRange,
       "currenciesAccepted": "GBP",
       "paymentAccepted": "Credit Card, Debit Card, Bank Transfer",
@@ -80,7 +100,6 @@ export const LocalBusinessSchema = ({
         "@type": "Country",
         "name": "United Kingdom"
       },
-      "hasMap": "https://www.google.com/maps/place/United+Kingdom",
       "sameAs": [
         "https://uk.trustpilot.com/review/buyawarranty.co.uk"
       ],
