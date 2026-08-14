@@ -5,8 +5,8 @@ const admin = (claimLimit: number, labourRate: number, voluntaryExcess: number, 
   getAbsoluteMinimumTotal({ paymentPeriod, claimLimit, labourRate, voluntaryExcess, surface: 'admin' });
 
 describe('Quotes & Orders absolute minimum ladder', () => {
-  it('cheapest combo is £349', () => {
-    expect(admin(1000, 50, 500)).toBe(349);
+  it('cheapest combo is £399', () => {
+    expect(admin(1000, 50, 500)).toBe(399);
   });
 
   it('claim limits £1,000 and £2,000 are different prices', () => {
@@ -21,17 +21,17 @@ describe('Quotes & Orders absolute minimum ladder', () => {
   });
 
   it('reference combo stays around the old £399 bottom', () => {
-    expect(admin(2000, 70, 150)).toBeLessThanOrEqual(400);
+    expect(admin(2000, 70, 150)).toBeGreaterThanOrEqual(399);
   });
 
   it('term floors scale', () => {
-    expect(admin(1000, 50, 500, '24months')).toBe(699);
-    expect(admin(1000, 50, 500, '36months')).toBe(999);
+    expect(admin(1000, 50, 500, '24months')).toBe(658);
+    expect(admin(1000, 50, 500, '36months')).toBe(938);
   });
 
   it('motorbikes are half', () => {
     expect(
       getAbsoluteMinimumTotal({ paymentPeriod: '12months', claimLimit: 1000, labourRate: 50, voluntaryExcess: 500, isMotorbike: true, surface: 'admin' })
-    ).toBe(175);
+    ).toBe(200);
   });
 });

@@ -12,7 +12,7 @@ import { GLOBAL_ABSOLUTE_MIN_TOTAL } from '@/lib/pricing/netFloor';
  * vehicle + options, otherwise agents quote something the test model never showed.
  */
 
-/** Shaped floor per term (the hard bottom below is the £349 absolute minimum). */
+/** Shaped floor per term (the hard bottom below is the £399 absolute minimum). */
 export const MIN_SELLABLE_BY_MONTHS: Record<number, number> = {
   12: 249,
   24: 498,
@@ -20,15 +20,15 @@ export const MIN_SELLABLE_BY_MONTHS: Record<number, number> = {
 };
 
 /**
- * ABSOLUTE hard-bottom minimum per term. 12 months = £349 for the CHEAPEST combo
+ * ABSOLUTE hard-bottom minimum per term. 12 months = £399 for the CHEAPEST combo
  * (£1,000 claim / £50 labour / £500 excess); 24 and 36 months scale from it.
  * Richer options step this bottom up via `getAbsoluteMinimumShape`.
  * Motorbikes are half. Web journey = grid minus the Step 3 discount.
  */
 export const ABSOLUTE_MIN_GRID_BY_MONTHS: Record<number, number> = {
-  12: 349,
-  24: 699,
-  36: 999,
+  12: 399,
+  24: 658,
+  36: 938,
 };
 
 
@@ -242,7 +242,7 @@ export function priceFromPricingModel(
    * agents never see two different minimums for the same options.
    */
   const absoluteMin = Math.round(
-    (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 349) *
+    (ABSOLUTE_MIN_GRID_BY_MONTHS[months] ?? 399) *
       getAbsoluteMinimumShape({
         claimLimit: Number(options.claimLimit),
         labourRate: Number(options.labourRate),

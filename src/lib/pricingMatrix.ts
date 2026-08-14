@@ -498,28 +498,28 @@ export function applyBasePriceFloor(
  * ABSOLUTE minimum sellable total — hard-bottom-only version.
  *
  * Anchored on the CHEAPEST reachable combo (£1,000 claim / £50 hr labour /
- * £500 excess) = £349 at 12 months, so the bottom of the range is a real price
+ * £500 excess) = £399 at 12 months, so the bottom of the range is a real price
  * instead of a clamp. Every richer option steps the hard bottom UP a compressed
  * ladder, which keeps £1,000 vs £2,000 claim limits and all six excess tiers on
  * visibly different prices even when a vehicle is floor-bound.
  *
- * 24 / 36 month floors scale with the term (×2.00 / ×2.86). Motorbikes are half
+ * 24 / 36 month floors scale with the term (×1.65 / ×2.35). Motorbikes are half
  * price; the web journey is the grid minus the live Step 3 discount.
  *
  * These same figures are the NET payable floor (see `lib/pricing/netFloor.ts`),
  * so an agent discount or a manual payment confirmation cannot land below them.
  */
-export const ABSOLUTE_MIN_GRID_TOTAL_12M = 349;
+export const ABSOLUTE_MIN_GRID_TOTAL_12M = 399;
 
 /** Flat term multipliers for the absolute minimum. */
 const ABSOLUTE_MIN_GRID_BY_PERIOD: Record<PaymentPeriod, number> = {
-  '12months': 349,
-  '24months': 699,
-  '36months': 999,
+  '12months': 399,
+  '24months': 658,
+  '36months': 938,
 };
 
 /**
- * The CHEAPEST combo the £349 anchor is defined against. Everything else costs
+ * The CHEAPEST combo the £399 anchor is defined against. Everything else costs
  * more, so the shape multiplier is always >= 1 by construction — no clamping.
  */
 const ABS_MIN_ANCHOR = { claimLimit: 1000, labourRate: 50, voluntaryExcess: 500 };
