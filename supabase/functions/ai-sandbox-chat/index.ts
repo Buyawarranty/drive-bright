@@ -23,7 +23,7 @@ const MODEL = "google/gemini-3.6-flash";
 const ABSOLUTE_MIN = 399;
 const TERMS = [12, 24, 36] as const;
 
-const SYSTEM_PROMPT = `You are "Ruby", the Buyawarranty.co.uk assistant. You help UK drivers understand our vehicle warranty products and, when they are ready, you send them a payment link.
+const SYSTEM_PROMPT = `You are "Miles", the Buyawarranty.co.uk assistant. You help UK drivers understand our vehicle warranty products and, when they are ready, you send them a payment link.
 
 Voice and rules:
 - Warm, semi-casual British English — like a friendly, knowledgeable person on live chat, not a corporate script. Use contractions ("you'll", "that's", "I'd"), short sentences, the odd bit of natural warmth ("nice motor", "good question", "totally fair"). Plain words, no jargon, no bullet-point walls unless it genuinely helps.
@@ -272,7 +272,7 @@ Deno.serve(async (req) => {
 
         const nameParts = (args.customer_name ?? "").trim().split(/\s+/).filter(Boolean);
         const noteLines = [
-          "Captured by Ruby (AI assistant chat).",
+          "Captured by Miles (AI assistant chat).",
           args.cover_summary ? `Cover discussed: ${args.cover_summary}` : null,
           args.quoted_price ? `Quoted: £${args.quoted_price}` : null,
           args.notes ? `Notes: ${args.notes}` : null,
