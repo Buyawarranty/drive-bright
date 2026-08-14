@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { logCustomerEmail } from '../_shared/log-email.ts';
+import { getPurchasedEmails } from '../_shared/purchase-guard.ts';
 import { buildUnsubscribeFooter } from "../_shared/unsubscribe-footer.ts";
 import { EMAIL_RESPONSIVE_STYLE } from "../_shared/email-layout.ts";
 
@@ -77,6 +78,13 @@ const handler = async (req: Request): Promise<Response> => {
       .in('email', customerEmails)
       .eq('frequency', 'essentials');
     for (const row of essentialsRows || []) blockedSet.add((row as any).email);
+
+    // Hard stop: never remind someone to buy when they have already purchased
+    const purchasedSet = await getPurchasedEmails(supabase, customerEmails);
+    for (const e of purchasedSet) blockedSet.add(e);
+    if (purchasedSet.size > 0) {
+      console.log(`⛔ Filtered out ${purchasedSet.size} recipients who already purchased`);
+    }
 
     const filteredCustomers = customers.filter(c => !blockedSet.has(c.email.trim().toLowerCase()));
 

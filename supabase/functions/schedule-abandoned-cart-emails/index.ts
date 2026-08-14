@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import { getPurchasedEmails } from '../_shared/purchase-guard.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -102,6 +103,12 @@ const handler = async (req: Request): Promise<Response> => {
       .in('email', emails);
     const unsubSet = new Set((unsubRows || []).map((r: any) => (r.email || '').trim().toLowerCase()));
 
+    // Hard stop: anyone who already bought must never get a "finish your purchase" email
+    const purchasedSet = await getPurchasedEmails(supabase, emails);
+    if (purchasedSet.size > 0) {
+      console.log(`Skipping ${purchasedSet.size} recipients who have already purchased`);
+    }
+
     const { data: prefRows } = await supabase
       .from('marketing_audience')
       .select('email, frequency, is_subscribed')
@@ -128,12 +135,14 @@ const handler = async (req: Request): Promise<Response> => {
     let emailsSent = 0;
     let errorsCount = 0;
     let cappedCount = 0;
+    let alreadyPurchased = 0;
     const now = Date.now();
     const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
 
     for (const [email, cart] of candidates) {
       try {
         if (unsubSet.has(email)) continue;
+        if (purchasedSet.has(email)) { alreadyPurchased++; continue; }
 
         // Respect customer-chosen frequency: 'off' and 'essentials' get no cart chasing.
         const pref = prefByEmail.get(email);
@@ -223,6 +232,7 @@ const handler = async (req: Request): Promise<Response> => {
       message: `Processed ${candidates.length} recipients from ${abandonedCarts.length} carts`,
       emailsSent,
       cappedByFrequency: cappedCount,
+      skippedAlreadyPurchased: alreadyPurchased,
       invalidEmailsSkipped: invalidEmails,
       errors: errorsCount,
     }), {
