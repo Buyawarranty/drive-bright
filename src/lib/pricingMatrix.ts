@@ -514,8 +514,8 @@ export const ABSOLUTE_MIN_GRID_TOTAL_12M = 399;
 /** Flat term multipliers for the absolute minimum. */
 const ABSOLUTE_MIN_GRID_BY_PERIOD: Record<PaymentPeriod, number> = {
   '12months': 399,
-  '24months': 658,
-  '36months': 938,
+  '24months': 699,
+  '36months': 999,
 };
 
 /**
