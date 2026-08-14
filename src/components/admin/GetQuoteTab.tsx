@@ -474,9 +474,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setDiscountAuthReason(approvedDiscountRequest.reason || '');
   }, [approvedDiscountRequest, regNumber]);
 
-  // In price match mode the agent may set any price they need to match the
-  // competitor quote, capped at 10% cheaper than the competitor's price.
-  const effectiveMaxDiscountPct = (priceMatchMode || discountAuthBy) ? 100 : baseMaxDiscountPct;
+  // Agents may override any pricing logic (discount %, manual price, excess,
+  // labour rate) as long as the final price stays at or above the per-term
+  // minimum floor. The floor — not a discount cap — is the only hard block.
+  const effectiveMaxDiscountPct = 100;
+
 
   // Parse the competitor's quoted price out of the free-text field (e.g. "WarrantyWise — £520")
   const priceMatchCompetitorPrice = (() => {
