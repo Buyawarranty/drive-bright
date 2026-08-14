@@ -58,6 +58,24 @@ export const ReturnDiscountBanner: React.FC<ReturnDiscountBannerProps> = ({
     }
   }, [firstPurchaseDate]);
 
+  const verifyStoredCode = async (storedCode: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-discount-code', {
+        body: { code: storedCode, customerEmail, orderAmount: 0 }
+      });
+      if (!error && data?.valid) {
+        setDiscountCode(storedCode);
+        return;
+      }
+      // Stale or expired — clear and mint a fresh one
+      localStorage.removeItem('returnDiscount_code');
+      createDiscountCode();
+    } catch {
+      localStorage.removeItem('returnDiscount_code');
+      createDiscountCode();
+    }
+  };
+
   const createDiscountCode = async () => {
     try {
       // Create a unique return discount code
