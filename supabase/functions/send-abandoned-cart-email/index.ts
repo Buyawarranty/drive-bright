@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { logCustomerEmail } from '../_shared/log-email.ts';
+import { hasPurchased } from '../_shared/purchase-guard.ts';
 import { buildUnsubscribeFooter } from "../_shared/unsubscribe-footer.ts";
 import { EMAIL_RESPONSIVE_STYLE } from "../_shared/email-layout.ts";
 
@@ -360,6 +361,15 @@ const handler = async (req: Request): Promise<Response> => {
     if (unsub && unsub.length > 0) {
       console.log(`Skipping email - recipient ${normalizedEmail} is unsubscribed`);
       return new Response(JSON.stringify({ success: true, message: "Recipient is unsubscribed" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Hard stop: they already bought - never chase a completed purchase
+    if (await hasPurchased(supabase, normalizedEmail, emailRequest.vehicleReg)) {
+      console.log(`Skipping email - ${normalizedEmail} has already purchased`);
+      return new Response(JSON.stringify({ success: true, message: "Recipient has already purchased" }), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
