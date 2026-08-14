@@ -382,6 +382,35 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     priceBlockEnabled &&
     (overDiscountCeiling || underNetFloor) && !isManagementRole && !hasApprovedAuth && !priceMatchReady;
 
+  /**
+   * Price match gate — runs on every confirmation regardless of discount.
+   * Returns a blocking message, or null when we are clear to proceed.
+   */
+  const priceMatchGate = (): { title: string; description: string } | null => {
+    if (pmIsPriceMatch === 'unset') {
+      return {
+        title: 'Price match check needed',
+        description: 'Tell us whether this sale was a price match — answer Yes or No under Payment details.',
+      };
+    }
+    if (pmIsPriceMatch === 'yes') {
+      if (!pmProofPath) {
+        return {
+          title: 'Price match file required',
+          description: 'Upload the competitor quote (image or PDF) for this price match before confirming the payment.',
+        };
+      }
+      if (!pmFileConfirmed) {
+        return {
+          title: 'Confirm the price match file',
+          description: 'Tick to confirm you have received and checked the price match file, then confirm the payment.',
+        };
+      }
+    }
+    return null;
+  };
+
+
 
 
 
