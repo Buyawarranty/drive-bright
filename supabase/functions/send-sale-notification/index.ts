@@ -91,7 +91,7 @@ serve(async (req: Request) => {
       if (!custRow && customerEmail) {
         const { data: pol } = await supabase
           .from('customer_policies')
-          .select('plan_type, payment_type, payment_amount, warranty_number, claim_limit, voluntary_excess, labour_rate')
+          .select('plan_type, payment_type, payment_amount, warranty_number, claim_limit, voluntary_excess')
           .ilike('email', customerEmail)
           .order('created_at', { ascending: false })
           .limit(1)
