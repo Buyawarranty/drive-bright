@@ -208,7 +208,31 @@ Deno.serve(async (req) => {
       }
     }
 
+    /** Log a learning signal for the admin "Chatbot data" section. Never throws. */
+    const logEvent = async (row: Record<string, unknown>) => {
+      try {
+        const { error } = await admin.from("ai_chat_events").insert({
+          thread_id: threadId,
+          user_id: user.id,
+          is_sandbox: true,
+          ...row,
+        });
+        if (error) console.error("[ai-sandbox-chat] event log failed", error);
+      } catch (e) {
+        console.error("[ai-sandbox-chat] event log threw", e);
+      }
+    };
+
+    if (lastMessage?.role === "user") {
+      const wording = (lastMessage.parts ?? [])
+        .filter((p: any) => p?.type === "text")
+        .map((p: any) => p.text)
+        .join("\n");
+      await logEvent({ event_type: "customer_message", customer_wording: wording });
+    }
+
     const gateway = createLovableAiGatewayProvider(lovableKey);
+
 
     /** How many warranty specialists are actually on duty in live chat right now. */
     const specialistsOnline = async (): Promise<number> => {
