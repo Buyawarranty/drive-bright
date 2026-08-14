@@ -20,7 +20,7 @@ import { Shimmer } from '@/components/ai-elements/shimmer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
-import milesWaving from '@/assets/miles-waving.png.asset.json';
+import milesCalls from '@/assets/miles-calls.png.asset.json';
 import { isTeamOpenNow, openingHoursLabel, nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
 import { useSandboxSpecialistPresence } from '@/hooks/useSandboxSpecialistPresence';
 
@@ -332,18 +332,16 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
           </Message>
 
           {messages.length === 0 && (
-            <div className="flex flex-col items-center gap-4 py-8 text-center">
+            <div className="flex flex-col items-center gap-4 py-6 text-center">
               <img
-                src={milesWaving.url}
-                alt="Miles the panda waving hello"
-                width={160}
-                height={160}
-                className="h-40 w-auto drop-shadow-sm"
+                src={milesCalls.url}
+                alt="Miles the panda in a buyawarranty polo with a headset, saying hi and offering to check your coverage, file a claim or get answers"
+                width={760}
+                height={512}
+                className="w-full max-w-xl h-auto"
                 loading="lazy"
               />
-              <p className="text-sm font-medium text-foreground">
-                Hi, I&apos;m Miles — ask me anything about your cover
-              </p>
+
               <div className="flex flex-wrap justify-center gap-2">
                 {STARTERS.map((s) => (
                   <button
