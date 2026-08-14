@@ -9,13 +9,16 @@ import { cn } from '@/lib/utils';
 interface Props {
   value: string; // yyyy-MM-dd or ''
   onChange: (v: string) => void;
+  /** Inline mode: same field height/label style as the surrounding form inputs. */
+  compact?: boolean;
 }
+
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 const pad = (n: number, l = 2) => n.toString().padStart(l, '0');
 
-export const DobTypeOrSelect: React.FC<Props> = ({ value, onChange }) => {
+export const DobTypeOrSelect: React.FC<Props> = ({ value, onChange, compact = false }) => {
   const parsed = value ? value.split('-') : [];
   const initY = parsed[0] || '';
   const initM = parsed[1] ? String(parseInt(parsed[1], 10)) : '';
@@ -68,17 +71,21 @@ export const DobTypeOrSelect: React.FC<Props> = ({ value, onChange }) => {
     }
   }
 
-  const fieldClass = "h-12 rounded-xl bg-sky-50 border-sky-200 hover:bg-sky-100 focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:border-sky-300 font-medium text-slate-700 text-center pr-9";
-  const chevronBtn = "absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 inline-flex items-center justify-center rounded-md text-slate-500 hover:text-slate-700 hover:bg-sky-100";
+  const fieldClass = cn(
+    compact
+      ? "h-10 rounded-md bg-blue-50 border-blue-200 focus:border-blue-400 text-center px-1 pr-7 text-sm"
+      : "h-12 rounded-xl bg-sky-50 border-sky-200 hover:bg-sky-100 focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:border-sky-300 font-medium text-slate-700 text-center pr-9",
+  );
+  const chevronBtn = cn(compact ? "absolute right-1" : "absolute right-2", "top-1/2 -translate-y-1/2 h-6 w-6 inline-flex items-center justify-center rounded-md text-slate-500 hover:text-slate-700 hover:bg-sky-100");
 
   const currentYear = new Date().getFullYear();
   const startYear = currentYear - 17;
   const years = Array.from({ length: 80 }, (_, i) => startYear - i);
 
   return (
-    <div className="space-y-2.5">
+    <div className={compact ? "space-y-2" : "space-y-2.5"}>
       <div className="flex items-center gap-2">
-        <Label className="text-sm font-semibold text-slate-900">Date of Birth</Label>
+        <Label className={compact ? undefined : "text-sm font-semibold text-slate-900"}>Date of Birth</Label>
         <span className="text-xs text-muted-foreground">(optional)</span>
         <Popover>
           <PopoverTrigger asChild>
@@ -98,7 +105,7 @@ export const DobTypeOrSelect: React.FC<Props> = ({ value, onChange }) => {
         )}
       </div>
 
-      <div className="grid grid-cols-[1fr_1.2fr_1.2fr_auto] gap-2 items-center max-w-lg">
+      <div className={cn("grid grid-cols-[1fr_1.2fr_1.2fr_auto] items-center", compact ? "gap-1.5" : "gap-2 max-w-lg")}>
         {/* DAY */}
         <div className="relative">
           <Input
@@ -213,7 +220,7 @@ export const DobTypeOrSelect: React.FC<Props> = ({ value, onChange }) => {
             variant="ghost"
             size="sm"
             onClick={clear}
-            className="h-12 text-muted-foreground hover:text-destructive hover:bg-red-50 rounded-xl px-3"
+            className={cn("text-muted-foreground hover:text-destructive hover:bg-red-50 px-2", compact ? "h-10 rounded-md" : "h-12 rounded-xl px-3")}
             title="Clear date of birth"
           >
             Clear
