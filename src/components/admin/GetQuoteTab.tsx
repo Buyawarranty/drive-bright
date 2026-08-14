@@ -4044,6 +4044,65 @@ Questions? Call 0330 229 5040`;
                 )}
                   </div>
 
+                {/* Manual vehicle entry — always available. The lookup can come back
+                    with the make only (or nothing at all, e.g. NI plates), and staff
+                    must never be blocked from quoting because of that. */}
+                <div className="rounded-lg border border-gray-200 bg-gray-50/60 p-3 space-y-2.5">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div>
+                      <Label className="text-sm font-semibold text-gray-900">Vehicle details (type or correct manually)</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Anything you type here overrides the DVLA/DVSA lookup. Leave blank to use the looked-up details.
+                      </p>
+                    </div>
+                    {autoPreview.data && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setManualMake(autoPreview.data?.make || '');
+                          setManualModel(autoPreview.data?.model || '');
+                          setManualYear(autoPreview.data?.year ? String(autoPreview.data.year) : '');
+                        }}
+                      >
+                        Copy looked-up details
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <div className="space-y-1">
+                      <Label htmlFor="manualMake" className="text-xs text-gray-700">Make</Label>
+                      <Input
+                        id="manualMake"
+                        value={manualMake}
+                        onChange={(e) => setManualMake(e.target.value)}
+                        placeholder={autoPreview.data?.make || 'e.g. Kia'}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="manualModel" className="text-xs text-gray-700">Model</Label>
+                      <Input
+                        id="manualModel"
+                        value={manualModel}
+                        onChange={(e) => setManualModel(e.target.value)}
+                        placeholder={autoPreview.data?.model || 'e.g. Niro 2 EV'}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="manualYear" className="text-xs text-gray-700">Year</Label>
+                      <Input
+                        id="manualYear"
+                        value={manualYear}
+                        onChange={(e) => setManualYear(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))}
+                        placeholder={autoPreview.data?.year ? String(autoPreview.data.year) : 'e.g. 2021'}
+                        inputMode="numeric"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+
                 {/* Mileage — mirrors Step 4 customer checkout */}
                   <div>
                   <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-1">
