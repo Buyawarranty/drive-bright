@@ -1030,9 +1030,9 @@ const CustomerDashboard = () => {
   const generateRenewalDiscount = async () => {
     try {
       const discountCode = `RENEW10-${Date.now().toString().slice(-6)}`;
-      setRenewalDiscount(discountCode);
-      
-      // Create the discount code in the database
+
+      // Create the discount code in the database FIRST — only show it to the
+      // customer once it actually exists and can be validated at checkout.
       const { error } = await supabase.functions.invoke('create-discount-code', {
         body: {
           code: discountCode,
@@ -1046,9 +1046,14 @@ const CustomerDashboard = () => {
 
       if (error) {
         console.error('Error creating renewal discount:', error);
+        setRenewalDiscount(null);
+        return;
       }
+
+      setRenewalDiscount(discountCode);
     } catch (error) {
       console.error('Error generating renewal discount:', error);
+      setRenewalDiscount(null);
     }
   };
 
