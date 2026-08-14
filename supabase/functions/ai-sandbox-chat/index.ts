@@ -619,10 +619,10 @@ Deno.serve(async (req) => {
           notes: z.string().nullable().describe("Anything the specialist should know before calling"),
         }),
         execute: async (args) => {
-          if (!args.customer_name && !args.customer_email && !args.customer_phone) {
+          if (!args.customer_email && !args.customer_phone) {
             return toolResultText({
               ok: false,
-              note: "Ask for a name plus an email or phone number first.",
+              note: "Ask for a phone number (or an email) first — a name is optional.",
             });
           }
           const state = availability();
