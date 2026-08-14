@@ -1904,15 +1904,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       setVehicleData({
         regNumber: regNumber.toUpperCase(),
         mileage: mileage,
-        make: data.make,
-        model: data.model || '',
+        // Anything the agent typed by hand on Step 1 wins over a partial
+        // DVLA/DVSA response, so a missing model never stops the quote.
+        make: manualMake.trim() || data.make,
+        model: manualModel.trim() || data.model || '',
         fuelType: data.fuelType || '',
         transmission: data.transmission || '',
-        year: data.yearOfManufacture || data.year || '',
+        year: manualYear.trim() || data.yearOfManufacture || data.year || '',
         vehicleType: data.vehicleType || '',
         registrationDate: data.registrationDate || undefined,
         manufactureDate: data.manufactureDate || undefined,
       });
+
       
       setStep(2);
     } catch (error: any) {
