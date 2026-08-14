@@ -4538,10 +4538,11 @@ Questions? Call 0330 229 5040`;
                       className="bg-blue-50 border-blue-200 focus:border-blue-400"
                     />
                   </div>
+                  {/* Date of Birth - optional, inline with Customer Phone */}
+                  <DobTypeOrSelect value={customerDob} onChange={setCustomerDob} compact />
                 </div>
 
-                {/* Date of Birth - Optional (type or select) */}
-                <DobTypeOrSelect value={customerDob} onChange={setCustomerDob} />
+
 
 
                 {/* Duration - Quick Select Chips */}
