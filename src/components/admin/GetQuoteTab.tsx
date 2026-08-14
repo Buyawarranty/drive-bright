@@ -425,7 +425,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const vehicleIdGap = vehicleData
     ? getVehicleIdentificationGap({ found: true, make: vehicleData.make, model: vehicleData.model })
     : null;
-  const vehicleIdBlocked = false;
   // Manual vehicle entry (Step 1) — used when the lookup returns make only,
   // nothing at all, or for Northern Ireland plates with no lookup available.
   const [manualMake, setManualMake] = useState('');
