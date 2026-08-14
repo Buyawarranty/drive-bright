@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { BUSINESS_POSTAL_ADDRESS, SITE_URL } from '@/lib/seo/businessInfo';
 
 interface OrganizationSchemaProps {
   type?: 'Organization' | 'LocalBusiness' | 'InsuranceAgency';
@@ -9,10 +10,19 @@ export const OrganizationSchema = ({ type = 'LocalBusiness' }: OrganizationSchem
     const schema = {
       "@context": "https://schema.org",
       "@type": "Organization",
+      "@id": `${SITE_URL}#organization`,
       "name": "Buyawarranty",
-      "alternateName": "Car Warranty Uk",
-      "url": "https://buyawarranty.co.uk/",
+      "legalName": "BUY A WARRANTY LIMITED",
+      "alternateName": "Buy A Warranty UK",
+      "url": `${SITE_URL}/`,
       "logo": "https://buyawarranty.co.uk/extended_warranty_uk-car-trustworthy-reviews.png",
+      "email": "support@buyawarranty.co.uk",
+      "telephone": "+44-330-229-5040",
+      "address": BUSINESS_POSTAL_ADDRESS,
+      "areaServed": {
+        "@type": "Country",
+        "name": "United Kingdom"
+      },
       "contactPoint": [
         {
           "@type": "ContactPoint",
@@ -29,7 +39,9 @@ export const OrganizationSchema = ({ type = 'LocalBusiness' }: OrganizationSchem
           "availableLanguage": "en"
         }
       ],
-      "sameAs": "trustpilot.com/review/buyawarranty.co.uk/"
+      "sameAs": [
+        "https://uk.trustpilot.com/review/buyawarranty.co.uk"
+      ]
     };
 
     const scriptId = 'organization-schema';
