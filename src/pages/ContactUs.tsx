@@ -316,6 +316,38 @@ const ContactUs = () => {
                   </div>
                 </div>
 
+                {/* Address Section — keep identical to the Google Business Profile listing */}
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-primary text-white rounded-full p-2">
+                      <MapPin size={20} className="sm:w-6 sm:h-6" />
+                    </div>
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Our Address:</h2>
+                  </div>
+                  <div className="ml-11 sm:ml-14">
+                    <address className="not-italic text-gray-600 text-sm sm:text-base leading-relaxed">
+                      Buy A Warranty Limited<br />
+                      Suite A, Cavendish House<br />
+                      233-235 High Street<br />
+                      Guildford, Surrey, GU1 3BJ<br />
+                      United Kingdom
+                    </address>
+                    <p className="mt-2 text-gray-500 text-xs sm:text-sm">
+                      We cover vehicles across the whole of the UK — cover is arranged online or over the phone.
+                    </p>
+                    <a
+                      href="https://www.google.com/maps/search/?api=1&query=Buy+A+Warranty+Suite+A+Cavendish+House+233-235+High+Street+Guildford+GU1+3BJ"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-brand-orange hover:underline"
+                    >
+                      View on Google Maps
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+
+
                 {/* Quick Callback Card - Prominent */}
                 <div className="bg-brand-orange/5 border-2 border-brand-orange/20 rounded-xl p-5 sm:p-6">
                   <div className="flex items-start gap-4">
