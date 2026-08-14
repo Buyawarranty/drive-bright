@@ -36,10 +36,25 @@ serve(async (req: Request) => {
     const saleValueDisplay = saleValue ? `£${Number(saleValue).toFixed(2)}` : 'N/A';
     const reg = regPlate || 'Unknown';
     const plan = planName || 'Unknown';
-    const payment = paymentMethod || 'Unknown';
+    const prettyPayment = (v: any): string => {
+      const s = String(v || '').trim();
+      if (!s) return 'Unknown';
+      const k = s.toLowerCase().replace(/[\s-]+/g, '_');
+      const map: Record<string, string> = {
+        payment_assist: 'Payment Assist',
+        bumper: 'Bumper (Pay Monthly)',
+        stripe: 'Stripe (Paid in Full)',
+        card: 'Card',
+        bank_transfer: 'Bank transfer',
+        cash: 'Cash',
+      };
+      return map[k] || s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    };
+    const payment = prettyPayment(paymentMethod);
     const name = customerName || 'Unknown';
     const phone = customerPhone || 'N/A';
     const warranty = warrantyReference || 'Pending';
+
 
     // Fetch the full customer/sale record so managers get every sale + vehicle field.
     // Scoped by registration plate first (one customer can hold several vehicles).
