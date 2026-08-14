@@ -6265,8 +6265,31 @@ Questions? Call 0330 229 5040`;
                 )}>
                   <div className="max-w-6xl mx-auto rounded-xl border border-gray-200 border-t-4 border-t-emerald-500 bg-white px-3 py-3 shadow-[0_-8px_24px_-10px_rgba(0,0,0,0.18)]">
 
-
-
+                    {/* Always-visible price match override entry point */}
+                    <div className="mb-2.5 flex items-center justify-between gap-2 flex-wrap">
+                      <p className="text-[11px] text-muted-foreground">
+                        Matching a competitor quote? Use price match override — evidence required, not counted as a discount.
+                      </p>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setPriceMatchMode(true);
+                          setTimeout(() => {
+                            document.getElementById('price-match-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }, 60);
+                        }}
+                        className={cn(
+                          "text-xs font-semibold gap-1.5 text-white border shrink-0",
+                          priceMatchMode
+                            ? "bg-sky-700 hover:bg-sky-800 border-sky-800 ring-2 ring-sky-300"
+                            : "bg-sky-600 hover:bg-sky-700 border-sky-700"
+                        )}
+                        title="Price match a competitor quote (max 10% cheaper). Upload the competitor quote as evidence."
+                      >
+                        <Gauge className="w-3.5 h-3.5" />
+                        {priceMatchMode ? 'Price match override on' : 'Price match override'}
+                      </Button>
+                    </div>
 
                     <div className="grid grid-cols-2 gap-2.5 xl:grid-cols-4">
 
