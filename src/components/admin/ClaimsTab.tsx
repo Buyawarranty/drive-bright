@@ -3,7 +3,7 @@ import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell'
 import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { FileSpreadsheet, FileDown, Plus, Download, Calendar as CalendarIcon, Bell, BarChart3 } from 'lucide-react';
+import { FileSpreadsheet, FileDown, Plus, Download, Calendar as CalendarIcon, Bell, BarChart3, Receipt } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -22,6 +22,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast as sonnerToast } from 'sonner';
 import { useToast } from '@/hooks/use-toast';
 import { AddClaimDialog } from './claims/AddClaimDialog';
+import { ClaimInvoicesDialog } from './claims/ClaimInvoicesDialog';
 import { exportToCSV, exportToPDF, formatClaimForExport } from './claims/exportUtils';
 import { ClaimUpdateNotifications } from './claims/ClaimUpdateNotifications';
 import { ClaimRemindersBanner } from './claims/ClaimRemindersBanner';
@@ -89,6 +90,7 @@ export const ClaimsTab = ({
   const [claims, setClaims] = useState<ClaimSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
+  const [showInvoicesDialog, setShowInvoicesDialog] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState<'claims' | 'reminders' | 'claims-data'>('claims');
 
   const { claims: managerClaims, loading: managerLoading, refetch: refetchManager } = useClaims();
@@ -473,6 +475,8 @@ export const ClaimsTab = ({
           </div>
         </>
       )}
+
+      <ClaimInvoicesDialog open={showInvoicesDialog} onOpenChange={setShowInvoicesDialog} />
 
       <AddClaimDialog
         open={showAddClaimDialog}
