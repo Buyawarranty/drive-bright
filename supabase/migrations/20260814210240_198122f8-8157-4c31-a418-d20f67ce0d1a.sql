@@ -1,0 +1,4 @@
+UPDATE public.blog_posts SET featured_image_url = '/__l5e/assets-v1/4f1c01ce-64c5-49ca-8b16-830244723d64/electric-car-running-costs-uk-2026-hero.jpg', updated_at = now() WHERE slug = 'electric-car-running-costs-uk-2026-tax-insurance-servicing';
+UPDATE public.blog_posts SET featured_image_url = '/__l5e/assets-v1/74989343-a18d-4624-982a-d2e7dc4f66e8/what-is-cat-n-car-uk-write-off-hero.jpg', updated_at = now() WHERE slug = 'what-is-cat-n-car-uk-write-off-categories-guide-2026';
+UPDATE public.blog_posts SET featured_image_url = '/__l5e/assets-v1/af2f3749-3f81-4d74-bb61-b4ed3dc51037/is-maintenance-warranty-necessary-hero.jpg', updated_at = now() WHERE slug = 'is-maintenance-warranty-necessary-used-cars-uk-2026';
+UPDATE public.blog_posts SET featured_image_url = '/__l5e/assets-v1/bb439991-0abf-4766-b316-32abf28cddb1/maintenance-vs-extended-warranty-hero.jpg', updated_at = now() WHERE slug = 'maintenance-warranty-vs-extended-warranty-uk-2026';
