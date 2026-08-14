@@ -7,6 +7,8 @@ import { useSandboxSpecialistPresence } from '@/hooks/useSandboxSpecialistPresen
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import SandboxChatWindow from '@/components/ai-sandbox/SandboxChatWindow';
 import rubyLogo from '@/assets/ai-sandbox-ruby.png';
 
@@ -144,18 +146,7 @@ export default function AiSandbox() {
   }
 
   if (!userId) {
-    return (
-      <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center p-8 text-center">
-        <Headset className="mb-3 h-8 w-8 text-muted-foreground" />
-        <h1 className="text-lg font-semibold">Sign in required</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The AI sandbox is staff only. Sign in to the admin area, then come back to this page.
-        </p>
-        <Button className="mt-4" onClick={() => navigate('/admin-dashboard')}>
-          Go to staff sign in
-        </Button>
-      </div>
-    );
+    return <SandboxSignIn />;
   }
 
 
@@ -269,6 +260,68 @@ export default function AiSandbox() {
           <div className="p-6 text-sm text-muted-foreground">Setting up your chat…</div>
         )}
       </main>
+    </div>
+  );
+}
+
+function SandboxSignIn() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    setBusy(false);
+    if (signInError) setError(signInError.message);
+    // On success the page's onAuthStateChange listener loads the sandbox.
+  };
+
+  return (
+    <div className="mx-auto flex min-h-[70vh] max-w-sm flex-col justify-center p-8">
+      <div className="flex flex-col items-center text-center">
+        <img src={rubyLogo} alt="" width={40} height={40} className="mb-3 h-10 w-10" />
+        <h1 className="text-lg font-semibold">Staff sign in</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Sign in here and you&apos;ll go straight into the Ruby chat — no trip to the dashboard.
+        </p>
+      </div>
+
+      <form onSubmit={submit} className="mt-6 space-y-3">
+        <div className="space-y-1">
+          <Label htmlFor="sandbox-email">Work email</Label>
+          <Input
+            id="sandbox-email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoFocus
+          />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="sandbox-password">Password</Label>
+          <Input
+            id="sandbox-password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        <Button type="submit" className="w-full" disabled={busy}>
+          {busy ? 'Signing in…' : 'Sign in and open chat'}
+        </Button>
+      </form>
     </div>
   );
 }
