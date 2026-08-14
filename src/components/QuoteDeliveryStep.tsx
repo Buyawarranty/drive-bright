@@ -200,8 +200,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     }
     
     try {
-      // Send quote email
-      const { error: quoteEmailError } = await supabase.functions.invoke('send-quote-email', {
+      // Send quote email in the background. It attaches two PDFs and can take
+      // 7-15s — awaiting it left the button stuck on "Sending..." and blocked
+      // the customer from reaching step 3.
+      supabase.functions.invoke('send-quote-email', {
         body: {
           email: email.trim(),
           firstName: 'Valued Customer',
@@ -218,11 +220,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           },
           isInitialQuote: true
         }
-      });
+      }).then(({ error: quoteEmailError }) => {
+        if (quoteEmailError) console.error('Error sending quote email:', quoteEmailError);
+      }).catch((e) => console.error('Error sending quote email:', e));
 
-      if (quoteEmailError) {
-        console.error('Error sending quote email:', quoteEmailError);
-      }
       // Update the existing abandoned_cart with step 2 data (name, email, phone).
       // The trigger on abandoned_carts will update the corresponding sales_lead.
       // We do NOT insert directly into sales_leads to avoid duplicates.
