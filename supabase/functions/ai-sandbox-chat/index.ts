@@ -715,6 +715,22 @@ Deno.serve(async (req) => {
 
           const pipeline = await createRealLead(args);
 
+          await logEvent({
+            event_type: "lead_captured",
+            topic: state.is_open ? "callback_request" : "out_of_hours_lead",
+            detail: args.cover_summary ?? null,
+            customer_wording: args.notes ?? null,
+            registration: args.registration ?? null,
+            quoted_price: args.quoted_price ?? null,
+            metadata: {
+              has_name: Boolean(args.customer_name),
+              has_email: Boolean(args.customer_email),
+              has_phone: Boolean(args.customer_phone),
+              pipeline,
+            },
+          });
+
+
           return toolResultText({
             ok: true,
             lead_id: data.id,
