@@ -3,6 +3,7 @@ import { X, Gift, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { CopyablePromoCode } from '@/components/CopyablePromoCode';
 
 interface ReturnDiscountBannerProps {
   firstPurchaseDate: string | null;
@@ -144,9 +145,9 @@ export const ReturnDiscountBanner: React.FC<ReturnDiscountBannerProps> = ({
               Cannot be used with other offers or for the same vehicle.
             </p>
             {discountCode && (
-              <p className="text-xs text-orange-100 mt-1">
-                Code: <span className="font-mono font-semibold">{discountCode}</span>
-              </p>
+              <div className="mt-1">
+                <CopyablePromoCode code={discountCode} label="Code:" className="text-white border-white/50" />
+              </div>
             )}
           </div>
         </div>

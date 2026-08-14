@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { SEOHead } from '@/components/SEOHead';
+import { CopyablePromoCode } from '@/components/CopyablePromoCode';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -1369,7 +1370,7 @@ const CustomerDashboard = () => {
                   <strong>Your warranty expires soon!</strong> Renew now and get 10% off your next policy.
                   {renewalDiscount && (
                     <div className="mt-2">
-                      <span className="text-sm">Use code: <strong>{renewalDiscount}</strong></span>
+                      <CopyablePromoCode code={renewalDiscount} label="Use code:" className="text-orange-800 border-orange-400" />
                     </div>
                   )}
                 </div>
