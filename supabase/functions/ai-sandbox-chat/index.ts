@@ -247,16 +247,19 @@ Deno.serve(async (req) => {
         const email = (args.customer_email ?? "").trim().toLowerCase();
         const phone = (args.customer_phone ?? "").replace(/\D/g, "");
         const tail9 = phone.length >= 9 ? phone.slice(-9) : null;
-        if (!email) return { created: false, reason: "email_required" };
+        // Phone-only leads are valid — people often will not give a name or email.
+        if (!email && !tail9) return { created: false, reason: "phone_or_email_required" };
 
         // Existing lead by email?
-        const { data: byEmail } = await admin
-          .from("sales_leads")
-          .select("id")
-          .ilike("email", email)
-          .limit(1);
-        if (byEmail && byEmail.length > 0) {
-          return { created: false, reason: "duplicate_email", lead_id: byEmail[0].id };
+        if (email) {
+          const { data: byEmail } = await admin
+            .from("sales_leads")
+            .select("id")
+            .ilike("email", email)
+            .limit(1);
+          if (byEmail && byEmail.length > 0) {
+            return { created: false, reason: "duplicate_email", lead_id: byEmail[0].id };
+          }
         }
 
         // Existing lead by phone tail-9?
@@ -272,10 +275,12 @@ Deno.serve(async (req) => {
 
         const nameParts = (args.customer_name ?? "").trim().split(/\s+/).filter(Boolean);
         const noteLines = [
-          "Captured by Miles (AI assistant chat).",
+          "Captured by Miles (AI live chat).",
           args.cover_summary ? `Cover discussed: ${args.cover_summary}` : null,
           args.quoted_price ? `Quoted: £${args.quoted_price}` : null,
           args.notes ? `Notes: ${args.notes}` : null,
+          !email ? "No email given — phone only." : null,
+          nameParts.length === 0 ? "No name given." : null,
         ].filter(Boolean);
 
         const { data: inserted, error: insertError } = await admin
@@ -283,7 +288,7 @@ Deno.serve(async (req) => {
           .insert({
             first_name: nameParts[0] ?? null,
             last_name: nameParts.slice(1).join(" ") || null,
-            email,
+            email: email || null,
             phone: args.customer_phone ?? null,
             vehicle_reg: args.registration ? args.registration.toUpperCase().replace(/\s/g, "") : null,
             quote_amount: args.quoted_price ?? null,
@@ -296,7 +301,24 @@ Deno.serve(async (req) => {
           console.error("[ai-sandbox-chat] pipeline lead insert failed", insertError);
           return { created: false, reason: "insert_failed" };
         }
-        return { created: true, lead_id: inserted.id };
+
+        // Tag it as a live chat lead so agents can see where it came from.
+        try {
+          const { data: tag } = await admin
+            .from("lead_tags")
+            .select("id")
+            .eq("name", "Live chat")
+            .maybeSingle();
+          if (tag?.id) {
+            await admin
+              .from("lead_tag_assignments")
+              .insert({ lead_id: inserted.id, tag_id: tag.id });
+          }
+        } catch (tagErr) {
+          console.error("[ai-sandbox-chat] live chat tag failed", tagErr);
+        }
+
+        return { created: true, lead_id: inserted.id, tag: "Live chat" };
       } catch (e) {
         console.error("[ai-sandbox-chat] createRealLead threw", e);
         return { created: false, reason: "error" };
