@@ -2450,6 +2450,65 @@ export type Database = {
           },
         ]
       }
+      claim_invoices: {
+        Row: {
+          amount: number | null
+          claim_id: string
+          created_at: string
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          file_url: string
+          id: string
+          invoice_date: string | null
+          invoice_name: string | null
+          updated_at: string
+          uploaded_by: string | null
+          uploaded_by_name: string | null
+          vehicle_registration: string | null
+        }
+        Insert: {
+          amount?: number | null
+          claim_id: string
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          invoice_date?: string | null
+          invoice_name?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name?: string | null
+          vehicle_registration?: string | null
+        }
+        Update: {
+          amount?: number | null
+          claim_id?: string
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          invoice_date?: string | null
+          invoice_name?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name?: string | null
+          vehicle_registration?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_invoices_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claims_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claim_notes: {
         Row: {
           claim_id: string
