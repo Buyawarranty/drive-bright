@@ -327,9 +327,9 @@ const ContactUs = () => {
                   <div className="ml-11 sm:ml-14">
                     <address className="not-italic text-gray-600 text-sm sm:text-base leading-relaxed">
                       Buy A Warranty Limited<br />
-                      Suite A, Cavendish House<br />
-                      233-235 High Street<br />
-                      Guildford, Surrey, GU1 3BJ<br />
+                      Warranty House<br />
+                      62 Berkhamsted Avenue<br />
+                      Wembley, London, HA9 6DT<br />
                       United Kingdom
                     </address>
                     <p className="mt-2 text-gray-500 text-xs sm:text-sm">
