@@ -287,6 +287,9 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
          ───────────────────────────────────────────────────────────── */}
       {isManagement && <StaffLeadAccessPanel />}
 
+      {/* Quotes & Orders — Confirm external payment price block master switch */}
+      {isManagement && <ConfirmPaymentBlockPanel />}
+
 
       {/* ─────────────────────────────────────────────────────────────
           SCOREBOARD TARGETS — set each agent's monthly goal.
