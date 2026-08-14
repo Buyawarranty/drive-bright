@@ -1229,6 +1229,77 @@ export type Database = {
           },
         ]
       }
+      ai_chat_events: {
+        Row: {
+          created_at: string
+          customer_wording: string | null
+          detail: string | null
+          event_type: string
+          id: string
+          is_sandbox: boolean
+          knowledge_confident: boolean | null
+          metadata: Json
+          plan_name: string | null
+          quoted_price: number | null
+          registration: string | null
+          term_months: number | null
+          thread_id: string | null
+          topic: string | null
+          user_id: string | null
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_year: number | null
+        }
+        Insert: {
+          created_at?: string
+          customer_wording?: string | null
+          detail?: string | null
+          event_type: string
+          id?: string
+          is_sandbox?: boolean
+          knowledge_confident?: boolean | null
+          metadata?: Json
+          plan_name?: string | null
+          quoted_price?: number | null
+          registration?: string | null
+          term_months?: number | null
+          thread_id?: string | null
+          topic?: string | null
+          user_id?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_year?: number | null
+        }
+        Update: {
+          created_at?: string
+          customer_wording?: string | null
+          detail?: string | null
+          event_type?: string
+          id?: string
+          is_sandbox?: boolean
+          knowledge_confident?: boolean | null
+          metadata?: Json
+          plan_name?: string | null
+          quoted_price?: number | null
+          registration?: string | null
+          term_months?: number | null
+          thread_id?: string | null
+          topic?: string | null
+          user_id?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_chat_events_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "ai_sandbox_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_sandbox_handovers: {
         Row: {
           claimed_at: string | null
