@@ -686,6 +686,13 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     // Prevent double-click race condition
     if (isConfirming) return;
 
+    // Price match journey: answered, file uploaded and confirmed as received.
+    const pmGate = priceMatchGate();
+    if (pmGate) {
+      toast({ ...pmGate, variant: 'destructive' });
+      return;
+    }
+
     // Hard stop: never create a policy more than 30% below the quoted price, and
     // never below the absolute net floor (£349/£699/£999 shaped), unless
     // Management are the ones confirming it.
@@ -777,7 +784,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
               discount_amount: givenAway,
               // Evidenced price match used to get under the floor / ceiling —
               // stored so Customer management and Vehicle intelligence show it.
-              ...(priceMatchReady
+              ...((priceMatchReady || (pmIsPriceMatch === 'yes' && pmProofPath))
                 ? {
                     price_comparison_proof_url: pmProofPath,
                     price_match_applied: true,
@@ -1658,7 +1665,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         )}
 
                         {/* Price match check — required on every confirmation */}
-                        <div className="space-y-2 rounded-lg border-2 border-sky-300 bg-sky-50/70 p-3">
+                        <div id="price-match-check" className="space-y-2 rounded-lg border-2 border-sky-300 bg-sky-50/70 p-3">
                           <p className="text-xs font-bold text-sky-900">
                             Was this sale a price match? *
                           </p>
