@@ -1369,7 +1369,7 @@ const CustomerDashboard = () => {
                   <strong>Your warranty expires soon!</strong> Renew now and get 10% off your next policy.
                   {renewalDiscount && (
                     <div className="mt-2">
-                      <span className="text-sm">Use code: <strong>{renewalDiscount}</strong></span>
+                      <CopyablePromoCode code={renewalDiscount} label="Use code:" className="text-orange-800 border-orange-400" />
                     </div>
                   )}
                 </div>
