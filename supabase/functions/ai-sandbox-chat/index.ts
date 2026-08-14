@@ -221,8 +221,90 @@ Deno.serve(async (req) => {
       return count ?? 0;
     };
 
+    /**
+     * Write a captured chat lead into the real New Leads pipeline.
+     * Gated behind the `ai_chat_creates_real_leads` feature flag so the sandbox stays isolated
+     * until the assistant goes live. Dedupes by normalised email or phone tail-9 and lets the
+     * existing round-robin / owner-sticky triggers do the assignment.
+     */
+    const createRealLead = async (args: {
+      customer_name?: string | null;
+      customer_email?: string | null;
+      customer_phone?: string | null;
+      registration?: string | null;
+      cover_summary?: string | null;
+      quoted_price?: number | null;
+      notes?: string | null;
+    }) => {
+      try {
+        const { data: flag } = await admin
+          .from("feature_flags")
+          .select("enabled")
+          .eq("key", "ai_chat_creates_real_leads")
+          .maybeSingle();
+        if (!flag?.enabled) return { created: false, reason: "sandbox_only" };
+
+        const email = (args.customer_email ?? "").trim().toLowerCase();
+        const phone = (args.customer_phone ?? "").replace(/\D/g, "");
+        const tail9 = phone.length >= 9 ? phone.slice(-9) : null;
+        if (!email) return { created: false, reason: "email_required" };
+
+        // Existing lead by email?
+        const { data: byEmail } = await admin
+          .from("sales_leads")
+          .select("id")
+          .ilike("email", email)
+          .limit(1);
+        if (byEmail && byEmail.length > 0) {
+          return { created: false, reason: "duplicate_email", lead_id: byEmail[0].id };
+        }
+
+        // Existing lead by phone tail-9?
+        if (tail9) {
+          const { data: byPhone } = await admin.rpc("find_sales_lead_by_phone_tail9", {
+            tail_digits: tail9,
+          });
+          const existingId = Array.isArray(byPhone) ? byPhone[0]?.id ?? byPhone[0] : byPhone;
+          if (existingId) {
+            return { created: false, reason: "duplicate_phone", lead_id: existingId };
+          }
+        }
+
+        const nameParts = (args.customer_name ?? "").trim().split(/\s+/).filter(Boolean);
+        const noteLines = [
+          "Captured by Ruby (AI assistant chat).",
+          args.cover_summary ? `Cover discussed: ${args.cover_summary}` : null,
+          args.quoted_price ? `Quoted: £${args.quoted_price}` : null,
+          args.notes ? `Notes: ${args.notes}` : null,
+        ].filter(Boolean);
+
+        const { data: inserted, error: insertError } = await admin
+          .from("sales_leads")
+          .insert({
+            first_name: nameParts[0] ?? null,
+            last_name: nameParts.slice(1).join(" ") || null,
+            email,
+            phone: args.customer_phone ?? null,
+            vehicle_reg: args.registration ? args.registration.toUpperCase().replace(/\s/g, "") : null,
+            quote_amount: args.quoted_price ?? null,
+            notes: noteLines.join("\n"),
+          })
+          .select("id")
+          .single();
+
+        if (insertError) {
+          console.error("[ai-sandbox-chat] pipeline lead insert failed", insertError);
+          return { created: false, reason: "insert_failed" };
+        }
+        return { created: true, lead_id: inserted.id };
+      } catch (e) {
+        console.error("[ai-sandbox-chat] createRealLead threw", e);
+        return { created: false, reason: "error" };
+      }
+    };
 
     const tools = {
+
       search_site_knowledge: tool({
         description:
           "Search Buyawarranty's APPROVED material (FAQ, terms and conditions, warranty plan, claims, cancellation, transfer pages) for the wording to answer a customer question. This is the ONLY permitted source for anything about cover, exclusions, claim limits, excess, labour rates, eligibility, cancellation or contractual terms. Always call it before answering such a question, and obey the 'confident' flag and 'instruction' it returns: if confident is false, do not answer — offer a warranty specialist instead.",
@@ -546,13 +628,17 @@ Deno.serve(async (req) => {
             return toolResultText({ ok: false, note: "The lead could not be saved." });
           }
 
+          const pipeline = await createRealLead(args);
+
           return toolResultText({
             ok: true,
             lead_id: data.id,
+            pipeline_lead: pipeline,
             next_open: state.next_open,
             note: "Lead saved. Confirm to the customer when a specialist will be in touch and offer to finish the purchase now with a test payment link.",
           });
         },
+
       }),
     };
 
