@@ -405,6 +405,18 @@ const getCustomerAcquisitionChannel = (
   return source || 'unknown';
 };
 
+// Was the sale completed by the customer themselves on the website (direct sale)
+// or closed by an agent from a lead (phone / manual back-office sale)?
+const getCustomerSalePath = (
+  customer: Pick<Customer, 'purchase_source'> & { is_manual_entry?: boolean | null }
+): 'direct' | 'lead' => {
+  const purchaseSrc = (customer.purchase_source || '').trim().toLowerCase();
+  if (customer.is_manual_entry === true) return 'lead';
+  if (['external', 'manual', 'admin', 'phone'].includes(purchaseSrc)) return 'lead';
+  return 'direct';
+};
+
+
 interface CustomersTabProps {
   notifications?: AdminNotification[];
   unreadCount?: number;
