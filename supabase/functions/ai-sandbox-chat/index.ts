@@ -208,7 +208,31 @@ Deno.serve(async (req) => {
       }
     }
 
+    /** Log a learning signal for the admin "Chatbot data" section. Never throws. */
+    const logEvent = async (row: Record<string, unknown>) => {
+      try {
+        const { error } = await admin.from("ai_chat_events").insert({
+          thread_id: threadId,
+          user_id: user.id,
+          is_sandbox: true,
+          ...row,
+        });
+        if (error) console.error("[ai-sandbox-chat] event log failed", error);
+      } catch (e) {
+        console.error("[ai-sandbox-chat] event log threw", e);
+      }
+    };
+
+    if (lastMessage?.role === "user") {
+      const wording = (lastMessage.parts ?? [])
+        .filter((p: any) => p?.type === "text")
+        .map((p: any) => p.text)
+        .join("\n");
+      await logEvent({ event_type: "customer_message", customer_wording: wording });
+    }
+
     const gateway = createLovableAiGatewayProvider(lovableKey);
+
 
     /** How many warranty specialists are actually on duty in live chat right now. */
     const specialistsOnline = async (): Promise<number> => {
@@ -334,7 +358,14 @@ Deno.serve(async (req) => {
           query: z.string().describe("The customer's question or the topic to look up"),
         }),
         execute: async ({ query }) => {
-          return toolResultText(retrieveGrounded(query, 5));
+          const grounded: any = retrieveGrounded(query, 5);
+          await logEvent({
+            event_type: "question",
+            topic: query,
+            customer_wording: query,
+            knowledge_confident: grounded?.confident ?? null,
+          });
+          return toolResultText(grounded);
         },
       }),
 
@@ -360,6 +391,14 @@ Deno.serve(async (req) => {
             });
           }
           const data = await res.json();
+          await logEvent({
+            event_type: "vehicle_interest",
+            registration: String(registration).replace(/\s/g, "").toUpperCase(),
+            vehicle_make: data?.make ?? null,
+            vehicle_model: data?.model ?? null,
+            vehicle_year: Number(data?.yearOfManufacture ?? data?.year) || null,
+            metadata: data ?? {},
+          });
           return toolResultText({ found: true, vehicle: data });
         },
       }),
@@ -434,6 +473,22 @@ Deno.serve(async (req) => {
           const websitePrice = Math.max(quotesAndOrders * (1 - webDiscount / 100), floor);
 
           const round = (n: number) => Math.round(n);
+
+          await logEvent({
+            event_type: "price_quoted",
+            quoted_price: round(websitePrice),
+            term_months: term,
+            topic: `${term}mo · £${claim_limit} limit · £${voluntary_excess} excess · £${labour_rate}/hr`,
+            metadata: {
+              vehicle_type,
+              claim_limit,
+              voluntary_excess,
+              labour_rate,
+              pricing_model: version.label,
+            },
+          });
+
+
 
           return toolResultText({
             ok: true,
@@ -597,6 +652,14 @@ Deno.serve(async (req) => {
             });
           }
 
+          await logEvent({
+            event_type: "handover",
+            topic: args.reason ?? null,
+            registration: args.registration ?? null,
+            quoted_price: args.quoted_price ?? null,
+            detail: args.cover_summary ?? null,
+          });
+
           return toolResultText({
             ok: true,
             handover_id: data.id,
@@ -651,6 +714,22 @@ Deno.serve(async (req) => {
           }
 
           const pipeline = await createRealLead(args);
+
+          await logEvent({
+            event_type: "lead_captured",
+            topic: state.is_open ? "callback_request" : "out_of_hours_lead",
+            detail: args.cover_summary ?? null,
+            customer_wording: args.notes ?? null,
+            registration: args.registration ?? null,
+            quoted_price: args.quoted_price ?? null,
+            metadata: {
+              has_name: Boolean(args.customer_name),
+              has_email: Boolean(args.customer_email),
+              has_phone: Boolean(args.customer_phone),
+              pipeline,
+            },
+          });
+
 
           return toolResultText({
             ok: true,

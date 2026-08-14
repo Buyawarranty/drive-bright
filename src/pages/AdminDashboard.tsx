@@ -46,6 +46,7 @@ const SmsTrackingTab = lazy(() => import('@/components/admin/SmsTrackingTab'));
 
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
+const ChatbotDataTab = lazy(() => import('@/components/admin/chatbot/ChatbotDataTab'));
 const ContactSubmissionsTab = lazy(() => import('@/components/admin/ContactSubmissionsTab'));
 const ComplaintsTab = lazy(() => import('@/components/admin/ComplaintsTab'));
 const AbandonedCartsTab = lazy(() => import('@/components/admin/AbandonedCartsTab').then(m => ({ default: m.AbandonedCartsTab })));
@@ -736,6 +737,8 @@ const AdminDashboard = () => {
             userRole={effectiveUserRole}
           />
         );
+      case 'chatbot-data':
+        return <ChatbotDataTab />;
       case 'reviews':
         return <ReviewsTab />;
       case 'contact':
