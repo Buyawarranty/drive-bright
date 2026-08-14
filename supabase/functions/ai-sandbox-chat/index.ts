@@ -546,13 +546,17 @@ Deno.serve(async (req) => {
             return toolResultText({ ok: false, note: "The lead could not be saved." });
           }
 
+          const pipeline = await createRealLead(args);
+
           return toolResultText({
             ok: true,
             lead_id: data.id,
+            pipeline_lead: pipeline,
             next_open: state.next_open,
             note: "Lead saved. Confirm to the customer when a specialist will be in touch and offer to finish the purchase now with a test payment link.",
           });
         },
+
       }),
     };
 
