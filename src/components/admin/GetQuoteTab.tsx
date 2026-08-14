@@ -419,13 +419,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const { required: claimLimit5kAuthRequired } = useClaimLimit5kAuthRequired();
   const claimLimit5kAllowed = !claimLimit5kAuthRequired || isManagementRole || !!claimLimit5kApproval;
 
-  // Vehicle must be fully identified (make AND model) before an agent can quote.
-  // Only a manager can authorise continuing on a partially identified vehicle.
-  const [vehicleIdManagerAuth, setVehicleIdManagerAuth] = useState<string | null>(null);
+  // Vehicle identification. Staff can always type the make, model, year and
+  // mileage by hand on Step 1, so a partial DVLA/DVSA response is only ever a
+  // prompt to confirm the details — it never blocks a quote or a sale.
   const vehicleIdGap = vehicleData
     ? getVehicleIdentificationGap({ found: true, make: vehicleData.make, model: vehicleData.model })
     : null;
-  const vehicleIdBlocked = !!vehicleIdGap && vehicleIdManagerAuth !== (vehicleData?.regNumber || '');
+  // Manual vehicle entry (Step 1) — used when the lookup returns make only,
+  // nothing at all, or for Northern Ireland plates with no lookup available.
+  const [manualMake, setManualMake] = useState('');
+  const [manualModel, setManualModel] = useState('');
+  const [manualYear, setManualYear] = useState('');
+
 
 
 
@@ -1899,15 +1904,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       setVehicleData({
         regNumber: regNumber.toUpperCase(),
         mileage: mileage,
-        make: data.make,
-        model: data.model || '',
+        // Anything the agent typed by hand on Step 1 wins over a partial
+        // DVLA/DVSA response, so a missing model never stops the quote.
+        make: manualMake.trim() || data.make,
+        model: manualModel.trim() || data.model || '',
         fuelType: data.fuelType || '',
         transmission: data.transmission || '',
-        year: data.yearOfManufacture || data.year || '',
+        year: manualYear.trim() || data.yearOfManufacture || data.year || '',
         vehicleType: data.vehicleType || '',
         registrationDate: data.registrationDate || undefined,
         manufactureDate: data.manufactureDate || undefined,
       });
+
       
       setStep(2);
     } catch (error: any) {
@@ -1978,11 +1986,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         setVehicleData({
           regNumber: regNumber.toUpperCase(),
           mileage: effectiveMileage,
-          make: fallbackMake,
-          model: fallbackModel,
+          make: manualMake.trim() || fallbackMake,
+          model: manualModel.trim() || fallbackModel,
           fuelType: fallbackFuel,
           transmission: '',
-          year: fallbackYear,
+          year: manualYear.trim() || fallbackYear,
           vehicleType: '',
         });
         setEditableCustomerFirstName(customerFirstName || (customerName || '').trim().split(/\s+/)[0] || '');
@@ -2039,11 +2047,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       setVehicleData({
         regNumber: regNumber.toUpperCase(),
         mileage: effectiveMileage,
-        make: data.make,
-        model: data.model || '',
+        make: manualMake.trim() || data.make,
+        model: manualModel.trim() || data.model || '',
         fuelType: data.fuelType || '',
         transmission: data.transmission || '',
-        year: data.yearOfManufacture || data.year || '',
+        year: manualYear.trim() || data.yearOfManufacture || data.year || '',
         vehicleType: data.vehicleType || '',
         registrationDate: data.registrationDate || undefined,
         manufactureDate: data.manufactureDate || undefined,
@@ -2130,15 +2138,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       setShowEmailError(false);
     }
 
-    if (vehicleIdBlocked && vehicleIdGap) {
-      toast({
-        title: 'Manager authorisation required',
-        description: `${vehicleIdGap.agentMessage} Do not quote or sell until a manager has authorised this vehicle.`,
-        variant: 'destructive',
-      });
-      return;
-    }
-
     if (hasError) {
       toast({
         title: "Missing Information",
@@ -2203,14 +2202,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
 
   const handleSendEmail = async () => {
-    if (vehicleIdBlocked && vehicleIdGap) {
-      toast({
-        title: 'Manager authorisation required',
-        description: `${vehicleIdGap.agentMessage} A quote cannot be sent until a manager authorises this vehicle.`,
-        variant: 'destructive',
-      });
-      return;
-    }
     if (previewMode) {
       toast({ title: 'Preview mode', description: 'This is a beta preview — nothing is sent, saved or charged.' });
       return;
@@ -4053,6 +4044,65 @@ Questions? Call 0330 229 5040`;
                 )}
                   </div>
 
+                {/* Manual vehicle entry — always available. The lookup can come back
+                    with the make only (or nothing at all, e.g. NI plates), and staff
+                    must never be blocked from quoting because of that. */}
+                <div className="rounded-lg border border-gray-200 bg-gray-50/60 p-3 space-y-2.5">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div>
+                      <Label className="text-sm font-semibold text-gray-900">Vehicle details (type or correct manually)</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Anything you type here overrides the DVLA/DVSA lookup. Leave blank to use the looked-up details.
+                      </p>
+                    </div>
+                    {autoPreview.data && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setManualMake(autoPreview.data?.make || '');
+                          setManualModel(autoPreview.data?.model || '');
+                          setManualYear(autoPreview.data?.year ? String(autoPreview.data.year) : '');
+                        }}
+                      >
+                        Copy looked-up details
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <div className="space-y-1">
+                      <Label htmlFor="manualMake" className="text-xs text-gray-700">Make</Label>
+                      <Input
+                        id="manualMake"
+                        value={manualMake}
+                        onChange={(e) => setManualMake(e.target.value)}
+                        placeholder={autoPreview.data?.make || 'e.g. Kia'}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="manualModel" className="text-xs text-gray-700">Model</Label>
+                      <Input
+                        id="manualModel"
+                        value={manualModel}
+                        onChange={(e) => setManualModel(e.target.value)}
+                        placeholder={autoPreview.data?.model || 'e.g. Niro 2 EV'}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="manualYear" className="text-xs text-gray-700">Year</Label>
+                      <Input
+                        id="manualYear"
+                        value={manualYear}
+                        onChange={(e) => setManualYear(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))}
+                        placeholder={autoPreview.data?.year ? String(autoPreview.data.year) : 'e.g. 2021'}
+                        inputMode="numeric"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+
                 {/* Mileage — mirrors Step 4 customer checkout */}
                   <div>
                   <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-1">
@@ -4277,45 +4327,25 @@ Questions? Call 0330 229 5040`;
           {step === 2 && vehicleData && (
             <Card>
               {vehicleIdGap && (
-                <Alert className={`m-4 mb-0 border-2 ${vehicleIdBlocked ? 'border-destructive bg-destructive/10' : 'border-amber-500 bg-amber-50'}`}>
-                  <Ban className={`h-4 w-4 ${vehicleIdBlocked ? 'text-destructive' : 'text-amber-600'}`} />
-                  <AlertDescription className={`text-sm ${vehicleIdBlocked ? 'text-destructive' : 'text-amber-800'}`}>
-                    <strong>Vehicle not fully recognised.</strong> {vehicleIdGap.agentMessage}
+                <Alert className="m-4 mb-0 border-2 border-amber-500 bg-amber-50">
+                  <AlertCircle className="h-4 w-4 text-amber-600" />
+                  <AlertDescription className="text-sm text-amber-800">
+                    <strong>Confirm the vehicle details.</strong> {vehicleIdGap.agentMessage}
                     {isNorthernIrelandPlate(vehicleData?.regNumber) && (
                       <div className="mt-1.5 rounded border border-amber-300 bg-white/70 p-2 text-[13px] text-amber-900">
                         <strong>Northern Ireland plate.</strong> There is no NI vehicle or MOT lookup, so
                         confirm the make, model, year and mileage with the customer (mileage is typed in
-                        here, not pulled from an MOT). Once the vehicle is confirmed a manager can
-                        authorise it and the sale can be completed as normal.
+                        here, not pulled from an MOT).
                       </div>
                     )}
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      {vehicleIdBlocked ? (
-                        isManagementRole ? (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => {
-                              setVehicleIdManagerAuth(vehicleData?.regNumber || '');
-                              toast({ title: 'Authorised', description: 'Manager authorisation recorded for this vehicle.' });
-                            }}
-                          >
-                            Authorise this vehicle (manager)
-                          </Button>
-                        ) : (
-                          <span className="font-semibold">
-                            You cannot continue — ask a manager to authorise this vehicle first.
-                          </span>
-                        )
-                      ) : (
-                        <span className="font-semibold text-green-700">
-                          Manager authorised — you may continue with this vehicle.
-                        </span>
-                      )}
+                    <div className="mt-2 text-[13px]">
+                      You can type the make, model and year yourself on Step 1 — quoting and selling are
+                      not blocked.
                     </div>
                   </AlertDescription>
                 </Alert>
               )}
+
 
               {getExclusionReason(vehicleData?.make, vehicleData?.model) && (
                 <Alert className="m-4 mb-0 border-2 border-destructive bg-destructive/10">
