@@ -1702,9 +1702,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     }
     setIsSwappingVehicle(true);
     try {
-      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-        body: { registrationNumber: cleanReg, skipAgeCheck: ageOverrideEnabled },
-      });
+      const { data, error } = await lookupVehicleByReg(cleanReg, { skipAgeCheck: ageOverrideEnabled });
 
       if (data?.blocked) {
         toast({
