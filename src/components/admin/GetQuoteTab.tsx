@@ -1822,16 +1822,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
     setIsLookingUp(true);
     try {
-      // Add timeout to prevent infinite loading - 30s for cold starts
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-      
+      // Hard 12s ceiling — never leave an agent on a spinner mid-call.
       const cleanReg = regNumber.replace(/\s/g, '').toUpperCase();
-      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-        body: { registrationNumber: cleanReg, skipAgeCheck: ageOverrideEnabled }
-      });
-      
-      clearTimeout(timeoutId);
+      const { data, error } = await lookupVehicleByReg(cleanReg, { skipAgeCheck: ageOverrideEnabled });
       console.log('[GetQuote] DVLA lookup response:', { data, error });
 
       // Fallback: if DVLA/DVSA API fails or returns no make, reuse the auto-preview
