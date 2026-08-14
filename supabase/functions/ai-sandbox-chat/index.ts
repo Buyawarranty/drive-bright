@@ -55,7 +55,7 @@ The sales journey — follow it in order:
 5. Hand over at buying intent, hesitation, OR any question the approved material does not answer. Buying intent: "how do I buy", "can I pay monthly", "I'll take it". Hesitation: price worries, comparing competitors, "let me think", repeated questions.
    - First call check_availability.
    - If open: offer it plainly — "Would you like me to connect you to a warranty specialist now?" — and only when they say yes, call connect_live_agent. Tell them a human specialist is joining and that the specialist can see the whole chat, so they will not need to repeat anything.
-   - If closed: say the team's hours in plain terms, then get them as far as you can yourself — confirm the cover and price, offer the test payment link, and ask for their name, email, phone and registration so a specialist can pick it up when the team opens. Once you have at least a name and an email or phone, call capture_lead.
+   - If closed: say the team's hours in plain terms, then get them as far as you can yourself — confirm the cover and price, offer the test payment link, and ask for their phone number (best), plus name, email and registration if they will share them, so a specialist can pick it up when the team opens. As soon as you have EITHER a phone number OR an email, call capture_lead — a name is optional, never block on it. Ask for anything still missing afterwards.
 6. Never promise a callback time beyond the next opening hours, and never claim to be a human.`;
 
 function toolResultText(value: unknown) {
@@ -247,16 +247,19 @@ Deno.serve(async (req) => {
         const email = (args.customer_email ?? "").trim().toLowerCase();
         const phone = (args.customer_phone ?? "").replace(/\D/g, "");
         const tail9 = phone.length >= 9 ? phone.slice(-9) : null;
-        if (!email) return { created: false, reason: "email_required" };
+        // Phone-only leads are valid — people often will not give a name or email.
+        if (!email && !tail9) return { created: false, reason: "phone_or_email_required" };
 
         // Existing lead by email?
-        const { data: byEmail } = await admin
-          .from("sales_leads")
-          .select("id")
-          .ilike("email", email)
-          .limit(1);
-        if (byEmail && byEmail.length > 0) {
-          return { created: false, reason: "duplicate_email", lead_id: byEmail[0].id };
+        if (email) {
+          const { data: byEmail } = await admin
+            .from("sales_leads")
+            .select("id")
+            .ilike("email", email)
+            .limit(1);
+          if (byEmail && byEmail.length > 0) {
+            return { created: false, reason: "duplicate_email", lead_id: byEmail[0].id };
+          }
         }
 
         // Existing lead by phone tail-9?
@@ -272,10 +275,12 @@ Deno.serve(async (req) => {
 
         const nameParts = (args.customer_name ?? "").trim().split(/\s+/).filter(Boolean);
         const noteLines = [
-          "Captured by Miles (AI assistant chat).",
+          "Captured by Miles (AI live chat).",
           args.cover_summary ? `Cover discussed: ${args.cover_summary}` : null,
           args.quoted_price ? `Quoted: £${args.quoted_price}` : null,
           args.notes ? `Notes: ${args.notes}` : null,
+          !email ? "No email given — phone only." : null,
+          nameParts.length === 0 ? "No name given." : null,
         ].filter(Boolean);
 
         const { data: inserted, error: insertError } = await admin
@@ -283,7 +288,7 @@ Deno.serve(async (req) => {
           .insert({
             first_name: nameParts[0] ?? null,
             last_name: nameParts.slice(1).join(" ") || null,
-            email,
+            email: email || null,
             phone: args.customer_phone ?? null,
             vehicle_reg: args.registration ? args.registration.toUpperCase().replace(/\s/g, "") : null,
             quote_amount: args.quoted_price ?? null,
@@ -296,7 +301,24 @@ Deno.serve(async (req) => {
           console.error("[ai-sandbox-chat] pipeline lead insert failed", insertError);
           return { created: false, reason: "insert_failed" };
         }
-        return { created: true, lead_id: inserted.id };
+
+        // Tag it as a live chat lead so agents can see where it came from.
+        try {
+          const { data: tag } = await admin
+            .from("lead_tags")
+            .select("id")
+            .eq("name", "Live chat")
+            .maybeSingle();
+          if (tag?.id) {
+            await admin
+              .from("lead_tag_assignments")
+              .insert({ lead_id: inserted.id, tag_id: tag.id });
+          }
+        } catch (tagErr) {
+          console.error("[ai-sandbox-chat] live chat tag failed", tagErr);
+        }
+
+        return { created: true, lead_id: inserted.id, tag: "Live chat" };
       } catch (e) {
         console.error("[ai-sandbox-chat] createRealLead threw", e);
         return { created: false, reason: "error" };
@@ -597,10 +619,10 @@ Deno.serve(async (req) => {
           notes: z.string().nullable().describe("Anything the specialist should know before calling"),
         }),
         execute: async (args) => {
-          if (!args.customer_name && !args.customer_email && !args.customer_phone) {
+          if (!args.customer_email && !args.customer_phone) {
             return toolResultText({
               ok: false,
-              note: "Ask for a name plus an email or phone number first.",
+              note: "Ask for a phone number (or an email) first — a name is optional.",
             });
           }
           const state = availability();
