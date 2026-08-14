@@ -5379,16 +5379,9 @@ Questions? Call 0330 229 5040`;
                           {priceMatchMode ? (
                             <> · <span className="font-semibold text-sky-700">Price match active — any price allowed, maximum 10% cheaper than competitors</span></>
                           ) : (
-                            <>
-                              {effectiveMaxDiscountPct < 100 && (
-                                <> · Your cap: <strong>{effectiveMaxDiscountPct}%</strong></>
-                              )}
-                              {effectiveMaxDiscountPct === 0 && ' · Discounts blocked'}
-                              {blockedByCeiling && (
-                                <> · <span className="font-semibold text-amber-700">Discounts above {DISCOUNT_CEILING_PCT}% need Management authorisation</span></>
-                              )}
-                            </>
+                            <> · <span className="font-semibold text-emerald-700">Any discount allowed down to the minimum price for this term</span></>
                           )}
+
                         </p>
                         <p className="text-[11px] text-muted-foreground mt-0.5">
                           Your cap is judged on your average discount across sales, not each individual sale.
