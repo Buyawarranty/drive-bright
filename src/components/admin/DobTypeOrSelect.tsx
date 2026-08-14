@@ -9,7 +9,10 @@ import { cn } from '@/lib/utils';
 interface Props {
   value: string; // yyyy-MM-dd or ''
   onChange: (v: string) => void;
+  /** Inline mode: same field height/label style as the surrounding form inputs. */
+  compact?: boolean;
 }
+
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
