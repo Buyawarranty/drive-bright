@@ -1577,12 +1577,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setAutoPreview((p) => ({ ...p, loading: true, error: null }));
     const t = setTimeout(async () => {
       try {
-        const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-          body: { registrationNumber: clean, skipAgeCheck: true }, // preview only — no hard block here
-        });
+        const { data, error, timedOut } = await lookupVehicleByReg(clean, { skipAgeCheck: true }); // preview only — no hard block here
         if (cancelled) return;
         if (error || !data || data.error || data.found === false || !data.make) {
-          setAutoPreview({ loading: false, error: 'Could not identify vehicle automatically', data: null });
+          setAutoPreview({
+            loading: false,
+            error: timedOut
+              ? 'Vehicle lookup is slow right now — you can continue and enter details manually'
+              : 'Could not identify vehicle automatically',
+            data: null,
+          });
           return;
         }
         const ageYears = getVehicleAge({
