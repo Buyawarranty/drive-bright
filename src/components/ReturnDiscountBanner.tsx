@@ -46,10 +46,10 @@ export const ReturnDiscountBanner: React.FC<ReturnDiscountBannerProps> = ({
       setIsEligible(true);
       setDaysRemaining(remaining);
       
-      // Generate or retrieve discount code
+      // Generate or retrieve discount code (verify stored codes are still valid)
       const storedCode = localStorage.getItem('returnDiscount_code');
       if (storedCode) {
-        setDiscountCode(storedCode);
+        verifyStoredCode(storedCode);
       } else {
         createDiscountCode();
       }
