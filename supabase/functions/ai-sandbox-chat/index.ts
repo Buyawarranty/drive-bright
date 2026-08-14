@@ -568,7 +568,7 @@ Deno.serve(async (req) => {
     }.\nIf a message in the conversation begins with "(Warranty specialist)" a human has joined this chat — stay out of the way and only reply if the customer asks you directly.`;
 
 
-    const modelMessages = convertToModelMessages(
+    const modelMessages = await convertToModelMessages(
       messages.filter((m: any) => m && typeof m === "object" && Array.isArray(m.parts)),
     );
     if (!Array.isArray(modelMessages) || modelMessages.length === 0) {
