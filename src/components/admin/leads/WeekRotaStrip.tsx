@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
-import { useIsManagement } from '@/hooks/useIsManagement';
+import { useSeesAllAgents } from '@/hooks/useSeesAllAgents';
 import { toast } from 'sonner';
 
 type DayType = 'full_day' | 'half_day' | 'off';
@@ -42,7 +42,7 @@ const defaultTypeFor = (d: Date): DayType | null => {
 export const WeekRotaStrip = () => {
   const { user } = useAuth();
   const currentAdminId = useCurrentAdminId();
-  const { isManagement } = useIsManagement();
+  const { seesAll: isManagement } = useSeesAllAgents();
   const [agents, setAgents] = useState<AdminLite[]>([]);
   const [rows, setRows] = useState<WorkingDayRow[]>([]);
   const [loading, setLoading] = useState(true);
