@@ -518,7 +518,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 onClick={() => setWeekdaysFullDay(editingAgent.id)}
               >
-                <Check className="h-4 w-4 mr-1" strokeWidth={3} /> Select all weekdays (Mon–Fri)
+                <Check className="h-4 w-4 mr-1" strokeWidth={3} /> Apply defaults (Mon–Fri full, Sat half)
               </Button>
               <Button size="sm" variant="outline" disabled={saving} onClick={saveRota}>
                 {saving ? 'Saving…' : 'Save rota'}
