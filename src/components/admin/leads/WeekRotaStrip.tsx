@@ -25,7 +25,7 @@ interface WorkingDayRow {
   day_type: DayType;
 }
 
-const ROTA_ROLES = ['sales', 'sales_lead', 'lead_gen', 'sales_manager', 'claims_agent', 'claims_manager'];
+const ROTA_ROLES = ['sales', 'sales_lead', 'lead_gen', 'sales_manager', 'claims_agent', 'claims_manager'] as const;
 
 /** Mon–Fri default full day, Saturday default half day, Sunday optional/blank. */
 const defaultTypeFor = (d: Date): DayType | null => {
