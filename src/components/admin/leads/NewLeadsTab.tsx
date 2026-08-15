@@ -5,7 +5,6 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { MyTargetStrip } from './MyTargetStrip';
 import { WeekRotaStrip } from './WeekRotaStrip';
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
-import { QuotesSentPanel } from '@/components/admin/QuotesSentPanel';
 import { ConvertedSalesLogPanel } from './ConvertedSalesLogPanel';
 import { PaymentFailedLeadsPanel } from './PaymentFailedLeadsPanel';
 import { DateRange } from 'react-day-picker';
@@ -1577,7 +1576,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       {/* MissedCallAlertBar now mounted globally in AdminDashboard so it shows on every tab */}
       <WeekRotaStrip />
       <MyTargetStrip />
-      <QuotesSentPanel currentAdminId={currentAdminId} currentUserRole={userRole} />
       {/* Header — compact, action-dense, grouped card */}
 
       <div className="rounded-xl border border-border bg-card shadow-sm px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
