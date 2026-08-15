@@ -1453,6 +1453,10 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           )}
                         </div>
 
+                        {/* Same staff-only base floor + discount rules as Get a quote */}
+                        <BaseFloorNotice showDiscountNote className="mt-2" />
+
+
                         {discountBlocked && (
                           <p className="text-xs font-semibold text-destructive">
                             {underNetFloor
