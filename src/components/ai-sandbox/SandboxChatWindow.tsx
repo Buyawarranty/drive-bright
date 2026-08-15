@@ -163,6 +163,111 @@ function RegQuickStart({
   );
 }
 
+const TERM_OPTIONS = [12, 24, 36];
+const LIMIT_OPTIONS = [1000, 2000, 3000];
+const EXCESS_OPTIONS = [0, 50, 100, 150, 250, 500];
+const LABOUR_OPTIONS = [50, 70, 100, 150];
+
+function OptionRow({
+  label,
+  options,
+  value,
+  onChange,
+  format,
+}: {
+  label: string;
+  options: number[];
+  value: number;
+  onChange: (v: number) => void;
+  format: (v: number) => string;
+}) {
+  return (
+    <div>
+      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <div className="mt-1 flex flex-wrap gap-1.5">
+        {options.map((o) => (
+          <button
+            key={o}
+            type="button"
+            onClick={() => onChange(o)}
+            className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
+              value === o
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+            }`}
+          >
+            {format(o)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PriceOptionsPanel({
+  disabled,
+  onSend,
+}: {
+  disabled?: boolean;
+  onSend: (text: string) => void;
+}) {
+  const [term, setTerm] = useState(24);
+  const [limit, setLimit] = useState(2000);
+  const [excess, setExcess] = useState(100);
+  const [labour, setLabour] = useState(70);
+
+  const combo = `${term} months, £${limit.toLocaleString()} claim limit, £${excess} excess, £${labour}/hr labour rate`;
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 text-left shadow-sm">
+      <p className="text-sm font-semibold text-foreground">Build your price</p>
+      <p className="mt-0.5 text-xs text-muted-foreground">
+        Pick your options and I'll price it, then send you a secure payment link.
+      </p>
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <OptionRow label="Cover length" options={TERM_OPTIONS} value={term} onChange={setTerm} format={(v) => `${v} months`} />
+        <OptionRow label="Claim limit" options={LIMIT_OPTIONS} value={limit} onChange={setLimit} format={(v) => `£${v.toLocaleString()}`} />
+        <OptionRow label="Excess" options={EXCESS_OPTIONS} value={excess} onChange={setExcess} format={(v) => `£${v}`} />
+        <OptionRow label="Labour rate" options={LABOUR_OPTIONS} value={labour} onChange={setLabour} format={(v) => `£${v}/hr`} />
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={disabled}
+          onClick={() => onSend(`Price this for me: ${combo}. What's the total?`)}
+        >
+          Show my price
+        </Button>
+        <Button
+          size="sm"
+          disabled={disabled}
+          onClick={() =>
+            onSend(`I'd like ${combo}. Please confirm the total and send me a card payment link.`)
+          }
+        >
+          Pay by card
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={disabled}
+          onClick={() =>
+            onSend(
+              `I'd like ${combo}. Please confirm the total and send me a monthly instalments link (Bumper).`,
+            )
+          }
+        >
+          Pay monthly
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+
 export function SandboxChatWindow({ threadId }: { threadId: string }) {
 
   const [initialMessages, setInitialMessages] = useState<UIMessage[] | null>(null);
