@@ -5579,10 +5579,10 @@ Questions? Call 0330 229 5040`;
                             )}
                           </div>
                           <div
-                            className={`space-y-1.5 rounded-lg p-2 transition-colors ${
+                            className={`space-y-1.5 rounded-lg p-2 ${
                               priceMatchProofPath
                                 ? 'border border-emerald-300 bg-emerald-50/60'
-                                : 'border-2 border-destructive bg-destructive/10 ring-2 ring-destructive/30 animate-pulse'
+                                : 'border-2 border-destructive bg-white'
                             }`}
                           >
                             <Label
