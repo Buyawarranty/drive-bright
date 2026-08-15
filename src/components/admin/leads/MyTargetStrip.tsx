@@ -6,7 +6,7 @@ import { Target, ChevronDown, ChevronUp } from 'lucide-react';
 import { differenceInCalendarDays, endOfMonth, format, startOfMonth } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useViewAs } from '@/contexts/ViewAsContext';
-import { useIsManagement } from '@/hooks/useIsManagement';
+import { useSeesAllAgents } from '@/hooks/useSeesAllAgents';
 import { getAgentColor } from '@/lib/agentColors';
 
 const gbp = (n: number) => `£${Math.round(n || 0).toLocaleString('en-GB')}`;
@@ -34,7 +34,7 @@ export const MyTargetStrip: React.FC = () => {
   const now = new Date();
   const month = startOfMonth(now);
   const { effectiveAdminUserId } = useViewAs();
-  const { isManagement } = useIsManagement();
+  const { seesAll } = useSeesAllAgents();
   const [rows, setRows] = useState<Row[]>([]);
   const [fallbackRevenue, setFallbackRevenue] = useState<Record<string, number> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -114,13 +114,15 @@ export const MyTargetStrip: React.FC = () => {
       };
     }
 
+    if (!seesAll) return null;
+
     if (rows.length) {
       const revenue = rows.reduce((s, r) => s + revenueOf(r), 0);
       const target = rows.reduce((s, r) => s + (Number(r.revenue_target) || 0), 0);
       return { scope: 'team' as const, revenue, target: target || null };
     }
     return null;
-  }, [rows, effectiveAdminUserId, revenueOf]);
+  }, [rows, effectiveAdminUserId, revenueOf, seesAll]);
 
   const breakdown = useMemo(
     () => [...rows].sort((a, b) => revenueOf(b) - revenueOf(a)),
@@ -205,7 +207,7 @@ export const MyTargetStrip: React.FC = () => {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          {isManagement === true && breakdown.length > 0 && (
+          {seesAll === true && breakdown.length > 0 && (
             <Button
               variant="outline"
               size="sm"
@@ -222,7 +224,7 @@ export const MyTargetStrip: React.FC = () => {
         </div>
       </div>
 
-      {isManagement === true && open && (
+      {seesAll === true && open && (
         <div className="mt-3 pt-3 border-t space-y-1.5">
           <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
             Each agent this month — same figures as the Sales Scoreboard
