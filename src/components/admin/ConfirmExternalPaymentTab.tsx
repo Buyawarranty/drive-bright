@@ -38,6 +38,7 @@ import { useIsManagement } from '@/hooks/useIsManagement';
 import { useConfirmPaymentPriceBlock } from '@/hooks/useConfirmPaymentPriceBlock';
 import { useDiscountAuthRequests } from '@/hooks/useDiscountAuthRequests';
 import { useAuth } from '@/hooks/useAuth';
+import { BaseFloorNotice } from '@/components/admin/pricing/BaseFloorNotice';
 
 
 interface VehicleData {
