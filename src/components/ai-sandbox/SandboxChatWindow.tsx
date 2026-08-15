@@ -561,6 +561,14 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
             );
           })}
 
+          {!agentMode && hasPriceQuote && (
+            <div className="px-2 pb-2">
+              <PriceOptionsPanel disabled={busy} onSend={send} />
+            </div>
+          )}
+
+
+
           {status === 'submitted' && (
             <div className="px-2 py-3">
               <Shimmer>Thinking…</Shimmer>
