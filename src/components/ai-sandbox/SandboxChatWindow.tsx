@@ -156,8 +156,9 @@ function RegQuickStart({
 
 
       <p className="mt-2 text-[11px] text-muted-foreground">
-        No obligation · takes about 20 seconds
+        Free quote · no card details needed · takes about 20 seconds
       </p>
+
     </div>
   );
 }
