@@ -294,8 +294,8 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
           </h3>
           <div className="text-sm text-orange-900/80 mt-1">
             <span className="font-semibold">{format(weekStart, 'd MMM')} – {format(weekEnd, 'd MMM yyyy')}</span>
-            {' · '}Tap a day to tick it. Weekdays = full day, weekend = half day.
-            {' · '}<span className="font-semibold text-red-700">Confirm Sat &amp; Sun</span>
+            {' · '}Everyone starts as Mon–Fri full days and Saturday half day — tap a day to change or mark it off.
+            {' · '}<span className="font-semibold text-red-700">Confirm Sunday if you're working</span>
             {' · '}Next week's rota by Thursday 6pm.
           </div>
 
