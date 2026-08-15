@@ -134,7 +134,7 @@ function RegQuickStart({
           if (valid && !disabled) onSubmit(clean.toUpperCase());
         }}
       >
-        <div className="flex w-[130px] shrink-0 items-stretch overflow-hidden rounded-lg border-2 border-foreground">
+        <div className="flex w-[260px] shrink-0 items-stretch overflow-hidden rounded-lg border-2 border-foreground">
           <div className="flex min-w-[26px] flex-col items-center justify-center bg-[hsl(220,90%,45%)] px-1 text-[9px] font-bold leading-none text-white">
             <span className="text-[10px]">🇬🇧</span>
             UK
