@@ -38,6 +38,7 @@ import { useIsManagement } from '@/hooks/useIsManagement';
 import { useConfirmPaymentPriceBlock } from '@/hooks/useConfirmPaymentPriceBlock';
 import { useDiscountAuthRequests } from '@/hooks/useDiscountAuthRequests';
 import { useAuth } from '@/hooks/useAuth';
+import { BaseFloorNotice } from '@/components/admin/pricing/BaseFloorNotice';
 
 
 interface VehicleData {
@@ -1452,6 +1453,10 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                             </span>
                           )}
                         </div>
+
+                        {/* Same staff-only base floor + discount rules as Get a quote */}
+                        <BaseFloorNotice showDiscountNote className="mt-2" />
+
 
                         {discountBlocked && (
                           <p className="text-xs font-semibold text-destructive">
