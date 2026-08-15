@@ -109,7 +109,60 @@ function SenderLabel({ sender }: { sender: Sender }) {
   );
 }
 
+function RegQuickStart({
+  onSubmit,
+  disabled,
+}: {
+  onSubmit: (reg: string) => void;
+  disabled?: boolean;
+}) {
+  const [reg, setReg] = useState('');
+  const clean = reg.replace(/\s+/g, '');
+  const valid = clean.length >= 5;
+
+  return (
+    <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-4 text-left shadow-sm">
+      <p className="text-sm font-semibold text-foreground">Get an instant price or advice</p>
+      <p className="mt-0.5 text-xs text-muted-foreground">
+        Pop your reg in — I'll pull your vehicle details and come straight back with cover options.
+      </p>
+
+      <form
+        className="mt-3 flex flex-col gap-2 sm:flex-row"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (valid && !disabled) onSubmit(clean.toUpperCase());
+        }}
+      >
+        <div className="flex flex-1 items-stretch overflow-hidden rounded-lg border-2 border-foreground">
+          <div className="flex min-w-[42px] flex-col items-center justify-center bg-[hsl(220,90%,45%)] px-2 text-[10px] font-bold leading-none text-white">
+            <span className="text-xs">🇬🇧</span>
+            UK
+          </div>
+          <input
+            value={reg}
+            onChange={(e) => setReg(e.target.value.replace(/[^A-Za-z0-9 ]/g, '').toUpperCase())}
+            placeholder="ENTER REG"
+            aria-label="Vehicle registration"
+            maxLength={9}
+            disabled={disabled}
+            className="min-w-0 flex-1 bg-[hsl(48,100%,55%)] px-3 py-2 text-lg font-black uppercase tracking-wider text-black outline-none placeholder:text-black/50"
+          />
+        </div>
+        <Button type="submit" disabled={!valid || disabled} className="shrink-0">
+          Get my price
+        </Button>
+      </form>
+
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        No obligation · takes about 20 seconds
+      </p>
+    </div>
+  );
+}
+
 export function SandboxChatWindow({ threadId }: { threadId: string }) {
+
   const [initialMessages, setInitialMessages] = useState<UIMessage[] | null>(null);
   const [handover, setHandover] = useState<Handover | null>(null);
   const [agentMode, setAgentMode] = useState(false);
