@@ -191,7 +191,7 @@ function OptionRow({
             key={o}
             type="button"
             onClick={() => onChange(o)}
-            className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
+            className={`rounded-lg border px-2.5 py-1 text-xs transition-colors ${
               value === o
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -524,7 +524,7 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
                   <button
                     key={s}
                     onClick={() => send(s)}
-                    className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   >
                     {s}
                   </button>
