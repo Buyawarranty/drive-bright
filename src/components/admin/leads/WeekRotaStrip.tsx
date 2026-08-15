@@ -27,12 +27,10 @@ interface WorkingDayRow {
 
 const ROTA_ROLES = ['sales', 'sales_lead', 'lead_gen', 'sales_manager', 'claims_agent', 'claims_manager'] as const;
 
-/** Mon–Fri default full day, Saturday default half day, Sunday optional/blank. */
+/** Mon–Fri ticked by default; Saturday and Sunday start unticked. */
 const defaultTypeFor = (d: Date): DayType | null => {
   const dow = d.getDay();
-  if (dow >= 1 && dow <= 5) return 'full_day';
-  if (dow === 6) return 'half_day';
-  return null;
+  return dow >= 1 && dow <= 5 ? 'full_day' : null;
 };
 
 /**
@@ -142,31 +140,12 @@ export const WeekRotaStrip = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, saving, agents, currentAdminId, rows.length]);
 
-  const cycleDay = async (agentId: string, date: Date) => {
+  const toggleDay = async (agentId: string, date: Date) => {
     if (!canEditFor(agentId) || saving) return;
     const existing = getRow(agentId, date);
     setSaving(true);
     try {
-      if (!existing) {
-        const type = defaultTypeFor(date) ?? 'half_day';
-        const { data, error } = await (supabase as any)
-          .from('agent_working_days')
-          .insert({
-            admin_user_id: agentId,
-            work_date: format(date, 'yyyy-MM-dd'),
-            day_type: type,
-            created_by: user?.id ?? null,
-          })
-          .select('id, admin_user_id, work_date, day_type')
-          .single();
-        if (error) throw error;
-        setRows((prev) => [...prev, data as WorkingDayRow]);
-        return;
-      }
-      // full_day -> half_day -> off -> (clear)
-      const next: DayType | null =
-        existing.day_type === 'full_day' ? 'half_day' : existing.day_type === 'half_day' ? 'off' : null;
-      if (next === null) {
+      if (existing) {
         const { error } = await (supabase as any)
           .from('agent_working_days')
           .delete()
@@ -174,12 +153,18 @@ export const WeekRotaStrip = () => {
         if (error) throw error;
         setRows((prev) => prev.filter((r) => r.id !== existing.id));
       } else {
-        const { error } = await (supabase as any)
+        const { data, error } = await (supabase as any)
           .from('agent_working_days')
-          .update({ day_type: next })
-          .eq('id', existing.id);
+          .insert({
+            admin_user_id: agentId,
+            work_date: format(date, 'yyyy-MM-dd'),
+            day_type: 'full_day',
+            created_by: user?.id ?? null,
+          })
+          .select('id, admin_user_id, work_date, day_type')
+          .single();
         if (error) throw error;
-        setRows((prev) => prev.map((r) => (r.id === existing.id ? { ...r, day_type: next } : r)));
+        setRows((prev) => [...prev, data as WorkingDayRow]);
       }
     } catch (e: any) {
       toast.error(e?.message ?? 'Could not update working day');
@@ -191,39 +176,25 @@ export const WeekRotaStrip = () => {
   const displayName = (a: AdminLite) => `${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email;
 
   const dayChip = (agentId: string, d: Date, interactive: boolean) => {
-    const row = getRow(agentId, d);
-    const isOff = row?.day_type === 'off';
-    const isHalf = row?.day_type === 'half_day';
-    const isFull = row?.day_type === 'full_day';
+    const on = !!getRow(agentId, d) && getRow(agentId, d)!.day_type !== 'off';
     return (
       <button
         key={agentId + d.toISOString()}
         type="button"
         disabled={!interactive || saving}
-        onClick={() => interactive && cycleDay(agentId, d)}
-        title={
-          interactive
-            ? 'Tap to change: full day → half day → off → not set'
-            : isFull
-              ? 'Full day'
-              : isHalf
-                ? 'Half day'
-                : isOff
-                  ? 'Off'
-                  : 'Not set'
-        }
+        onClick={() => interactive && toggleDay(agentId, d)}
+        title={`${format(d, 'EEEE d MMM')} — ${on ? 'working (tap to untick)' : 'not working (tap to tick)'}`}
+        aria-pressed={on}
         className={cn(
-          'h-7 min-w-[42px] px-1.5 rounded-md border text-[11px] font-semibold transition-colors',
-          isFull && 'bg-emerald-600 text-white border-emerald-700',
-          isHalf && 'bg-amber-500 text-white border-amber-600',
-          isOff && 'bg-slate-400 text-white border-slate-500',
-          !row && 'bg-background text-muted-foreground border-dashed border-border',
+          'h-7 w-7 rounded-md border text-[11px] font-bold transition-colors',
+          on
+            ? 'bg-emerald-600 text-white border-emerald-700'
+            : 'bg-background text-muted-foreground border-dashed border-border',
           isToday(d) && 'ring-2 ring-primary ring-offset-1',
           interactive ? 'hover:opacity-90 cursor-pointer' : 'cursor-default',
         )}
       >
         {format(d, 'EEEEE')}
-        {isHalf && <span className="ml-0.5 text-[9px]">½</span>}
       </button>
     );
   };
@@ -245,7 +216,7 @@ export const WeekRotaStrip = () => {
       <div className="px-4 py-2.5 flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-2 min-w-0">
           <CalendarDays className="h-4 w-4 text-orange-600 shrink-0" />
-          <span className="text-sm font-semibold whitespace-nowrap">This week's rota</span>
+          <span className="text-sm font-semibold whitespace-nowrap">Attendance · this week</span>
           <span className="text-[11px] text-muted-foreground whitespace-nowrap">
             {format(weekStart, 'd MMM')} – {format(weekEnd, 'd MMM')}
           </span>
@@ -258,7 +229,7 @@ export const WeekRotaStrip = () => {
         )}
 
         <span className="text-[11px] text-muted-foreground">
-          Mon–Fri full · Sat half by default — tap to change
+          Mon–Fri ticked by default — tap to tick or untick any day
         </span>
 
         {isManagement && (
@@ -267,7 +238,7 @@ export const WeekRotaStrip = () => {
             onClick={() => setExpanded((v) => !v)}
             className="ml-auto text-xs font-medium text-primary hover:underline inline-flex items-center gap-1"
           >
-            {expanded ? 'Hide team rota' : `Team rota (${agents.length} agents)`}
+            {expanded ? 'Hide team attendance' : `Team attendance (${agents.length})`}
             {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
           </button>
         )}
