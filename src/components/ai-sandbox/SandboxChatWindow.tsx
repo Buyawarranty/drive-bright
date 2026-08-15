@@ -128,15 +128,15 @@ function RegQuickStart({
       </p>
 
       <form
-        className="mt-3 flex flex-col gap-2 sm:flex-row"
+        className="mt-3 flex items-stretch gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           if (valid && !disabled) onSubmit(clean.toUpperCase());
         }}
       >
-        <div className="flex flex-1 items-stretch overflow-hidden rounded-lg border-2 border-foreground">
-          <div className="flex min-w-[42px] flex-col items-center justify-center bg-[hsl(220,90%,45%)] px-2 text-[10px] font-bold leading-none text-white">
-            <span className="text-xs">🇬🇧</span>
+        <div className="flex w-[130px] shrink-0 items-stretch overflow-hidden rounded-lg border-2 border-foreground">
+          <div className="flex min-w-[26px] flex-col items-center justify-center bg-[hsl(220,90%,45%)] px-1 text-[9px] font-bold leading-none text-white">
+            <span className="text-[10px]">🇬🇧</span>
             UK
           </div>
           <input
@@ -146,13 +146,14 @@ function RegQuickStart({
             aria-label="Vehicle registration"
             maxLength={9}
             disabled={disabled}
-            className="min-w-0 flex-1 bg-[hsl(48,100%,55%)] px-3 py-2 text-lg font-black uppercase tracking-wider text-black outline-none placeholder:text-black/50"
+            className="min-w-0 flex-1 bg-[hsl(48,100%,55%)] px-2 py-2 text-base font-black uppercase tracking-wide text-black outline-none placeholder:text-black/50"
           />
         </div>
-        <Button type="submit" disabled={!valid || disabled} className="shrink-0">
+        <Button type="submit" disabled={!valid || disabled} className="shrink-0 px-4 text-sm font-semibold">
           Get my price
         </Button>
       </form>
+
 
       <p className="mt-2 text-[11px] text-muted-foreground">
         No obligation · takes about 20 seconds
