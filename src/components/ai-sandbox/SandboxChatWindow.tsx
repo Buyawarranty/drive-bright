@@ -342,6 +342,7 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
                 loading="lazy"
               />
 
+              <RegQuickStart disabled={busy} onSubmit={(reg) => send(`My reg is ${reg} — what would my warranty cost?`)} />
 
               <div className="flex flex-wrap justify-center gap-2">
                 {STARTERS.map((s) => (
@@ -356,6 +357,7 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
               </div>
             </div>
           )}
+
 
           {messages.map((message) => {
             const sender = senderOf(message);
