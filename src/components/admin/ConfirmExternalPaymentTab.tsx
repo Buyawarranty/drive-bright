@@ -1552,6 +1552,44 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                             <p className="text-xs text-slate-500">
                               Competitor, their price and the uploaded quote are all needed before this unlocks. No evidence? Use Contact management instead.
                             </p>
+                            {/* Self-verification: the agent confirms their own uploaded
+                                evidence and unlocks the confirmation, no manager needed. */}
+                            <div className="space-y-1.5 rounded-md border border-amber-300 bg-white p-2">
+                              <p className="text-[11px] font-semibold text-slate-600">
+                                Verify it yourself — upload above, then submit this confirmation:
+                              </p>
+                              <ul className="text-[11px] text-slate-500 space-y-0.5">
+                                <li>{pmCompetitorName ? '✅' : '⬜'} Competitor selected</li>
+                                <li>{pmCompetitorPrice ? '✅' : '⬜'} Their quoted price entered</li>
+                                <li>{pmProofPath ? '✅' : '⬜'} Competitor quote uploaded</li>
+                                <li>
+                                  {pmFloor !== null && Number.isFinite(enteredAmount) && enteredAmount >= pmFloor - 0.01
+                                    ? '✅'
+                                    : '⬜'}{' '}
+                                  Amount within {PRICE_MATCH_MAX_PCT}% of their price
+                                </li>
+                              </ul>
+                              <Button
+                                size="sm"
+                                className="h-7 w-full text-xs font-semibold"
+                                disabled={!priceMatchReady || pmUploading}
+                                onClick={() => {
+                                  setPmIsPriceMatch('yes');
+                                  setPmFileConfirmed(true);
+                                  toast({
+                                    title: 'Price match verified',
+                                    description: `Evidence accepted (${pmCompetitorName} £${pmCompetitorPrice}). You can now confirm this payment.`,
+                                  });
+                                }}
+                              >
+                                Submit &amp; confirm evidence
+                              </Button>
+                              {priceMatchReady && pmFileConfirmed && (
+                                <p className="text-[11px] font-semibold text-emerald-600">
+                                  ✅ Verified — continue to Review &amp; Confirm.
+                                </p>
+                              )}
+                            </div>
                             <Button
                               size="sm"
                               variant="ghost"
