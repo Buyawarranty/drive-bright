@@ -332,15 +332,16 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
           </Message>
 
           {messages.length === 0 && (
-            <div className="flex flex-col items-center gap-4 py-6 text-center">
+            <div className="flex flex-col items-center gap-3 py-4 text-center">
               <img
                 src={milesCalls.url}
                 alt="Miles the panda in a buyawarranty polo with a headset, saying hi and offering to check your coverage, file a claim or get answers"
                 width={760}
                 height={512}
-                className="w-full max-w-xl h-auto"
+                className="h-auto w-full max-w-[220px]"
                 loading="lazy"
               />
+
 
               <div className="flex flex-wrap justify-center gap-2">
                 {STARTERS.map((s) => (

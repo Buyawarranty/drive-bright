@@ -32,6 +32,8 @@ export default function AiSandbox() {
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const { liveCount, meOnline, setOnDuty } = useSandboxSpecialistPresence();
+  const [previewSize, setPreviewSize] = useState<'desktop' | 'mobile'>('desktop');
+
 
   useEffect(() => {
     let cancelled = false;
@@ -252,11 +254,38 @@ export default function AiSandbox() {
             <Button size="sm" variant="outline" className="md:hidden" onClick={createThread}>
               <Plus className="h-4 w-4" />
             </Button>
+            <div className="flex items-center gap-1 rounded-md border border-border p-0.5">
+              <Button
+                size="sm"
+                variant={previewSize === 'desktop' ? 'default' : 'ghost'}
+                className="h-6 px-2 text-xs"
+                onClick={() => setPreviewSize('desktop')}
+              >
+                Desktop
+              </Button>
+              <Button
+                size="sm"
+                variant={previewSize === 'mobile' ? 'default' : 'ghost'}
+                className="h-6 px-2 text-xs"
+                onClick={() => setPreviewSize('mobile')}
+              >
+                Mobile
+              </Button>
+            </div>
           </div>
         </header>
 
         {threadId ? (
-          <SandboxChatWindow key={threadId} threadId={threadId} />
+          <div className="flex flex-1 justify-center overflow-auto bg-muted/30 p-4">
+            {/* Real on-site widget footprint: 400x600 desktop panel, 360x640 mobile sheet */}
+            <div
+              className={`flex flex-col overflow-hidden rounded-xl border border-border bg-background shadow-xl ${
+                previewSize === 'desktop' ? 'h-[600px] w-full max-w-[400px]' : 'h-[640px] w-full max-w-[360px]'
+              }`}
+            >
+              <SandboxChatWindow key={threadId} threadId={threadId} />
+            </div>
+          </div>
         ) : (
           <div className="p-6 text-sm text-muted-foreground">Setting up your chat…</div>
         )}
@@ -264,6 +293,7 @@ export default function AiSandbox() {
     </div>
   );
 }
+
 
 function SandboxSignIn() {
   const [email, setEmail] = useState('');
