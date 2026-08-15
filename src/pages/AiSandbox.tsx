@@ -32,6 +32,8 @@ export default function AiSandbox() {
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const { liveCount, meOnline, setOnDuty } = useSandboxSpecialistPresence();
+  const [previewSize, setPreviewSize] = useState<'desktop' | 'mobile'>('desktop');
+
 
   useEffect(() => {
     let cancelled = false;
