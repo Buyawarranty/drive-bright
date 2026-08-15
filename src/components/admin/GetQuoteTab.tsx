@@ -5578,8 +5578,20 @@ Questions? Call 0330 229 5040`;
                               <p className="text-[11px] text-sky-800 font-medium">{priceMatchCompetitor}</p>
                             )}
                           </div>
-                          <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-sky-900">Price match evidence</Label>
+                          <div
+                            className={`space-y-1.5 rounded-lg p-2 transition-colors ${
+                              priceMatchProofPath
+                                ? 'border border-emerald-300 bg-emerald-50/60'
+                                : 'border-2 border-destructive bg-destructive/10 ring-2 ring-destructive/30 animate-pulse'
+                            }`}
+                          >
+                            <Label
+                              className={`text-xs font-semibold ${
+                                priceMatchProofPath ? 'text-emerald-800' : 'text-destructive'
+                              }`}
+                            >
+                              Price match evidence {priceMatchProofPath ? '' : '*'}
+                            </Label>
                             <input
                               id="price-match-proof"
                               type="file"
@@ -5593,7 +5605,15 @@ Questions? Call 0330 229 5040`;
                             />
                             <div className="flex items-center gap-2">
                               <label htmlFor="price-match-proof">
-                                <Button asChild variant="outline" size="sm" disabled={priceMatchUploading} className="text-xs font-semibold gap-1.5 bg-white">
+                                <Button
+                                  asChild
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={priceMatchUploading}
+                                  className={`text-xs font-semibold gap-1.5 bg-white ${
+                                    priceMatchProofPath ? '' : 'border-destructive text-destructive hover:bg-destructive/10'
+                                  }`}
+                                >
                                   <span>
                                     {priceMatchUploading
                                       ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -5608,6 +5628,11 @@ Questions? Call 0330 229 5040`;
                                 </span>
                               )}
                             </div>
+                            {!priceMatchProofPath && (
+                              <p className="text-[11px] font-semibold text-destructive">
+                                Required — attach the competitor quote (image or PDF).
+                              </p>
+                            )}
                           </div>
                         </div>
                         {!priceMatchProofPath && (
