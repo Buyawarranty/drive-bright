@@ -524,7 +524,7 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
                   <button
                     key={s}
                     onClick={() => send(s)}
-                    className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   >
                     {s}
                   </button>
