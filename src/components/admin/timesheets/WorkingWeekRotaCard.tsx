@@ -180,46 +180,57 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
   };
 
   /**
-   * Weekdays (Mon–Fri) default to ON with green ticks. Runs once per agent+week
-   * when that agent has no entries at all for the week, so nobody starts blank.
+   * Defaults for every agent: Mon–Fri = full day, Saturday = half day.
+   * Sunday stays blank (optional). Runs once per agent+week when that agent
+   * has no entries at all for the week, so nobody starts blank.
    */
   const autoFilled = useRef<Set<string>>(new Set());
 
+  const defaultTypeFor = (d: Date): DayType | null => {
+    const dow = d.getDay();
+    if (dow >= 1 && dow <= 5) return 'full_day';
+    if (dow === 6) return 'half_day';
+    return null; // Sunday optional
+  };
+
   const setWeekdaysFullDay = async (agentId: string, opts?: { silent?: boolean }) => {
     if (!canEditFor(agentId)) return;
-    const weekdays = days.filter((d) => !isWeekend(d));
-    const missing = weekdays.filter((d) => !getRow(agentId, d));
-    const toChange = weekdays.filter((d) => {
+    const targets = days
+      .map((d) => ({ d, type: defaultTypeFor(d) }))
+      .filter((x): x is { d: Date; type: DayType } => x.type !== null);
+    const toChange = targets.filter(({ d, type }) => {
       const r = getRow(agentId, d);
-      return !r || r.day_type !== 'full_day';
+      return !r || r.day_type !== type;
     });
     if (toChange.length === 0) {
-      if (!opts?.silent) toast.success('Weekdays already set to full days');
+      if (!opts?.silent) toast.success('Defaults already applied (Mon–Fri full, Sat half)');
       return;
     }
     setSaving(true);
     try {
-      // Flip existing non-full weekday rows, then insert the missing ones.
-      const existingIds = toChange
-        .map((d) => getRow(agentId, d))
-        .filter(Boolean)
-        .map((r) => r!.id);
-      if (existingIds.length) {
+      const existing = toChange.filter(({ d }) => !!getRow(agentId, d));
+      const missing = toChange.filter(({ d }) => !getRow(agentId, d));
+
+      const updatedIds: Record<string, DayType> = {};
+      for (const { d, type } of existing) {
+        const row = getRow(agentId, d)!;
         const { error } = await (supabase as any)
           .from('agent_working_days')
-          .update({ day_type: 'full_day' })
-          .in('id', existingIds);
+          .update({ day_type: type })
+          .eq('id', row.id);
         if (error) throw error;
+        updatedIds[row.id] = type;
       }
+
       let inserted: WorkingDayRow[] = [];
       if (missing.length) {
         const { data, error } = await (supabase as any)
           .from('agent_working_days')
           .insert(
-            missing.map((d) => ({
+            missing.map(({ d, type }) => ({
               admin_user_id: agentId,
               work_date: format(d, 'yyyy-MM-dd'),
-              day_type: 'full_day' as DayType,
+              day_type: type,
               created_by: user?.id ?? null,
             })),
           )
@@ -228,33 +239,34 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
         inserted = (data as WorkingDayRow[]) || [];
       }
       setRows((prev) => [
-        ...prev.map((r) =>
-          existingIds.includes(r.id) ? { ...r, day_type: 'full_day' as DayType } : r,
-        ),
+        ...prev.map((r) => (updatedIds[r.id] ? { ...r, day_type: updatedIds[r.id] } : r)),
         ...inserted,
       ]);
-      if (!opts?.silent) toast.success('Mon–Fri ticked as full days');
+      if (!opts?.silent) toast.success('Mon–Fri set to full days, Saturday to half day');
     } catch (e: any) {
-      toast.error(e?.message ?? 'Could not set weekdays');
+      toast.error(e?.message ?? 'Could not set default days');
     } finally {
       setSaving(false);
     }
   };
 
+  // Auto-apply defaults for every agent shown (managers see the whole team).
   useEffect(() => {
-    if (loading || saving || !selectedAgentId) return;
-    if (!canEditFor(selectedAgentId)) return;
-    const key = `${selectedAgentId}:${format(weekStart, 'yyyy-MM-dd')}`;
-    if (autoFilled.current.has(key)) return;
-    const hasAny = rows.some((r) => r.admin_user_id === selectedAgentId);
-    if (hasAny) {
+    if (loading || saving) return;
+    const targets = isManagement ? agents.map((a) => a.id) : selectedAgentId ? [selectedAgentId] : [];
+    for (const agentId of targets) {
+      if (!canEditFor(agentId)) continue;
+      const key = `${agentId}:${format(weekStart, 'yyyy-MM-dd')}`;
+      if (autoFilled.current.has(key)) continue;
       autoFilled.current.add(key);
-      return;
+      const hasAny = rows.some((r) => r.admin_user_id === agentId);
+      if (hasAny) continue;
+      setWeekdaysFullDay(agentId, { silent: true });
+      return; // one agent per pass — avoids concurrent writes
     }
-    autoFilled.current.add(key);
-    setWeekdaysFullDay(selectedAgentId, { silent: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, selectedAgentId, rows.length, weekStart.toISOString()]);
+  }, [loading, saving, agents, selectedAgentId, rows.length, weekStart.toISOString()]);
+
 
   const saveRota = async () => {
     await load();
