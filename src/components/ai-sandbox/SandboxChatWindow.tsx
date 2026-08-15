@@ -134,7 +134,7 @@ function RegQuickStart({
           if (valid && !disabled) onSubmit(clean.toUpperCase());
         }}
       >
-        <div className="flex w-[260px] shrink-0 items-stretch overflow-hidden rounded-lg border-2 border-foreground">
+        <div className="flex min-w-0 flex-1 items-stretch overflow-hidden rounded-lg border-2 border-foreground sm:w-[260px] sm:flex-none">
           <div className="flex min-w-[26px] flex-col items-center justify-center bg-[hsl(220,90%,45%)] px-1 text-[9px] font-bold leading-none text-white">
             <span className="text-[10px]">🇬🇧</span>
             UK
@@ -149,9 +149,10 @@ function RegQuickStart({
             className="min-w-0 flex-1 bg-[hsl(48,100%,55%)] px-2 py-2 text-base font-black uppercase tracking-wide text-black outline-none placeholder:text-black/50"
           />
         </div>
-        <Button type="submit" disabled={!valid || disabled} className="shrink-0 px-4 text-sm font-semibold">
+        <Button type="submit" disabled={!valid || disabled} className="shrink-0 whitespace-nowrap px-3 text-sm font-semibold">
           Get my price
         </Button>
+
       </form>
 
 
