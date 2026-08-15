@@ -347,6 +347,20 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
 
   const busy = status === 'submitted' || status === 'streaming';
 
+  // Show the price builder once Miles has looked the vehicle up or quoted a price
+  const hasPriceQuote = useMemo(
+    () =>
+      messages.some((m) =>
+        m.parts.some(
+          (p) =>
+            typeof p.type === 'string' &&
+            (p.type === 'tool-get_indicative_price' || p.type === 'tool-lookup_vehicle'),
+        ),
+      ),
+    [messages],
+  );
+
+
   const sendAsAgent = async (text: string) => {
     const content = `${AGENT_PREFIX} ${text}`;
     const { data: session } = await supabase.auth.getUser();
