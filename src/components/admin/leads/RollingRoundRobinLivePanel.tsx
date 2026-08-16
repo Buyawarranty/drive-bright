@@ -8,8 +8,7 @@ import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 /**
- * Live rolling round-robin hand-out (the real version of the Morning leads
- * practice panel).
+ * Live rolling round-robin hand-out.
  *
  *  - Leads are pre-assigned one at a time in fair rotation, up to BATCH_CAP
  *    open leads per agent, so nobody is buried and nobody cherry-picks.
@@ -188,11 +187,11 @@ export function RollingRoundRobinLivePanel({ canEdit }: { canEdit: boolean }) {
         <div>
           <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <Clock className="h-4 w-4 text-primary" />
-            Rolling round-robin · 30-minute first-call window
-            <Badge variant="outline" className="text-[10px]">Test panel only</Badge>
+            Live rolling round-robin · 30-minute first-call window
+            <Badge className="text-[10px] bg-teal-600 hover:bg-teal-600">Live CRM</Badge>
           </h3>
           <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
-            Manager practice panel — it does not run on its own anywhere else. Leads are pre-assigned one at a time in rotation — up to {BATCH_CAP} open leads per agent — so nobody
+            Leads are assigned one at a time in rotation — up to {BATCH_CAP} open leads per agent — so nobody
             cherry-picks. Each lead must have a first call logged within {WINDOW_MINUTES} minutes, otherwise it goes
             back to the pool and is handed to the next available agent. As soon as an agent logs a call, they are
             topped up with the next waiting lead.

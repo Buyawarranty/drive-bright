@@ -332,7 +332,7 @@ export const defaultTabs: Tab[] = [
     id: 'open-round-robin',
     label: 'Open Round Robin',
     icon: Users,
-    description: 'Live queues, capacity, alerts and practice panels for the open rotation'
+    description: 'Live queues, distribution, capacity and alerts for the open rotation'
   },
   {
     id: 'orr-test-lab',
