@@ -3,6 +3,7 @@ import { ArrowLeft, FlaskConical } from 'lucide-react';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
 import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
 import { OrrGlanceStrip } from './OrrGlanceStrip';
+import { OrrAgentRotationPanel } from './OrrAgentRotationPanel';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 import { useViewAs } from '@/contexts/ViewAsContext';
 
@@ -74,6 +75,10 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
 
       <WidgetErrorBoundary label="At a glance">
         <OrrGlanceStrip teamLabel="Open Round Robin" />
+      </WidgetErrorBoundary>
+
+      <WidgetErrorBoundary label="Agent availability & rotation">
+        <OrrAgentRotationPanel />
       </WidgetErrorBoundary>
 
       <OpenRoundRobinTestPanel />
