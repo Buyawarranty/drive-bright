@@ -26,11 +26,26 @@ const JUMP_LINKS = [
  */
 export const OpenRoundRobinPage: React.FC<OpenRoundRobinPageProps> = ({ onNavigateToTab }) => {
   const { effectiveRole } = useViewAs();
+  const [orrLive, setOrrLive] = React.useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('lead_distribution_settings')
+        .select('open_round_robin_enabled');
+      if (cancelled) return;
+      setOrrLive((data || []).some(r => r.open_round_robin_enabled === true));
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const isManagement =
     effectiveRole === 'super_admin' ||
     effectiveRole === 'admin' ||
     effectiveRole === 'sales_manager' ||
     effectiveRole === 'performance_manager';
+
 
   if (!isManagement) {
     return (
