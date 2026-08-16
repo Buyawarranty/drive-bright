@@ -16,6 +16,7 @@ import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, RotateCcw
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { QuotesSentPanel } from './QuotesSentPanel';
+import { WidgetErrorBoundary } from './WidgetErrorBoundary';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useDiscountAuthRequests } from '@/hooks/useDiscountAuthRequests';
 import { useConcessionAllowance } from '@/hooks/useConcessionAllowance';
@@ -4972,7 +4973,9 @@ Questions? Call 0330 229 5040`;
                         <span className="text-muted-foreground">Click a button below to add free months. This will update the customer's email and quote.</span>
                       </p>
                       <div className="mt-2">
-                        <ConcessionAllowanceStrip adminUserId={currentAdminId} />
+                        <WidgetErrorBoundary label="Free months allowance">
+                          <ConcessionAllowanceStrip adminUserId={currentAdminId} />
+                        </WidgetErrorBoundary>
                       </div>
                     </details>
                   </div>
@@ -5374,7 +5377,9 @@ Questions? Call 0330 229 5040`;
                   )}
 
                   {/* Always-on explainer: the base floor per term, discount included */}
-                  <BaseFloorNotice minFloor={globalMinFloor} />
+                  <WidgetErrorBoundary label="Base floor notice">
+                    <BaseFloorNotice minFloor={globalMinFloor} />
+                  </WidgetErrorBoundary>
 
 
 
@@ -8911,7 +8916,9 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
       </Tabs>
 
       {/* Managers-only board, kept at the bottom so it doesn't push the form down */}
-      <QuotesSentPanel currentAdminId={currentAdminId} currentUserRole={userRole} className="mt-6" />
+      <WidgetErrorBoundary label="Quotes sent per agent">
+        <QuotesSentPanel currentAdminId={currentAdminId} currentUserRole={userRole} className="mt-6" />
+      </WidgetErrorBoundary>
     </div>
 
     {isManagementRole && (
