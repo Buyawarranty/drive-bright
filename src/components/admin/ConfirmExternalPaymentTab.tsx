@@ -775,18 +775,42 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       // Customer management both read these two numbers.
       if (data?.customerId && quotedTotal > 0) {
         const collected = parseFloat(paymentAmount) || 0;
-        const givenAway = Math.max(0, Math.round((quotedTotal - collected) * 100) / 100);
+        // The discount the agent actually gave is measured against the price the
+        // customer was FIRST quoted, not against a grid price recalculated at
+        // confirmation time (config tweaks like labour rate can quietly shrink it).
+        // So take the highest quoted total logged for this reg in the last 14 days.
+        let effectiveQuoted = Math.round(quotedTotal * 100) / 100;
+        try {
+          const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+          const { data: priorQuotes } = await supabase
+            .from('price_override_audit')
+            .select('matrix_total, created_at')
+            .ilike('vehicle_reg', editableRegNumber.trim())
+            .gte('created_at', since)
+            .order('created_at', { ascending: true })
+            .limit(20);
+          const highestPrior = (priorQuotes || []).reduce(
+            (max, r: any) => Math.max(max, Number(r.matrix_total) || 0),
+            0
+          );
+          if (highestPrior > effectiveQuoted) effectiveQuoted = Math.round(highestPrior * 100) / 100;
+        } catch {
+          /* fall back to the grid price shown at confirmation */
+        }
+        const givenAway = Math.max(0, Math.round((effectiveQuoted - collected) * 100) / 100);
+
         try {
           await supabase
             .from('customers')
             .update({
-              original_amount: Math.round(quotedTotal * 100) / 100,
+              original_amount: effectiveQuoted,
               discount_amount: givenAway,
               // Point-of-sale record used for commissions and the Customers tab
               // discount column — never re-derived from a later price change.
-              sale_quoted_total: Math.round(quotedTotal * 100) / 100,
+              sale_quoted_total: effectiveQuoted,
               sale_discount_amount: givenAway,
-              sale_discount_pct: quotedTotal > 0 ? Math.round((givenAway / quotedTotal) * 1000) / 10 : 0,
+              sale_discount_pct: effectiveQuoted > 0 ? Math.round((givenAway / effectiveQuoted) * 1000) / 10 : 0,
+
               sale_price_basis: 'agent_quote',
               // Evidenced price match used to get under the floor / ceiling —
               // stored so Customer management and Vehicle intelligence show it.
