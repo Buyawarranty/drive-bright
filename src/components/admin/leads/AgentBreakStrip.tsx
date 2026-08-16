@@ -24,7 +24,7 @@ interface AdminLite {
   role: string;
 }
 
-const PRESENCE_ROLES = ['sales', 'sales_lead', 'lead_gen', 'sales_manager', 'claims_agent', 'claims_manager'];
+const PRESENCE_ROLES = ['sales', 'sales_lead', 'lead_gen', 'sales_manager', 'claims_agent', 'claims_manager'] as const;
 
 const STATUS_META: Record<BreakStatus, { label: string; chip: string; dot: string }> = {
   available: { label: 'Available', chip: 'bg-teal-50 text-teal-700 border-teal-200', dot: 'bg-teal-500' },
