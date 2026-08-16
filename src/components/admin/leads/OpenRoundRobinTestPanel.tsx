@@ -885,11 +885,17 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                   <th className="px-2 py-2 text-left">Reg</th>
                   <th className="px-2 py-2 text-left">Your turn</th>
                   <th className="px-2 py-2 text-left">Status</th>
-                  <th className="px-2 py-2 text-left">Dials</th>
+                  <th className="px-2 py-2 text-left">Calls</th>
                   <th className="px-2 py-2 text-left">Actions</th>
                   <th className="px-2 py-2 text-left">Agent</th>
                   <th className="px-2 py-2 text-left w-8">Src</th>
                   <th className="px-2 py-2 text-left">Email</th>
+                  <th className="px-2 py-2 text-left">Payment</th>
+                  <th className="px-2 py-2 text-left">Paid Date</th>
+                  <th className="px-2 py-2 text-left">Agent activity</th>
+                  <th className="px-2 py-2 text-left">Lead Date</th>
+                  <th className="px-2 py-2 text-left">Customer activity</th>
+                  <th className="px-2 py-2 text-left">Time to contact</th>
                 </tr>
               </thead>
               <tbody>
