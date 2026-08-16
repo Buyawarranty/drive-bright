@@ -8911,7 +8911,9 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
       </Tabs>
 
       {/* Managers-only board, kept at the bottom so it doesn't push the form down */}
-      <QuotesSentPanel currentAdminId={currentAdminId} currentUserRole={userRole} className="mt-6" />
+      <WidgetErrorBoundary label="Quotes sent per agent">
+        <QuotesSentPanel currentAdminId={currentAdminId} currentUserRole={userRole} className="mt-6" />
+      </WidgetErrorBoundary>
     </div>
 
     {isManagementRole && (
