@@ -5,8 +5,6 @@ import { ManualAddLeadDialog } from './leads/ManualAddLeadDialog';
 import type { AdminUser } from '@/hooks/useLeads';
 
 import { OpenPoolManagerAlerts } from './leads/OpenPoolManagerAlerts';
-import { OpenRoundRobinTestPanel } from './leads/OpenRoundRobinTestPanel';
-import MorningQueuePracticePanel from './leads/MorningQueuePracticePanel';
 import { OpenPoolActivityMonitor } from './leads/OpenPoolActivityMonitor';
 
 import { RecontactAccessPanel } from './leads/RecontactAccessPanel';
@@ -54,7 +52,6 @@ const QUICK_LINKS = [
   { id: 'staff-lead-access', label: 'Staff Lead Access', className: 'bg-indigo-300/50 text-indigo-900 border-indigo-200/50 hover:bg-indigo-400/50' },
   { id: 'scoreboard-targets', label: 'Scoreboard targets', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
   { id: 'open-round-robin', label: 'Open Round Robin →', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
-  { id: 'morning-leads', label: 'Morning leads', className: 'bg-amber-200/50 text-amber-900 border-amber-100/50 hover:bg-amber-300/50' },
   { id: 'recontact-leads', label: 'Recontact leads', className: 'bg-rose-300/50 text-rose-900 border-rose-200/50 hover:bg-rose-400/50' },
   { id: 'recovery-audit', label: 'Recover leads', className: 'bg-cyan-300/50 text-cyan-900 border-cyan-200/50 hover:bg-cyan-400/50' },
 ];
@@ -336,13 +333,13 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           <div className="border-l-4 border-primary/60 pl-3">
             <h2 className="text-lg font-semibold text-foreground">Open Round Robin</h2>
             <p className="text-xs text-muted-foreground">
-              Queues, capacity, agent activity, manager alerts and the practice panels now live in their own section.
+               Live queues, distribution controls, capacity, agent activity and manager alerts now live in their own section.
             </p>
           </div>
           <div className="rounded-lg border border-border bg-card shadow-sm p-4 flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground max-w-2xl">
-              There's a lot to manage here, so Open Round Robin has its own page — including the Morning leads 9:00 am
-              batch practice.
+               There's a lot to manage here, so Open Round Robin has its own live operations page. Dummy simulations
+               remain separate in the ORR Test Lab.
             </p>
             {onNavigateToTab && (
               <button
