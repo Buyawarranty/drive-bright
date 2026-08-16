@@ -42,9 +42,18 @@ export const getRecordedOrderDiscount = (
   const paid = Number(order.final_amount) || 0;
   const storedDiscount = Number(order.discount_amount) || 0;
   const storedOriginal = Number(order.original_amount) || 0;
+  const saleQuoted = Number(order.sale_quoted_total) || 0;
 
-  // Prefer the explicitly stored quote; otherwise rebuild it from paid + discount.
-  const quoted = storedOriginal > 0 ? storedOriginal : storedDiscount > 0 ? paid + storedDiscount : 0;
+  // Prefer the quote recorded at the point of sale, then the legacy original amount,
+  // otherwise rebuild it from paid + discount.
+  const quoted =
+    saleQuoted > 0
+      ? saleQuoted
+      : storedOriginal > 0
+        ? storedOriginal
+        : storedDiscount > 0
+          ? paid + storedDiscount
+          : 0;
   if (quoted <= 0 || paid <= 0) return null;
 
   const amount = Math.round((quoted - paid) * 100) / 100;
