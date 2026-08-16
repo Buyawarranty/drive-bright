@@ -43,7 +43,7 @@ export const OrrAgentRotationPanel: React.FC = () => {
       const [agentsRes, capsRes, stateRes, breaksRes, leadsRes] = await Promise.all([
         supabase
           .from('admin_users')
-          .select('id, name, email, role, is_active')
+          .select('id, first_name, last_name, email, role, is_active')
           .in('role', ['sales', 'sales_lead'])
           .eq('is_active', true)
           .limit(200),
@@ -122,7 +122,7 @@ export const OrrAgentRotationPanel: React.FC = () => {
 
         return {
           id: a.id,
-          name: (a.name as string) || (a.email as string) || 'Agent',
+          name: [a.first_name, a.last_name].filter(Boolean).join(' ') || (a.email as string) || 'Agent',
           status,
           statusLabel,
           activity,
