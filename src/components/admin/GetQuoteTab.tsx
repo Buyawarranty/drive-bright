@@ -4132,7 +4132,12 @@ Questions? Call 0330 229 5040`;
                         Pulled live from the MOT record — adjust it if the customer's mileage is higher.
                       </span>
                     </p>
+                  ) : !step1MotLoading ? (
+                    <p className="mb-4 text-sm text-[#8A5A00] bg-[#FFF6E5] border border-[#FFE1A8] rounded-md px-4 py-2.5">
+                      No MOT mileage on record for this registration — <span className="font-semibold">enter the mileage manually below</span> after confirming it with the customer.
+                    </p>
                   ) : null}
+
 
                   <div className="flex flex-col gap-3">
 
