@@ -155,7 +155,7 @@ export const OpenRoundRobinPage: React.FC<OpenRoundRobinPageProps> = ({ onNaviga
             Run the real rolling distribution for waiting customer leads. Actions here update live CRM assignments.
           </p>
         </div>
-        <RollingRoundRobinLivePanel canEdit={isManagement} />
+        <RollingRoundRobinLivePanel canEdit={isManagement && orrLive === true} />
       </div>
 
       <div id="orr-activity" className="space-y-4">
