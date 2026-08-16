@@ -1576,9 +1576,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   return (
     <div className="space-y-4">
       {/* MissedCallAlertBar now mounted globally in AdminDashboard so it shows on every tab */}
-      <WeekRotaStrip />
-      <AgentBreakStrip />
-      <MyTargetStrip />
+      <WidgetErrorBoundary label="This week's rota"><WeekRotaStrip /></WidgetErrorBoundary>
+      <WidgetErrorBoundary label="Break status"><AgentBreakStrip /></WidgetErrorBoundary>
+      <WidgetErrorBoundary label="Your target"><MyTargetStrip /></WidgetErrorBoundary>
 
       {/* Header — compact, action-dense, grouped card */}
 
