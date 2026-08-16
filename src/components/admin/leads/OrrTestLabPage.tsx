@@ -5,6 +5,7 @@ import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
 import { OrrGlanceStrip } from './OrrGlanceStrip';
 import { OrrAgentRotationPanel } from './OrrAgentRotationPanel';
 import { OrrQueuePanels } from './OrrQueuePanels';
+import { OrrPerformancePanel } from './OrrPerformancePanel';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 import { useViewAs } from '@/contexts/ViewAsContext';
 
@@ -85,6 +86,11 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
       <WidgetErrorBoundary label="Lead queues">
         <OrrQueuePanels />
       </WidgetErrorBoundary>
+
+      <WidgetErrorBoundary label="Today's performance & alerts">
+        <OrrPerformancePanel />
+      </WidgetErrorBoundary>
+
 
       <OpenRoundRobinTestPanel />
 
