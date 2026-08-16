@@ -71,7 +71,6 @@ const WorldpayPaymentPanel: React.FC<Props> = ({
           customer_id: customerId || null,
           customer_email: customerEmail || null,
           customer_phone: customerPhone || null,
-        },
       });
       if (error) throw error;
       const res = data as WorldpayResponse;

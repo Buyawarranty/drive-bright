@@ -765,7 +765,6 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
             county: customerCounty,
             postcode: customerPostcode,
           },
-        }
       });
 
       if (error) throw error;

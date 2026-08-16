@@ -83,7 +83,6 @@ export default function PaymentAssistPanel({
           customer_postcode: postcode.trim(),
           customer_address_line1: addr1.trim(),
           vehicle_reg: vehicleReg || undefined,
-        },
       });
       if (error) throw error;
       if (data?.error) {

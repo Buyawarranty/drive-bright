@@ -83,7 +83,6 @@ export default function BumperPaymentPanel({
           // the checkboxes below control our own follow-up send.
           send_sms: false,
           send_email: false,
-        },
       });
       if (error) throw error;
       if (data?.error) {
