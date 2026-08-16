@@ -571,6 +571,7 @@ serve(async (req) => {
               }
 
 
+              const cachedMileage = await fetchCachedMotMileage(registrationNumber);
               const validation = validateVehicleEligibility({ make: dvla.make, model: recoveredModel || '', regNumber: registrationNumber });
               const blocked = !validation.isValid;
               return new Response(JSON.stringify({
@@ -638,7 +639,8 @@ serve(async (req) => {
             const cached = await fetchMotHistoryFallback(registrationNumber);
             if (cached?.make) {
               console.log('✅ Using mot_history cache as final fallback for', regUpper);
-              const validationCached = validateVehicleEligibility({ make: cached.make, model: cached.model || '', regNumber: registrationNumber });
+              const cachedMileage = await fetchCachedMotMileage(registrationNumber);
+            const validationCached = validateVehicleEligibility({ make: cached.make, model: cached.model || '', regNumber: registrationNumber });
               return new Response(JSON.stringify({
                 found: true,
                 blocked: !validationCached.isValid,
@@ -731,6 +733,7 @@ serve(async (req) => {
 
 
 
+        const cachedMileage = await fetchCachedMotMileage(registrationNumber);
         const validation = validateVehicleEligibility({ make: dvlaFallback.make, model: recoveredModel2 || '', regNumber: registrationNumber });
         const blocked = !validation.isValid;
         
@@ -774,6 +777,7 @@ serve(async (req) => {
       const cachedFinal = await fetchMotHistoryFallback(registrationNumber);
       if (cachedFinal?.make) {
         console.log('✅ Using mot_history cache as final fallback (post-DVSA-failure) for', regUpper);
+        const cachedMileage = await fetchCachedMotMileage(registrationNumber);
         const validationCachedFinal = validateVehicleEligibility({ make: cachedFinal.make, model: cachedFinal.model || '', regNumber: registrationNumber });
         return new Response(JSON.stringify({
           found: true,
