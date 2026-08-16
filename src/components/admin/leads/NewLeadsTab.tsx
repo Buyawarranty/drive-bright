@@ -4,6 +4,8 @@ import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { MyTargetStrip } from './MyTargetStrip';
 import { WeekRotaStrip } from './WeekRotaStrip';
+import { AgentBreakStrip } from './AgentBreakStrip';
+
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
 import { ConvertedSalesLogPanel } from './ConvertedSalesLogPanel';
 import { PaymentFailedLeadsPanel } from './PaymentFailedLeadsPanel';
