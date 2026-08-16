@@ -846,6 +846,16 @@ export const MorningQueuePracticePanel: React.FC = () => {
                           <div className="text-muted-foreground">{formatRelative(lead.arrivedAtMs)}</div>
                           <div className="text-foreground">{lead.customerActivity}</div>
                         </td>
+                        <td className="px-3 py-2 text-xs whitespace-nowrap">
+                          {lead.firstAttemptAtMs ? (
+                            <span className="rounded px-1.5 py-0.5 font-semibold tabular-nums bg-teal-100 text-teal-800">
+                              {formatCountdown(Math.max(0, lead.firstAttemptAtMs - lead.arrivedAtMs))}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">Not contacted</span>
+                          )}
+                        </td>
+
                       </tr>
                     );
                   })}
