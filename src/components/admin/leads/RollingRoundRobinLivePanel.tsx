@@ -259,19 +259,31 @@ export function RollingRoundRobinLivePanel({ canEdit }: { canEdit: boolean }) {
         )}
       </div>
 
-      {/* In-flight list */}
+      {/* In-flight list — same columns as New Leads */}
       {leads.length > 0 && (
-        <div className="max-h-72 overflow-y-auto rounded-md border border-border">
+        <div className="max-h-72 overflow-x-auto overflow-y-auto rounded-md border border-border">
           <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-xs uppercase text-muted-foreground sticky top-0">
+            <thead className="bg-muted/50 text-[11px] uppercase tracking-wide text-muted-foreground sticky top-0">
               <tr>
-                <th className="text-left px-3 py-2">Lead</th>
-                <th className="text-left px-3 py-2">Agent</th>
-                <th className="text-left px-3 py-2">First call due</th>
+                <th className="px-2 py-2 text-left w-8">#</th>
+                <th className="px-2 py-2 text-left w-8"></th>
+                <th className="px-2 py-2 text-left">Name</th>
+                <th className="px-2 py-2 text-left">Phone</th>
+                <th className="px-2 py-2 text-left">Reg</th>
+                <th className="px-2 py-2 text-left">First call due</th>
+                <th className="px-2 py-2 text-left">Status</th>
+                <th className="px-2 py-2 text-left">Calls</th>
+                <th className="px-2 py-2 text-left">Agent</th>
+                <th className="px-2 py-2 text-left w-8">Src</th>
+                <th className="px-2 py-2 text-left">Email</th>
+                <th className="px-2 py-2 text-left">Payment</th>
+                <th className="px-2 py-2 text-left">Paid Date</th>
+                <th className="px-2 py-2 text-left">Lead Date</th>
+                <th className="px-2 py-2 text-left">Time to contact</th>
               </tr>
             </thead>
             <tbody>
-              {leads.map((l) => {
+              {leads.map((l, rowIndex) => {
                 const ms = new Date(l.orr_first_call_deadline).getTime() - Date.now();
                 const tone =
                   ms < 0
@@ -279,19 +291,82 @@ export function RollingRoundRobinLivePanel({ canEdit }: { canEdit: boolean }) {
                     : ms < AMBER_MS
                       ? 'bg-amber-100 text-amber-900 border-amber-200'
                       : 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                const contactMs =
+                  l.last_contacted_at && l.created_at
+                    ? new Date(l.last_contacted_at).getTime() - new Date(l.created_at).getTime()
+                    : null;
                 return (
-                  <tr key={l.id} className="border-t border-border">
-                    <td className="px-3 py-2 font-medium">
+                  <tr key={l.id} className="border-t border-border align-middle">
+                    <td className="px-2 py-2 text-muted-foreground">{rowIndex + 1}</td>
+                    <td className="px-2 py-2">
+                      <input type="checkbox" className="h-4 w-4 rounded border-input" readOnly />
+                    </td>
+                    <td className="px-2 py-2 font-semibold whitespace-nowrap">
                       {[l.first_name, l.last_name].filter(Boolean).join(' ') || 'Lead'}
                     </td>
-                    <td className="px-3 py-2 text-muted-foreground">
-                      {l.assigned_to ? agents[l.assigned_to]?.name ?? '—' : '—'}
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      {l.phone ? (
+                        <a
+                          href={`tel:${l.phone}`}
+                          className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-900"
+                        >
+                          {l.phone}
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </td>
-                    <td className="px-3 py-2">
-                      <span className={cn('inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium', tone)}>
+                    <td className="px-2 py-2">
+                      {l.vehicle_reg ? (
+                        <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-1 text-xs font-bold text-yellow-950 font-mono">
+                          {l.vehicle_reg}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-2 py-2">
+                      <span className={cn('inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium whitespace-nowrap', tone)}>
                         {ms < 0 ? <Undo2 className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
                         {fmtRemaining(ms)}
                       </span>
+                    </td>
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      <span className="inline-flex items-center rounded border border-border bg-muted px-2 py-0.5 text-[11px] font-medium capitalize">
+                        {(l.status ?? 'new').replace(/_/g, ' ')}
+                      </span>
+                    </td>
+                    <td className="px-2 py-2 tabular-nums">{l.call_count ?? 0}</td>
+                    <td className="px-2 py-2 text-muted-foreground whitespace-nowrap">
+                      {l.assigned_to ? agents[l.assigned_to]?.name ?? '—' : '—'}
+                    </td>
+                    <td className="px-2 py-2 text-[11px] text-muted-foreground whitespace-nowrap">
+                      {(l.lead_source ?? '—').replace(/_/g, ' ')}
+                    </td>
+                    <td className="px-2 py-2 text-xs text-muted-foreground max-w-[180px] truncate">
+                      {l.email || '—'}
+                    </td>
+                    <td className="px-2 py-2 text-xs whitespace-nowrap">
+                      {l.is_paid || l.payment_amount
+                        ? `£${Number(l.payment_amount ?? 0).toFixed(0)}${l.payment_method || l.payment_type ? ` · ${l.payment_method || l.payment_type}` : ''}`
+                        : '—'}
+                    </td>
+                    <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
+                      {l.payment_date ? new Date(l.payment_date).toLocaleDateString('en-GB') : '—'}
+                    </td>
+                    <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
+                      {l.created_at
+                        ? new Date(l.created_at).toLocaleString('en-GB', {
+                            day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+                          })
+                        : '—'}
+                    </td>
+                    <td className="px-2 py-2 text-xs whitespace-nowrap">
+                      {contactMs !== null ? (
+                        <span className="font-medium text-emerald-800">{fmtRemaining(Math.abs(contactMs))}</span>
+                      ) : (
+                        <span className="text-muted-foreground">Not contacted</span>
+                      )}
                     </td>
                   </tr>
                 );
