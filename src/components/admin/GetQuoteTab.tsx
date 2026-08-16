@@ -16,6 +16,7 @@ import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, RotateCcw
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { QuotesSentPanel } from './QuotesSentPanel';
+import { WidgetErrorBoundary } from './WidgetErrorBoundary';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useDiscountAuthRequests } from '@/hooks/useDiscountAuthRequests';
 import { useConcessionAllowance } from '@/hooks/useConcessionAllowance';
