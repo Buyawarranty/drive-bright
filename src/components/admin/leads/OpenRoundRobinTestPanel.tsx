@@ -1144,6 +1144,39 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
                         <CopyEmail email={lead.email} />
                       </td>
+                      <td className="px-2 py-2 text-xs text-muted-foreground">—</td>
+                      <td className="px-2 py-2 text-xs text-muted-foreground">—</td>
+                      <td className="px-2 py-2 text-xs whitespace-nowrap">
+                        {lead.dials > 0 ? (
+                          <div>
+                            <div className="font-medium text-foreground">{lead.dials} dial{lead.dials === 1 ? '' : 's'} logged</div>
+                            <div className="text-[11px] text-muted-foreground">practice · {formatAgo(lead.createdAt)}</div>
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="text-muted-foreground">No agent activity</div>
+                            <div className="text-[11px] text-muted-foreground">sys {formatAgo(lead.createdAt)}</div>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
+                        {formatLeadDate(lead.createdAt)}
+                      </td>
+                      <td className="px-2 py-2 text-xs whitespace-nowrap">
+                        <div className="text-muted-foreground">{formatAgo(lead.createdAt)}</div>
+                        <div className="text-[11px] font-medium text-foreground">Shopping page</div>
+                      </td>
+                      <td className="px-2 py-2 text-xs whitespace-nowrap">
+                        {lead.contactedAt ? (
+                          <span className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-800">
+                            {formatClock(Math.max(0, Math.round((lead.contactedAt - lead.createdAt) / 1000)))}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-muted-foreground">
+                            Not contacted
+                          </span>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
