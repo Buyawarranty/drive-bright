@@ -64,6 +64,7 @@ const FeatureFlagsTab = lazy(() => import('@/components/admin/FeatureFlagsTab'))
 const ApiConnectivityTest = lazy(() => import('@/components/admin/ApiConnectivityTest').then(m => ({ default: m.ApiConnectivityTest })));
 const UserPermissionsTab = lazy(() => import('@/components/admin/UserPermissionsTab').then(m => ({ default: m.UserPermissionsTab })));
 const LeadTeamsTab = lazy(() => import('@/components/admin/LeadTeamsTab').then(m => ({ default: m.LeadTeamsTab })));
+const OpenRoundRobinPage = lazy(() => import('@/components/admin/leads/OpenRoundRobinPage').then(m => ({ default: m.OpenRoundRobinPage })));
 const OrrTestLabPage = lazy(() => import('@/components/admin/leads/OrrTestLabPage').then(m => ({ default: m.OrrTestLabPage })));
 const DocumentMappingTab = lazy(() => import('@/components/admin/DocumentMappingTab').then(m => ({ default: m.DocumentMappingTab })));
 const BulkPricingTab = lazy(() => import('@/components/admin/BulkPricingTab').then(m => ({ default: m.BulkPricingTab })));
