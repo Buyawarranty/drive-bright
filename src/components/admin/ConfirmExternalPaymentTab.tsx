@@ -1408,6 +1408,56 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                       </select>
                     </div>
 
+                    {/* Staff-only pricing summary — never emailed or shown to the
+                        customer. Gives the agent the quoted grid price, what they
+                        are actually taking, and the discount that implies. */}
+                    {(() => {
+                      const given = Number.isFinite(enteredAmount) && enteredAmount > 0 ? enteredAmount : quotedTotal;
+                      const discAmount = Math.max(0, quotedTotal - given);
+                      const discPct = quotedTotal > 0 ? (discAmount / quotedTotal) * 100 : 0;
+                      return (
+                        <div className="rounded-lg border-2 border-amber-300 bg-amber-50 p-4">
+                          <div className="flex items-center justify-between gap-2 mb-3">
+                            <p className="text-xs font-bold uppercase tracking-wide text-amber-900">
+                              Staff view only — not sent to the customer
+                            </p>
+                            <Badge variant="outline" className="border-amber-400 text-amber-900 bg-white">
+                              Internal
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div>
+                              <p className="text-[11px] font-semibold text-amber-800">Quote &amp; order price</p>
+                              <p className="text-lg font-bold text-slate-900">£{quotedTotal.toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <p className="text-[11px] font-semibold text-amber-800">Price given</p>
+                              <p className="text-lg font-bold text-slate-900">£{given.toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <p className="text-[11px] font-semibold text-amber-800">Discount given</p>
+                              <p className={cn('text-lg font-bold', discAmount > 0 ? 'text-destructive' : 'text-slate-900')}>
+                                £{discAmount.toFixed(2)}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-[11px] font-semibold text-amber-800">Discount %</p>
+                              <p className={cn('text-lg font-bold', discPct > DISCOUNT_CEILING_PCT ? 'text-destructive' : 'text-slate-900')}>
+                                {discPct.toFixed(1)}%
+                              </p>
+                            </div>
+                          </div>
+                          {discPct > DISCOUNT_CEILING_PCT && (
+                            <p className="text-xs font-semibold text-destructive mt-2">
+                              Over the {DISCOUNT_CEILING_PCT}% ceiling — management authorisation required.
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })()}
+
+
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-500">Amount Received (£) *</Label>
