@@ -5377,7 +5377,9 @@ Questions? Call 0330 229 5040`;
                   )}
 
                   {/* Always-on explainer: the base floor per term, discount included */}
-                  <BaseFloorNotice minFloor={globalMinFloor} />
+                  <WidgetErrorBoundary label="Base floor notice">
+                    <BaseFloorNotice minFloor={globalMinFloor} />
+                  </WidgetErrorBoundary>
 
 
 
