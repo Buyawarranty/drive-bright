@@ -791,7 +791,10 @@ serve(async (req) => {
           manufactureDate: cachedFinal.manufactureDate || null,
           registrationDate: cachedFinal.registrationDate || null,
           vehicleType: 'car',
-          source: 'mot_history_cache'
+          source: 'mot_history_cache',
+          motMileage: cachedMileage.motMileage,
+          motMileageDate: cachedMileage.motMileageDate
+
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
