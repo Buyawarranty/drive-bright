@@ -5,6 +5,7 @@ import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
 import { OrrGlanceStrip } from './OrrGlanceStrip';
 import { OrrAgentRotationPanel } from './OrrAgentRotationPanel';
 import { OrrQueuePanels } from './OrrQueuePanels';
+import { OrrPerformancePanel } from './OrrPerformancePanel';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 import { useViewAs } from '@/contexts/ViewAsContext';
 
