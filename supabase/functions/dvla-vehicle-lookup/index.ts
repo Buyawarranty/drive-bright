@@ -274,7 +274,7 @@ async function getAccessToken(): Promise<string> {
   params.append('scope', scopeUrl!);
   params.append('grant_type', 'client_credentials');
 
-  const response = await fetch(tokenUrl!, {
+  const response = await resilientFetch(tokenUrl!, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -291,6 +291,41 @@ async function getAccessToken(): Promise<string> {
   return tokenData.access_token;
 }
 
+// Upstream government APIs blip (timeouts, 502s, rate limits) and an agent on the
+// phone must never see a dead lookup. Retry transient failures with backoff and
+// always bound each attempt so we can move on to a fallback source.
+async function resilientFetch(
+  url: string,
+  init: RequestInit,
+  opts: { attempts?: number; timeoutMs?: number } = {}
+): Promise<Response> {
+  const { attempts = 3, timeoutMs = 8000 } = opts;
+  let lastError: unknown = null;
+
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { ...init, signal: controller.signal });
+      clearTimeout(timer);
+      // Retry only on transient server / throttling responses.
+      if ((res.status === 429 || res.status >= 500) && attempt < attempts) {
+        console.warn(`resilientFetch transient ${res.status} on attempt ${attempt} for ${url}`);
+        await new Promise((r) => setTimeout(r, 300 * attempt));
+        continue;
+      }
+      return res;
+    } catch (e) {
+      clearTimeout(timer);
+      lastError = e;
+      console.warn(`resilientFetch attempt ${attempt} failed for ${url}:`, e instanceof Error ? e.message : e);
+      if (attempt < attempts) await new Promise((r) => setTimeout(r, 300 * attempt));
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error('Upstream request failed');
+}
+
 async function fetchDVSAVehicleData(registration: string, accessToken: string): Promise<DVSAVehicleResponse> {
   const apiKey = Deno.env.get('MOT_API_KEY');
   
@@ -298,7 +333,7 @@ async function fetchDVSAVehicleData(registration: string, accessToken: string): 
     throw new Error('Missing MOT API key');
   }
 
-  const response = await fetch(`https://history.mot.api.gov.uk/v1/trade/vehicles/registration/${registration.toUpperCase()}`, {
+  const response = await resilientFetch(`https://history.mot.api.gov.uk/v1/trade/vehicles/registration/${registration.toUpperCase()}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
@@ -326,7 +361,7 @@ async function fetchDVLAFallback(registration: string): Promise<{ make?: string;
     return null;
   }
   try {
-    const res = await fetch('https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles', {
+    const res = await resilientFetch('https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles', {
       method: 'POST',
       headers: {
         'x-api-key': dvlaKey,
@@ -338,6 +373,7 @@ async function fetchDVLAFallback(registration: string): Promise<{ make?: string;
       console.error('DVLA VES request failed:', res.status, await res.text());
       return null;
     }
+
     const dvla: any = await res.json();
     return {
       make: dvla.make,
