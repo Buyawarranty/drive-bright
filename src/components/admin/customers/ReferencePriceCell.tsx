@@ -12,6 +12,7 @@ import {
   withPricingAsOf,
   type PricingVersionSnapshot,
 } from '@/lib/pricing/historicalPricing';
+import { getRecordedOrderDiscount, discountBandClass } from '@/lib/pricing/orderDiscount';
 
 /**
  * Customer management cell: what the system said this cover should cost on the
@@ -56,12 +57,46 @@ export const ReferencePriceCell: React.FC<{ order: SoldOrderLike | null | undefi
     </Badge>
   ) : null;
 
+  const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
+  const signed = (n: number) => `${n > 0 ? '+' : ''}${n.toFixed(1)}%`;
+
+  // Recorded at the point of sale (what the agent actually gave away). This is the
+  // figure commissions use, so it always wins over a recalculated estimate.
+  const storedQuoted = Number((order as any)?.sale_quoted_total) || 0;
+  const storedPct = (order as any)?.sale_discount_pct;
+  const recorded =
+    storedQuoted > 0 && storedPct != null
+      ? { quoted: storedQuoted, pct: Number(storedPct), paid: Number((order as any)?.final_amount) || 0 }
+      : getRecordedOrderDiscount(order as any);
+
+  if (recorded) {
+    return (
+      <div className="flex flex-col gap-1 min-w-[150px]">
+        {priceMatchTag}
+        <div className="text-[11px] text-slate-600">
+          Quoted <span className="font-semibold text-slate-900">{gbp(recorded.quoted)}</span> → sold{' '}
+          <span className="font-semibold text-emerald-700">{gbp(recorded.paid)}</span>
+        </div>
+        <Badge
+          variant="outline"
+          className={`text-xs whitespace-nowrap ${discountBandClass(recorded.pct)}`}
+          title={`Discount recorded when this sale was confirmed: ${gbp(recorded.quoted - recorded.paid)} off the quoted ${gbp(recorded.quoted)}. This is the figure used for commission.`}
+        >
+          {recorded.pct > 0 ? `${recorded.pct.toFixed(1)}% off given` : 'No discount given'}
+        </Badge>
+        {recorded.pct > DISCOUNT_CEILING_PCT && (
+          <span className="flex items-center gap-1 text-[11px] font-semibold text-red-700">
+            <AlertTriangle className="h-3 w-3" />
+            Over {DISCOUNT_CEILING_PCT}% off
+          </span>
+        )}
+      </div>
+    );
+  }
+
   if (!ref) {
     return priceMatchTag ?? <span className="text-xs text-muted-foreground">—</span>;
   }
-
-  const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
-  const signed = (n: number) => `${n > 0 ? '+' : ''}${n.toFixed(1)}%`;
 
   return (
     <div className="flex flex-col gap-1 min-w-[150px]">
@@ -82,7 +117,7 @@ export const ReferencePriceCell: React.FC<{ order: SoldOrderLike | null | undefi
         className={`text-xs whitespace-nowrap ${referenceGapClass(ref)}`}
         title={`Sold ${gbp(ref.sold)} vs QOP ${gbp(ref.qop)} (${signed(ref.diffVsQopPct)}) · vs RP ${gbp(ref.rp)} (${signed(ref.diffVsRpPct)}) · lowest price allowed ${gbp(ref.minAllowed)} (prices live on the sale date)`}
       >
-        {signed(ref.diffVsQopPct)} vs QOP
+        {signed(ref.diffVsQopPct)} vs QOP (est.)
       </Badge>
       {ref.breach && (
         <span

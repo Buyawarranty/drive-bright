@@ -782,6 +782,12 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
             .update({
               original_amount: Math.round(quotedTotal * 100) / 100,
               discount_amount: givenAway,
+              // Point-of-sale record used for commissions and the Customers tab
+              // discount column — never re-derived from a later price change.
+              sale_quoted_total: Math.round(quotedTotal * 100) / 100,
+              sale_discount_amount: givenAway,
+              sale_discount_pct: quotedTotal > 0 ? Math.round((givenAway / quotedTotal) * 1000) / 10 : 0,
+              sale_price_basis: 'agent_quote',
               // Evidenced price match used to get under the floor / ceiling —
               // stored so Customer management and Vehicle intelligence show it.
               ...((priceMatchReady || (pmIsPriceMatch === 'yes' && pmProofPath))
