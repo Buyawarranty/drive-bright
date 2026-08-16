@@ -193,6 +193,31 @@ const formatClock = (seconds: number) => {
 const formatTimeOfDay = (ms: number) =>
   new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
 
+/** "Aug 16, 2026 08:13" — same shape as the live New Leads table. */
+const formatLeadDate = (ms: number) =>
+  new Date(ms).toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+
+/** "1 minute ago" style relative label. */
+const formatAgo = (ms: number) => {
+  const secs = Math.max(0, Math.round((Date.now() - ms) / 1000));
+  if (secs < 60) return `${secs} second${secs === 1 ? '' : 's'} ago`;
+  const mins = Math.round(secs / 60);
+  if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
+  const days = Math.round(hrs / 24);
+  return `${days} day${days === 1 ? '' : 's'} ago`;
+};
+
+
+
 
 /** Copyable email cell with icon + tooltip feedback. */
 const CopyEmail = ({ email }: { email: string }) => {
