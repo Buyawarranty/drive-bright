@@ -1053,6 +1053,17 @@ serve(async (req) => {
       }
     }
 
+    // Live MOT payload had no usable odometer — fall back to the cached history
+    // so the quote journey still gets a mileage instead of nothing.
+    if (motMileage === null) {
+      const cachedMileage = await fetchCachedMotMileage(registrationNumber);
+      if (cachedMileage.motMileage) {
+        motMileage = cachedMileage.motMileage;
+        motMileageDate = cachedMileage.motMileageDate;
+      }
+    }
+
+
     if (!(vehicleData.motTests && Array.isArray(vehicleData.motTests) && vehicleData.motTests.length > 0)) {
       // No MOT tests found - could be new vehicle
       if (yearOfManufacture) {
