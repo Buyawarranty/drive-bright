@@ -272,6 +272,16 @@ class TabErrorBoundary extends React.Component<
               Refresh the page
             </button>
           </div>
+          {this.state.error?.message && (
+            <details className="max-w-lg text-left">
+              <summary className="text-xs text-muted-foreground cursor-pointer">
+                Technical detail (helpful if you report this)
+              </summary>
+              <p className="mt-1 text-xs font-mono break-words text-muted-foreground">
+                {this.props.tabKey ? `[${this.props.tabKey}] ` : ''}{this.state.error.message}
+              </p>
+            </details>
+          )}
         </div>
 
       );
