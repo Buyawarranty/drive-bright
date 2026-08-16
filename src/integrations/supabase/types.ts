@@ -732,6 +732,47 @@ export type Database = {
           },
         ]
       }
+      agent_break_status: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          expected_back_at: string | null
+          id: string
+          reason: string | null
+          started_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          expected_back_at?: string | null
+          id?: string
+          reason?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          expected_back_at?: string | null
+          id?: string
+          reason?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_break_status_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_daily_lead_stats: {
         Row: {
           active_leads_eod: number

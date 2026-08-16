@@ -4,6 +4,8 @@ import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { MyTargetStrip } from './MyTargetStrip';
 import { WeekRotaStrip } from './WeekRotaStrip';
+import { AgentBreakStrip } from './AgentBreakStrip';
+
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
 import { ConvertedSalesLogPanel } from './ConvertedSalesLogPanel';
 import { PaymentFailedLeadsPanel } from './PaymentFailedLeadsPanel';
@@ -1575,7 +1577,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     <div className="space-y-4">
       {/* MissedCallAlertBar now mounted globally in AdminDashboard so it shows on every tab */}
       <WeekRotaStrip />
+      <AgentBreakStrip />
       <MyTargetStrip />
+
       {/* Header — compact, action-dense, grouped card */}
 
       <div className="rounded-xl border border-border bg-card shadow-sm px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
