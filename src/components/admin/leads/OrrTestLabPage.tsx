@@ -2,6 +2,8 @@ import React from 'react';
 import { ArrowLeft, FlaskConical } from 'lucide-react';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
 import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
+import { OrrGlanceStrip } from './OrrGlanceStrip';
+import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 import { useViewAs } from '@/contexts/ViewAsContext';
 
 interface OrrTestLabPageProps {
