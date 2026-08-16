@@ -4230,6 +4230,10 @@ export type Database = {
           sale_credit_overridden_at: string | null
           sale_credit_overridden_by: string | null
           sale_credit_override_reason: string | null
+          sale_discount_amount: number | null
+          sale_discount_pct: number | null
+          sale_price_basis: string | null
+          sale_quoted_total: number | null
           seasonal_bonus_months: number | null
           signup_date: string
           status: string
@@ -4345,6 +4349,10 @@ export type Database = {
           sale_credit_overridden_at?: string | null
           sale_credit_overridden_by?: string | null
           sale_credit_override_reason?: string | null
+          sale_discount_amount?: number | null
+          sale_discount_pct?: number | null
+          sale_price_basis?: string | null
+          sale_quoted_total?: number | null
           seasonal_bonus_months?: number | null
           signup_date?: string
           status?: string
@@ -4460,6 +4468,10 @@ export type Database = {
           sale_credit_overridden_at?: string | null
           sale_credit_overridden_by?: string | null
           sale_credit_override_reason?: string | null
+          sale_discount_amount?: number | null
+          sale_discount_pct?: number | null
+          sale_price_basis?: string | null
+          sale_quoted_total?: number | null
           seasonal_bonus_months?: number | null
           signup_date?: string
           status?: string
