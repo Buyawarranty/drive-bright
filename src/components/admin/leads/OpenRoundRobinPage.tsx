@@ -1,11 +1,13 @@
 import React from 'react';
-import { ArrowLeft, Repeat } from 'lucide-react';
+import { ArrowLeft, Repeat, FlaskConical } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 import { QueueCapacityDashboard } from './QueueCapacityDashboard';
 import { OpenPoolActivityMonitor } from './OpenPoolActivityMonitor';
 import { OpenPoolManagerAlerts } from './OpenPoolManagerAlerts';
 import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
 import { useViewAs } from '@/contexts/ViewAsContext';
+
 
 interface OpenRoundRobinPageProps {
   onNavigateToTab?: (tab: string) => void;
