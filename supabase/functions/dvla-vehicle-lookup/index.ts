@@ -640,7 +640,7 @@ serve(async (req) => {
             if (cached?.make) {
               console.log('✅ Using mot_history cache as final fallback for', regUpper);
               const cachedMileage = await fetchCachedMotMileage(registrationNumber);
-            const validationCached = validateVehicleEligibility({ make: cached.make, model: cached.model || '', regNumber: registrationNumber });
+              const validationCached = validateVehicleEligibility({ make: cached.make, model: cached.model || '', regNumber: registrationNumber });
               return new Response(JSON.stringify({
                 found: true,
                 blocked: !validationCached.isValid,
@@ -655,10 +655,9 @@ serve(async (req) => {
                 registrationDate: cached.registrationDate || null,
                 vehicleType: 'car',
                 source: 'mot_history_cache',
-          motMileage: cachedMileage.motMileage,
-          motMileageDate: cachedMileage.motMileageDate,
                 motMileage: cachedMileage.motMileage,
                 motMileageDate: cachedMileage.motMileageDate
+
               }), {
                 headers: { ...corsHeaders, "Content-Type": "application/json" },
                 status: 200,
