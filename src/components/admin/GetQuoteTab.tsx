@@ -1783,6 +1783,32 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       const { data, error } = await lookupVehicleByReg(cleanReg, { skipAgeCheck: ageOverrideEnabled });
       console.log('[GetQuote] DVLA lookup response:', { data, error });
 
+      // Mileage resolution: whatever the agent typed wins, otherwise the MOT
+      // odometer from this lookup, the auto-preview, or the cached MOT row.
+      const apiMotMileage =
+        (data?.motMileage as number | null | undefined) ??
+        (autoPreview.data?.motMileage as number | null | undefined) ??
+        step1MotMileage ??
+        null;
+      let resolvedMileage = effectiveMileage;
+      if (!resolvedMileage && apiMotMileage && Number(apiMotMileage) > 0) {
+        resolvedMileage = Number(apiMotMileage).toLocaleString();
+        setMileage(resolvedMileage);
+        setSliderMileage(Math.min(Number(apiMotMileage), 150000));
+        setStep1AutoFilledMileage(resolvedMileage);
+        setStep1MileagePrefilledReg(cleanReg);
+      }
+      if (!resolvedMileage) {
+        toast({
+          title: "Mileage not on record",
+          description: "No MOT mileage found for this registration — please confirm the mileage with the customer and enter it.",
+          variant: "destructive",
+        });
+        setIsLookingUp(false);
+        return;
+      }
+
+
       // Fallback: if DVLA/DVSA API fails or returns no make, reuse the auto-preview
       // data (already fetched successfully when the reg was typed) so we never lose
       // make/model to a transient second-call failure. Only fall back to empty
