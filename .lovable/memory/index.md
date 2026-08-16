@@ -23,6 +23,7 @@ Updated: just now
 
 - Excluded vehicle matrix is a hard non-overridable gate on every price and every push live. See mem://pricing/exclusions-apply-to-all-prices
 
+- ORR never parks or gates live leads: out-of-hours holds only apply when Open Round Robin is switched on. See mem://constraints/orr-never-blocks-live-leads
 
 ## Memories
 - [SEO work visual-only](mem://constraints/seo-work-visual-only) — During SEO work: layout/wording/padding only; never touch pricing logic, APIs, integrations, or tracking tags
