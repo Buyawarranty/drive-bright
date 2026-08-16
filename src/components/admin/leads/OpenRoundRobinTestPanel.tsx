@@ -359,36 +359,25 @@ interface OrrTheme {
   reserved: string;
 }
 
-const ORR_THEMES: Record<OrrPracticeTeam, OrrTheme> = {
-  blue: {
-    label: 'Team Blue',
-    cardBorder: 'border-l-blue-500',
-    iconWrap: 'bg-blue-100',
-    icon: 'text-blue-600',
-    chip: 'bg-blue-100 text-blue-800 border border-blue-200',
-    holdBox: 'border-teal-100 bg-teal-50/40',
-    holdLabel: 'text-teal-800',
-    holdValue: 'text-teal-900',
-    holdIcon: 'text-teal-600',
-    bar: 'bg-teal-100',
-    barFill: 'bg-teal-500',
-    reserved: 'border-teal-200 bg-teal-50/70 text-teal-700',
-  },
-  red: {
-    label: 'Team Red',
-    cardBorder: 'border-l-rose-500',
-    iconWrap: 'bg-rose-100',
-    icon: 'text-rose-600',
-    chip: 'bg-rose-100 text-rose-800 border border-rose-200',
-    holdBox: 'border-teal-100 bg-teal-50/40',
-    holdLabel: 'text-teal-800',
-    holdValue: 'text-teal-900',
-    holdIcon: 'text-teal-600',
-    bar: 'bg-teal-100',
-    barFill: 'bg-teal-500',
-    reserved: 'border-teal-200 bg-teal-50/70 text-teal-700',
-  },
+const ORR_SHARED_THEME: Omit<OrrTheme, 'label'> = {
+  cardBorder: 'border-l-teal-500',
+  iconWrap: 'bg-teal-100',
+  icon: 'text-teal-600',
+  chip: 'bg-teal-100 text-teal-800 border border-teal-200',
+  holdBox: 'border-teal-100 bg-teal-50/40',
+  holdLabel: 'text-teal-800',
+  holdValue: 'text-teal-900',
+  holdIcon: 'text-teal-600',
+  bar: 'bg-teal-100',
+  barFill: 'bg-teal-500',
+  reserved: 'border-teal-200 bg-teal-50/70 text-teal-700',
 };
+
+const ORR_THEMES: Record<OrrPracticeTeam, OrrTheme> = {
+  blue: { label: 'Team Blue', ...ORR_SHARED_THEME },
+  red: { label: 'Team Red', ...ORR_SHARED_THEME },
+};
+
 
 /**
  * Open Round Robin — frontend-only dummy test mode.
