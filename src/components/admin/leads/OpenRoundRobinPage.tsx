@@ -102,6 +102,23 @@ export const OpenRoundRobinPage: React.FC<OpenRoundRobinPageProps> = ({ onNaviga
         )}
       </div>
 
+      {orrLive === false && (
+        <div className="rounded-md border border-teal-300/60 bg-teal-50 dark:bg-teal-950/30 p-4 flex items-start gap-3">
+          <FlaskConical className="h-5 w-5 text-teal-700 dark:text-teal-300 mt-0.5 shrink-0" />
+          <div className="text-sm">
+            <p className="font-semibold text-teal-900 dark:text-teal-200">
+              Open Round Robin is off — test mode only
+            </p>
+            <p className="text-teal-800/90 dark:text-teal-300/90 mt-1">
+              No live leads are routed through Open Round Robin, and distribution controls below are read-only.
+              New enquiries keep flowing through the normal New Leads rotation. Use the ORR Test Lab to practise,
+              then switch it on in Lead Allocation when you're ready to push it live.
+            </p>
+          </div>
+        </div>
+      )}
+
+
       <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-background/95 backdrop-blur border-b border-border">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           <span className="text-xs font-semibold text-foreground shrink-0">Jump to:</span>
