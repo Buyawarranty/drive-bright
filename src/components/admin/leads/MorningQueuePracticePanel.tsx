@@ -684,6 +684,8 @@ export const MorningQueuePracticePanel: React.FC = () => {
                     <th className="w-[120px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agent activity</th>
                     <th className="w-[110px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Lead Date</th>
                     <th className="w-[140px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Customer activity</th>
+                    <th className="w-[120px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Time to contact</th>
+
                   </tr>
                 </thead>
                 <tbody>
