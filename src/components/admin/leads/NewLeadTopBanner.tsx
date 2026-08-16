@@ -74,8 +74,8 @@ export const NewLeadTopBanner: React.FC<Props> = ({ onGo }) => {
         {lead.vehicle_reg && (
           <span className="text-xs font-mono bg-white/15 rounded px-1.5 py-0.5">{lead.vehicle_reg}</span>
         )}
-        <span className="text-xs bg-white/15 rounded px-1.5 py-0.5" title="Time since the lead came in">
-          {elapsed}
+        <span className="text-xs bg-white/15 rounded px-1.5 py-0.5" title="How long this lead has been waiting. It is not a countdown — the lead stays with you until you action it.">
+          waiting {elapsed}
         </span>
 
         <div className="flex items-center gap-2 ml-auto">
