@@ -17,6 +17,10 @@ export interface OrderDiscountRecord {
   final_amount?: number | null;
   original_amount?: number | null;
   discount_amount?: number | null;
+  /** Quoted total recorded at the point of sale (preferred over everything else). */
+  sale_quoted_total?: number | null;
+  sale_discount_amount?: number | null;
+  sale_discount_pct?: number | null;
 }
 
 export interface RecordedOrderDiscount {
