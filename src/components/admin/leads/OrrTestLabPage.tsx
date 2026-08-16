@@ -72,7 +72,12 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
         )}
       </div>
 
+      <WidgetErrorBoundary label="At a glance">
+        <OrrGlanceStrip teamLabel="Open Round Robin" />
+      </WidgetErrorBoundary>
+
       <OpenRoundRobinTestPanel />
+
 
       <div className="border-l-4 border-primary/40 pl-3">
         <div className="flex items-center gap-2 flex-wrap">
