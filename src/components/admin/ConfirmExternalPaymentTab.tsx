@@ -16,6 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeWithFreshSession } from '@/lib/invokeWithFreshSession';
 import { 
   Loader2, Search, CheckCircle2, UserCheck, AlertCircle, 
   CalendarIcon, CreditCard, Car, Info, Zap, ArrowRight, Edit, UserPlus
@@ -730,8 +731,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
       const fullName = `${editableFirstName} ${editableLastName}`.trim();
 
-      const { data, error } = await supabase.functions.invoke('confirm-external-payment', {
-        body: {
+      const { data, error } = await invokeWithFreshSession('confirm-external-payment', {
           customerName: fullName,
           customerFirstName: editableFirstName,
           customerLastName: editableLastName,

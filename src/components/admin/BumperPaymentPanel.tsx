@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CreditCard, Send, Copy, Loader2, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeWithFreshSession } from '@/lib/invokeWithFreshSession';
 import { useToast } from '@/hooks/use-toast';
 
 interface Props {
@@ -66,8 +67,7 @@ export default function BumperPaymentPanel({
     setLoading(true);
     setLink(null);
     try {
-      const { data, error } = await supabase.functions.invoke('bumper-create-link', {
-        body: {
+      const { data, error } = await invokeWithFreshSession('bumper-create-link', {
           amount_pounds: Number(amount),
           description: description || 'Vehicle warranty',
           sales_lead_id: salesLeadId || null,

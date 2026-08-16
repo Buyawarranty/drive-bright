@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeWithFreshSession } from '@/lib/invokeWithFreshSession';
 import { useToast } from '@/hooks/use-toast';
 
 interface Props {
@@ -62,8 +63,7 @@ const WorldpayPaymentPanel: React.FC<Props> = ({
     setLoading(flow);
     setStatus('');
     try {
-      const { data, error } = await supabase.functions.invoke('worldpay-create-payment-page', {
-        body: {
+      const { data, error } = await invokeWithFreshSession('worldpay-create-payment-page', {
           flow,
           amount_pence: Math.round(pounds * 100),
           description: desc || 'Vehicle warranty payment',
