@@ -684,8 +684,6 @@ export const MorningQueuePracticePanel: React.FC = () => {
                     <th className="w-[120px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agent activity</th>
                     <th className="w-[110px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Lead Date</th>
                     <th className="w-[140px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Customer activity</th>
-                    <th className="w-[120px] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Time to contact</th>
-
                   </tr>
                 </thead>
                 <tbody>
@@ -848,16 +846,6 @@ export const MorningQueuePracticePanel: React.FC = () => {
                           <div className="text-muted-foreground">{formatRelative(lead.arrivedAtMs)}</div>
                           <div className="text-foreground">{lead.customerActivity}</div>
                         </td>
-                        <td className="px-3 py-2 text-xs whitespace-nowrap">
-                          {lead.firstAttemptAtMs ? (
-                            <span className="rounded px-1.5 py-0.5 font-semibold tabular-nums bg-teal-100 text-teal-800">
-                              {formatCountdown(Math.max(0, lead.firstAttemptAtMs - lead.arrivedAtMs))}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">Not contacted</span>
-                          )}
-                        </td>
-
                       </tr>
                     );
                   })}
