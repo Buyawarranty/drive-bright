@@ -27,9 +27,21 @@ interface InFlightLead {
   id: string;
   first_name: string | null;
   last_name: string | null;
+  email: string | null;
+  phone: string | null;
+  vehicle_reg: string | null;
+  status: string | null;
+  lead_source: string | null;
   assigned_to: string | null;
   orr_first_call_deadline: string;
   call_count: number | null;
+  is_paid: boolean | null;
+  payment_amount: number | null;
+  payment_method: string | null;
+  payment_type: string | null;
+  payment_date: string | null;
+  created_at: string | null;
+  last_contacted_at: string | null;
 }
 
 interface AgentInfo {
