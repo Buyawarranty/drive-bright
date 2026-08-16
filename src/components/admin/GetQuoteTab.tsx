@@ -1819,7 +1819,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
           console.warn('[GetQuote] Second DVLA call failed - reusing auto-preview data', { error, data, preview });
           setVehicleData({
             regNumber: regNumber.toUpperCase(),
-            mileage: mileage,
+            mileage: resolvedMileage,
             make: preview.make,
             model: preview.model || '',
             fuelType: preview.fuelType || '',
@@ -1838,7 +1838,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         });
         setVehicleData({
           regNumber: regNumber.toUpperCase(),
-          mileage: mileage,
+          mileage: resolvedMileage,
           make: '',
           model: '',
           fuelType: '',
@@ -1884,7 +1884,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
       setVehicleData({
         regNumber: regNumber.toUpperCase(),
-        mileage: mileage,
+        mileage: resolvedMileage,
         // Anything the agent typed by hand on Step 1 wins over a partial
         // DVLA/DVSA response, so a missing model never stops the quote.
         make: manualMake.trim() || data.make,
