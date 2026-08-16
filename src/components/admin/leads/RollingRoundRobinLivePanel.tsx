@@ -87,7 +87,7 @@ export function RollingRoundRobinLivePanel({ canEdit }: { canEdit: boolean }) {
       const [{ data: rows }, { count }] = await Promise.all([
         (supabase as any)
           .from('sales_leads')
-          .select('id, first_name, last_name, assigned_to, orr_first_call_deadline, call_count')
+          .select('id, first_name, last_name, email, phone, vehicle_reg, status, lead_source, assigned_to, orr_first_call_deadline, call_count, is_paid, payment_amount, payment_method, payment_type, payment_date, created_at, last_contacted_at')
           .not('orr_first_call_deadline', 'is', null)
           .not('assigned_to', 'is', null)
           .eq('status', 'new')
