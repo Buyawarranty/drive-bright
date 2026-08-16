@@ -36,7 +36,13 @@ const STATUS_META: Record<BreakStatus, { label: string; chip: string; dot: strin
 };
 
 const nameOf = (a: AdminLite) =>
-  [a.first_name, a.last_name].filter(Boolean).join(' ').trim() || a.email.split('@')[0];
+  [a.first_name, a.last_name].filter(Boolean).join(' ').trim() ||
+  (a.email || '').split('@')[0] ||
+  'Team member';
+
+/** Never trust the stored status blindly — an unknown value must not blank the page. */
+const metaFor = (s: string | null | undefined) =>
+  STATUS_META[(s as BreakStatus)] ?? STATUS_META.available;
 
 const elapsed = (iso: string) => {
   const mins = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000));
@@ -131,7 +137,7 @@ export const AgentBreakStrip = () => {
         next.push({ admin_user_id: currentAdminId, status, reason: reason ?? null, started_at: new Date().toISOString() });
         return next;
       });
-      toast.success(status === 'available' ? 'Welcome back — you are on the phones' : `Marked as ${STATUS_META[status].label.toLowerCase()}`);
+      toast.success(status === 'available' ? 'Welcome back — you are on the phones' : `Marked as ${metaFor(status).label.toLowerCase()}`);
     } catch (e: any) {
       toast.error(e?.message || 'Could not update your status');
     } finally {
@@ -158,11 +164,11 @@ export const AgentBreakStrip = () => {
         <span
           className={cn(
             'inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium',
-            STATUS_META[myStatus].chip,
+            metaFor(myStatus).chip,
           )}
         >
-          <span className={cn('h-1.5 w-1.5 rounded-full', STATUS_META[myStatus].dot)} />
-          {STATUS_META[myStatus].label}
+          <span className={cn('h-1.5 w-1.5 rounded-full', metaFor(myStatus).dot)} />
+          {metaFor(myStatus).label}
           {onBreak && mine ? ` · ${elapsed(mine.started_at)}` : ''}
         </span>
 
@@ -252,11 +258,11 @@ export const AgentBreakStrip = () => {
                       <span
                         className={cn(
                           'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium',
-                          STATUS_META[s].chip,
+                          metaFor(s).chip,
                         )}
                       >
-                        <span className={cn('h-1.5 w-1.5 rounded-full', STATUS_META[s].dot)} />
-                        {STATUS_META[s].label}
+                        <span className={cn('h-1.5 w-1.5 rounded-full', metaFor(s).dot)} />
+                        {metaFor(s).label}
                         {s !== 'available' && row ? ` · ${elapsed(row.started_at)}` : ''}
                       </span>
                     </div>
