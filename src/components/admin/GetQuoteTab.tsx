@@ -1747,17 +1747,17 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
 
   const handleVehicleLookup = async () => {
-    // Sync mileage from slider if text input is empty but slider has a value
+    // Mileage is pricing input, but it comes from the MOT record via the API —
+    // an agent must never be blocked for "missing mileage" before we've asked
+    // the API. Only the registration is required up front.
     const effectiveMileage = mileage.trim() || (sliderMileage > 0 ? sliderMileage.toLocaleString() : '');
     if (!mileage.trim() && sliderMileage > 0) {
       setMileage(sliderMileage.toLocaleString());
     }
-    if (!regNumber.trim() || !effectiveMileage) {
+    if (!regNumber.trim()) {
       toast({
         title: "Missing Information",
-        description: !regNumber.trim() && !effectiveMileage
-          ? "Please enter both registration number and mileage"
-          : !regNumber.trim() ? "Please enter the registration number" : "Please enter the mileage",
+        description: "Please enter the registration number",
         variant: "destructive",
       });
       return;
@@ -1772,6 +1772,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       });
       return;
     }
+
 
 
 
