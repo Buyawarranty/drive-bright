@@ -1747,17 +1747,17 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
 
   const handleVehicleLookup = async () => {
-    // Sync mileage from slider if text input is empty but slider has a value
+    // Mileage is pricing input, but it comes from the MOT record via the API —
+    // an agent must never be blocked for "missing mileage" before we've asked
+    // the API. Only the registration is required up front.
     const effectiveMileage = mileage.trim() || (sliderMileage > 0 ? sliderMileage.toLocaleString() : '');
     if (!mileage.trim() && sliderMileage > 0) {
       setMileage(sliderMileage.toLocaleString());
     }
-    if (!regNumber.trim() || !effectiveMileage) {
+    if (!regNumber.trim()) {
       toast({
         title: "Missing Information",
-        description: !regNumber.trim() && !effectiveMileage
-          ? "Please enter both registration number and mileage"
-          : !regNumber.trim() ? "Please enter the registration number" : "Please enter the mileage",
+        description: "Please enter the registration number",
         variant: "destructive",
       });
       return;
@@ -1775,12 +1775,39 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
 
 
+
     setIsLookingUp(true);
     try {
       // Hard 12s ceiling — never leave an agent on a spinner mid-call.
       const cleanReg = regNumber.replace(/\s/g, '').toUpperCase();
       const { data, error } = await lookupVehicleByReg(cleanReg, { skipAgeCheck: ageOverrideEnabled });
       console.log('[GetQuote] DVLA lookup response:', { data, error });
+
+      // Mileage resolution: whatever the agent typed wins, otherwise the MOT
+      // odometer from this lookup, the auto-preview, or the cached MOT row.
+      const apiMotMileage =
+        (data?.motMileage as number | null | undefined) ??
+        (autoPreview.data?.motMileage as number | null | undefined) ??
+        step1MotMileage ??
+        null;
+      let resolvedMileage = effectiveMileage;
+      if (!resolvedMileage && apiMotMileage && Number(apiMotMileage) > 0) {
+        resolvedMileage = Number(apiMotMileage).toLocaleString();
+        setMileage(resolvedMileage);
+        setSliderMileage(Math.min(Number(apiMotMileage), 150000));
+        setStep1AutoFilledMileage(resolvedMileage);
+        setStep1MileagePrefilledReg(cleanReg);
+      }
+      if (!resolvedMileage) {
+        toast({
+          title: "Mileage not on record",
+          description: "No MOT mileage found for this registration — please confirm the mileage with the customer and enter it.",
+          variant: "destructive",
+        });
+        setIsLookingUp(false);
+        return;
+      }
+
 
       // Fallback: if DVLA/DVSA API fails or returns no make, reuse the auto-preview
       // data (already fetched successfully when the reg was typed) so we never lose
@@ -1792,7 +1819,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
           console.warn('[GetQuote] Second DVLA call failed - reusing auto-preview data', { error, data, preview });
           setVehicleData({
             regNumber: regNumber.toUpperCase(),
-            mileage: mileage,
+            mileage: resolvedMileage,
             make: preview.make,
             model: preview.model || '',
             fuelType: preview.fuelType || '',
@@ -1811,7 +1838,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         });
         setVehicleData({
           regNumber: regNumber.toUpperCase(),
-          mileage: mileage,
+          mileage: resolvedMileage,
           make: '',
           model: '',
           fuelType: '',
@@ -1857,7 +1884,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
       setVehicleData({
         regNumber: regNumber.toUpperCase(),
-        mileage: mileage,
+        mileage: resolvedMileage,
         // Anything the agent typed by hand on Step 1 wins over a partial
         // DVLA/DVSA response, so a missing model never stops the quote.
         make: manualMake.trim() || data.make,
