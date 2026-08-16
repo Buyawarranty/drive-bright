@@ -193,6 +193,31 @@ const formatClock = (seconds: number) => {
 const formatTimeOfDay = (ms: number) =>
   new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
 
+/** "Aug 16, 2026 08:13" — same shape as the live New Leads table. */
+const formatLeadDate = (ms: number) =>
+  new Date(ms).toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+
+/** "1 minute ago" style relative label. */
+const formatAgo = (ms: number) => {
+  const secs = Math.max(0, Math.round((Date.now() - ms) / 1000));
+  if (secs < 60) return `${secs} second${secs === 1 ? '' : 's'} ago`;
+  const mins = Math.round(secs / 60);
+  if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
+  const days = Math.round(hrs / 24);
+  return `${days} day${days === 1 ? '' : 's'} ago`;
+};
+
+
+
 
 /** Copyable email cell with icon + tooltip feedback. */
 const CopyEmail = ({ email }: { email: string }) => {
@@ -860,11 +885,17 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                   <th className="px-2 py-2 text-left">Reg</th>
                   <th className="px-2 py-2 text-left">Your turn</th>
                   <th className="px-2 py-2 text-left">Status</th>
-                  <th className="px-2 py-2 text-left">Dials</th>
+                  <th className="px-2 py-2 text-left">Calls</th>
                   <th className="px-2 py-2 text-left">Actions</th>
                   <th className="px-2 py-2 text-left">Agent</th>
                   <th className="px-2 py-2 text-left w-8">Src</th>
                   <th className="px-2 py-2 text-left">Email</th>
+                  <th className="px-2 py-2 text-left">Payment</th>
+                  <th className="px-2 py-2 text-left">Paid Date</th>
+                  <th className="px-2 py-2 text-left">Agent activity</th>
+                  <th className="px-2 py-2 text-left">Lead Date</th>
+                  <th className="px-2 py-2 text-left">Customer activity</th>
+                  <th className="px-2 py-2 text-left">Time to contact</th>
                 </tr>
               </thead>
               <tbody>
@@ -1112,6 +1143,39 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       <td className="px-2 py-2 text-xs font-bold text-blue-700">F</td>
                       <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
                         <CopyEmail email={lead.email} />
+                      </td>
+                      <td className="px-2 py-2 text-xs text-muted-foreground">—</td>
+                      <td className="px-2 py-2 text-xs text-muted-foreground">—</td>
+                      <td className="px-2 py-2 text-xs whitespace-nowrap">
+                        {lead.dials > 0 ? (
+                          <div>
+                            <div className="font-medium text-foreground">{lead.dials} dial{lead.dials === 1 ? '' : 's'} logged</div>
+                            <div className="text-[11px] text-muted-foreground">practice · {formatAgo(lead.createdAt)}</div>
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="text-muted-foreground">No agent activity</div>
+                            <div className="text-[11px] text-muted-foreground">sys {formatAgo(lead.createdAt)}</div>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
+                        {formatLeadDate(lead.createdAt)}
+                      </td>
+                      <td className="px-2 py-2 text-xs whitespace-nowrap">
+                        <div className="text-muted-foreground">{formatAgo(lead.createdAt)}</div>
+                        <div className="text-[11px] font-medium text-foreground">Shopping page</div>
+                      </td>
+                      <td className="px-2 py-2 text-xs whitespace-nowrap">
+                        {lead.contactedAt ? (
+                          <span className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-800">
+                            {formatClock(Math.max(0, Math.round((lead.contactedAt - lead.createdAt) / 1000)))}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-muted-foreground">
+                            Not contacted
+                          </span>
+                        )}
                       </td>
                     </tr>
                   );
