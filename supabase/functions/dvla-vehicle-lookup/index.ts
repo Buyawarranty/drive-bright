@@ -352,6 +352,42 @@ async function fetchDVLAFallback(registration: string): Promise<{ make?: string;
   }
 }
 
+// Latest odometer reading from the cached DVSA MOT history row for a reg.
+// Used by every fallback branch so the customer journey can still price from
+// mileage when the live DVSA call didn't happen.
+async function fetchCachedMotMileage(registration: string): Promise<{ motMileage: number | null; motMileageDate: string | null }> {
+  try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+    const regUpper = registration.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const spaced = `${regUpper.slice(0, -3)} ${regUpper.slice(-3)}`;
+    const { data: rows } = await supabase
+      .from('mot_history')
+      .select('mot_tests')
+      .in('registration', [regUpper, spaced])
+      .limit(2);
+
+    const tests = (rows || [])
+      .flatMap((r: any) => (Array.isArray(r.mot_tests) ? r.mot_tests : []))
+      .filter((t: any) => Number(String(t?.odometerValue ?? '').replace(/[^0-9]/g, '')) > 0)
+      .sort((a: any, b: any) => new Date(b.completedDate || 0).getTime() - new Date(a.completedDate || 0).getTime());
+
+    const latest = tests[0];
+    if (!latest) return { motMileage: null, motMileageDate: null };
+    const raw = Number(String(latest.odometerValue).replace(/[^0-9]/g, ''));
+    const unit = String(latest.odometerUnit || 'mi').toLowerCase();
+    return {
+      motMileage: unit.startsWith('km') ? Math.round(raw * 0.621371) : raw,
+      motMileageDate: latest.completedDate || null,
+    };
+  } catch (e) {
+    console.error('cached MOT mileage lookup failed:', e);
+    return { motMileage: null, motMileageDate: null };
+  }
+}
+
 // Final fallback: pull from previously-stored mot_history row so we never lose
 // make/model when DVSA + DVLA both transiently fail for a reg we've seen before.
 async function fetchMotHistoryFallback(registration: string): Promise<
@@ -535,6 +571,7 @@ serve(async (req) => {
               }
 
 
+              const cachedMileage = await fetchCachedMotMileage(registrationNumber);
               const validation = validateVehicleEligibility({ make: dvla.make, model: recoveredModel || '', regNumber: registrationNumber });
               const blocked = !validation.isValid;
               return new Response(JSON.stringify({
@@ -549,7 +586,9 @@ serve(async (req) => {
                 yearOfManufacture: dvla.yearOfManufacture || null,
                 vehicleType: 'car',
                 modelMissing: !recoveredModel,
-                source: recoveredModel ? 'dvla+dvsa_retry' : 'dvla_fallback'
+                source: recoveredModel ? 'dvla+dvsa_retry' : 'dvla_fallback',
+                motMileage: cachedMileage.motMileage,
+                motMileageDate: cachedMileage.motMileageDate
               }), {
                 headers: { ...corsHeaders, "Content-Type": "application/json" },
                 status: 200,
@@ -600,6 +639,7 @@ serve(async (req) => {
             const cached = await fetchMotHistoryFallback(registrationNumber);
             if (cached?.make) {
               console.log('✅ Using mot_history cache as final fallback for', regUpper);
+              const cachedMileage = await fetchCachedMotMileage(registrationNumber);
               const validationCached = validateVehicleEligibility({ make: cached.make, model: cached.model || '', regNumber: registrationNumber });
               return new Response(JSON.stringify({
                 found: true,
@@ -614,7 +654,10 @@ serve(async (req) => {
                 manufactureDate: cached.manufactureDate || null,
                 registrationDate: cached.registrationDate || null,
                 vehicleType: 'car',
-                source: 'mot_history_cache'
+                source: 'mot_history_cache',
+                motMileage: cachedMileage.motMileage,
+                motMileageDate: cachedMileage.motMileageDate
+
               }), {
                 headers: { ...corsHeaders, "Content-Type": "application/json" },
                 status: 200,
@@ -689,6 +732,7 @@ serve(async (req) => {
 
 
 
+        const cachedMileage = await fetchCachedMotMileage(registrationNumber);
         const validation = validateVehicleEligibility({ make: dvlaFallback.make, model: recoveredModel2 || '', regNumber: registrationNumber });
         const blocked = !validation.isValid;
         
@@ -719,7 +763,9 @@ serve(async (req) => {
           manufactureDate: null,
           vehicleType: 'car',
           modelMissing: !recoveredModel2,
-          source: recoveredModel2 ? 'dvla+dvsa_retry' : 'dvla_fallback'
+          source: recoveredModel2 ? 'dvla+dvsa_retry' : 'dvla_fallback',
+          motMileage: cachedMileage.motMileage,
+          motMileageDate: cachedMileage.motMileageDate
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
@@ -730,6 +776,7 @@ serve(async (req) => {
       const cachedFinal = await fetchMotHistoryFallback(registrationNumber);
       if (cachedFinal?.make) {
         console.log('✅ Using mot_history cache as final fallback (post-DVSA-failure) for', regUpper);
+        const cachedMileage = await fetchCachedMotMileage(registrationNumber);
         const validationCachedFinal = validateVehicleEligibility({ make: cachedFinal.make, model: cachedFinal.model || '', regNumber: registrationNumber });
         return new Response(JSON.stringify({
           found: true,
@@ -744,7 +791,10 @@ serve(async (req) => {
           manufactureDate: cachedFinal.manufactureDate || null,
           registrationDate: cachedFinal.registrationDate || null,
           vehicleType: 'car',
-          source: 'mot_history_cache'
+          source: 'mot_history_cache',
+          motMileage: cachedMileage.motMileage,
+          motMileageDate: cachedMileage.motMileageDate
+
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
