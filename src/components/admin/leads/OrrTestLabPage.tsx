@@ -2,6 +2,8 @@ import React from 'react';
 import { ArrowLeft, FlaskConical } from 'lucide-react';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
 import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
+import { OrrGlanceStrip } from './OrrGlanceStrip';
+import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 import { useViewAs } from '@/contexts/ViewAsContext';
 
 interface OrrTestLabPageProps {
@@ -70,7 +72,12 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
         )}
       </div>
 
+      <WidgetErrorBoundary label="At a glance">
+        <OrrGlanceStrip teamLabel="Open Round Robin" />
+      </WidgetErrorBoundary>
+
       <OpenRoundRobinTestPanel />
+
 
       <div className="border-l-4 border-primary/40 pl-3">
         <div className="flex items-center gap-2 flex-wrap">
