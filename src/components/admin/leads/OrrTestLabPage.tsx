@@ -86,6 +86,11 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
         <OrrQueuePanels />
       </WidgetErrorBoundary>
 
+      <WidgetErrorBoundary label="Today's performance & alerts">
+        <OrrPerformancePanel />
+      </WidgetErrorBoundary>
+
+
       <OpenRoundRobinTestPanel />
 
 
