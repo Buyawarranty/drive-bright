@@ -641,6 +641,15 @@ ${rows}
                       </td>
                       <td className="py-2 px-3 align-top text-right">
                         <div className="flex items-center justify-end gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2 gap-1"
+                            onClick={() => setExpandedId(prev => (prev === c.id ? null : c.id))}
+                            title="Show full customer, plan and cover details"
+                          >
+                            {expandedId === c.id ? 'Hide' : 'Details'}
+                          </Button>
                           <Button size="sm" variant="outline" className="h-7 px-2 gap-1" onClick={() => openEdit(c)} title="Edit name & address">
                             <Pencil className="h-3.5 w-3.5" />
                             Edit
