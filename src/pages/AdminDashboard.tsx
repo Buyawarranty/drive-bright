@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SEOHead } from '@/components/SEOHead';
@@ -313,6 +314,7 @@ interface LeadForQuote {
 }
 
 const AdminDashboard = () => {
+  const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   // Initialize with URL tab param if present, otherwise default to 'customers'
   const rawUrlTab = searchParams.get('tab');
