@@ -1799,14 +1799,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         setStep1MileagePrefilledReg(cleanReg);
       }
       if (!resolvedMileage) {
+        // Never block the agent: they can type the mileage by hand on Step 2.
         toast({
           title: "Mileage not on record",
-          description: "No MOT mileage found for this registration — please confirm the mileage with the customer and enter it.",
-          variant: "destructive",
+          description: "No MOT mileage found — confirm it with the customer and type it in on the next step.",
         });
-        setIsLookingUp(false);
-        return;
       }
+
 
 
       // Fallback: if DVLA/DVSA API fails or returns no make, reuse the auto-preview
