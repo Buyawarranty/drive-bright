@@ -171,10 +171,6 @@ export function TimesheetCalendar({
           <div className="w-3 h-3 rounded bg-emerald-100 border border-emerald-400" />
           <span className="text-gray-600">Full day</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-blue-100 border border-blue-400" />
-          <span className="text-gray-600">Half day</span>
-        </div>
         {Object.entries(entryTypeConfig).filter(([t]) => t !== 'worked').map(([type, config]) => (
           <div key={type} className="flex items-center gap-1.5">
             <div className={cn('w-3 h-3 rounded', config.bgColor)} />
