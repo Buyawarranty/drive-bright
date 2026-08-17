@@ -598,6 +598,13 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
                                 {lead.call_count || 0}
                               </Badge>
                             </TableCell>
+                            {canSeeDetails && (
+                              <TableCell>
+                                <Badge variant="outline" className="text-[10px] bg-white">
+                                  {SOURCE_LABELS[lead.lead_source || 'website'] || (lead.lead_source || 'Direct / organic')}
+                                </Badge>
+                              </TableCell>
+                            )}
                             <TableCell>
                               <div className="font-medium">
                                 {marker ? `${marker.first_name || ''} ${marker.last_name || ''}`.trim() || marker.email : '—'}
