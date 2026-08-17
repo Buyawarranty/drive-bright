@@ -629,10 +629,11 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
               {/* Benefits */}
               <div className="mb-8 sm:mb-3 text-gray-700 text-xs sm:text-sm md:text-base space-y-1 sm:space-y-2">
-                <div className="flex items-center">
+                <div className="flex items-center px-1 py-1.5 sm:px-0 sm:py-0">
                   <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 sm:mr-3 flex-shrink-0" />
                   <span className="font-medium">From just 60p a day • Easy claims • Fast payouts</span>
                 </div>
+
                 {/* Second tick line moves to the bottom strip on mobile */}
                 <div className="hidden sm:flex items-center">
                   <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 sm:mr-3 flex-shrink-0" />
