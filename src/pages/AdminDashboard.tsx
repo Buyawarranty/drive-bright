@@ -751,6 +751,16 @@ const AdminDashboard = () => {
         );
       case 'chatbot-data':
         return <ChatbotDataTab />;
+      case 'semrush-seo':
+        if (!['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole)) {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">Semrush SEO data is restricted to management.</p>
+            </div>
+          );
+        }
+        return <SemrushSeoTab />;
       case 'reviews':
         return <ReviewsTab />;
       case 'contact':
