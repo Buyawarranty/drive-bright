@@ -39,6 +39,7 @@ import suvHighMileage from '@/assets/land-rover-range-rover-sport-warranty.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 // Popular SUV & 4x4 models covered (2011 - 2024) — grouped by category
 // Popular SUV & 4x4 models covered (2011 - 2024) — grouped by category
 const suvModelCategories = {
@@ -1431,6 +1432,13 @@ const SUVWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/skoda-warranty/', label: 'skoda extended warranty' },
+            { to: '/thewarrantyhub/uk-car-repair-costs-2026-without-warranty/', label: 'UK car repair costs without a warranty' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

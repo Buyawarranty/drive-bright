@@ -26,6 +26,7 @@ import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 const brandName = 'Dodge';
 const brandSlug = 'dodge-warranty';
 const brandMake = 'Dodge';
@@ -275,6 +276,13 @@ const DodgeWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/ev-warranty/', label: 'ev warranty uk' },
+            { to: '/thewarrantyhub/car-warranty-vs-breakdown-cover-vs-insurance-uk-2026/', label: 'car warranty vs breakdown cover' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

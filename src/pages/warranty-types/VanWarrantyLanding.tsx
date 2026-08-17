@@ -33,6 +33,7 @@ import vanIcon from '@/assets/van-icon.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 // UK Van Models covered (grouped by manufacturer) - 2012-2026
 const vanModelCategories = {
   'Ford': {
@@ -1438,6 +1439,13 @@ const VanWarrantyLanding: React.FC = () => {
             </Button>
           </div>
         )}
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/vauxhall-warranty/', label: 'vauxhall extended warranty' },
+            { to: '/thewarrantyhub/used-car-warranty-uk-2026-whats-covered-when-to-buy/', label: 'used car warranty UK 2026' },
+          ]}
+        />
       </main>
 
       <MinimalLandingFooter />

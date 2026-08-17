@@ -30,6 +30,7 @@ import evHeroImage from '@/assets/ev-warranty-hero-electric-vehicle.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 // UK EV Models covered (grouped by manufacturer) - 2012-2026
 const evModelCategories = {
   'Tesla': {
@@ -1298,6 +1299,13 @@ const EVWarrantyLanding: React.FC = () => {
             </div>
           </div>
         </section>
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/ford-warranty/', label: 'ford extended warranty' },
+            { to: '/thewarrantyhub/uk-car-repair-costs-2026-without-warranty/', label: 'UK car repair costs without a warranty' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

@@ -26,6 +26,7 @@ import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 const brandName = 'Cadillac';
 const brandSlug = 'cadillac-warranty';
 const brandMake = 'CADILLAC';
@@ -279,6 +280,13 @@ const CadillacWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/chevrolet-warranty/', label: 'chevrolet extended warranty' },
+            { to: '/thewarrantyhub/uk-car-repair-costs-2026-without-warranty/', label: 'UK car repair costs without a warranty' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

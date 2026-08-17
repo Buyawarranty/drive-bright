@@ -32,6 +32,7 @@ import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import { SEO_FROM_MONTHLY_PRICE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 // Citroën UK models 2012–2026
 const citroenModelCategories = {
   'Hatchbacks': {
@@ -765,6 +766,13 @@ const CitroenWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/dacia-warranty/', label: 'dacia extended warranty' },
+            { to: '/thewarrantyhub/are-car-warranties-worth-it-best-car-warranty-uk-2026/', label: 'are car warranties worth it' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

@@ -26,6 +26,7 @@ import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 const brandName = 'Mitsubishi';
 const brandSlug = 'mitsubishi-warranty';
 const brandMake = 'MITSUBISHI';
@@ -279,6 +280,13 @@ const MitsubishiWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/motorbike-motorcycle-warranty/', label: 'motorbike warranty uk' },
+            { to: '/thewarrantyhub/uk-car-repair-costs-2026-without-warranty/', label: 'UK car repair costs without a warranty' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

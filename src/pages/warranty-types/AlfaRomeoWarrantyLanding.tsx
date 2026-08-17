@@ -25,6 +25,7 @@ import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 const brandName = 'Alfa Romeo';
 const brandSlug = 'alfa-romeo-warranty';
 const brandMake = 'ALFA ROMEO';
@@ -273,6 +274,13 @@ const AlfaRomeoWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/audi-warranty/', label: 'audi extended warranty' },
+            { to: '/thewarrantyhub/used-car-warranty-uk-2026-whats-covered-when-to-buy/', label: 'used car warranty UK 2026' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

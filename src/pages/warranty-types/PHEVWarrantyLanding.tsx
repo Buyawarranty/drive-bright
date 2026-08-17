@@ -30,6 +30,7 @@ import phevVolvoXC60 from '@/assets/phev-warranty-volvo-xc60.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 // UK PHEV Models covered (grouped by manufacturer) - 2012-2026
 const phevModelCategories = {
   'BMW': {
@@ -1036,6 +1037,13 @@ const PHEVWarrantyLanding: React.FC = () => {
             </div>
           </div>
         </section>
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/peugeot-warranty/', label: 'peugeot extended warranty' },
+            { to: '/thewarrantyhub/are-car-warranties-worth-it-best-car-warranty-uk-2026/', label: 'are car warranties worth it' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

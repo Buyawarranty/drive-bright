@@ -26,6 +26,7 @@ import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 const brandName = 'BYD';
 const brandSlug = 'byd-warranty';
 const brandMake = 'BYD';
@@ -276,6 +277,13 @@ const BYDWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/cadillac-warranty/', label: 'cadillac extended warranty' },
+            { to: '/thewarrantyhub/car-warranty-vs-breakdown-cover-vs-insurance-uk-2026/', label: 'car warranty vs breakdown cover' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

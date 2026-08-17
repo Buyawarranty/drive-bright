@@ -31,6 +31,7 @@ import hyundaiSantaFeTestimonials from '@/assets/hyundai-santa-fe-testimonials-u
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 const hyundaiModelCategories = {
   'Hatchback & Saloon': {
     'i10': ['PA', 'AC3'], 'i20': ['PB', 'BC3'], 'i30': ['GD', 'PD'], 'i30 N': ['PD N'], 'i40': ['VF'], 'IONIQ Hybrid': ['AE'],
@@ -397,6 +398,13 @@ const HyundaiWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/infiniti-warranty/', label: 'infiniti extended warranty' },
+            { to: '/thewarrantyhub/auto-warranty-vs-extended-warranty-insurance-uk-2026/', label: 'extended warranty insurance explained' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

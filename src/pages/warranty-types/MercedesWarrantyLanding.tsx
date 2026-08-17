@@ -39,6 +39,7 @@ import mercedesHighMileage from '@/assets/mercedes-van.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 // Hero image: Panda mascot with two Mercedes cars
 const mercedesHeroImage = '/lovable-uploads/MERCEDES-BENZ-extended-warranty.webp';
 // Why Choose Us section: Mercedes with buyawarranty logo
@@ -1298,6 +1299,13 @@ const MercedesWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/mini-warranty/', label: 'mini extended warranty' },
+            { to: '/thewarrantyhub/auto-warranty-vs-extended-warranty-insurance-uk-2026/', label: 'extended warranty insurance explained' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

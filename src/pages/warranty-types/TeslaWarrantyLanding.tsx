@@ -31,6 +31,7 @@ import teslaModel3AdditionalCover from '@/assets/tesla-model-3-additional-cover-
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 const teslaModelCategories = {
   'Sedan': {
     'Model 3': ['Standard Range Plus', 'Long Range', 'Performance', 'Highland'],
@@ -395,6 +396,13 @@ const TeslaWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/toyota-warranty/', label: 'toyota extended warranty' },
+            { to: '/thewarrantyhub/uk-car-repair-costs-2026-without-warranty/', label: 'UK car repair costs without a warranty' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

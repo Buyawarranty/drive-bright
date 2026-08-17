@@ -35,6 +35,7 @@ import skodaEnyaqHighMileage from '@/assets/skoda-enyaq-high-mileage-warranty.pn
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 // Škoda Models covered (grouped by category) - 2012 to 2026
 const skodaModelCategories = {
   'Hatchback & Saloon': {
@@ -986,6 +987,13 @@ const SkodaWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/smart-warranty/', label: 'smart extended warranty' },
+            { to: '/thewarrantyhub/cheap-car-warranty-in-the-uk-what-is-covered-what-is-not-how-to-choose-smartly/', label: 'cheap car warranty in the UK' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

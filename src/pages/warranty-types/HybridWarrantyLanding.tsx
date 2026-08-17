@@ -34,6 +34,7 @@ import hybridKiaNiro from '@/assets/hybrid-warranty-kia-niro.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 // UK Hybrid Models covered (grouped by manufacturer) - 2012-2026
 const hybridModelCategories = {
   'Toyota': {
@@ -1439,6 +1440,13 @@ const HybridWarrantyLanding: React.FC = () => {
             </div>
           </div>
         </section>
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/hyundai-warranty/', label: 'hyundai extended warranty' },
+            { to: '/thewarrantyhub/are-car-warranties-worth-it-best-car-warranty-uk-2026/', label: 'are car warranties worth it' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />
