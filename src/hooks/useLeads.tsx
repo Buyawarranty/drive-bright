@@ -14,6 +14,9 @@ const LEAD_TAG_BATCH_TIMEOUT_MS = 4000;
 const LEADS_LIST_LIMIT = 750;
 const LEADS_PAGE_SIZE = 1000;
 const MAX_PAGED_LEADS = 5000;
+// Safety cap for an agent's unfiltered "all my leads" view so agents with huge
+// histories don't time out and end up seeing nothing.
+const AGENT_UNFILTERED_LEADS_CAP = 2000;
 const PENDING_STATUS_UPDATES_STORAGE_KEY = 'new-leads:pending-status-updates';
 let latestAccessToken: string | null = null;
 
@@ -609,9 +612,9 @@ export const useLeads = (options?: UseLeadsOptions) => {
         return query.or(searchClauses.join(','));
       };
 
-      const fetchPagedLeads = async (buildQuery: (from: number, to: number) => any) => {
+      const fetchPagedLeads = async (buildQuery: (from: number, to: number) => any, maxRows: number = MAX_PAGED_LEADS) => {
         const rows: any[] = [];
-        for (let offset = 0; offset < MAX_PAGED_LEADS; offset += LEADS_PAGE_SIZE) {
+        for (let offset = 0; offset < maxRows; offset += LEADS_PAGE_SIZE) {
           const { data, error } = await buildQuery(offset, offset + LEADS_PAGE_SIZE - 1);
           if (error) return { data: rows, error } as any;
           const page = data || [];
@@ -641,7 +644,19 @@ export const useLeads = (options?: UseLeadsOptions) => {
         return { data: rows, error: null } as any;
       };
 
-      const allSalesLeadsResult = await withTimeout(
+      // Last-resort fallback so an agent never ends up with a blank list when
+      // the wide fetch is slow: their most recent leads, one small query.
+      const fetchAgentFallbackLeads = async () => {
+        if (!currentAdmin?.id) return { data: [], error: null } as any;
+        return await supabase
+          .from('sales_leads')
+          .select(SELECT_COLUMNS)
+          .eq('assigned_to', currentAdmin.id)
+          .order('created_at', { ascending: false })
+          .limit(500);
+      };
+
+      const runWideLeadsFetch = () => withTimeout(
         (async () => {
           const serverAgentFilter = serverAgentFilterRef.current;
           if (serverAgentFilter && serverAgentFilter !== 'all' && serverAgentFilter !== 'unassigned') {
@@ -678,7 +693,15 @@ export const useLeads = (options?: UseLeadsOptions) => {
           // narrower assigned+unassigned scope.
           const hasActiveSearch = !!serverSearchTermRef.current?.trim();
           if (isSalesAgent && currentAdmin?.id && !hasActiveSearch) {
-            // 1) All leads assigned to this agent (full history, no 750 cap)
+            // 1) Leads assigned to this agent. Agents with very large histories
+            // (thousands of leads) used to page through everything, blowing the
+            // 25s fetch timeout and leaving them with an EMPTY list. Cap the
+            // unfiltered view — a date filter or search still pages wider.
+            const agentDateFilter = serverDateFilterRef.current;
+            const agentHasDateWindow = !!agentDateFilter?.from || !!agentDateFilter?.to;
+            const assignedMaxRows = agentHasDateWindow || serverCallbacksOnlyRef.current
+              ? MAX_PAGED_LEADS
+              : AGENT_UNFILTERED_LEADS_CAP;
             const assignedQ = fetchPagedLeads((from, to) =>
               applyHiddenFromAgent(applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase
@@ -688,7 +711,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              ))))
+              )))),
+              assignedMaxRows
             );
 
             // 2) Recent unassigned leads so the agent can still claim
@@ -781,8 +805,18 @@ export const useLeads = (options?: UseLeadsOptions) => {
         'Leads fetch timed out'
       );
 
-      const { data: allSalesLeadsData, error: salesError } = allSalesLeadsResult;
-      if (salesError) throw salesError;
+      let allSalesLeadsResult: any;
+      try {
+        allSalesLeadsResult = await runWideLeadsFetch();
+        if (allSalesLeadsResult?.error) throw allSalesLeadsResult.error;
+      } catch (wideErr) {
+        if (!isSalesAgent || !currentAdmin?.id) throw wideErr;
+        console.warn('[Leads] Wide fetch failed, falling back to recent assigned leads:', wideErr);
+        allSalesLeadsResult = await fetchAgentFallbackLeads();
+        if (allSalesLeadsResult?.error) throw allSalesLeadsResult.error;
+      }
+
+      const { data: allSalesLeadsData } = allSalesLeadsResult;
 
       const explicitLeadIds = serverLeadIdsRef.current || [];
       const explicitLeadsResult = explicitLeadIds.length > 0
