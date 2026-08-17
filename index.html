@@ -48,14 +48,20 @@
     <!-- Preload LCP image for faster rendering (WebP for modern browsers) -->
     <link rel="preload" as="image" href="/extended_warranty_uk-car-trustworthy-reviews.webp" fetchpriority="high" type="image/webp" imagesizes="(max-width: 768px) 100vw, 651px">
 
+    <meta property="og:site_name" content="Buy A Warranty" />
+    <meta property="og:locale" content="en_GB" />
     <meta property="og:title" content="Buy A Warranty | UK Vehicle Warranty & Extended Cover" />
     <meta property="og:description" content="Get instant warranty quotes for cars, vans, EVs & motorbikes. UK's trusted warranty provider with 5-star reviews. Flexible plans with no hidden fees." />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://buyawarranty.co.uk/favicon.png" />
+    <meta property="og:image" content="https://buyawarranty.co.uk/og-buyawarranty.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Buy A Warranty — UK vehicle warranty and extended cover" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@buyawarranty" />
-    <meta name="twitter:image" content="https://buyawarranty.co.uk/favicon.png" />
+    <meta name="twitter:image" content="https://buyawarranty.co.uk/og-buyawarranty.jpg" />
+    <meta name="twitter:image:alt" content="Buy A Warranty — UK vehicle warranty and extended cover" />
 
     <!-- Critical inline CSS to prevent render-blocking -->
     <style>
@@ -143,99 +149,36 @@
         "areaServed": "GB",
         "availableLanguage": "en"
       }],
-      "sameAs": "trustpilot.com/review/buyawarranty.co.uk/"
+      "sameAs": ["https://uk.trustpilot.com/review/buyawarranty.co.uk"]
     }
     </script>
 
-    <!-- Breadcrumb Schema -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org/",
-      "@type": "BreadcrumbList",
-      "itemListElement": [{
-        "@type": "ListItem",
-        "position": 1,
-        "name": "HOME PAGE",
-        "item": "https://buyawarranty.co.uk/"
-      },{
-        "@type": "ListItem",
-        "position": 2,
-        "name": "MAKE A CLAIM",
-        "item": "https://buyawarranty.co.uk/make-a-claim/"
-      },{
-        "@type": "ListItem",
-        "position": 3,
-        "name": "WHAT'S COVERED",
-        "item": "https://buyawarranty.co.uk/what-is-covered/"
-      },{
-        "@type": "ListItem",
-        "position": 4,
-        "name": "FAQ'S",
-        "item": "https://buyawarranty.co.uk/faq/"
-      },{
-        "@type": "ListItem",
-        "position": 5,
-        "name": "LOGIN",
-        "item": "https://buyawarranty.co.uk/customer-dashboard/"
-      },{
-        "@type": "ListItem",
-        "position": 6,
-        "name": "CAR WARRANTY",
-        "item": "https://buyawarranty.co.uk/buy-a-used-car-warranty-reliable-warranties/"
-      },{
-        "@type": "ListItem",
-        "position": 7,
-        "name": "VAN WARRANTY",
-        "item": "https://buyawarranty.co.uk/van-warranty/"
-      },{
-        "@type": "ListItem",
-        "position": 8,
-        "name": "EV WARRANTY",
-        "item": "https://buyawarranty.co.uk/ev-warranty/"
-      },{
-        "@type": "ListItem",
-        "position": 9,
-        "name": "MOTOR CYCLE WARRANTY",
-        "item": "https://buyawarranty.co.uk/motorcycle-warranty/"
-      },{
-        "@type": "ListItem",
-        "position": 10,
-        "name": "WARRANTY TYPES",
-        "item": "https://buyawarranty.co.uk/warranty-types/"
-      }]
-    }
-    </script>
-
-    <!-- FAQ Schema -->
+    <!-- Site navigation (sitewide). Breadcrumbs are emitted per route, not here. -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "What vehicles are eligible for warranty?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Vehicles under 15 years old with less than 150,000 miles are eligible for Buyawarranty cover."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How quickly can I get a quote?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "You can get a simple online quote instantly through the Buyawarranty website."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What does the warranty cover?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Plans cover mechanical and electrical breakdowns with flexible options based on your driving needs."
-          }
-        }
+      "@type": "SiteNavigationElement",
+      "name": [
+        "Home",
+        "Make a claim",
+        "What's covered",
+        "FAQs",
+        "Car warranty",
+        "Van warranty",
+        "EV warranty",
+        "Motorcycle warranty",
+        "Warranty types"
+      ],
+      "url": [
+        "https://buyawarranty.co.uk/",
+        "https://buyawarranty.co.uk/make-a-claim/",
+        "https://buyawarranty.co.uk/what-is-covered/",
+        "https://buyawarranty.co.uk/faq/",
+        "https://buyawarranty.co.uk/buy-a-used-car-warranty-reliable-warranties/",
+        "https://buyawarranty.co.uk/van-warranty/",
+        "https://buyawarranty.co.uk/ev-warranty/",
+        "https://buyawarranty.co.uk/motorcycle-warranty/",
+        "https://buyawarranty.co.uk/warranty-types/"
       ]
     }
     </script>
