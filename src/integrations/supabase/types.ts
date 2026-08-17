@@ -5921,6 +5921,7 @@ export type Database = {
           mileage: string | null
           paid_at: string | null
           payment_method: string | null
+          plan_options: Json | null
           plan_type: string | null
           price: number | null
           retail_price: number | null
@@ -5950,6 +5951,7 @@ export type Database = {
           mileage?: string | null
           paid_at?: string | null
           payment_method?: string | null
+          plan_options?: Json | null
           plan_type?: string | null
           price?: number | null
           retail_price?: number | null
@@ -5979,6 +5981,7 @@ export type Database = {
           mileage?: string | null
           paid_at?: string | null
           payment_method?: string | null
+          plan_options?: Json | null
           plan_type?: string | null
           price?: number | null
           retail_price?: number | null
