@@ -683,7 +683,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                         <button
                           type="button"
                           onClick={() => document.getElementById('reg-input-field')?.focus()}
-                          className="w-full text-center rounded-xl border border-[#F0D6C3] bg-[#FBE4D6]/50 hover:bg-[#FBE4D6]/70 transition-colors px-3 py-2.5 flex items-center justify-center gap-3"
+                          className="hidden sm:flex w-full text-center rounded-xl border border-[#F0D6C3] bg-[#FBE4D6]/50 hover:bg-[#FBE4D6]/70 transition-colors px-3 py-2.5 items-center justify-center gap-3"
                         >
                           <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/70 ring-1 ring-[#EBC9B0] flex-shrink-0">
                             <Shield className="w-4 h-4" style={{ color: '#B07A5C' }} strokeWidth={2} />
@@ -783,8 +783,32 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 )}
 
                 
-                {/* Pricing Reassurance Panel - Premium Trust Block */}
-                <div className="mt-4 sm:mt-7 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-4 py-3.5 sm:px-5 sm:py-4 text-center">
+                {/* Mobile: speak-to-us card */}
+                <div className="sm:hidden mt-4">
+                  <p className="text-center text-[15px] text-gray-600">Prefer to speak to us?</p>
+                  <div className="mt-2 rounded-2xl border border-gray-200 bg-white shadow-sm px-4 py-3.5">
+                    <a href="tel:03302295040" className="flex items-center justify-center gap-2.5">
+                      <Phone className="w-5 h-5 text-blue-700 fill-blue-700" strokeWidth={0} />
+                      <span className="text-2xl font-extrabold text-blue-700 underline underline-offset-4 tracking-tight">
+                        0330 229 5040
+                      </span>
+                    </a>
+                    <p className="mt-1.5 text-center text-sm text-gray-600">Speak to our UK team</p>
+                  </div>
+                  <p className="mt-2.5 text-center text-[15px] text-gray-700">
+                    Can't call now?{' '}
+                    <button
+                      onClick={() => setShowCallbackModal(true)}
+                      className="text-brand-orange font-semibold hover:underline inline-flex items-center gap-0.5"
+                    >
+                      Request a callback
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </p>
+                </div>
+
+                {/* Pricing Reassurance Panel - Premium Trust Block (desktop) */}
+                <div className="hidden sm:block mt-4 sm:mt-7 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-4 py-3.5 sm:px-5 sm:py-4 text-center">
                    <h2 className="text-[13px] leading-snug sm:text-[17px] font-bold text-[#1B2A4A]">
                      Fair price. Fast quote. No surprises.
                    </h2>
@@ -808,6 +832,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     </button>
                   </div>
                 </div>
+
               </div>
             </div>
 
