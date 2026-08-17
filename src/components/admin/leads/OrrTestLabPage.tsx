@@ -103,12 +103,12 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
           </span>
         </div>
         <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
-          Trial of the 30-minute first-call window for the open pool. Kept here while it is being tested — it is not part
-          of the live Lead Allocation page.
+          Trial of the 30-minute first-call window for the open pool. Shown here for observation only — running a pass is
+          disabled in the lab, so no real lead is handed out or pulled back. It is not part of the live Lead Allocation page.
         </p>
       </div>
 
-      <RollingRoundRobinLivePanel canEdit={isManagement} />
+      <RollingRoundRobinLivePanel canEdit={isManagement} readOnly />
 
 
       <div className="rounded-md border border-border bg-muted/40 p-4 text-xs text-muted-foreground space-y-1">
