@@ -1,6 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, ArrowRight, Star, Shield, Clock, Zap, Car, Truck, Battery, Bike, Menu, X, Phone, FileCheck, MessageCircle } from 'lucide-react';
+import { Check, ArrowRight, Star, Shield, Clock, Zap, Car, Truck, Battery, Bike, Menu, X, Phone, FileCheck, MessageCircle, Wrench, PoundSterling } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';
@@ -13,6 +13,8 @@ import { OptimizedImage } from '@/components/OptimizedImage';
 import LazySection from './homepage/LazySection';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
+import heroPandaVehiclesMobile from '@/assets/homepage-hero-panda-vehicles-mobile.png.asset.json';
+
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
 import TrustpilotSliderWidget from './TrustpilotSliderWidget';
@@ -617,10 +619,12 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 sm:mr-3 flex-shrink-0" />
                   <span className="font-medium">From just 60p a day • Easy claims • Fast payouts</span>
                 </div>
-                <div className="flex items-center">
+                {/* Second tick line moves to the bottom strip on mobile */}
+                <div className="hidden sm:flex items-center">
                   <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 sm:mr-3 flex-shrink-0" />
                   <span className="font-medium">Unlimited claims • Parts and Labour • No excess</span>
                 </div>
+
               </div>
 
               {/* Registration Input */}
@@ -812,15 +816,26 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               <div className="hidden lg:block mb-2">
                 <TrustpilotMicroComboWidget className="scale-75 origin-center" />
               </div>
+              {/* Mobile: new panda + vehicles line-up */}
+              <img
+                src={heroPandaVehiclesMobile.url}
+                alt="buyawarranty panda mascot with a car, van, SUV and motorbike"
+                className="lg:hidden w-full h-auto"
+                width={1920}
+                height={627}
+                fetchPriority="high"
+                decoding="async"
+              />
               <OptimizedImage 
                 src="/extended_warranty_uk-car-trustworthy-reviews.webp" 
                 alt="Extended warranty UK - Car trustworthy reviews - Panda mascot with vehicle collection" 
-                className="w-full h-auto"
+                className="hidden lg:block w-full h-auto"
                 priority={true}
                 width={651}
                 height={434}
-                sizes="(max-width: 768px) 100vw, 651px"
+                sizes="651px"
               />
+
               
               {/* Vehicle Types positioned directly below the image on desktop */}
               <div className="hidden lg:block w-full mt-4">
@@ -914,6 +929,29 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
               </div>
             </div>
+
+            {/* Mobile bottom line — the second tick row, shown as a 4-up strip */}
+            <div className="sm:hidden w-full mt-4 lg:col-span-2">
+              <div className="grid grid-cols-4 divide-x divide-gray-200 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                <div className="flex flex-col items-center gap-1 px-1.5 py-2.5 text-center">
+                  <Shield className="w-5 h-5 text-blue-600" strokeWidth={1.8} />
+                  <span className="text-[11px] leading-tight font-medium text-gray-700">Unlimited claims</span>
+                </div>
+                <div className="flex flex-col items-center gap-1 px-1.5 py-2.5 text-center">
+                  <Wrench className="w-5 h-5 text-green-600" strokeWidth={1.8} />
+                  <span className="text-[11px] leading-tight font-medium text-gray-700">Parts &amp; Labour</span>
+                </div>
+                <div className="flex flex-col items-center gap-1 px-1.5 py-2.5 text-center">
+                  <PoundSterling className="w-5 h-5 text-brand-orange" strokeWidth={1.8} />
+                  <span className="text-[11px] leading-tight font-medium text-gray-700">From just 60p a day</span>
+                </div>
+                <div className="flex flex-col items-center gap-1 px-1.5 py-2.5 text-center">
+                  <Clock className="w-5 h-5 text-purple-600" strokeWidth={1.8} />
+                  <span className="text-[11px] leading-tight font-medium text-gray-700">Fast payouts</span>
+                </div>
+              </div>
+            </div>
+
           </div>
           
         </div>
