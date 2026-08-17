@@ -51,8 +51,9 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const [leadOwners, setLeadOwners] = useState<Record<string, { adminId: string | null; name: string | null; active: boolean; isPaid: boolean; status: string | null }>>({});
   const [currentAdminId, setCurrentAdminId] = useState<string | null>(null);
   const [currentAdminName, setCurrentAdminName] = useState<string | null>(null);
+  // Default to MUTED — the repeating beep is opt-in, not opt-out.
   const [muted, setMuted] = useState<boolean>(() => {
-    try { return localStorage.getItem(MUTE_KEY) === '1'; } catch { return false; }
+    try { return localStorage.getItem(MUTE_KEY) !== '0'; } catch { return true; }
   });
   const audioCtxRef = useRef<AudioContext | null>(null);
   const beepTimerRef = useRef<number | null>(null);
