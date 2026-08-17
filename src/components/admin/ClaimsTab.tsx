@@ -35,6 +35,7 @@ import { PerformanceKpiStrip } from './claims-manager/PerformanceKpiStrip';
 import { VehicleIntelligenceExplorer } from './claims/VehicleIntelligenceExplorer';
 import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
 import { ClaimsAgeMileageAnalytics } from './claims/ClaimsAgeMileageAnalytics';
+import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 
 interface ClaimSubmission {
   id: string;
