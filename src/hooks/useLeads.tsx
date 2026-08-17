@@ -609,9 +609,9 @@ export const useLeads = (options?: UseLeadsOptions) => {
         return query.or(searchClauses.join(','));
       };
 
-      const fetchPagedLeads = async (buildQuery: (from: number, to: number) => any) => {
+      const fetchPagedLeads = async (buildQuery: (from: number, to: number) => any, maxRows: number = MAX_PAGED_LEADS) => {
         const rows: any[] = [];
-        for (let offset = 0; offset < MAX_PAGED_LEADS; offset += LEADS_PAGE_SIZE) {
+        for (let offset = 0; offset < maxRows; offset += LEADS_PAGE_SIZE) {
           const { data, error } = await buildQuery(offset, offset + LEADS_PAGE_SIZE - 1);
           if (error) return { data: rows, error } as any;
           const page = data || [];
