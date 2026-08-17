@@ -68,9 +68,15 @@ const CookiePolicy = () => {
             <div>
               <p className="text-lg text-gray-700 leading-relaxed mb-4">
                 This Cookie Policy explains how Buy A Warranty ("we", "us", or "our") uses cookies and similar technologies on our website{' '}
-                <a href="https://buyawarranty.co.uk" className="text-[#eb4b00] hover:underline">
-                  https://buyawarranty.co.uk
+                <a
+                  href="https://buyawarranty.co.uk"
+                  title="Buy A Warranty — UK car warranty quotes and cover"
+                  aria-label="Buy A Warranty UK car warranty website homepage"
+                  className="text-[#eb4b00] hover:underline"
+                >
+                  Buy A Warranty UK car warranty website
                 </a>. By continuing to use our website, you consent to the use of cookies as described in this policy.
+
               </p>
               <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
                 <p className="text-blue-800 font-medium">
