@@ -919,17 +919,28 @@ export const useLeads = (options?: UseLeadsOptions) => {
             leadIdBatches.push(visibleLeadIds.slice(i, i + LEAD_TAG_BATCH_SIZE));
           }
 
-          for (const batch of leadIdBatches) {
-            const { data, error } = await withTimeout(
-              (async () =>
-                await supabase
-                  .from('lead_tag_assignments')
-                  .select('lead_id, tag_id, lead_tags(id, name, color, description)')
-                  .in('lead_id', batch))(),
-              LEAD_TAG_BATCH_TIMEOUT_MS,
-              'Lead tag lookup timed out'
-            );
+          // Run the batches in parallel — sequential awaits were the single
+          // biggest stall on first paint of the New Leads tab.
+          const batchResults = await Promise.all(
+            leadIdBatches.map(async (batch) => {
+              try {
+                return await withTimeout(
+                  (async () =>
+                    await supabase
+                      .from('lead_tag_assignments')
+                      .select('lead_id, tag_id, lead_tags(id, name, color, description)')
+                      .in('lead_id', batch))(),
+                  LEAD_TAG_BATCH_TIMEOUT_MS,
+                  'Lead tag lookup timed out'
+                );
+              } catch (e) {
+                console.warn('[Leads] Tag batch timed out, skipping batch:', e);
+                return { data: null, error: e } as any;
+              }
+            })
+          );
 
+          for (const { data, error } of batchResults) {
             if (error) {
               console.warn('[Leads] Tag batch fetch failed, skipping batch:', error);
               continue;
@@ -944,6 +955,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
               }
             });
           }
+
         }
       } catch (tagError) {
         console.warn('[Leads] Tag fetch failed, continuing without tags:', tagError);
