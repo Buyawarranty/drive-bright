@@ -814,15 +814,26 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               <div className="hidden lg:block mb-2">
                 <TrustpilotMicroComboWidget className="scale-75 origin-center" />
               </div>
+              {/* Mobile: new panda + vehicles line-up */}
+              <img
+                src={heroPandaVehiclesMobile.url}
+                alt="buyawarranty panda mascot with a car, van, SUV and motorbike"
+                className="lg:hidden w-full h-auto"
+                width={1920}
+                height={627}
+                fetchPriority="high"
+                decoding="async"
+              />
               <OptimizedImage 
                 src="/extended_warranty_uk-car-trustworthy-reviews.webp" 
                 alt="Extended warranty UK - Car trustworthy reviews - Panda mascot with vehicle collection" 
-                className="w-full h-auto"
+                className="hidden lg:block w-full h-auto"
                 priority={true}
                 width={651}
                 height={434}
-                sizes="(max-width: 768px) 100vw, 651px"
+                sizes="651px"
               />
+
               
               {/* Vehicle Types positioned directly below the image on desktop */}
               <div className="hidden lg:block w-full mt-4">
