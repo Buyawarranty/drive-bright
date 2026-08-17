@@ -209,8 +209,18 @@ serve(async (req: Request) => {
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #16a34a; border-bottom: 2px solid #16a34a; padding-bottom: 10px;">🎉 New Sale</h2>
         ${isAgentSale ? `
-        <div style="margin-top: 16px; padding: 12px 20px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;">
-          <div style="font-size: 14px; color: #1e40af;"><strong>Converted by:</strong> ${resolvedAgentName || 'Unknown Agent'}</div>
+        <div style="margin-top: 16px; padding: 14px 20px; background: #eff6ff; border: 2px solid #3b82f6; border-radius: 8px;">
+          <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #1e40af;">Agent sale</div>
+          <div style="font-size: 20px; font-weight: 800; color: #1e3a8a;">${resolvedAgentName || 'Unknown Agent'}</div>
+        </div>` : ''}
+        ${isPriceMatch ? `
+        <div style="margin-top: 16px; padding: 14px 20px; background: #fff7ed; border: 2px solid #f97316; border-radius: 8px;">
+          <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #c2410c;">Price match applied</div>
+          <div style="font-size: 14px; color: #7c2d12;">
+            ${saleExtras.price_match_competitor ? `Competitor: <strong>${saleExtras.price_match_competitor}</strong>` : 'Competitor: —'}
+            ${saleExtras.price_match_competitor_price != null ? ` · Their price: <strong>${money(saleExtras.price_match_competitor_price)}</strong>` : ''}
+            ${saleExtras.price_match_our_price != null ? ` · Our matched price: <strong>${money(saleExtras.price_match_our_price)}</strong>` : ''}
+          </div>
         </div>` : ''}
         <div style="margin-top: 16px; padding: 16px 24px; background: #fef9c3; border: 2px solid #eab308; border-radius: 8px; text-align: center;">
           <div style="font-size: 28px; font-weight: 900; color: #000000; letter-spacing: 2px; font-family: 'Arial Black', Arial, sans-serif;">${reg}</div>
