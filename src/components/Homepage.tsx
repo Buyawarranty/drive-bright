@@ -13,7 +13,7 @@ import { OptimizedImage } from '@/components/OptimizedImage';
 import LazySection from './homepage/LazySection';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
-import heroPandaVehiclesMobile from '@/assets/homepage-hero-panda-vehicles-mobile.png.asset.json';
+import heroPandaVehiclesMobile from '@/assets/homepage-hero-panda-vehicles-mobile-v3.png.asset.json';
 
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
@@ -819,10 +819,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               {/* Mobile: new panda + vehicles line-up */}
               <img
                 src={heroPandaVehiclesMobile.url}
-                alt="buyawarranty panda mascot with a car, van, SUV and motorbike"
+                alt="buyawarranty panda mascot holding car keys with a car, van, SUV and motorbike"
                 className="lg:hidden w-full h-auto"
-                width={1920}
-                height={627}
+                width={1536}
+                height={1024}
                 fetchPriority="high"
                 decoding="async"
               />
