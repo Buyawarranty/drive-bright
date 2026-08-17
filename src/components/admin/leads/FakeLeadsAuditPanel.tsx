@@ -17,11 +17,13 @@ import {
 import {
   ShieldCheck, RotateCcw, ChevronDown, ChevronRight, Phone, Mail, Car,
   AlertTriangle, CheckCircle2, Loader2, Download, Calendar as CalendarIcon, X,
+  RefreshCw, Lock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { detectSuspiciousLead } from '@/utils/suspiciousLeadDetection';
 import { cn } from '@/lib/utils';
 import { FAKE_REASONS } from './MarkFakeReasonDialog';
+import { useIsManagement } from '@/hooks/useIsManagement';
 
 type Period = 'this_week' | 'last_week' | 'this_month' | 'last_month' | 'last_90';
 
@@ -37,6 +39,7 @@ interface FakeLeadRow {
   call_count: number | null;
   status: string;
   created_at: string;
+  lead_source: string | null;
   fake_marked_at: string | null;
   fake_marked_by: string | null;
   fake_reason: string | null;
@@ -64,6 +67,20 @@ interface FakeLeadsAuditPanelProps {
 }
 
 const REASON_LABELS = Object.fromEntries(FAKE_REASONS.map(r => [r.value, r.label])) as Record<string, string>;
+
+/** Manager-only source labels for fake-marked leads. */
+const SOURCE_LABELS: Record<string, string> = {
+  website: 'Direct / organic',
+  google_ad: 'Google Ads',
+  bing_ad: 'Bing Ads',
+  social_ad: 'Facebook / Meta',
+  tiktok_ad: 'TikTok',
+  referral: 'Referral',
+  phone: 'Phone',
+  email: 'Email',
+  partner: 'Partner',
+  other: 'Other',
+};
 
 const phoneValidity = (phone?: string | null): { tier: 'valid' | 'suspicious' | 'invalid' | 'missing'; reason: string } => {
   if (!phone || !phone.trim()) return { tier: 'missing', reason: 'No phone number provided' };
@@ -96,7 +113,15 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
   const [callLogsByLead, setCallLogsByLead] = useState<Record<string, CallLogRow[]>>({});
   const [admins, setAdmins] = useState<Record<string, AdminLite>>({});
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [refreshing, setRefreshing] = useState(false);
 
+  const { isManagement } = useIsManagement();
+  const canSeeDetails =
+    isManagement ||
+    userRole === 'super_admin' ||
+    userRole === 'admin' ||
+    userRole === 'sales_manager' ||
+    userRole === 'performance_manager';
   const canExport = userRole === 'super_admin' || userRole === 'admin';
   const { from, to, label } = useMemo(() => getPeriodRange(period), [period]);
 
@@ -107,7 +132,7 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
       const { data: leadsData, error: leadsErr } = await supabase
         .from('sales_leads')
         .select(`id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model,
-                 call_count, status, created_at,
+                 call_count, status, created_at, lead_source,
                  fake_marked_at, fake_marked_by, fake_reason, fake_reason_note,
                  fake_audit_status, fake_audited_at, fake_audited_by`)
         .gte('fake_marked_at', from.toISOString())
@@ -167,6 +192,40 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  const manualRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try { await fetchData(); } finally { setRefreshing(false); }
+  }, [fetchData]);
+
+  /** Keep the counters live: refresh on realtime fake marks, tab focus and a slow poll. */
+  useEffect(() => {
+    const channel = supabase
+      .channel('fake-leads-audit-live')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sales_leads' }, (payload: any) => {
+        const before = payload.old || {};
+        const after = payload.new || {};
+        if (
+          after.status === 'fake_lead' ||
+          before.status === 'fake_lead' ||
+          after.fake_marked_at !== before.fake_marked_at ||
+          after.fake_audit_status !== before.fake_audit_status
+        ) {
+          fetchData();
+        }
+      })
+      .subscribe();
+
+    const onFocus = () => { if (document.visibilityState === 'visible') fetchData(); };
+    document.addEventListener('visibilitychange', onFocus);
+    const interval = window.setInterval(fetchData, 60000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      document.removeEventListener('visibilitychange', onFocus);
+      window.clearInterval(interval);
+    };
+  }, [fetchData]);
+
   const filteredLeads = useMemo(() => {
     if (statusFilter === 'all') return leads;
     return leads.filter(l => (l.fake_audit_status || 'pending') === statusFilter);
@@ -223,19 +282,23 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
 
   /** Marked-as-fake counts per calendar day (newest first) for the selected period. */
   const dailyCounts = useMemo(() => {
-    const map: Record<string, number> = {};
+    const map: Record<string, { count: number; sources: Record<string, number> }> = {};
     filteredLeads.forEach(l => {
       const d = l.fake_marked_at ? parseISO(l.fake_marked_at) : parseISO(l.created_at);
       const key = format(d, 'yyyy-MM-dd');
-      map[key] = (map[key] || 0) + 1;
+      if (!map[key]) map[key] = { count: 0, sources: {} };
+      map[key].count++;
+      const src = SOURCE_LABELS[l.lead_source || 'website'] || (l.lead_source || 'Direct / organic');
+      map[key].sources[src] = (map[key].sources[src] || 0) + 1;
     });
     return Object.entries(map)
       .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-      .map(([key, count]) => ({
+      .map(([key, v]) => ({
         key,
         day: format(parseISO(key), 'EEE'),
         date: format(parseISO(key), 'd MMM yyyy'),
-        count,
+        count: v.count,
+        sources: Object.entries(v.sources).sort((a, b) => b[1] - a[1]),
       }));
   }, [filteredLeads]);
 
@@ -378,6 +441,9 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
                 <TabsTrigger value="flat" className="text-xs px-2">Flat</TabsTrigger>
               </TabsList>
             </Tabs>
+            <Button variant="outline" size="sm" onClick={manualRefresh} disabled={refreshing || loading}>
+              <RefreshCw className={cn('h-3.5 w-3.5 mr-1', (refreshing || loading) && 'animate-spin')} /> Refresh
+            </Button>
             {canExport && (
               <Button variant="outline" size="sm" onClick={exportCsv} disabled={filteredLeads.length === 0}>
                 <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
@@ -411,8 +477,13 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
         {/* Marked as fake — per day and date */}
         {!loading && dailyCounts.length > 0 && (
           <div className="bg-white rounded-md border p-2">
-            <div className="text-xs font-semibold text-muted-foreground mb-1.5">
+            <div className="text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-2">
               Marked as fake by day &amp; date
+              {canSeeDetails && (
+                <Badge variant="outline" className="text-[10px] bg-white font-normal">
+                  Source shown — managers only
+                </Badge>
+              )}
             </div>
             <div className="flex gap-1.5 overflow-x-auto pb-1">
               {dailyCounts.map(d => (
@@ -423,6 +494,15 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
                   <div className="text-[10px] font-semibold text-red-900">{d.day}</div>
                   <div className="text-[10px] text-muted-foreground whitespace-nowrap">{d.date}</div>
                   <div className="text-base font-bold text-red-700 leading-tight">{d.count}</div>
+                  {canSeeDetails && d.sources.length > 0 && (
+                    <div className="mt-1 space-y-0.5 border-t border-red-200 pt-1">
+                      {d.sources.map(([src, n]) => (
+                        <div key={src} className="text-[9px] text-muted-foreground whitespace-nowrap">
+                          {src}: <span className="font-semibold text-foreground">{n}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -471,6 +551,7 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
                       <TableHead>Customer</TableHead>
                       <TableHead>Phone</TableHead>
                       <TableHead className="text-center">Calls</TableHead>
+                      {canSeeDetails && <TableHead>Source</TableHead>}
                       <TableHead>Marked fake</TableHead>
                       <TableHead>Reason</TableHead>
                       <TableHead>Audit</TableHead>
@@ -495,9 +576,25 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
                             )}
                           >
                             <TableCell>
-                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => toggleExpand(lead.id)}>
-                                {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                              </Button>
+                              {canSeeDetails ? (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => toggleExpand(lead.id)}>
+                                      {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Manager view — full fake-mark details</TooltipContent>
+                                </Tooltip>
+                              ) : (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="inline-flex h-6 w-6 items-center justify-center text-muted-foreground">
+                                      <Lock className="h-3 w-3" />
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Details are visible to managers only</TooltipContent>
+                                </Tooltip>
+                              )}
                             </TableCell>
                             <TableCell>
                               <div className="font-medium">
@@ -533,6 +630,13 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
                                 {lead.call_count || 0}
                               </Badge>
                             </TableCell>
+                            {canSeeDetails && (
+                              <TableCell>
+                                <Badge variant="outline" className="text-[10px] bg-white">
+                                  {SOURCE_LABELS[lead.lead_source || 'website'] || (lead.lead_source || 'Direct / organic')}
+                                </Badge>
+                              </TableCell>
+                            )}
                             <TableCell>
                               <div className="font-medium">
                                 {marker ? `${marker.first_name || ''} ${marker.last_name || ''}`.trim() || marker.email : '—'}
@@ -602,7 +706,7 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
                           </TableRow>
                           {isExpanded && (
                             <TableRow className="bg-muted/20">
-                              <TableCell colSpan={8} className="text-xs">
+                              <TableCell colSpan={canSeeDetails ? 9 : 8} className="text-xs">
                                 <div className="font-semibold mb-1 flex items-center gap-1">
                                   <Phone className="h-3 w-3" /> Call attempts ({calls.length})
                                 </div>
