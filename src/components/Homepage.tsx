@@ -88,6 +88,20 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const [showEmailPopup, setShowEmailPopup] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showCallbackModal, setShowCallbackModal] = useState(false);
+  // UK office hours: 09:00–18:00 Europe/London
+  const [isUkOfficeHours, setIsUkOfficeHours] = useState(() => {
+    const h = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: 'numeric', hour12: false }).format(new Date()));
+    return h >= 9 && h < 18;
+  });
+  useEffect(() => {
+    const tick = () => {
+      const h = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: 'numeric', hour12: false }).format(new Date()));
+      setIsUkOfficeHours(h >= 9 && h < 18);
+    };
+    const id = setInterval(tick, 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   
 
   useEffect(() => {
