@@ -50,6 +50,16 @@ const elapsed = (iso: string) => {
   return `${Math.floor(mins / 60)}h ${mins % 60}m`;
 };
 
+const LUNCH_MINUTES = 60;
+
+/** Remaining lunch time as m:ss, or null once the hour is used up. */
+const lunchRemaining = (iso: string) => {
+  const ms = new Date(iso).getTime() + LUNCH_MINUTES * 60000 - Date.now();
+  if (ms <= 0) return null;
+  const total = Math.floor(ms / 1000);
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+};
+
 /**
  * Break / back-from-break control for the New Leads section.
  *
