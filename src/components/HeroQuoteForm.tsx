@@ -148,7 +148,9 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
 
     try {
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-        body: { registration: regNumber }
+        // Send every alias the lookup function accepts so a plate is never
+        // rejected as "Registration number is required".
+        body: { registrationNumber: cleanedReg, registration: cleanedReg, reg: cleanedReg }
       });
 
       if (timedOut) return;

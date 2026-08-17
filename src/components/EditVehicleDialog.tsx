@@ -96,7 +96,7 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
 
       // DVLA lookup
       const { data, error: dvlaError } = await supabase.functions.invoke('dvla-vehicle-lookup', {
-        body: { registration: normalizedReg },
+        body: { registrationNumber: normalizedReg, registration: normalizedReg, reg: normalizedReg },
       });
 
       const baseVehicle: EditableVehicleData = {
