@@ -131,9 +131,11 @@ const isExplicitlyPermittedTab = (tab: string, permissions?: Record<string, bool
 };
 
 const getFirstPermittedTab = (role: string | null, permissions?: Record<string, boolean> | null) => {
-  const preferredOrder = role === 'claims_agent' || role === 'claims_manager'
+  const isClaimsUser = role === 'claims_agent' || role === 'claims_manager' || permissions?.['tab_claims'] === true;
+  const preferredOrder = isClaimsUser
     ? ['claims', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account']
     : ['get-quote', 'customers', 'new-leads', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
+
 
   if (permissions) {
     const firstPreferred = preferredOrder.find(tab => permissions[`tab_${tab}`] === true);
@@ -171,15 +173,18 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   if (tab === 'unsubscribe') return true;
   if (role === 'super_admin' || role === 'dev_tester') return true;
   if (tab === 'overview' && role && LIVE_CALLS_ALWAYS_ALLOWED_ROLES.has(role)) return true;
+  // Permissions win over role hardcoding: any user (any role, now or in future)
+  // granted tab_<id> = true in User Permissions gets the tab. This is what makes
+  // a new "Claims access level" work without touching role lists.
+  const explicitGrant: boolean | undefined = permissions ? permissions[permKey] : undefined;
+  if (explicitGrant === true) return true;
   if (MANAGEMENT_ONLY_TABS.has(tab)) return !!role && CLAIMS_ALLOWED_ROLES.has(role);
-  if (SUPER_ADMIN_ONLY_TABS.has(tab)) {
-    return permissions?.[permKey] === true;
-  }
-  // Explicit per-user grant from User Permissions always wins for non-super-admin roles.
+  if (SUPER_ADMIN_ONLY_TABS.has(tab)) return false;
+
+  // Explicit per-user revoke from User Permissions always wins for non-super-admin roles.
   // This lets management toggle any tab (e.g. recontact-leads) on/off for any user.
-  if (permissions && permKey in permissions) {
-    return permissions[permKey] === true;
-  }
+  if (permissions && permKey in permissions) return false;
+
 
   if (role === 'admin') return true;
   if (role === 'claims_agent') return CLAIMS_AGENT_TABS.includes(tab);
