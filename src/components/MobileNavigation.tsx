@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Phone, Clock, PhoneCall, LogIn } from 'lucide-react';
+import { Menu, X, Phone, Clock, PhoneCall, LogIn, Check } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Link, useNavigate } from 'react-router-dom';
 import { OptimizedImage } from '@/components/OptimizedImage';
@@ -147,8 +147,19 @@ const MobileNavigation: React.FC = () => {
                 </button>
               </div>
 
-              
+              {/* Reassurance benefits — fills the space above the CTA */}
+              <div className="mt-3 pt-3 border-t">
+                <div className="rounded-xl bg-muted/60 px-3 py-2.5 space-y-1.5">
+                  {['Unlimited claims', 'Parts and labour covered', 'No excess', 'From just 60p a day'].map((b) => (
+                    <div key={b} className="flex items-center gap-2 text-[13px] font-medium text-gray-700">
+                      <Check className="h-3.5 w-3.5 text-green-500 flex-shrink-0" />
+                      <span>{b}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </nav>
+
 
             {/* Bottom CTA */}
             <div className="flex-shrink-0 pt-3 border-t">
