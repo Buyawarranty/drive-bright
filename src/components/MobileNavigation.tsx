@@ -33,7 +33,7 @@ const MobileNavigation: React.FC = () => {
         <SheetTrigger asChild>
           <button
             type="button"
-            className="lg:hidden inline-flex items-center gap-1.5 min-h-[34px] px-2.5 py-1 rounded-xl bg-background border border-border shadow-sm hover:shadow-md active:scale-[0.97] transition-all"
+            className="lg:hidden inline-flex items-center gap-1.5 min-h-[34px] px-2.5 py-1 rounded-xl bg-background/80 border border-border/50 hover:bg-muted/60 active:scale-[0.97] transition-all"
             aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={isMobileMenuOpen}
           >
