@@ -15,6 +15,11 @@ interface UseMotMileageResult {
   error: string | null;
 }
 
+// PERF: the same plate is queried by several panels on one screen (step 1, step 2,
+// external payment). Cache the resolved reading for the session so only the first
+// panel hits the database and the rest render instantly.
+const motCache = new Map<string, { mileage: number | null; date: string | null }>();
+
 export const useMotMileage = (registrationNumber: string | undefined): UseMotMileageResult => {
   const [motMileage, setMotMileage] = useState<number | null>(null);
   const [motDate, setMotDate] = useState<string | null>(null);
@@ -36,6 +41,15 @@ export const useMotMileage = (registrationNumber: string | undefined): UseMotMil
     }
 
     const spacedReg = `${normalizedReg.slice(0, -3)} ${normalizedReg.slice(-3)}`;
+
+    const cached = motCache.get(normalizedReg);
+    if (cached) {
+      setMotMileage(cached.mileage);
+      setMotDate(cached.date);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -72,6 +86,7 @@ export const useMotMileage = (registrationNumber: string | undefined): UseMotMil
         const motTests: MotTest[] = Array.isArray(rawMotTests) ? (rawMotTests as MotTest[]) : [];
 
         if (motTests.length === 0) {
+          motCache.set(normalizedReg, { mileage: null, date: null });
           setMotMileage(null);
           setMotDate(null);
           return;
@@ -86,9 +101,14 @@ export const useMotMileage = (registrationNumber: string | undefined): UseMotMil
           .find((test) => test.odometerValue && test.odometerValue > 0);
 
         if (testWithMileage?.odometerValue) {
+          motCache.set(normalizedReg, {
+            mileage: testWithMileage.odometerValue,
+            date: testWithMileage.completedDate || null,
+          });
           setMotMileage(testWithMileage.odometerValue);
           setMotDate(testWithMileage.completedDate || null);
         } else {
+          motCache.set(normalizedReg, { mileage: null, date: null });
           setMotMileage(null);
           setMotDate(null);
         }
