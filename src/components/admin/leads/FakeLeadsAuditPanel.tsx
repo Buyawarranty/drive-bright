@@ -494,6 +494,15 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
                   <div className="text-[10px] font-semibold text-red-900">{d.day}</div>
                   <div className="text-[10px] text-muted-foreground whitespace-nowrap">{d.date}</div>
                   <div className="text-base font-bold text-red-700 leading-tight">{d.count}</div>
+                  {canSeeDetails && d.sources.length > 0 && (
+                    <div className="mt-1 space-y-0.5 border-t border-red-200 pt-1">
+                      {d.sources.map(([src, n]) => (
+                        <div key={src} className="text-[9px] text-muted-foreground whitespace-nowrap">
+                          {src}: <span className="font-semibold text-foreground">{n}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
