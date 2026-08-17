@@ -975,9 +975,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
             {/* Mobile bottom line — the second tick row */}
             <div className="sm:hidden w-full mt-4 lg:col-span-2">
-              <div className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white shadow-sm px-3 py-2.5">
-                <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                <span className="text-sm font-medium text-gray-700">Unlimited claims • Parts and Labour • No excess</span>
+              <div className="flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white shadow-sm px-2 py-2">
+                <Check className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                <span className="text-[11px] leading-tight font-medium text-gray-700 whitespace-nowrap">Unlimited claims • Parts and Labour • No excess</span>
               </div>
             </div>
 
