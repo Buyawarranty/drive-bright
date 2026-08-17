@@ -805,8 +805,18 @@ export const useLeads = (options?: UseLeadsOptions) => {
         'Leads fetch timed out'
       );
 
-      const { data: allSalesLeadsData, error: salesError } = allSalesLeadsResult;
-      if (salesError) throw salesError;
+      let allSalesLeadsResult: any;
+      try {
+        allSalesLeadsResult = await runWideLeadsFetch();
+        if (allSalesLeadsResult?.error) throw allSalesLeadsResult.error;
+      } catch (wideErr) {
+        if (!isSalesAgent || !currentAdmin?.id) throw wideErr;
+        console.warn('[Leads] Wide fetch failed, falling back to recent assigned leads:', wideErr);
+        allSalesLeadsResult = await fetchAgentFallbackLeads();
+        if (allSalesLeadsResult?.error) throw allSalesLeadsResult.error;
+      }
+
+      const { data: allSalesLeadsData } = allSalesLeadsResult;
 
       const explicitLeadIds = serverLeadIdsRef.current || [];
       const explicitLeadsResult = explicitLeadIds.length > 0
