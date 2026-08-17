@@ -519,6 +519,7 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
                       <TableHead>Customer</TableHead>
                       <TableHead>Phone</TableHead>
                       <TableHead className="text-center">Calls</TableHead>
+                      {canSeeDetails && <TableHead>Source</TableHead>}
                       <TableHead>Marked fake</TableHead>
                       <TableHead>Reason</TableHead>
                       <TableHead>Audit</TableHead>
