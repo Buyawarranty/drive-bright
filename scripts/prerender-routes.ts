@@ -109,6 +109,14 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
 
   // ---------------- The Warranty Hub articles ----------------
   {
+    path: "/thewarrantyhub/2026-toyota-corolla-cross-first-look-features-price-reliability/",
+    title: "2026 Toyota Corolla Cross First Look UK | Price & Reliability",
+    description:
+      "First look at the 2026 Toyota Corolla Cross with updated design and hybrid efficiency in the UK, plus price expectations, reliability insight and warranty advice.",
+    ogType: "article",
+    ogImage: "https://buyawarranty.co.uk/blog/2026-toyota-corolla-cross-uk.jpg",
+  },
+  {
     path: "/thewarrantyhub/toyota-corolla-hybrid-ownership-cost-uk-fuel-savings-vs-warranty-protection/",
     title: "Toyota Corolla Hybrid Ownership Cost UK | Fuel Savings vs Warranty",
     description:
