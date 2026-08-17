@@ -47,6 +47,7 @@ const SmsTrackingTab = lazy(() => import('@/components/admin/SmsTrackingTab'));
 // Lazy-load ALL tab components to drastically reduce initial bundle
 const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
 const ChatbotDataTab = lazy(() => import('@/components/admin/chatbot/ChatbotDataTab'));
+const SemrushSeoTab = lazy(() => import('@/components/admin/semrush/SemrushSeoTab'));
 const ContactSubmissionsTab = lazy(() => import('@/components/admin/ContactSubmissionsTab'));
 const ComplaintsTab = lazy(() => import('@/components/admin/ComplaintsTab'));
 const AbandonedCartsTab = lazy(() => import('@/components/admin/AbandonedCartsTab').then(m => ({ default: m.AbandonedCartsTab })));
@@ -750,6 +751,16 @@ const AdminDashboard = () => {
         );
       case 'chatbot-data':
         return <ChatbotDataTab />;
+      case 'semrush-seo':
+        if (!['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole)) {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">Semrush SEO data is restricted to management.</p>
+            </div>
+          );
+        }
+        return <SemrushSeoTab />;
       case 'reviews':
         return <ReviewsTab />;
       case 'contact':
