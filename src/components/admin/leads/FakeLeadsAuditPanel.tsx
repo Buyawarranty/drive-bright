@@ -118,7 +118,7 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
       const { data: leadsData, error: leadsErr } = await supabase
         .from('sales_leads')
         .select(`id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model,
-                 call_count, status, created_at,
+                 call_count, status, created_at, lead_source,
                  fake_marked_at, fake_marked_by, fake_reason, fake_reason_note,
                  fake_audit_status, fake_audited_at, fake_audited_by`)
         .gte('fake_marked_at', from.toISOString())
