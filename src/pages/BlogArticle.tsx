@@ -348,6 +348,7 @@ const BlogArticle = () => {
           "@type": "SpeakableSpecification",
           "cssSelector": ["h1"],
         },
+        "isPartOf": { "@type": "WebPage", "@id": articleUrl },
         "mainEntityOfPage": { "@type": "WebPage", "@id": articleUrl },
       },
       ...(faqItems.length
