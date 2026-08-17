@@ -86,13 +86,31 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         }
 
 
-        const [slRes, cartRes] = await Promise.all([query, cartQuery]);
+        let [slRes, cartRes] = await Promise.all([query, cartQuery]);
 
         if (slRes.error) console.error('Error fetching leads:', slRes.error);
         if (cartRes.error) console.error('Error fetching abandoned carts:', cartRes.error);
 
+        // Fallback: if the combined search filter failed, try a plain reg/email
+        // match so the agent still gets the lead instead of an empty list.
+        if (slRes.error && searchTerm.trim()) {
+          const compact = searchTerm.trim().replace(/\s+/g, '').toUpperCase();
+          const spaced = compact.length >= 5 ? `${compact.slice(0, -3)} ${compact.slice(-3)}` : compact;
+          slRes = await supabase
+            .from('sales_leads')
+            .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest, assigned_to')
+            .in('vehicle_reg', [compact, spaced, searchTerm.trim()])
+            .order('created_at', { ascending: false })
+            .limit(50) as any;
+        }
+
+        setLoadError(
+          slRes.error ? (slRes.error.message || 'Lead search failed — try again.') : null
+        );
+
         const merged: LeadData[] = [...((slRes.data as any[]) || [])];
         const seen = new Set(
+
           merged.map((l) => `${(l.email || '').toLowerCase()}|${(l.vehicle_reg || '').replace(/\s/g, '').toUpperCase()}`)
         );
 
