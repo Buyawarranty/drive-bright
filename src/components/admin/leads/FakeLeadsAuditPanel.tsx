@@ -39,6 +39,7 @@ interface FakeLeadRow {
   call_count: number | null;
   status: string;
   created_at: string;
+  lead_source: string | null;
   fake_marked_at: string | null;
   fake_marked_by: string | null;
   fake_reason: string | null;
