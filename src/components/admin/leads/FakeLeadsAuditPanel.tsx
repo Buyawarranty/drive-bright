@@ -282,19 +282,23 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
 
   /** Marked-as-fake counts per calendar day (newest first) for the selected period. */
   const dailyCounts = useMemo(() => {
-    const map: Record<string, number> = {};
+    const map: Record<string, { count: number; sources: Record<string, number> }> = {};
     filteredLeads.forEach(l => {
       const d = l.fake_marked_at ? parseISO(l.fake_marked_at) : parseISO(l.created_at);
       const key = format(d, 'yyyy-MM-dd');
-      map[key] = (map[key] || 0) + 1;
+      if (!map[key]) map[key] = { count: 0, sources: {} };
+      map[key].count++;
+      const src = SOURCE_LABELS[l.lead_source || 'website'] || (l.lead_source || 'Direct / organic');
+      map[key].sources[src] = (map[key].sources[src] || 0) + 1;
     });
     return Object.entries(map)
       .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-      .map(([key, count]) => ({
+      .map(([key, v]) => ({
         key,
         day: format(parseISO(key), 'EEE'),
         date: format(parseISO(key), 'd MMM yyyy'),
-        count,
+        count: v.count,
+        sources: Object.entries(v.sources).sort((a, b) => b[1] - a[1]),
       }));
   }, [filteredLeads]);
 
