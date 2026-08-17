@@ -671,25 +671,41 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   // Whenever the visible leads change, pull the set of leads currently tagged
   // "Not spoken to" so the pill count and filter reflect live data.
+  // Keyed on a stable id string (not the array identity) so re-renders don't
+  // re-fire the query, and capped/chunked so the request URL stays small.
+  const visibleLeadIdsKey = useMemo(
+    () => visibleLeads.slice(0, 250).map(l => l.id).join(','),
+    [visibleLeads]
+  );
   useEffect(() => {
-    if (!notSpokenTagId || visibleLeads.length === 0) {
+    if (!notSpokenTagId || !visibleLeadIdsKey) {
       setNotSpokenLeadIds(new Set());
       return;
     }
     let cancelled = false;
-    const leadIds = visibleLeads.map(l => l.id);
+    const leadIds = visibleLeadIdsKey.split(',');
+    const chunks: string[][] = [];
+    for (let i = 0; i < leadIds.length; i += 100) chunks.push(leadIds.slice(i, i + 100));
     (async () => {
-      const { data, error } = await (supabase.from('lead_tag_assignments') as any)
-        .select('lead_id')
-        .eq('tag_id', notSpokenTagId)
-        .in('lead_id', leadIds);
+      const results = await Promise.all(
+        chunks.map(chunk =>
+          (supabase.from('lead_tag_assignments') as any)
+            .select('lead_id')
+            .eq('tag_id', notSpokenTagId)
+            .in('lead_id', chunk)
+        )
+      );
       if (cancelled) return;
-      if (error) { setNotSpokenLeadIds(new Set()); return; }
-      const ids = new Set<string>((data || []).map((r: any) => r.lead_id as string));
+      const ids = new Set<string>();
+      results.forEach((r: any) => {
+        if (r?.error) return;
+        (r?.data || []).forEach((row: any) => ids.add(row.lead_id as string));
+      });
       setNotSpokenLeadIds(ids);
     })();
     return () => { cancelled = true; };
-  }, [notSpokenTagId, visibleLeads]);
+  }, [notSpokenTagId, visibleLeadIdsKey]);
+
 
 
   const statusFilteredLeads = useMemo(
@@ -1231,9 +1247,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         const createdGroup = createdParts.length > 1 ? `and(${createdParts.join(',')})` : createdParts[0];
         const resubGroup = resubParts.length > 1 ? `and(${resubParts.join(',')})` : resubParts[0];
         query = query.or(`${createdGroup},${resubGroup}`);
+      } else {
+        // No date range selected: never scan the whole table. The agent badges
+        // only ever describe recent flow, so window it to the last 90 days.
+        const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+        query = query.or(`created_at.gte.${since},last_resubmitted_at.gte.${since}`);
       }
 
-      const { data, error } = await query.limit(10000);
+      const { data, error } = await query.limit(5000);
       if (cancelled) return;
       if (error) {
         console.warn('[NewLeadsTab] agent count query failed', error);
@@ -1241,9 +1262,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       }
       setAgentCountRows((data || []) as any);
     };
-    load();
-    return () => { cancelled = true; };
-  }, [dateRange?.from?.getTime(), dateRange?.to?.getTime(), leads.length]);
+    // Defer slightly so the first paint of the table isn't competing with this
+    // secondary badge query, and so rapid date changes only fire once.
+    const t = setTimeout(load, 250);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [dateRange?.from?.getTime(), dateRange?.to?.getTime()]);
+
 
   const teamScopedAgentCountRows = useMemo(() => {
     if (!teamFilter) return agentCountRows;
