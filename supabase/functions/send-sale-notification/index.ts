@@ -293,7 +293,9 @@ serve(async (req: Request) => {
 
     // Use the dedicated notify.buyawarranty.co.uk sender so mail to
     // @buyawarranty.co.uk mailboxes isn't dropped by same-domain anti-spoof.
-    const subject = `New Sale ${subjectSource}: ${reg} - ${saleValueDisplay} via ${payment}`;
+    const agentSubjectPart = isAgentSale ? ` — Agent: ${resolvedAgentName || 'Unknown Agent'}` : '';
+    const priceMatchSubjectPart = isPriceMatch ? ' [Price match]' : '';
+    const subject = `New Sale ${subjectSource}: ${reg} - ${saleValueDisplay} via ${payment}${agentSubjectPart}${priceMatchSubjectPart}`;
     const notifyResult = await sendInternalNotification({
       to: ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"],
       subject,
