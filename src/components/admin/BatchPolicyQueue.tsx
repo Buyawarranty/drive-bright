@@ -82,6 +82,7 @@ export const BatchPolicyQueue: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<QueuedCustomer>>({});
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Autosave queue to localStorage on every change
@@ -613,8 +614,8 @@ ${rows}
                   const issues = getIssues(c);
                   const hasIssue = issues.length > 0;
                   return (
+                    <React.Fragment key={c.id}>
                     <tr
-                      key={c.id}
                       className={`border-b ${hasIssue ? 'bg-destructive/5 hover:bg-destructive/10' : 'hover:bg-muted/20'}`}
                     >
                       <td className="py-2 px-3 text-muted-foreground align-top">{i + 1}</td>
@@ -640,6 +641,15 @@ ${rows}
                       </td>
                       <td className="py-2 px-3 align-top text-right">
                         <div className="flex items-center justify-end gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2 gap-1"
+                            onClick={() => setExpandedId(prev => (prev === c.id ? null : c.id))}
+                            title="Show full customer, plan and cover details"
+                          >
+                            {expandedId === c.id ? 'Hide' : 'Details'}
+                          </Button>
                           <Button size="sm" variant="outline" className="h-7 px-2 gap-1" onClick={() => openEdit(c)} title="Edit name & address">
                             <Pencil className="h-3.5 w-3.5" />
                             Edit
@@ -650,6 +660,62 @@ ${rows}
                         </div>
                       </td>
                     </tr>
+                    {expandedId === c.id && (
+                      <tr className="border-b bg-muted/20">
+                        <td colSpan={7} className="px-3 py-3">
+                          <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-4 text-xs">
+                            {(() => {
+                              const cl = c.policy?.claim_limit ?? c.claim_limit;
+                              const ex = c.policy?.voluntary_excess ?? c.voluntary_excess;
+                              const rows: Array<[string, React.ReactNode]> = [
+                                ['Claim limit', cl ? `£${getDisplayClaimLimitValue(cl).toLocaleString()}` : '—'],
+                                ['Voluntary excess', ex !== undefined && ex !== null ? `£${ex}` : '—'],
+                                ['Labour rate', c.labour_rate ? `£${c.labour_rate}/hr` : '—'],
+                                ['Plan', c.policy?.plan_type || c.plan_type || '—'],
+                                ['Payment type', c.policy?.payment_type || c.payment_type || '—'],
+                                ['Bonus months', String(c.policy?.seasonal_bonus_months ?? c.seasonal_bonus_months ?? 0)],
+                                ['Policy number', c.policy?.policy_number || '—'],
+                                ['Warranty #', c.policy?.warranty_number || c.warranty_number || c.warranty_reference_number || '—'],
+                                ['Start date', c.policy?.policy_start_date ? format(new Date(c.policy.policy_start_date), 'd MMM yyyy') : '—'],
+                                ['End date', c.policy?.policy_end_date ? format(new Date(c.policy.policy_end_date), 'd MMM yyyy') : '—'],
+                                ['Vehicle', [c.vehicle_make, c.vehicle_model, c.vehicle_year].filter(Boolean).join(' ') || '—'],
+                                ['Mileage', c.mileage ? `${parseInt(c.mileage).toLocaleString()} miles` : '—'],
+                                ['Phone', c.phone || '—'],
+                                ['Email', c.email || '—'],
+                                ['Address', formatAddress(c).join(', ') || '—'],
+                              ];
+                              return rows.map(([label, value]) => (
+                                <div key={label} className="flex flex-col">
+                                  <span className="text-muted-foreground">{label}</span>
+                                  <span className="font-semibold break-words">{value}</span>
+                                </div>
+                              ));
+                            })()}
+                          </div>
+                          {(() => {
+                            const addons = [
+                              c.wear_tear && 'Wear & tear',
+                              c.europe_cover && 'European cover',
+                              c.mot_repair && 'MOT repair',
+                              c.mot_fee && 'MOT fee',
+                              c.tyre_cover && 'Tyre cover',
+                              c.lost_key && 'Lost key',
+                              c.vehicle_rental && 'Vehicle rental',
+                              c.transfer_cover && 'Transfer cover',
+                              c.consequential && 'Consequential loss',
+                              c.breakdown_recovery && 'Breakdown recovery',
+                            ].filter(Boolean) as string[];
+                            return (
+                              <div className="mt-3 text-xs">
+                                <span className="text-muted-foreground">Add-ons: </span>
+                                <span className="font-semibold">{addons.length ? addons.join(' • ') : 'None'}</span>
+                              </div>
+                            );
+                          })()}
+                        </td>
+                      </tr>
+                    )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
