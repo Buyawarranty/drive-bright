@@ -688,7 +688,7 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
                           </TableRow>
                           {isExpanded && (
                             <TableRow className="bg-muted/20">
-                              <TableCell colSpan={8} className="text-xs">
+                              <TableCell colSpan={canSeeDetails ? 9 : 8} className="text-xs">
                                 <div className="font-semibold mb-1 flex items-center gap-1">
                                   <Phone className="h-3 w-3" /> Call attempts ({calls.length})
                                 </div>
