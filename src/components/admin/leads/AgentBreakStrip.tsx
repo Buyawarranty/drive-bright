@@ -256,7 +256,11 @@ export const AgentBreakStrip = () => {
                       >
                         <span className={cn('h-1.5 w-1.5 rounded-full', metaFor(s).dot)} />
                         {metaFor(s).label}
-                        {s !== 'available' && row ? ` · ${elapsed(row.started_at)}` : ''}
+                        {s !== 'available' && row ? (
+                          <span className="tabular-nums font-normal opacity-80">
+                            · {lunchRemaining(row.started_at) ? `${lunchRemaining(row.started_at)} left` : `over by ${elapsed(row.started_at)}`}
+                          </span>
+                        ) : null}
                       </span>
                     </div>
                   );
