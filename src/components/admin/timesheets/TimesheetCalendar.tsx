@@ -33,31 +33,20 @@ const entryTypeConfig: Record<string, { icon: React.ElementType; label: string; 
   unpaid_leave: { icon: Coffee, label: 'Leave', color: 'text-gray-700', bgColor: 'bg-gray-200', selectedBg: 'bg-gray-500' },
 };
 
-type DayType = 'full_day' | 'half_day';
+type DayType = 'full_day';
 
-function getDefaults(date: Date, dayType: DayType = 'full_day') {
-  const weekend = isWeekend(date);
-  if (dayType === 'half_day') {
-    return { startTime: '09:00', endTime: '14:00', hoursWorked: 5, breakMinutes: 0 };
-  }
-  return {
-    startTime: '09:00',
-    endTime: weekend ? '14:00' : '18:00',
-    hoursWorked: weekend ? 5 : 9,
-    breakMinutes: weekend ? 0 : 30,
-  };
-}
-
-function isHalfDay(entry: TimesheetEntry): boolean {
-  return (entry.hours_worked || 0) <= 5;
+// Every worked day is a full day — there is no half-day option any more.
+function getDefaults(_date: Date, _dayType: DayType = 'full_day') {
+  return { startTime: '09:00', endTime: '18:00', hoursWorked: 9, breakMinutes: 30 };
 }
 
 function getDayLabel(entry: TimesheetEntry): string {
   if (entry.entry_type === 'worked' || entry.entry_type === 'wfh' || entry.entry_type === 'training') {
-    return isHalfDay(entry) ? 'Half Day' : 'Full Day';
+    return 'Full Day';
   }
   return entryTypeConfig[entry.entry_type]?.label || entry.entry_type;
 }
+
 
 export function TimesheetCalendar({
   entries,
@@ -86,23 +75,23 @@ export function TimesheetCalendar({
   };
 
   const handleDayClick = (date: Date, entry?: TimesheetEntry) => {
-    // Always open the popover so the user can pick Worked / Half / Holiday / Sick / Training / Leave.
+    // Always open the popover so the user can pick Full day / Holiday / Sick / Training / Leave.
     setSelectedDate(date);
     if (entry) {
       setFormData({
         entryType: entry.entry_type === 'wfh' ? 'worked' : entry.entry_type,
-        dayType: isHalfDay(entry) ? 'half_day' : 'full_day',
+        dayType: 'full_day',
         notes: entry.notes || '',
       });
     } else {
-      const weekend = isWeekend(date);
       setFormData({
         entryType: 'worked',
-        dayType: weekend ? 'half_day' : 'full_day',
+        dayType: 'full_day',
         notes: '',
       });
     }
   };
+
 
   const handleSave = async () => {
     if (!selectedDate) return;
@@ -151,7 +140,7 @@ export function TimesheetCalendar({
         <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-5">
           {[
             { label: 'Full Days', value: stats.fullDays, color: 'text-emerald-700', bg: 'bg-emerald-50' },
-            { label: 'Half Days', value: stats.halfDays, color: 'text-blue-700', bg: 'bg-blue-50' },
+            
             { label: 'Weekend', value: stats.weekendDays, color: 'text-indigo-700', bg: 'bg-indigo-50' },
             { label: 'Sick', value: stats.sickDays, color: 'text-red-700', bg: 'bg-red-50' },
             { label: 'Holidays', value: stats.holidayDays, color: 'text-amber-700', bg: 'bg-amber-50' },
@@ -171,10 +160,6 @@ export function TimesheetCalendar({
           <div className="w-3 h-3 rounded bg-emerald-100 border border-emerald-400" />
           <span className="text-gray-600">Full day</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-blue-100 border border-blue-400" />
-          <span className="text-gray-600">Half day</span>
-        </div>
         {Object.entries(entryTypeConfig).filter(([t]) => t !== 'worked').map(([type, config]) => (
           <div key={type} className="flex items-center gap-1.5">
             <div className={cn('w-3 h-3 rounded', config.bgColor)} />
@@ -189,7 +174,7 @@ export function TimesheetCalendar({
 
       {/* Hint */}
       <p className="text-xs text-gray-500 mb-3">
-        Just mark the days you're <span className="font-semibold text-red-600">off</span> — click a day and pick Holiday, Sick, Training or Leave. Days off show a big red X. Worked days are Full (green) or Half (blue).
+        Just mark the days you're <span className="font-semibold text-red-600">off</span> — click a day and pick Holiday, Sick, Training or Leave. Days off show a big red X. Every day you work counts as a full day (green).
       </p>
 
 
@@ -219,19 +204,19 @@ export function TimesheetCalendar({
           const weekend = isWeekend(day);
           const today = isToday(day);
           const hasEntry = !!entry;
-          const half = !!entry && (entryType === 'worked' || entryType === 'training') && isHalfDay(entry);
           const isDayOff = entryType === 'holiday' || entryType === 'sick' || entryType === 'unpaid_leave';
-          // Full day = green, half day = blue, so they read differently at a glance.
+          // Every worked day is a full day (green).
           const cellBg = !hasEntry
             ? undefined
             : entryType === 'worked'
-              ? (half ? 'bg-blue-100' : 'bg-emerald-100')
+              ? 'bg-emerald-100'
               : config?.bgColor;
           const cellText = !hasEntry
             ? undefined
             : entryType === 'worked'
-              ? (half ? 'text-blue-700' : 'text-emerald-700')
+              ? 'text-emerald-700'
               : config?.color;
+
 
           return (
             <Popover
@@ -264,13 +249,13 @@ export function TimesheetCalendar({
                   {hasEntry && !isDayOff && (
                     <div className={cn(
                       'w-5 h-5 rounded-full flex items-center justify-center',
-                      entryType === 'worked' ? (half ? 'bg-blue-500' : 'bg-emerald-500') : (config?.selectedBg || 'bg-emerald-500'),
+                      entryType === 'worked' ? 'bg-emerald-500' : (config?.selectedBg || 'bg-emerald-500'),
                     )}>
                       <Check className="h-3 w-3 text-white" strokeWidth={3} />
                     </div>
                   )}
                   {hasEntry && entry && (entryType === 'worked' || entryType === 'training') && (
-                    <span className={cn('text-[10px]', half ? 'text-blue-600' : 'text-emerald-700')}>
+                    <span className="text-[10px] text-emerald-700">
                       {getDayLabel(entry)}
                     </span>
                   )}
@@ -305,19 +290,6 @@ export function TimesheetCalendar({
                     >
                       <Briefcase className="h-4 w-4" />
                       Full Day
-                    </button>
-                    {/* Half Day */}
-                    <button
-                      onClick={() => setFormData(prev => ({ ...prev, entryType: 'worked', dayType: 'half_day' }))}
-                      className={cn(
-                        'flex items-center gap-2 p-3 rounded-lg border-2 text-sm font-medium transition-all',
-                        formData.entryType === 'worked' && formData.dayType === 'half_day'
-                          ? 'bg-blue-100 border-blue-500 text-blue-700'
-                          : 'border-gray-200 hover:border-gray-300 text-gray-500'
-                      )}
-                    >
-                      <Briefcase className="h-4 w-4" />
-                      Half Day
                     </button>
                     {/* Holiday */}
                     <button

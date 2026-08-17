@@ -8,7 +8,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useSeesAllAgents } from '@/hooks/useSeesAllAgents';
 import { toast } from 'sonner';
 
-type DayType = 'full_day' | 'half_day' | 'off';
+type DayType = 'full_day' | 'off';
 
 interface AdminLite {
   id: string;

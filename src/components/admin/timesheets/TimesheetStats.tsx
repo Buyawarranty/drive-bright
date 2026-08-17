@@ -9,7 +9,6 @@ interface TimesheetStatsProps {
 export function TimesheetStats({ stats }: TimesheetStatsProps) {
   const statCards = [
     { label: 'Full Days Worked', value: stats.fullDays, icon: Briefcase, color: 'text-emerald-600', bgColor: 'bg-emerald-50' },
-    { label: 'Half Days', value: stats.halfDays, icon: Calendar, color: 'text-blue-600', bgColor: 'bg-blue-50' },
     { label: 'Weekend Days', value: stats.weekendDays, icon: Calendar, color: 'text-indigo-600', bgColor: 'bg-indigo-50' },
     { label: 'Sick Days', value: stats.sickDays, icon: HeartPulse, color: 'text-red-600', bgColor: 'bg-red-50' },
     { label: 'Holidays', value: stats.holidayDays, icon: Umbrella, color: 'text-amber-600', bgColor: 'bg-amber-50' },
