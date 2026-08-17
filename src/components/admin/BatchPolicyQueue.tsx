@@ -614,8 +614,8 @@ ${rows}
                   const issues = getIssues(c);
                   const hasIssue = issues.length > 0;
                   return (
+                    <React.Fragment key={c.id}>
                     <tr
-                      key={c.id}
                       className={`border-b ${hasIssue ? 'bg-destructive/5 hover:bg-destructive/10' : 'hover:bg-muted/20'}`}
                     >
                       <td className="py-2 px-3 text-muted-foreground align-top">{i + 1}</td>
