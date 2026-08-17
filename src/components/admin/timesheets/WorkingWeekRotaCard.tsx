@@ -646,9 +646,6 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                         {working.map(({ a, row }) => (
                           <li key={a.id} className="flex items-center gap-1">
                             <span className="truncate text-foreground">{displayName(a)}</span>
-                            {row!.day_type === 'half_day' && (
-                              <span className="text-amber-600 text-[9px]">½</span>
-                            )}
                           </li>
                         ))}
                         {off.map(({ a }) => (
