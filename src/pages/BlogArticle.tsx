@@ -30,6 +30,7 @@ interface BlogPost {
   seo_description: string | null;
   seo_keywords: string[] | null;
   canonical_url: string | null;
+  meta_tags?: { featured_image_alt?: string; featured_image_title?: string } | null;
   structured_data: any;
   blog_authors: { name: string; bio: string } | null;
   blog_categories: { name: string } | null;
