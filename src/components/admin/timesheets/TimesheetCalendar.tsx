@@ -33,31 +33,20 @@ const entryTypeConfig: Record<string, { icon: React.ElementType; label: string; 
   unpaid_leave: { icon: Coffee, label: 'Leave', color: 'text-gray-700', bgColor: 'bg-gray-200', selectedBg: 'bg-gray-500' },
 };
 
-type DayType = 'full_day' | 'half_day';
+type DayType = 'full_day';
 
-function getDefaults(date: Date, dayType: DayType = 'full_day') {
-  const weekend = isWeekend(date);
-  if (dayType === 'half_day') {
-    return { startTime: '09:00', endTime: '14:00', hoursWorked: 5, breakMinutes: 0 };
-  }
-  return {
-    startTime: '09:00',
-    endTime: weekend ? '14:00' : '18:00',
-    hoursWorked: weekend ? 5 : 9,
-    breakMinutes: weekend ? 0 : 30,
-  };
-}
-
-function isHalfDay(entry: TimesheetEntry): boolean {
-  return (entry.hours_worked || 0) <= 5;
+// Every worked day is a full day — there is no half-day option any more.
+function getDefaults(_date: Date, _dayType: DayType = 'full_day') {
+  return { startTime: '09:00', endTime: '18:00', hoursWorked: 9, breakMinutes: 30 };
 }
 
 function getDayLabel(entry: TimesheetEntry): string {
   if (entry.entry_type === 'worked' || entry.entry_type === 'wfh' || entry.entry_type === 'training') {
-    return isHalfDay(entry) ? 'Half Day' : 'Full Day';
+    return 'Full Day';
   }
   return entryTypeConfig[entry.entry_type]?.label || entry.entry_type;
 }
+
 
 export function TimesheetCalendar({
   entries,
