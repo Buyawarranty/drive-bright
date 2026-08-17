@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SEOHead } from '@/components/SEOHead';
@@ -314,7 +313,7 @@ interface LeadForQuote {
 }
 
 const AdminDashboard = () => {
-  const queryClient = useQueryClient();
+  const [tabRetryKey, setTabRetryKey] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
   // Initialize with URL tab param if present, otherwise default to 'customers'
   const rawUrlTab = searchParams.get('tab');
@@ -1197,7 +1196,11 @@ const AdminDashboardInner: React.FC<{
             onSelect={handleTabChange}
           />
           <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-104px)]">
-            <TabErrorBoundary tabKey={activeTab} onRetry={() => queryClient.invalidateQueries()}>
+            <TabErrorBoundary
+              key={`${activeTab}:${tabRetryKey}`}
+              tabKey={activeTab}
+              onRetry={() => setTabRetryKey(value => value + 1)}
+            >
               <Suspense fallback={<TabFallback />}>
                 {renderContent(displayRole, displayPermissions)}
               </Suspense>
