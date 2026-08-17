@@ -423,6 +423,9 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
                 <TabsTrigger value="flat" className="text-xs px-2">Flat</TabsTrigger>
               </TabsList>
             </Tabs>
+            <Button variant="outline" size="sm" onClick={manualRefresh} disabled={refreshing || loading}>
+              <RefreshCw className={cn('h-3.5 w-3.5 mr-1', (refreshing || loading) && 'animate-spin')} /> Refresh
+            </Button>
             {canExport && (
               <Button variant="outline" size="sm" onClick={exportCsv} disabled={filteredLeads.length === 0}>
                 <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
