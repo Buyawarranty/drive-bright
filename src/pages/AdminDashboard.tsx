@@ -171,7 +171,7 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   if (tab === 'unsubscribe') return true;
   if (role === 'super_admin' || role === 'dev_tester') return true;
   if (tab === 'overview' && role && LIVE_CALLS_ALWAYS_ALLOWED_ROLES.has(role)) return true;
-  if (MANAGEMENT_ONLY_TABS.has(tab)) return role === 'admin';
+  if (MANAGEMENT_ONLY_TABS.has(tab)) return !!role && CLAIMS_ALLOWED_ROLES.has(role);
   if (SUPER_ADMIN_ONLY_TABS.has(tab)) {
     return permissions?.[permKey] === true;
   }
