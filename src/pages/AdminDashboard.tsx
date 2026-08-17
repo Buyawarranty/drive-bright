@@ -313,7 +313,6 @@ interface LeadForQuote {
 }
 
 const AdminDashboard = () => {
-  const [tabRetryKey, setTabRetryKey] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
   // Initialize with URL tab param if present, otherwise default to 'customers'
   const rawUrlTab = searchParams.get('tab');
@@ -1003,6 +1002,7 @@ const AdminDashboardInner: React.FC<{
   accessFromCache?: boolean;
 }> = ({ activeTab, handleTabChange, userRole, userPermissions, isMobileMenuOpen, setIsMobileMenuOpen, navigateToQuoteForm, renderContent, navigate, accessFromCache }) => {
 
+  const [tabRetryKey, setTabRetryKey] = useState(0);
   const { effectiveRole, effectivePermissions, isImpersonating, viewAsAgent } = useViewAs();
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
   const { session } = useAuth();
