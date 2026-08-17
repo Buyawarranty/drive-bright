@@ -13503,6 +13503,7 @@ export type Database = {
           reclaimed_count: number
         }[]
       }
+      rota_sync_in_progress: { Args: never; Returns: boolean }
       set_user_offline: { Args: never; Returns: undefined }
       shark_tank_agent_stats: {
         Args: never
