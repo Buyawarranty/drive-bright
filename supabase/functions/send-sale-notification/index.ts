@@ -128,6 +128,16 @@ serve(async (req: Request) => {
       ['Consequential', saleExtras.consequential],
     ] as [string, any][]).filter(([, on]) => !!on).map(([l]) => l);
     const addOnsDisplay = addOns.length ? addOns.join(', ') : 'None';
+    // Quotes & Orders reference price (frozen at point of sale) + discount given
+    const quotedTotal = saleExtras.sale_quoted_total ?? saleExtras.original_amount ?? null;
+    const soldTotal = saleValue != null ? Number(saleValue) : (saleExtras.final_amount ?? null);
+    const discountAmt = saleExtras.sale_discount_amount ?? saleExtras.discount_amount ??
+      (quotedTotal != null && soldTotal != null ? Number(quotedTotal) - Number(soldTotal) : null);
+    const discountPct = saleExtras.sale_discount_pct != null
+      ? Number(saleExtras.sale_discount_pct)
+      : (quotedTotal ? Math.round((Number(discountAmt || 0) / Number(quotedTotal)) * 1000) / 10 : null);
+    const isPriceMatch = !!saleExtras.price_match_applied;
+
     const row = (label: string, value: string, highlight = false) =>
       `<tr><td style="padding: 8px; background: ${highlight ? '#fde68a' : '#f3f4f6'};"><strong>${label}:</strong></td><td style="padding: 8px;${highlight ? ' font-weight: 700;' : ''}">${value}</td></tr>`;
 
