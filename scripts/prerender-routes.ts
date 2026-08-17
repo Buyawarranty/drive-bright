@@ -109,6 +109,14 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
 
   // ---------------- The Warranty Hub articles ----------------
   {
+    path: "/thewarrantyhub/stop-overpaying-for-repairs-maintenance-warranty-vs-extended-warranty/",
+    title: "Maintenance Warranty vs Extended Warranty UK | Key Differences",
+    description:
+      "Understand the difference between a maintenance warranty and an extended warranty in the UK, what each covers, 2026 costs and how to stop overpaying for repairs.",
+    ogType: "article",
+    ogImage: "https://buyawarranty.co.uk/blog/maintenance-vs-extended-warranty-uk.jpg",
+  },
+  {
     path: "/thewarrantyhub/2026-toyota-corolla-cross-first-look-features-price-reliability/",
     title: "2026 Toyota Corolla Cross First Look UK | Price & Reliability",
     description:
