@@ -264,13 +264,13 @@ export function TimesheetCalendar({
                   {hasEntry && !isDayOff && (
                     <div className={cn(
                       'w-5 h-5 rounded-full flex items-center justify-center',
-                      entryType === 'worked' ? (half ? 'bg-blue-500' : 'bg-emerald-500') : (config?.selectedBg || 'bg-emerald-500'),
+                      entryType === 'worked' ? 'bg-emerald-500' : (config?.selectedBg || 'bg-emerald-500'),
                     )}>
                       <Check className="h-3 w-3 text-white" strokeWidth={3} />
                     </div>
                   )}
                   {hasEntry && entry && (entryType === 'worked' || entryType === 'training') && (
-                    <span className={cn('text-[10px]', half ? 'text-blue-600' : 'text-emerald-700')}>
+                    <span className="text-[10px] text-emerald-700">
                       {getDayLabel(entry)}
                     </span>
                   )}
