@@ -162,28 +162,74 @@ const FAQ = () => {
   };
 
   // Helper function to render text with clickable links
+  // Descriptive anchor text for every auto-linked URL in an answer.
+  // Bare URLs count as "links with no anchor text" for search engines and AI
+  // answer engines (ChatGPT / Gemini / Claude), so each link gets a keyword-rich
+  // label plus a title/aria-label describing its destination.
+  const ANCHOR_LABELS: Record<string, { label: string; title: string }> = {
+    '/what-is-covered': {
+      label: "what's covered by our UK car warranty",
+      title: "What's covered by a Buy A Warranty UK car warranty plan",
+    },
+    '/cancel-warranty': {
+      label: 'car warranty cancellation policy',
+      title: 'How to cancel a Buy A Warranty car warranty and get a refund',
+    },
+    '/make-a-claim': {
+      label: 'how to make a car warranty claim',
+      title: 'Make a car warranty claim with Buy A Warranty',
+    },
+    '/contact-us': {
+      label: 'contact our UK warranty team',
+      title: 'Contact the Buy A Warranty UK support team',
+    },
+  };
+
+  const describeUrl = (url: string) => {
+    let pathname = url;
+    try {
+      pathname = new URL(url, 'https://buyawarranty.co.uk').pathname;
+    } catch {
+      /* keep raw */
+    }
+    const key = pathname.replace(/\/+$/, '') || '/';
+    if (ANCHOR_LABELS[key]) return ANCHOR_LABELS[key];
+    if (key === '/') {
+      return {
+        label: 'Buy A Warranty car warranty quotes',
+        title: 'Get an instant UK car warranty quote from Buy A Warranty',
+      };
+    }
+    const words = key.split('/').filter(Boolean).pop()?.replace(/-/g, ' ') ?? 'car warranty';
+    return { label: words, title: `${words} — Buy A Warranty UK` };
+  };
+
   const renderAnswerWithLinks = (text: string) => {
     // Split text by URLs
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const parts = text.split(urlRegex);
-    
+
     return parts.map((part, index) => {
       if (part.match(urlRegex)) {
+        const isInternal = part.includes('buyawarranty.co.uk');
+        const { label, title } = describeUrl(part);
         return (
           <a
             key={index}
             href={part}
             className="text-brand-orange hover:underline font-medium"
-            target="_blank"
-            rel="noopener noreferrer"
+            title={title}
+            aria-label={title}
+            {...(isInternal ? {} : { target: '_blank', rel: 'noopener noreferrer' })}
           >
-            {part}
+            {label}
           </a>
         );
       }
       return <span key={index}>{part}</span>;
     });
   };
+
 
   const faqData = [
     {
