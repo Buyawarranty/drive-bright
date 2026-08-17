@@ -50,7 +50,7 @@ const MobileNavigation: React.FC = () => {
         <SheetContent side="right" className="w-[300px] sm:w-[400px] overflow-y-auto">
           <div className="flex flex-col h-full max-h-screen">
             {/* Header with logo */}
-            <div className="flex items-center justify-between pb-4 flex-shrink-0">
+            <div className="flex items-center justify-between pb-3 flex-shrink-0">
               <button 
                 onClick={handleLogoClick}
                 className="hover:opacity-80 transition-opacity"
@@ -58,7 +58,7 @@ const MobileNavigation: React.FC = () => {
                   <OptimizedImage 
                     src={buyawarrantyLogo} 
                     alt="Buy a Warranty Logo"
-                    className="h-8 w-auto object-contain"
+                    className="h-7 w-auto object-contain"
                     priority={false}
                     width={240}
                     height={40}
@@ -67,90 +67,91 @@ const MobileNavigation: React.FC = () => {
             </div>
 
             {/* Navigation Links */}
-            <nav className="flex flex-col space-y-4 flex-1 overflow-y-auto pb-4">
+            <nav className="flex flex-col space-y-0.5 flex-1 overflow-y-auto pb-2">
               <Link 
                 to="/what-is-covered/" 
-                className="text-lg font-medium text-gray-700 hover:text-gray-900 py-2"
+                className="text-base font-medium text-gray-700 hover:text-gray-900 py-1.5"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 What's Covered
               </Link>
               <Link 
                 to="/make-a-claim/" 
-                className="text-lg font-medium text-gray-700 hover:text-gray-900 py-2"
+                className="text-base font-medium text-gray-700 hover:text-gray-900 py-1.5"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Make a Claim
               </Link>
               <Link 
                 to="/faq/" 
-                className="text-lg font-medium text-gray-700 hover:text-gray-900 py-2"
+                className="text-base font-medium text-gray-700 hover:text-gray-900 py-1.5"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 FAQs
               </Link>
               <Link 
                 to="/contact-us/" 
-                className="text-lg font-medium text-gray-700 hover:text-gray-900 py-2"
+                className="text-base font-medium text-gray-700 hover:text-gray-900 py-1.5"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Contact Us
               </Link>
               <Link 
                 to="/customer-dashboard/" 
-                className="text-lg font-medium text-gray-700 hover:text-gray-900 py-2 flex items-center gap-2"
+                className="text-base font-medium text-gray-700 hover:text-gray-900 py-1.5 flex items-center gap-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <LogIn className="h-5 w-5" />
+                <LogIn className="h-4 w-4" />
                 Login
               </Link>
               
               {/* Call Us Section */}
-              <div className="pt-4 border-t">
-                <div className="text-sm text-gray-600 mb-3 flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
+              <div className="pt-3 mt-1 border-t">
+                <div className="text-xs text-gray-600 mb-2 flex items-center gap-2">
+                  <Clock className="h-3.5 w-3.5" />
                   Mon-Fri 9am to 5:30pm
                 </div>
                 <a 
                   href="tel:03302295040" 
-                  className="flex items-center p-3 rounded-lg hover:bg-gray-50 mb-2"
+                  className="flex items-center p-2 rounded-lg hover:bg-gray-50"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Phone className="h-5 w-5 mr-3 text-orange-500" />
+                  <Phone className="h-4 w-4 mr-2.5 text-orange-500" />
                   <div>
-                    <div className="font-semibold text-sm">Get a Quote</div>
-                    <div className="text-orange-500 font-semibold">0330 229 5040</div>
+                    <div className="font-semibold text-xs">Get a Quote</div>
+                    <div className="text-orange-500 font-semibold text-sm">0330 229 5040</div>
                   </div>
                 </a>
                 <a 
                   href="tel:03302295045" 
-                  className="flex items-center p-3 rounded-lg hover:bg-gray-50 mb-2"
+                  className="flex items-center p-2 rounded-lg hover:bg-gray-50"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Phone className="h-5 w-5 mr-3 text-orange-500" />
+                  <Phone className="h-4 w-4 mr-2.5 text-orange-500" />
                   <div>
-                    <div className="font-semibold text-sm">Make a Claim</div>
-                    <div className="text-orange-500 font-semibold">0330 229 5045</div>
+                    <div className="font-semibold text-xs">Make a Claim</div>
+                    <div className="text-orange-500 font-semibold text-sm">0330 229 5045</div>
                   </div>
                 </a>
                 
                 {/* Request Call-Back Button */}
                 <button 
                   onClick={handleRequestCallback}
-                  className="flex items-center w-full p-3 rounded-lg bg-brand-orange/10 hover:bg-brand-orange/20 transition-colors"
+                  className="flex items-center w-full p-2 mt-1 rounded-lg bg-brand-orange/10 hover:bg-brand-orange/20 transition-colors"
                 >
-                  <PhoneCall className="h-5 w-5 mr-3 text-brand-orange" />
+                  <PhoneCall className="h-4 w-4 mr-2.5 text-brand-orange" />
                   <div className="text-left">
-                    <div className="font-semibold text-sm text-foreground">Request Call-Back</div>
-                    <div className="text-xs text-muted-foreground">We'll call you back</div>
+                    <div className="font-semibold text-xs text-foreground">Request Call-Back</div>
+                    <div className="text-[11px] text-muted-foreground">We'll call you back</div>
                   </div>
                 </button>
               </div>
+
               
             </nav>
 
             {/* Bottom CTA */}
-            <div className="flex-shrink-0 pt-4 border-t space-y-2">
+            <div className="flex-shrink-0 pt-3 border-t">
               <Link
                 to="/?step=1"
                 onClick={() => setIsMobileMenuOpen(false)}
