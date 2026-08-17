@@ -933,10 +933,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     const debounce = setTimeout(async () => {
       try {
         const spaced = reg.length > 4 ? `${reg.slice(0, reg.length - 3)} ${reg.slice(-3)}` : reg;
+        // PERF: indexed equality on vehicle_reg (plates are stored uppercase),
+        // never ilike — an ilike scan of every lead took ~65ms per keystroke.
         const { data } = await supabase
           .from('sales_leads')
           .select('id, first_name, last_name, email, phone, assigned_to, mileage, created_at')
-          .or(`vehicle_reg.ilike.${reg},vehicle_reg.ilike.${spaced}`)
+          .in('vehicle_reg', [reg, spaced])
           .order('created_at', { ascending: false })
           .limit(1);
         if (cancelled) return;
