@@ -457,8 +457,7 @@ export function TimesheetApprovals() {
                     <div className="hidden sm:flex items-center gap-3 text-sm text-gray-600">
                       <span>{agent.fullDays} full</span>
                       <span className="text-gray-300">|</span>
-                      <span>{agent.fullDays} full</span>
-                      <span className="text-gray-300">|</span>
+
                       <span>{agent.weekendDays} wknd</span>
                       <span className="text-gray-300">|</span>
                       <span>{agent.deals.length} deals</span>
