@@ -561,11 +561,11 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
         <button
           type="button"
           onClick={() => (mustAcceptFirst ? passCall(top.id) : dismiss(top.id))}
-          className="h-6 w-6 inline-flex items-center justify-center rounded bg-blue-800 hover:bg-blue-900"
+          className="h-9 w-9 inline-flex items-center justify-center rounded-md bg-blue-900 hover:bg-red-600 ring-1 ring-white/50"
           title="Close this alert"
           aria-label="Close this alert"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-6 w-6" strokeWidth={3} />
         </button>
       </div>
       <div className="px-2 py-1.5 space-y-1.5">
