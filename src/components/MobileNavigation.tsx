@@ -70,35 +70,35 @@ const MobileNavigation: React.FC = () => {
             <nav className="flex flex-col space-y-0.5 flex-1 overflow-y-auto pb-2">
               <Link 
                 to="/what-is-covered/" 
-                className="text-base font-medium text-gray-700 hover:text-gray-900 py-1.5"
+                className="text-base font-medium text-gray-700 py-1.5 px-2 -mx-2 rounded-lg transition-colors hover:bg-muted hover:text-gray-900"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 What's Covered
               </Link>
               <Link 
                 to="/make-a-claim/" 
-                className="text-base font-medium text-gray-700 hover:text-gray-900 py-1.5"
+                className="text-base font-medium text-gray-700 py-1.5 px-2 -mx-2 rounded-lg transition-colors hover:bg-muted hover:text-gray-900"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Make a Claim
               </Link>
               <Link 
                 to="/faq/" 
-                className="text-base font-medium text-gray-700 hover:text-gray-900 py-1.5"
+                className="text-base font-medium text-gray-700 py-1.5 px-2 -mx-2 rounded-lg transition-colors hover:bg-muted hover:text-gray-900"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 FAQs
               </Link>
               <Link 
                 to="/contact-us/" 
-                className="text-base font-medium text-gray-700 hover:text-gray-900 py-1.5"
+                className="text-base font-medium text-gray-700 py-1.5 px-2 -mx-2 rounded-lg transition-colors hover:bg-muted hover:text-gray-900"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Contact Us
               </Link>
               <Link 
                 to="/customer-dashboard/" 
-                className="text-base font-medium text-gray-700 hover:text-gray-900 py-1.5 flex items-center gap-2"
+                className="text-base font-medium text-gray-700 py-1.5 px-2 -mx-2 rounded-lg transition-colors hover:bg-muted hover:text-gray-900 flex items-center gap-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <LogIn className="h-4 w-4" />
@@ -113,7 +113,7 @@ const MobileNavigation: React.FC = () => {
                 </div>
                 <a 
                   href="tel:03302295040" 
-                  className="flex items-center p-2 rounded-lg hover:bg-gray-50"
+                  className="flex items-center p-2 rounded-lg transition-colors hover:bg-muted"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Phone className="h-4 w-4 mr-2.5 text-orange-500" />
@@ -124,7 +124,7 @@ const MobileNavigation: React.FC = () => {
                 </a>
                 <a 
                   href="tel:03302295045" 
-                  className="flex items-center p-2 rounded-lg hover:bg-gray-50"
+                  className="flex items-center p-2 rounded-lg transition-colors hover:bg-muted"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Phone className="h-4 w-4 mr-2.5 text-orange-500" />
