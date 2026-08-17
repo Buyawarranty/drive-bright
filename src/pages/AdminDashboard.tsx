@@ -149,7 +149,9 @@ const getFirstPermittedTab = (role: string | null, permissions?: Record<string, 
 // Other roles only see them when explicitly granted via tab_<id> = true in permissions.
 const SUPER_ADMIN_ONLY_TABS = new Set<string>(['plans']);
 
-// Claims data is management-only: super admin + admin. No per-user grant can open it.
+// Claims data is limited to management (super admin + admin) and the claims team
+// (claims_agent / claims_manager) — that's their core workload.
+const CLAIMS_ALLOWED_ROLES = new Set<string>(['admin', 'claims_agent', 'claims_manager']);
 const MANAGEMENT_ONLY_TABS = new Set<string>(['claims']);
 
 // Tab ids that are really the same screen as 'overview' (Live Calls Data).
