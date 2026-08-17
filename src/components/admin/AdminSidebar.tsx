@@ -239,6 +239,12 @@ export const defaultTabs: Tab[] = [
     description: 'What customers ask the AI assistant'
   },
   {
+    id: 'semrush-seo',
+    label: 'Semrush SEO',
+    icon: LineChart,
+    description: 'Organic visibility, keywords and backlinks from Semrush'
+  },
+  {
     id: 'claims',
     label: 'Claims',
     icon: MessageSquare,
