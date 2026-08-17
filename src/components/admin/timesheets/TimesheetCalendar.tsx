@@ -75,23 +75,23 @@ export function TimesheetCalendar({
   };
 
   const handleDayClick = (date: Date, entry?: TimesheetEntry) => {
-    // Always open the popover so the user can pick Worked / Half / Holiday / Sick / Training / Leave.
+    // Always open the popover so the user can pick Full day / Holiday / Sick / Training / Leave.
     setSelectedDate(date);
     if (entry) {
       setFormData({
         entryType: entry.entry_type === 'wfh' ? 'worked' : entry.entry_type,
-        dayType: isHalfDay(entry) ? 'half_day' : 'full_day',
+        dayType: 'full_day',
         notes: entry.notes || '',
       });
     } else {
-      const weekend = isWeekend(date);
       setFormData({
         entryType: 'worked',
-        dayType: weekend ? 'half_day' : 'full_day',
+        dayType: 'full_day',
         notes: '',
       });
     }
   };
+
 
   const handleSave = async () => {
     if (!selectedDate) return;
