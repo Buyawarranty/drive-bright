@@ -77,9 +77,9 @@ export const AgentBreakStrip = () => {
   const [expanded, setExpanded] = useState(false);
   const [, setTick] = useState(0);
 
-  // Re-render every 30s so the "away for" timers stay honest.
+  // Tick every second so the lunch countdown stays live.
   useEffect(() => {
-    const t = setInterval(() => setTick((n) => n + 1), 30000);
+    const t = setInterval(() => setTick((n) => n + 1), 1000);
     return () => clearInterval(t);
   }, []);
 
