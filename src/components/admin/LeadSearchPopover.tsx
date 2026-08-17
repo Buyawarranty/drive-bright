@@ -38,6 +38,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [leads, setLeads] = useState<LeadData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const adminMap = useAllAdminUsersMap();
 
   const ownerNameFor = React.useCallback((assignedTo?: string | null) => {
@@ -227,8 +228,10 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : leads.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {searchTerm ? 'No leads found' : 'No unpaid leads available'}
+            <div className="text-center py-8 px-3 text-muted-foreground">
+              {loadError ? (
+                <span className="text-destructive text-xs">{loadError}</span>
+              ) : searchTerm ? 'No leads found' : 'No unpaid leads available'}
             </div>
           ) : (
             <div className="p-2 space-y-1">
