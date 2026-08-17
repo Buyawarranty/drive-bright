@@ -99,7 +99,15 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
   const [callLogsByLead, setCallLogsByLead] = useState<Record<string, CallLogRow[]>>({});
   const [admins, setAdmins] = useState<Record<string, AdminLite>>({});
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [refreshing, setRefreshing] = useState(false);
 
+  const { isManagement } = useIsManagement();
+  const canSeeDetails =
+    isManagement ||
+    userRole === 'super_admin' ||
+    userRole === 'admin' ||
+    userRole === 'sales_manager' ||
+    userRole === 'performance_manager';
   const canExport = userRole === 'super_admin' || userRole === 'admin';
   const { from, to, label } = useMemo(() => getPeriodRange(period), [period]);
 
