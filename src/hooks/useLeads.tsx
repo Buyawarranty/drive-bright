@@ -656,7 +656,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           .limit(500);
       };
 
-      let allSalesLeadsResult = await withTimeout(
+      const runWideLeadsFetch = () => withTimeout(
         (async () => {
           const serverAgentFilter = serverAgentFilterRef.current;
           if (serverAgentFilter && serverAgentFilter !== 'all' && serverAgentFilter !== 'unassigned') {
