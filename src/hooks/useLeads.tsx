@@ -14,6 +14,9 @@ const LEAD_TAG_BATCH_TIMEOUT_MS = 4000;
 const LEADS_LIST_LIMIT = 750;
 const LEADS_PAGE_SIZE = 1000;
 const MAX_PAGED_LEADS = 5000;
+// Safety cap for an agent's unfiltered "all my leads" view so agents with huge
+// histories don't time out and end up seeing nothing.
+const AGENT_UNFILTERED_LEADS_CAP = 2000;
 const PENDING_STATUS_UPDATES_STORAGE_KEY = 'new-leads:pending-status-updates';
 let latestAccessToken: string | null = null;
 
