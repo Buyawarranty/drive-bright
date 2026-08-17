@@ -930,7 +930,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     if (autoLeadReg === reg) return;
     setAutoLeadReg(reg);
     let cancelled = false;
-    const debounce = setTimeout(() => {
+    const debounce = setTimeout(async () => {
       try {
         const spaced = reg.length > 4 ? `${reg.slice(0, reg.length - 3)} ${reg.slice(-3)}` : reg;
         const { data } = await supabase
