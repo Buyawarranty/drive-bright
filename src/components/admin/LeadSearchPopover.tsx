@@ -38,6 +38,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [leads, setLeads] = useState<LeadData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const adminMap = useAllAdminUsersMap();
 
   const ownerNameFor = React.useCallback((assignedTo?: string | null) => {
@@ -68,27 +69,49 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
           .order('updated_at', { ascending: false })
           .limit(50);
 
-        if (searchTerm) {
-          const term = `%${searchTerm}%`;
-          // Reg plate variants: strip spaces, and add a spaced variant (e.g. "AP69YUX" ↔ "AP69 YUX")
-          const compact = searchTerm.replace(/\s+/g, '').toUpperCase();
-          const regVariants = new Set<string>([searchTerm]);
+        if (searchTerm.trim()) {
+          // PostgREST `or()` values must be quoted — a bare space or comma
+          // (e.g. "AP69 YUX") breaks the filter parser and the whole request
+          // 400s, which looked like "No leads found" for every reg search.
+          const q = (v: string) => `"%${v.replace(/["\\]/g, '')}%"`;
+          const raw = searchTerm.trim();
+          const compact = raw.replace(/\s+/g, '').toUpperCase();
+          const regVariants = new Set<string>([raw]);
           if (compact.length >= 5) {
             regVariants.add(compact);
             regVariants.add(`${compact.slice(0, -3)} ${compact.slice(-3)}`);
           }
-          const regClauses = Array.from(regVariants).map(v => `vehicle_reg.ilike.%${v}%`).join(',');
-          query = query.or(`email.ilike.${term},first_name.ilike.${term},last_name.ilike.${term},phone.ilike.${term},${regClauses}`);
-          cartQuery = cartQuery.or(`email.ilike.${term},full_name.ilike.${term},phone.ilike.${term},${regClauses}`);
+          const regClauses = Array.from(regVariants).map(v => `vehicle_reg.ilike.${q(v)}`).join(',');
+          query = query.or(`email.ilike.${q(raw)},first_name.ilike.${q(raw)},last_name.ilike.${q(raw)},phone.ilike.${q(raw)},${regClauses}`);
+          cartQuery = cartQuery.or(`email.ilike.${q(raw)},full_name.ilike.${q(raw)},phone.ilike.${q(raw)},${regClauses}`);
         }
 
-        const [slRes, cartRes] = await Promise.all([query, cartQuery]);
+
+        let [slRes, cartRes] = await Promise.all([query, cartQuery]);
 
         if (slRes.error) console.error('Error fetching leads:', slRes.error);
         if (cartRes.error) console.error('Error fetching abandoned carts:', cartRes.error);
 
+        // Fallback: if the combined search filter failed, try a plain reg/email
+        // match so the agent still gets the lead instead of an empty list.
+        if (slRes.error && searchTerm.trim()) {
+          const compact = searchTerm.trim().replace(/\s+/g, '').toUpperCase();
+          const spaced = compact.length >= 5 ? `${compact.slice(0, -3)} ${compact.slice(-3)}` : compact;
+          slRes = await supabase
+            .from('sales_leads')
+            .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest, assigned_to')
+            .in('vehicle_reg', [compact, spaced, searchTerm.trim()])
+            .order('created_at', { ascending: false })
+            .limit(50) as any;
+        }
+
+        setLoadError(
+          slRes.error ? (slRes.error.message || 'Lead search failed — try again.') : null
+        );
+
         const merged: LeadData[] = [...((slRes.data as any[]) || [])];
         const seen = new Set(
+
           merged.map((l) => `${(l.email || '').toLowerCase()}|${(l.vehicle_reg || '').replace(/\s/g, '').toUpperCase()}`)
         );
 
@@ -205,8 +228,10 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : leads.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {searchTerm ? 'No leads found' : 'No unpaid leads available'}
+            <div className="text-center py-8 px-3 text-muted-foreground">
+              {loadError ? (
+                <span className="text-destructive text-xs">{loadError}</span>
+              ) : searchTerm ? 'No leads found' : 'No unpaid leads available'}
             </div>
           ) : (
             <div className="p-2 space-y-1">

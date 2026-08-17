@@ -835,7 +835,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
     const newReg = lead.vehicle_reg ? lead.vehicle_reg.replace(/\s+/g, '').toUpperCase() : '';
     const currentReg = (vehicleData?.regNumber || regNumber || '').replace(/\s+/g, '').toUpperCase();
-    const regChanged = !!newReg && newReg !== currentReg;
+    // Also treat "no vehicle loaded yet" as a change: an agent who typed the plate
+    // but never got a lookup back would otherwise import a lead and see nothing.
+    const regChanged = !!newReg && (newReg !== currentReg || !vehicleData?.make);
+
 
     let numMileage: number | null = null;
     if (lead.mileage) {
