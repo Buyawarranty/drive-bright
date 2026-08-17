@@ -171,10 +171,15 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   if (tab === 'unsubscribe') return true;
   if (role === 'super_admin' || role === 'dev_tester') return true;
   if (tab === 'overview' && role && LIVE_CALLS_ALWAYS_ALLOWED_ROLES.has(role)) return true;
+  // Permissions win over role hardcoding: any user (any role, now or in future)
+  // granted tab_<id> = true in User Permissions gets the tab. This is what makes
+  // a new "Claims access level" work without touching role lists.
+  if (permissions?.[permKey] === true) return true;
   if (MANAGEMENT_ONLY_TABS.has(tab)) return !!role && CLAIMS_ALLOWED_ROLES.has(role);
   if (SUPER_ADMIN_ONLY_TABS.has(tab)) {
     return permissions?.[permKey] === true;
   }
+
   // Explicit per-user grant from User Permissions always wins for non-super-admin roles.
   // This lets management toggle any tab (e.g. recontact-leads) on/off for any user.
   if (permissions && permKey in permissions) {
