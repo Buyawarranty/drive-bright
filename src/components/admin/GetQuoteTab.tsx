@@ -1799,14 +1799,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         setStep1MileagePrefilledReg(cleanReg);
       }
       if (!resolvedMileage) {
+        // Never block the agent: they can type the mileage by hand on Step 2.
         toast({
           title: "Mileage not on record",
-          description: "No MOT mileage found for this registration — please confirm the mileage with the customer and enter it.",
-          variant: "destructive",
+          description: "No MOT mileage found — confirm it with the customer and type it in on the next step.",
         });
-        setIsLookingUp(false);
-        return;
       }
+
 
 
       // Fallback: if DVLA/DVSA API fails or returns no make, reuse the auto-preview
@@ -4329,6 +4328,68 @@ Questions? Call 0330 229 5040`;
           {/* Step 2: Quote Details */}
           {step === 2 && vehicleData && (
             <Card>
+              {/* Manual vehicle entry — always available so a missing or slow
+                  DVLA/MOT lookup never stops a quote. Edits re-price live. */}
+              <div className="m-4 mb-0 rounded-lg border border-border bg-muted/30 p-3">
+                <div className="mb-2 flex items-center justify-between gap-2 flex-wrap">
+                  <span className="text-xs font-semibold text-foreground">Vehicle details — enter or correct by hand</span>
+                  <span className="text-[11px] text-muted-foreground">{vehicleData.regNumber}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  <div>
+                    <Label className="text-[11px] text-muted-foreground">Make</Label>
+                    <Input
+                      value={vehicleData.make || ''}
+                      placeholder="e.g. Ford"
+                      onChange={(e) => setVehicleData({ ...vehicleData, make: e.target.value })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[11px] text-muted-foreground">Model</Label>
+                    <Input
+                      value={vehicleData.model || ''}
+                      placeholder="e.g. Focus"
+                      onChange={(e) => setVehicleData({ ...vehicleData, model: e.target.value })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[11px] text-muted-foreground">Year</Label>
+                    <Input
+                      value={vehicleData.year || ''}
+                      placeholder="e.g. 2018"
+                      inputMode="numeric"
+                      onChange={(e) => setVehicleData({ ...vehicleData, year: e.target.value.replace(/[^0-9]/g, '').slice(0, 4) })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className={`text-[11px] ${!mileage.trim() ? 'text-amber-700 font-medium' : 'text-muted-foreground'}`}>
+                      Mileage {!mileage.trim() && '— needed to price'}
+                    </Label>
+                    <Input
+                      value={mileage}
+                      placeholder="e.g. 62,000"
+                      inputMode="numeric"
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/[^0-9]/g, '');
+                        const formatted = digits ? Number(digits).toLocaleString() : '';
+                        setMileage(formatted);
+                        setSliderMileage(digits ? Math.min(Number(digits), 150000) : 0);
+                        setVehicleData({ ...vehicleData, mileage: formatted });
+                      }}
+                      className={`h-8 text-sm ${!mileage.trim() ? 'border-2 border-amber-500' : ''}`}
+                    />
+                  </div>
+                </div>
+                {!mileage.trim() && (
+                  <p className="mt-2 text-[11px] text-amber-700">
+                    No MOT mileage on record for this registration — confirm it with the customer and type it here. You can carry on with the quote either way.
+                  </p>
+                )}
+              </div>
+
               {vehicleIdGap && (
                 <Alert className="m-4 mb-0 border-2 border-amber-500 bg-amber-50">
                   <AlertCircle className="h-4 w-4 text-amber-600" />
