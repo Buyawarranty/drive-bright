@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Coffee, Loader2, Play, Users, UtensilsCrossed, GraduationCap, ChevronDown, ChevronUp } from 'lucide-react';
+import { Coffee, Loader2, Play, Users, UtensilsCrossed, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
@@ -50,6 +50,16 @@ const elapsed = (iso: string) => {
   return `${Math.floor(mins / 60)}h ${mins % 60}m`;
 };
 
+const LUNCH_MINUTES = 60;
+
+/** Remaining lunch time as m:ss, or null once the hour is used up. */
+const lunchRemaining = (iso: string) => {
+  const ms = new Date(iso).getTime() + LUNCH_MINUTES * 60000 - Date.now();
+  if (ms <= 0) return null;
+  const total = Math.floor(ms / 1000);
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+};
+
 /**
  * Break / back-from-break control for the New Leads section.
  *
@@ -67,9 +77,9 @@ export const AgentBreakStrip = () => {
   const [expanded, setExpanded] = useState(false);
   const [, setTick] = useState(0);
 
-  // Re-render every 30s so the "away for" timers stay honest.
+  // Tick every second so the lunch countdown stays live.
   useEffect(() => {
-    const t = setInterval(() => setTick((n) => n + 1), 30000);
+    const t = setInterval(() => setTick((n) => n + 1), 1000);
     return () => clearInterval(t);
   }, []);
 
@@ -152,6 +162,7 @@ export const AgentBreakStrip = () => {
   const availableCount = agents.length - away.length;
 
   const onBreak = myStatus !== 'available';
+  const myRemaining = onBreak && mine ? lunchRemaining(mine.started_at) : null;
 
   return (
     <div className="rounded-lg border bg-card">
@@ -169,48 +180,30 @@ export const AgentBreakStrip = () => {
         >
           <span className={cn('h-1.5 w-1.5 rounded-full', metaFor(myStatus).dot)} />
           {metaFor(myStatus).label}
-          {onBreak && mine ? ` · ${elapsed(mine.started_at)}` : ''}
+          {onBreak && mine ? (
+            <span className="tabular-nums font-normal opacity-80">
+              · {myRemaining ? `${myRemaining} left` : `over by ${elapsed(mine.started_at)}`}
+            </span>
+          ) : null}
         </span>
 
         <div className="flex flex-wrap items-center gap-2">
           {onBreak ? (
             <Button size="sm" className="h-7 gap-1.5" disabled={saving} onClick={() => setStatus('available')}>
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
-              Back from break
+              Back from lunch
             </Button>
           ) : (
-            <>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 gap-1.5"
-                disabled={saving}
-                onClick={() => setStatus('break')}
-              >
-                <Coffee className="h-3.5 w-3.5" />
-                On break
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 gap-1.5"
-                disabled={saving}
-                onClick={() => setStatus('lunch')}
-              >
-                <UtensilsCrossed className="h-3.5 w-3.5" />
-                Lunch
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 gap-1.5"
-                disabled={saving}
-                onClick={() => setStatus('training')}
-              >
-                <GraduationCap className="h-3.5 w-3.5" />
-                Training
-              </Button>
-            </>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 gap-1.5"
+              disabled={saving}
+              onClick={() => setStatus('lunch')}
+            >
+              <UtensilsCrossed className="h-3.5 w-3.5" />
+              Lunch (1 hour)
+            </Button>
           )}
         </div>
 
@@ -263,7 +256,11 @@ export const AgentBreakStrip = () => {
                       >
                         <span className={cn('h-1.5 w-1.5 rounded-full', metaFor(s).dot)} />
                         {metaFor(s).label}
-                        {s !== 'available' && row ? ` · ${elapsed(row.started_at)}` : ''}
+                        {s !== 'available' && row ? (
+                          <span className="tabular-nums font-normal opacity-80">
+                            · {lunchRemaining(row.started_at) ? `${lunchRemaining(row.started_at)} left` : `over by ${elapsed(row.started_at)}`}
+                          </span>
+                        ) : null}
                       </span>
                     </div>
                   );
