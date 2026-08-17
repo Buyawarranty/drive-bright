@@ -66,7 +66,11 @@ function fmtRemaining(ms: number) {
   return ms < 0 ? `${t} overdue` : t;
 }
 
-export function RollingRoundRobinLivePanel({ canEdit }: { canEdit: boolean }) {
+export function RollingRoundRobinLivePanel({ canEdit, readOnly = false }: { canEdit: boolean; readOnly?: boolean }) {
+  // readOnly = observation only (used by the ORR Test Lab): never run the
+  // distribute/reclaim RPCs, so no real lead is ever moved from this screen.
+  const allowWrites = canEdit && !readOnly;
+
   const [leads, setLeads] = useState<InFlightLead[]>([]);
   const [agents, setAgents] = useState<Record<string, AgentInfo>>({});
   const [poolCount, setPoolCount] = useState(0);
@@ -133,6 +137,15 @@ export function RollingRoundRobinLivePanel({ canEdit }: { canEdit: boolean }) {
   const runPass = useCallback(
     async (silent = false) => {
       if (busy.current) return;
+      if (!allowWrites) {
+        if (!silent) {
+          toast({
+            title: 'Read-only view',
+            description: 'This is the practice lab — real leads are never handed out or pulled back from here.',
+          });
+        }
+        return;
+      }
       busy.current = true;
       setRunning(true);
       try {
@@ -166,18 +179,18 @@ export function RollingRoundRobinLivePanel({ canEdit }: { canEdit: boolean }) {
         setRunning(false);
       }
     },
-    [load],
+    [load, allowWrites],
   );
 
   useEffect(() => {
-    if (!auto || !canEdit) return;
+    if (!auto || !allowWrites) return;
     const kick = setTimeout(() => runPass(true), 1200);
     const t = setInterval(() => runPass(true), AUTO_INTERVAL_MS);
     return () => {
       clearTimeout(kick);
       clearInterval(t);
     };
-  }, [auto, canEdit, runPass]);
+  }, [auto, allowWrites, runPass]);
 
   const perAgent = useMemo(() => {
     const map: Record<string, { open: number; overdue: number }> = {};
@@ -200,7 +213,7 @@ export function RollingRoundRobinLivePanel({ canEdit }: { canEdit: boolean }) {
           <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <Clock className="h-4 w-4 text-primary" />
             Live rolling round-robin · 30-minute first-call window
-            <Badge className="text-[10px] bg-teal-600 hover:bg-teal-600">Live CRM</Badge>
+            <Badge className={cn('text-[10px]', readOnly ? 'bg-muted text-muted-foreground hover:bg-muted' : 'bg-teal-600 hover:bg-teal-600')}>{readOnly ? 'Read-only view' : 'Live CRM'}</Badge>
           </h3>
           <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
             Leads are assigned one at a time in rotation — up to {BATCH_CAP} open leads per agent — so nobody
@@ -211,12 +224,12 @@ export function RollingRoundRobinLivePanel({ canEdit }: { canEdit: boolean }) {
         </div>
         <label className="flex items-center gap-2 text-xs font-medium cursor-pointer select-none">
           Keep it rolling
-          <Switch checked={auto} onCheckedChange={setAuto} disabled={!canEdit} />
+          <Switch checked={auto} onCheckedChange={setAuto} disabled={!allowWrites} />
         </label>
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
-        <Button size="sm" onClick={() => runPass(false)} disabled={!canEdit || running}>
+        <Button size="sm" onClick={() => runPass(false)} disabled={!allowWrites || running}>
           {running ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Play className="h-3.5 w-3.5 mr-1.5" />}
           Run rolling pass
         </Button>
