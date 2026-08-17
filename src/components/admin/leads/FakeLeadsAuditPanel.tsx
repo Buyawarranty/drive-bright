@@ -544,9 +544,25 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
                             )}
                           >
                             <TableCell>
-                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => toggleExpand(lead.id)}>
-                                {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                              </Button>
+                              {canSeeDetails ? (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => toggleExpand(lead.id)}>
+                                      {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Manager view — full fake-mark details</TooltipContent>
+                                </Tooltip>
+                              ) : (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="inline-flex h-6 w-6 items-center justify-center text-muted-foreground">
+                                      <Lock className="h-3 w-3" />
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Details are visible to managers only</TooltipContent>
+                                </Tooltip>
+                              )}
                             </TableCell>
                             <TableCell>
                               <div className="font-medium">
