@@ -30,6 +30,7 @@ interface BlogPost {
   seo_description: string | null;
   seo_keywords: string[] | null;
   canonical_url: string | null;
+  meta_tags?: any;
   structured_data: any;
   blog_authors: { name: string; bio: string } | null;
   blog_categories: { name: string } | null;
@@ -511,7 +512,8 @@ const BlogArticle = () => {
             <div className="relative aspect-[21/9] bg-slate-100 rounded-xl overflow-hidden shadow-xl">
               <img
                 src={heroImage}
-                alt={`${post.title}: UK car warranty guide illustration`}
+                alt={post.meta_tags?.featured_image_alt || `${post.title}: UK car warranty guide illustration`}
+                title={post.meta_tags?.featured_image_title || post.seo_title || post.title}
                 width={1600}
                 height={900}
                 loading="eager"
