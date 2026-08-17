@@ -306,19 +306,6 @@ export function TimesheetCalendar({
                       <Briefcase className="h-4 w-4" />
                       Full Day
                     </button>
-                    {/* Half Day */}
-                    <button
-                      onClick={() => setFormData(prev => ({ ...prev, entryType: 'worked', dayType: 'half_day' }))}
-                      className={cn(
-                        'flex items-center gap-2 p-3 rounded-lg border-2 text-sm font-medium transition-all',
-                        formData.entryType === 'worked' && formData.dayType === 'half_day'
-                          ? 'bg-blue-100 border-blue-500 text-blue-700'
-                          : 'border-gray-200 hover:border-gray-300 text-gray-500'
-                      )}
-                    >
-                      <Briefcase className="h-4 w-4" />
-                      Half Day
-                    </button>
                     {/* Holiday */}
                     <button
                       onClick={() => setFormData(prev => ({ ...prev, entryType: 'holiday' }))}
