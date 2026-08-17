@@ -660,6 +660,62 @@ ${rows}
                         </div>
                       </td>
                     </tr>
+                    {expandedId === c.id && (
+                      <tr className="border-b bg-muted/20">
+                        <td colSpan={7} className="px-3 py-3">
+                          <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-4 text-xs">
+                            {(() => {
+                              const cl = c.policy?.claim_limit ?? c.claim_limit;
+                              const ex = c.policy?.voluntary_excess ?? c.voluntary_excess;
+                              const rows: Array<[string, React.ReactNode]> = [
+                                ['Claim limit', cl ? `£${getDisplayClaimLimitValue(cl).toLocaleString()}` : '—'],
+                                ['Voluntary excess', ex !== undefined && ex !== null ? `£${ex}` : '—'],
+                                ['Labour rate', c.labour_rate ? `£${c.labour_rate}/hr` : '—'],
+                                ['Plan', c.policy?.plan_type || c.plan_type || '—'],
+                                ['Payment type', c.policy?.payment_type || c.payment_type || '—'],
+                                ['Bonus months', String(c.policy?.seasonal_bonus_months ?? c.seasonal_bonus_months ?? 0)],
+                                ['Policy number', c.policy?.policy_number || '—'],
+                                ['Warranty #', c.policy?.warranty_number || c.warranty_number || c.warranty_reference_number || '—'],
+                                ['Start date', c.policy?.policy_start_date ? format(new Date(c.policy.policy_start_date), 'd MMM yyyy') : '—'],
+                                ['End date', c.policy?.policy_end_date ? format(new Date(c.policy.policy_end_date), 'd MMM yyyy') : '—'],
+                                ['Vehicle', [c.vehicle_make, c.vehicle_model, c.vehicle_year].filter(Boolean).join(' ') || '—'],
+                                ['Mileage', c.mileage ? `${parseInt(c.mileage).toLocaleString()} miles` : '—'],
+                                ['Phone', c.phone || '—'],
+                                ['Email', c.email || '—'],
+                                ['Address', formatAddress(c).join(', ') || '—'],
+                              ];
+                              return rows.map(([label, value]) => (
+                                <div key={label} className="flex flex-col">
+                                  <span className="text-muted-foreground">{label}</span>
+                                  <span className="font-semibold break-words">{value}</span>
+                                </div>
+                              ));
+                            })()}
+                          </div>
+                          {(() => {
+                            const addons = [
+                              c.wear_tear && 'Wear & tear',
+                              c.europe_cover && 'European cover',
+                              c.mot_repair && 'MOT repair',
+                              c.mot_fee && 'MOT fee',
+                              c.tyre_cover && 'Tyre cover',
+                              c.lost_key && 'Lost key',
+                              c.vehicle_rental && 'Vehicle rental',
+                              c.transfer_cover && 'Transfer cover',
+                              c.consequential && 'Consequential loss',
+                              c.breakdown_recovery && 'Breakdown recovery',
+                            ].filter(Boolean) as string[];
+                            return (
+                              <div className="mt-3 text-xs">
+                                <span className="text-muted-foreground">Add-ons: </span>
+                                <span className="font-semibold">{addons.length ? addons.join(' • ') : 'None'}</span>
+                              </div>
+                            );
+                          })()}
+                        </td>
+                      </tr>
+                    )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
