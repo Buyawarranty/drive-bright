@@ -132,7 +132,7 @@ const isExplicitlyPermittedTab = (tab: string, permissions?: Record<string, bool
 
 const getFirstPermittedTab = (role: string | null, permissions?: Record<string, boolean> | null) => {
   const preferredOrder = role === 'claims_agent' || role === 'claims_manager'
-    ? ['customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account']
+    ? ['claims', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'account']
     : ['get-quote', 'customers', 'new-leads', 'discount-codes', 'timesheets', 'staff-hub', 'account'];
 
   if (permissions) {
