@@ -68,19 +68,23 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
           .order('updated_at', { ascending: false })
           .limit(50);
 
-        if (searchTerm) {
-          const term = `%${searchTerm}%`;
-          // Reg plate variants: strip spaces, and add a spaced variant (e.g. "AP69YUX" ↔ "AP69 YUX")
-          const compact = searchTerm.replace(/\s+/g, '').toUpperCase();
-          const regVariants = new Set<string>([searchTerm]);
+        if (searchTerm.trim()) {
+          // PostgREST `or()` values must be quoted — a bare space or comma
+          // (e.g. "AP69 YUX") breaks the filter parser and the whole request
+          // 400s, which looked like "No leads found" for every reg search.
+          const q = (v: string) => `"%${v.replace(/["\\]/g, '')}%"`;
+          const raw = searchTerm.trim();
+          const compact = raw.replace(/\s+/g, '').toUpperCase();
+          const regVariants = new Set<string>([raw]);
           if (compact.length >= 5) {
             regVariants.add(compact);
             regVariants.add(`${compact.slice(0, -3)} ${compact.slice(-3)}`);
           }
-          const regClauses = Array.from(regVariants).map(v => `vehicle_reg.ilike.%${v}%`).join(',');
-          query = query.or(`email.ilike.${term},first_name.ilike.${term},last_name.ilike.${term},phone.ilike.${term},${regClauses}`);
-          cartQuery = cartQuery.or(`email.ilike.${term},full_name.ilike.${term},phone.ilike.${term},${regClauses}`);
+          const regClauses = Array.from(regVariants).map(v => `vehicle_reg.ilike.${q(v)}`).join(',');
+          query = query.or(`email.ilike.${q(raw)},first_name.ilike.${q(raw)},last_name.ilike.${q(raw)},phone.ilike.${q(raw)},${regClauses}`);
+          cartQuery = cartQuery.or(`email.ilike.${q(raw)},full_name.ilike.${q(raw)},phone.ilike.${q(raw)},${regClauses}`);
         }
+
 
         const [slRes, cartRes] = await Promise.all([query, cartQuery]);
 
