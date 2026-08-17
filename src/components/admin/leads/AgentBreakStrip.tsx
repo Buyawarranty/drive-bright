@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Coffee, Loader2, Play, Users, UtensilsCrossed, GraduationCap, ChevronDown, ChevronUp } from 'lucide-react';
+import { Coffee, Loader2, Play, Users, UtensilsCrossed, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
