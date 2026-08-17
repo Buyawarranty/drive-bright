@@ -678,7 +678,15 @@ export const useLeads = (options?: UseLeadsOptions) => {
           // narrower assigned+unassigned scope.
           const hasActiveSearch = !!serverSearchTermRef.current?.trim();
           if (isSalesAgent && currentAdmin?.id && !hasActiveSearch) {
-            // 1) All leads assigned to this agent (full history, no 750 cap)
+            // 1) Leads assigned to this agent. Agents with very large histories
+            // (thousands of leads) used to page through everything, blowing the
+            // 25s fetch timeout and leaving them with an EMPTY list. Cap the
+            // unfiltered view — a date filter or search still pages wider.
+            const agentDateFilter = serverDateFilterRef.current;
+            const agentHasDateWindow = !!agentDateFilter?.from || !!agentDateFilter?.to;
+            const assignedMaxRows = agentHasDateWindow || serverCallbacksOnlyRef.current
+              ? MAX_PAGED_LEADS
+              : AGENT_UNFILTERED_LEADS_CAP;
             const assignedQ = fetchPagedLeads((from, to) =>
               applyHiddenFromAgent(applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase
@@ -688,7 +696,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              ))))
+              )))),
+              assignedMaxRows
             );
 
             // 2) Recent unassigned leads so the agent can still claim
