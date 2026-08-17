@@ -27,7 +27,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { toast } from 'sonner';
 
 
-type DayType = 'full_day' | 'half_day' | 'off';
+type DayType = 'full_day' | 'off';
 
 interface AdminLite {
   id: string;
@@ -158,7 +158,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
         if (error) throw error;
         setRows((prev) => prev.map((r) => (r.id === existing.id ? { ...r, day_type: forceType } : r)));
       } else if (!existing) {
-        const dayType: DayType = forceType ?? (isWeekend(date) ? 'half_day' : 'full_day');
+        const dayType: DayType = forceType ?? 'full_day';
         const { data, error } = await (supabase as any)
           .from('agent_working_days')
           .insert({
@@ -180,7 +180,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
   };
 
   /**
-   * Defaults for every agent: Mon–Fri = full day, Saturday = half day.
+   * Defaults for every agent: Mon–Sat = full day.
    * Sunday stays blank (optional). Runs once per agent+week when that agent
    * has no entries at all for the week, so nobody starts blank.
    */
@@ -189,7 +189,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
   const defaultTypeFor = (d: Date): DayType | null => {
     const dow = d.getDay();
     if (dow >= 1 && dow <= 5) return 'full_day';
-    if (dow === 6) return 'half_day';
+    if (dow === 6) return 'full_day';
     return null; // Sunday optional
   };
 
@@ -203,7 +203,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
       return !r || r.day_type !== type;
     });
     if (toChange.length === 0) {
-      if (!opts?.silent) toast.success('Defaults already applied (Mon–Fri full, Sat half)');
+      if (!opts?.silent) toast.success('Defaults already applied (Mon–Sat full days)');
       return;
     }
     setSaving(true);
@@ -242,7 +242,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
         ...prev.map((r) => (updatedIds[r.id] ? { ...r, day_type: updatedIds[r.id] } : r)),
         ...inserted,
       ]);
-      if (!opts?.silent) toast.success('Mon–Fri set to full days, Saturday to half day');
+      if (!opts?.silent) toast.success('Mon–Sat set to full days');
     } catch (e: any) {
       toast.error(e?.message ?? 'Could not set default days');
     } finally {
@@ -294,7 +294,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
           </h3>
           <div className="text-sm text-orange-900/80 mt-1">
             <span className="font-semibold">{format(weekStart, 'd MMM')} – {format(weekEnd, 'd MMM yyyy')}</span>
-            {' · '}Everyone starts as Mon–Fri full days and Saturday half day — tap a day to change or mark it off.
+            {' · '}Everyone starts as Mon–Sat full days — tap a day to mark it off.
             {' · '}<span className="font-semibold text-red-700">Confirm Sunday if you're working</span>
             {' · '}Next week's rota by Thursday 6pm.
           </div>
@@ -458,22 +458,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                             </span>
                           )}
                         </div>
-                        <div className="grid grid-cols-3 gap-2">
-                          <button
-                            type="button"
-                            disabled={disabled}
-                            onClick={() => toggleDay(editingAgent.id, d, 'half_day')}
-                            className={cn(
-                              'h-14 rounded-lg border-2 text-sm font-bold flex items-center justify-center gap-1.5 transition-colors',
-                              row?.day_type === 'half_day'
-                                ? 'bg-blue-500 text-white border-blue-600'
-                                : 'bg-background border-blue-300 text-blue-700 hover:bg-blue-50',
-
-                              disabled && 'opacity-60 cursor-not-allowed',
-                            )}
-                          >
-                            <Check className="h-5 w-5" strokeWidth={3} /> Half day
-                          </button>
+                        <div className="grid grid-cols-2 gap-2">
                           <button
                             type="button"
                             disabled={disabled}
@@ -518,7 +503,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 onClick={() => setWeekdaysFullDay(editingAgent.id)}
               >
-                <Check className="h-4 w-4 mr-1" strokeWidth={3} /> Apply defaults (Mon–Fri full, Sat half)
+                <Check className="h-4 w-4 mr-1" strokeWidth={3} /> Apply defaults (Mon–Sat full days)
               </Button>
               <Button size="sm" variant="outline" disabled={saving} onClick={saveRota}>
                 {saving ? 'Saving…' : 'Save rota'}
@@ -547,9 +532,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                     className={cn(
                       'rounded-lg border p-2 flex flex-col',
                       isWorking
-                        ? (row?.day_type === 'half_day'
-                            ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/25'
-                            : 'border-emerald-400 bg-emerald-50/40 dark:bg-emerald-950/20')
+                        ? 'border-emerald-400 bg-emerald-50/40 dark:bg-emerald-950/20'
 
                         : isOff
                           ? 'border-slate-400 bg-slate-100/70 dark:bg-slate-900/40'
@@ -576,7 +559,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                       <button
                         type="button"
                         disabled={disabled}
-                        onClick={() => toggleDay(editingAgent!.id, d, isWorking ? undefined : (isWeekend(d) ? 'half_day' : 'full_day'))}
+                        onClick={() => toggleDay(editingAgent!.id, d, isWorking ? undefined : 'full_day')}
                         className={cn(
                           'w-7 h-7 rounded-full flex items-center justify-center border transition-colors',
                           isWorking
@@ -592,7 +575,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-1 mt-auto">
+                    <div className="grid grid-cols-2 gap-1 mt-auto">
                       <button
                         type="button"
                         disabled={disabled}
@@ -606,21 +589,6 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
                         )}
                       >
                         Full
-                      </button>
-                      <button
-                        type="button"
-                        disabled={disabled}
-                        onClick={() => toggleDay(editingAgent!.id, d, 'half_day')}
-                        className={cn(
-                          'text-[11px] py-1 rounded border font-medium transition-colors',
-                          row?.day_type === 'half_day'
-                            ? 'bg-blue-500 text-white border-blue-600'
-                            : 'bg-background hover:bg-blue-50 border-border text-foreground',
-
-                          disabled && 'opacity-60 cursor-not-allowed',
-                        )}
-                      >
-                        Half
                       </button>
                       <button
                         type="button"
