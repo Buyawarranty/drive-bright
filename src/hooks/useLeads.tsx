@@ -644,7 +644,19 @@ export const useLeads = (options?: UseLeadsOptions) => {
         return { data: rows, error: null } as any;
       };
 
-      const allSalesLeadsResult = await withTimeout(
+      // Last-resort fallback so an agent never ends up with a blank list when
+      // the wide fetch is slow: their most recent leads, one small query.
+      const fetchAgentFallbackLeads = async () => {
+        if (!currentAdmin?.id) return { data: [], error: null } as any;
+        return await supabase
+          .from('sales_leads')
+          .select(SELECT_COLUMNS)
+          .eq('assigned_to', currentAdmin.id)
+          .order('created_at', { ascending: false })
+          .limit(500);
+      };
+
+      let allSalesLeadsResult = await withTimeout(
         (async () => {
           const serverAgentFilter = serverAgentFilterRef.current;
           if (serverAgentFilter && serverAgentFilter !== 'all' && serverAgentFilter !== 'unassigned') {
