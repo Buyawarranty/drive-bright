@@ -324,7 +324,7 @@ const BlogArticle = () => {
         "articleSection": post.blog_categories?.name || 'Warranty Guides',
         "author": {
           "@type": "Person",
-          "name": post.blog_authors?.name || 'Buy a Warranty Editorial Team',
+          "name": post.meta_tags?.author_name || post.blog_authors?.name || 'Buy a Warranty Editorial Team',
           "worksFor": { "@type": "Organization", "name": "Buy a Warranty" },
         },
         "publisher": {
