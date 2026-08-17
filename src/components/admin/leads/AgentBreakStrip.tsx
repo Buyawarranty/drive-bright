@@ -162,6 +162,7 @@ export const AgentBreakStrip = () => {
   const availableCount = agents.length - away.length;
 
   const onBreak = myStatus !== 'available';
+  const myRemaining = onBreak && mine ? lunchRemaining(mine.started_at) : null;
 
   return (
     <div className="rounded-lg border bg-card">
@@ -179,48 +180,30 @@ export const AgentBreakStrip = () => {
         >
           <span className={cn('h-1.5 w-1.5 rounded-full', metaFor(myStatus).dot)} />
           {metaFor(myStatus).label}
-          {onBreak && mine ? ` · ${elapsed(mine.started_at)}` : ''}
+          {onBreak && mine ? (
+            <span className="tabular-nums font-normal opacity-80">
+              · {myRemaining ? `${myRemaining} left` : `over by ${elapsed(mine.started_at)}`}
+            </span>
+          ) : null}
         </span>
 
         <div className="flex flex-wrap items-center gap-2">
           {onBreak ? (
             <Button size="sm" className="h-7 gap-1.5" disabled={saving} onClick={() => setStatus('available')}>
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
-              Back from break
+              Back from lunch
             </Button>
           ) : (
-            <>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 gap-1.5"
-                disabled={saving}
-                onClick={() => setStatus('break')}
-              >
-                <Coffee className="h-3.5 w-3.5" />
-                On break
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 gap-1.5"
-                disabled={saving}
-                onClick={() => setStatus('lunch')}
-              >
-                <UtensilsCrossed className="h-3.5 w-3.5" />
-                Lunch
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 gap-1.5"
-                disabled={saving}
-                onClick={() => setStatus('training')}
-              >
-                <GraduationCap className="h-3.5 w-3.5" />
-                Training
-              </Button>
-            </>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 gap-1.5"
+              disabled={saving}
+              onClick={() => setStatus('lunch')}
+            >
+              <UtensilsCrossed className="h-3.5 w-3.5" />
+              Lunch (1 hour)
+            </Button>
           )}
         </div>
 
