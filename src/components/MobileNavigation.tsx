@@ -151,7 +151,7 @@ const MobileNavigation: React.FC = () => {
             </nav>
 
             {/* Bottom CTA */}
-            <div className="flex-shrink-0 pt-4 border-t space-y-2">
+            <div className="flex-shrink-0 pt-3 border-t">
               <Link
                 to="/?step=1"
                 onClick={() => setIsMobileMenuOpen(false)}
