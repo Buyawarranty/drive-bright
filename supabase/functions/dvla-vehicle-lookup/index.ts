@@ -507,10 +507,13 @@ serve(async (req) => {
   }
 
   try {
-    const body = await req.json();
-    const { skipAgeCheck } = body;
-    // Accept any of the aliases callers use across the app.
-    const rawInput = body.registrationNumber ?? body.registration ?? body.reg ?? body.regNumber;
+    const body = await req.json().catch(() => ({} as Record<string, unknown>));
+    const { skipAgeCheck } = body as any;
+    // Accept any of the aliases callers use across the app (also nested payloads).
+    const b = body as any;
+    const rawInput =
+      b?.registrationNumber ?? b?.registration ?? b?.reg ?? b?.regNumber ??
+      b?.plate ?? b?.vrm ?? b?.vehicle?.registrationNumber ?? b?.vehicle?.registration;
 
     if (!rawInput) {
       throw new Error("Registration number is required");
