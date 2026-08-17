@@ -88,6 +88,20 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const [showEmailPopup, setShowEmailPopup] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showCallbackModal, setShowCallbackModal] = useState(false);
+  // UK office hours: 09:00–18:00 Europe/London
+  const [isUkOfficeHours, setIsUkOfficeHours] = useState(() => {
+    const h = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: 'numeric', hour12: false }).format(new Date()));
+    return h >= 9 && h < 18;
+  });
+  useEffect(() => {
+    const tick = () => {
+      const h = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: 'numeric', hour12: false }).format(new Date()));
+      setIsUkOfficeHours(h >= 9 && h < 18);
+    };
+    const id = setInterval(tick, 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   
 
   useEffect(() => {
@@ -783,29 +797,32 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 )}
 
                 
-                {/* Mobile: speak-to-us card */}
-                <div className="sm:hidden mt-4">
-                  <p className="text-center text-[15px] text-gray-600">Prefer to speak to us?</p>
-                  <div className="mt-2 rounded-2xl border border-gray-200 bg-white shadow-sm px-4 py-3.5">
-                    <a href="tel:03302295040" className="flex items-center justify-center gap-2.5">
-                      <Phone className="w-5 h-5 text-blue-700 fill-blue-700" strokeWidth={0} />
-                      <span className="text-2xl font-extrabold text-blue-700 underline underline-offset-4 tracking-tight">
-                        0330 229 5040
-                      </span>
-                    </a>
-                    <p className="mt-1.5 text-center text-sm text-gray-600">Speak to our UK team</p>
+                {/* Mobile: speak-to-us card — UK office hours only (09:00–18:00 Europe/London) */}
+                {isUkOfficeHours && (
+                  <div className="sm:hidden mt-5 pt-4 border-t border-gray-200">
+                    <p className="text-center text-sm text-gray-600">Prefer to speak to us?</p>
+                    <div className="mt-2 rounded-xl border border-gray-200 bg-white shadow-sm px-3 py-2.5">
+                      <a href="tel:03309122402" className="flex items-center justify-center gap-2">
+                        <Phone className="w-4 h-4 text-blue-700 fill-blue-700" strokeWidth={0} />
+                        <span className="text-lg font-extrabold text-blue-700 underline underline-offset-4 tracking-tight">
+                          0330 912 2402
+                        </span>
+                      </a>
+                      <p className="mt-1 text-center text-xs text-gray-600">Speak to our UK team</p>
+                    </div>
+                    <p className="mt-2 text-center text-sm text-gray-700">
+                      Can't call now?{' '}
+                      <button
+                        onClick={() => setShowCallbackModal(true)}
+                        className="text-brand-orange font-semibold hover:underline inline-flex items-center gap-0.5"
+                      >
+                        Request a callback
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </p>
                   </div>
-                  <p className="mt-2.5 text-center text-[15px] text-gray-700">
-                    Can't call now?{' '}
-                    <button
-                      onClick={() => setShowCallbackModal(true)}
-                      className="text-brand-orange font-semibold hover:underline inline-flex items-center gap-0.5"
-                    >
-                      Request a callback
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </p>
-                </div>
+                )}
+
 
                 {/* Pricing Reassurance Panel - Premium Trust Block (desktop) */}
                 <div className="hidden sm:block mt-4 sm:mt-7 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-4 py-3.5 sm:px-5 sm:py-4 text-center">
