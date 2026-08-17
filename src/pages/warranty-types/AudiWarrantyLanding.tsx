@@ -32,6 +32,7 @@ import audiMobileQuote from '@/assets/audi-warranty-mobile-quote.webp';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 // Audi Models covered (grouped by category)
 const audiModelCategories = {
   'Saloon & Sportback': {
@@ -1241,6 +1242,13 @@ const AudiWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/bmw-warranty/', label: 'bmw extended warranty' },
+            { to: '/thewarrantyhub/are-car-warranties-worth-it-best-car-warranty-uk-2026/', label: 'are car warranties worth it' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

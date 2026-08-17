@@ -37,6 +37,7 @@ import motorcycleCoverage from '@/assets/motorbike-warranty-uk-repair-cover.png'
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 // UK Motorbike Models covered (grouped by manufacturer) - 2012-2026
 const motorbikeModelCategories = {
   'Honda': {
@@ -1295,6 +1296,13 @@ const MotorbikeWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/nissan-warranty/', label: 'nissan extended warranty' },
+            { to: '/thewarrantyhub/cheap-car-warranty-in-the-uk-what-is-covered-what-is-not-how-to-choose-smartly/', label: 'cheap car warranty in the UK' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

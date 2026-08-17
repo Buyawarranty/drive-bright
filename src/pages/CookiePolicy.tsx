@@ -7,6 +7,7 @@ import pandaService from '@/assets/panda-service.png';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import pandaSavings from '@/assets/panda-savings.png';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 const CookiePolicy = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const navigate = useNavigate();
@@ -228,7 +229,13 @@ const CookiePolicy = () => {
             </div>
           </div>
         </section>
-      </main>
+              <RelatedInternalLinks
+          links={[
+            { to: '/car-extended-warranty/', label: 'car extended warranty' },
+            { to: '/warranty-types/ev-warranty/', label: 'ev warranty uk' },
+          ]}
+        />
+        </main>
     </div>
   );
 };

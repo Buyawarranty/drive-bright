@@ -26,6 +26,7 @@ import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 const brandName = 'Smart';
 const brandSlug = 'smart-warranty';
 const brandMake = 'Smart';
@@ -372,6 +373,13 @@ const SmartWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/ssangyong-warranty/', label: 'ssangyong extended warranty' },
+            { to: '/thewarrantyhub/used-car-warranty-uk-2026-whats-covered-when-to-buy/', label: 'used car warranty UK 2026' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

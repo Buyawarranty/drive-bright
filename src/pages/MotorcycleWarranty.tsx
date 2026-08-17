@@ -22,6 +22,7 @@ import trustpilotLogo from '@/assets/trustpilot-excellent-box.webp';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import companyRegistration from '@/assets/company-registration-footer.png';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 const MotorcycleWarranty = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -653,6 +654,12 @@ const MotorcycleWarranty = () => {
           </>
         )}
 
+                <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/motorbike-motorcycle-warranty/', label: 'motorbike warranty uk' },
+            { to: '/thewarrantyhub/are-car-warranties-worth-it-best-car-warranty-uk-2026/', label: 'are car warranties worth it' },
+          ]}
+        />
         {/* Scroll to Top */}
         {showScrollTop && (
           <button

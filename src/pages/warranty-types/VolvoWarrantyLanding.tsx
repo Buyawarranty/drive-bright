@@ -25,6 +25,7 @@ import volvoXC40EVWarranty from '@/assets/volvo-xc40-ev-warranty.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 const volvoModelCategories = {
   'SUV & Crossover': { 'XC40': ['Mk1'], 'XC60': ['Mk2'], 'XC90': ['Mk2'], 'EX30': ['Mk1'], 'EX90': ['Mk1'] },
   'Saloon & Estate': { 'S60': ['Mk3'], 'S90': ['Mk2'], 'V60': ['Mk2'], 'V90': ['Mk2'], 'V60 Cross Country': ['Mk2'], 'V90 Cross Country': ['Mk2'] },
@@ -235,6 +236,13 @@ const VolvoWarrantyLanding: React.FC = () => {
         <section className="py-12 md:py-16 bg-gradient-to-br from-blue-50 to-slate-50"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div className="text-center mb-8"><h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">What Volvo Owners Say</h2><div className="flex items-center justify-center gap-2"><div className="flex -space-x-1">{[...Array(5)].map((_, i) => <Star key={i} className="h-5 w-5 fill-[#00b67a] text-[#00b67a]" />)}</div><span className="text-sm text-gray-600">Rated Excellent on Trustpilot</span></div></div><div className={`grid grid-cols-1 ${isMobile ? '' : 'md:grid-cols-2'} gap-6`}>{testimonials.map((t, i) => (<div key={i} className="bg-white rounded-xl p-6 shadow-md border border-gray-100"><div className="flex gap-1 mb-3">{[...Array(t.rating)].map((_, j) => <Star key={j} className="h-4 w-4 fill-[#00b67a] text-[#00b67a]" />)}</div><p className="text-gray-700 text-sm mb-4">"{renderTestimonialText(t.text)}"</p><div><p className="font-semibold text-gray-900 text-sm">{t.name}</p><p className="text-xs text-gray-500">{t.model} · {t.location}</p></div></div>))}</div><div className="text-center mt-6"><a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer" className="text-brand-orange hover:underline text-sm font-medium"><section className="py-12 md:py-16 bg-gradient-to-br from-blue-50 to-slate-50"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div className="text-center mb-8"><h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">What Volvo Owners Say</h2><div className="flex items-center justify-center gap-2"><div className="flex -space-x-1">{[...Array(5)].map((_, i) => <Star key={i} className="h-5 w-5 fill-[#00b67a] text-[#00b67a]" />)}</div><span className="text-sm text-gray-600">Rated Excellent on Trustpilot</span></div></div><div className={`grid grid-cols-1 ${isMobile ? '' : 'md:grid-cols-2'} gap-6`}>{testimonials.map((t, i) => (<div key={i} className="bg-white rounded-xl p-6 shadow-md border border-gray-100"><div className="flex gap-1 mb-3">{[...Array(t.rating)].map((_, j) => <Star key={j} className="h-4 w-4 fill-[#00b67a] text-[#00b67a]" />)}</div><p className="text-gray-700 text-sm mb-4">"{renderTestimonialText(t.text)}"</p><div><p className="font-semibold text-gray-900 text-sm">{t.name}</p><p className="text-xs text-gray-500">{t.model} · {t.location}</p></div></div>))}</div><div className="text-center mt-6"><a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer" className="text-brand-orange hover:underline text-sm font-medium">Read more reviews on Trustpilot →</a></div></div></section></a></div></div></section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/alfa-romeo-warranty/', label: 'alfa romeo extended warranty' },
+            { to: '/thewarrantyhub/car-warranty-vs-breakdown-cover-vs-insurance-uk-2026/', label: 'car warranty vs breakdown cover' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

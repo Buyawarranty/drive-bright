@@ -26,6 +26,7 @@ import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 const brandName = 'SsangYong';
 const brandSlug = 'ssangyong-warranty';
 const brandMake = 'SsangYong';
@@ -333,6 +334,13 @@ const SsangYongWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/subaru-warranty/', label: 'subaru extended warranty' },
+            { to: '/thewarrantyhub/are-car-warranties-worth-it-best-car-warranty-uk-2026/', label: 'are car warranties worth it' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

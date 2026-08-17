@@ -26,6 +26,7 @@ import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 const brandName = 'Infiniti';
 const brandSlug = 'infiniti-warranty';
 const brandMake = 'INFINITI';
@@ -279,6 +280,13 @@ const InfinitiWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/jeep-warranty/', label: 'jeep extended warranty' },
+            { to: '/thewarrantyhub/car-warranty-vs-breakdown-cover-vs-insurance-uk-2026/', label: 'car warranty vs breakdown cover' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

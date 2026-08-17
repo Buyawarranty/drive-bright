@@ -31,6 +31,7 @@ import vauxhallConfidenceCovered from '@/assets/vauxhall-confidence-covered.png'
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 // Vauxhall Models covered (grouped by category)
 const vauxhallModelCategories = {
   'Hatchback & Saloon': {
@@ -802,6 +803,13 @@ const VauxhallWarrantyLanding: React.FC = () => {
 
         {/* 16. FAQ */}
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/volkswagen-warranty/', label: 'volkswagen extended warranty' },
+            { to: '/thewarrantyhub/are-car-warranties-worth-it-best-car-warranty-uk-2026/', label: 'are car warranties worth it' },
+          ]}
+        />
       </main>
 
       {/* 17. Footer & Callback */}

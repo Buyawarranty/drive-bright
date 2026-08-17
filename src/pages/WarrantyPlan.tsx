@@ -15,6 +15,7 @@ import pandaGarage from '@/assets/panda-garage-warranty.png';
 import pandaVehicleCollection from '@/assets/panda-vehicle-collection.png';
 import pandaCelebrating from '@/assets/panda-celebrating.png';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 const WarrantyPlan = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [platinumDocUrl, setPlatinumDocUrl] = useState<string>('');
@@ -1945,6 +1946,12 @@ const WarrantyPlan = () => {
             
           </div>
         </section>
+            <RelatedInternalLinks
+        links={[
+          { to: '/car-extended-warranty/', label: 'car extended warranty' },
+          { to: '/thewarrantyhub/cheap-car-warranty-in-the-uk-what-is-covered-what-is-not-how-to-choose-smartly/', label: 'cheap car warranty in the UK' },
+        ]}
+      />
       </div>
     </>
   );

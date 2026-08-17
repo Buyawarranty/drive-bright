@@ -40,6 +40,7 @@ import bmwHighMileage from '@/assets/bmw-i3-warranty.webp';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 // BMW Models covered (grouped by category)
 const bmwModelCategories = {
   'Series': {
@@ -1388,6 +1389,13 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/byd-warranty/', label: 'byd warranty' },
+            { to: '/thewarrantyhub/auto-warranty-vs-extended-warranty-insurance-uk-2026/', label: 'extended warranty insurance explained' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

@@ -38,6 +38,7 @@ import vwHighMileage from '@/assets/vw-confidence-covered.webp';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 // VW Models covered (grouped by category)
 const vwModelCategories = {
   'Hatchbacks & Saloons': {
@@ -1257,6 +1258,13 @@ const VolkswagenWarrantyLanding: React.FC = () => {
         </section>
 
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/volvo-warranty/', label: 'volvo extended warranty' },
+            { to: '/thewarrantyhub/auto-warranty-vs-extended-warranty-insurance-uk-2026/', label: 'extended warranty insurance explained' },
+          ]}
+        />
       </main>
       <MinimalLandingFooter />
       <BluePersistentCallback />

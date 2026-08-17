@@ -31,6 +31,7 @@ import peugeotConfidenceCovered from '@/assets/peugeot-confidence-covered.png';
 import { SEO_FROM_MONTHLY_PRICE, SEO_PRICE_RANGE } from '@/lib/seo/schemaPricing';
 import { TRUSTPILOT_RATING_VALUE, TRUSTPILOT_REVIEW_COUNT } from '@/lib/seo/trustpilotRating';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 // Peugeot Models covered (grouped by category)
 const peugeotModelCategories = {
   'Hatchback & Saloon': {
@@ -802,6 +803,13 @@ const PeugeotWarrantyLanding: React.FC = () => {
 
         {/* 16. FAQ */}
         <BrandPageFAQ />
+      
+        <RelatedInternalLinks
+          links={[
+            { to: '/warranty-types/porsche-warranty/', label: 'porsche extended warranty' },
+            { to: '/thewarrantyhub/auto-warranty-vs-extended-warranty-insurance-uk-2026/', label: 'extended warranty insurance explained' },
+          ]}
+        />
       </main>
 
       {/* 17. Footer & Callback */}
