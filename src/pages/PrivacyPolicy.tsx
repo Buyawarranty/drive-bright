@@ -139,9 +139,15 @@ const PrivacyPolicy = () => {
             <div>
               <p className="text-lg text-gray-700 leading-relaxed">
                 Buy A Warranty ("we", "us", or "our") is committed to protecting your privacy. This policy outlines how we collect, use, and safeguard your personal data when you visit our website{' '}
-                <a href="https://buyawarranty.co.uk" className="text-[#eb4b00] hover:underline">
-                  https://buyawarranty.co.uk
+                <a
+                  href="https://buyawarranty.co.uk"
+                  title="Buy A Warranty — UK car warranty quotes and cover"
+                  aria-label="Buy A Warranty UK car warranty website homepage"
+                  className="text-[#eb4b00] hover:underline"
+                >
+                  Buy A Warranty UK car warranty website
                 </a>{' '}
+
                 or interact with our services.
               </p>
             </div>
