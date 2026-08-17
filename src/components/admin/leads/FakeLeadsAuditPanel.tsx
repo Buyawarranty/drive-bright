@@ -17,11 +17,13 @@ import {
 import {
   ShieldCheck, RotateCcw, ChevronDown, ChevronRight, Phone, Mail, Car,
   AlertTriangle, CheckCircle2, Loader2, Download, Calendar as CalendarIcon, X,
+  RefreshCw, Lock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { detectSuspiciousLead } from '@/utils/suspiciousLeadDetection';
 import { cn } from '@/lib/utils';
 import { FAKE_REASONS } from './MarkFakeReasonDialog';
+import { useIsManagement } from '@/hooks/useIsManagement';
 
 type Period = 'this_week' | 'last_week' | 'this_month' | 'last_month' | 'last_90';
 
