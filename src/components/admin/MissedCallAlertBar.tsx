@@ -51,8 +51,9 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   const [leadOwners, setLeadOwners] = useState<Record<string, { adminId: string | null; name: string | null; active: boolean; isPaid: boolean; status: string | null }>>({});
   const [currentAdminId, setCurrentAdminId] = useState<string | null>(null);
   const [currentAdminName, setCurrentAdminName] = useState<string | null>(null);
+  // Default to MUTED — the repeating beep is opt-in, not opt-out.
   const [muted, setMuted] = useState<boolean>(() => {
-    try { return localStorage.getItem(MUTE_KEY) === '1'; } catch { return false; }
+    try { return localStorage.getItem(MUTE_KEY) !== '0'; } catch { return true; }
   });
   const audioCtxRef = useRef<AudioContext | null>(null);
   const beepTimerRef = useRef<number | null>(null);
@@ -560,11 +561,11 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
         <button
           type="button"
           onClick={() => (mustAcceptFirst ? passCall(top.id) : dismiss(top.id))}
-          className="h-6 w-6 inline-flex items-center justify-center rounded bg-blue-800 hover:bg-blue-900"
+          className="h-9 w-9 inline-flex items-center justify-center rounded-md bg-blue-900 hover:bg-red-600 ring-1 ring-white/50"
           title="Close this alert"
           aria-label="Close this alert"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-6 w-6" strokeWidth={3} />
         </button>
       </div>
       <div className="px-2 py-1.5 space-y-1.5">
