@@ -34,6 +34,7 @@ import TrustCallbackPanel from '@/components/TrustCallbackPanel';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 
+import RelatedInternalLinks from '@/components/seo/RelatedInternalLinks';
 interface DynamicLandingPage {
   id: string;
   slug: string;
@@ -1409,6 +1410,12 @@ const CarExtendedWarranty: React.FC = () => {
         </div>
       )}
 
+            <RelatedInternalLinks
+        links={[
+          { to: '/warranty-types/bmw-warranty/', label: 'bmw extended warranty' },
+          { to: '/thewarrantyhub/used-car-warranty-uk-2026-whats-covered-when-to-buy/', label: 'used car warranty UK 2026' },
+        ]}
+      />
       {/* Mobile Floating Buttons */}
       {isMobile && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 z-50 flex gap-3">
