@@ -178,6 +178,40 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  const manualRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try { await fetchData(); } finally { setRefreshing(false); }
+  }, [fetchData]);
+
+  /** Keep the counters live: refresh on realtime fake marks, tab focus and a slow poll. */
+  useEffect(() => {
+    const channel = supabase
+      .channel('fake-leads-audit-live')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sales_leads' }, (payload: any) => {
+        const before = payload.old || {};
+        const after = payload.new || {};
+        if (
+          after.status === 'fake_lead' ||
+          before.status === 'fake_lead' ||
+          after.fake_marked_at !== before.fake_marked_at ||
+          after.fake_audit_status !== before.fake_audit_status
+        ) {
+          fetchData();
+        }
+      })
+      .subscribe();
+
+    const onFocus = () => { if (document.visibilityState === 'visible') fetchData(); };
+    document.addEventListener('visibilitychange', onFocus);
+    const interval = window.setInterval(fetchData, 60000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      document.removeEventListener('visibilitychange', onFocus);
+      window.clearInterval(interval);
+    };
+  }, [fetchData]);
+
   const filteredLeads = useMemo(() => {
     if (statusFilter === 'all') return leads;
     return leads.filter(l => (l.fake_audit_status || 'pending') === statusFilter);
