@@ -68,6 +68,20 @@ interface FakeLeadsAuditPanelProps {
 
 const REASON_LABELS = Object.fromEntries(FAKE_REASONS.map(r => [r.value, r.label])) as Record<string, string>;
 
+/** Manager-only source labels for fake-marked leads. */
+const SOURCE_LABELS: Record<string, string> = {
+  website: 'Direct / organic',
+  google_ad: 'Google Ads',
+  bing_ad: 'Bing Ads',
+  social_ad: 'Facebook / Meta',
+  tiktok_ad: 'TikTok',
+  referral: 'Referral',
+  phone: 'Phone',
+  email: 'Email',
+  partner: 'Partner',
+  other: 'Other',
+};
+
 const phoneValidity = (phone?: string | null): { tier: 'valid' | 'suspicious' | 'invalid' | 'missing'; reason: string } => {
   if (!phone || !phone.trim()) return { tier: 'missing', reason: 'No phone number provided' };
   const flags = detectSuspiciousLead({ phone });
