@@ -7,6 +7,7 @@ import { OrrAgentRotationPanel } from './OrrAgentRotationPanel';
 import { OrrQueuePanels } from './OrrQueuePanels';
 import { OrrMorningReleasePanel } from './OrrMorningReleasePanel';
 import { OrrPerformancePanel } from './OrrPerformancePanel';
+import { OrrLeadFreezePanel } from './OrrLeadFreezePanel';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 import { useViewAs } from '@/contexts/ViewAsContext';
 
