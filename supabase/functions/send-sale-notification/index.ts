@@ -247,9 +247,10 @@ serve(async (req: Request) => {
           ${row('Payment', payment)}
           ${row('Payment status', orDash(saleExtras.payment_status))}
           ${row('Sale Amount', saleValueDisplay, true)}
-          ${saleExtras.original_amount != null ? row('Quoted / original amount', money(saleExtras.original_amount) || '—') : ''}
+          ${row('Price match', isPriceMatch ? `Yes${saleExtras.price_match_competitor ? ` — ${saleExtras.price_match_competitor}` : ''}${saleExtras.price_match_competitor_price != null ? ` at ${money(saleExtras.price_match_competitor_price)}` : ''}` : 'No', isPriceMatch)}
+          ${quotedTotal != null ? row('Quotes &amp; Orders price', money(quotedTotal) || '—') : ''}
           ${saleExtras.final_amount != null ? row('Final amount charged', money(saleExtras.final_amount) || '—') : ''}
-          ${saleExtras.discount_amount ? row('Discount given', `${money(saleExtras.discount_amount)}${saleExtras.original_amount ? ` (${Math.round((Number(saleExtras.discount_amount) / Number(saleExtras.original_amount)) * 100)}%)` : ''}`) : ''}
+          ${discountAmt ? row('Discount given', `${money(discountAmt)}${discountPct != null ? ` (${discountPct}%)` : ''}`, discountPct != null && discountPct > 30) : row('Discount given', 'None')}
           ${saleExtras.discount_code ? row('Discount code', String(saleExtras.discount_code)) : ''}
           ${saleExtras.deposit_amount ? row('Deposit taken', money(saleExtras.deposit_amount) || '—') : ''}
           ${saleExtras.balance_due_amount ? row('Balance outstanding', money(saleExtras.balance_due_amount) || '—', true) : ''}
