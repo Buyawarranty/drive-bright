@@ -189,7 +189,7 @@ export function TimesheetCalendar({
 
       {/* Hint */}
       <p className="text-xs text-gray-500 mb-3">
-        Just mark the days you're <span className="font-semibold text-red-600">off</span> — click a day and pick Holiday, Sick, Training or Leave. Days off show a big red X. Worked days are Full (green) or Half (blue).
+        Just mark the days you're <span className="font-semibold text-red-600">off</span> — click a day and pick Holiday, Sick, Training or Leave. Days off show a big red X. Every day you work counts as a full day (green).
       </p>
 
 
