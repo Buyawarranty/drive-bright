@@ -1247,9 +1247,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         const createdGroup = createdParts.length > 1 ? `and(${createdParts.join(',')})` : createdParts[0];
         const resubGroup = resubParts.length > 1 ? `and(${resubParts.join(',')})` : resubParts[0];
         query = query.or(`${createdGroup},${resubGroup}`);
+      } else {
+        // No date range selected: never scan the whole table. The agent badges
+        // only ever describe recent flow, so window it to the last 90 days.
+        const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+        query = query.or(`created_at.gte.${since},last_resubmitted_at.gte.${since}`);
       }
 
-      const { data, error } = await query.limit(10000);
+      const { data, error } = await query.limit(5000);
       if (cancelled) return;
       if (error) {
         console.warn('[NewLeadsTab] agent count query failed', error);
@@ -1257,9 +1262,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       }
       setAgentCountRows((data || []) as any);
     };
-    load();
-    return () => { cancelled = true; };
-  }, [dateRange?.from?.getTime(), dateRange?.to?.getTime(), leads.length]);
+    // Defer slightly so the first paint of the table isn't competing with this
+    // secondary badge query, and so rapid date changes only fire once.
+    const t = setTimeout(load, 250);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [dateRange?.from?.getTime(), dateRange?.to?.getTime()]);
+
 
   const teamScopedAgentCountRows = useMemo(() => {
     if (!teamFilter) return agentCountRows;
