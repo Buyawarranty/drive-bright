@@ -457,7 +457,7 @@ export function TimesheetApprovals() {
                     <div className="hidden sm:flex items-center gap-3 text-sm text-gray-600">
                       <span>{agent.fullDays} full</span>
                       <span className="text-gray-300">|</span>
-                      <span>{agent.halfDays} half</span>
+                      <span>{agent.fullDays} full</span>
                       <span className="text-gray-300">|</span>
                       <span>{agent.weekendDays} wknd</span>
                       <span className="text-gray-300">|</span>
@@ -524,7 +524,7 @@ export function TimesheetApprovals() {
                                 <tr key={entry.id} className="border-b border-gray-100">
                                   <td className="py-2 pr-4">{format(new Date(entry.entry_date), 'EEE dd/MM')}</td>
                                   <td className="py-2 pr-4 capitalize">{entry.entry_type.replace('_', ' ')}</td>
-                                  <td className="py-2 pr-4">{entry.hours_worked > 5 ? 'Full Day' : 'Half Day'}</td>
+                                  <td className="py-2 pr-4">Full Day</td>
                                   <td className="py-2 pr-4 text-gray-500">{entry.start_time || '-'} – {entry.end_time || '-'}</td>
                                   <td className="py-2 pr-4 text-gray-500 max-w-[150px] truncate">{entry.notes || '-'}</td>
                                   <td className="py-2 pr-4">
