@@ -61,7 +61,7 @@ serve(async (req: Request) => {
     let saleExtras: Record<string, any> = {};
     try {
       const normalizedReg = String(regPlate || '').toUpperCase().replace(/\s/g, '');
-      const cols = 'claim_limit, voluntary_excess, labour_rate, payment_type, plan_type, mileage, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, vehicle_transmission, registration_plate, signup_date, discount_code, discount_amount, original_amount, final_amount, warranty_number, warranty_reference_number, purchase_source, acquisition_source, seasonal_bonus_months, deposit_amount, balance_due_amount, payment_status, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, flat_number, building_name, building_number, street, town, county, postcode, country, first_name, last_name, phone';
+      const cols = 'claim_limit, voluntary_excess, labour_rate, payment_type, plan_type, mileage, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, vehicle_transmission, registration_plate, signup_date, discount_code, discount_amount, original_amount, final_amount, sale_quoted_total, sale_discount_amount, sale_discount_pct, price_match_applied, price_match_competitor, price_match_competitor_price, price_match_our_price, warranty_number, warranty_reference_number, purchase_source, acquisition_source, seasonal_bonus_months, deposit_amount, balance_due_amount, payment_status, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, flat_number, building_name, building_number, street, town, county, postcode, country, first_name, last_name, phone';
       let custRow: any = null;
       if (normalizedReg) {
         // Plates are stored both with and without spaces, so match either.
@@ -128,6 +128,16 @@ serve(async (req: Request) => {
       ['Consequential', saleExtras.consequential],
     ] as [string, any][]).filter(([, on]) => !!on).map(([l]) => l);
     const addOnsDisplay = addOns.length ? addOns.join(', ') : 'None';
+    // Quotes & Orders reference price (frozen at point of sale) + discount given
+    const quotedTotal = saleExtras.sale_quoted_total ?? saleExtras.original_amount ?? null;
+    const soldTotal = saleValue != null ? Number(saleValue) : (saleExtras.final_amount ?? null);
+    const discountAmt = saleExtras.sale_discount_amount ?? saleExtras.discount_amount ??
+      (quotedTotal != null && soldTotal != null ? Number(quotedTotal) - Number(soldTotal) : null);
+    const discountPct = saleExtras.sale_discount_pct != null
+      ? Number(saleExtras.sale_discount_pct)
+      : (quotedTotal ? Math.round((Number(discountAmt || 0) / Number(quotedTotal)) * 1000) / 10 : null);
+    const isPriceMatch = !!saleExtras.price_match_applied;
+
     const row = (label: string, value: string, highlight = false) =>
       `<tr><td style="padding: 8px; background: ${highlight ? '#fde68a' : '#f3f4f6'};"><strong>${label}:</strong></td><td style="padding: 8px;${highlight ? ' font-weight: 700;' : ''}">${value}</td></tr>`;
 
@@ -199,8 +209,18 @@ serve(async (req: Request) => {
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #16a34a; border-bottom: 2px solid #16a34a; padding-bottom: 10px;">🎉 New Sale</h2>
         ${isAgentSale ? `
-        <div style="margin-top: 16px; padding: 12px 20px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;">
-          <div style="font-size: 14px; color: #1e40af;"><strong>Converted by:</strong> ${resolvedAgentName || 'Unknown Agent'}</div>
+        <div style="margin-top: 16px; padding: 14px 20px; background: #eff6ff; border: 2px solid #3b82f6; border-radius: 8px;">
+          <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #1e40af;">Agent sale</div>
+          <div style="font-size: 20px; font-weight: 800; color: #1e3a8a;">${resolvedAgentName || 'Unknown Agent'}</div>
+        </div>` : ''}
+        ${isPriceMatch ? `
+        <div style="margin-top: 16px; padding: 14px 20px; background: #fff7ed; border: 2px solid #f97316; border-radius: 8px;">
+          <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #c2410c;">Price match applied</div>
+          <div style="font-size: 14px; color: #7c2d12;">
+            ${saleExtras.price_match_competitor ? `Competitor: <strong>${saleExtras.price_match_competitor}</strong>` : 'Competitor: —'}
+            ${saleExtras.price_match_competitor_price != null ? ` · Their price: <strong>${money(saleExtras.price_match_competitor_price)}</strong>` : ''}
+            ${saleExtras.price_match_our_price != null ? ` · Our matched price: <strong>${money(saleExtras.price_match_our_price)}</strong>` : ''}
+          </div>
         </div>` : ''}
         <div style="margin-top: 16px; padding: 16px 24px; background: #fef9c3; border: 2px solid #eab308; border-radius: 8px; text-align: center;">
           <div style="font-size: 28px; font-weight: 900; color: #000000; letter-spacing: 2px; font-family: 'Arial Black', Arial, sans-serif;">${reg}</div>
@@ -227,9 +247,10 @@ serve(async (req: Request) => {
           ${row('Payment', payment)}
           ${row('Payment status', orDash(saleExtras.payment_status))}
           ${row('Sale Amount', saleValueDisplay, true)}
-          ${saleExtras.original_amount != null ? row('Quoted / original amount', money(saleExtras.original_amount) || '—') : ''}
+          ${row('Price match', isPriceMatch ? `Yes${saleExtras.price_match_competitor ? ` — ${saleExtras.price_match_competitor}` : ''}${saleExtras.price_match_competitor_price != null ? ` at ${money(saleExtras.price_match_competitor_price)}` : ''}` : 'No', isPriceMatch)}
+          ${quotedTotal != null ? row('Quotes &amp; Orders price', money(quotedTotal) || '—') : ''}
           ${saleExtras.final_amount != null ? row('Final amount charged', money(saleExtras.final_amount) || '—') : ''}
-          ${saleExtras.discount_amount ? row('Discount given', `${money(saleExtras.discount_amount)}${saleExtras.original_amount ? ` (${Math.round((Number(saleExtras.discount_amount) / Number(saleExtras.original_amount)) * 100)}%)` : ''}`) : ''}
+          ${discountAmt ? row('Discount given', `${money(discountAmt)}${discountPct != null ? ` (${discountPct}%)` : ''}`, discountPct != null && discountPct > 30) : row('Discount given', 'None')}
           ${saleExtras.discount_code ? row('Discount code', String(saleExtras.discount_code)) : ''}
           ${saleExtras.deposit_amount ? row('Deposit taken', money(saleExtras.deposit_amount) || '—') : ''}
           ${saleExtras.balance_due_amount ? row('Balance outstanding', money(saleExtras.balance_due_amount) || '—', true) : ''}
@@ -272,7 +293,9 @@ serve(async (req: Request) => {
 
     // Use the dedicated notify.buyawarranty.co.uk sender so mail to
     // @buyawarranty.co.uk mailboxes isn't dropped by same-domain anti-spoof.
-    const subject = `New Sale ${subjectSource}: ${reg} - ${saleValueDisplay} via ${payment}`;
+    const agentSubjectPart = isAgentSale ? ` — Agent: ${resolvedAgentName || 'Unknown Agent'}` : '';
+    const priceMatchSubjectPart = isPriceMatch ? ' [Price match]' : '';
+    const subject = `New Sale ${subjectSource}: ${reg} - ${saleValueDisplay} via ${payment}${agentSubjectPart}${priceMatchSubjectPart}`;
     const notifyResult = await sendInternalNotification({
       to: ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"],
       subject,
