@@ -1002,6 +1002,7 @@ const AdminDashboardInner: React.FC<{
   accessFromCache?: boolean;
 }> = ({ activeTab, handleTabChange, userRole, userPermissions, isMobileMenuOpen, setIsMobileMenuOpen, navigateToQuoteForm, renderContent, navigate, accessFromCache }) => {
 
+  const [tabRetryKey, setTabRetryKey] = useState(0);
   const { effectiveRole, effectivePermissions, isImpersonating, viewAsAgent } = useViewAs();
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
   const { session } = useAuth();
@@ -1195,7 +1196,11 @@ const AdminDashboardInner: React.FC<{
             onSelect={handleTabChange}
           />
           <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-104px)]">
-            <TabErrorBoundary tabKey={activeTab} onRetry={() => window.location.reload()}>
+            <TabErrorBoundary
+              key={`${activeTab}:${tabRetryKey}`}
+              tabKey={activeTab}
+              onRetry={() => setTabRetryKey(value => value + 1)}
+            >
               <Suspense fallback={<TabFallback />}>
                 {renderContent(displayRole, displayPermissions)}
               </Suspense>
