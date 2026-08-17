@@ -96,6 +96,10 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
         <OrrPerformancePanel />
       </WidgetErrorBoundary>
 
+      <WidgetErrorBoundary label="Auto block & unblock leads">
+        <OrrLeadFreezePanel />
+      </WidgetErrorBoundary>
+
 
       <OpenRoundRobinTestPanel />
 
