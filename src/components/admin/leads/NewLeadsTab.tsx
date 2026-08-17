@@ -671,25 +671,41 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   // Whenever the visible leads change, pull the set of leads currently tagged
   // "Not spoken to" so the pill count and filter reflect live data.
+  // Keyed on a stable id string (not the array identity) so re-renders don't
+  // re-fire the query, and capped/chunked so the request URL stays small.
+  const visibleLeadIdsKey = useMemo(
+    () => visibleLeads.slice(0, 250).map(l => l.id).join(','),
+    [visibleLeads]
+  );
   useEffect(() => {
-    if (!notSpokenTagId || visibleLeads.length === 0) {
+    if (!notSpokenTagId || !visibleLeadIdsKey) {
       setNotSpokenLeadIds(new Set());
       return;
     }
     let cancelled = false;
-    const leadIds = visibleLeads.map(l => l.id);
+    const leadIds = visibleLeadIdsKey.split(',');
+    const chunks: string[][] = [];
+    for (let i = 0; i < leadIds.length; i += 100) chunks.push(leadIds.slice(i, i + 100));
     (async () => {
-      const { data, error } = await (supabase.from('lead_tag_assignments') as any)
-        .select('lead_id')
-        .eq('tag_id', notSpokenTagId)
-        .in('lead_id', leadIds);
+      const results = await Promise.all(
+        chunks.map(chunk =>
+          (supabase.from('lead_tag_assignments') as any)
+            .select('lead_id')
+            .eq('tag_id', notSpokenTagId)
+            .in('lead_id', chunk)
+        )
+      );
       if (cancelled) return;
-      if (error) { setNotSpokenLeadIds(new Set()); return; }
-      const ids = new Set<string>((data || []).map((r: any) => r.lead_id as string));
+      const ids = new Set<string>();
+      results.forEach((r: any) => {
+        if (r?.error) return;
+        (r?.data || []).forEach((row: any) => ids.add(row.lead_id as string));
+      });
       setNotSpokenLeadIds(ids);
     })();
     return () => { cancelled = true; };
-  }, [notSpokenTagId, visibleLeads]);
+  }, [notSpokenTagId, visibleLeadIdsKey]);
+
 
 
   const statusFilteredLeads = useMemo(
