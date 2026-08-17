@@ -60,12 +60,15 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
             {/* Section Header */}
             <div className="mb-6">
               <div className="text-center lg:text-left">
-                
+                <h2 className="text-2xl md:text-3xl font-bold text-brand-dark-text mb-2">
+                  {headline}
+                </h2>
                 <p className="text-base md:text-lg text-gray-500">
                   Superior Protection. Affordable Prices. Instant Cover.
                 </p>
               </div>
             </div>
+
 
             {/* Two Column Coverage Layout */}
             <div className="grid md:grid-cols-2 gap-6 mb-6">
