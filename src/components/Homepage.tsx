@@ -13,6 +13,8 @@ import { OptimizedImage } from '@/components/OptimizedImage';
 import LazySection from './homepage/LazySection';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
+import heroPandaVehiclesMobile from '@/assets/homepage-hero-panda-vehicles-mobile.png.asset.json';
+
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
 import TrustpilotSliderWidget from './TrustpilotSliderWidget';
