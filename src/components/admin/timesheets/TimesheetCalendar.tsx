@@ -151,7 +151,7 @@ export function TimesheetCalendar({
         <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-5">
           {[
             { label: 'Full Days', value: stats.fullDays, color: 'text-emerald-700', bg: 'bg-emerald-50' },
-            { label: 'Half Days', value: stats.halfDays, color: 'text-blue-700', bg: 'bg-blue-50' },
+            
             { label: 'Weekend', value: stats.weekendDays, color: 'text-indigo-700', bg: 'bg-indigo-50' },
             { label: 'Sick', value: stats.sickDays, color: 'text-red-700', bg: 'bg-red-50' },
             { label: 'Holidays', value: stats.holidayDays, color: 'text-amber-700', bg: 'bg-amber-50' },
