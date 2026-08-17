@@ -31,15 +31,21 @@ const MobileNavigation: React.FC = () => {
       {/* Mobile Menu Button */}
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="lg"
-            className="lg:hidden p-3 min-w-[48px] min-h-[48px]"
-            aria-label="Open menu"
+          <button
+            type="button"
+            className="lg:hidden inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-2xl bg-background border border-border shadow-sm hover:shadow-md active:scale-[0.97] transition-all"
+            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isMobileMenuOpen}
           >
-            <Menu className="h-8 w-8" />
-          </Button>
+            {isMobileMenuOpen ? (
+              <X className="h-5 w-5 text-foreground" strokeWidth={2.5} />
+            ) : (
+              <Menu className="h-5 w-5 text-foreground" strokeWidth={2.5} />
+            )}
+            <span className="text-[15px] font-semibold text-foreground">Menu</span>
+          </button>
         </SheetTrigger>
+
         <SheetContent side="right" className="w-[300px] sm:w-[400px] overflow-y-auto">
           <div className="flex flex-col h-full max-h-screen">
             {/* Header with logo */}
