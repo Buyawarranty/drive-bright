@@ -219,19 +219,19 @@ export function TimesheetCalendar({
           const weekend = isWeekend(day);
           const today = isToday(day);
           const hasEntry = !!entry;
-          const half = !!entry && (entryType === 'worked' || entryType === 'training') && isHalfDay(entry);
           const isDayOff = entryType === 'holiday' || entryType === 'sick' || entryType === 'unpaid_leave';
-          // Full day = green, half day = blue, so they read differently at a glance.
+          // Every worked day is a full day (green).
           const cellBg = !hasEntry
             ? undefined
             : entryType === 'worked'
-              ? (half ? 'bg-blue-100' : 'bg-emerald-100')
+              ? 'bg-emerald-100'
               : config?.bgColor;
           const cellText = !hasEntry
             ? undefined
             : entryType === 'worked'
-              ? (half ? 'text-blue-700' : 'text-emerald-700')
+              ? 'text-emerald-700'
               : config?.color;
+
 
           return (
             <Popover
