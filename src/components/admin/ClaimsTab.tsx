@@ -467,17 +467,25 @@ export const ClaimsTab = ({
       {/* Claims List Sub-tab — Workbench (queues + tabbed drawer) */}
       {activeSubTab === 'claims' && (
         <>
-          <ClaimUpdateNotifications />
-          <PerformanceKpiStrip
-            avgPayout={perfKpis.avgPayout}
-            avgResolutionDays={avgResolutionDays}
-            avgClaimsPerMonth={perfKpis.avgPerMonth}
-          />
-          <ClaimsWorkbench showUrgencyBanner={false} />
+          <WidgetErrorBoundary label="Customer claim updates">
+            <ClaimUpdateNotifications />
+          </WidgetErrorBoundary>
+          <WidgetErrorBoundary label="Claims performance">
+            <PerformanceKpiStrip
+              avgPayout={perfKpis.avgPayout}
+              avgResolutionDays={avgResolutionDays}
+              avgClaimsPerMonth={perfKpis.avgPerMonth}
+            />
+          </WidgetErrorBoundary>
+          <WidgetErrorBoundary label="Claims workbench">
+            <ClaimsWorkbench showUrgencyBanner={false} />
+          </WidgetErrorBoundary>
           <div className="pt-4 border-t border-slate-200 space-y-3">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Operational overview</div>
-            <UrgencyBanner claims={managerClaims} avgResolutionDays={avgResolutionDays} />
-            <KpiStrip claims={managerClaims} avgResolutionDays={avgResolutionDays} />
+            <WidgetErrorBoundary label="Operational overview">
+              <UrgencyBanner claims={managerClaims} avgResolutionDays={avgResolutionDays} />
+              <KpiStrip claims={managerClaims} avgResolutionDays={avgResolutionDays} />
+            </WidgetErrorBoundary>
           </div>
         </>
       )}
