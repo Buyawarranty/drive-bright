@@ -66,7 +66,11 @@ function fmtRemaining(ms: number) {
   return ms < 0 ? `${t} overdue` : t;
 }
 
-export function RollingRoundRobinLivePanel({ canEdit }: { canEdit: boolean }) {
+export function RollingRoundRobinLivePanel({ canEdit, readOnly = false }: { canEdit: boolean; readOnly?: boolean }) {
+  // readOnly = observation only (used by the ORR Test Lab): never run the
+  // distribute/reclaim RPCs, so no real lead is ever moved from this screen.
+  const allowWrites = canEdit && !readOnly;
+
   const [leads, setLeads] = useState<InFlightLead[]>([]);
   const [agents, setAgents] = useState<Record<string, AgentInfo>>({});
   const [poolCount, setPoolCount] = useState(0);
