@@ -477,8 +477,13 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
         {/* Marked as fake — per day and date */}
         {!loading && dailyCounts.length > 0 && (
           <div className="bg-white rounded-md border p-2">
-            <div className="text-xs font-semibold text-muted-foreground mb-1.5">
+            <div className="text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-2">
               Marked as fake by day &amp; date
+              {canSeeDetails && (
+                <Badge variant="outline" className="text-[10px] bg-white font-normal">
+                  Source shown — managers only
+                </Badge>
+              )}
             </div>
             <div className="flex gap-1.5 overflow-x-auto pb-1">
               {dailyCounts.map(d => (
