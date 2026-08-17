@@ -828,7 +828,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     setSelectedLeadId(lead.id);
     setSelectedLeadOwner(lead.owner_name || null);
     setSelectedLeadOwnerId(lead.assigned_to || null);
-    setCustomerEmail(lead.email);
+    setCustomerEmail(lead.email || '');
     setCustomerFirstName(lead.first_name || '');
     setCustomerLastName(lead.last_name || '');
     setCustomerPhone(lead.phone || '');
@@ -899,10 +899,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     let toastDescription: string;
     if (newReg) {
       toastDescription = regChanged
-        ? `Switched to ${lead.first_name || lead.email} — ${newReg}${lead.vehicle_make ? ` (${lead.vehicle_make}${lead.vehicle_model ? ' ' + lead.vehicle_model : ''})` : ''}.`
-        : `Details for ${lead.first_name || lead.email} have been loaded.`;
+        ? `Switched to ${lead.first_name || lead.email || lead.phone || 'the selected lead'} — ${newReg}${lead.vehicle_make ? ` (${lead.vehicle_make}${lead.vehicle_model ? ' ' + lead.vehicle_model : ''})` : ''}.`
+        : `Details for ${lead.first_name || lead.email || lead.phone || 'the selected lead'} have been loaded.`;
     } else {
-      toastDescription = `Contact details for ${lead.first_name || lead.email} imported. The lead has no vehicle registration — enter it manually to price the quote.`;
+      toastDescription = `Contact details for ${lead.first_name || lead.email || lead.phone || 'the selected lead'} imported. The lead has no vehicle registration — enter it manually to price the quote.`;
     }
 
     toast({

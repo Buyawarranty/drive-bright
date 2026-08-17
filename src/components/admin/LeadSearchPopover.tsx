@@ -13,7 +13,7 @@ export interface LeadData {
   id: string;
   first_name: string | null;
   last_name: string | null;
-  email: string;
+  email: string | null;
   phone: string | null;
   vehicle_reg: string | null;
   vehicle_make: string | null;
@@ -73,17 +73,38 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
           // PostgREST `or()` values must be quoted — a bare space or comma
           // (e.g. "AP69 YUX") breaks the filter parser and the whole request
           // 400s, which looked like "No leads found" for every reg search.
-          const q = (v: string) => `"%${v.replace(/["\\]/g, '')}%"`;
+          const q = (v: string) => `"%${v.replace(/["\\,()]/g, ' ').trim()}%"`;
           const raw = searchTerm.trim();
+          const words = raw.split(/\s+/).map(word => word.trim()).filter(Boolean).slice(0, 4);
           const compact = raw.replace(/\s+/g, '').toUpperCase();
+          const digits = raw.replace(/\D/g, '');
           const regVariants = new Set<string>([raw]);
           if (compact.length >= 5) {
             regVariants.add(compact);
             regVariants.add(`${compact.slice(0, -3)} ${compact.slice(-3)}`);
           }
-          const regClauses = Array.from(regVariants).map(v => `vehicle_reg.ilike.${q(v)}`).join(',');
-          query = query.or(`email.ilike.${q(raw)},first_name.ilike.${q(raw)},last_name.ilike.${q(raw)},phone.ilike.${q(raw)},${regClauses}`);
-          cartQuery = cartQuery.or(`email.ilike.${q(raw)},full_name.ilike.${q(raw)},phone.ilike.${q(raw)},${regClauses}`);
+          const regClauses = Array.from(regVariants).map(v => `vehicle_reg.ilike.${q(v)}`);
+          const leadClauses = [
+            `email.ilike.${q(raw)}`,
+            `phone.ilike.${q(raw)}`,
+            ...words.flatMap(word => [`first_name.ilike.${q(word)}`, `last_name.ilike.${q(word)}`]),
+            ...regClauses,
+          ];
+          const cartClauses = [
+            `email.ilike.${q(raw)}`,
+            `full_name.ilike.${q(raw)}`,
+            ...words.map(word => `full_name.ilike.${q(word)}`),
+            `phone.ilike.${q(raw)}`,
+            ...regClauses,
+          ];
+          // Also match a pasted phone number after punctuation/spaces are removed.
+          // UK numbers are commonly stored in several different visual formats.
+          if (digits.length >= 7 && digits !== raw) {
+            leadClauses.push(`phone.ilike.${q(digits)}`);
+            cartClauses.push(`phone.ilike.${q(digits)}`);
+          }
+          query = query.or(leadClauses.join(','));
+          cartQuery = cartQuery.or(cartClauses.join(','));
         }
 
 
@@ -160,7 +181,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
             id: `cart:${c.id}`,
             first_name: parts[0] || null,
             last_name: parts.slice(1).join(' ') || null,
-            email: c.email,
+            email: c.email || null,
             phone: c.phone,
             vehicle_reg: c.vehicle_reg,
             vehicle_make: c.vehicle_make,
@@ -197,7 +218,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
     if (lead.first_name || lead.last_name) {
       return `${lead.first_name || ''} ${lead.last_name || ''}`.trim();
     }
-    return lead.email.split('@')[0];
+    return lead.email?.split('@')[0] || lead.phone || lead.vehicle_reg || 'Lead';
   };
 
   return (
@@ -237,6 +258,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
             <div className="p-2 space-y-1">
               {leads.map((lead) => (
                 <button
+                  type="button"
                   key={lead.id}
                   onClick={() => handleSelectLead(lead)}
                   className="w-full text-left p-3 rounded-lg hover:bg-muted transition-colors"
@@ -260,10 +282,12 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
                         </Badge>
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
-                        <Mail className="h-3 w-3 shrink-0" />
-                        <span className="truncate">{lead.email}</span>
-                      </div>
+                      {lead.email && (
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                          <Mail className="h-3 w-3 shrink-0" />
+                          <span className="truncate">{lead.email}</span>
+                        </div>
+                      )}
                       {lead.phone && (
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
                           <Phone className="h-3 w-3 shrink-0" />
