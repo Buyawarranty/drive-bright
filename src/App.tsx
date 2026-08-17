@@ -218,10 +218,18 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 10 * 60 * 1000, // 10 minutes - increased for better caching
       gcTime: 30 * 60 * 1000, // 30 minutes - keep cached data longer
-      retry: 1, // Reduced retries for faster failure handling
-      refetchOnWindowFocus: false, // Prevent unnecessary refetches
-      refetchOnReconnect: false,
-      refetchOnMount: false,
+      // CRM laptops frequently move between VPN/Wi-Fi states. A temporary
+      // failure must recover by itself rather than staying cached until staff
+      // repeatedly reload the whole application.
+      retry: (failureCount, error) => {
+        const status = (error as { status?: number } | null)?.status;
+        if (status === 401 || status === 403) return false;
+        return failureCount < 3;
+      },
+      retryDelay: attempt => Math.min(1000 * 2 ** attempt, 8000),
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
+      refetchOnMount: true,
     },
   },
 });

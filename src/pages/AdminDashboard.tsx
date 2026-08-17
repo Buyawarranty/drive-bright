@@ -1195,7 +1195,7 @@ const AdminDashboardInner: React.FC<{
             onSelect={handleTabChange}
           />
           <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-104px)]">
-            <TabErrorBoundary tabKey={activeTab} onRetry={() => window.location.reload()}>
+            <TabErrorBoundary tabKey={activeTab} onRetry={() => queryClient.invalidateQueries()}>
               <Suspense fallback={<TabFallback />}>
                 {renderContent(displayRole, displayPermissions)}
               </Suspense>
