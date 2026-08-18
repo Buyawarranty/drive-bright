@@ -928,30 +928,27 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             </div>
             
             {/* Vehicle Types for mobile/tablet - spans full width */}
-            <div className="lg:hidden w-full px-4 mt-4 sm:mt-6 lg:col-span-2">
-              <div className="flex flex-col items-center gap-4 sm:gap-6">
-                <div className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap max-w-full">
-                  <div className="flex items-center space-x-1.5 min-w-0">
-                    <Car className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                    <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">Cars</span>
+            <div className="lg:hidden w-full px-2 mt-1 sm:mt-6 lg:col-span-2">
+              <div className="flex flex-col items-center gap-3 sm:gap-6">
+                <div className="flex items-center justify-center gap-2 sm:gap-4 flex-nowrap w-full">
+                  <div className="flex items-center space-x-1 min-w-0">
+                    <Car className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-[11px] sm:text-sm whitespace-nowrap">Cars</span>
                   </div>
-                  <div className="flex items-center space-x-1.5 min-w-0">
-                    <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                    <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">Vans</span>
+                  <div className="flex items-center space-x-1 min-w-0">
+                    <Truck className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-[11px] sm:text-sm whitespace-nowrap">Vans</span>
                   </div>
-                  <div className="flex items-center space-x-1.5 min-w-0">
-                    <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                    <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">Hybrid</span>
+                  <div className="flex items-center space-x-1 min-w-0">
+                    <Zap className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-[11px] sm:text-sm whitespace-nowrap">Hybrid &amp; EV</span>
                   </div>
-                  <div className="flex items-center space-x-1.5 min-w-0">
-                    <Battery className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                    <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">EV</span>
-                  </div>
-                  <div className="flex items-center space-x-1.5 min-w-0">
-                    <Bike className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                    <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">Motorbikes</span>
+                  <div className="flex items-center space-x-1 min-w-0">
+                    <Bike className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-[11px] sm:text-sm whitespace-nowrap">Motorbikes</span>
                   </div>
                 </div>
+
 
                 <TooltipProvider delayDuration={100}>
                   <Tooltip>
