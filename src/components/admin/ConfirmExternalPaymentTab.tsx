@@ -1418,12 +1418,22 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                     </h2>
                   </div>
                   <div className="p-6 space-y-5">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-500">Payment Source *</Label>
+                    <div className="space-y-1.5" id="payment-source-field">
+                      <Label className="text-xs font-semibold text-slate-500">
+                        Payment Source <span className="text-destructive">*</span>
+                      </Label>
                       <select
                         value={paymentSource}
                         onChange={(e) => setPaymentSource(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900"
+                        required
+                        aria-required="true"
+                        aria-invalid={!paymentSource}
+                        className={cn(
+                          'w-full px-3 py-2 border rounded-md bg-white text-slate-900',
+                          !paymentSource
+                            ? 'border-2 border-destructive ring-1 ring-destructive'
+                            : 'border-slate-300',
+                        )}
                       >
                         <option value="">Select payment source...</option>
                         <option value="stripe_dashboard">Stripe Dashboard</option>
@@ -1436,7 +1446,13 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         <option value="facebook">Facebook</option>
                         <option value="other">Other</option>
                       </select>
+                      {!paymentSource && (
+                        <p className="text-xs font-semibold text-destructive">
+                          Required — we must record where the payment was taken.
+                        </p>
+                      )}
                     </div>
+
 
                     {/* Staff-only pricing summary — never emailed or shown to the
                         customer. Gives the agent the quoted grid price, what they
