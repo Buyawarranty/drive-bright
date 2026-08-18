@@ -13,8 +13,8 @@ import { OptimizedImage } from '@/components/OptimizedImage';
 import LazySection from './homepage/LazySection';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
-import heroPandaVehiclesMobile from '@/assets/homepage-hero-panda-vehicles-mobile-v5.png.asset.json';
-import heroPandaVehiclesDesktop from '@/assets/homepage-hero-panda-vehicles-desktop-v1.png.asset.json';
+import heroPandaVehiclesMobile from '@/assets/hero-panda-vehicles-mobile.webp.asset.json';
+import heroPandaVehiclesDesktop from '@/assets/hero-panda-vehicles-desktop.webp.asset.json';
 
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
@@ -863,22 +863,31 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               {/* Mobile: new panda + vehicles line-up */}
               <img
                 src={heroPandaVehiclesMobile.url}
-                alt="buyawarranty panda mascot holding car keys with a car, van, SUV and motorbike"
+                alt="Buyawarranty panda mascot with a car, van, SUV and motorbike covered by UK used car warranty plans"
+                title="UK used car, van, hybrid, EV and motorbike warranty cover"
                 className="lg:hidden w-full h-auto -mt-6 -mb-2 sm:mt-0 sm:mb-0"
-                width={1536}
-                height={1024}
+                width={860}
+                height={645}
+                sizes="(max-width: 1023px) 100vw, 0px"
                 fetchPriority="high"
+                loading="eager"
                 decoding="async"
+                itemProp="image"
               />
               <img
                 src={heroPandaVehiclesDesktop.url}
-                alt="buyawarranty panda mascot holding car keys with a car, van, SUV and motorbike"
+                alt="Buyawarranty panda mascot holding car keys beside a car, van, SUV and motorbike covered by extended warranty"
+                title="Extended warranty cover for cars, vans, hybrids, EVs and motorbikes"
                 className="hidden lg:block w-full h-auto lg:-mt-10 lg:-ml-12 lg:-mb-4"
-                width={1672}
-                height={936}
+                width={1400}
+                height={788}
+                sizes="(min-width: 1024px) 50vw, 0px"
                 fetchPriority="high"
+                loading="eager"
                 decoding="async"
+                itemProp="image"
               />
+
 
               
               {/* Vehicle Types positioned directly below the image on desktop */}
