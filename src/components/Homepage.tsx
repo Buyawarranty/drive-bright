@@ -864,7 +864,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 src={heroPandaVehiclesDesktop.url}
                 alt="Buyawarranty panda mascot holding car keys beside a car, van, SUV and motorbike covered by extended warranty"
                 title="Extended warranty cover for cars, vans, hybrids, EVs and motorbikes"
-                className="hidden lg:block w-full h-auto lg:-mt-10 lg:ml-10 lg:-mb-4"
+                className="hidden lg:block w-full h-auto lg:-mt-10 lg:ml-[130px] lg:-mb-4"
                 width={1400}
                 height={788}
                 sizes="(min-width: 1024px) 50vw, 0px"
