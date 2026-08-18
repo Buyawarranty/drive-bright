@@ -646,12 +646,18 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
     if (!paymentSource || !paymentAmount) {
       toast({
-        title: "Missing Payment Info",
-        description: "Please fill in payment source and amount",
+        title: "Payment source and amount are required",
+        description: !paymentSource
+          ? "Select where the payment was taken (Stripe, Bumper, Payment Assist, bank transfer…) before confirming."
+          : "Enter the amount actually received before confirming.",
         variant: "destructive",
       });
+      document
+        .getElementById(!paymentSource ? 'payment-source-field' : 'payment-amount-field')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
+
 
     const pmGateSubmit = priceMatchGate();
     if (pmGateSubmit) {
