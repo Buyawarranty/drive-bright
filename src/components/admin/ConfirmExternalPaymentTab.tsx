@@ -350,12 +350,17 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     isMotorbike: /motor\s*(bike|cycle)|\bbike\b/i.test(String((vehicleData as any)?.vehicleType || '')),
     surface: 'admin',
   });
+  // Kept for reference/display only — no longer used to block a confirmation.
   const ceilingMinAmount = quotedTotal > 0
     ? Math.round(quotedTotal * (1 - DISCOUNT_CEILING_PCT / 100) * 100) / 100
     : 0;
-  // Whichever bites harder: the 30% ceiling or the absolute net floor.
-  const minAllowedAmount = Math.max(ceilingMinAmount, netFloorAmount);
+  void ceilingMinAmount;
+
+  // Sales staff may confirm ANY amount down to the absolute net floor — the 30%
+  // ceiling no longer blocks a confirmation here, it only flags the discount.
+  const minAllowedAmount = netFloorAmount;
   const overDiscountCeiling = discountPct > DISCOUNT_CEILING_PCT + 0.01;
+
   const underNetFloor = Number.isFinite(enteredAmount) && enteredAmount > 0 && enteredAmount < netFloorAmount - 0.01;
   // A manager-approved authorisation for this vehicle lifts the block up to the
   // price they approved (agents no longer hit a dead end).
@@ -377,12 +382,12 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     pmFloor !== null &&
     enteredAmount >= pmFloor - 0.01;
   const priceMatchApplied = priceMatchReady && !isManagementRole;
-  // Master switch (Lead Allocation → Confirm payment price block). Off by
-  // default: no agent is blocked from confirming a payment unless management
-  // deliberately turns the block on.
+  // Only the absolute net floor (£399 / £699 / £999, half for motorbikes) blocks a
+  // confirmation. Any discount above 30% is allowed, flagged and logged — sales staff
+  // no longer need management authorisation just to confirm a low amount.
   const discountBlocked =
-    priceBlockEnabled &&
-    (overDiscountCeiling || underNetFloor) && !isManagementRole && !hasApprovedAuth && !priceMatchReady;
+    underNetFloor && !isManagementRole && !hasApprovedAuth && !priceMatchReady;
+
 
   /**
    * Price match gate — runs on every confirmation regardless of discount.
@@ -670,12 +675,13 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
     if (discountBlocked) {
       toast({
-        title: `Blocked — contact management`,
-        description: `£${enteredAmount.toFixed(2)} is ${discountPct.toFixed(1)}% below the quoted £${quotedTotal}. You cannot confirm this payment — please contact management to authorise it. The lowest you can confirm yourself is £${minAllowedAmount.toFixed(2)}.`,
+        title: `Below the minimum sellable price`,
+        description: `£${enteredAmount.toFixed(2)} is under the £${netFloorAmount.toFixed(2)} floor for this cover. Contact management to authorise anything lower.`,
         variant: "destructive",
       });
       return;
     }
+
 
     // CRITICAL: Sales agent is compulsory for commission tracking
     if (!assigneeId) {
@@ -1575,11 +1581,17 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
                         {discountBlocked && (
                           <p className="text-xs font-semibold text-destructive">
-                            {underNetFloor
-                              ? `Blocked — £${netFloorAmount.toFixed(2)} is the minimum sellable price for this cover (${paymentType.replace('months', ' month')} term). Contact management to authorise anything lower.`
-                              : `Blocked — that is ${discountPct.toFixed(1)}% off. You cannot confirm this payment. Please contact management to authorise anything below £${minAllowedAmount.toFixed(2)} (max ${DISCOUNT_CEILING_PCT}% off).`}
+                            {`Blocked — £${netFloorAmount.toFixed(2)} is the minimum sellable price for this cover (${paymentType.replace('months', ' month')} term). Contact management to authorise anything lower.`}
                           </p>
                         )}
+
+                        {!discountBlocked && overDiscountCeiling && !isManagementRole && (
+                          <p className="text-xs font-semibold text-amber-700">
+                            {discountPct.toFixed(1)}% off — above the {DISCOUNT_CEILING_PCT}% guideline. You can still
+                            confirm it; the discount is recorded against your name for management review.
+                          </p>
+                        )}
+
 
 
                         {discountBlocked && blockRoute === 'none' && (
