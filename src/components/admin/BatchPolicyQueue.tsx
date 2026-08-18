@@ -83,6 +83,9 @@ export const BatchPolicyQueue: React.FC = () => {
   const [editForm, setEditForm] = useState<Partial<QueuedCustomer>>({});
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [inlineForms, setInlineForms] = useState<Record<string, any>>({});
+  const [savingInlineId, setSavingInlineId] = useState<string | null>(null);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Autosave queue to localStorage on every change
@@ -202,59 +205,89 @@ export const BatchPolicyQueue: React.FC = () => {
     } as any);
   };
 
-  const saveEdit = async () => {
-    if (!editingId) return;
-    setIsSavingEdit(true);
-    const f = editForm as any;
-    const first = (f.first_name || '').trim();
-    const last = (f.last_name || '').trim();
+  // Shared writer so both the Edit dialog and the inline Details editor keep
+  // customers + customer_policies in sync with Customer Management.
+  const persistCustomerDetails = async (
+    customerId: string,
+    form: any,
+  ): Promise<boolean> => {
+    const first = (form.first_name || '').trim();
+    const last = (form.last_name || '').trim();
     const fullName = `${first} ${last}`.trim();
     const updates: any = {
       first_name: first || null,
       last_name: last || null,
       name: fullName || null,
-      flat_number: editForm.flat_number?.trim() || null,
-      building_name: editForm.building_name?.trim() || null,
-      building_number: editForm.building_number?.trim() || null,
-      street: editForm.street?.trim() || null,
-      town: editForm.town?.trim() || null,
-      county: editForm.county?.trim() || null,
-      postcode: editForm.postcode?.trim() || null,
+      flat_number: form.flat_number?.trim() || null,
+      building_name: form.building_name?.trim() || null,
+      building_number: form.building_number?.trim() || null,
+      street: form.street?.trim() || null,
+      town: form.town?.trim() || null,
+      county: form.county?.trim() || null,
+      postcode: form.postcode?.trim().toUpperCase() || null,
     };
-    const { error } = await supabase.from('customers').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', editingId);
+
+    const { data: updatedRows, error } = await supabase
+      .from('customers')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', customerId)
+      .select('id');
     if (error) {
-      setIsSavingEdit(false);
       toast({ title: 'Save failed', description: error.message, variant: 'destructive' });
-      return;
+      return false;
+    }
+    if (!updatedRows || updatedRows.length === 0) {
+      toast({
+        title: 'Nothing saved',
+        description: "Your account doesn't have permission to edit this customer.",
+        variant: 'destructive',
+      });
+      return false;
     }
 
-    // Mirror to customer_policies so the customer dashboard / portal show the same details
-    const composedAddress = [
-      updates.flat_number,
-      updates.building_name,
-      [updates.building_number, updates.street].filter(Boolean).join(' '),
-      updates.town,
-      updates.county,
-      updates.postcode,
-    ].filter(Boolean).join(', ');
+    // Mirror to customer_policies using the SAME structured address shape that
+    // Customer Management writes, so both dashboards read identical details.
     const { error: polError } = await supabase
       .from('customer_policies')
       .update({
         customer_full_name: fullName || null,
-        address: composedAddress || null,
+        address: {
+          flat_number: updates.flat_number || '',
+          building_name: updates.building_name || '',
+          building_number: updates.building_number || '',
+          street: updates.street || '',
+          town: updates.town || '',
+          county: updates.county || '',
+          postcode: updates.postcode || '',
+        } as any,
         updated_at: new Date().toISOString(),
       })
-      .eq('customer_id', editingId);
-    if (polError) {
-      console.error('customer_policies sync failed:', polError);
-    }
-    setIsSavingEdit(false);
+      .eq('customer_id', customerId);
+    if (polError) console.error('customer_policies sync failed:', polError);
 
-    setQueue(prev => prev.map(q => (q.id === editingId ? { ...q, ...updates } as QueuedCustomer : q)));
-    toast({ title: 'Saved', description: 'Customer details updated.' });
+    setQueue(prev => prev.map(q => (q.id === customerId ? ({ ...q, ...updates } as QueuedCustomer) : q)));
+    toast({ title: 'Saved', description: 'Details updated here and in Customer Management.' });
+    return true;
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    setIsSavingEdit(true);
+    const ok = await persistCustomerDetails(editingId, editForm as any);
+    setIsSavingEdit(false);
+    if (!ok) return;
     setEditingId(null);
     setEditForm({});
   };
+
+  const saveInline = async (customerId: string) => {
+    const form = inlineForms[customerId];
+    if (!form) return;
+    setSavingInlineId(customerId);
+    await persistCustomerDetails(customerId, form);
+    setSavingInlineId(null);
+  };
+
 
 
   const clearQueue = () => {
@@ -645,7 +678,24 @@ ${rows}
                             size="sm"
                             variant="outline"
                             className="h-7 px-2 gap-1"
-                            onClick={() => setExpandedId(prev => (prev === c.id ? null : c.id))}
+                            onClick={() => {
+                              setExpandedId(prev => (prev === c.id ? null : c.id));
+                              setInlineForms(prev => (prev[c.id] ? prev : {
+                                ...prev,
+                                [c.id]: {
+                                  first_name: (c as any).first_name || (c.name || '').trim().split(/\s+/)[0] || '',
+                                  last_name: (c as any).last_name || (c.name || '').trim().split(/\s+/).slice(1).join(' '),
+                                  flat_number: c.flat_number || '',
+                                  building_name: c.building_name || '',
+                                  building_number: c.building_number || '',
+                                  street: c.street || '',
+                                  town: c.town || '',
+                                  county: c.county || '',
+                                  postcode: c.postcode || '',
+                                },
+                              }));
+                            }}
+
                             title="Show full customer, plan and cover details"
                           >
                             {expandedId === c.id ? 'Hide' : 'Details'}
@@ -712,6 +762,43 @@ ${rows}
                               </div>
                             );
                           })()}
+
+                          {/* Inline name & address editor — saves here and in Customer Management */}
+                          <div className="mt-4 rounded-md border bg-background p-3">
+                            <p className="text-xs font-semibold mb-2">Edit name & address</p>
+                            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                              {([
+                                ['first_name', 'First name'],
+                                ['last_name', 'Last name'],
+                                ['flat_number', 'Flat / apt'],
+                                ['building_name', 'Building name'],
+                                ['building_number', 'House number'],
+                                ['street', 'Street'],
+                                ['town', 'Town / city'],
+                                ['county', 'County'],
+                                ['postcode', 'Postcode'],
+                              ] as Array<[string, string]>).map(([key, label]) => (
+                                <div key={key} className="space-y-1">
+                                  <label className="text-[11px] text-muted-foreground">{label}</label>
+                                  <Input
+                                    className="h-8 text-xs"
+                                    value={inlineForms[c.id]?.[key] ?? ''}
+                                    onChange={(e) => {
+                                      const v = key === 'postcode' ? e.target.value.toUpperCase() : e.target.value;
+                                      setInlineForms(prev => ({ ...prev, [c.id]: { ...(prev[c.id] || {}), [key]: v } }));
+                                    }}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            <div className="mt-3 flex items-center gap-2">
+                              <Button size="sm" className="h-8" onClick={() => saveInline(c.id)} disabled={savingInlineId === c.id}>
+                                {savingInlineId === c.id ? 'Saving...' : 'Save'}
+                              </Button>
+                              <span className="text-[11px] text-muted-foreground">Also updates the customer profile in Customer Management.</span>
+                            </div>
+                          </div>
+
                         </td>
                       </tr>
                     )}
