@@ -20,6 +20,13 @@ const MIN_HOURS_BETWEEN_EMAILS = 48;   // never two marketing emails inside 48h
 const MAX_EMAILS_PER_30_DAYS = 3;      // hard ceiling per recipient per month
 const DEDUPE_WINDOW_DAYS = 60;         // same trigger never repeats within 60 days
 
+// ---- Throttling: the sender is an edge function with its own rate limit, so
+// we pace invokes and cap each run. Anything left over goes on the next run. ----
+const MAX_SENDS_PER_RUN = 25;
+const SEND_SPACING_MS = 1200;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 
 /** Reject malformed addresses instead of retrying them forever. */
