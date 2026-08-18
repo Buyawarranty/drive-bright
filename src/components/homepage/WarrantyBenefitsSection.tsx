@@ -4,6 +4,7 @@ import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import warrantyPandaMascot from '@/assets/warranty-panda-mascot.webp';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface WarrantyBenefitsSectionProps {
   headline?: string;
