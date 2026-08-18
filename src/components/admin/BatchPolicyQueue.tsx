@@ -678,7 +678,24 @@ ${rows}
                             size="sm"
                             variant="outline"
                             className="h-7 px-2 gap-1"
-                            onClick={() => setExpandedId(prev => (prev === c.id ? null : c.id))}
+                            onClick={() => {
+                              setExpandedId(prev => (prev === c.id ? null : c.id));
+                              setInlineForms(prev => (prev[c.id] ? prev : {
+                                ...prev,
+                                [c.id]: {
+                                  first_name: (c as any).first_name || (c.name || '').trim().split(/\s+/)[0] || '',
+                                  last_name: (c as any).last_name || (c.name || '').trim().split(/\s+/).slice(1).join(' '),
+                                  flat_number: c.flat_number || '',
+                                  building_name: c.building_name || '',
+                                  building_number: c.building_number || '',
+                                  street: c.street || '',
+                                  town: c.town || '',
+                                  county: c.county || '',
+                                  postcode: c.postcode || '',
+                                },
+                              }));
+                            }}
+
                             title="Show full customer, plan and cover details"
                           >
                             {expandedId === c.id ? 'Hide' : 'Details'}
