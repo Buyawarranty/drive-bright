@@ -93,15 +93,20 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const computeUkOfficeHours = () => {
     const parts = new Intl.DateTimeFormat('en-GB', {
       timeZone: 'Europe/London',
+      weekday: 'short',
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
     }).formatToParts(new Date());
     const h = Number(parts.find((p) => p.type === 'hour')?.value ?? '0');
     const m = Number(parts.find((p) => p.type === 'minute')?.value ?? '0');
+    const weekday = parts.find((p) => p.type === 'weekday')?.value ?? '';
     const mins = h * 60 + m;
-    return mins >= 9 * 60 && mins < 18 * 60;
+    // Open Monday to Saturday, 9am–6pm UK time (closed Sundays)
+    const isOpenDay = weekday !== 'Sun';
+    return isOpenDay && mins >= 9 * 60 && mins < 18 * 60;
   };
+
   const [isUkOfficeHours, setIsUkOfficeHours] = useState(computeUkOfficeHours);
   useEffect(() => {
     const id = setInterval(() => setIsUkOfficeHours(computeUkOfficeHours()), 60_000);
