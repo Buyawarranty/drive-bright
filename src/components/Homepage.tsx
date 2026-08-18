@@ -822,12 +822,12 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                        </div>
 
                        <p className="text-[13px] text-gray-500 font-medium leading-relaxed">
-                         Speak to our UK team – <span className="text-gray-400">Lines open 9am to 6pm, Monday to Friday.</span>
+                         Speak to our UK team – <span className="text-gray-400">Lines open 9am to 6pm, Monday to Saturday.</span>
                        </p>
                      </>
                    ) : (
                      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm">
-                       <span className="text-gray-600 whitespace-nowrap">Our UK team is open 9am–6pm, Monday to Friday</span>
+                       <span className="text-gray-600 whitespace-nowrap">Our UK team is open 9am–6pm, Monday to Saturday</span>
                        <button
                          onClick={() => setShowCallbackModal(true)}
                          className="group flex items-center gap-1.5 text-brand-orange font-bold hover:text-orange-700 transition-colors"
