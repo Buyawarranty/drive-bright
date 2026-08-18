@@ -31,6 +31,8 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
+import { useQuotePaymentRoutes } from '@/hooks/useQuotePaymentRoutes';
+
 import { PaginationControls } from '@/components/ui/pagination-controls';
 
 import { CustomerNotesSection } from './CustomerNotesSection';
