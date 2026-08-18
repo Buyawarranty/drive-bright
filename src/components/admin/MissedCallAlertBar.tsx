@@ -4,6 +4,7 @@ import { PhoneMissed, Phone, Check, X, ExternalLink, UserPlus, Copy, Volume2, Vo
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { dialWithZoiper } from '@/utils/zoiperDial';
+import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 interface MissedCall {
   id: string;
@@ -107,10 +108,10 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
       .channel('missed-calls-alert-bar')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'missed_calls' }, () => fetchActive())
       .subscribe();
-    const t = window.setInterval(fetchActive, 60_000);
+    const stop = setVisibleInterval(fetchActive, 60_000);
     return () => {
       supabase.removeChannel(channel);
-      window.clearInterval(t);
+      stop();
     };
   }, [allowed, fetchActive]);
 
@@ -125,16 +126,21 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
       if (!cancelled && (data as number | null)) fetchActive();
     };
     tick();
-    const t = window.setInterval(tick, 3000);
-    return () => { cancelled = true; window.clearInterval(t); };
+    // Only rotate while the tab is actually being looked at — this RPC used to
+    // fire every 3s in every background tab, which was a major source of lag.
+    const stop = setVisibleInterval(tick, 3000);
+    return () => { cancelled = true; stop(); };
   }, [allowed, fetchActive]);
 
   // Local 1s ticker so the countdown on the offer is live.
   const [nowTs, setNowTs] = useState(() => Date.now());
+  const hasLiveOffer = calls.some((c) => !!c.offer_expires_at);
   useEffect(() => {
+    // Only run the 1s countdown ticker when there is actually an offer on screen.
+    if (!hasLiveOffer) return;
     const t = window.setInterval(() => setNowTs(Date.now()), 1000);
     return () => window.clearInterval(t);
-  }, []);
+  }, [hasLiveOffer]);
 
   const passCall = useCallback(async (id: string) => {
     // Not a permanent hide — the server may loop it back if nobody takes it.

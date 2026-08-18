@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { isAlertsMuted } from '@/lib/alertSoundPreference';
+import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 // Business-hours gate — pop-ups AND beeps only fire 09:00–18:00 Europe/London.
 // Outside this window nothing appears: overnight assignments are picked up
@@ -317,7 +318,7 @@ export const useNewLeadAlert = () => {
   // a laptop sleeps, which is why the queue used to look "stuck".
   useEffect(() => {
     load();
-    const t = setInterval(() => loadRef.current(), 15000);
+    const stopPoll = setVisibleInterval(() => loadRef.current(), 15000);
     const wake = () => {
       if (document.visibilityState === 'visible') loadRef.current();
     };
@@ -325,17 +326,20 @@ export const useNewLeadAlert = () => {
     window.addEventListener('focus', wake);
     window.addEventListener('online', wake);
     return () => {
-      clearInterval(t);
+      stopPoll();
       document.removeEventListener('visibilitychange', wake);
       window.removeEventListener('focus', wake);
       window.removeEventListener('online', wake);
     };
   }, [load]);
 
+  const hasQueue = queue.length > 0;
   useEffect(() => {
+    // Elapsed-time ticker only matters while a pop-up is on screen.
+    if (!hasQueue) return;
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [hasQueue]);
 
   // Realtime push. Only `sales_leads` is in the realtime publication —
   // binding to lead_quick_notes / lead_call_logs (which are NOT published)
