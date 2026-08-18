@@ -6605,22 +6605,34 @@ Please log in and change your password after first login.`;
                    </TableCell>
 
 
-                  {showPaymentColumn && (
+                  {showPaymentColumn && (() => {
+                    const quoteRoute = quotePaymentRouteForReg(customer.registration_plate);
+                    const routeLabel =
+                      customer.bumper_order_id ? 'Bumper' :
+                      customer.stripe_session_id ? 'Stripe' :
+                      quoteRoute ??
+                      (customer.is_manual_entry ? 'Manual' : 'N/A');
+                    const agentTaken = !customer.bumper_order_id && !customer.stripe_session_id;
+                    return (
                     <TableCell>
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-1">
-                          <Badge variant={customer.is_manual_entry ? 'secondary' : 'outline'}>
-                            {customer.is_manual_entry ? 'Manual' :
-                             customer.bumper_order_id ? 'Bumper' : 
-                             customer.stripe_session_id ? 'Stripe' : 'N/A'}
+                          <Badge
+                            variant={routeLabel === 'Manual' ? 'secondary' : 'outline'}
+                            title={agentTaken && quoteRoute ? `Paid via ${quoteRoute} on an agent quote — no webhook record on the customer row` : undefined}
+                          >
+                            {routeLabel}
                           </Badge>
+                          {agentTaken && quoteRoute && (
+                            <span className="text-[10px] text-muted-foreground">agent</span>
+                          )}
                           {customer.payment_verified ? (
                             <span className="text-green-600" title="Payment verified">✓</span>
                           ) : customer.is_manual_entry ? (
                             <span className="text-amber-500" title="Manual entry - no payment record">⚠</span>
                           ) : (
                             <span className="text-red-500" title="Payment not verified">✗</span>
-                          )}
+
                         </div>
                         {customer.final_amount && customer.final_amount > 0 && (normalizedRole === 'super_admin' || normalizedRole === 'admin' || normalizedRole === 'accounts' || normalizedRole === 'accounts_manager') && (
                           <span className="text-xs font-medium text-green-700">
