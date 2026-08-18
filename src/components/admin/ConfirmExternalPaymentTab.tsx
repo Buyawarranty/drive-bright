@@ -646,12 +646,18 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
     if (!paymentSource || !paymentAmount) {
       toast({
-        title: "Missing Payment Info",
-        description: "Please fill in payment source and amount",
+        title: "Payment source and amount are required",
+        description: !paymentSource
+          ? "Select where the payment was taken (Stripe, Bumper, Payment Assist, bank transfer…) before confirming."
+          : "Enter the amount actually received before confirming.",
         variant: "destructive",
       });
+      document
+        .getElementById(!paymentSource ? 'payment-source-field' : 'payment-amount-field')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
+
 
     const pmGateSubmit = priceMatchGate();
     if (pmGateSubmit) {
@@ -1418,12 +1424,22 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                     </h2>
                   </div>
                   <div className="p-6 space-y-5">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-500">Payment Source *</Label>
+                    <div className="space-y-1.5" id="payment-source-field">
+                      <Label className="text-xs font-semibold text-slate-500">
+                        Payment Source <span className="text-destructive">*</span>
+                      </Label>
                       <select
                         value={paymentSource}
                         onChange={(e) => setPaymentSource(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900"
+                        required
+                        aria-required="true"
+                        aria-invalid={!paymentSource}
+                        className={cn(
+                          'w-full px-3 py-2 border rounded-md bg-white text-slate-900',
+                          !paymentSource
+                            ? 'border-2 border-destructive ring-1 ring-destructive'
+                            : 'border-slate-300',
+                        )}
                       >
                         <option value="">Select payment source...</option>
                         <option value="stripe_dashboard">Stripe Dashboard</option>
@@ -1436,7 +1452,13 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         <option value="facebook">Facebook</option>
                         <option value="other">Other</option>
                       </select>
+                      {!paymentSource && (
+                        <p className="text-xs font-semibold text-destructive">
+                          Required — we must record where the payment was taken.
+                        </p>
+                      )}
                     </div>
+
 
                     {/* Staff-only pricing summary — never emailed or shown to the
                         customer. Gives the agent the quoted grid price, what they
@@ -1489,18 +1511,32 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-500">Amount Received (£) *</Label>
+                      <div className="space-y-1.5" id="payment-amount-field">
+                        <Label className="text-xs font-semibold text-slate-500">
+                          Amount Received (£) <span className="text-destructive">*</span>
+                        </Label>
                         <Input
                           type="number"
                           value={paymentAmount}
                           onChange={(e) => setPaymentAmount(e.target.value)}
                           placeholder={currentPrice.totalPrice.toString()}
-                          className={discountBlocked ? 'border-destructive ring-1 ring-destructive' : undefined}
+                          required
+                          aria-required="true"
+                          aria-invalid={!paymentAmount || discountBlocked}
+                          className={cn(
+                            (discountBlocked || !paymentAmount) &&
+                              'border-2 border-destructive ring-1 ring-destructive',
+                          )}
                         />
+                        {!paymentAmount && (
+                          <p className="text-xs font-semibold text-destructive">
+                            Required — enter the amount actually taken.
+                          </p>
+                        )}
                         {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
                           <p className="text-xs text-destructive">⚠️ Differs from quoted price (£{currentPrice.totalPrice})</p>
                         )}
+
 
                         {/* Minimum sale price notice — always on, so the floor is never a
                             surprise after the amount is typed. Turns red once breached. */}
