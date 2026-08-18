@@ -929,7 +929,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             
             {/* Vehicle Types for mobile/tablet - spans full width */}
             <div className="lg:hidden w-full px-2 mt-1 sm:mt-6 lg:col-span-2">
-              <div className="flex flex-col items-center gap-3 sm:gap-6">
+              <div className="flex flex-col items-center gap-1.5 sm:gap-6">
                 <div className="flex items-center justify-center gap-2 sm:gap-4 flex-nowrap w-full">
                   <div className="flex items-center space-x-1 min-w-0">
                     <Car className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -955,7 +955,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     <TooltipTrigger asChild>
                       <button
                         type="button"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 border border-green-100 text-xs sm:text-sm font-semibold text-gray-700 hover:bg-green-100 transition-colors cursor-help"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-green-50 border border-green-100 text-[11px] sm:text-sm font-semibold text-gray-700 hover:bg-green-100 transition-colors cursor-help"
                       >
                         <Zap className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                         Instant activation
@@ -971,8 +971,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             </div>
 
             {/* Mobile bottom line — the second tick row */}
-            <div className="sm:hidden w-full mt-4 lg:col-span-2">
-              <div className="flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white shadow-sm px-2 py-2">
+            <div className="sm:hidden w-full mt-1.5 lg:col-span-2">
+              <div className="flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white shadow-sm px-2 py-1.5">
                 <Check className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
                 <span className="text-[11px] leading-tight font-medium text-gray-700 whitespace-nowrap">Unlimited claims • Parts and Labour • No excess</span>
               </div>
