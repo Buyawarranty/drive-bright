@@ -2,12 +2,12 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertTriangle, Phone, Check, X, ChevronDown, Volume2, VolumeX, Copy } from 'lucide-react';
 import {
-import { setVisibleInterval } from '@/lib/visibilityInterval';
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 interface StruggleAlert {
   id: string;
