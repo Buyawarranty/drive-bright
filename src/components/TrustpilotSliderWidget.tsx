@@ -12,7 +12,7 @@ function ensureBootstrap(): void {
   document.head.appendChild(s);
 }
 
-const TrustpilotSliderWidget: React.FC<{ className?: string }> = ({ className = '' }) => {
+const TrustpilotSliderWidget: React.FC<{ className?: string; styleHeight?: string }> = ({ className = '', styleHeight }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
