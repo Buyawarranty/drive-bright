@@ -64,7 +64,7 @@ export const PendingLeadsPill = ({ userRole, onClick, className }: Props) => {
       )
       .subscribe();
     return () => {
-      clearInterval(interval);
+      stopInterval();
       supabase.removeChannel(channel);
     };
   }, [canSee, load]);

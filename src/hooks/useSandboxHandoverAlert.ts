@@ -63,7 +63,7 @@ export function useSandboxHandoverAlert() {
       )
       .subscribe();
     return () => {
-      window.clearInterval(interval);
+      stopInterval();
       void supabase.removeChannel(channel);
     };
   }, [load]);
