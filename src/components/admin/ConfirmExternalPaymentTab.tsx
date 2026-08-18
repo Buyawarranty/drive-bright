@@ -1505,18 +1505,32 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-500">Amount Received (£) *</Label>
+                      <div className="space-y-1.5" id="payment-amount-field">
+                        <Label className="text-xs font-semibold text-slate-500">
+                          Amount Received (£) <span className="text-destructive">*</span>
+                        </Label>
                         <Input
                           type="number"
                           value={paymentAmount}
                           onChange={(e) => setPaymentAmount(e.target.value)}
                           placeholder={currentPrice.totalPrice.toString()}
-                          className={discountBlocked ? 'border-destructive ring-1 ring-destructive' : undefined}
+                          required
+                          aria-required="true"
+                          aria-invalid={!paymentAmount || discountBlocked}
+                          className={cn(
+                            (discountBlocked || !paymentAmount) &&
+                              'border-2 border-destructive ring-1 ring-destructive',
+                          )}
                         />
+                        {!paymentAmount && (
+                          <p className="text-xs font-semibold text-destructive">
+                            Required — enter the amount actually taken.
+                          </p>
+                        )}
                         {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
                           <p className="text-xs text-destructive">⚠️ Differs from quoted price (£{currentPrice.totalPrice})</p>
                         )}
+
 
                         {/* Minimum sale price notice — always on, so the floor is never a
                             surprise after the amount is typed. Turns red once breached. */}
