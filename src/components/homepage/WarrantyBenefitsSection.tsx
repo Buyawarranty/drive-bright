@@ -51,7 +51,7 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
   ];
 
   return (
-    <section className="py-4 md:py-20 bg-gray-50">
+    <section className="py-4 md:pt-6 md:pb-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Trustpilot Slider Widget */}
         <TrustpilotSliderWidget className="mb-2 md:mb-8 -mx-2 sm:mx-0" styleHeight={isMobile ? '190px' : '240px'} />
