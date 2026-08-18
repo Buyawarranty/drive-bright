@@ -13,7 +13,7 @@ import { OptimizedImage } from '@/components/OptimizedImage';
 import LazySection from './homepage/LazySection';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
-import heroPandaVehiclesMobile from '@/assets/homepage-hero-panda-vehicles-mobile-v4.png.asset.json';
+import heroPandaVehiclesMobile from '@/assets/homepage-hero-panda-vehicles-mobile-v5.png.asset.json';
 
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
