@@ -6632,7 +6632,7 @@ Please log in and change your password after first login.`;
                             <span className="text-amber-500" title="Manual entry - no payment record">⚠</span>
                           ) : (
                             <span className="text-red-500" title="Payment not verified">✗</span>
-
+                          )}
                         </div>
                         {customer.final_amount && customer.final_amount > 0 && (normalizedRole === 'super_admin' || normalizedRole === 'admin' || normalizedRole === 'accounts' || normalizedRole === 'accounts_manager') && (
                           <span className="text-xs font-medium text-green-700">
@@ -6641,7 +6641,9 @@ Please log in and change your password after first login.`;
                         )}
                       </div>
                     </TableCell>
-                  )}
+                    );
+                  })()}
+
                   <TableCell className="text-center bg-amber-50/40">
                     <PriceComparisonProofCell
                       customerId={customer.id}
