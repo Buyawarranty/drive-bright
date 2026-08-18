@@ -809,38 +809,42 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
 
                 {/* Pricing Reassurance Panel - Premium Trust Block (desktop) */}
-                <div className="hidden sm:block mt-4 sm:mt-7 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-4 py-3.5 sm:px-5 sm:py-4 text-center">
-                   <h2 className="text-[13px] leading-snug sm:text-[17px] font-bold text-[#1B2A4A]">
+                <div className="hidden sm:block mt-4 sm:mt-7 bg-white border border-gray-200 rounded-xl shadow-sm px-5 py-4 text-center">
+                   <h2 className="text-[17px] leading-snug font-bold text-[#1B2A4A]">
                      Fair price. Fast quote. No surprises.
                    </h2>
 
-                   <div className="mt-1 sm:mt-1.5 flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-y-0.5 sm:gap-x-1.5 text-xs sm:text-[15px]">
-                    {isUkOfficeHours ? (
-                      <>
-                        <span className="whitespace-nowrap">
-                          <span className="text-gray-600">Speak to an expert: </span>
-                          <a
-                            href="tel:03302295040"
-                            className="font-semibold text-gray-900 hover:underline"
-                          >
-                            0330 229 5040
-                          </a>
-                        </span>
-                        <span className="hidden sm:inline text-gray-400">or</span>
-                      </>
-                    ) : (
-                      <span className="whitespace-nowrap text-gray-600">
-                        Our UK team is open 9am–5:45pm
-                      </span>
-                    )}
-                    <button
-                      onClick={() => setShowCallbackModal(true)}
-                      className="text-brand-orange hover:underline font-medium"
-                    >
-                      Request a callback
-                    </button>
-                  </div>
+                   {isUkOfficeHours ? (
+                     <div className="mt-2.5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+                       <a href="tel:03309122402" className="flex items-center gap-2.5 group">
+                         <Phone className="w-6 h-6 text-blue-700 fill-blue-700 flex-shrink-0" strokeWidth={0} />
+                         <span className="text-2xl lg:text-[28px] font-extrabold text-blue-700 underline underline-offset-4 tracking-tight group-hover:text-blue-800">
+                           0330 912 2402
+                         </span>
+                       </a>
+                       <span className="hidden sm:block h-7 w-px bg-gray-200" aria-hidden />
+                       <button
+                         onClick={() => setShowCallbackModal(true)}
+                         className="text-brand-orange hover:underline font-bold text-[15px] inline-flex items-center gap-1"
+                       >
+                         Request a callback
+                         <ArrowRight className="w-4 h-4" />
+                       </button>
+                     </div>
+                   ) : (
+                     <div className="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[15px]">
+                       <span className="text-gray-600 whitespace-nowrap">Our UK team is open 9am–5:45pm</span>
+                       <button
+                         onClick={() => setShowCallbackModal(true)}
+                         className="text-brand-orange hover:underline font-bold inline-flex items-center gap-1"
+                       >
+                         Request a callback
+                         <ArrowRight className="w-4 h-4" />
+                       </button>
+                     </div>
+                   )}
                 </div>
+
 
 
               </div>
