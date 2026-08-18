@@ -805,7 +805,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 )}
 
                 
-                {/* Mobile: speak-to-us card — UK office hours only (09:00–18:00 Europe/London) */}
+                {/* Mobile: speak-to-us card — UK office hours only (09:00–17:45 Europe/London) */}
                 {isUkOfficeHours && (
                   <div className="sm:hidden mt-5 pt-4 border-t border-gray-200">
                     <p className="text-center text-sm text-gray-600">Prefer to speak to us?</p>
@@ -831,6 +831,22 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   </div>
                 )}
 
+                {/* Mobile: outside office hours — callback only */}
+                {!isUkOfficeHours && (
+                  <div className="sm:hidden mt-5 pt-4 border-t border-gray-200">
+                    <p className="text-center text-sm text-gray-700">
+                      Our UK team is open 9am–5:45pm.{' '}
+                      <button
+                        onClick={() => setShowCallbackModal(true)}
+                        className="text-brand-orange font-semibold hover:underline inline-flex items-center gap-0.5"
+                      >
+                        Request a callback
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </p>
+                  </div>
+                )}
+
 
                 {/* Pricing Reassurance Panel - Premium Trust Block (desktop) */}
                 <div className="hidden sm:block mt-4 sm:mt-7 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-4 py-3.5 sm:px-5 sm:py-4 text-center">
@@ -839,16 +855,24 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                    </h2>
 
                    <div className="mt-1 sm:mt-1.5 flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-y-0.5 sm:gap-x-1.5 text-xs sm:text-[15px]">
-                    <span className="whitespace-nowrap">
-                      <span className="text-gray-600">Speak to an expert: </span>
-                      <a 
-                        href="tel:03302295040" 
-                        className="font-semibold text-gray-900 hover:underline"
-                      >
-                        0330 229 5040
-                      </a>
-                    </span>
-                    <span className="hidden sm:inline text-gray-400">or</span>
+                    {isUkOfficeHours ? (
+                      <>
+                        <span className="whitespace-nowrap">
+                          <span className="text-gray-600">Speak to an expert: </span>
+                          <a
+                            href="tel:03302295040"
+                            className="font-semibold text-gray-900 hover:underline"
+                          >
+                            0330 229 5040
+                          </a>
+                        </span>
+                        <span className="hidden sm:inline text-gray-400">or</span>
+                      </>
+                    ) : (
+                      <span className="whitespace-nowrap text-gray-600">
+                        Our UK team is open 9am–5:45pm
+                      </span>
+                    )}
                     <button
                       onClick={() => setShowCallbackModal(true)}
                       className="text-brand-orange hover:underline font-medium"
@@ -857,6 +881,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     </button>
                   </div>
                 </div>
+
 
               </div>
             </div>
