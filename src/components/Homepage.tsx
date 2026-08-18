@@ -815,14 +815,15 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                    </h2>
 
                    {isUkOfficeHours ? (
-                     <div className="mt-2.5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-                       <a href="tel:03309122402" className="flex items-center gap-2.5 group">
-                         <Phone className="w-6 h-6 text-blue-700 fill-blue-700 flex-shrink-0" strokeWidth={0} />
-                         <span className="text-2xl lg:text-[28px] font-extrabold text-blue-700 underline underline-offset-4 tracking-tight group-hover:text-blue-800">
+                     <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+                       <a href="tel:03309122402" className="flex items-center gap-2 group">
+                         <Phone className="w-[18px] h-[18px] text-blue-800 fill-blue-800 flex-shrink-0" strokeWidth={0} />
+                         <span className="text-lg lg:text-xl font-extrabold text-blue-800 underline underline-offset-4 tracking-tight group-hover:text-blue-900">
                            0330 912 2402
                          </span>
                        </a>
-                       <span className="hidden sm:block h-7 w-px bg-gray-200" aria-hidden />
+                       <span className="hidden sm:block h-5 w-px bg-gray-200" aria-hidden />
+
                        <button
                          onClick={() => setShowCallbackModal(true)}
                          className="text-brand-orange hover:underline font-bold text-[15px] inline-flex items-center gap-1"
