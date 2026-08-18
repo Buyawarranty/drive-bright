@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertTriangle, Phone, Check, X, ChevronDown, Volume2, VolumeX, Copy } from 'lucide-react';
 import {
+import { setVisibleInterval } from '@/lib/visibilityInterval';
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -144,10 +145,10 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
         () => fetchActive()
       )
       .subscribe();
-    const t = window.setInterval(fetchActive, 60_000);
+    const stop = setVisibleInterval(fetchActive, 60_000);
     return () => {
       supabase.removeChannel(channel);
-      window.clearInterval(t);
+      stop();
     };
   }, [canView, fetchActive]);
 

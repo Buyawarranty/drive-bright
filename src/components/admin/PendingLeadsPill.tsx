@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 interface Props {
   userRole?: string | null;
@@ -53,7 +54,7 @@ export const PendingLeadsPill = ({ userRole, onClick, className }: Props) => {
   useEffect(() => {
     if (!canSee) return;
     load();
-    const interval = setInterval(load, 60_000);
+    const stopInterval = setVisibleInterval(load, 60_000);
     const channel = supabase
       .channel('pending-leads-pill')
       .on(

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { PoundSterling, X } from 'lucide-react';
+import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 interface Props {
   userRole?: string | null;
@@ -51,8 +52,8 @@ export const CollectPaymentsBanner: React.FC<Props> = ({ userRole, onNavigate })
   useEffect(() => {
     if (!MANAGEMENT.has(userRole || '')) return;
     load();
-    const iv = setInterval(load, 60_000);
-    return () => clearInterval(iv);
+    const stop = setVisibleInterval(load, 60_000);
+    return () => stop();
   }, [userRole]);
 
   const total = overdue + today;

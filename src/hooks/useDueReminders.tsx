@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { notifyDueReminders, requestNotificationPermission } from '@/lib/reminderAlerts';
+import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 
 export interface DueReminder {
@@ -136,10 +137,8 @@ export const useDueReminders = () => {
     requestNotificationPermission();
     fetchDueReminders();
     // Poll every 20s so newly-due reminders fire promptly.
-    intervalRef.current = setInterval(fetchDueReminders, 20000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    const stop = setVisibleInterval(fetchDueReminders, 20000);
+    return () => stop();
   }, [fetchDueReminders]);
 
 
