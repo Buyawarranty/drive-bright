@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, X } from 'lucide-react';
 import { isNorthernIrelandPlate } from '@/lib/niPlate';
+import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 interface Props {
   userRole?: string | null;
@@ -51,8 +52,8 @@ export const NIVerifyBanner: React.FC<Props> = ({ userRole, onNavigate }) => {
   useEffect(() => {
     if (!ALLOWED.has(userRole || '')) return;
     load();
-    const iv = setInterval(load, 60_000);
-    return () => clearInterval(iv);
+    const stop = setVisibleInterval(load, 60_000);
+    return () => stop();
   }, [userRole]);
 
   const handleDismiss = () => {

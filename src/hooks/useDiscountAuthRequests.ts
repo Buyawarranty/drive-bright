@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsManagement } from '@/hooks/useIsManagement';
 import { playReminderChime } from '@/lib/reminderAlerts';
+import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 
 export interface DiscountAuthRequest {
@@ -93,10 +94,10 @@ export const useDiscountAuthRequests = (userRole?: string | null) => {
         fetchRequests();
       })
       .subscribe();
-    const interval = setInterval(fetchRequests, 30000);
+    const stop = setVisibleInterval(fetchRequests, 30000);
     return () => {
       supabase.removeChannel(channel);
-      clearInterval(interval);
+      stop();
     };
   }, [user?.id, fetchRequests]);
 

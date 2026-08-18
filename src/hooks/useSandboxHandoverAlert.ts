@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { playPhoneRing, playPhoneRingBurst } from '@/lib/aiSandbox/ringTone';
+import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 export type WaitingHandover = {
   id: string;
@@ -52,7 +53,7 @@ export function useSandboxHandoverAlert() {
 
   useEffect(() => {
     load();
-    const interval = window.setInterval(load, 15000);
+    const stopInterval = setVisibleInterval(load, 15000);
     const channel = supabase
       .channel('ai-sandbox-handovers-alert')
       .on(
@@ -62,7 +63,7 @@ export function useSandboxHandoverAlert() {
       )
       .subscribe();
     return () => {
-      window.clearInterval(interval);
+      stopInterval();
       void supabase.removeChannel(channel);
     };
   }, [load]);

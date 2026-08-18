@@ -6,6 +6,7 @@ import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { useAuth } from '@/hooks/useAuth';
 import { useViewAs } from '@/contexts/ViewAsContext';
+import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 const LEAD_TAG_BATCH_SIZE = 75;
 const INITIAL_LEADS_LOAD_TIMEOUT_MS = 25000;
@@ -1111,11 +1112,14 @@ export const useLeads = (options?: UseLeadsOptions) => {
     }
     
     realtimeRefetchTimerRef.current = setTimeout(() => {
-      if (pendingRealtimeRef.current) {
-        pendingRealtimeRef.current = false;
-        fetchLeadsRef.current();
-      }
-    }, 1000);
+      if (!pendingRealtimeRef.current) return;
+      // Hidden tab: keep the pending flag set and let the visibility/focus
+      // handler do a single catch-up fetch when the agent comes back. This
+      // stops background tabs re-pulling the whole lead list all day.
+      if (document.visibilityState === 'hidden') return;
+      pendingRealtimeRef.current = false;
+      fetchLeadsRef.current();
+    }, 2500);
   }, []);
 
   // Initial fetch: flush any queued status changes first, then load once.
@@ -1181,7 +1185,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
     // Note: abandoned_carts channel removed — leads are sourced only from sales_leads now
 
     // Polling fallback: refresh every 60s (realtime handles fast sync, this is a safety net)
-    const pollingInterval = setInterval(() => {
+    const stopPolling = setVisibleInterval(() => {
       fetchLeadsRef.current();
     }, 60000);
 
@@ -1235,8 +1239,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
     return () => {
       leadsChannel.unsubscribe();
-      
-      clearInterval(pollingInterval);
+
+      stopPolling();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('pagehide', flushPendingStatusQueue);

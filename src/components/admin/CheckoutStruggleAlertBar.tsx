@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 interface StruggleAlert {
   id: string;
@@ -144,10 +145,10 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
         () => fetchActive()
       )
       .subscribe();
-    const t = window.setInterval(fetchActive, 60_000);
+    const stop = setVisibleInterval(fetchActive, 60_000);
     return () => {
       supabase.removeChannel(channel);
-      window.clearInterval(t);
+      stop();
     };
   }, [canView, fetchActive]);
 
