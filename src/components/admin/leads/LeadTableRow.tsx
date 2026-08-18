@@ -1281,7 +1281,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <PhoneCopyText phone={lead.phone} leadId={lead.id} disabled={isDoNotContact} />
+              <PhoneCopyText phone={lead.phone} leadId={lead.id} disabled={isDoNotContact} holdUntil={lead.no_callback_until} />
             )}
             <div className={cn("flex items-center", isDoNotContact && "pointer-events-none opacity-40")}>
               <Tooltip delayDuration={100}>
