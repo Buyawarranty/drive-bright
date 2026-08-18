@@ -210,16 +210,34 @@ const handler = async (req: Request): Promise<Response> => {
           protectionAddons: metadata.protection_addons,
         };
 
-        console.log(`Sending ${dueTrigger} to ${email} (cart ${cart.id}, step ${cart.step_abandoned})`);
-        const emailResponse = await supabase.functions.invoke('send-abandoned-cart-email', {
-          body: emailPayload,
-        });
+        // Hard cap per run + spacing between invokes so we never trip the
+        // edge-function rate limiter (which used to fail whole batches).
+        if (emailsSent + errorsCount >= MAX_SENDS_PER_RUN) {
+          deferredCount++;
+          continue;
+        }
 
-        if (emailResponse.error) {
+        console.log(`Sending ${dueTrigger} to ${email} (cart ${cart.id}, step ${cart.step_abandoned})`);
+
+        let emailResponse: any = null;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          emailResponse = await supabase.functions.invoke('send-abandoned-cart-email', {
+            body: emailPayload,
+          });
+          if (!emailResponse.error) break;
+          const retryAfter = Number(emailResponse.error?.context?.retryAfterMs) || 0;
+          if (!retryAfter) break; // not a rate limit — don't retry
+          const wait = Math.min(retryAfter + 500, 40_000);
+          console.log(`Rate limited, waiting ${wait}ms before retrying ${email}`);
+          await sleep(wait);
+        }
+
+        if (emailResponse?.error) {
           console.error(`Error sending ${dueTrigger} to ${email}:`, emailResponse.error);
           errorsCount++;
         } else {
           emailsSent++;
+          await sleep(SEND_SPACING_MS);
         }
       } catch (cartErr) {
         console.error('Error processing recipient:', email, cartErr);
