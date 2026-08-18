@@ -89,19 +89,25 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const [showEmailPopup, setShowEmailPopup] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showCallbackModal, setShowCallbackModal] = useState(false);
-  // UK office hours: 09:00–18:00 Europe/London
-  const [isUkOfficeHours, setIsUkOfficeHours] = useState(() => {
-    const h = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: 'numeric', hour12: false }).format(new Date()));
-    return h >= 9 && h < 18;
-  });
+  // UK office hours: 09:00–17:45 Europe/London
+  const computeUkOfficeHours = () => {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/London',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).formatToParts(new Date());
+    const h = Number(parts.find((p) => p.type === 'hour')?.value ?? '0');
+    const m = Number(parts.find((p) => p.type === 'minute')?.value ?? '0');
+    const mins = h * 60 + m;
+    return mins >= 9 * 60 && mins < 17 * 60 + 45;
+  };
+  const [isUkOfficeHours, setIsUkOfficeHours] = useState(computeUkOfficeHours);
   useEffect(() => {
-    const tick = () => {
-      const h = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: 'numeric', hour12: false }).format(new Date()));
-      setIsUkOfficeHours(h >= 9 && h < 18);
-    };
-    const id = setInterval(tick, 60_000);
+    const id = setInterval(() => setIsUkOfficeHours(computeUkOfficeHours()), 60_000);
     return () => clearInterval(id);
   }, []);
+
 
   
 
