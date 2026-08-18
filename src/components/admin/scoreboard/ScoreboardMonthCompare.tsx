@@ -42,9 +42,10 @@ const MonthColumn: React.FC<ColumnProps> = ({ month, onPrev, onNext, allowedAgen
           </Button>
         </div>
         <div className="flex justify-between text-xs text-muted-foreground mt-2 px-1">
-          <span>{totalSales} sales</span>
+          <span>{totalSales} deals · AOV £{totalSales > 0 ? Math.round(total / totalSales).toLocaleString() : 0}</span>
           <span className="font-semibold text-emerald-600">£{total.toLocaleString()}</span>
         </div>
+
       </CardHeader>
       <CardContent className="p-0">
         {loading ? (
@@ -58,7 +59,10 @@ const MonthColumn: React.FC<ColumnProps> = ({ month, onPrev, onNext, allowedAgen
                 <div className="w-7 text-center text-sm font-bold text-muted-foreground">#{a.rank}</div>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm truncate">{a.name}</div>
-                  <div className="text-xs text-muted-foreground">{a.salesCount} sales · {a.conversionRate.toFixed(1)}% conv.</div>
+                  <div className="text-xs text-muted-foreground tabular-nums">
+                    {a.salesCount} {a.salesCount === 1 ? 'deal' : 'deals'} · AOV £{Math.round(a.avgOrderValue).toLocaleString()} · {a.conversionRate.toFixed(1)}% conv.
+                  </div>
+
                 </div>
                 <div className="text-right">
                   <div className="font-bold text-sm text-emerald-600">£{a.revenue.toLocaleString()}</div>
