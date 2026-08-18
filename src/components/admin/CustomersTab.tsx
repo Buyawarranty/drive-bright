@@ -31,6 +31,8 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
+import { useQuotePaymentRoutes } from '@/hooks/useQuotePaymentRoutes';
+
 import { PaginationControls } from '@/components/ui/pagination-controls';
 
 import { CustomerNotesSection } from './CustomerNotesSection';
@@ -909,6 +911,13 @@ export const CustomersTab = ({
 
   // Pagination for customers table - only paginate filtered results
   const customersPagination = usePagination(filteredCustomers, { initialPageSize: 50 });
+
+  // Real payment route (Stripe link / Bumper / Payment Assist) for agent-confirmed
+  // sales, which carry no stripe/bumper id on the customer row. Display only.
+  const { routeForReg: quotePaymentRouteForReg } = useQuotePaymentRoutes(
+    (customersPagination.paginatedData ?? []).map((c: any) => c.registration_plate),
+  );
+
 
   // Cache for tag assignments to avoid DB calls in filter function
   const [tagAssignmentsCache, setTagAssignmentsCache] = useState<Record<string, Set<string>>>({});
@@ -6596,15 +6605,27 @@ Please log in and change your password after first login.`;
                    </TableCell>
 
 
-                  {showPaymentColumn && (
+                  {showPaymentColumn && (() => {
+                    const quoteRoute = quotePaymentRouteForReg(customer.registration_plate);
+                    const routeLabel =
+                      customer.bumper_order_id ? 'Bumper' :
+                      customer.stripe_session_id ? 'Stripe' :
+                      quoteRoute ??
+                      (customer.is_manual_entry ? 'Manual' : 'N/A');
+                    const agentTaken = !customer.bumper_order_id && !customer.stripe_session_id;
+                    return (
                     <TableCell>
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-1">
-                          <Badge variant={customer.is_manual_entry ? 'secondary' : 'outline'}>
-                            {customer.is_manual_entry ? 'Manual' :
-                             customer.bumper_order_id ? 'Bumper' : 
-                             customer.stripe_session_id ? 'Stripe' : 'N/A'}
+                          <Badge
+                            variant={routeLabel === 'Manual' ? 'secondary' : 'outline'}
+                            title={agentTaken && quoteRoute ? `Paid via ${quoteRoute} on an agent quote — no webhook record on the customer row` : undefined}
+                          >
+                            {routeLabel}
                           </Badge>
+                          {agentTaken && quoteRoute && (
+                            <span className="text-[10px] text-muted-foreground">agent</span>
+                          )}
                           {customer.payment_verified ? (
                             <span className="text-green-600" title="Payment verified">✓</span>
                           ) : customer.is_manual_entry ? (
@@ -6620,7 +6641,9 @@ Please log in and change your password after first login.`;
                         )}
                       </div>
                     </TableCell>
-                  )}
+                    );
+                  })()}
+
                   <TableCell className="text-center bg-amber-50/40">
                     <PriceComparisonProofCell
                       customerId={customer.id}
