@@ -4,6 +4,7 @@ import TrustpilotSliderWidget from '@/components/TrustpilotSliderWidget';
 import warrantyPandaMascot from '@/assets/warranty-panda-mascot.webp';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface WarrantyBenefitsSectionProps {
   headline?: string;
@@ -12,6 +13,7 @@ interface WarrantyBenefitsSectionProps {
 const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({ 
   headline = "Complete Car Warranty." 
 }) => {
+  const isMobile = useIsMobile();
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -49,10 +51,10 @@ const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({
   ];
 
   return (
-    <section className="py-12 md:py-20 bg-gray-50">
+    <section className="py-4 md:py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Trustpilot Slider Widget */}
-        <TrustpilotSliderWidget className="mb-8" />
+        <TrustpilotSliderWidget className="mb-2 md:mb-8 -mx-2 sm:mx-0" styleHeight={isMobile ? '190px' : '240px'} />
         
         {/* Main Content */}
         <div>
