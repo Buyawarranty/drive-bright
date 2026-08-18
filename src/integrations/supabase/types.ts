@@ -10183,6 +10183,7 @@ export type Database = {
           follow_up_status: string | null
           hidden_from_agent_ids: string[]
           id: string
+          inbound_spoken_at: string | null
           intake_class: string | null
           is_callback: boolean | null
           is_paid: boolean | null
@@ -10204,6 +10205,7 @@ export type Database = {
           next_action_at: string | null
           next_action_date: string | null
           next_action_type: string | null
+          no_callback_until: string | null
           notes: string | null
           original_assigned_to: string | null
           original_source: string | null
@@ -10292,6 +10294,7 @@ export type Database = {
           follow_up_status?: string | null
           hidden_from_agent_ids?: string[]
           id?: string
+          inbound_spoken_at?: string | null
           intake_class?: string | null
           is_callback?: boolean | null
           is_paid?: boolean | null
@@ -10313,6 +10316,7 @@ export type Database = {
           next_action_at?: string | null
           next_action_date?: string | null
           next_action_type?: string | null
+          no_callback_until?: string | null
           notes?: string | null
           original_assigned_to?: string | null
           original_source?: string | null
@@ -10401,6 +10405,7 @@ export type Database = {
           follow_up_status?: string | null
           hidden_from_agent_ids?: string[]
           id?: string
+          inbound_spoken_at?: string | null
           intake_class?: string | null
           is_callback?: boolean | null
           is_paid?: boolean | null
@@ -10422,6 +10427,7 @@ export type Database = {
           next_action_at?: string | null
           next_action_date?: string | null
           next_action_type?: string | null
+          no_callback_until?: string | null
           notes?: string | null
           original_assigned_to?: string | null
           original_source?: string | null
