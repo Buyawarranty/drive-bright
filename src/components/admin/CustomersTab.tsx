@@ -910,6 +910,13 @@ export const CustomersTab = ({
   // Pagination for customers table - only paginate filtered results
   const customersPagination = usePagination(filteredCustomers, { initialPageSize: 50 });
 
+  // Real payment route (Stripe link / Bumper / Payment Assist) for agent-confirmed
+  // sales, which carry no stripe/bumper id on the customer row. Display only.
+  const { routeForReg: quotePaymentRouteForReg } = useQuotePaymentRoutes(
+    (customersPagination.paginatedData ?? []).map((c: any) => c.registration_plate),
+  );
+
+
   // Cache for tag assignments to avoid DB calls in filter function
   const [tagAssignmentsCache, setTagAssignmentsCache] = useState<Record<string, Set<string>>>({});
   const [refundedCustomerIds, setRefundedCustomerIds] = useState<Set<string>>(new Set());
