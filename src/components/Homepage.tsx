@@ -817,8 +817,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                    {isUkOfficeHours ? (
                      <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                        <a href="tel:03309122402" className="flex items-center gap-2 group">
-                         <Phone className="w-[18px] h-[18px] text-blue-800 fill-blue-800 flex-shrink-0" strokeWidth={0} />
-                         <span className="text-lg lg:text-xl font-extrabold text-blue-800 underline underline-offset-4 tracking-tight group-hover:text-blue-900">
+                         <Phone className="w-[18px] h-[18px] text-brand-blue fill-brand-blue flex-shrink-0" strokeWidth={0} />
+                         <span className="text-lg lg:text-xl font-extrabold text-brand-blue underline underline-offset-4 tracking-tight group-hover:text-brand-blue-dark">
+
                            0330 912 2402
                          </span>
                        </a>
@@ -990,8 +991,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 <p className="text-center text-sm text-gray-600">Prefer to speak to us?</p>
                 <div className="mt-2 rounded-xl border border-gray-200 bg-white shadow-sm px-3 py-2.5">
                   <a href="tel:03309122402" className="flex items-center justify-center gap-2">
-                    <Phone className="w-4 h-4 text-blue-700 fill-blue-700" strokeWidth={0} />
-                    <span className="text-lg font-extrabold text-blue-700 underline underline-offset-4 tracking-tight">
+                    <Phone className="w-4 h-4 text-brand-blue fill-brand-blue" strokeWidth={0} />
+                    <span className="text-lg font-extrabold text-brand-blue underline underline-offset-4 tracking-tight">
+
                       0330 912 2402
                     </span>
                   </a>
