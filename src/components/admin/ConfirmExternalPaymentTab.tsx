@@ -350,9 +350,12 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     isMotorbike: /motor\s*(bike|cycle)|\bbike\b/i.test(String((vehicleData as any)?.vehicleType || '')),
     surface: 'admin',
   });
+  // Kept for reference/display only — no longer used to block a confirmation.
   const ceilingMinAmount = quotedTotal > 0
     ? Math.round(quotedTotal * (1 - DISCOUNT_CEILING_PCT / 100) * 100) / 100
     : 0;
+  void ceilingMinAmount;
+
   // Sales staff may confirm ANY amount down to the absolute net floor — the 30%
   // ceiling no longer blocks a confirmation here, it only flags the discount.
   const minAllowedAmount = netFloorAmount;
