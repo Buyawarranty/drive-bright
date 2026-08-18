@@ -88,29 +88,68 @@ function deriveH1(route: RouteMeta): string {
   return (first || route.title).replace(/\s*[-–—]\s*$/, "").trim();
 }
 
-function buildStaticBody(route: RouteMeta): string {
-  const h1 = escapeHtmlText(deriveH1(route));
-  const intro = escapeHtmlText(route.intro ?? route.description);
-  const links = [
-    ["/", "Get an instant warranty quote"],
-    ["/what-is-covered/", "What's covered"],
-    ["/warranty-plan/", "Warranty plans and pricing"],
-    ["/warranty-types/", "Cover by vehicle and make"],
-    ["/thewarrantyhub/", "The Warranty Hub guides"],
-    ["/faq/", "Frequently asked questions"],
-    ["/make-a-claim/", "Make a claim"],
-    ["/contact-us/", "Contact our UK team"],
-  ]
-    .filter(([href]) => href !== route.path)
+function buildLinkList(routePath: string): string {
+  const links = PRERENDER_LINKS.filter(([href]) => href !== routePath)
     .map(([href, label]) => `<li><a href="${href}">${escapeHtmlText(label)}</a></li>`)
     .join("");
+  return `<h2>More about our UK warranty cover</h2><nav aria-label="Main sections"><ul>${links}</ul></nav>`;
+}
+
+/** FAQPage JSON-LD so AI answer engines can lift Q&A pairs directly. */
+function buildFaqJsonLd(body: PageBody): string {
+  const json = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: body.faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+  return `<script type="application/ld+json">${JSON.stringify(json).replace(/</g, "\\u003c")}</script>`;
+}
+
+function buildStaticBody(route: RouteMeta): string {
+  const body = getPageBody(route.path);
+
+  if (body) {
+    const parts: string[] = [
+      `<div id="prerender-content">`,
+      `<h1>${escapeHtmlText(body.h1)}</h1>`,
+      `<p>${escapeHtmlText(body.intro)}</p>`,
+    ];
+
+    body.sections.forEach((section) => {
+      parts.push(`<h2>${escapeHtmlText(section.h2)}</h2>`);
+      section.paras.forEach((p) => parts.push(`<p>${escapeHtmlText(p)}</p>`));
+      (section.points ?? []).forEach((point) => {
+        parts.push(`<h3>${escapeHtmlText(point.h3)}</h3>`);
+        parts.push(`<p>${escapeHtmlText(point.text)}</p>`);
+      });
+    });
+
+    parts.push(`<h2>Frequently asked questions</h2>`);
+    body.faqs.forEach((faq) => {
+      parts.push(`<h3>${escapeHtmlText(faq.q)}</h3>`);
+      parts.push(`<p>${escapeHtmlText(faq.a)}</p>`);
+    });
+
+    parts.push(buildLinkList(route.path));
+    parts.push(buildFaqJsonLd(body));
+    parts.push(`</div>`);
+    return parts.join("");
+  }
+
+  const h1 = escapeHtmlText(deriveH1(route));
+  const intro = escapeHtmlText(route.intro ?? route.description);
 
   return [
     `<div id="prerender-content">`,
     `<h1>${h1}</h1>`,
     `<p>${intro}</p>`,
+    `<h2>Extended warranty cover across the UK</h2>`,
     `<p>Buy A Warranty arranges extended warranty cover for cars, vans, motorbikes, hybrids and electric vehicles across the UK. Choose your claim limit, voluntary excess, labour rate and cover length, then get an instant online price using just your registration and mileage. Repairs are carried out by VAT-registered garages, and our UK-based team handles claims and questions by phone, email or WhatsApp.</p>`,
-    `<nav aria-label="Main sections"><ul>${links}</ul></nav>`,
+    buildLinkList(route.path),
     `</div>`,
   ].join("");
 }
