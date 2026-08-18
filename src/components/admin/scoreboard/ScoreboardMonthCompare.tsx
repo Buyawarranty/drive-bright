@@ -42,9 +42,10 @@ const MonthColumn: React.FC<ColumnProps> = ({ month, onPrev, onNext, allowedAgen
           </Button>
         </div>
         <div className="flex justify-between text-xs text-muted-foreground mt-2 px-1">
-          <span>{totalSales} sales</span>
+          <span>{totalSales} deals · AOV £{totalSales > 0 ? Math.round(total / totalSales).toLocaleString() : 0}</span>
           <span className="font-semibold text-emerald-600">£{total.toLocaleString()}</span>
         </div>
+
       </CardHeader>
       <CardContent className="p-0">
         {loading ? (
