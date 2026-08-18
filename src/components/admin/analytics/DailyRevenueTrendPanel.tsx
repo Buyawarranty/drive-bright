@@ -73,7 +73,7 @@ export const DailyRevenueTrendPanel: React.FC<Props> = ({ customers, sourceFilte
     const to = startOfDay(dateRange?.to || dateRange?.from || new Date());
     const days = eachDayOfInterval({ start: from, end: to }).map(d => ({
       key: format(d, 'yyyy-MM-dd'),
-      day: format(d, 'd MMM'),
+      day: `${format(d, 'EEE')} ${format(d, 'd MMM')}`,
       revenue: 0,
       salesCount: 0,
       aov: 0,
