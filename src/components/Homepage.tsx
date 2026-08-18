@@ -863,7 +863,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               <img
                 src={heroPandaVehiclesMobile.url}
                 alt="buyawarranty panda mascot holding car keys with a car, van, SUV and motorbike"
-                className="lg:hidden w-full h-auto"
+                className="lg:hidden w-full h-auto -mt-2 sm:mt-0"
                 width={1536}
                 height={1024}
                 fetchPriority="high"
