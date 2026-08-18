@@ -170,6 +170,10 @@ export interface Lead {
   call_count: number;
   // Callback flag
   is_callback: boolean;
+  /** Inbound call: hold call-backs until this time (they just spoke to an agent). */
+  no_callback_until?: string | null;
+  inbound_spoken_at?: string | null;
+
   // Cart metadata for plan selections
   cart_metadata: {
     claim_limit?: number;
