@@ -762,6 +762,43 @@ ${rows}
                               </div>
                             );
                           })()}
+
+                          {/* Inline name & address editor — saves here and in Customer Management */}
+                          <div className="mt-4 rounded-md border bg-background p-3">
+                            <p className="text-xs font-semibold mb-2">Edit name & address</p>
+                            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                              {([
+                                ['first_name', 'First name'],
+                                ['last_name', 'Last name'],
+                                ['flat_number', 'Flat / apt'],
+                                ['building_name', 'Building name'],
+                                ['building_number', 'House number'],
+                                ['street', 'Street'],
+                                ['town', 'Town / city'],
+                                ['county', 'County'],
+                                ['postcode', 'Postcode'],
+                              ] as Array<[string, string]>).map(([key, label]) => (
+                                <div key={key} className="space-y-1">
+                                  <label className="text-[11px] text-muted-foreground">{label}</label>
+                                  <Input
+                                    className="h-8 text-xs"
+                                    value={inlineForms[c.id]?.[key] ?? ''}
+                                    onChange={(e) => {
+                                      const v = key === 'postcode' ? e.target.value.toUpperCase() : e.target.value;
+                                      setInlineForms(prev => ({ ...prev, [c.id]: { ...(prev[c.id] || {}), [key]: v } }));
+                                    }}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            <div className="mt-3 flex items-center gap-2">
+                              <Button size="sm" className="h-8" onClick={() => saveInline(c.id)} disabled={savingInlineId === c.id}>
+                                {savingInlineId === c.id ? 'Saving...' : 'Save'}
+                              </Button>
+                              <span className="text-[11px] text-muted-foreground">Also updates the customer profile in Customer Management.</span>
+                            </div>
+                          </div>
+
                         </td>
                       </tr>
                     )}
