@@ -265,9 +265,10 @@ const getRowUrgencyClass = (
 // Renders the number as a tel: link so click-to-dial works natively (and Zoiper
 // Click2Dial can still enhance it). A sibling copy button lets agents copy the
 // number to the clipboard for paste into any other dialer.
-const PhoneCopyText = memo<{ phone: string; leadId?: string | null; disabled?: boolean }>(({ phone, leadId, disabled }) => {
+const PhoneCopyText = memo<{ phone: string; leadId?: string | null; disabled?: boolean; holdUntil?: string | null }>(({ phone, leadId, disabled, holdUntil }) => {
   const telHref = `tel:${phone.replace(/[^\d+]/g, '')}`;
   const [copied, setCopied] = useState(false);
+  const onHold = !!holdUntil && new Date(holdUntil).getTime() > Date.now();
 
   const handleDial = useCallback((e: React.MouseEvent) => {
     if (disabled) return;
@@ -276,13 +277,23 @@ const PhoneCopyText = memo<{ phone: string; leadId?: string | null; disabled?: b
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
     e.stopPropagation();
+    // Inbound hold: they are (or have just been) on the phone with an agent.
+    // Require an explicit confirmation so nobody rings them back mid-conversation.
+    if (onHold) {
+      const until = format(new Date(holdUntil!), 'h:mm a');
+      const ok = window.confirm(
+        `This customer called us and has just spoken to an agent.\n\nCall-backs are on hold until ${until}.\n\nAre you sure you want to ring them now?`
+      );
+      if (!ok) return;
+    }
     dialWithZoiper(phone, { leadId: leadId ?? null, leadType: 'sales_lead' });
     navigator.clipboard?.writeText(phone.replace(/[^\d+]/g, '')).catch(() => { /* noop */ });
     toast.success('Dialling via Zoiper', {
       duration: 2500,
       description: "If Zoiper didn't open, the number is on your clipboard.",
     });
-  }, [phone, leadId, disabled]);
+  }, [phone, leadId, disabled, onHold, holdUntil]);
+
 
   const handleCopy = useCallback(async (e: React.MouseEvent) => {
     if (disabled) return;
@@ -320,13 +331,23 @@ const PhoneCopyText = memo<{ phone: string; leadId?: string | null; disabled?: b
             onClick={handleDial}
             onAuxClick={(e) => e.stopPropagation()}
             aria-label={`Click to dial ${formatUKPhone(phone)} via Zoiper`}
-            className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 shadow-sm hover:bg-emerald-100 hover:border-emerald-500 hover:text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 cursor-pointer transition-colors"
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold shadow-sm focus:outline-none focus:ring-2 cursor-pointer transition-colors",
+              onHold
+                ? "border-sky-500/50 bg-sky-50 text-sky-700 hover:bg-sky-100 focus:ring-sky-500/40"
+                : "border-emerald-500/40 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-500 hover:text-emerald-800 focus:ring-emerald-500/40"
+            )}
           >
             <Phone className="h-3 w-3 flex-shrink-0" fill="currentColor" strokeWidth={0} />
             <span className="select-text">{formatUKPhone(phone)}</span>
           </a>
         </TooltipTrigger>
-        <TooltipContent side="top" className="text-xs">Click to dial via Zoiper</TooltipContent>
+        <TooltipContent side="top" className="text-xs">
+          {onHold
+            ? `On hold until ${format(new Date(holdUntil!), 'h:mm a')} — they just spoke to an agent`
+            : 'Click to dial via Zoiper'}
+        </TooltipContent>
+
       </Tooltip>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
@@ -1260,7 +1281,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <PhoneCopyText phone={lead.phone} leadId={lead.id} disabled={isDoNotContact} />
+              <PhoneCopyText phone={lead.phone} leadId={lead.id} disabled={isDoNotContact} holdUntil={lead.no_callback_until} />
             )}
             <div className={cn("flex items-center", isDoNotContact && "pointer-events-none opacity-40")}>
               <Tooltip delayDuration={100}>
