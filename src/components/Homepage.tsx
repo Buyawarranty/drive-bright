@@ -869,14 +869,14 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 fetchPriority="high"
                 decoding="async"
               />
-              <OptimizedImage 
-                src="/extended_warranty_uk-car-trustworthy-reviews.webp" 
-                alt="Extended warranty UK - Car trustworthy reviews - Panda mascot with vehicle collection" 
+              <img
+                src={heroPandaVehiclesDesktop.url}
+                alt="buyawarranty panda mascot holding car keys with a car, van, SUV and motorbike"
                 className="hidden lg:block w-full h-auto"
-                priority={true}
-                width={651}
-                height={434}
-                sizes="651px"
+                width={1672}
+                height={936}
+                fetchPriority="high"
+                decoding="async"
               />
 
               
