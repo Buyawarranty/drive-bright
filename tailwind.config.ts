@@ -82,7 +82,10 @@ export default {
 				// Brand colors for buyawarranty.co.uk
 				brand: {
 					orange: '#FF6A00',
+					blue: '#0E3F88',
+					'blue-dark': '#0A2F66',
 					'deep-blue': '#001F3F', 
+
 					'dark-text': '#0B0B0B',
 					'gray-bg': '#F5F6FA',
 					'orange-light': '#FF8C42',
