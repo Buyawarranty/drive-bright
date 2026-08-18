@@ -672,12 +672,13 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
     if (discountBlocked) {
       toast({
-        title: `Blocked — contact management`,
-        description: `£${enteredAmount.toFixed(2)} is ${discountPct.toFixed(1)}% below the quoted £${quotedTotal}. You cannot confirm this payment — please contact management to authorise it. The lowest you can confirm yourself is £${minAllowedAmount.toFixed(2)}.`,
+        title: `Below the minimum sellable price`,
+        description: `£${enteredAmount.toFixed(2)} is under the £${netFloorAmount.toFixed(2)} floor for this cover. Contact management to authorise anything lower.`,
         variant: "destructive",
       });
       return;
     }
+
 
     // CRITICAL: Sales agent is compulsory for commission tracking
     if (!assigneeId) {
