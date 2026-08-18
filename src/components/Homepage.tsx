@@ -792,51 +792,48 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
 
                 {/* Pricing Reassurance Panel - Premium Trust Block (desktop) */}
-                <div className="hidden sm:block mt-4 sm:mt-7 bg-white border border-gray-100 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] px-8 py-7 text-center">
-                   <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-[#1B2A4A] mb-7">
-                     Fair price. Fast quote. No surprises.
-                   </h2>
-
+                <div className="hidden sm:block mt-4 sm:mt-6 bg-white border border-gray-100 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] px-6 py-5 text-center">
                    {isUkOfficeHours ? (
                      <>
-                       <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-0 mb-5">
-                         <a href="tel:03309122402" className="group flex items-center gap-3 text-brand-blue transition-all duration-200">
-                           <span className="p-2 bg-blue-50 rounded-full text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-colors">
-                             <Phone className="w-5 h-5 fill-current" strokeWidth={0} />
+                       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-0 mb-3">
+                         <a href="tel:03309122402" className="group flex items-center gap-2.5 text-brand-blue transition-all duration-200">
+                           <span className="p-1.5 bg-blue-50 rounded-full text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-colors">
+                             <Phone className="w-4 h-4 fill-current" strokeWidth={0} />
                            </span>
-                           <span className="text-xl md:text-2xl font-bold border-b-2 border-brand-blue pb-0.5 leading-none tracking-tight group-hover:text-[#1B2A4A] group-hover:border-[#1B2A4A]">
+                           <span className="text-base md:text-lg font-bold border-b-2 border-brand-blue pb-0.5 leading-none tracking-tight group-hover:text-[#1B2A4A] group-hover:border-[#1B2A4A]">
                              0330 912 2402
                            </span>
                          </a>
 
-                         <span className="hidden sm:block h-8 w-px bg-gray-200 mx-8" aria-hidden />
+                         <span className="hidden sm:block h-6 w-px bg-gray-200 mx-6" aria-hidden />
 
                          <button
                            onClick={() => setShowCallbackModal(true)}
-                           className="group flex items-center gap-1.5 text-brand-orange font-bold text-base md:text-lg hover:text-orange-700 transition-colors"
+                           className="group flex items-center gap-1.5 text-brand-orange font-bold text-sm md:text-base hover:text-orange-700 transition-colors"
                          >
                            Request a callback
-                           <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                           <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                          </button>
                        </div>
 
-                       <p className="text-sm text-gray-500 font-medium leading-relaxed">
-                         Speak to our UK team – <span className="text-gray-400">Lines open 9am to 5:45pm, Monday to Friday.</span>
+                       <p className="text-[13px] text-gray-500 font-medium leading-relaxed">
+                         Speak to our UK team – <span className="text-gray-400">Lines open 9am to 6pm, Monday to Friday.</span>
                        </p>
                      </>
                    ) : (
-                     <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[15px]">
-                       <span className="text-gray-600 whitespace-nowrap">Our UK team is open 9am–5:45pm</span>
+                     <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm">
+                       <span className="text-gray-600 whitespace-nowrap">Our UK team is open 9am–6pm, Monday to Friday</span>
                        <button
                          onClick={() => setShowCallbackModal(true)}
                          className="group flex items-center gap-1.5 text-brand-orange font-bold hover:text-orange-700 transition-colors"
                        >
                          Request a callback
-                         <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                         <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                        </button>
                      </div>
                    )}
                 </div>
+
 
 
 
