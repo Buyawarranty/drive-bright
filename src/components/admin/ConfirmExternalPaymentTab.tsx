@@ -353,9 +353,11 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const ceilingMinAmount = quotedTotal > 0
     ? Math.round(quotedTotal * (1 - DISCOUNT_CEILING_PCT / 100) * 100) / 100
     : 0;
-  // Whichever bites harder: the 30% ceiling or the absolute net floor.
-  const minAllowedAmount = Math.max(ceilingMinAmount, netFloorAmount);
+  // Sales staff may confirm ANY amount down to the absolute net floor — the 30%
+  // ceiling no longer blocks a confirmation here, it only flags the discount.
+  const minAllowedAmount = netFloorAmount;
   const overDiscountCeiling = discountPct > DISCOUNT_CEILING_PCT + 0.01;
+
   const underNetFloor = Number.isFinite(enteredAmount) && enteredAmount > 0 && enteredAmount < netFloorAmount - 0.01;
   // A manager-approved authorisation for this vehicle lifts the block up to the
   // price they approved (agents no longer hit a dead end).
