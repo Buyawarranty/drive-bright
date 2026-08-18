@@ -817,8 +817,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                    {isUkOfficeHours ? (
                      <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                        <a href="tel:03309122402" className="flex items-center gap-2 group">
-                         <Phone className="w-[18px] h-[18px] text-blue-800 fill-blue-800 flex-shrink-0" strokeWidth={0} />
-                         <span className="text-lg lg:text-xl font-extrabold text-blue-800 underline underline-offset-4 tracking-tight group-hover:text-blue-900">
+                         <Phone className="w-[18px] h-[18px] text-brand-blue fill-brand-blue flex-shrink-0" strokeWidth={0} />
+                         <span className="text-lg lg:text-xl font-extrabold text-brand-blue underline underline-offset-4 tracking-tight group-hover:text-brand-blue-dark">
+
                            0330 912 2402
                          </span>
                        </a>
