@@ -1046,6 +1046,22 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               </TooltipContent>
             </Tooltip>
           )}
+          {lead.no_callback_until && !isPast(new Date(lead.no_callback_until)) && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-sky-600 text-white border-0 flex items-center gap-0.5 flex-shrink-0 cursor-help">
+                  <Clock className="h-3 w-3" />
+                  INBOUND — HOLD
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs max-w-[240px]">
+                They called us and spoke to an agent
+                {lead.inbound_spoken_at ? ` ${formatDistanceToNow(new Date(lead.inbound_spoken_at), { addSuffix: true })}` : ''}.
+                Do not call back before {format(new Date(lead.no_callback_until), 'h:mm a')}.
+              </TooltipContent>
+            </Tooltip>
+          )}
+
           {reminderTime && isToday(new Date(reminderTime)) && !isPast(new Date(reminderTime)) && !isFakeLead && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>

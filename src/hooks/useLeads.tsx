@@ -170,6 +170,10 @@ export interface Lead {
   call_count: number;
   // Callback flag
   is_callback: boolean;
+  /** Inbound call: hold call-backs until this time (they just spoke to an agent). */
+  no_callback_until?: string | null;
+  inbound_spoken_at?: string | null;
+
   // Cart metadata for plan selections
   cart_metadata: {
     claim_limit?: number;
@@ -478,7 +482,9 @@ export const useLeads = (options?: UseLeadsOptions) => {
         vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
         last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
         created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
-        call_count, is_callback, resubmission_count, last_resubmitted_at, hidden_from_agent_ids
+        call_count, is_callback, resubmission_count, last_resubmitted_at, hidden_from_agent_ids,
+        no_callback_until, inbound_spoken_at
+
       `;
 
       // For a sales agent, resolve the ids of everyone on their team so
@@ -846,6 +852,9 @@ export const useLeads = (options?: UseLeadsOptions) => {
           is_from_abandoned_cart: false,
           call_count: lead.call_count || 0,
           is_callback: lead.is_callback || false,
+          no_callback_until: (lead as any).no_callback_until || null,
+          inbound_spoken_at: (lead as any).inbound_spoken_at || null,
+
           cart_metadata: lead.abandoned_cart?.cart_metadata || null,
           resubmission_count: lead.resubmission_count || 0,
           last_resubmitted_at: lead.last_resubmitted_at || null,
