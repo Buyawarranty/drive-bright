@@ -929,7 +929,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             
             {/* Vehicle Types for mobile/tablet - spans full width */}
             <div className="lg:hidden w-full px-2 mt-1 sm:mt-6 lg:col-span-2">
-              <div className="flex flex-col items-center gap-3 sm:gap-6">
+              <div className="flex flex-col items-center gap-1.5 sm:gap-6">
                 <div className="flex items-center justify-center gap-2 sm:gap-4 flex-nowrap w-full">
                   <div className="flex items-center space-x-1 min-w-0">
                     <Car className="w-4 h-4 text-green-500 flex-shrink-0" />
