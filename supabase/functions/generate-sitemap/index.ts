@@ -76,6 +76,23 @@ Deno.serve(async (req) => {
       { url: '/warranty-types/volvo-warranty/', priority: '0.8' },
       { url: '/warranty-types/volkswagen-warranty/', priority: '0.8' },
       { url: '/warranty-types/motorbike-motorcycle-warranty/', priority: '0.8' },
+      { url: '/warranty-types/tesla-warranty/', priority: '0.8' },
+      { url: '/warranty-types/dacia-warranty/', priority: '0.8' },
+      { url: '/warranty-types/jeep-warranty/', priority: '0.8' },
+      { url: '/warranty-types/smart-warranty/', priority: '0.8' },
+      { url: '/warranty-types/subaru-warranty/', priority: '0.8' },
+      { url: '/warranty-types/porsche-warranty/', priority: '0.8' },
+      { url: '/warranty-types/lexus-warranty/', priority: '0.8' },
+      { url: '/warranty-types/mini-warranty/', priority: '0.8' },
+      { url: '/warranty-types/alfa-romeo-warranty/', priority: '0.8' },
+      { url: '/warranty-types/suzuki-warranty/', priority: '0.8' },
+      { url: '/warranty-types/mitsubishi-warranty/', priority: '0.8' },
+      { url: '/warranty-types/byd-warranty/', priority: '0.8' },
+      { url: '/warranty-types/chevrolet-warranty/', priority: '0.8' },
+      { url: '/warranty-types/chrysler-warranty/', priority: '0.8' },
+      { url: '/warranty-types/dodge-warranty/', priority: '0.8' },
+      { url: '/warranty-types/infiniti-warranty/', priority: '0.8' },
+      { url: '/warranty-types/cadillac-warranty/', priority: '0.8' },
       { url: '/car-extended-warranty/audi/', priority: '0.8' },
       { url: '/car-extended-warranty/bmw/', priority: '0.8' },
       { url: '/car-extended-warranty/ford/', priority: '0.8' },
@@ -89,7 +106,7 @@ Deno.serve(async (req) => {
     ];
 
     const baseUrl = 'https://buyawarranty.co.uk';
-    const lastmod = '2026-03-17';
+    const lastmod = new Date().toISOString().split('T')[0];
 
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
