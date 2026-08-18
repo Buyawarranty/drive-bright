@@ -134,6 +134,7 @@ Updated: just now
 - [Email Blocklist System](mem://marketing/email-blocklist-system) — Opt out edge functions and hashing
 - [Newsletter Syncing](mem://marketing/newsletter-integration) — Lead recovery automated audience additions
 - [Notification Routing](mem://integrations/notifications/routing-logic) — Subject text matching logic per system
+- [Prerender Crawler Content](mem://marketing/prerender-crawler-content) — Every public route needs prerender-routes + body content + sitemap entries or crawlers see the homepage shell
 - [SEO & Metadata](mem://marketing/seo-and-metadata-standards-v2) — JSON-LD implementation and Helmet rules
 - [Email Automation Strategy](mem://marketing/email-and-promo-automation-v5) — Aesthetic limits and links
 - [ClickSend SMS Config](mem://integrations/clicksend-sms-system-v5) — Rule sorting and timing offsets

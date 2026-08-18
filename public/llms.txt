@@ -16,6 +16,21 @@
 - [FAQs](https://buyawarranty.co.uk/faqs): Common questions on eligibility, waiting periods and cancellations.
 - [Contact us](https://buyawarranty.co.uk/contact-us): Phone, email and opening hours.
 
+## Cover by vehicle and make (UK)
+
+Each page lists the components that typically fail on that vehicle in the UK, the models we cover, how pricing is set (registration, mileage, claim limit, hourly labour rate, voluntary excess) and how a claim is authorised at a VAT-registered garage. Eligibility: up to 15 years old and 150,000 miles at the start of cover; GB and Northern Ireland registrations accepted.
+
+- [All warranty types](https://buyawarranty.co.uk/warranty-types/): Index of cover by vehicle type and manufacturer.
+- [Electric vehicle warranty](https://buyawarranty.co.uk/warranty-types/ev-warranty/): Drive motor, on-board charger, inverter and thermal management cover after the 3-year vehicle term.
+- [Hybrid warranty](https://buyawarranty.co.uk/warranty-types/hybrid-warranty/): Petrol engine plus hybrid transaxle, inverter and regenerative braking cover.
+- [Plug-in hybrid warranty](https://buyawarranty.co.uk/warranty-types/phev-warranty/): Both drivetrains covered, including charging hardware.
+- [Van warranty](https://buyawarranty.co.uk/warranty-types/vans-warranty/): Trade and business use accepted; DPF, turbo, clutch and gearbox cover.
+- [SUV warranty](https://buyawarranty.co.uk/warranty-types/suv-warranty/): 4x4 driveline, air suspension and driver-assist module cover.
+- [Motorbike warranty](https://buyawarranty.co.uk/warranty-types/motorbike-motorcycle-warranty/): Priced at half the equivalent car rate.
+- [Audi](https://buyawarranty.co.uk/warranty-types/audi-warranty/) · [BMW](https://buyawarranty.co.uk/warranty-types/bmw-warranty/) · [Mercedes-Benz](https://buyawarranty.co.uk/warranty-types/mercedes-warranty/) · [Volkswagen](https://buyawarranty.co.uk/warranty-types/volkswagen-warranty/) · [Toyota](https://buyawarranty.co.uk/warranty-types/toyota-warranty/) · [Honda](https://buyawarranty.co.uk/warranty-types/honda-warranty/) · [Nissan](https://buyawarranty.co.uk/warranty-types/nissan-warranty/) · [Kia](https://buyawarranty.co.uk/warranty-types/kia-warranty/) · [Vauxhall](https://buyawarranty.co.uk/warranty-types/vauxhall-warranty/) · [Citroën](https://buyawarranty.co.uk/warranty-types/citroen-warranty/) · [Dacia](https://buyawarranty.co.uk/warranty-types/dacia-warranty/) · [Jeep](https://buyawarranty.co.uk/warranty-types/jeep-warranty/) · [Subaru](https://buyawarranty.co.uk/warranty-types/subaru-warranty/) · [smart](https://buyawarranty.co.uk/warranty-types/smart-warranty/) · [Tesla](https://buyawarranty.co.uk/warranty-types/tesla-warranty/)
+
+
+
 ## The Warranty Hub (guides & news)
 
 - [The Warranty Hub](https://buyawarranty.co.uk/thewarrantyhub/): Index of all guides, news and buying advice for UK car owners.

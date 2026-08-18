@@ -541,4 +541,106 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     description:
       "SsangYong extended warranty cover in the UK from \u00a319/month \u2014 Rexton, Korando and Tivoli protection with unlimited claims and instant online quotes.",
   },
+  {
+    path: "/warranty-types/tesla-warranty/",
+    title: "Tesla Warranty UK | Model 3, Y, S & X Cover | Buy A Warranty",
+    description:
+      "Tesla warranty cover in the UK for Model 3, Model Y, Model S and Model X — drive unit, on-board charger, power electronics and MCU protection with instant online quotes.",
+  },
+  {
+    path: "/warranty-types/dacia-warranty/",
+    title: "Dacia Extended Warranty UK | Sandero, Duster & Jogger Cover",
+    description:
+      "Dacia extended warranty cover in the UK for Sandero, Duster, Jogger and Spring — turbo, gearbox and electrics protection with instant online quotes.",
+  },
+  {
+    path: "/warranty-types/jeep-warranty/",
+    title: "Jeep Extended Warranty UK | Renegade, Compass & Cherokee",
+    description:
+      "Jeep extended warranty cover in the UK for Renegade, Compass, Cherokee and Wrangler — gearbox, 4x4 driveline and electronics protection, quoted online in 60 seconds.",
+  },
+  {
+    path: "/warranty-types/smart-warranty/",
+    title: "smart Car Warranty UK | fortwo & forfour Cover | Buy A Warranty",
+    description:
+      "smart car warranty cover in the UK for fortwo, forfour and EQ models — clutch actuator, gear selector and electrics protection with instant online quotes.",
+  },
+  {
+    path: "/warranty-types/subaru-warranty/",
+    title: "Subaru Extended Warranty UK | Forester, Outback & Impreza",
+    description:
+      "Subaru extended warranty cover in the UK for Forester, Outback, Impreza and XV — boxer engine, CVT and all-wheel-drive protection quoted online in 60 seconds.",
+  },
+  {
+    path: "/warranty-types/porsche-warranty/",
+    title: "Porsche Extended Warranty UK | Instant Quote | Buy A Warranty",
+    description:
+      "Porsche extended warranty cover in the UK for Macan, Cayenne, Boxster, Cayman and Panamera — specialist labour rates and instant online quotes.",
+  },
+  {
+    path: "/warranty-types/lexus-warranty/",
+    title: "Lexus Extended Warranty UK | Hybrid Cover | Buy A Warranty",
+    description:
+      "Lexus extended warranty cover in the UK for IS, NX, RX, UX and CT — hybrid transaxle, inverter and electronics protection with instant online quotes.",
+  },
+  {
+    path: "/warranty-types/mini-warranty/",
+    title: "MINI Extended Warranty UK | Hatch, Countryman & Clubman",
+    description:
+      "MINI extended warranty cover in the UK for Hatch, Countryman, Clubman and Convertible — timing chain, gearbox and electrics protection quoted online.",
+  },
+  {
+    path: "/warranty-types/alfa-romeo-warranty/",
+    title: "Alfa Romeo Extended Warranty UK | Giulia, Stelvio & Giulietta",
+    description:
+      "Alfa Romeo extended warranty cover in the UK for Giulia, Stelvio, Giulietta and MiTo — gearbox, turbo and electronics protection quoted online in 60 seconds.",
+  },
+  {
+    path: "/warranty-types/suzuki-warranty/",
+    title: "Suzuki Extended Warranty UK | Swift, Vitara & Jimny Cover",
+    description:
+      "Suzuki extended warranty cover in the UK for Swift, Vitara, S-Cross, Ignis and Jimny — mechanical and electrical protection with instant online quotes.",
+  },
+  {
+    path: "/warranty-types/mitsubishi-warranty/",
+    title: "Mitsubishi Extended Warranty UK | Outlander PHEV & ASX",
+    description:
+      "Mitsubishi extended warranty cover in the UK for Outlander PHEV, ASX, Shogun and L200 — hybrid drive, gearbox and 4x4 protection quoted online.",
+  },
+  {
+    path: "/warranty-types/byd-warranty/",
+    title: "BYD Warranty UK | Atto 3, Dolphin & Seal Cover | Buy A Warranty",
+    description:
+      "BYD warranty cover in the UK for Atto 3, Dolphin, Seal and Seal U — drive motor, on-board charger and power electronics protection with instant online quotes.",
+  },
+  {
+    path: "/warranty-types/chevrolet-warranty/",
+    title: "Chevrolet Extended Warranty UK | Captiva, Cruze & Spark",
+    description:
+      "Chevrolet extended warranty cover in the UK for Captiva, Cruze, Aveo, Spark and Orlando — engine, gearbox and electrics protection quoted online.",
+  },
+  {
+    path: "/warranty-types/chrysler-warranty/",
+    title: "Chrysler Extended Warranty UK | Grand Voyager & 300C Cover",
+    description:
+      "Chrysler extended warranty cover in the UK for Grand Voyager, 300C, Ypsilon and Delta — automatic gearbox, engine and electrics protection quoted online.",
+  },
+  {
+    path: "/warranty-types/dodge-warranty/",
+    title: "Dodge Extended Warranty UK | Journey, Nitro & Caliber Cover",
+    description:
+      "Dodge extended warranty cover in the UK for Journey, Nitro, Caliber and Avenger — gearbox, driveline and electrics protection with instant online quotes.",
+  },
+  {
+    path: "/warranty-types/infiniti-warranty/",
+    title: "Infiniti Extended Warranty UK | Q30, QX30 & Q50 Cover",
+    description:
+      "Infiniti extended warranty cover in the UK for Q30, QX30, Q50 and FX — gearbox, turbo and electronics protection quoted online in 60 seconds.",
+  },
+  {
+    path: "/warranty-types/cadillac-warranty/",
+    title: "Cadillac Extended Warranty UK | CTS, BLS & Escalade Cover",
+    description:
+      "Cadillac extended warranty cover in the UK for CTS, BLS, SRX and Escalade — automatic gearbox, engine and electrics protection quoted online.",
+  },
 ];
