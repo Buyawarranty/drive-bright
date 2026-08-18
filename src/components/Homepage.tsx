@@ -991,8 +991,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 <p className="text-center text-sm text-gray-600">Prefer to speak to us?</p>
                 <div className="mt-2 rounded-xl border border-gray-200 bg-white shadow-sm px-3 py-2.5">
                   <a href="tel:03309122402" className="flex items-center justify-center gap-2">
-                    <Phone className="w-4 h-4 text-blue-700 fill-blue-700" strokeWidth={0} />
-                    <span className="text-lg font-extrabold text-blue-700 underline underline-offset-4 tracking-tight">
+                    <Phone className="w-4 h-4 text-brand-blue fill-brand-blue" strokeWidth={0} />
+                    <span className="text-lg font-extrabold text-brand-blue underline underline-offset-4 tracking-tight">
+
                       0330 912 2402
                     </span>
                   </a>
