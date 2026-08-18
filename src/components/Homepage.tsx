@@ -14,6 +14,7 @@ import LazySection from './homepage/LazySection';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import heroPandaVehiclesMobile from '@/assets/homepage-hero-panda-vehicles-mobile-v5.png.asset.json';
+import heroPandaVehiclesDesktop from '@/assets/homepage-hero-panda-vehicles-desktop-v1.png.asset.json';
 
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
@@ -869,14 +870,14 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 fetchPriority="high"
                 decoding="async"
               />
-              <OptimizedImage 
-                src="/extended_warranty_uk-car-trustworthy-reviews.webp" 
-                alt="Extended warranty UK - Car trustworthy reviews - Panda mascot with vehicle collection" 
+              <img
+                src={heroPandaVehiclesDesktop.url}
+                alt="buyawarranty panda mascot holding car keys with a car, van, SUV and motorbike"
                 className="hidden lg:block w-full h-auto"
-                priority={true}
-                width={651}
-                height={434}
-                sizes="651px"
+                width={1672}
+                height={936}
+                fetchPriority="high"
+                decoding="async"
               />
 
               
