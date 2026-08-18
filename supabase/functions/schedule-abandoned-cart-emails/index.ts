@@ -258,6 +258,7 @@ const handler = async (req: Request): Promise<Response> => {
       message: `Processed ${candidates.length} recipients from ${abandonedCarts.length} carts`,
       emailsSent,
       cappedByFrequency: cappedCount,
+      deferredToNextRun: deferredCount,
       skippedAlreadyPurchased: alreadyPurchased,
       invalidEmailsSkipped: invalidEmails,
       errors: errorsCount,
