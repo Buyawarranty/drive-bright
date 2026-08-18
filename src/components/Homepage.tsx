@@ -14,6 +14,7 @@ import LazySection from './homepage/LazySection';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import heroPandaVehiclesMobile from '@/assets/homepage-hero-panda-vehicles-mobile-v5.png.asset.json';
+import heroPandaVehiclesDesktop from '@/assets/homepage-hero-panda-vehicles-desktop-v1.png.asset.json';
 
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
