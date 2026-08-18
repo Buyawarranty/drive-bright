@@ -20,6 +20,13 @@ const MIN_HOURS_BETWEEN_EMAILS = 48;   // never two marketing emails inside 48h
 const MAX_EMAILS_PER_30_DAYS = 3;      // hard ceiling per recipient per month
 const DEDUPE_WINDOW_DAYS = 60;         // same trigger never repeats within 60 days
 
+// ---- Throttling: the sender is an edge function with its own rate limit, so
+// we pace invokes and cap each run. Anything left over goes on the next run. ----
+const MAX_SENDS_PER_RUN = 25;
+const SEND_SPACING_MS = 1200;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 
 /** Reject malformed addresses instead of retrying them forever. */
@@ -135,6 +142,7 @@ const handler = async (req: Request): Promise<Response> => {
     let emailsSent = 0;
     let errorsCount = 0;
     let cappedCount = 0;
+    let deferredCount = 0;
     let alreadyPurchased = 0;
     const now = Date.now();
     const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
@@ -210,16 +218,34 @@ const handler = async (req: Request): Promise<Response> => {
           protectionAddons: metadata.protection_addons,
         };
 
-        console.log(`Sending ${dueTrigger} to ${email} (cart ${cart.id}, step ${cart.step_abandoned})`);
-        const emailResponse = await supabase.functions.invoke('send-abandoned-cart-email', {
-          body: emailPayload,
-        });
+        // Hard cap per run + spacing between invokes so we never trip the
+        // edge-function rate limiter (which used to fail whole batches).
+        if (emailsSent + errorsCount >= MAX_SENDS_PER_RUN) {
+          deferredCount++;
+          continue;
+        }
 
-        if (emailResponse.error) {
+        console.log(`Sending ${dueTrigger} to ${email} (cart ${cart.id}, step ${cart.step_abandoned})`);
+
+        let emailResponse: any = null;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          emailResponse = await supabase.functions.invoke('send-abandoned-cart-email', {
+            body: emailPayload,
+          });
+          if (!emailResponse.error) break;
+          const retryAfter = Number(emailResponse.error?.context?.retryAfterMs) || 0;
+          if (!retryAfter) break; // not a rate limit — don't retry
+          const wait = Math.min(retryAfter + 500, 40_000);
+          console.log(`Rate limited, waiting ${wait}ms before retrying ${email}`);
+          await sleep(wait);
+        }
+
+        if (emailResponse?.error) {
           console.error(`Error sending ${dueTrigger} to ${email}:`, emailResponse.error);
           errorsCount++;
         } else {
           emailsSent++;
+          await sleep(SEND_SPACING_MS);
         }
       } catch (cartErr) {
         console.error('Error processing recipient:', email, cartErr);
@@ -232,6 +258,7 @@ const handler = async (req: Request): Promise<Response> => {
       message: `Processed ${candidates.length} recipients from ${abandonedCarts.length} carts`,
       emailsSent,
       cappedByFrequency: cappedCount,
+      deferredToNextRun: deferredCount,
       skippedAlreadyPurchased: alreadyPurchased,
       invalidEmailsSkipped: invalidEmails,
       errors: errorsCount,
