@@ -202,59 +202,89 @@ export const BatchPolicyQueue: React.FC = () => {
     } as any);
   };
 
-  const saveEdit = async () => {
-    if (!editingId) return;
-    setIsSavingEdit(true);
-    const f = editForm as any;
-    const first = (f.first_name || '').trim();
-    const last = (f.last_name || '').trim();
+  // Shared writer so both the Edit dialog and the inline Details editor keep
+  // customers + customer_policies in sync with Customer Management.
+  const persistCustomerDetails = async (
+    customerId: string,
+    form: any,
+  ): Promise<boolean> => {
+    const first = (form.first_name || '').trim();
+    const last = (form.last_name || '').trim();
     const fullName = `${first} ${last}`.trim();
     const updates: any = {
       first_name: first || null,
       last_name: last || null,
       name: fullName || null,
-      flat_number: editForm.flat_number?.trim() || null,
-      building_name: editForm.building_name?.trim() || null,
-      building_number: editForm.building_number?.trim() || null,
-      street: editForm.street?.trim() || null,
-      town: editForm.town?.trim() || null,
-      county: editForm.county?.trim() || null,
-      postcode: editForm.postcode?.trim() || null,
+      flat_number: form.flat_number?.trim() || null,
+      building_name: form.building_name?.trim() || null,
+      building_number: form.building_number?.trim() || null,
+      street: form.street?.trim() || null,
+      town: form.town?.trim() || null,
+      county: form.county?.trim() || null,
+      postcode: form.postcode?.trim().toUpperCase() || null,
     };
-    const { error } = await supabase.from('customers').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', editingId);
+
+    const { data: updatedRows, error } = await supabase
+      .from('customers')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', customerId)
+      .select('id');
     if (error) {
-      setIsSavingEdit(false);
       toast({ title: 'Save failed', description: error.message, variant: 'destructive' });
-      return;
+      return false;
+    }
+    if (!updatedRows || updatedRows.length === 0) {
+      toast({
+        title: 'Nothing saved',
+        description: "Your account doesn't have permission to edit this customer.",
+        variant: 'destructive',
+      });
+      return false;
     }
 
-    // Mirror to customer_policies so the customer dashboard / portal show the same details
-    const composedAddress = [
-      updates.flat_number,
-      updates.building_name,
-      [updates.building_number, updates.street].filter(Boolean).join(' '),
-      updates.town,
-      updates.county,
-      updates.postcode,
-    ].filter(Boolean).join(', ');
+    // Mirror to customer_policies using the SAME structured address shape that
+    // Customer Management writes, so both dashboards read identical details.
     const { error: polError } = await supabase
       .from('customer_policies')
       .update({
         customer_full_name: fullName || null,
-        address: composedAddress || null,
+        address: {
+          flat_number: updates.flat_number || '',
+          building_name: updates.building_name || '',
+          building_number: updates.building_number || '',
+          street: updates.street || '',
+          town: updates.town || '',
+          county: updates.county || '',
+          postcode: updates.postcode || '',
+        } as any,
         updated_at: new Date().toISOString(),
       })
-      .eq('customer_id', editingId);
-    if (polError) {
-      console.error('customer_policies sync failed:', polError);
-    }
-    setIsSavingEdit(false);
+      .eq('customer_id', customerId);
+    if (polError) console.error('customer_policies sync failed:', polError);
 
-    setQueue(prev => prev.map(q => (q.id === editingId ? { ...q, ...updates } as QueuedCustomer : q)));
-    toast({ title: 'Saved', description: 'Customer details updated.' });
+    setQueue(prev => prev.map(q => (q.id === customerId ? ({ ...q, ...updates } as QueuedCustomer) : q)));
+    toast({ title: 'Saved', description: 'Details updated here and in Customer Management.' });
+    return true;
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    setIsSavingEdit(true);
+    const ok = await persistCustomerDetails(editingId, editForm as any);
+    setIsSavingEdit(false);
+    if (!ok) return;
     setEditingId(null);
     setEditForm({});
   };
+
+  const saveInline = async (customerId: string) => {
+    const form = inlineForms[customerId];
+    if (!form) return;
+    setSavingInlineId(customerId);
+    await persistCustomerDetails(customerId, form);
+    setSavingInlineId(null);
+  };
+
 
 
   const clearQueue = () => {
