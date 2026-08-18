@@ -331,13 +331,23 @@ const PhoneCopyText = memo<{ phone: string; leadId?: string | null; disabled?: b
             onClick={handleDial}
             onAuxClick={(e) => e.stopPropagation()}
             aria-label={`Click to dial ${formatUKPhone(phone)} via Zoiper`}
-            className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 shadow-sm hover:bg-emerald-100 hover:border-emerald-500 hover:text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 cursor-pointer transition-colors"
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold shadow-sm focus:outline-none focus:ring-2 cursor-pointer transition-colors",
+              onHold
+                ? "border-sky-500/50 bg-sky-50 text-sky-700 hover:bg-sky-100 focus:ring-sky-500/40"
+                : "border-emerald-500/40 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-500 hover:text-emerald-800 focus:ring-emerald-500/40"
+            )}
           >
             <Phone className="h-3 w-3 flex-shrink-0" fill="currentColor" strokeWidth={0} />
             <span className="select-text">{formatUKPhone(phone)}</span>
           </a>
         </TooltipTrigger>
-        <TooltipContent side="top" className="text-xs">Click to dial via Zoiper</TooltipContent>
+        <TooltipContent side="top" className="text-xs">
+          {onHold
+            ? `On hold until ${format(new Date(holdUntil!), 'h:mm a')} — they just spoke to an agent`
+            : 'Click to dial via Zoiper'}
+        </TooltipContent>
+
       </Tooltip>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
