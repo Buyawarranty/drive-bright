@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://buyawarranty.co.uk/</loc>
-    <lastmod>2026-03-17</lastmod>
+    <lastmod>2026-08-18</lastmod>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://buyawarranty.co.uk/__l5e/assets-v1/17b121e3-b912-47c9-af71-19d01e00a5f3/used-car-warranty-panda-vehicles-desktop.webp</image:loc>
+      <image:title>Extended warranty cover for cars, vans, hybrids, EVs and motorbikes</image:title>
+      <image:caption>Buyawarranty panda mascot holding car keys beside a car, van, SUV and motorbike covered by extended warranty</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://buyawarranty.co.uk/__l5e/assets-v1/666507a5-603f-424f-92fc-44d209766ef5/used-car-warranty-panda-vehicles-mobile.webp</image:loc>
+      <image:title>UK used car, van, hybrid, EV and motorbike warranty cover</image:title>
+      <image:caption>Buyawarranty panda mascot with a car, van, SUV and motorbike covered by UK used car warranty plans</image:caption>
+    </image:image>
   </url>
+
   <url>
     <loc>https://buyawarranty.co.uk/what-is-covered/</loc>
     <lastmod>2026-03-17</lastmod>
