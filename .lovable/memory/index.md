@@ -18,6 +18,7 @@ Updated: just now
 - SEO work = visual/structural/wording ONLY. Never touch pricing, APIs, integrations, or tracking tags. See mem://constraints/seo-work-visual-only
 - Voluntary excess is a % factor of the cover price (£100 = 1.00; £0 1.08 → £500 0.80), never a flat £/mo table. See mem://pricing/excess-proportional-factors
 - Price floor is shaped by excess + claim limit; never clamp grid cells cell-by-cell. See mem://pricing/floor-must-not-flatten-options
+- Website Step 3/4 + Bumper/Stripe clamp to the SAME shaped £399/£699/£999 floor as the grid; only promo codes may go below. See mem://pricing/website-floor-same-as-grid
 
 - Pricing test panels must offer the exact Step 3/4 options from src/lib/pricing/journeyOptions.ts. See mem://pricing/sandbox-step3-parity
 
@@ -26,6 +27,7 @@ Updated: just now
 - ORR never parks or gates live leads: out-of-hours holds only apply when Open Round Robin is switched on. See mem://constraints/orr-never-blocks-live-leads
 
 ## Memories
+- [Website Floor = Grid Floor](mem://pricing/website-floor-same-as-grid) — Step 3/4 and checkout clamped to the shaped £399/£699/£999 floor; promos exempt
 - [SEO work visual-only](mem://constraints/seo-work-visual-only) — During SEO work: layout/wording/padding only; never touch pricing logic, APIs, integrations, or tracking tags
 - [Northern Ireland Vehicles](mem://features/northern-ireland-vehicles) — No NI API: buy online only when make+model recognised, otherwise callback; customer-typed mileage
 - [Reg-only Quote Journey](mem://features/reg-only-mileage-from-mot) — Step 1 is reg-only; mileage from latest MOT, confirmed at Step 4, price honoured

@@ -103,3 +103,18 @@ export function clampWebToNetFloor(amount: number, params: NetFloorParams): numb
   return clampToNetFloor(amount, { ...params, surface: 'customer' });
 }
 
+
+/**
+ * WEBSITE (Step 3 / Step 4 / Bumper–Stripe handoff) sell floor.
+ *
+ * Agreed 18/08/2026: the public journey uses the SAME £399 / £699 / £999
+ * shaped floor as Quotes & Orders — no "minus the web gap" version — so the
+ * site can never publish or sell a warranty below the minimum sellable price
+ * for that cover. Promo codes (SAVE25, cart recovery, pay-in-full 10%) are
+ * still allowed to discount below it; they are applied AFTER this clamp.
+ */
+export function applyWebsiteSellFloor(total: number, params: Omit<NetFloorParams, 'surface'>): number {
+  const floor = getNetPayableFloor({ ...params, surface: 'admin' });
+  if (!Number.isFinite(total) || total <= 0) return Math.ceil(floor);
+  return Math.max(Math.round(total), Math.ceil(floor));
+}
