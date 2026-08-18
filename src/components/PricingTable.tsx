@@ -55,6 +55,7 @@ import Step3Desktop from '@/components/step3/Step3Desktop';
 import MobileSteppedFlow from '@/components/step3/MobileSteppedFlow';
 import EditVehicleDialog from '@/components/EditVehicleDialog';
 import { useAppliedPromos, calcPromoDiscount, clearAppliedPromos, promoPriceFloor } from '@/lib/promoStorage';
+import { applyWebsiteSellFloor } from '@/lib/pricing/netFloor';
 
 type VehicleType = 'car' | 'motorbike' | 'phev' | 'hybrid' | 'ev';
 
@@ -942,11 +943,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // Memoized total price calculation - EXACT Excel price + adjustments (no marketing discount applied)
   // Includes: base + labour rate + add-ons + premium claim surcharge + boost addon
   const totalPrice = useMemo(() => {
-    return basePlanPrice + labourRateTotalAdjustment + addOnPrice + premiumClaimSurcharge + boostTotalAdjustment + getExcessTotalAdjustment(paymentType as PaymentPeriod, voluntaryExcess ?? 100, basePlanPrice);
+    const raw = basePlanPrice + labourRateTotalAdjustment + addOnPrice + premiumClaimSurcharge + boostTotalAdjustment + getExcessTotalAdjustment(paymentType as PaymentPeriod, voluntaryExcess ?? 100, basePlanPrice);
+    // Minimum sellable price for this cover (same floor as Quotes & Orders).
+    // Promo codes are applied after this and may still go below it.
+    return applyWebsiteSellFloor(raw, {
+      paymentPeriod: paymentType as PaymentPeriod,
+      voluntaryExcess: voluntaryExcess ?? 100,
+      claimLimit: selectedClaimLimit,
+      labourRate: selectedLabourRate,
+      isMotorbike: isMotorbikeAdjustment(calculateVehiclePriceAdjustment(vehicleData as any, paymentType === '12months' ? 1 : paymentType === '24months' ? 2 : 3)),
+    });
     // voluntaryExcess + paymentType MUST stay in the deps: the excess adjustment is
     // read straight from them, so leaving them out froze the price whenever the base
     // grid price didn't change (e.g. floor-bound vehicles).
-  }, [basePlanPrice, labourRateTotalAdjustment, addOnPrice, premiumClaimSurcharge, boostTotalAdjustment, paymentType, voluntaryExcess]);
+  }, [basePlanPrice, labourRateTotalAdjustment, addOnPrice, premiumClaimSurcharge, boostTotalAdjustment, paymentType, voluntaryExcess, selectedClaimLimit, selectedLabourRate, vehicleData]);
 
   // Marketing savings (display only - NOT applied to actual price)
   const marketingSavings = useMemo(() => {
@@ -1159,7 +1169,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
       
       // Apply minimum BASE price floor (acquisition + lead cost protection)
       const flooredBasePrice = applyBasePriceFloor(discountedBasePrice, selectedPaymentType as PaymentPeriod, voluntaryExcess, isMotorbikeAdjustment(vehiclePriceAdjustment), 'customer', [vehicleData?.make, vehicleData?.model].filter(Boolean).join(' '), selectedClaimLimit);
-      const totalPrice = flooredBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust + getExcessTotalAdjustment(selectedPaymentType as PaymentPeriod, voluntaryExcess ?? 100, flooredBasePrice);
+      const totalPrice = applyWebsiteSellFloor(
+        flooredBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust + getExcessTotalAdjustment(selectedPaymentType as PaymentPeriod, voluntaryExcess ?? 100, flooredBasePrice),
+        {
+          paymentPeriod: selectedPaymentType as PaymentPeriod,
+          voluntaryExcess: voluntaryExcess ?? 100,
+          claimLimit: selectedClaimLimit,
+          labourRate: selectedLabourRate,
+          isMotorbike: isMotorbikeAdjustment(vehiclePriceAdjustment),
+        }
+      );
       
       // Don't allow progression if vehicle is too old
       if (vehicleAgeError) {
@@ -1353,7 +1372,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
     const addOnTotal = calculateAddOnPrice(termAddOns, term, durationMonths);
     const premiumSurcharge = getClaimLimitSurcharge(effectiveClaimLimit, term, effectiveExcess);
-    const total = flooredBasePrice + labourTotalAdjust + addOnTotal + premiumSurcharge + boostTotalAdjustment + getExcessTotalAdjustment(term as PaymentPeriod, effectiveExcess ?? 100, flooredBasePrice);
+    const total = applyWebsiteSellFloor(
+      flooredBasePrice + labourTotalAdjust + addOnTotal + premiumSurcharge + boostTotalAdjustment + getExcessTotalAdjustment(term as PaymentPeriod, effectiveExcess ?? 100, flooredBasePrice),
+      {
+        paymentPeriod: term as PaymentPeriod,
+        voluntaryExcess: effectiveExcess ?? 100,
+        claimLimit: effectiveClaimLimit,
+        labourRate: selectedLabourRate,
+        isMotorbike: isMotorbikeAdjustment(termVehicleAdjustment),
+      }
+    );
 
     return Math.ceil(total / 12);
   }, [vehicleData, getPricingData, voluntaryExcess, selectedClaimLimit, selectedLabourRate, selectedProtectionAddOns, boostTotalAdjustment]);
@@ -1827,7 +1855,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
                const cardPremiumSurcharge = getClaimLimitSurcharge(cardClaimLimit, durationId, voluntaryExcess || 100);
               
               // Calculate total price with all adjustments including add-ons
-              const totalPriceWithAdjustments = finalBasePrice + labourTotalAdjust + boostTotalAdjust + durationAddOnPrice + cardPremiumSurcharge + getExcessTotalAdjustment(durationId as PaymentPeriod, voluntaryExcess ?? 100, finalBasePrice);
+              const totalPriceWithAdjustments = applyWebsiteSellFloor(
+                finalBasePrice + labourTotalAdjust + boostTotalAdjust + durationAddOnPrice + cardPremiumSurcharge + getExcessTotalAdjustment(durationId as PaymentPeriod, voluntaryExcess ?? 100, finalBasePrice),
+                {
+                  paymentPeriod: durationId as PaymentPeriod,
+                  voluntaryExcess: voluntaryExcess ?? 100,
+                  claimLimit: cardClaimLimit,
+                  labourRate: selectedLabourRate,
+                  isMotorbike: isMotorbikeAdjustment(vehicleAdjustment),
+                }
+              );
               
               // Calculate true monthly (for savings/totals)
               const trueMonthly = Math.ceil(totalPriceWithAdjustments / 12);
