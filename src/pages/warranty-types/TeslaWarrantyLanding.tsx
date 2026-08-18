@@ -170,7 +170,7 @@ const TeslaWarrantyLanding: React.FC = () => {
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center">
               <div className="text-center lg:text-left">
                 <div className="flex items-center justify-center lg:justify-start gap-4 mb-4 md:mb-6">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Tesla_logo.png/120px-Tesla_logo.png" alt="Tesla Logo" className="h-8 md:h-12 w-auto object-contain" width={48} height={48} />
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Tesla_logo.png/120px-Tesla_logo.png" alt="Tesla logo — Tesla extended warranty cover in the UK" loading="lazy" decoding="async" className="h-8 md:h-12 w-auto object-contain" width={48} height={48} />
                 </div>
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
                   <span className="text-gray-900">Tesla extended warranty </span>

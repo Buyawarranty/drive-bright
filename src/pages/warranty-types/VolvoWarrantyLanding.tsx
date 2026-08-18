@@ -145,7 +145,7 @@ const VolvoWarrantyLanding: React.FC = () => {
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center">
               <div className="text-center lg:text-left">
                 <div className="flex items-center justify-center lg:justify-start gap-4 mb-4 md:mb-6">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Volvo_Cars_Logo.svg/800px-Volvo_Cars_Logo.svg.png" alt="Volvo Logo" className="h-10 md:h-14 w-auto object-contain" width={112} height={56} />
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Volvo_Cars_Logo.svg/800px-Volvo_Cars_Logo.svg.png" alt="Volvo logo — Volvo extended warranty cover in the UK" loading="lazy" decoding="async" className="h-10 md:h-14 w-auto object-contain" width={112} height={56} />
                 </div>
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
                   <span className="text-gray-900">Volvo Extended Warranty </span>
