@@ -135,11 +135,27 @@ Allow: /
 User-agent: *
 Allow: /
 
-# ---------- Blog URLs (Warranty Hub) ----------
+# ---------- Content sections (explicitly crawlable) ----------
 Allow: /thewarrantyhub/
 Allow: /thewarrantyhub/*
+Allow: /warranty-types/
+Allow: /warranty-types/*
+Allow: /car-extended-warranty/
+Allow: /car-extended-warranty/*
 
-# ---------- Sitemap ----------
+# ---------- Admin / app areas (no SEO value) ----------
+User-agent: *
+Disallow: /admin-dashboard
+Disallow: /dealer-portal
+Disallow: /customer-dashboard
+Disallow: /reset-password
+Disallow: /sales-login
+
+# ---------- AI knowledge file ----------
+# Plain-text summary of our cover, pricing and claims process for answer engines
+# https://buyawarranty.co.uk/llms.txt
+
+# ---------- Sitemaps ----------
 Sitemap: https://buyawarranty.co.uk/sitemap.xml
 
 # ---------- Politeness ----------
