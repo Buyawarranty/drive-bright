@@ -142,6 +142,7 @@ const handler = async (req: Request): Promise<Response> => {
     let emailsSent = 0;
     let errorsCount = 0;
     let cappedCount = 0;
+    let deferredCount = 0;
     let alreadyPurchased = 0;
     const now = Date.now();
     const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
