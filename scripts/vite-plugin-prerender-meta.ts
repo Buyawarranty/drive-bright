@@ -16,6 +16,7 @@ import {
   DEFAULT_OG_IMAGE_URL,
   type RouteMeta,
 } from "./prerender-routes";
+import { getPageBody, PRERENDER_LINKS, type PageBody } from "./prerender-body-content";
 
 function escapeHtmlAttr(value: string): string {
   return value
