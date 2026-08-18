@@ -605,7 +605,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       {/* Hero Section */}
       <section id="quote-form" className="bg-white pt-1 sm:pt-8 lg:pt-4 pb-2 sm:pb-4 lg:pb-6 px-3 sm:px-0">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 items-center">
+          <div className="grid lg:grid-cols-2 gap-1 sm:gap-6 lg:gap-8 items-center">
             {/* Left Content */}
             <div className="space-y-1 sm:space-y-4 px-0 sm:px-0 flex flex-col justify-center">
 
@@ -620,7 +620,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               </div>
 
                {/* Main Headline */}
-               <div className="space-y-2 mb-8 sm:mb-4">
+               <div className="space-y-2 mb-2 sm:mb-4">
                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black leading-tight">
                  <span className="text-[#333]">Affordable warranty you can trust </span>
                  <span className="text-brand-orange">in 60 seconds!</span>
@@ -628,7 +628,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                </div>
 
               {/* Benefits */}
-              <div className="mb-8 sm:mb-3 text-gray-700 text-xs sm:text-sm md:text-base space-y-1 sm:space-y-2">
+              <div className="mb-2 sm:mb-3 text-gray-700 text-xs sm:text-sm md:text-base space-y-1 sm:space-y-2">
                 <div className="flex items-center px-1 py-1.5 sm:px-0 sm:py-0">
                   <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 sm:mr-3 flex-shrink-0" />
                   <span className="font-medium">From just 60p a day • Easy claims • Fast payouts</span>
@@ -863,7 +863,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               <img
                 src={heroPandaVehiclesMobile.url}
                 alt="buyawarranty panda mascot holding car keys with a car, van, SUV and motorbike"
-                className="lg:hidden w-full h-auto"
+                className="lg:hidden w-full h-auto -mt-2 sm:mt-0"
                 width={1536}
                 height={1024}
                 fetchPriority="high"
@@ -928,30 +928,27 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             </div>
             
             {/* Vehicle Types for mobile/tablet - spans full width */}
-            <div className="lg:hidden w-full px-4 mt-4 sm:mt-6 lg:col-span-2">
-              <div className="flex flex-col items-center gap-4 sm:gap-6">
-                <div className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap max-w-full">
-                  <div className="flex items-center space-x-1.5 min-w-0">
-                    <Car className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                    <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">Cars</span>
+            <div className="lg:hidden w-full px-2 mt-1 sm:mt-6 lg:col-span-2">
+              <div className="flex flex-col items-center gap-3 sm:gap-6">
+                <div className="flex items-center justify-center gap-2 sm:gap-4 flex-nowrap w-full">
+                  <div className="flex items-center space-x-1 min-w-0">
+                    <Car className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-[11px] sm:text-sm whitespace-nowrap">Cars</span>
                   </div>
-                  <div className="flex items-center space-x-1.5 min-w-0">
-                    <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                    <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">Vans</span>
+                  <div className="flex items-center space-x-1 min-w-0">
+                    <Truck className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-[11px] sm:text-sm whitespace-nowrap">Vans</span>
                   </div>
-                  <div className="flex items-center space-x-1.5 min-w-0">
-                    <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                    <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">Hybrid</span>
+                  <div className="flex items-center space-x-1 min-w-0">
+                    <Zap className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-[11px] sm:text-sm whitespace-nowrap">Hybrid &amp; EV</span>
                   </div>
-                  <div className="flex items-center space-x-1.5 min-w-0">
-                    <Battery className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                    <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">EV</span>
-                  </div>
-                  <div className="flex items-center space-x-1.5 min-w-0">
-                    <Bike className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                    <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">Motorbikes</span>
+                  <div className="flex items-center space-x-1 min-w-0">
+                    <Bike className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-[11px] sm:text-sm whitespace-nowrap">Motorbikes</span>
                   </div>
                 </div>
+
 
                 <TooltipProvider delayDuration={100}>
                   <Tooltip>
