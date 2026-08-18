@@ -290,3 +290,6 @@ verify_jwt = false
 
 [functions.zoiper-cdr-webhook]
 verify_jwt = false
+
+[functions.trustpilot-rating]
+verify_jwt = false
