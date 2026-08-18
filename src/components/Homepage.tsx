@@ -89,7 +89,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const [showEmailPopup, setShowEmailPopup] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showCallbackModal, setShowCallbackModal] = useState(false);
-  // UK office hours: 09:00–17:45 Europe/London
+  // UK office hours: 09:00–18:00 Europe/London
   const computeUkOfficeHours = () => {
     const parts = new Intl.DateTimeFormat('en-GB', {
       timeZone: 'Europe/London',
@@ -100,7 +100,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     const h = Number(parts.find((p) => p.type === 'hour')?.value ?? '0');
     const m = Number(parts.find((p) => p.type === 'minute')?.value ?? '0');
     const mins = h * 60 + m;
-    return mins >= 9 * 60 && mins < 17 * 60 + 45;
+    return mins >= 9 * 60 && mins < 18 * 60;
   };
   const [isUkOfficeHours, setIsUkOfficeHours] = useState(computeUkOfficeHours);
   useEffect(() => {
@@ -974,7 +974,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               </div>
             </div>
 
-            {/* Mobile: speak-to-us card — UK office hours only (09:00–17:45 Europe/London) */}
+            {/* Mobile: speak-to-us card — UK office hours only (09:00–18:00 Europe/London) */}
             {isUkOfficeHours ? (
               <div className="sm:hidden w-full mt-3 lg:col-span-2">
                 <p className="text-center text-sm text-gray-600">Prefer to speak to us?</p>
@@ -1002,7 +1002,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             ) : (
               <div className="sm:hidden w-full mt-3 lg:col-span-2">
                 <p className="text-center text-sm text-gray-700">
-                  Our UK team is open 9am–5:45pm.{' '}
+                  Our UK team is open 9am–6pm.{' '}
                   <button
                     onClick={() => setShowCallbackModal(true)}
                     className="text-brand-orange font-semibold hover:underline inline-flex items-center gap-0.5"
