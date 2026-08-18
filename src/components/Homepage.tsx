@@ -979,6 +979,47 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               </div>
             </div>
 
+            {/* Mobile: speak-to-us card — UK office hours only (09:00–17:45 Europe/London) */}
+            {isUkOfficeHours ? (
+              <div className="sm:hidden w-full mt-3 lg:col-span-2">
+                <p className="text-center text-sm text-gray-600">Prefer to speak to us?</p>
+                <div className="mt-2 rounded-xl border border-gray-200 bg-white shadow-sm px-3 py-2.5">
+                  <a href="tel:03309122402" className="flex items-center justify-center gap-2">
+                    <Phone className="w-4 h-4 text-blue-700 fill-blue-700" strokeWidth={0} />
+                    <span className="text-lg font-extrabold text-blue-700 underline underline-offset-4 tracking-tight">
+                      0330 912 2402
+                    </span>
+                  </a>
+                  <p className="mt-1 text-center text-xs text-gray-600">Speak to our UK team</p>
+                </div>
+                <p className="mt-2 text-center text-sm text-gray-700">
+                  Can't call now?{' '}
+                  <button
+                    onClick={() => setShowCallbackModal(true)}
+                    className="text-brand-orange font-semibold hover:underline inline-flex items-center gap-0.5"
+                  >
+                    Request a callback
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </p>
+              </div>
+            ) : (
+              <div className="sm:hidden w-full mt-3 lg:col-span-2">
+                <p className="text-center text-sm text-gray-700">
+                  Our UK team is open 9am–5:45pm.{' '}
+                  <button
+                    onClick={() => setShowCallbackModal(true)}
+                    className="text-brand-orange font-semibold hover:underline inline-flex items-center gap-0.5"
+                  >
+                    Request a callback
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </p>
+              </div>
+            )}
+
+
+
 
           </div>
           
