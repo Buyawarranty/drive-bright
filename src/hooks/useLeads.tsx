@@ -852,6 +852,9 @@ export const useLeads = (options?: UseLeadsOptions) => {
           is_from_abandoned_cart: false,
           call_count: lead.call_count || 0,
           is_callback: lead.is_callback || false,
+          no_callback_until: (lead as any).no_callback_until || null,
+          inbound_spoken_at: (lead as any).inbound_spoken_at || null,
+
           cart_metadata: lead.abandoned_cart?.cart_metadata || null,
           resubmission_count: lead.resubmission_count || 0,
           last_resubmitted_at: lead.last_resubmitted_at || null,
