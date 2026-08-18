@@ -13,6 +13,7 @@ interface WarrantyBenefitsSectionProps {
 const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({ 
   headline = "Complete Car Warranty." 
 }) => {
+  const isMobile = useIsMobile();
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
