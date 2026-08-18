@@ -873,7 +873,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               <img
                 src={heroPandaVehiclesDesktop.url}
                 alt="buyawarranty panda mascot holding car keys with a car, van, SUV and motorbike"
-                className="hidden lg:block w-full h-auto"
+                className="hidden lg:block w-full h-auto lg:-mt-10 lg:-ml-12 lg:-mb-4"
                 width={1672}
                 height={936}
                 fetchPriority="high"
