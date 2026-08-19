@@ -1321,6 +1321,11 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
         <SalesByHourPanel customers={customers} sourceFilter={sourceFilter} />
 
+        <AnalyticsSectionHeading id="best-selling-days" title="Best selling days of the week" description="Which weekday sells the most warranties against the leads that came in, plus weekly, monthly and yearly views." accent="border-indigo-500/60" />
+
+        <SalesByWeekdayPanel customers={customers} sourceFilter={sourceFilter} />
+
+
 
 
         {monthProjection && (
