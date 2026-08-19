@@ -6772,6 +6772,7 @@ Questions? Call 0330 229 5040`;
                     <ChevronDown className="w-4 h-4 text-slate-500 ml-auto transition-transform group-open:rotate-180" />
                   </summary>
                   <div className="p-4 grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <Suspense fallback={null}>
                     <PaymentAssistPanel
                       amountPounds={currentPrice.payInFullPrice || Math.ceil(currentPrice.totalPrice * 0.9)}
                       description={`Vehicle warranty${customerFirstName ? ` — ${customerFirstName} ${customerLastName}`.trim() : ''}`}
@@ -6797,6 +6798,7 @@ Questions? Call 0330 229 5040`;
                       customerAddressLine1={[customerBuildingNumber, customerStreet].filter(Boolean).join(' ').trim()}
                       vehicleReg={vehicleData?.regNumber}
                     />
+                    </Suspense>
 
 
                     {/* Worldpay — temporarily disabled */}
