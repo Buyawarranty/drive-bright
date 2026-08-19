@@ -537,6 +537,7 @@ export const useLeadDistribution = () => {
       .subscribe();
 
     const refreshInterval = setInterval(() => {
+      if (document.hidden) return;
       fetchAgentCaps();
       fetchAgentPresences();
       fetchTodayLeadCounts();

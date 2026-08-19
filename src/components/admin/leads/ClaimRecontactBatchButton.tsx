@@ -76,7 +76,7 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
   useEffect(() => {
     if (activeTab !== 'recontact-leads') return;
     loadCounter();
-    const t = setInterval(loadCounter, 60_000);
+    const t = setInterval(() => { if (document.hidden) return; loadCounter(); }, 60_000);
     return () => clearInterval(t);
   }, [activeTab, loadCounter]);
 

@@ -84,7 +84,7 @@ export const SmsTrackingTab: React.FC = () => {
 
   // Fallback poll every 30s
   useEffect(() => {
-    const t = setInterval(() => fetchRows(), 30000);
+    const t = setInterval(() => { if (document.hidden) return; fetchRows(); }, 30000);
     return () => clearInterval(t);
   }, [fetchRows]);
 

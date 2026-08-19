@@ -79,7 +79,7 @@ export const AgentBreakStrip = () => {
 
   // Tick every second so the lunch countdown stays live.
   useEffect(() => {
-    const t = setInterval(() => setTick((n) => n + 1), 1000);
+    const t = setInterval(() => { if (document.hidden) return; setTick((n) => n + 1); }, 1000);
     return () => clearInterval(t);
   }, []);
 

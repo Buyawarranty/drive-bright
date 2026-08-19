@@ -49,7 +49,7 @@ export const MuteAlertsMenu: React.FC<Props> = ({ className, size = 16 }) => {
     const off = subscribeAlertsMuted(sync);
     // Also poll every 30s so the "expired" state clears when the timer runs
     // out even if nothing else triggers a re-render.
-    const t = setInterval(sync, 30000);
+    const t = setInterval(() => { if (document.hidden) return; sync(); }, 30000);
     return () => { off(); clearInterval(t); };
   }, []);
 

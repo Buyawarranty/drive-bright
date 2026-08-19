@@ -416,7 +416,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_leads' }, () => load())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'lead_call_logs' }, () => load())
       .subscribe();
-    const iv = setInterval(load, 60_000);
+    const iv = setInterval(() => { if (document.hidden) return; load(); }, 60_000);
     return () => { supabase.removeChannel(ch); clearInterval(iv); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

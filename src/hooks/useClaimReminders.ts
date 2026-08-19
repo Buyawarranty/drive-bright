@@ -82,8 +82,8 @@ export function useClaimReminders() {
 
   // Re-evaluate windows every 30s and re-fetch every 2 minutes.
   useEffect(() => {
-    const t = setInterval(() => setTick(v => v + 1), 30_000);
-    const r = setInterval(() => { load(); }, 120_000);
+    const t = setInterval(() => { if (document.hidden) return; setTick(v => v + 1); }, 30_000);
+    const r = setInterval(() => { if (document.hidden) return; load(); }, 120_000);
     return () => { clearInterval(t); clearInterval(r); };
   }, [load]);
 

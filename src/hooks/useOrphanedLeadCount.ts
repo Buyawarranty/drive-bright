@@ -47,7 +47,7 @@ export const useOrphanedLeadCount = () => {
 
     refresh();
     // Refresh every 5 minutes
-    const interval = setInterval(refresh, 5 * 60 * 1000);
+    const interval = setInterval(() => { if (document.hidden) return; refresh(); }, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [authLoading, user?.id, refresh]);
 

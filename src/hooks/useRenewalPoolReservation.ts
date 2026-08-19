@@ -40,7 +40,7 @@ export function useRenewalReservationCountdown(res: RenewalReservation): number 
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!res) return;
-    const t = setInterval(() => setNow(Date.now()), 1000);
+    const t = setInterval(() => { if (document.hidden) return; setNow(Date.now()); }, 1000);
     return () => clearInterval(t);
   }, [res?.policyId, res?.lockedAt]);
   if (!res) return 0;

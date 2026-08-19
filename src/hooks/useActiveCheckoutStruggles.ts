@@ -45,7 +45,7 @@ export function useActiveCheckoutStruggles(windowMinutes = 60 * 24) {
         () => fetchData()
       )
       .subscribe();
-    const t = window.setInterval(fetchData, 60_000);
+    const t = window.setInterval(() => { if (document.hidden) return; fetchData(); }, 60_000);
     return () => {
       supabase.removeChannel(channel);
       window.clearInterval(t);

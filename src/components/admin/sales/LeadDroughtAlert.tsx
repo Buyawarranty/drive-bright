@@ -49,7 +49,7 @@ export const LeadDroughtAlert: React.FC<LeadDroughtAlertProps> = ({ userRole }) 
     };
 
     checkLastLead();
-    const interval = setInterval(checkLastLead, 60_000); // re-check every minute
+    const interval = setInterval(() => { if (document.hidden) return; checkLastLead(); }, 60_000); // re-check every minute
     return () => clearInterval(interval);
   }, [canSee]);
 
