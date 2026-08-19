@@ -13545,6 +13545,8 @@ export type Database = {
           lead_id: string
         }[]
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       simulate_lead_routing: { Args: { p_source: string }; Returns: Json }
       snapshot_agent_daily_stats: { Args: { p_date: string }; Returns: number }
       snapshot_daily_lead_counts: {

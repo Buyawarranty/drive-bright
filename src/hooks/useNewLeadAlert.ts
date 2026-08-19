@@ -76,6 +76,37 @@ export const playNewLeadBeep = () => {
   }
 };
 
+// PERFORMANCE: this hook is mounted by several components at once (sidebar,
+// top banner, alert stack, open-pool alert). Each instance used to run its own
+// 15s poll, so a single agent fired 4 identical `sales_leads` reads every 15s —
+// by far the heaviest query in the database. All instances now share one
+// in-flight request with a short TTL cache, so the DB sees one read per cycle.
+const ALERT_CACHE_TTL_MS = 12_000;
+const _alertCache = new Map<string, { at: number; rows: any[]; inflight?: Promise<any[]> }>();
+
+const fetchAgentAlertLeads = (adminId: string): Promise<any[]> => {
+  const entry = _alertCache.get(adminId);
+  const now = Date.now();
+  if (entry) {
+    if (entry.inflight) return entry.inflight;
+    if (now - entry.at < ALERT_CACHE_TTL_MS) return Promise.resolve(entry.rows);
+  }
+  const inflight = (async () => {
+    const { data, error } = await supabase
+      .from('sales_leads')
+      .select('id, first_name, last_name, phone, email, created_at, assigned_at, status, is_paid, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, lead_source, orr_first_call_deadline, orr_attempt_count, pool_status, orr_offer_expires_at')
+      .eq('assigned_to', adminId)
+      .eq('is_paid', false)
+      .order('assigned_at', { ascending: false, nullsFirst: false })
+      .limit(50);
+    const rows = error || !data ? [] : (data as any[]);
+    _alertCache.set(adminId, { at: Date.now(), rows });
+    return rows;
+  })();
+  _alertCache.set(adminId, { at: entry?.at ?? 0, rows: entry?.rows ?? [], inflight });
+  return inflight;
+};
+
 export interface NewLeadAlertData {
   id: string;
   first_name: string | null;
@@ -235,16 +266,9 @@ export const useNewLeadAlert = () => {
       setQueue([]);
       return;
     }
-    const { data, error } = await supabase
-      .from('sales_leads')
-      .select('id, first_name, last_name, phone, email, created_at, assigned_at, status, is_paid, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, lead_source, orr_first_call_deadline, orr_attempt_count, pool_status, orr_offer_expires_at')
-      .eq('assigned_to', adminId)
-      .eq('is_paid', false)
-      .order('assigned_at', { ascending: false, nullsFirst: false })
-      .limit(50);
+    const data = await fetchAgentAlertLeads(adminId);
 
-
-    if (error || !data) {
+    if (!data || data.length === 0) {
       setQueue([]);
       return;
     }
@@ -318,7 +342,7 @@ export const useNewLeadAlert = () => {
   // a laptop sleeps, which is why the queue used to look "stuck".
   useEffect(() => {
     load();
-    const stopPoll = setVisibleInterval(() => loadRef.current(), 15000);
+    const stopPoll = setVisibleInterval(() => loadRef.current(), 30000);
     const wake = () => {
       if (document.visibilityState === 'visible') loadRef.current();
     };
