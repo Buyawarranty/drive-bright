@@ -22,7 +22,6 @@ const MAX_PAGED_LEADS = 5000;
 const AGENT_UNFILTERED_LEADS_CAP = 2000;
 // Chunk size for an agent's own leads. Chunks are fetched in parallel so a
 // 1000+ lead history paints in one round-trip instead of sequential pages.
-const AGENT_CHUNK_SIZE = 500;
 const PENDING_STATUS_UPDATES_STORAGE_KEY = 'new-leads:pending-status-updates';
 let latestAccessToken: string | null = null;
 
