@@ -32,20 +32,26 @@ import { Loader2, Search, Gavel, ExternalLink, Send, ArrowLeft, CheckCircle2 } f
 
 export const INDEPENDENT_REVIEWERS = [
   {
+    id: 'either',
+    name: 'Scotia or ACE — whichever is available',
+    url: 'http://scotiavehicleinspection.com/',
+    blurb: 'Whichever independent inspector is available will be booked.',
+  },
+  {
     id: 'scotia',
-    name: 'Scotia Vehicle Inspections',
-    url: 'https://scotiavehicleinspections.com',
+    name: 'Scotia Vehicle Inspection',
+    url: 'http://scotiavehicleinspection.com/',
     blurb: 'Independent engineer report, UK-wide coverage.',
   },
   {
     id: 'ace',
-    name: 'ACE Inspection Services',
-    url: 'https://www.aceinspections.co.uk',
+    name: 'ACE (ace-uk.org)',
+    url: 'https://ace-uk.org',
     blurb: 'Independent vehicle assessment and engineer opinion.',
   },
 ] as const;
 
-const DEFAULT_APPEAL_FEE = 99;
+const DEFAULT_APPEAL_FEE = 140;
 /** No placeholder: the agent pastes the real Stripe/Bumper appeal payment link. */
 const DEFAULT_PAYMENT_LINK = '';
 
@@ -81,7 +87,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
 
   const [reason, setReason] = useState('');
   const [newEvidence, setNewEvidence] = useState('');
-  const [reviewerId, setReviewerId] = useState<string>('');
+  const [reviewerId, setReviewerId] = useState<string>('either');
   const [appealFee, setAppealFee] = useState(String(DEFAULT_APPEAL_FEE));
   const [paymentLink, setPaymentLink] = useState(DEFAULT_PAYMENT_LINK);
   const [notifyCustomer, setNotifyCustomer] = useState(true);
@@ -98,7 +104,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
       setResults([]);
       setReason('');
       setNewEvidence('');
-      setReviewerId('');
+      setReviewerId('either');
       setAppealFee(String(DEFAULT_APPEAL_FEE));
       setPaymentLink(DEFAULT_PAYMENT_LINK);
       setNotifyCustomer(true);
@@ -185,7 +191,8 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             message:
               `Your claim appeal has been opened${selected.vehicle_registration ? ` for ${selected.vehicle_registration}` : ''}. ` +
               `Appeal fee: £${fee}. Pay here: ${paymentLink.trim()} — ` +
-              `you can also request an independent review by ${reviewer.name} (${reviewer.url}). ` +
+              `An independent review is available from Scotia Vehicle Inspection (http://scotiavehicleinspection.com/) ` +
+              `or ACE (https://ace-uk.org) — whichever is available will be booked. Pay £${fee} now: ${paymentLink.trim()}. ` +
               `We will post every update on this appeal here in your profile.`,
           });
           notified = !notifyError;
@@ -316,7 +323,10 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             {/* Independent review */}
             <div className="space-y-2">
               <Label>Independent review *</Label>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <p className="text-xs text-muted-foreground">
+                Whichever inspector is available will be booked — pay £{Number(String(appealFee).replace(/[^0-9.]/g, '')) || 0} now.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-3">
                 {INDEPENDENT_REVIEWERS.map((r) => (
                   <Card
                     key={r.id}
@@ -403,6 +413,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
               <p className="font-semibold">Independent review</p>
               <p className="text-muted-foreground">
                 {reviewer?.name} — {reviewer?.url}
+                {reviewer?.id === 'either' && ' · Scotia or ACE (https://ace-uk.org), whichever is available will be booked'}
               </p>
             </div>
             <div>
