@@ -326,11 +326,13 @@ const BlogArticle = () => {
           "@type": "Person",
           "name": post.meta_tags?.author_name || post.blog_authors?.name || 'Buy a Warranty Editorial Team',
           "worksFor": { "@type": "Organization", "name": "Buy a Warranty" },
+          "knowsAbout": ["UK extended car warranties", "vehicle repair costs in the UK", "MOT and DVSA rules"],
         },
         "publisher": {
           "@type": "Organization",
           "name": "Buy a Warranty",
           "url": "https://buyawarranty.co.uk/",
+          "areaServed": { "@type": "Country", "name": "United Kingdom", "alternateName": "GB" },
           "logo": {
             "@type": "ImageObject",
             "url": "https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png"
@@ -338,7 +340,19 @@ const BlogArticle = () => {
         },
         "wordCount": post.content?.raw?.split(/\s+/).length || 0,
         "timeRequired": `PT${post.read_time_minutes}M`,
-        "spatialCoverage": { "@type": "Country", "name": "United Kingdom" },
+        "spatialCoverage": {
+          "@type": "Place",
+          "name": "United Kingdom",
+          "address": { "@type": "PostalAddress", "addressCountry": "GB" },
+        },
+        "contentLocation": { "@type": "Place", "name": "United Kingdom" },
+        "areaServed": [
+          { "@type": "Country", "name": "United Kingdom", "alternateName": "GB" },
+          { "@type": "AdministrativeArea", "name": "England" },
+          { "@type": "AdministrativeArea", "name": "Scotland" },
+          { "@type": "AdministrativeArea", "name": "Wales" },
+          { "@type": "AdministrativeArea", "name": "Northern Ireland" },
+        ],
         "audience": { "@type": "Audience", "audienceType": "UK car owners and used car buyers", "geographicArea": { "@type": "Country", "name": "United Kingdom" } },
         "about": [
           { "@type": "Thing", "name": "Car warranty" },
@@ -346,9 +360,14 @@ const BlogArticle = () => {
         ],
         "speakable": {
           "@type": "SpeakableSpecification",
-          "cssSelector": ["h1"],
+          "cssSelector": ["h1", "h2", ".article-content p"],
         },
-        "isPartOf": { "@type": "WebPage", "@id": articleUrl },
+        "isPartOf": {
+          "@type": "Blog",
+          "@id": "https://buyawarranty.co.uk/thewarrantyhub/#blog",
+          "name": "The Warranty Hub",
+          "inLanguage": "en-GB",
+        },
         "mainEntityOfPage": { "@type": "WebPage", "@id": articleUrl },
       },
       ...(faqItems.length
@@ -362,7 +381,10 @@ const BlogArticle = () => {
               "acceptedAnswer": { "@type": "Answer", "text": f.answer },
             })),
           }]
-        : []),
+        : storedFaqNode
+          ? [storedFaqNode]
+          : []),
+
     ],
   };
 
