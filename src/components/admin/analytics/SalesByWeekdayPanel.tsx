@@ -186,6 +186,48 @@ export const SalesByWeekdayPanel: React.FC<Props> = ({ customers, sourceFilter }
     };
   }, [customers, sourceFilter, period, grouping, leadRows]);
 
+  // Conversion by the day the lead ARRIVED on, regardless of when it converted.
+  const { arrivalRows, arrivalTotals } = useMemo(() => {
+    const from = periodStart(period);
+    const buckets = DAY_LABELS.map(day => ({ day, leads: 0, converted: 0, conversion: 0 }));
+    let leads = 0;
+    let converted = 0;
+
+    (leadRows || []).forEach(lead => {
+      if (!lead.created_at) return;
+      const d = new Date(lead.created_at);
+      if (Number.isNaN(d.getTime())) return;
+      if (from && d < from) return;
+      const idx = (d.getDay() + 6) % 7;
+      buckets[idx].leads += 1;
+      leads += 1;
+      if ((lead.status || '').toLowerCase() === 'converted') {
+        buckets[idx].converted += 1;
+        converted += 1;
+      }
+    });
+
+    buckets.forEach(b => {
+      b.conversion = b.leads > 0 ? Math.round((b.converted / b.leads) * 1000) / 10 : 0;
+    });
+
+    const eligible = buckets.filter(b => b.leads >= 20);
+    const pool = eligible.length ? eligible : buckets.filter(b => b.leads > 0);
+    const best = pool.reduce((acc, b) => (!acc || b.conversion > acc.conversion ? b : acc), undefined as typeof buckets[number] | undefined);
+    const worst = pool.reduce((acc, b) => (!acc || b.conversion < acc.conversion ? b : acc), undefined as typeof buckets[number] | undefined);
+
+    return {
+      arrivalRows: buckets,
+      arrivalTotals: {
+        leads,
+        converted,
+        rate: leads > 0 ? Math.round((converted / leads) * 1000) / 10 : 0,
+        best,
+        worst: worst && best && worst.day !== best.day ? worst : undefined,
+      },
+    };
+  }, [leadRows, period]);
+
   return (
     <Card className="border-2 border-indigo-500/30">
       <CardHeader className="pb-3">
@@ -299,6 +341,76 @@ export const SalesByWeekdayPanel: React.FC<Props> = ({ customers, sourceFilter }
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Lead arrival day → conversion (independent of the grouping above) */}
+        <div className="pt-2 border-t space-y-3">
+          <div>
+            <h4 className="text-sm font-semibold">Which day a lead arrives on converts best</h4>
+            <p className="text-xs text-muted-foreground">
+              Grouped by the day the lead came in — regardless of which day it eventually converted on.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {arrivalTotals.best && (
+              <Badge className="bg-emerald-100 text-emerald-900 border border-emerald-300">
+                Best arrival day: {arrivalTotals.best.day} · {arrivalTotals.best.conversion}%
+              </Badge>
+            )}
+            {arrivalTotals.worst && (
+              <Badge variant="outline">Weakest: {arrivalTotals.worst.day} · {arrivalTotals.worst.conversion}%</Badge>
+            )}
+            <Badge variant="secondary">
+              Overall {arrivalTotals.leads} leads → {arrivalTotals.converted} converted ({arrivalTotals.rate}%)
+            </Badge>
+          </div>
+
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={arrivalRows} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="day" tick={{ fontSize: 11 }} interval={0} />
+                <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} unit="%" />
+                <Tooltip formatter={(value: any, name: any) => (name === 'Conversion %' ? [`${value}%`, name] : [value, name])} />
+                <Legend />
+                <Bar yAxisId="left" dataKey="leads" name="Leads in" fill="hsl(var(--muted-foreground))" fillOpacity={0.35} radius={[4, 4, 0, 0]} />
+                <Bar yAxisId="left" dataKey="converted" name="Converted" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                <Line yAxisId="right" type="monotone" dataKey="conversion" name="Conversion %" stroke="hsl(var(--chart-2, 200 80% 45%))" strokeWidth={2} dot />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <th className="py-2 pr-3">Lead arrived on</th>
+                  <th className="py-2 pr-3 text-right">Leads in</th>
+                  <th className="py-2 pr-3 text-right">Converted</th>
+                  <th className="py-2 pr-3 text-right">Conversion rate</th>
+                  <th className="py-2 pr-3 text-right">Share of leads</th>
+                </tr>
+              </thead>
+              <tbody>
+                {arrivalRows.map(r => (
+                  <tr key={r.day} className="border-b last:border-0">
+                    <td className="py-2 pr-3 font-medium">{r.day}</td>
+                    <td className="py-2 pr-3 text-right">{r.leads}</td>
+                    <td className="py-2 pr-3 text-right font-semibold">{r.converted}</td>
+                    <td className="py-2 pr-3 text-right">{r.leads ? `${r.conversion}%` : '—'}</td>
+                    <td className="py-2 pr-3 text-right">
+                      {arrivalTotals.leads ? `${Math.round((r.leads / arrivalTotals.leads) * 1000) / 10}%` : '—'}
+                    </td>
+                  </tr>
+                ))}
+                {arrivalTotals.leads === 0 && (
+                  <tr><td colSpan={5} className="py-6 text-center text-muted-foreground">No leads in this period.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </CardContent>
     </Card>
