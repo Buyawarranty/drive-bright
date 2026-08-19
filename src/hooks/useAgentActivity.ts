@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 /**
  * Last time a HUMAN agent actually touched a lead.
