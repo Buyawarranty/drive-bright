@@ -2582,13 +2582,17 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       return;
     }
     if (!quoteLink) {
-      toast({
-        title: 'Quote link required',
-        description: 'Please wait for the quote link to be generated first.',
-        variant: 'destructive',
-      });
-      return;
+      const minted = await getVerifiedQuoteLink().catch(() => null);
+      if (!minted) {
+        toast({
+          title: 'Quote link required',
+          description: "We couldn't generate the quote link. Please check the vehicle and customer details, then try again.",
+          variant: 'destructive',
+        });
+        return;
+      }
     }
+
     setIsSendingSelfCopy(true);
     try {
       const adminRecipient = await resolveAdminRecipient();
