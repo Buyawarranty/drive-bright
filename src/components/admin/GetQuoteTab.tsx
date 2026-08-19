@@ -1155,7 +1155,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
   // Manager-only diagnostic: records whether this quote came from the published
   // pricing model or fell back to the legacy grid (vehicle referred out).
-  const pricingTrace: { usedLegacy: boolean; reason: string } = { usedLegacy: false, reason: '' };
+  // Kept in a ref so the trace survives renders where the memoised price is reused.
+  const pricingTraceRef = useRef<{ usedLegacy: boolean; reason: string }>({ usedLegacy: false, reason: '' });
+  const pricingTrace = pricingTraceRef.current;
+
 
   // Calculate base price (before any custom overrides)
   const calculateBasePrice = () => {
