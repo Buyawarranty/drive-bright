@@ -13,15 +13,33 @@ export async function invokeWithFreshSession<T = any>(
   fn: string,
   body: unknown
 ): Promise<{ data: T | null; error: Error | null }> {
+  // A stalled auth call (long-open admin tab, flaky network) must never hang the
+  // caller — bound getSession/refreshSession and carry on with what we have.
+  const bounded = async <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> => {
+    let timer: ReturnType<typeof setTimeout>;
+    const timeout = new Promise<T>((resolve) => {
+      timer = setTimeout(() => resolve(fallback), ms);
+    });
+    try {
+      return await Promise.race([p, timeout]);
+    } finally {
+      clearTimeout(timer!);
+    }
+  };
+
   const ensureSession = async (forceRefresh = false) => {
-    const { data } = await supabase.auth.getSession();
-    const session = data.session;
+    const { data } = await bounded(supabase.auth.getSession(), 4000, { data: { session: null } } as any);
+    const session = data?.session;
     if (!session) return null;
     const expiresAt = (session.expires_at ?? 0) * 1000;
     const expiringSoon = expiresAt > 0 && expiresAt - Date.now() < 90_000;
     if (forceRefresh || expiringSoon) {
-      const { data: refreshed } = await supabase.auth.refreshSession();
-      return refreshed.session ?? session;
+      const { data: refreshed } = await bounded(
+        supabase.auth.refreshSession(),
+        4000,
+        { data: { session: null } } as any
+      );
+      return refreshed?.session ?? session;
     }
     return session;
   };
