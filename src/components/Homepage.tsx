@@ -677,7 +677,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     />
                   </div>
                   {regNumber.replace(/\s/g, '').length >= 5 && !regError && (
-                    <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1 shadow-md ring-2 ring-white" aria-label="Registration entered">
+                    <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1 shadow-md" aria-label="Registration entered">
                       <Check className="w-4 h-4 text-white" strokeWidth={4} />
                     </div>
                   )}
