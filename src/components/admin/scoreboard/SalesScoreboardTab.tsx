@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Trophy, User, BarChart3, ChevronLeft, ChevronRight, GitCompare, Zap, Target } from 'lucide-react';
+import { RefreshCw, Trophy, User, BarChart3, ChevronLeft, ChevronRight, GitCompare, Zap, Target, CalendarDays } from 'lucide-react';
 import { SpeedToDialPanel } from './SpeedToDialPanel';
+import { DailySalesChartPanel } from './DailySalesChartPanel';
 import { TeamTargetBoard } from './TeamTargetBoard';
 import { useScoreboardData, TimePeriod } from '@/hooks/useScoreboardData';
 import { ScoreboardRankingTable } from './ScoreboardRankingTable';
@@ -336,6 +337,20 @@ export const SalesScoreboardTab: React.FC = () => {
           </AccordionTrigger>
           <AccordionContent className="pb-4">
             <TeamTargetBoard monthDate={dateRange?.from ?? new Date()} />
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="daily" className="border rounded-xl bg-card/60 px-4">
+          <AccordionTrigger className="text-sm font-semibold hover:no-underline">
+            <span className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-sky-600" /> Daily sales &amp; AOV</span>
+          </AccordionTrigger>
+          <AccordionContent className="pb-4">
+            <DailySalesChartPanel
+              monthDate={dateRange?.from ?? new Date()}
+              agents={visibleAgents.map(a => ({ id: a.id, name: a.name }))}
+              currentAdminUserId={currentAdminUserId}
+              isManagement={isManagement}
+            />
           </AccordionContent>
         </AccordionItem>
 
