@@ -7301,7 +7301,8 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                 <Button
                   variant="secondary"
                   onClick={handleSendSelfCopy}
-                  disabled={isSendingSelfCopy || isSendingEmail || !quoteLink}
+                  disabled={isSendingSelfCopy || isSendingEmail}
+
                 >
                   {isSendingSelfCopy ? (
                     <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending copy…</>
