@@ -821,7 +821,16 @@ const AdminDashboard = () => {
         }
         return <UnifiedEmailHub />;
       case 'analytics':
-        return <AnalyticsTab userRole={effectiveUserRole} />;
+        return (
+          <div className="space-y-6">
+            <AnalyticsTab userRole={effectiveUserRole} />
+            {['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole) && (
+              <Suspense fallback={null}>
+                <AdminUiEventLogPanel />
+              </Suspense>
+            )}
+          </div>
+        );
       case 'page-analytics':
         return <PageAnalyticsTab />;
       case 'google-ads':
