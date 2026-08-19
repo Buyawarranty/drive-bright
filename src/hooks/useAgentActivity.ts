@@ -33,7 +33,7 @@ const BATCH = 200;
 
 export const useAgentActivity = (leadIds: string[]) => {
   const [activityByLead, setActivityByLead] = useState<Record<string, AgentActivity>>({});
-  const lastKeyRef = useRef('');
+  const inFlightRef = useRef(false);
 
   const ids = useMemo(() => [...new Set(leadIds.filter(Boolean))].sort(), [leadIds]);
   const key = useMemo(
