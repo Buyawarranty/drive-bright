@@ -20,8 +20,6 @@ const MAX_PAGED_LEADS = 5000;
 // Safety cap for an agent's unfiltered "all my leads" view so agents with huge
 // histories don't time out and end up seeing nothing.
 const AGENT_UNFILTERED_LEADS_CAP = 2000;
-// Chunk size for an agent's own leads. Chunks are fetched in parallel so a
-// 1000+ lead history paints in one round-trip instead of sequential pages.
 const PENDING_STATUS_UPDATES_STORAGE_KEY = 'new-leads:pending-status-updates';
 let latestAccessToken: string | null = null;
 
