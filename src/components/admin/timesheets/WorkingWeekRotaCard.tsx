@@ -149,28 +149,26 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
           .eq('id', existing.id);
         if (error) throw error;
         setRows((prev) => prev.filter((r) => r.id !== existing.id));
-      } else if (existing && forceType && existing.day_type !== forceType) {
-        // change type
-        const { error } = await (supabase as any)
-          .from('agent_working_days')
-          .update({ day_type: forceType })
-          .eq('id', existing.id);
-        if (error) throw error;
-        setRows((prev) => prev.map((r) => (r.id === existing.id ? { ...r, day_type: forceType } : r)));
-      } else if (!existing) {
+      } else {
+        // Upsert so a stale local view (row created in another tab/page) can
+        // never make the save fail on the unique admin+date constraint.
         const dayType: DayType = forceType ?? 'full_day';
         const { data, error } = await (supabase as any)
           .from('agent_working_days')
-          .insert({
-            admin_user_id: agentId,
-            work_date: dateStr,
-            day_type: dayType,
-            created_by: user?.id ?? null,
-          })
+          .upsert(
+            {
+              admin_user_id: agentId,
+              work_date: dateStr,
+              day_type: dayType,
+              created_by: user?.id ?? null,
+            },
+            { onConflict: 'admin_user_id,work_date' },
+          )
           .select('id, admin_user_id, work_date, day_type')
           .single();
         if (error) throw error;
-        setRows((prev) => [...prev, data as WorkingDayRow]);
+        const saved = data as WorkingDayRow;
+        setRows((prev) => [...prev.filter((r) => r.id !== saved.id && !(r.admin_user_id === saved.admin_user_id && r.work_date === saved.work_date)), saved]);
       }
     } catch (e: any) {
       toast.error(e?.message ?? 'Could not update working day');
@@ -178,6 +176,7 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
       setSaving(false);
     }
   };
+
 
   /**
    * Defaults for every agent: Mon–Sat = full day.
