@@ -9,7 +9,9 @@ import { useViewAs } from '@/contexts/ViewAsContext';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 const LEAD_TAG_BATCH_SIZE = 75;
-const INITIAL_LEADS_LOAD_TIMEOUT_MS = 25000;
+// Never hold a bare spinner (which reads as a "blank screen") for longer than
+// this — the page paints and rows fill in when the fetch lands.
+const INITIAL_LEADS_LOAD_TIMEOUT_MS = 8000;
 const LEADS_FETCH_TIMEOUT_MS = 25000;
 const LEAD_TAG_BATCH_TIMEOUT_MS = 4000;
 const LEADS_LIST_LIMIT = 750;
