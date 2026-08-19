@@ -42,8 +42,10 @@ export const useAgentActivity = (leadIds: string[]) => {
   );
 
   const fetchAll = useCallback(async () => {
-    if (!key || lastKeyRef.current === key) return;
-    lastKeyRef.current = key;
+    // Re-fetch freely: calls land continuously (Zoiper / Dial 9), so the
+    // column must keep refreshing for the same set of leads.
+    if (!key || inFlightRef.current) return;
+    inFlightRef.current = true;
 
     const merged: Record<string, AgentActivity> = {};
     const upsert = (leadId: string, at: string | null, source: AgentActivity['source']) => {
