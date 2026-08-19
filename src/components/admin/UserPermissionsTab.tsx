@@ -1882,6 +1882,9 @@ export const UserPermissionsTab = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    {(currentAdminUser?.role === 'super_admin' || editingUser.role === 'super_admin') && (
+                      <SelectItem value="super_admin">Super Administrator - Full unrestricted access</SelectItem>
+                    )}
                     <SelectItem value="admin">Admin - Full access to all tabs</SelectItem>
                     <SelectItem value="member">Member - Custom tab access</SelectItem>
                     <SelectItem value="viewer">Viewer - Read-only access</SelectItem>
