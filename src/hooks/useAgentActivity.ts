@@ -11,17 +11,20 @@ import { supabase } from '@/integrations/supabase/client';
  *   - lead_quick_notes (created_by set = written by an agent)
  *   - lead_call_logs   (any logged call)
  *   - sales_leads_changelog (status changed by a real user)
+ *   - phone_events     (click-to-dial from Zoiper / Dial 9)
+ *   - callrail_calls   (answered calls matched to this lead)
  */
 
 export interface AgentActivity {
   lastAt: string;
-  source: 'note' | 'call' | 'status';
+  source: 'note' | 'call' | 'status' | 'dial';
 }
 
 const SOURCE_LABEL: Record<AgentActivity['source'], string> = {
   note: 'Note added',
   call: 'Call logged',
   status: 'Status changed',
+  dial: 'Dialled (Zoiper / Dial 9)',
 };
 
 export const getAgentActivityLabel = (s: AgentActivity['source']) => SOURCE_LABEL[s];
@@ -54,7 +57,7 @@ export const useAgentActivity = (leadIds: string[]) => {
     try {
       for (let i = 0; i < ids.length; i += BATCH) {
         const batch = ids.slice(i, i + BATCH);
-        const [notes, calls, changes] = await Promise.all([
+        const [notes, calls, changes, dials, crCalls] = await Promise.all([
           supabase
             .from('lead_quick_notes')
             .select('lead_id, created_at, created_by')
@@ -75,10 +78,28 @@ export const useAgentActivity = (leadIds: string[]) => {
             .not('changed_by', 'is', null)
             .order('changed_at', { ascending: false })
             .limit(batch.length * 5),
+          // Click-to-dial from Zoiper / Dial 9 (agent actually rang the customer)
+          supabase
+            .from('phone_events')
+            .select('lead_id, created_at')
+            .in('lead_id', batch)
+            .order('created_at', { ascending: false })
+            .limit(batch.length * 3),
+          // Inbound / tracked calls matched to this lead
+          supabase
+            .from('callrail_calls')
+            .select('matched_lead_id, started_at, answered_at')
+            .in('matched_lead_id', batch)
+            .order('started_at', { ascending: false })
+            .limit(batch.length * 2),
         ]);
 
         (notes.data || []).forEach((r: any) => upsert(r.lead_id, r.created_at, 'note'));
         (calls.data || []).forEach((r: any) => upsert(r.lead_id, r.created_at, 'call'));
+        (dials.data || []).forEach((r: any) => upsert(r.lead_id, r.created_at, 'dial'));
+        (crCalls.data || []).forEach((r: any) =>
+          upsert(r.matched_lead_id, r.answered_at || r.started_at, 'call')
+        );
         (changes.data || []).forEach((r: any) => {
           if (!r.new_status || r.old_status === r.new_status) return;
           upsert(r.lead_id, r.changed_at, 'status');

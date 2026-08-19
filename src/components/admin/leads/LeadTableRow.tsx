@@ -77,7 +77,7 @@ interface LeadTableRowProps {
   /** Viewer has explicit lead-routing permission, so website-sale locks don't apply. */
   canOverrideAssignmentLock?: boolean;
   noteCount?: number;
-  agentActivity?: { lastAt: string; source: 'note' | 'call' | 'status' };
+  agentActivity?: { lastAt: string; source: 'note' | 'call' | 'status' | 'dial' };
   showFbBadge?: boolean;
   showRecoveredBadge?: boolean;
   showSourceColumn?: boolean;
@@ -567,6 +567,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     if (!agentActivity || b < a) return null;
     return agentActivity.source === 'note' ? 'note'
       : agentActivity.source === 'call' ? 'call'
+      : agentActivity.source === 'dial' ? 'dialled'
       : 'status change';
   }, [agentActivity, lead.last_contacted_at, lastQuoteSentAt]);
 
