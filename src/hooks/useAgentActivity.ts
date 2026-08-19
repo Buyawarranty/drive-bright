@@ -11,17 +11,20 @@ import { supabase } from '@/integrations/supabase/client';
  *   - lead_quick_notes (created_by set = written by an agent)
  *   - lead_call_logs   (any logged call)
  *   - sales_leads_changelog (status changed by a real user)
+ *   - phone_events     (click-to-dial from Zoiper / Dial 9)
+ *   - callrail_calls   (answered calls matched to this lead)
  */
 
 export interface AgentActivity {
   lastAt: string;
-  source: 'note' | 'call' | 'status';
+  source: 'note' | 'call' | 'status' | 'dial';
 }
 
 const SOURCE_LABEL: Record<AgentActivity['source'], string> = {
   note: 'Note added',
   call: 'Call logged',
   status: 'Status changed',
+  dial: 'Dialled (Zoiper / Dial 9)',
 };
 
 export const getAgentActivityLabel = (s: AgentActivity['source']) => SOURCE_LABEL[s];
