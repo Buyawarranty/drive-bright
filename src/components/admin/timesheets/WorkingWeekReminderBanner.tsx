@@ -92,24 +92,45 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
 
   const toggle = (dateStr: string) => setSelected((prev) => ({ ...prev, [dateStr]: !prev[dateStr] }));
 
+  /** Writes both weekend days: ticked = full day, unticked = explicit 'off'. */
+  const persistWeekend = async (workingDays: string[]) => {
+    const payload = [saturday, sunday].map((d) => {
+      const work_date = format(d, 'yyyy-MM-dd');
+      return {
+        admin_user_id: adminId,
+        work_date,
+        day_type: workingDays.includes(work_date) ? 'full_day' : 'off',
+        created_by: user?.id ?? null,
+      };
+    });
+    const { error } = await (supabase as any)
+      .from('agent_working_days')
+      .upsert(payload, { onConflict: 'admin_user_id,work_date' });
+    if (error) throw error;
+  };
+
+  const declineWeekend = async () => {
+    setSaving(true);
+    try {
+      await persistWeekend([]);
+      toast.success('Thanks — marked as not working this weekend.');
+      closeForWeek();
+    } catch (e: any) {
+      toast.error(e.message || 'Could not save your days');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const save = async () => {
     const days = [saturday, sunday].map((d) => format(d, 'yyyy-MM-dd')).filter((d) => selected[d]);
     if (days.length === 0) {
-      closeForWeek();
-      toast.success('Thanks — marked as not working this weekend.');
+      await declineWeekend();
       return;
     }
     setSaving(true);
     try {
-      const { error } = await (supabase as any).from('agent_working_days').insert(
-        days.map((work_date) => ({
-          admin_user_id: adminId,
-          work_date,
-          day_type: 'full_day',
-          created_by: user?.id ?? null,
-        }))
-      );
-      if (error) throw error;
+      await persistWeekend(days);
       toast.success(`You're down to work ${days.length === 2 ? 'Saturday and Sunday' : format(new Date(days[0]), 'EEEE')}.`);
       closeForWeek();
     } catch (e: any) {
@@ -118,6 +139,7 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
       setSaving(false);
     }
   };
+
 
   if (!isReminderDay || !applicable) return null;
 
@@ -162,9 +184,10 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
 
 
         <div className="flex gap-2 pt-2">
-          <Button variant="ghost" onClick={closeForWeek} className="flex-1">
+          <Button variant="ghost" onClick={declineWeekend} disabled={saving} className="flex-1">
             Not this weekend
           </Button>
+
           <Button onClick={save} disabled={saving} className="flex-1">
             {saving ? 'Saving…' : 'Save my days'}
           </Button>

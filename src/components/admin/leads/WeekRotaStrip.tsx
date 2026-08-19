@@ -117,16 +117,18 @@ export const WeekRotaStrip = () => {
     if (!targets.length) return;
     const { data, error } = await (supabase as any)
       .from('agent_working_days')
-      .insert(
+      .upsert(
         targets.map(({ d, type }) => ({
           admin_user_id: agentId,
           work_date: format(d, 'yyyy-MM-dd'),
           day_type: type,
           created_by: user?.id ?? null,
         })),
+        { onConflict: 'admin_user_id,work_date' },
       )
       .select('id, admin_user_id, work_date, day_type');
     if (error) return;
+
     setRows((prev) => [...prev, ...((data as WorkingDayRow[]) || [])]);
   };
 
@@ -173,34 +175,24 @@ export const WeekRotaStrip = () => {
     if (!pendingCount || saving) return;
     setSaving(true);
     try {
-      for (const [k, working] of Object.entries(draft)) {
+      // Upsert every staged tick in one go. Unticked days are recorded as an
+      // explicit 'off' row (not deleted) so the weekend counts as confirmed
+      // and nothing keeps asking the agent again.
+      const payload = Object.entries(draft).map(([k, working]) => {
         const [agentId, dateStr] = k.split('|');
-        const date = new Date(dateStr + 'T00:00:00');
-        const existing = getRow(agentId, date);
-        if (working) {
-          if (existing) {
-            const { error } = await (supabase as any)
-              .from('agent_working_days')
-              .update({ day_type: 'full_day' })
-              .eq('id', existing.id);
-            if (error) throw error;
-          } else {
-            const { error } = await (supabase as any).from('agent_working_days').insert({
-              admin_user_id: agentId,
-              work_date: dateStr,
-              day_type: 'full_day',
-              created_by: user?.id ?? null,
-            });
-            if (error) throw error;
-          }
-        } else if (existing) {
-          const { error } = await (supabase as any)
-            .from('agent_working_days')
-            .delete()
-            .eq('id', existing.id);
-          if (error) throw error;
-        }
-      }
+        return {
+          admin_user_id: agentId,
+          work_date: dateStr,
+          day_type: working ? 'full_day' : 'off',
+          created_by: user?.id ?? null,
+        };
+      });
+      const { error } = await (supabase as any)
+        .from('agent_working_days')
+        .upsert(payload, { onConflict: 'admin_user_id,work_date' });
+      if (error) throw error;
+      setDraft({});
+
       toast.success('Attendance saved — your timesheet is updated too');
       await load();
     } catch (e: any) {
