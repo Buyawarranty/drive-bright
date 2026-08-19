@@ -34,6 +34,7 @@ import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
 import { recordTabVisit } from '@/hooks/useTabUsage';
 import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
 import { initAdminTelemetry, logAdminUiEvent, logAdminSlowLoad } from '@/lib/adminTelemetry';
+const AdminUiEventLogPanel = lazy(() => import('@/components/admin/AdminUiEventLogPanel'));
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
 import { DiscountAuthBanner } from '@/components/admin/DiscountAuthBanner';
 import { DiscountAuthPopup } from '@/components/admin/DiscountAuthPopup';
