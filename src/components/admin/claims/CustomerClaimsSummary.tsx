@@ -28,6 +28,52 @@ interface CustomerClaimsSummaryProps {
   showOnly?: 'claimsMade' | 'claimsPaid'; // For separate column display
 }
 
+/**
+ * PERFORMANCE: the Customers table renders this widget twice per row (claims
+ * made + claims paid). Every instance used to fire its own claims_submissions
+ * query, so one page of 50 customers issued ~100 identical reads — the single
+ * chattiest query in the whole CRM and a big part of the lag sales staff saw.
+ * Requests are now shared per email/reg with a short-lived cache, so each
+ * customer costs one read per page view regardless of how many widgets show it.
+ */
+const CLAIMS_CACHE_TTL_MS = 60_000;
+const _claimsCache = new Map<string, { at: number; rows: Claim[]; inflight?: Promise<Claim[]> }>();
+
+const fetchClaimsFor = (email?: string, reg?: string): Promise<Claim[]> => {
+  const key = `${(email || '').trim().toLowerCase()}|${(reg || '').trim().toUpperCase()}`;
+  const entry = _claimsCache.get(key);
+  const now = Date.now();
+  if (entry) {
+    if (entry.inflight) return entry.inflight;
+    if (now - entry.at < CLAIMS_CACHE_TTL_MS) return Promise.resolve(entry.rows);
+  }
+
+  const inflight = (async () => {
+    let query = supabase
+      .from('claims_submissions')
+      .select('id, claim_reason, payment_amount, status, created_at, paid_at, vehicle_registration')
+      .order('created_at', { ascending: false });
+
+    // Match by email OR vehicle registration
+    if (email && reg) {
+      query = query.or(`email.ilike.${email},vehicle_registration.ilike.${reg}`);
+    } else if (email) {
+      query = query.ilike('email', email);
+    } else if (reg) {
+      query = query.ilike('vehicle_registration', reg);
+    }
+
+    const { data, error } = await query;
+    const rows = error || !data ? [] : (data as Claim[]);
+    _claimsCache.set(key, { at: Date.now(), rows });
+    return rows;
+  })();
+
+  _claimsCache.set(key, { at: entry?.at ?? 0, rows: entry?.rows ?? [], inflight });
+  return inflight;
+};
+
+
 export const CustomerClaimsSummary: React.FC<CustomerClaimsSummaryProps> = ({
   customerId,
   customerEmail,
