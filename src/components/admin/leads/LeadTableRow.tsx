@@ -77,7 +77,7 @@ interface LeadTableRowProps {
   /** Viewer has explicit lead-routing permission, so website-sale locks don't apply. */
   canOverrideAssignmentLock?: boolean;
   noteCount?: number;
-  agentActivity?: { lastAt: string; source: 'note' | 'call' | 'status' };
+  agentActivity?: { lastAt: string; source: 'note' | 'call' | 'status' | 'dial' };
   showFbBadge?: boolean;
   showRecoveredBadge?: boolean;
   showSourceColumn?: boolean;
