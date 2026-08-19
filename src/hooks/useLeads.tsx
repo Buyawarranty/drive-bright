@@ -481,6 +481,11 @@ export const useLeads = (options?: UseLeadsOptions) => {
       // Granting `tab_new-leads_all-leads` lifts that restriction (manager-style global view).
       const hasAllLeadsPerm = currentAdmin?.permissions?.['tab_new-leads_all-leads'] === true;
       const isSalesAgent = currentAdmin?.role === 'sales' && !hasAllLeadsPerm;
+      // Sales leads (team leads) own huge histories too. Without this they fell
+      // into the "page every lead in the system" branch, blew the 25s timeout
+      // and got "Failed to load leads: Leads fetch timed out" with no fallback.
+      const isAgentScoped =
+        (currentAdmin?.role === 'sales' || currentAdmin?.role === 'sales_lead') && !hasAllLeadsPerm;
 
       const SELECT_COLUMNS = `
         id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
