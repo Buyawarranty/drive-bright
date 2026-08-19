@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 /**
  * Last time a HUMAN agent actually touched a lead.
@@ -33,7 +34,7 @@ const BATCH = 200;
 
 export const useAgentActivity = (leadIds: string[]) => {
   const [activityByLead, setActivityByLead] = useState<Record<string, AgentActivity>>({});
-  const lastKeyRef = useRef('');
+  const inFlightRef = useRef(false);
 
   const ids = useMemo(() => [...new Set(leadIds.filter(Boolean))].sort(), [leadIds]);
   const key = useMemo(
@@ -42,8 +43,10 @@ export const useAgentActivity = (leadIds: string[]) => {
   );
 
   const fetchAll = useCallback(async () => {
-    if (!key || lastKeyRef.current === key) return;
-    lastKeyRef.current = key;
+    // Re-fetch freely: calls land continuously (Zoiper / Dial 9), so the
+    // column must keep refreshing for the same set of leads.
+    if (!key || inFlightRef.current) return;
+    inFlightRef.current = true;
 
     const merged: Record<string, AgentActivity> = {};
     const upsert = (leadId: string, at: string | null, source: AgentActivity['source']) => {
@@ -108,14 +111,22 @@ export const useAgentActivity = (leadIds: string[]) => {
       setActivityByLead(merged);
     } catch (e) {
       console.error('useAgentActivity error', e);
+    } finally {
+      inFlightRef.current = false;
     }
   }, [key, ids]);
 
   useEffect(() => {
     if (!key) return;
     const t = setTimeout(fetchAll, 600);
-    return () => clearTimeout(t);
+    // Keep the column live while the tab is open — a dial made now should show
+    // up within a minute without a page refresh.
+    const stop = setVisibleInterval(fetchAll, 60_000);
+    return () => {
+      clearTimeout(t);
+      stop();
+    };
   }, [key, fetchAll]);
 
-  return { activityByLead };
+  return { activityByLead, refresh: fetchAll };
 };

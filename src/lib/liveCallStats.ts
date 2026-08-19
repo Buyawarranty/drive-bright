@@ -67,6 +67,16 @@ const ensureTimer = () => {
   timer = setInterval(() => { poll().catch(() => {}); }, POLL_MS);
 };
 
+/** Debounced immediate poll so new rows get real numbers straight away. */
+let kickTimer: ReturnType<typeof setTimeout> | null = null;
+const kickPoll = () => {
+  if (kickTimer || typeof window === 'undefined') return;
+  kickTimer = setTimeout(() => {
+    kickTimer = null;
+    poll().catch(() => {});
+  }, 800);
+};
+
 const stopTimerIfIdle = () => {
   if (timer && listeners.size === 0) {
     clearInterval(timer);
@@ -83,6 +93,8 @@ export const subscribeLiveCallStats = (leadId: string, cb: Listener): (() => voi
   if (!listeners.has(leadId)) listeners.set(leadId, new Set());
   listeners.get(leadId)!.add(cb);
   ensureTimer();
+  // First paint shouldn't wait a full poll cycle for the real counter.
+  kickPoll();
 
   const cached = cache.get(leadId);
   if (cached) cb(cached);
