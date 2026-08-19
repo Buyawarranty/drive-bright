@@ -67,6 +67,16 @@ const ensureTimer = () => {
   timer = setInterval(() => { poll().catch(() => {}); }, POLL_MS);
 };
 
+/** Debounced immediate poll so new rows get real numbers straight away. */
+let kickTimer: ReturnType<typeof setTimeout> | null = null;
+const kickPoll = () => {
+  if (kickTimer || typeof window === 'undefined') return;
+  kickTimer = setTimeout(() => {
+    kickTimer = null;
+    poll().catch(() => {});
+  }, 800);
+};
+
 const stopTimerIfIdle = () => {
   if (timer && listeners.size === 0) {
     clearInterval(timer);
