@@ -768,9 +768,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                         >
                           {isLookingUp ? 'Preparing your instant price…' : 'Get my quote'}
                         </Button>
-                        <p className="text-sm text-gray-600 text-center">
-                          No mileage needed — we use your latest MOT reading and confirm it at checkout.
-                        </p>
                       </div>
                     );
                   })()
