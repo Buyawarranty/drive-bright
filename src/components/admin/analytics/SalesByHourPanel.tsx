@@ -145,6 +145,69 @@ export const SalesByHourPanel: React.FC<Props> = ({ customers, sourceFilter }) =
 
   const maxCell = Math.max(1, ...grid.flat());
 
+  // ---- Lead conversion rate by hour the lead came in ----
+  const fromIso = useMemo(() => {
+    const from = periodStart(period);
+    return from ? from.toISOString() : null;
+  }, [period]);
+
+  const { data: leadRows } = useQuery({
+    queryKey: ['sales-by-hour-lead-conversion', fromIso],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await fetchAllRows<{ created_at: string; status: string | null }>(() => {
+        let q = supabase.from('sales_leads').select('created_at, status').order('created_at', { ascending: false });
+        if (fromIso) q = q.gte('created_at', fromIso);
+        return q;
+      });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const { leadHours, leadTotals } = useMemo(() => {
+    const leadHours = HOUR_LABELS.map((label, h) => ({ hour: label, h, leads: 0, converted: 0, rate: 0 }));
+    let leads = 0;
+    let converted = 0;
+    let overnightLeads = 0;
+    let overnightConverted = 0;
+
+    (leadRows || []).forEach(row => {
+      if (!row.created_at) return;
+      const d = new Date(row.created_at);
+      if (Number.isNaN(d.getTime())) return;
+      const h = d.getHours();
+      const isConverted = (row.status || '').toLowerCase() === 'converted';
+      leadHours[h].leads += 1;
+      leads += 1;
+      if (isConverted) { leadHours[h].converted += 1; converted += 1; }
+      if (h >= 22 || h < 6) {
+        overnightLeads += 1;
+        if (isConverted) overnightConverted += 1;
+      }
+    });
+
+    leadHours.forEach(b => {
+      b.rate = b.leads > 0 ? Math.round((b.converted / b.leads) * 1000) / 10 : 0;
+    });
+
+    const best = leadHours.reduce((acc, b) => (b.leads >= 20 && b.rate > acc.rate ? b : acc), { hour: '—', rate: 0 } as any);
+
+    return {
+      leadHours,
+      leadTotals: {
+        leads,
+        converted,
+        rate: leads > 0 ? Math.round((converted / leads) * 1000) / 10 : 0,
+        overnightLeads,
+        overnightConverted,
+        overnightRate: overnightLeads > 0 ? Math.round((overnightConverted / overnightLeads) * 1000) / 10 : 0,
+        bestHour: best.hour,
+        bestRate: best.rate,
+      },
+    };
+  }, [leadRows]);
+
   return (
     <Card>
       <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
