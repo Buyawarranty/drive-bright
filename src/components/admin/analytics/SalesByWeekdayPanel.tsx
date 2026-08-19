@@ -103,8 +103,8 @@ export const SalesByWeekdayPanel: React.FC<Props> = ({ customers, sourceFilter }
     queryKey: ['sales-by-weekday-leads', fromIso],
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
-      const { data, error } = await fetchAllRows<{ created_at: string; status: string | null }>(() => {
-        let q = supabase.from('sales_leads').select('created_at, status').order('created_at', { ascending: false });
+      const { data, error } = await fetchAllRows<{ created_at: string; status: string | null; converted_at: string | null; updated_at: string | null }>(() => {
+        let q = supabase.from('sales_leads').select('created_at, status, converted_at, updated_at').order('created_at', { ascending: false });
         if (fromIso) q = q.gte('created_at', fromIso);
         return q;
       });
