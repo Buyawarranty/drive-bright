@@ -230,6 +230,13 @@ class TabErrorBoundary extends React.Component<
   }
   componentDidCatch(error: Error) {
     console.error('[TabErrorBoundary] Tab error:', error);
+    logAdminUiEvent({
+      event_type: 'crash',
+      label: String(error?.message || 'Tab crashed').slice(0, 200),
+      tab: this.props.tabKey ?? null,
+      detail: { scope: 'tab', stack: (error?.stack || '').slice(0, 1200) || undefined },
+    });
+
 
     // Auto-recover from stale chunks after a deployment: hard-reload once
     // per session so staff don't need to know what "ChunkLoadError" means.
