@@ -228,6 +228,84 @@ export const SalesByWeekdayPanel: React.FC<Props> = ({ customers, sourceFilter }
     };
   }, [leadRows, period]);
 
+  // Arrival day → conversion day matrix: does a Saturday lead convert later in the week?
+  const matrix = useMemo(() => {
+    const from = periodStart(period);
+    const rowsM = DAY_LABELS.map((day, i) => ({
+      day,
+      short: DAY_SHORT[i],
+      leads: 0,
+      converted: 0,
+      cells: DAY_SHORT.map(() => 0),
+      sameDay: 0,
+      lagSum: 0,
+      avgLag: 0,
+      conversion: 0,
+      sameDayShare: 0,
+      topConvertDay: '—',
+    }));
+    const convertDayTotals = DAY_SHORT.map(() => 0);
+
+    (leadRows || []).forEach(lead => {
+      if (!lead.created_at) return;
+      const created = new Date(lead.created_at);
+      if (Number.isNaN(created.getTime())) return;
+      if (from && created < from) return;
+      const arrIdx = (created.getDay() + 6) % 7;
+      const row = rowsM[arrIdx];
+      row.leads += 1;
+      if ((lead.status || '').toLowerCase() !== 'converted') return;
+      const convRaw = lead.converted_at || lead.updated_at;
+      if (!convRaw) return;
+      const conv = new Date(convRaw);
+      if (Number.isNaN(conv.getTime()) || conv < created) return;
+      const convIdx = (conv.getDay() + 6) % 7;
+      row.converted += 1;
+      row.cells[convIdx] += 1;
+      convertDayTotals[convIdx] += 1;
+      const lag = Math.max(0, Math.round((startOfDay(conv).getTime() - startOfDay(created).getTime()) / 86400000));
+      row.lagSum += lag;
+      if (lag === 0) row.sameDay += 1;
+    });
+
+    rowsM.forEach(r => {
+      r.conversion = r.leads > 0 ? Math.round((r.converted / r.leads) * 1000) / 10 : 0;
+      r.avgLag = r.converted > 0 ? Math.round((r.lagSum / r.converted) * 10) / 10 : 0;
+      r.sameDayShare = r.converted > 0 ? Math.round((r.sameDay / r.converted) * 1000) / 10 : 0;
+      const maxVal = Math.max(...r.cells);
+      r.topConvertDay = maxVal > 0 ? DAY_LABELS[r.cells.indexOf(maxVal)] : '—';
+    });
+
+    const maxCell = Math.max(1, ...rowsM.flatMap(r => r.cells));
+    const weekendRows = [rowsM[5], rowsM[6]];
+    const weekendLeads = weekendRows.reduce((s, r) => s + r.leads, 0);
+    const weekendConverted = weekendRows.reduce((s, r) => s + r.converted, 0);
+    const weekdayLeads = rowsM.slice(0, 5).reduce((s, r) => s + r.leads, 0);
+    const weekdayConverted = rowsM.slice(0, 5).reduce((s, r) => s + r.converted, 0);
+    const weekendLagSum = weekendRows.reduce((s, r) => s + r.lagSum, 0);
+    const weekdayLagSum = rowsM.slice(0, 5).reduce((s, r) => s + r.lagSum, 0);
+    const weekendConvertedOnWeekdays = weekendRows.reduce(
+      (s, r) => s + r.cells.slice(0, 5).reduce((a, b) => a + b, 0), 0,
+    );
+
+    return {
+      rowsM,
+      maxCell,
+      convertDayTotals,
+      summary: {
+        weekendRate: weekendLeads ? Math.round((weekendConverted / weekendLeads) * 1000) / 10 : 0,
+        weekdayRate: weekdayLeads ? Math.round((weekdayConverted / weekdayLeads) * 1000) / 10 : 0,
+        weekendAvgLag: weekendConverted ? Math.round((weekendLagSum / weekendConverted) * 10) / 10 : 0,
+        weekdayAvgLag: weekdayConverted ? Math.round((weekdayLagSum / weekdayConverted) * 10) / 10 : 0,
+        weekendLeads,
+        weekendConverted,
+        weekendSpillShare: weekendConverted ? Math.round((weekendConvertedOnWeekdays / weekendConverted) * 1000) / 10 : 0,
+      },
+    };
+  }, [leadRows, period]);
+
+
+
   return (
     <Card className="border-2 border-indigo-500/30">
       <CardHeader className="pb-3">
