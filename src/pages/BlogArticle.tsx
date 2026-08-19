@@ -299,6 +299,14 @@ const BlogArticle = () => {
   const metaDescription = post.seo_description || post.excerpt || quickAnswer;
   const lastModified = post.updated_at || post.published_at;
 
+  // Fallback: FAQPage node stored with the post (used when the body has no Q1./A1. pairs)
+  const storedFaqNode = (() => {
+    const sd: any = post.structured_data;
+    const nodes: any[] = Array.isArray(sd?.['@graph']) ? sd['@graph'] : sd ? [sd] : [];
+    const faq = nodes.find((n) => n?.['@type'] === 'FAQPage' && Array.isArray(n?.mainEntity) && n.mainEntity.length);
+    return faq ? { ...faq, '@id': `${articleUrl}#faq` } : null;
+  })();
+
   // Generate structured data (Article + FAQ + breadcrumb-friendly graph for AI answer engines)
   const structuredData = {
     "@context": "https://schema.org",
