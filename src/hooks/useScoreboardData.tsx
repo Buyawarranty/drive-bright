@@ -85,7 +85,7 @@ export const useScoreboardData = (): ScoreboardData => {
       case 'week':
         return { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) };
       case '14days':
-        return { start: startOfDay(subDays(now, 13)), end: endOfDay(now) };
+        return { start: startOfDay(subDays(now, 29)), end: endOfDay(now) };
       case 'month':
         return { start: startOfMonth(now), end: endOfMonth(now) };
       case 'all':
