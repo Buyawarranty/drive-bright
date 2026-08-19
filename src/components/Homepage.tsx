@@ -683,7 +683,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   )}
                 </div>
 
-                <p className="text-sm text-gray-500 text-left">
+                <p className="text-sm text-gray-500 text-center">
                   Protection for vehicles up to <span className="font-bold text-gray-700">150,000 miles</span> and <span className="font-bold text-gray-700">15 years old</span>.
                 </p>
 
