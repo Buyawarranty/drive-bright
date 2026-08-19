@@ -184,9 +184,10 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
 
 
         <div className="flex gap-2 pt-2">
-          <Button variant="ghost" onClick={closeForWeek} className="flex-1">
+          <Button variant="ghost" onClick={declineWeekend} disabled={saving} className="flex-1">
             Not this weekend
           </Button>
+
           <Button onClick={save} disabled={saving} className="flex-1">
             {saving ? 'Saving…' : 'Save my days'}
           </Button>
