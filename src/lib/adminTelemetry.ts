@@ -97,7 +97,7 @@ const flush = async (immediate = false) => {
 
   try {
     await resolveIdentity();
-    const rows = batch.map((row) => ({ ...row, ...(identity || {}) }));
+    const rows = batch.map((row) => ({ ...row, ...(identity || {}) })) as any[];
     const { error } = await supabase.from('admin_ui_events').insert(rows);
     if (error) console.warn('[admin-telemetry] insert failed', error.message);
   } catch (e) {
