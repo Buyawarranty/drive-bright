@@ -709,7 +709,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           // hand off to the right salesperson. Without an active search, keep the
           // narrower assigned+unassigned scope.
           const hasActiveSearch = !!serverSearchTermRef.current?.trim();
-          if (isSalesAgent && currentAdmin?.id && !hasActiveSearch) {
+          if (isAgentScoped && currentAdmin?.id && !hasActiveSearch) {
             // 1) Leads assigned to this agent. Agents with very large histories
             // (thousands of leads) used to page through everything, blowing the
             // 25s fetch timeout and leaving them with an EMPTY list (the "blank
@@ -842,7 +842,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
         allSalesLeadsResult = await runWideLeadsFetch();
         if (allSalesLeadsResult?.error) throw allSalesLeadsResult.error;
       } catch (wideErr) {
-        if (!isSalesAgent || !currentAdmin?.id) throw wideErr;
+        if (!isAgentScoped || !currentAdmin?.id) throw wideErr;
         console.warn('[Leads] Wide fetch failed, falling back to recent assigned leads:', wideErr);
         allSalesLeadsResult = await fetchAgentFallbackLeads();
         if (allSalesLeadsResult?.error) throw allSalesLeadsResult.error;
