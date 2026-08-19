@@ -1316,6 +1316,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
         <DailyRevenueTrendPanel customers={customers} sourceFilter={sourceFilter} />
 
+        <AnalyticsSectionHeading id="time-of-sale" title="Time of sale (24 hour tracker)" description="Hour-by-hour view of when sales land across all 24 hours, split by online versus agent-entered, plus a weekday/hour heatmap." accent="border-cyan-500/60" />
+
+        <SalesByHourPanel customers={customers} sourceFilter={sourceFilter} />
+
 
 
         {monthProjection && (
