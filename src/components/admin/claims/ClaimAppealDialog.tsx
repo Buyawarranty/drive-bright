@@ -46,7 +46,8 @@ export const INDEPENDENT_REVIEWERS = [
 ] as const;
 
 const DEFAULT_APPEAL_FEE = 99;
-const DEFAULT_PAYMENT_LINK = 'https://buyawarranty.co.uk/appeal-payment';
+/** No placeholder: the agent pastes the real Stripe/Bumper appeal payment link. */
+const DEFAULT_PAYMENT_LINK = '';
 
 interface ClaimRow {
   id: string;
@@ -362,7 +363,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
                 <Input
                   value={paymentLink}
                   onChange={(e) => setPaymentLink(e.target.value)}
-                  placeholder="https://..."
+                  placeholder="Paste the appeal payment link (Stripe / Bumper)"
                 />
               </div>
             </div>
