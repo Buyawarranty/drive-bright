@@ -1155,7 +1155,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
   // Manager-only diagnostic: records whether this quote came from the published
   // pricing model or fell back to the legacy grid (vehicle referred out).
-  const pricingTrace: { usedLegacy: boolean; reason: string } = { usedLegacy: false, reason: '' };
+  // Kept in a ref so the trace survives renders where the memoised price is reused.
+  const pricingTraceRef = useRef<{ usedLegacy: boolean; reason: string }>({ usedLegacy: false, reason: '' });
+  const pricingTrace = pricingTraceRef.current;
+
 
   // Calculate base price (before any custom overrides)
   const calculateBasePrice = () => {
@@ -1184,12 +1187,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       warrantyYears
     );
     
-    console.log('🔍 Admin Quote - Vehicle Adjustment:', {
-      mileage: vehicleMileage,
-      warrantyYears,
-      adjustmentAmount: vehicleAdjustmentResult.adjustmentAmount,
-      adjustmentType: vehicleAdjustmentResult.adjustmentType
-    });
+    // (No logging in this hot path — it runs on every keystroke in steps 2 and 3.)
+
     
     // ── Price from the published pricing model (same maths as the Aug hybrid
     // test Step 2) so Quotes & Orders and the pricing sandboxes never disagree.
@@ -1334,8 +1333,26 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     return calculateBasePrice();
   };
 
-  const currentPrice = calculatePrice();
-  const basePrice = calculateBasePrice();
+  /**
+   * SPEED: the pricing engine ran twice on every single render (so twice per
+   * keystroke in the step 2 / step 3 forms). Same maths, same inputs — just
+   * cached until a pricing input actually changes.
+   */
+  const basePrice = React.useMemo(
+    () => calculateBasePrice(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      paymentType, excessAmount, claimLimit, labourRate, boostAddon,
+      selectedAddOns, includePayInFullDiscount, mileage, regNumber,
+      vehicleData, pricingModel, ABSOLUTE_MIN_TOTAL,
+    ]
+  );
+  const currentPrice = React.useMemo(
+    () => (isPriceOverridden ? calculatePrice() : basePrice),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [basePrice, isPriceOverridden, customFullPrice, customMonthlyPrice, includePayInFullDiscount]
+  );
+
   // When a custom price is set, the custom total is authoritative
   const displayedTotalPrice = isPriceOverridden
     ? Number(currentPrice.totalPrice || 0)
