@@ -103,8 +103,8 @@ export const SalesByWeekdayPanel: React.FC<Props> = ({ customers, sourceFilter }
     queryKey: ['sales-by-weekday-leads', fromIso],
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
-      const { data, error } = await fetchAllRows<{ created_at: string; status: string | null }>(() => {
-        let q = supabase.from('sales_leads').select('created_at, status').order('created_at', { ascending: false });
+      const { data, error } = await fetchAllRows<{ created_at: string; status: string | null; converted_at: string | null; updated_at: string | null }>(() => {
+        let q = supabase.from('sales_leads').select('created_at, status, converted_at, updated_at').order('created_at', { ascending: false });
         if (fromIso) q = q.gte('created_at', fromIso);
         return q;
       });
@@ -227,6 +227,84 @@ export const SalesByWeekdayPanel: React.FC<Props> = ({ customers, sourceFilter }
       },
     };
   }, [leadRows, period]);
+
+  // Arrival day → conversion day matrix: does a Saturday lead convert later in the week?
+  const matrix = useMemo(() => {
+    const from = periodStart(period);
+    const rowsM = DAY_LABELS.map((day, i) => ({
+      day,
+      short: DAY_SHORT[i],
+      leads: 0,
+      converted: 0,
+      cells: DAY_SHORT.map(() => 0),
+      sameDay: 0,
+      lagSum: 0,
+      avgLag: 0,
+      conversion: 0,
+      sameDayShare: 0,
+      topConvertDay: '—',
+    }));
+    const convertDayTotals = DAY_SHORT.map(() => 0);
+
+    (leadRows || []).forEach(lead => {
+      if (!lead.created_at) return;
+      const created = new Date(lead.created_at);
+      if (Number.isNaN(created.getTime())) return;
+      if (from && created < from) return;
+      const arrIdx = (created.getDay() + 6) % 7;
+      const row = rowsM[arrIdx];
+      row.leads += 1;
+      if ((lead.status || '').toLowerCase() !== 'converted') return;
+      const convRaw = lead.converted_at || lead.updated_at;
+      if (!convRaw) return;
+      const conv = new Date(convRaw);
+      if (Number.isNaN(conv.getTime()) || conv < created) return;
+      const convIdx = (conv.getDay() + 6) % 7;
+      row.converted += 1;
+      row.cells[convIdx] += 1;
+      convertDayTotals[convIdx] += 1;
+      const lag = Math.max(0, Math.round((startOfDay(conv).getTime() - startOfDay(created).getTime()) / 86400000));
+      row.lagSum += lag;
+      if (lag === 0) row.sameDay += 1;
+    });
+
+    rowsM.forEach(r => {
+      r.conversion = r.leads > 0 ? Math.round((r.converted / r.leads) * 1000) / 10 : 0;
+      r.avgLag = r.converted > 0 ? Math.round((r.lagSum / r.converted) * 10) / 10 : 0;
+      r.sameDayShare = r.converted > 0 ? Math.round((r.sameDay / r.converted) * 1000) / 10 : 0;
+      const maxVal = Math.max(...r.cells);
+      r.topConvertDay = maxVal > 0 ? DAY_LABELS[r.cells.indexOf(maxVal)] : '—';
+    });
+
+    const maxCell = Math.max(1, ...rowsM.flatMap(r => r.cells));
+    const weekendRows = [rowsM[5], rowsM[6]];
+    const weekendLeads = weekendRows.reduce((s, r) => s + r.leads, 0);
+    const weekendConverted = weekendRows.reduce((s, r) => s + r.converted, 0);
+    const weekdayLeads = rowsM.slice(0, 5).reduce((s, r) => s + r.leads, 0);
+    const weekdayConverted = rowsM.slice(0, 5).reduce((s, r) => s + r.converted, 0);
+    const weekendLagSum = weekendRows.reduce((s, r) => s + r.lagSum, 0);
+    const weekdayLagSum = rowsM.slice(0, 5).reduce((s, r) => s + r.lagSum, 0);
+    const weekendConvertedOnWeekdays = weekendRows.reduce(
+      (s, r) => s + r.cells.slice(0, 5).reduce((a, b) => a + b, 0), 0,
+    );
+
+    return {
+      rowsM,
+      maxCell,
+      convertDayTotals,
+      summary: {
+        weekendRate: weekendLeads ? Math.round((weekendConverted / weekendLeads) * 1000) / 10 : 0,
+        weekdayRate: weekdayLeads ? Math.round((weekdayConverted / weekdayLeads) * 1000) / 10 : 0,
+        weekendAvgLag: weekendConverted ? Math.round((weekendLagSum / weekendConverted) * 10) / 10 : 0,
+        weekdayAvgLag: weekdayConverted ? Math.round((weekdayLagSum / weekdayConverted) * 10) / 10 : 0,
+        weekendLeads,
+        weekendConverted,
+        weekendSpillShare: weekendConverted ? Math.round((weekendConvertedOnWeekdays / weekendConverted) * 1000) / 10 : 0,
+      },
+    };
+  }, [leadRows, period]);
+
+
 
   return (
     <Card className="border-2 border-indigo-500/30">
@@ -411,6 +489,81 @@ export const SalesByWeekdayPanel: React.FC<Props> = ({ customers, sourceFilter }
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Arrival day vs conversion day matrix */}
+        <div className="pt-2 border-t space-y-3">
+          <div>
+            <h4 className="text-sm font-semibold">Day the lead came in vs the day it converted</h4>
+            <p className="text-xs text-muted-foreground">
+              Rows are the day the lead arrived, columns the day it converted. Use this to see whether weekend leads
+              convert later in the week and whether weekend intake is worth keeping on.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary">
+              Weekend arrivals {matrix.summary.weekendLeads} → {matrix.summary.weekendConverted} converted ({matrix.summary.weekendRate}%)
+            </Badge>
+            <Badge variant="secondary">Mon–Fri arrivals convert at {matrix.summary.weekdayRate}%</Badge>
+            <Badge variant="outline">
+              Avg days to convert: weekend {matrix.summary.weekendAvgLag} · weekday {matrix.summary.weekdayAvgLag}
+            </Badge>
+            <Badge className="bg-amber-100 text-amber-900 border border-amber-300">
+              {matrix.summary.weekendSpillShare}% of weekend conversions land Mon–Fri
+            </Badge>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <th className="py-2 pr-3">Arrived \ Converted</th>
+                  {DAY_SHORT.map(d => (
+                    <th key={d} className="py-2 px-2 text-center">{d}</th>
+                  ))}
+                  <th className="py-2 pr-3 text-right">Converted</th>
+                  <th className="py-2 pr-3 text-right">Rate</th>
+                  <th className="py-2 pr-3 text-right">Avg days</th>
+                  <th className="py-2 pr-3 text-right">Same day</th>
+                  <th className="py-2 pr-3">Peaks on</th>
+                </tr>
+              </thead>
+              <tbody>
+                {matrix.rowsM.map(r => (
+                  <tr key={r.day} className="border-b last:border-0">
+                    <td className="py-2 pr-3 font-medium whitespace-nowrap">{r.day}</td>
+                    {r.cells.map((c, i) => (
+                      <td
+                        key={i}
+                        className="py-2 px-2 text-center tabular-nums"
+                        style={c > 0 ? { backgroundColor: `hsl(var(--primary) / ${0.08 + (c / matrix.maxCell) * 0.5})` } : undefined}
+                      >
+                        {c || '—'}
+                      </td>
+                    ))}
+                    <td className="py-2 pr-3 text-right font-semibold">{r.converted}</td>
+                    <td className="py-2 pr-3 text-right">{r.leads ? `${r.conversion}%` : '—'}</td>
+                    <td className="py-2 pr-3 text-right">{r.converted ? r.avgLag : '—'}</td>
+                    <td className="py-2 pr-3 text-right">{r.converted ? `${r.sameDayShare}%` : '—'}</td>
+                    <td className="py-2 pr-3 whitespace-nowrap">{r.topConvertDay}</td>
+                  </tr>
+                ))}
+                <tr className="border-t font-medium">
+                  <td className="py-2 pr-3">Converted on</td>
+                  {matrix.convertDayTotals.map((t, i) => (
+                    <td key={i} className="py-2 px-2 text-center">{t || '—'}</td>
+                  ))}
+                  <td className="py-2 pr-3 text-right">{matrix.convertDayTotals.reduce((a, b) => a + b, 0)}</td>
+                  <td colSpan={4} />
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Conversion day uses the lead's converted timestamp (falling back to its last update), so leads still open are
+            counted in the arrival row only.
+          </p>
         </div>
       </CardContent>
     </Card>
