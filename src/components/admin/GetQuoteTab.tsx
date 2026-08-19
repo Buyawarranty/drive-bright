@@ -2175,17 +2175,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
 
   const handlePreviewEmail = () => {
-    if (!quoteLink) {
-      toast({
-        title: "Quote Link Required",
-        description: "Please wait for the quote link to be generated first.",
-        variant: "destructive",
-      });
-      return;
+    // Open the preview even if the quote link is still being generated — the
+    // send step mints/verifies the link itself, so a slow link must never leave
+    // the agent stuck with a dead button.
+    if (!quoteLink && !quoteGenerated) {
+      void generateQuoteLink();
     }
     setEmailSubject(generateEmailSubject());
     setShowEmailDialog(true);
   };
+
 
   const handleSendEmail = async () => {
     if (previewMode) {
