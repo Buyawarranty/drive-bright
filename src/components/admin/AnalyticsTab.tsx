@@ -1221,6 +1221,77 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           <p className="text-sm text-gray-600">Overview of your warranty business (excludes test orders)</p>
         </div>
 
+        {monthProjection && (
+          <AnalyticsSectionHeading id="month-projection" title="This month's projection" description="Run-rate forecast for the current month based on sales so far." accent="border-lime-500/60" controls={sectionFilters} />
+
+        )}
+
+        {monthProjection && (
+          <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-primary" />
+                {monthProjection.monthLabel} — Current Pace Projection
+              </CardTitle>
+              <CardDescription>
+                You're on day {monthProjection.dayOfMonth} of {monthProjection.daysInMonth} with{' '}
+                <strong>{monthProjection.actualSales} {monthProjection.actualSales === 1 ? 'sale' : 'sales'}</strong>{' '}
+                (£{monthProjection.actualRevenue.toLocaleString('en-GB')}). At this rate
+                (~{monthProjection.dailySalesRate} sales / £{monthProjection.dailyRunRate.toLocaleString('en-GB')} per day),
+                you'll finish {monthProjection.monthLabel} at approximately{' '}
+                <strong className="text-primary">£{monthProjection.projectedRevenue.toLocaleString('en-GB')}</strong>{' '}
+                from <strong className="text-primary">{monthProjection.projectedSales} warranties</strong>.
+                {monthProjection.daysRemaining > 0 && (
+                  <> That's another £{monthProjection.remainingRevenue.toLocaleString('en-GB')} /{' '}
+                  {monthProjection.remainingSales} sales over the next {monthProjection.daysRemaining} day{monthProjection.daysRemaining === 1 ? '' : 's'}.</>
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-1">
+                  <span className="text-sm text-muted-foreground">So far this month</span>
+                  <p className="text-2xl font-bold">£{monthProjection.actualRevenue.toLocaleString('en-GB')}</p>
+                  <p className="text-xs text-muted-foreground">{monthProjection.actualSales} warranties</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-sm text-muted-foreground">Projected revenue</span>
+                  <p className="text-2xl font-bold text-primary">£{monthProjection.projectedRevenue.toLocaleString('en-GB')}</p>
+                  {monthProjection.revenueDeltaPct !== null && (
+                    <p className={`text-xs flex items-center gap-1 ${monthProjection.revenueDeltaPct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {monthProjection.revenueDeltaPct >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      {monthProjection.revenueDeltaPct >= 0 ? '+' : ''}{monthProjection.revenueDeltaPct}% vs last month
+                    </p>
+                  )}
+                  {monthProjection.hasYoY && monthProjection.yoyRevenueDeltaPct !== null && (
+                    <p className={`text-xs flex items-center gap-1 ${monthProjection.yoyRevenueDeltaPct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {monthProjection.yoyRevenueDeltaPct >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      {monthProjection.yoyRevenueDeltaPct >= 0 ? '+' : ''}{monthProjection.yoyRevenueDeltaPct}% vs same month last year (£{monthProjection.yoyRevenue!.toLocaleString('en-GB')})
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <span className="text-sm text-muted-foreground">Projected warranties</span>
+                  <p className="text-2xl font-bold text-primary">{monthProjection.projectedSales}</p>
+                  {monthProjection.priorSales !== null && (
+                    <p className="text-xs text-muted-foreground">Last month: {monthProjection.priorSales}</p>
+                  )}
+                  {monthProjection.hasYoY && (
+                    <p className="text-xs text-muted-foreground">
+                      Same month {new Date().getFullYear() - 1}: {monthProjection.yoySales}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <span className="text-sm text-muted-foreground">Projected AOV</span>
+                  <p className="text-2xl font-bold">£{monthProjection.projectedAov.toLocaleString('en-GB')}</p>
+                  <p className="text-xs text-muted-foreground">Current: £{monthProjection.actualAov.toLocaleString('en-GB')}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <AnalyticsSectionHeading id="revenue-monthly" title="Revenue & AOV by month" description="Monthly revenue, order volume and average order value across the last 12 months." accent="border-emerald-500/60" />
 
         <Card>
@@ -1329,76 +1400,6 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
 
 
-        {monthProjection && (
-          <AnalyticsSectionHeading id="month-projection" title="This month's projection" description="Run-rate forecast for the current month based on sales so far." accent="border-lime-500/60" controls={sectionFilters} />
-
-        )}
-
-        {monthProjection && (
-          <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-primary" />
-                {monthProjection.monthLabel} — Current Pace Projection
-              </CardTitle>
-              <CardDescription>
-                You're on day {monthProjection.dayOfMonth} of {monthProjection.daysInMonth} with{' '}
-                <strong>{monthProjection.actualSales} {monthProjection.actualSales === 1 ? 'sale' : 'sales'}</strong>{' '}
-                (£{monthProjection.actualRevenue.toLocaleString('en-GB')}). At this rate
-                (~{monthProjection.dailySalesRate} sales / £{monthProjection.dailyRunRate.toLocaleString('en-GB')} per day),
-                you'll finish {monthProjection.monthLabel} at approximately{' '}
-                <strong className="text-primary">£{monthProjection.projectedRevenue.toLocaleString('en-GB')}</strong>{' '}
-                from <strong className="text-primary">{monthProjection.projectedSales} warranties</strong>.
-                {monthProjection.daysRemaining > 0 && (
-                  <> That's another £{monthProjection.remainingRevenue.toLocaleString('en-GB')} /{' '}
-                  {monthProjection.remainingSales} sales over the next {monthProjection.daysRemaining} day{monthProjection.daysRemaining === 1 ? '' : 's'}.</>
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="space-y-1">
-                  <span className="text-sm text-muted-foreground">So far this month</span>
-                  <p className="text-2xl font-bold">£{monthProjection.actualRevenue.toLocaleString('en-GB')}</p>
-                  <p className="text-xs text-muted-foreground">{monthProjection.actualSales} warranties</p>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-sm text-muted-foreground">Projected revenue</span>
-                  <p className="text-2xl font-bold text-primary">£{monthProjection.projectedRevenue.toLocaleString('en-GB')}</p>
-                  {monthProjection.revenueDeltaPct !== null && (
-                    <p className={`text-xs flex items-center gap-1 ${monthProjection.revenueDeltaPct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {monthProjection.revenueDeltaPct >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {monthProjection.revenueDeltaPct >= 0 ? '+' : ''}{monthProjection.revenueDeltaPct}% vs last month
-                    </p>
-                  )}
-                  {monthProjection.hasYoY && monthProjection.yoyRevenueDeltaPct !== null && (
-                    <p className={`text-xs flex items-center gap-1 ${monthProjection.yoyRevenueDeltaPct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {monthProjection.yoyRevenueDeltaPct >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {monthProjection.yoyRevenueDeltaPct >= 0 ? '+' : ''}{monthProjection.yoyRevenueDeltaPct}% vs same month last year (£{monthProjection.yoyRevenue!.toLocaleString('en-GB')})
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-1">
-                  <span className="text-sm text-muted-foreground">Projected warranties</span>
-                  <p className="text-2xl font-bold text-primary">{monthProjection.projectedSales}</p>
-                  {monthProjection.priorSales !== null && (
-                    <p className="text-xs text-muted-foreground">Last month: {monthProjection.priorSales}</p>
-                  )}
-                  {monthProjection.hasYoY && (
-                    <p className="text-xs text-muted-foreground">
-                      Same month {new Date().getFullYear() - 1}: {monthProjection.yoySales}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-1">
-                  <span className="text-sm text-muted-foreground">Projected AOV</span>
-                  <p className="text-2xl font-bold">£{monthProjection.projectedAov.toLocaleString('en-GB')}</p>
-                  <p className="text-xs text-muted-foreground">Current: £{monthProjection.actualAov.toLocaleString('en-GB')}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         <AnalyticsSectionHeading id="duration-mix" title="Warranty duration mix" description="Split of 1-year, 2-year and 3-year policies sold each month." accent="border-sky-500/60" />
 
