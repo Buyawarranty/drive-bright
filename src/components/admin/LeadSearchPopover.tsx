@@ -52,9 +52,27 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
   useEffect(() => {
     if (!open) return;
 
+    let cancelled = false;
+
+    // Agents reported "unable to import the lead": a slow lead/cart query left the
+    // popover spinning forever with no result and no error. Every request is now
+    // time-bounded and degrades to whatever came back.
+    const bounded = async <T,>(p: PromiseLike<T>, ms = 8000): Promise<T | { data: null; error: Error }> => {
+      let timer: ReturnType<typeof setTimeout>;
+      const timeout = new Promise<{ data: null; error: Error }>((resolve) => {
+        timer = setTimeout(() => resolve({ data: null, error: new Error('Search timed out') }), ms);
+      });
+      try {
+        return (await Promise.race([Promise.resolve(p), timeout])) as any;
+      } finally {
+        clearTimeout(timer!);
+      }
+    };
+
     const fetchLeads = async () => {
       setLoading(true);
       try {
+
         let query = supabase
           .from('sales_leads')
           .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest, assigned_to')
