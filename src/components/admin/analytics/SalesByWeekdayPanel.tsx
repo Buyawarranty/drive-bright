@@ -490,6 +490,81 @@ export const SalesByWeekdayPanel: React.FC<Props> = ({ customers, sourceFilter }
             </table>
           </div>
         </div>
+
+        {/* Arrival day vs conversion day matrix */}
+        <div className="pt-2 border-t space-y-3">
+          <div>
+            <h4 className="text-sm font-semibold">Day the lead came in vs the day it converted</h4>
+            <p className="text-xs text-muted-foreground">
+              Rows are the day the lead arrived, columns the day it converted. Use this to see whether weekend leads
+              convert later in the week and whether weekend intake is worth keeping on.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary">
+              Weekend arrivals {matrix.summary.weekendLeads} → {matrix.summary.weekendConverted} converted ({matrix.summary.weekendRate}%)
+            </Badge>
+            <Badge variant="secondary">Mon–Fri arrivals convert at {matrix.summary.weekdayRate}%</Badge>
+            <Badge variant="outline">
+              Avg days to convert: weekend {matrix.summary.weekendAvgLag} · weekday {matrix.summary.weekdayAvgLag}
+            </Badge>
+            <Badge className="bg-amber-100 text-amber-900 border border-amber-300">
+              {matrix.summary.weekendSpillShare}% of weekend conversions land Mon–Fri
+            </Badge>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <th className="py-2 pr-3">Arrived \ Converted</th>
+                  {DAY_SHORT.map(d => (
+                    <th key={d} className="py-2 px-2 text-center">{d}</th>
+                  ))}
+                  <th className="py-2 pr-3 text-right">Converted</th>
+                  <th className="py-2 pr-3 text-right">Rate</th>
+                  <th className="py-2 pr-3 text-right">Avg days</th>
+                  <th className="py-2 pr-3 text-right">Same day</th>
+                  <th className="py-2 pr-3">Peaks on</th>
+                </tr>
+              </thead>
+              <tbody>
+                {matrix.rowsM.map(r => (
+                  <tr key={r.day} className="border-b last:border-0">
+                    <td className="py-2 pr-3 font-medium whitespace-nowrap">{r.day}</td>
+                    {r.cells.map((c, i) => (
+                      <td
+                        key={i}
+                        className="py-2 px-2 text-center tabular-nums"
+                        style={c > 0 ? { backgroundColor: `hsl(var(--primary) / ${0.08 + (c / matrix.maxCell) * 0.5})` } : undefined}
+                      >
+                        {c || '—'}
+                      </td>
+                    ))}
+                    <td className="py-2 pr-3 text-right font-semibold">{r.converted}</td>
+                    <td className="py-2 pr-3 text-right">{r.leads ? `${r.conversion}%` : '—'}</td>
+                    <td className="py-2 pr-3 text-right">{r.converted ? r.avgLag : '—'}</td>
+                    <td className="py-2 pr-3 text-right">{r.converted ? `${r.sameDayShare}%` : '—'}</td>
+                    <td className="py-2 pr-3 whitespace-nowrap">{r.topConvertDay}</td>
+                  </tr>
+                ))}
+                <tr className="border-t font-medium">
+                  <td className="py-2 pr-3">Converted on</td>
+                  {matrix.convertDayTotals.map((t, i) => (
+                    <td key={i} className="py-2 px-2 text-center">{t || '—'}</td>
+                  ))}
+                  <td className="py-2 pr-3 text-right">{matrix.convertDayTotals.reduce((a, b) => a + b, 0)}</td>
+                  <td colSpan={4} />
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Conversion day uses the lead's converted timestamp (falling back to its last update), so leads still open are
+            counted in the arrival row only.
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
