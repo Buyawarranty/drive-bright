@@ -3,7 +3,7 @@ import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell'
 import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { FileSpreadsheet, FileDown, Plus, Download, Calendar as CalendarIcon, Bell, BarChart3, Receipt, Paperclip } from 'lucide-react';
+import { FileSpreadsheet, FileDown, Plus, Download, Calendar as CalendarIcon, Bell, BarChart3, Receipt, Paperclip, Gavel } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AddClaimDialog } from './claims/AddClaimDialog';
 import { ClaimInvoicesDialog } from './claims/ClaimInvoicesDialog';
 import { ClaimFilesDialog } from './claims/ClaimFilesDialog';
+import { ClaimAppealDialog } from './claims/ClaimAppealDialog';
 import { exportToCSV, exportToPDF, formatClaimForExport } from './claims/exportUtils';
 import { ClaimUpdateNotifications } from './claims/ClaimUpdateNotifications';
 import { ClaimRemindersBanner } from './claims/ClaimRemindersBanner';
@@ -94,6 +95,7 @@ export const ClaimsTab = ({
   const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
   const [showInvoicesDialog, setShowInvoicesDialog] = useState(false);
   const [showFilesDialog, setShowFilesDialog] = useState(false);
+  const [showAppealDialog, setShowAppealDialog] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState<'claims' | 'reminders' | 'claims-data'>('claims');
 
   const { claims: managerClaims, loading: managerLoading, refetch: refetchManager } = useClaims();
@@ -497,6 +499,11 @@ export const ClaimsTab = ({
 
       <ClaimInvoicesDialog open={showInvoicesDialog} onOpenChange={setShowInvoicesDialog} />
       <ClaimFilesDialog open={showFilesDialog} onOpenChange={setShowFilesDialog} />
+      <ClaimAppealDialog
+        open={showAppealDialog}
+        onOpenChange={setShowAppealDialog}
+        onSent={() => fetchClaims()}
+      />
 
       <AddClaimDialog
         open={showAddClaimDialog}
