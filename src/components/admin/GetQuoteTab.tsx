@@ -6710,7 +6710,8 @@ Questions? Call 0330 229 5040`;
                         <Button
                           type="button"
                           onClick={handleSendSelfCopy}
-                          disabled={isSendingSelfCopy || isSendingEmail || !quoteLink}
+                          disabled={isSendingSelfCopy || isSendingEmail}
+
                           variant="secondary"
                           className="w-full bg-white hover:bg-orange-50 text-black border border-orange-200"
                         >
