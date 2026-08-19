@@ -702,14 +702,18 @@ export const useLeads = (options?: UseLeadsOptions) => {
           if (isSalesAgent && currentAdmin?.id && !hasActiveSearch) {
             // 1) Leads assigned to this agent. Agents with very large histories
             // (thousands of leads) used to page through everything, blowing the
-            // 25s fetch timeout and leaving them with an EMPTY list. Cap the
-            // unfiltered view — a date filter or search still pages wider.
+            // 25s fetch timeout and leaving them with an EMPTY list (the "blank
+            // New Leads screen"). The unfiltered view now fetches its chunks in
+            // PARALLEL instead of walking 1000-row pages one after another, so
+            // an agent with ~1000+ leads paints in one round-trip instead of
+            // several sequential ones.
             const agentDateFilter = serverDateFilterRef.current;
             const agentHasDateWindow = !!agentDateFilter?.from || !!agentDateFilter?.to;
             const assignedMaxRows = agentHasDateWindow || serverCallbacksOnlyRef.current
               ? MAX_PAGED_LEADS
               : AGENT_UNFILTERED_LEADS_CAP;
-            const assignedQ = fetchPagedLeads((from, to) =>
+
+            const buildAssignedChunk = (from: number, to: number) =>
               applyHiddenFromAgent(applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
@@ -718,9 +722,20 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              )))),
-              assignedMaxRows
-            );
+              ))));
+
+            const assignedQ = (async () => {
+              const chunks: Promise<any>[] = [];
+              for (let offset = 0; offset < assignedMaxRows; offset += AGENT_CHUNK_SIZE) {
+                chunks.push(buildAssignedChunk(offset, offset + AGENT_CHUNK_SIZE - 1));
+              }
+              const results = await Promise.all(chunks);
+              const failed = results.find((r: any) => r?.error);
+              if (failed) return failed;
+              const rows: any[] = [];
+              results.forEach((r: any) => rows.push(...(r.data || [])));
+              return { data: rows, error: null } as any;
+            })();
 
             // 2) Recent unassigned leads so the agent can still claim
             let unassignedQ = supabase
@@ -729,7 +744,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
               .is('assigned_to', null)
               .order('created_at', { ascending: false })
               .order('id', { ascending: false })
-              .limit(500);
+              .limit(300);
             unassignedQ = applyServerDateFilter(unassignedQ);
             unassignedQ = applyServerSearchFilter(unassignedQ);
             unassignedQ = applyCallbacksFilter(unassignedQ);
