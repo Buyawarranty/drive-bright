@@ -33,6 +33,8 @@ interface DayRow {
 }
 
 const money = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
+const cpl = (cost: number, leads: number) => (leads > 0 ? cost / leads : 0);
+
 
 const DEFAULT_LEAD_COST = 21;
 
@@ -292,19 +294,30 @@ export const LeadsToSalesRatioPanel: React.FC = () => {
         {/* Paid channel lead cost at £{leadCost} a lead */}
         <div className="flex flex-wrap gap-2">
           <Badge className="bg-blue-600 text-white hover:bg-blue-600">
-            Google {money(totals.googleCost)} · {totals.googleLeads} leads
+            Google {money(totals.googleCost)} · {totals.googleLeads} leads · {money(cpl(totals.googleCost, totals.googleLeads))} per lead
           </Badge>
           <Badge className="bg-indigo-600 text-white hover:bg-indigo-600">
-            Meta {money(totals.metaCost)} · {totals.metaLeads} leads
+            Meta {money(totals.metaCost)} · {totals.metaLeads} leads · {money(cpl(totals.metaCost, totals.metaLeads))} per lead
           </Badge>
           <Badge className="bg-teal-600 text-white hover:bg-teal-600">
-            Bing {money(totals.bingCost)} · {totals.bingLeads} leads
+            Bing {money(totals.bingCost)} · {totals.bingLeads} leads · {money(cpl(totals.bingCost, totals.bingLeads))} per lead
           </Badge>
           <Badge className="bg-zinc-900 text-white hover:bg-zinc-900">
-            TikTok {money(totals.tiktokCost)} · {totals.tiktokLeads} leads
+            TikTok {money(totals.tiktokCost)} · {totals.tiktokLeads} leads · {money(cpl(totals.tiktokCost, totals.tiktokLeads))} per lead
           </Badge>
-          <Badge variant="secondary">All paid channels {money(totals.paidCost)}</Badge>
+          <Badge variant="secondary">
+            All paid channels {money(totals.paidCost)} ·{' '}
+            {(totals.googleLeads + totals.metaLeads + totals.bingLeads + totals.tiktokLeads).toLocaleString('en-GB')} leads ·{' '}
+            {money(
+              cpl(
+                totals.paidCost,
+                totals.googleLeads + totals.metaLeads + totals.bingLeads + totals.tiktokLeads,
+              ),
+            )}{' '}
+            per lead
+          </Badge>
         </div>
+
 
 
 
