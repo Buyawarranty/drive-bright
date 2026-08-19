@@ -481,6 +481,11 @@ export const useLeads = (options?: UseLeadsOptions) => {
       // Granting `tab_new-leads_all-leads` lifts that restriction (manager-style global view).
       const hasAllLeadsPerm = currentAdmin?.permissions?.['tab_new-leads_all-leads'] === true;
       const isSalesAgent = currentAdmin?.role === 'sales' && !hasAllLeadsPerm;
+      // Sales leads (team leads) own huge histories too. Without this they fell
+      // into the "page every lead in the system" branch, blew the 25s timeout
+      // and got "Failed to load leads: Leads fetch timed out" with no fallback.
+      const isAgentScoped =
+        (currentAdmin?.role === 'sales' || currentAdmin?.role === 'sales_lead') && !hasAllLeadsPerm;
 
       const SELECT_COLUMNS = `
         id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
@@ -704,7 +709,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           // hand off to the right salesperson. Without an active search, keep the
           // narrower assigned+unassigned scope.
           const hasActiveSearch = !!serverSearchTermRef.current?.trim();
-          if (isSalesAgent && currentAdmin?.id && !hasActiveSearch) {
+          if (isAgentScoped && currentAdmin?.id && !hasActiveSearch) {
             // 1) Leads assigned to this agent. Agents with very large histories
             // (thousands of leads) used to page through everything, blowing the
             // 25s fetch timeout and leaving them with an EMPTY list (the "blank
@@ -837,7 +842,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
         allSalesLeadsResult = await runWideLeadsFetch();
         if (allSalesLeadsResult?.error) throw allSalesLeadsResult.error;
       } catch (wideErr) {
-        if (!isSalesAgent || !currentAdmin?.id) throw wideErr;
+        if (!isAgentScoped || !currentAdmin?.id) throw wideErr;
         console.warn('[Leads] Wide fetch failed, falling back to recent assigned leads:', wideErr);
         allSalesLeadsResult = await fetchAgentFallbackLeads();
         if (allSalesLeadsResult?.error) throw allSalesLeadsResult.error;
