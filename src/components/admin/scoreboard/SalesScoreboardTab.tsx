@@ -339,6 +339,20 @@ export const SalesScoreboardTab: React.FC = () => {
           </AccordionContent>
         </AccordionItem>
 
+        <AccordionItem value="daily" className="border rounded-xl bg-card/60 px-4">
+          <AccordionTrigger className="text-sm font-semibold hover:no-underline">
+            <span className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-sky-600" /> Daily sales &amp; AOV</span>
+          </AccordionTrigger>
+          <AccordionContent className="pb-4">
+            <DailySalesChartPanel
+              monthDate={dateRange?.from ?? new Date()}
+              agents={visibleAgents.map(a => ({ id: a.id, name: a.name }))}
+              currentAdminUserId={currentAdminUserId}
+              isManagement={isManagement}
+            />
+          </AccordionContent>
+        </AccordionItem>
+
         <AccordionItem value="leaderboard" className="border rounded-xl bg-card/60 px-4">
           <AccordionTrigger className="text-sm font-semibold hover:no-underline">
             <span className="flex items-center gap-2"><BarChart3 className="h-4 w-4" /> Leaderboard</span>
