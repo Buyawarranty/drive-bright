@@ -2306,38 +2306,59 @@ export type Database = {
       }
       claim_appeals: {
         Row: {
+          appeal_fee: number | null
           claim_id: string
           closed_at: string | null
           created_at: string
           created_by: string | null
+          customer_email: string | null
+          customer_notified: boolean
           id: string
+          independent_reviewer: string | null
           new_evidence: string | null
           outcome: string | null
+          payment_link: string | null
           reason: string | null
+          reviewer_url: string | null
+          sent_at: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          appeal_fee?: number | null
           claim_id: string
           closed_at?: string | null
           created_at?: string
           created_by?: string | null
+          customer_email?: string | null
+          customer_notified?: boolean
           id?: string
+          independent_reviewer?: string | null
           new_evidence?: string | null
           outcome?: string | null
+          payment_link?: string | null
           reason?: string | null
+          reviewer_url?: string | null
+          sent_at?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          appeal_fee?: number | null
           claim_id?: string
           closed_at?: string | null
           created_at?: string
           created_by?: string | null
+          customer_email?: string | null
+          customer_notified?: boolean
           id?: string
+          independent_reviewer?: string | null
           new_evidence?: string | null
           outcome?: string | null
+          payment_link?: string | null
           reason?: string | null
+          reviewer_url?: string | null
+          sent_at?: string | null
           status?: string
           updated_at?: string
         }
