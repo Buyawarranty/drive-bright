@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_sales_leads_assigned_created_id ON public.sales_leads (assigned_to, created_at DESC, id DESC);
