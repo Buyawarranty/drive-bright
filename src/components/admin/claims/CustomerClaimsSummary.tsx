@@ -130,9 +130,12 @@ export const CustomerClaimsSummary: React.FC<CustomerClaimsSummaryProps> = ({
   };
 
   const handleClaimAdded = () => {
+    // A newly added claim must show immediately — bypass the shared cache.
+    invalidateClaimsCache(customerEmail, vehicleReg);
     fetchClaims();
     onClaimAdded?.();
   };
+
 
   if (loading) {
     return (
