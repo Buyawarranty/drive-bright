@@ -450,11 +450,10 @@ export const useLeads = (options?: UseLeadsOptions) => {
       // CRITICAL: Do NOT check fetchToken — always force loading off after 12s
       if (shouldShowBlockingLoader && !loadingTimeoutRef.current) {
         loadingTimeoutRef.current = setTimeout(() => {
-          console.warn('[Leads] Loading safety timeout triggered after 12s');
+          console.warn('[Leads] Loading safety timeout triggered');
           setLoading(false);
           initialLoadDoneRef.current = true;
           initialLoadStartedRef.current = false;
-          isFetchingRef.current = false;
           loadingTimeoutRef.current = null;
         }, INITIAL_LEADS_LOAD_TIMEOUT_MS);
       }
@@ -464,7 +463,18 @@ export const useLeads = (options?: UseLeadsOptions) => {
       // For 'sales' role agents: fetch ALL leads assigned to them (no 750 cap),
       // plus the most recent unassigned leads so they can still claim new ones.
       // For admin / sales_lead / super_admin: keep the global recent-750 window.
-      let currentAdmin = await getCachedAdminUser();
+      // The admin lookup sits in front of every leads query. Bound it as well as
+      // the lead query itself so a stalled auth/RLS request cannot leave this tab
+      // looking empty indefinitely.
+      const currentAdminLookup = await withTimeout(
+        getCachedAdminUser(),
+        INITIAL_LEADS_LOAD_TIMEOUT_MS,
+        'Admin profile lookup timed out'
+      ).catch((error) => {
+        console.warn('[Leads] Admin profile lookup failed:', error);
+        return null;
+      });
+      let currentAdmin = currentAdminLookup;
       // When a super_admin impersonates another agent via "View As", scope the lead
       // fetch as if it were that agent — otherwise we'd return the global recent-750
       // window and miss older leads assigned to the impersonated sales agent.
@@ -946,6 +956,16 @@ export const useLeads = (options?: UseLeadsOptions) => {
       }));
 
       const visibleLeadIds = leadsWithCounts.slice(0, 250).map((lead: any) => lead.id);
+
+      // Paint the usable table as soon as the core rows arrive. Tag lookups are
+      // optional decoration and can be slow under load; they must never hold the
+      // entire New Leads page on a spinner or make it appear blank.
+      if (fetchToken === latestFetchTokenRef.current && leadsRef.current.length === 0) {
+        setLeads(leadsWithCounts as Lead[]);
+        setLoading(false);
+        initialLoadDoneRef.current = true;
+        initialLoadStartedRef.current = false;
+      }
 
       let tagsByLeadId: Record<string, any[]> = {};
 
