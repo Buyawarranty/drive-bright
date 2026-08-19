@@ -13,6 +13,7 @@ import { CostEfficiencyPanel } from './scoreboard/CostEfficiencyPanel';
 import { CoverOptionsMixPanel } from './analytics/CoverOptionsMixPanel';
 import { DailyRevenueTrendPanel } from './analytics/DailyRevenueTrendPanel';
 import { SalesByHourPanel } from './analytics/SalesByHourPanel';
+import { SalesByWeekdayPanel } from './analytics/SalesByWeekdayPanel';
 import { CustomerDemographicsPanel } from './analytics/CustomerDemographicsPanel';
 import { PriceConversionAovPanel } from './analytics/PriceConversionAovPanel';
 import { LeadsToSalesRatioPanel } from './analytics/LeadsToSalesRatioPanel';
