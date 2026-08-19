@@ -1,4 +1,5 @@
 import React from 'react';
+import { logAdminUiEvent } from '@/lib/adminTelemetry';
 
 interface State {
   hasError: boolean;
@@ -26,6 +27,16 @@ export class AdminShellErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error('[AdminShellErrorBoundary]', error, info);
+    logAdminUiEvent({
+      event_type: 'crash',
+      label: String(error?.message || 'Admin shell crashed').slice(0, 200),
+      detail: {
+        scope: 'shell',
+        stack: (error?.stack || '').slice(0, 1200) || undefined,
+        componentStack: (info?.componentStack || '').slice(0, 800) || undefined,
+      },
+    });
+
 
     // Stale-chunk auto-recovery: after a fresh deploy the old JS chunks may
     // 404. Force one hard reload so the browser picks up the new bundle.

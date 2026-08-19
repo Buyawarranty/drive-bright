@@ -33,6 +33,8 @@ import { NewLeadsWaitingBanner } from '@/components/admin/leads/NewLeadsWaitingB
 import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
 import { recordTabVisit } from '@/hooks/useTabUsage';
 import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
+import { initAdminTelemetry, logAdminUiEvent, logAdminSlowLoad } from '@/lib/adminTelemetry';
+const AdminUiEventLogPanel = lazy(() => import('@/components/admin/AdminUiEventLogPanel'));
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
 import { DiscountAuthBanner } from '@/components/admin/DiscountAuthBanner';
 import { DiscountAuthPopup } from '@/components/admin/DiscountAuthPopup';
@@ -229,6 +231,13 @@ class TabErrorBoundary extends React.Component<
   }
   componentDidCatch(error: Error) {
     console.error('[TabErrorBoundary] Tab error:', error);
+    logAdminUiEvent({
+      event_type: 'crash',
+      label: String(error?.message || 'Tab crashed').slice(0, 200),
+      tab: this.props.tabKey ?? null,
+      detail: { scope: 'tab', stack: (error?.stack || '').slice(0, 1200) || undefined },
+    });
+
 
     // Auto-recover from stale chunks after a deployment: hard-reload once
     // per session so staff don't need to know what "ChunkLoadError" means.
@@ -349,6 +358,21 @@ const AdminDashboard = () => {
     }
     // Attach global phone-click tracker (a[href^="tel:"] + [data-phone-click])
     initPhoneClickTracker();
+
+    // Attach CRM telemetry (CTA clicks, JS errors, crashes) and record how long
+    // this dashboard took to become usable so slow/blank loads are visible later.
+    const detachTelemetry = initAdminTelemetry();
+    const loadStartedAt = performance.now();
+    const raf = requestAnimationFrame(() => {
+      const ms = performance.now() - loadStartedAt;
+      logAdminUiEvent({ event_type: 'page_load', label: 'Admin dashboard loaded', duration_ms: ms });
+      if (ms > 8000) logAdminSlowLoad('Admin dashboard slow load', ms);
+    });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      detachTelemetry();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [isCheckingRole, setIsCheckingRole] = useState(true);
@@ -391,6 +415,7 @@ const AdminDashboard = () => {
     setSearchParams({ tab: publicSlugFor(newTab) }, { replace: true });
     // Track per-user tab visits so the shortcuts bar can surface favourites
     recordTabVisit(session?.user?.id ?? null, newTab);
+    logAdminUiEvent({ event_type: 'tab_view', tab: newTab, label: `Opened ${newTab}` });
   }, [setSearchParams, session?.user?.id]);
 
   // Back navigation within the dashboard
@@ -797,7 +822,16 @@ const AdminDashboard = () => {
         }
         return <UnifiedEmailHub />;
       case 'analytics':
-        return <AnalyticsTab userRole={effectiveUserRole} />;
+        return (
+          <div className="space-y-6">
+            <AnalyticsTab userRole={effectiveUserRole} />
+            {['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole) && (
+              <Suspense fallback={null}>
+                <AdminUiEventLogPanel />
+              </Suspense>
+            )}
+          </div>
+        );
       case 'page-analytics':
         return <PageAnalyticsTab />;
       case 'google-ads':

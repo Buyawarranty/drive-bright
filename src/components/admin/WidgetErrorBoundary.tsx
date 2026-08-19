@@ -1,4 +1,5 @@
 import React from 'react';
+import { logAdminUiEvent } from '@/lib/adminTelemetry';
 
 interface Props {
   children: React.ReactNode;
@@ -29,6 +30,11 @@ export class WidgetErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error(`[WidgetErrorBoundary] ${this.props.label || 'widget'} failed:`, error, info);
+    logAdminUiEvent({
+      event_type: 'crash',
+      label: `${this.props.label || 'Widget'}: ${String(error?.message || 'failed')}`.slice(0, 200),
+      detail: { scope: 'widget', stack: (error?.stack || '').slice(0, 1200) || undefined },
+    });
   }
 
   render() {
