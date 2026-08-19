@@ -842,7 +842,10 @@ export const useLeads = (options?: UseLeadsOptions) => {
         allSalesLeadsResult = await runWideLeadsFetch();
         if (allSalesLeadsResult?.error) throw allSalesLeadsResult.error;
       } catch (wideErr) {
-        if (!isAgentScoped || !currentAdmin?.id) throw wideErr;
+        // Any signed-in admin user (including sales_lead / managers with the
+        // `all-leads` permission) falls back to their own recent leads rather
+        // than rendering a completely blank New Leads screen.
+        if (!currentAdmin?.id) throw wideErr;
         console.warn('[Leads] Wide fetch failed, falling back to recent assigned leads:', wideErr);
         allSalesLeadsResult = await fetchAgentFallbackLeads();
         if (allSalesLeadsResult?.error) throw allSalesLeadsResult.error;
