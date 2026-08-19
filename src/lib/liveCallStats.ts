@@ -83,6 +83,8 @@ export const subscribeLiveCallStats = (leadId: string, cb: Listener): (() => voi
   if (!listeners.has(leadId)) listeners.set(leadId, new Set());
   listeners.get(leadId)!.add(cb);
   ensureTimer();
+  // First paint shouldn't wait a full poll cycle for the real counter.
+  kickPoll();
 
   const cached = cache.get(leadId);
   if (cached) cb(cached);
