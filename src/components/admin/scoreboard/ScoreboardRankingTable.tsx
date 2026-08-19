@@ -38,7 +38,7 @@ interface Props {
 const PERIOD_LABELS: Record<TimePeriod, string> = {
   today: "Today's",
   week: "This Week's",
-  '14days': "Last 14 Days'",
+  '14days': "Last 30 Days'",
   month: "This Month's",
   all: 'All-Time',
   custom: 'Custom Period',
@@ -110,7 +110,7 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
           <Trophy className="h-5 w-5 text-yellow-500" />
           {PERIOD_LABELS[period]} leaderboard
           <Badge variant="outline" className="text-[11px] font-medium border-emerald-500/60 text-emerald-700 bg-emerald-50">
-            Conversion goal 10%
+            Conversion goal 15%
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -260,8 +260,8 @@ export const ScoreboardRankingTable: React.FC<Props> = ({ agents, currentAdminUs
                     <div className="rounded-lg border bg-background/70 px-3 py-2">
                       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Conv. / goal</div>
                       <div className="font-semibold text-base tabular-nums">
-                        <span className={agent.conversionRate >= 10 ? 'text-emerald-600' : 'text-foreground'}>{agent.conversionRate.toFixed(1)}%</span>
-                        <span className="text-muted-foreground font-normal text-xs"> / 10%</span>
+                        <span className={agent.conversionRate >= 15 ? 'text-emerald-600' : 'text-foreground'}>{agent.conversionRate.toFixed(1)}%</span>
+                        <span className="text-muted-foreground font-normal text-xs"> / 15%</span>
                       </div>
                     </div>
                     <div className="rounded-lg border bg-background/70 px-3 py-2">

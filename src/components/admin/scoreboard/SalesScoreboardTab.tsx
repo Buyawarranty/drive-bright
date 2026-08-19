@@ -20,7 +20,7 @@ import { startOfMonth, endOfMonth, addMonths, subMonths, format, isSameMonth } f
 const QUICK_PERIODS: { value: TimePeriod; label: string }[] = [
   { value: 'today', label: 'Today' },
   { value: 'week', label: 'This week' },
-  { value: '14days', label: 'Last 14 days' },
+  { value: '14days', label: 'Last 30 days' },
   { value: 'month', label: 'This month' },
   { value: 'all', label: 'All time' },
 ];
