@@ -52,9 +52,27 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
   useEffect(() => {
     if (!open) return;
 
+    let cancelled = false;
+
+    // Agents reported "unable to import the lead": a slow lead/cart query left the
+    // popover spinning forever with no result and no error. Every request is now
+    // time-bounded and degrades to whatever came back.
+    const bounded = async <T,>(p: PromiseLike<T>, ms = 8000): Promise<T | { data: null; error: Error }> => {
+      let timer: ReturnType<typeof setTimeout>;
+      const timeout = new Promise<{ data: null; error: Error }>((resolve) => {
+        timer = setTimeout(() => resolve({ data: null, error: new Error('Search timed out') }), ms);
+      });
+      try {
+        return (await Promise.race([Promise.resolve(p), timeout])) as any;
+      } finally {
+        clearTimeout(timer!);
+      }
+    };
+
     const fetchLeads = async () => {
       setLoading(true);
       try {
+
         let query = supabase
           .from('sales_leads')
           .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest, assigned_to')
@@ -108,7 +126,8 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         }
 
 
-        let [slRes, cartRes] = await Promise.all([query, cartQuery]);
+        let [slRes, cartRes]: any[] = await Promise.all([bounded(query), bounded(cartQuery)]);
+        if (cancelled) return;
 
         if (slRes.error) console.error('Error fetching leads:', slRes.error);
         if (cartRes.error) console.error('Error fetching abandoned carts:', cartRes.error);
@@ -118,12 +137,13 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         if (slRes.error && searchTerm.trim()) {
           const compact = searchTerm.trim().replace(/\s+/g, '').toUpperCase();
           const spaced = compact.length >= 5 ? `${compact.slice(0, -3)} ${compact.slice(-3)}` : compact;
-          slRes = await supabase
+          slRes = await bounded(supabase
             .from('sales_leads')
             .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest, assigned_to')
             .in('vehicle_reg', [compact, spaced, searchTerm.trim()])
             .order('created_at', { ascending: false })
-            .limit(50) as any;
+            .limit(50)) as any;
+          if (cancelled) return;
         }
 
         setLoadError(
@@ -157,13 +177,15 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
           )
         ).slice(0, 50);
         if (missingEmails.length > 0) {
-          const { data: ownerRows } = await supabase
+          // Owner enrichment is cosmetic — never let it hold up the list.
+          const { data: ownerRows } = (await bounded(supabase
             .from('sales_leads')
             .select('email, phone, assigned_to')
             .in('email', missingEmails)
             .not('assigned_to', 'is', null)
             .order('created_at', { ascending: false })
-            .limit(200);
+            .limit(200), 4000)) as any;
+          if (cancelled) return;
           for (const l of (ownerRows as any[]) || []) {
             const e = String(l.email || '').toLowerCase();
             if (e && !ownerByEmail.has(e)) ownerByEmail.set(e, l.assigned_to);
@@ -199,13 +221,17 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         setLeads(merged);
       } catch (err) {
         console.error('Error fetching leads:', err);
+        if (!cancelled) setLoadError('Lead search failed — try again.');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     const debounce = setTimeout(fetchLeads, 300);
-    return () => clearTimeout(debounce);
+    return () => {
+      cancelled = true;
+      clearTimeout(debounce);
+    };
   }, [open, searchTerm]);
 
   const handleSelectLead = (lead: LeadData) => {

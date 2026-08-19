@@ -55,39 +55,55 @@ export async function lookupVehicleByReg(
     if (pending) return pending;
   }
 
-  const withTimeout = <T,>(p: Promise<T>): Promise<T | 'timeout'> =>
+  const withTimeout = <T,>(p: Promise<T>, ms: number = timeoutMs): Promise<T | 'timeout'> =>
     Promise.race([
       p,
-      new Promise<'timeout'>((resolve) => setTimeout(() => resolve('timeout'), timeoutMs)),
+      new Promise<'timeout'>((resolve) => setTimeout(() => resolve('timeout'), ms)),
     ]);
+
+  // Plain anon invoke — the lookup function is public, so this works even when the
+  // staff session is stale, refreshing, or completely gone.
+  const anonLookup = async (ms: number) => {
+    const res = await withTimeout(supabase.functions.invoke('dvla-vehicle-lookup', { body }), ms);
+    if (res === 'timeout') return { data: null, error: new Error('Lookup timed out'), timedOut: true };
+    return { data: (res as any).data ?? null, error: ((res as any).error as Error) ?? null, timedOut: false };
+  };
 
   const run = async (): Promise<LookupResult> => {
     try {
-      const first = await withTimeout(invokeWithFreshSession<any>('dvla-vehicle-lookup', body));
-      if (first === 'timeout') {
-        return { data: null, error: new Error('Lookup timed out'), timedOut: true };
-      }
-      if (first.data?.make) {
+      // The authenticated attempt gets only PART of the budget. Agents were left
+      // staring at "Could not identify vehicle" because a stalled getSession/
+      // refreshSession call ate the whole 12s and no fallback ever ran.
+      const AUTH_BUDGET_MS = Math.min(6000, Math.max(3000, Math.floor(timeoutMs / 2)));
+      const first = await withTimeout(
+        invokeWithFreshSession<any>('dvla-vehicle-lookup', body),
+        AUTH_BUDGET_MS
+      );
+
+      if (first !== 'timeout' && first.data?.make) {
         cache.set(key, { at: Date.now(), data: first.data });
         return { data: first.data, error: null, timedOut: false };
       }
 
-      // Fall back to an unauthenticated call — the function is public for lookups.
-      const second = await withTimeout(supabase.functions.invoke('dvla-vehicle-lookup', { body }));
-      if (second === 'timeout') {
-        return { data: first.data ?? null, error: first.error ?? new Error('Lookup timed out'), timedOut: true };
+      // Fall back to an unauthenticated call with the remaining budget.
+      const second = await anonLookup(Math.max(4000, timeoutMs - AUTH_BUDGET_MS));
+      const firstData = first === 'timeout' ? null : first.data ?? null;
+      const firstError = first === 'timeout' ? new Error('Lookup timed out') : first.error ?? null;
+      const data = second.data ?? firstData;
+      if (data?.make) {
+        cache.set(key, { at: Date.now(), data });
+        return { data, error: null, timedOut: false };
       }
-      const data = second.data ?? first.data ?? null;
-      if (data?.make) cache.set(key, { at: Date.now(), data });
       return {
         data,
-        error: (second.error as Error) ?? first.error ?? null,
-        timedOut: false,
+        error: second.error ?? firstError ?? null,
+        timedOut: second.timedOut && !data,
       };
     } catch (e: any) {
       return { data: null, error: e instanceof Error ? e : new Error(String(e)), timedOut: false };
     }
   };
+
 
   const promise = run().finally(() => inflight.delete(key));
   inflight.set(key, promise);
