@@ -1,4 +1,5 @@
 import React from 'react';
+import { logAdminUiEvent } from '@/lib/adminTelemetry';
 
 interface State {
   hasError: boolean;
