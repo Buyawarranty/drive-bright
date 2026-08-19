@@ -154,3 +154,4 @@ Updated: just now
 - [Departed Agent Lead Recovery](mem://admin/leads/departed-agent-lead-recovery) — Any leaver's ex-owned unassigned leads recovered all-time via audit trail, live counter, ignores date range
 - [Note-lock Reassign Authorisation](mem://admin/leads/note-lock-reassign-authorisation) — Calls/status changes never block a reassign; an agent-written note locks the lead until a manager ticks explicit authorisation
 - [AI Sandbox Grounding](mem://features/ai-sandbox-grounding) — Sandbox chatbot answers cover/T&C questions only from approved site material; not confident = specialist handover, never a guess
+- [CallRail Missed Call 30-min Suppression](mem://admin/leads/callrail-missed-call-30min-suppression) — Missed CallRail call only becomes a lead if no Zoiper/Dial 9 call to that number within ±30 minutes
