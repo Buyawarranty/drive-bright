@@ -81,7 +81,7 @@ serve(async (req) => {
       const { data: adminByEmail } = await supabaseClient
         .from('admin_users')
         .select('id, email, first_name, last_name, is_active, user_id')
-        .eq('email', user.email)
+        .ilike('email', user.email || '')
         .maybeSingle();
 
       if (adminByEmail?.is_active) {
@@ -93,16 +93,29 @@ serve(async (req) => {
         logStep("Admin found by email, updated user_id mapping", { adminEmail: adminByEmail.email });
         resolvedAdmin = adminByEmail;
       } else {
-        // Fallback: allow users with a management role in user_roles
+        // Fallback: allow the same active staff roles as the shared admin-auth
+        // helper used by send-admin-quote. This path is commonly reached after
+        // a staff account is re-invited and its admin_users.user_id is stale.
         const { data: roleRows } = await supabaseClient
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id);
         const roles = (roleRows || []).map((r: any) => r.role);
-        const managementRoles = ['admin', 'super_admin', 'sales_manager', 'performance_manager', 'accounts_manager', 'sales_lead'];
-        const hasManagementRole = roles.some((r: string) => managementRoles.includes(r));
+        const staffRoles = [
+          'admin',
+          'super_admin',
+          'sales_manager',
+          'performance_manager',
+          'accounts_manager',
+          'sales_lead',
+          'sales',
+          'sales_agent',
+          'lead_gen',
+          'claims_agent',
+        ];
+        const hasStaffRole = roles.some((r: string) => staffRoles.includes(r));
 
-        if (hasManagementRole) {
+        if (hasStaffRole) {
           logStep("Admin access granted via user_roles", { userId: user.id, email: user.email, roles });
           const emailName = (user.email || '').split('@')[0].replace(/[._-]+/g, ' ');
           resolvedAdmin = {
