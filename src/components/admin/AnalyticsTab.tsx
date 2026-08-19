@@ -90,6 +90,7 @@ const ANALYTICS_QUICK_LINKS = [
   { id: 'revenue-monthly', label: 'Revenue & AOV', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
   { id: 'revenue-daily', label: 'Daily revenue', className: 'bg-teal-300/50 text-teal-900 border-teal-200/50 hover:bg-teal-400/50' },
   { id: 'time-of-sale', label: 'Time of sale (24h)', className: 'bg-cyan-300/50 text-cyan-900 border-cyan-200/50 hover:bg-cyan-400/50' },
+  { id: 'best-selling-days', label: 'Best selling days', className: 'bg-indigo-300/50 text-indigo-900 border-indigo-200/50 hover:bg-indigo-400/50' },
   { id: 'month-projection', label: 'Month projection', className: 'bg-lime-300/50 text-lime-900 border-lime-200/50 hover:bg-lime-400/50' },
   { id: 'duration-mix', label: 'Duration mix', className: 'bg-sky-300/50 text-sky-900 border-sky-200/50 hover:bg-sky-400/50' },
   { id: 'per-year-value', label: 'Per-year value', className: 'bg-blue-300/50 text-blue-900 border-blue-200/50 hover:bg-blue-400/50' },
