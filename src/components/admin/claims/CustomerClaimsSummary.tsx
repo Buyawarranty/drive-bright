@@ -49,24 +49,8 @@ export const CustomerClaimsSummary: React.FC<CustomerClaimsSummaryProps> = ({
     }
 
     try {
-      let query = supabase
-        .from('claims_submissions')
-        .select('id, claim_reason, payment_amount, status, created_at, paid_at, vehicle_registration')
-        .order('created_at', { ascending: false });
-
-      // Match by email OR vehicle registration
-      if (customerEmail && vehicleReg) {
-        query = query.or(`email.ilike.${customerEmail},vehicle_registration.ilike.${vehicleReg}`);
-      } else if (customerEmail) {
-        query = query.ilike('email', customerEmail);
-      } else if (vehicleReg) {
-        query = query.ilike('vehicle_registration', vehicleReg);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setClaims(data || []);
+      const rows = await fetchClaimsFor(customerEmail, vehicleReg);
+      setClaims(rows);
     } catch (error) {
       console.error('Error fetching customer claims:', error);
     } finally {
@@ -77,6 +61,7 @@ export const CustomerClaimsSummary: React.FC<CustomerClaimsSummaryProps> = ({
   useEffect(() => {
     fetchClaims();
   }, [customerEmail, vehicleReg]);
+
 
   const totalClaims = claims.length;
   const totalPaid = claims.reduce((sum, c) => sum + (c.payment_amount || 0), 0);
