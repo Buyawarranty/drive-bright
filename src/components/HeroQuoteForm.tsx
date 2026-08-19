@@ -339,9 +339,10 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                 )}
               </div>
 
-              <p className="text-sm text-black text-left mt-0.5">
-                Protection for vehicles up to 150,000 miles and 15 years.
+              <p className="text-sm text-gray-500 text-left mt-0.5">
+                Protection for vehicles up to <span className="font-bold text-gray-700">150,000 miles</span> and <span className="font-bold text-gray-700">15 years old</span>.
               </p>
+
 
               {/* Inline registration error */}
               {regError && (
