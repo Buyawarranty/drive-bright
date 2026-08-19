@@ -28,6 +28,59 @@ interface CustomerClaimsSummaryProps {
   showOnly?: 'claimsMade' | 'claimsPaid'; // For separate column display
 }
 
+/**
+ * PERFORMANCE: the Customers table renders this widget twice per row (claims
+ * made + claims paid). Every instance used to fire its own claims_submissions
+ * query, so one page of 50 customers issued ~100 identical reads — the single
+ * chattiest query in the whole CRM and a big part of the lag sales staff saw.
+ * Requests are now shared per email/reg with a short-lived cache, so each
+ * customer costs one read per page view regardless of how many widgets show it.
+ */
+const CLAIMS_CACHE_TTL_MS = 60_000;
+const _claimsCache = new Map<string, { at: number; rows: Claim[]; inflight?: Promise<Claim[]> }>();
+
+const claimsCacheKey = (email?: string, reg?: string) =>
+  `${(email || '').trim().toLowerCase()}|${(reg || '').trim().toUpperCase()}`;
+
+const invalidateClaimsCache = (email?: string, reg?: string) => {
+  _claimsCache.delete(claimsCacheKey(email, reg));
+};
+
+const fetchClaimsFor = (email?: string, reg?: string): Promise<Claim[]> => {
+  const key = `${(email || '').trim().toLowerCase()}|${(reg || '').trim().toUpperCase()}`;
+  const entry = _claimsCache.get(key);
+  const now = Date.now();
+  if (entry) {
+    if (entry.inflight) return entry.inflight;
+    if (now - entry.at < CLAIMS_CACHE_TTL_MS) return Promise.resolve(entry.rows);
+  }
+
+  const inflight = (async () => {
+    let query = supabase
+      .from('claims_submissions')
+      .select('id, claim_reason, payment_amount, status, created_at, paid_at, vehicle_registration')
+      .order('created_at', { ascending: false });
+
+    // Match by email OR vehicle registration
+    if (email && reg) {
+      query = query.or(`email.ilike.${email},vehicle_registration.ilike.${reg}`);
+    } else if (email) {
+      query = query.ilike('email', email);
+    } else if (reg) {
+      query = query.ilike('vehicle_registration', reg);
+    }
+
+    const { data, error } = await query;
+    const rows = error || !data ? [] : (data as Claim[]);
+    _claimsCache.set(key, { at: Date.now(), rows });
+    return rows;
+  })();
+
+  _claimsCache.set(key, { at: entry?.at ?? 0, rows: entry?.rows ?? [], inflight });
+  return inflight;
+};
+
+
 export const CustomerClaimsSummary: React.FC<CustomerClaimsSummaryProps> = ({
   customerId,
   customerEmail,
@@ -49,24 +102,8 @@ export const CustomerClaimsSummary: React.FC<CustomerClaimsSummaryProps> = ({
     }
 
     try {
-      let query = supabase
-        .from('claims_submissions')
-        .select('id, claim_reason, payment_amount, status, created_at, paid_at, vehicle_registration')
-        .order('created_at', { ascending: false });
-
-      // Match by email OR vehicle registration
-      if (customerEmail && vehicleReg) {
-        query = query.or(`email.ilike.${customerEmail},vehicle_registration.ilike.${vehicleReg}`);
-      } else if (customerEmail) {
-        query = query.ilike('email', customerEmail);
-      } else if (vehicleReg) {
-        query = query.ilike('vehicle_registration', vehicleReg);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setClaims(data || []);
+      const rows = await fetchClaimsFor(customerEmail, vehicleReg);
+      setClaims(rows);
     } catch (error) {
       console.error('Error fetching customer claims:', error);
     } finally {
@@ -77,6 +114,7 @@ export const CustomerClaimsSummary: React.FC<CustomerClaimsSummaryProps> = ({
   useEffect(() => {
     fetchClaims();
   }, [customerEmail, vehicleReg]);
+
 
   const totalClaims = claims.length;
   const totalPaid = claims.reduce((sum, c) => sum + (c.payment_amount || 0), 0);
@@ -99,9 +137,12 @@ export const CustomerClaimsSummary: React.FC<CustomerClaimsSummaryProps> = ({
   };
 
   const handleClaimAdded = () => {
+    // A newly added claim must show immediately — bypass the shared cache.
+    invalidateClaimsCache(customerEmail, vehicleReg);
     fetchClaims();
     onClaimAdded?.();
   };
+
 
   if (loading) {
     return (

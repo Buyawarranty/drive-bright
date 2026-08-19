@@ -1729,30 +1729,45 @@ export const CustomersTab = ({
   const normaliseReg = (value?: string | null) => value?.toUpperCase().replace(/\s+/g, '') || '';
   const normalisePhone = (value?: string | null) => value?.replace(/\s+/g, '') || '';
 
-  const fetchPhoneSources = async (table: 'sales_leads' | 'abandoned_carts') => {
-    const pageSize = 1000;
-    let from = 0;
+  /**
+   * PERFORMANCE: this used to page through EVERY sales_lead and abandoned_cart
+   * row (tens of thousands) just to backfill a handful of blank phone numbers —
+   * one of the slowest queries in the CRM and a major cause of the Customers /
+   * dashboard lag agents reported. It now looks up only the specific emails and
+   * registrations that are actually missing a phone number.
+   */
+  const fetchPhoneSources = async (
+    table: 'sales_leads' | 'abandoned_carts',
+    emails: string[],
+    regs: string[],
+  ) => {
     const rows: Array<{ email: string | null; vehicle_reg: string | null; phone: string | null; created_at: string }> = [];
+    if (emails.length === 0 && regs.length === 0) return rows;
 
-    while (true) {
+    const escape = (v: string) => v.replace(/[%_,()]/g, ' ').trim();
+    const clauses = [
+      ...emails.map((e) => `email.ilike.${escape(e)}`),
+      ...regs.map((r) => `vehicle_reg.ilike.${escape(r)}`),
+    ].filter((c) => c.length > 14);
+
+    const CHUNK = 20;
+    for (let i = 0; i < clauses.length; i += CHUNK) {
+      const chunk = clauses.slice(i, i + CHUNK);
       const { data, error } = await supabase
         .from(table)
         .select('email, vehicle_reg, phone, created_at')
+        .or(chunk.join(','))
         .not('phone', 'is', null)
         .order('created_at', { ascending: false })
-        .range(from, from + pageSize - 1);
+        .limit(1000);
 
       if (error) throw error;
-
-      const valid = (data || []).filter((row: any) => row.phone && String(row.phone).trim().length > 0);
-      rows.push(...valid);
-
-      if (!data || data.length < pageSize) break;
-      from += pageSize;
+      rows.push(...(data || []).filter((row: any) => row.phone && String(row.phone).trim().length > 0));
     }
 
     return rows;
   };
+
 
   const recoverMissingPhones = async (customerRows: Customer[]) => {
     const missing = customerRows.filter((customer) => !customer.phone || !customer.phone.trim());
@@ -1760,10 +1775,18 @@ export const CustomersTab = ({
       return { recoveredRows: customerRows, recoveredCount: 0 };
     }
 
+    const wantedEmails = Array.from(
+      new Set(missing.map((c) => normaliseEmail(c.email)).filter(Boolean)),
+    );
+    const wantedRegs = Array.from(
+      new Set(missing.map((c) => (c as any).registration_plate || '').map((r: string) => r.trim()).filter(Boolean)),
+    );
+
     const [salesPhones, cartPhones] = await Promise.all([
-      fetchPhoneSources('sales_leads'),
-      fetchPhoneSources('abandoned_carts'),
+      fetchPhoneSources('sales_leads', wantedEmails, wantedRegs),
+      fetchPhoneSources('abandoned_carts', wantedEmails, wantedRegs),
     ]);
+
 
     const phoneByEmail = new Map<string, string>();
     const phoneByReg = new Map<string, string>();
