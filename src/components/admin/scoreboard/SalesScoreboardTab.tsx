@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Trophy, User, BarChart3, ChevronLeft, ChevronRight, GitCompare, Zap, Target } from 'lucide-react';
+import { RefreshCw, Trophy, User, BarChart3, ChevronLeft, ChevronRight, GitCompare, Zap, Target, CalendarDays } from 'lucide-react';
 import { SpeedToDialPanel } from './SpeedToDialPanel';
+import { DailySalesChartPanel } from './DailySalesChartPanel';
 import { TeamTargetBoard } from './TeamTargetBoard';
 import { useScoreboardData, TimePeriod } from '@/hooks/useScoreboardData';
 import { ScoreboardRankingTable } from './ScoreboardRankingTable';
