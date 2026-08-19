@@ -2175,42 +2175,43 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
 
   const handlePreviewEmail = () => {
-    if (!quoteLink) {
-      toast({
-        title: "Quote Link Required",
-        description: "Please wait for the quote link to be generated first.",
-        variant: "destructive",
-      });
-      return;
+    // Open the preview even if the quote link is still being generated — the
+    // send step mints/verifies the link itself, so a slow link must never leave
+    // the agent stuck with a dead button.
+    if (!quoteLink && !quoteGenerated) {
+      void generateQuoteLink();
     }
     setEmailSubject(generateEmailSubject());
     setShowEmailDialog(true);
   };
+
 
   const handleSendEmail = async () => {
     if (previewMode) {
       toast({ title: 'Preview mode', description: 'This is a beta preview — nothing is sent, saved or charged.' });
       return;
     }
-    if (!quoteLink) {
-      toast({
-        title: "Quote Link Required",
-        description: "Please wait for the quote link to be generated first.",
-        variant: "destructive",
-      });
-      return;
-    }
     // Safety: never email a link that belongs to a different vehicle/customer.
-    // Verified against the stored quote, not just local state.
-    const sendLink = await getVerifiedQuoteLink();
+    // Verified against the stored quote, not just local state. If no link exists
+    // yet (generation was still running, or failed once) this mints a fresh one
+    // rather than silently doing nothing.
+    setIsSendingEmail(true);
+    let sendLink: string | null = null;
+    try {
+      sendLink = await getVerifiedQuoteLink();
+    } catch (e) {
+      console.error('Quote link verification failed', e);
+    }
     if (!sendLink) {
+      setIsSendingEmail(false);
       toast({
-        title: "Quote link is out of date",
-        description: "The vehicle or customer changed and a fresh link couldn't be created. Please try again.",
+        title: "Quote link couldn't be created",
+        description: "We couldn't generate the customer quote link. Please check the vehicle and customer details, then try again.",
         variant: "destructive",
       });
       return;
     }
+
 
 
     setIsSendingEmail(true);
@@ -2581,13 +2582,17 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       return;
     }
     if (!quoteLink) {
-      toast({
-        title: 'Quote link required',
-        description: 'Please wait for the quote link to be generated first.',
-        variant: 'destructive',
-      });
-      return;
+      const minted = await getVerifiedQuoteLink().catch(() => null);
+      if (!minted) {
+        toast({
+          title: 'Quote link required',
+          description: "We couldn't generate the quote link. Please check the vehicle and customer details, then try again.",
+          variant: 'destructive',
+        });
+        return;
+      }
     }
+
     setIsSendingSelfCopy(true);
     try {
       const adminRecipient = await resolveAdminRecipient();
@@ -6705,7 +6710,8 @@ Questions? Call 0330 229 5040`;
                         <Button
                           type="button"
                           onClick={handleSendSelfCopy}
-                          disabled={isSendingSelfCopy || isSendingEmail || !quoteLink}
+                          disabled={isSendingSelfCopy || isSendingEmail}
+
                           variant="secondary"
                           className="w-full bg-white hover:bg-orange-50 text-black border border-orange-200"
                         >
@@ -7295,7 +7301,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                 <Button
                   variant="secondary"
                   onClick={handleSendSelfCopy}
-                  disabled={isSendingSelfCopy || isSendingEmail || !quoteLink}
+                  disabled={isSendingSelfCopy || isSendingEmail}
                 >
                   {isSendingSelfCopy ? (
                     <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending copy…</>
@@ -7305,7 +7311,8 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                 </Button>
                 <Button
                   onClick={handleSendEmail}
-                  disabled={isSendingEmail || !quoteLink || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)}
+                  disabled={isSendingEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((customerEmail || '').trim())}
+
                   className="min-w-[150px]"
                 >
                   {isSendingEmail ? (

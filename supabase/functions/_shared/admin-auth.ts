@@ -48,7 +48,34 @@ export async function requireAdmin(req: Request, options: RequireAdminOptions = 
     { auth: { persistSession: false } }
   );
 
-  const { data: userData, error: userError } = await supabase.auth.getUser(token);
+  // Under load the auth/REST gateway can answer with a plain-text body
+  // ("Operation timed out"), which makes supabase-js throw while parsing JSON
+  // and turns a transient blip into an opaque 500 for the agent. Retry once,
+  // then fail with a readable JSON error.
+  const withRetry = async <T,>(op: () => Promise<T>): Promise<T | null> => {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        return await op();
+      } catch (e) {
+        console.error(`[requireAdmin] transient auth/db failure (attempt ${attempt + 1})`, e);
+        if (attempt === 1) return null;
+        await new Promise((r) => setTimeout(r, 300));
+      }
+    }
+    return null;
+  };
+
+  const userResult = await withRetry(() => supabase.auth.getUser(token));
+  if (!userResult) {
+    return {
+      ok: false as const,
+      response: new Response(
+        JSON.stringify({ error: "Auth service temporarily unavailable, please try again" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      ),
+    };
+  }
+  const { data: userData, error: userError } = userResult;
   if (userError || !userData?.user) {
     return {
       ok: false as const,
@@ -59,12 +86,25 @@ export async function requireAdmin(req: Request, options: RequireAdminOptions = 
     };
   }
 
-  const { data: adminUser, error: adminError } = await supabase
-    .from("admin_users")
-    .select("id, user_id, email, role, is_active")
-    .eq("user_id", userData.user.id)
-    .eq("is_active", true)
-    .maybeSingle();
+  const adminResult = await withRetry(() =>
+    supabase
+      .from("admin_users")
+      .select("id, user_id, email, role, is_active")
+      .eq("user_id", userData.user.id)
+      .eq("is_active", true)
+      .maybeSingle()
+  );
+  if (!adminResult) {
+    return {
+      ok: false as const,
+      response: new Response(
+        JSON.stringify({ error: "Staff lookup temporarily unavailable, please try again" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      ),
+    };
+  }
+  const { data: adminUser, error: adminError } = adminResult;
+
 
   if (adminError || !adminUser || !allowed.has(adminUser.role)) {
     return {
