@@ -1184,12 +1184,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       warrantyYears
     );
     
-    console.log('🔍 Admin Quote - Vehicle Adjustment:', {
-      mileage: vehicleMileage,
-      warrantyYears,
-      adjustmentAmount: vehicleAdjustmentResult.adjustmentAmount,
-      adjustmentType: vehicleAdjustmentResult.adjustmentType
-    });
+    // (No logging in this hot path — it runs on every keystroke in steps 2 and 3.)
+
     
     // ── Price from the published pricing model (same maths as the Aug hybrid
     // test Step 2) so Quotes & Orders and the pricing sandboxes never disagree.
