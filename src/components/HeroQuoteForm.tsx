@@ -312,25 +312,33 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
 
             {/* Registration Input */}
             <div className="space-y-3 w-full max-w-md">
-              <div className="flex items-stretch rounded-lg overflow-hidden shadow-lg border-2 border-black w-full">
-                {/* UK Section with flag */}
-                <div className="bg-blue-600 text-white font-bold px-4 py-4 flex items-center justify-center min-w-[80px] h-[66px]">
-                  <div className="flex flex-col items-center">
-                    <div className="text-lg leading-tight mb-1">🇬🇧</div>
-                    <div className="text-base font-bold leading-none">UK</div>
+              <div className="relative">
+                <div className="flex items-stretch rounded-lg overflow-hidden shadow-lg border-2 border-black w-full">
+                  {/* UK Section with flag */}
+                  <div className="bg-blue-600 text-white font-bold px-4 py-4 flex items-center justify-center min-w-[80px] h-[66px]">
+                    <div className="flex flex-col items-center">
+                      <div className="text-lg leading-tight mb-1">🇬🇧</div>
+                      <div className="text-base font-bold leading-none">UK</div>
+                    </div>
                   </div>
+                  {/* Registration Input */}
+                  <input
+                    id="hero-reg-input-field"
+                    type="text"
+                    value={regNumber}
+                    onChange={handleRegChange}
+                    placeholder="Enter reg"
+                    className="bg-yellow-400 border-none outline-none text-3xl text-black flex-1 font-black placeholder:text-black/70 px-4 py-4 uppercase tracking-wider h-[66px] min-w-0"
+                    maxLength={8}
+                  />
                 </div>
-                {/* Registration Input */}
-                <input
-                  id="hero-reg-input-field"
-                  type="text"
-                  value={regNumber}
-                  onChange={handleRegChange}
-                  placeholder="Enter reg"
-                  className="bg-yellow-400 border-none outline-none text-3xl text-black flex-1 font-black placeholder:text-black/70 px-4 py-4 uppercase tracking-wider h-[66px] min-w-0"
-                  maxLength={8}
-                />
+                {regNumber.replace(/\s/g, '').length >= 5 && !regError && (
+                  <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1 shadow-md ring-2 ring-white" aria-label="Registration entered">
+                    <Check className="w-4 h-4 text-white" strokeWidth={4} />
+                  </div>
+                )}
               </div>
+
               <p className="text-sm text-black text-left mt-0.5">
                 Protection for vehicles up to 150,000 miles and 15 years.
               </p>

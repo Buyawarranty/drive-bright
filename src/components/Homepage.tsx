@@ -676,7 +676,13 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                       maxLength={8}
                     />
                   </div>
+                  {regNumber.replace(/\s/g, '').length >= 5 && !regError && (
+                    <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1 shadow-md ring-2 ring-white" aria-label="Registration entered">
+                      <Check className="w-4 h-4 text-white" strokeWidth={4} />
+                    </div>
+                  )}
                 </div>
+
                 
                 {/* Inline registration error (friendly amber border + message) */}
                 {regError && (
