@@ -357,6 +357,21 @@ const AdminDashboard = () => {
     }
     // Attach global phone-click tracker (a[href^="tel:"] + [data-phone-click])
     initPhoneClickTracker();
+
+    // Attach CRM telemetry (CTA clicks, JS errors, crashes) and record how long
+    // this dashboard took to become usable so slow/blank loads are visible later.
+    const detachTelemetry = initAdminTelemetry();
+    const loadStartedAt = performance.now();
+    const raf = requestAnimationFrame(() => {
+      const ms = performance.now() - loadStartedAt;
+      logAdminUiEvent({ event_type: 'page_load', label: 'Admin dashboard loaded', duration_ms: ms });
+      if (ms > 8000) logAdminSlowLoad('Admin dashboard slow load', ms);
+    });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      detachTelemetry();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [isCheckingRole, setIsCheckingRole] = useState(true);
