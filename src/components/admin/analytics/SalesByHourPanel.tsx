@@ -303,6 +303,42 @@ export const SalesByHourPanel: React.FC<Props> = ({ customers, sourceFilter }) =
             Darker cells mean more sales in that hour of that weekday. Excludes cancelled and refunded orders.
           </p>
         </div>
+
+        <div className="pt-2 border-t">
+          <h4 className="text-sm font-semibold mb-1">Lead conversion rate by hour the lead came in</h4>
+          <p className="text-xs text-muted-foreground mb-3">
+            Leads received in each hour versus how many of those leads went on to convert. Times are UK time.
+          </p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            <Badge variant="secondary">{leadTotals.leads.toLocaleString('en-GB')} leads in</Badge>
+            <Badge variant="secondary">{leadTotals.converted.toLocaleString('en-GB')} converted</Badge>
+            <Badge variant="outline">Overall {leadTotals.rate}%</Badge>
+            <Badge variant="outline">
+              Overnight 10pm–6am {leadTotals.overnightLeads.toLocaleString('en-GB')} leads · {leadTotals.overnightConverted} converted ({leadTotals.overnightRate}%)
+            </Badge>
+            <Badge variant="outline">Best hour {leadTotals.bestHour} ({leadTotals.bestRate}%)</Badge>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={leadHours}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="hour" tick={{ fontSize: 10 }} interval={0} angle={-45} textAnchor="end" height={50} />
+              <YAxis yAxisId="left" allowDecimals={false} />
+              <YAxis yAxisId="right" orientation="right" tickFormatter={(v) => `${v}%`} />
+              <Tooltip
+                formatter={(value: number, name: string) => {
+                  if (name === 'rate') return [`${value}%`, 'Conversion rate'];
+                  return [Number(value).toLocaleString('en-GB'), name === 'leads' ? 'Leads in' : 'Converted'];
+                }}
+                labelStyle={{ fontWeight: 'bold' }}
+                contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+              />
+              <Legend formatter={(v) => v === 'leads' ? 'Leads in' : v === 'converted' ? 'Converted' : 'Conversion rate'} />
+              <Bar yAxisId="left" dataKey="leads" fill="#93c5fd" radius={[4, 4, 0, 0]} />
+              <Bar yAxisId="left" dataKey="converted" fill="#2563eb" radius={[4, 4, 0, 0]} />
+              <Line yAxisId="right" type="monotone" dataKey="rate" stroke="#f97316" strokeWidth={2} dot={{ fill: '#f97316', r: 2 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );
