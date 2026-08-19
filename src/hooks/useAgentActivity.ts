@@ -110,14 +110,22 @@ export const useAgentActivity = (leadIds: string[]) => {
       setActivityByLead(merged);
     } catch (e) {
       console.error('useAgentActivity error', e);
+    } finally {
+      inFlightRef.current = false;
     }
   }, [key, ids]);
 
   useEffect(() => {
     if (!key) return;
     const t = setTimeout(fetchAll, 600);
-    return () => clearTimeout(t);
+    // Keep the column live while the tab is open — a dial made now should show
+    // up within a minute without a page refresh.
+    const stop = setVisibleInterval(fetchAll, 60_000);
+    return () => {
+      clearTimeout(t);
+      stop();
+    };
   }, [key, fetchAll]);
 
-  return { activityByLead };
+  return { activityByLead, refresh: fetchAll };
 };
