@@ -117,16 +117,18 @@ export const WeekRotaStrip = () => {
     if (!targets.length) return;
     const { data, error } = await (supabase as any)
       .from('agent_working_days')
-      .insert(
+      .upsert(
         targets.map(({ d, type }) => ({
           admin_user_id: agentId,
           work_date: format(d, 'yyyy-MM-dd'),
           day_type: type,
           created_by: user?.id ?? null,
         })),
+        { onConflict: 'admin_user_id,work_date' },
       )
       .select('id, admin_user_id, work_date, day_type');
     if (error) return;
+
     setRows((prev) => [...prev, ...((data as WorkingDayRow[]) || [])]);
   };
 
