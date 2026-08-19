@@ -342,7 +342,7 @@ export const useNewLeadAlert = () => {
   // a laptop sleeps, which is why the queue used to look "stuck".
   useEffect(() => {
     load();
-    const stopPoll = setVisibleInterval(() => loadRef.current(), 15000);
+    const stopPoll = setVisibleInterval(() => loadRef.current(), 30000);
     const wake = () => {
       if (document.visibilityState === 'visible') loadRef.current();
     };
