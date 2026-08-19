@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -6,6 +7,8 @@ import {
   Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, ComposedChart,
 } from 'recharts';
 import { subDays, subMonths, startOfDay } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 
 type Period = '7' | '30' | '90' | '180' | '365' | 'all';
 
@@ -142,6 +145,69 @@ export const SalesByHourPanel: React.FC<Props> = ({ customers, sourceFilter }) =
 
   const maxCell = Math.max(1, ...grid.flat());
 
+  // ---- Lead conversion rate by hour the lead came in ----
+  const fromIso = useMemo(() => {
+    const from = periodStart(period);
+    return from ? from.toISOString() : null;
+  }, [period]);
+
+  const { data: leadRows } = useQuery({
+    queryKey: ['sales-by-hour-lead-conversion', fromIso],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await fetchAllRows<{ created_at: string; status: string | null }>(() => {
+        let q = supabase.from('sales_leads').select('created_at, status').order('created_at', { ascending: false });
+        if (fromIso) q = q.gte('created_at', fromIso);
+        return q;
+      });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const { leadHours, leadTotals } = useMemo(() => {
+    const leadHours = HOUR_LABELS.map((label, h) => ({ hour: label, h, leads: 0, converted: 0, rate: 0 }));
+    let leads = 0;
+    let converted = 0;
+    let overnightLeads = 0;
+    let overnightConverted = 0;
+
+    (leadRows || []).forEach(row => {
+      if (!row.created_at) return;
+      const d = new Date(row.created_at);
+      if (Number.isNaN(d.getTime())) return;
+      const h = d.getHours();
+      const isConverted = (row.status || '').toLowerCase() === 'converted';
+      leadHours[h].leads += 1;
+      leads += 1;
+      if (isConverted) { leadHours[h].converted += 1; converted += 1; }
+      if (h >= 22 || h < 6) {
+        overnightLeads += 1;
+        if (isConverted) overnightConverted += 1;
+      }
+    });
+
+    leadHours.forEach(b => {
+      b.rate = b.leads > 0 ? Math.round((b.converted / b.leads) * 1000) / 10 : 0;
+    });
+
+    const best = leadHours.reduce((acc, b) => (b.leads >= 20 && b.rate > acc.rate ? b : acc), { hour: '—', rate: 0 } as any);
+
+    return {
+      leadHours,
+      leadTotals: {
+        leads,
+        converted,
+        rate: leads > 0 ? Math.round((converted / leads) * 1000) / 10 : 0,
+        overnightLeads,
+        overnightConverted,
+        overnightRate: overnightLeads > 0 ? Math.round((overnightConverted / overnightLeads) * 1000) / 10 : 0,
+        bestHour: best.hour,
+        bestRate: best.rate,
+      },
+    };
+  }, [leadRows]);
+
   return (
     <Card>
       <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -236,6 +302,42 @@ export const SalesByHourPanel: React.FC<Props> = ({ customers, sourceFilter }) =
           <p className="text-xs text-muted-foreground mt-2">
             Darker cells mean more sales in that hour of that weekday. Excludes cancelled and refunded orders.
           </p>
+        </div>
+
+        <div className="pt-2 border-t">
+          <h4 className="text-sm font-semibold mb-1">Lead conversion rate by hour the lead came in</h4>
+          <p className="text-xs text-muted-foreground mb-3">
+            Leads received in each hour versus how many of those leads went on to convert. Times are UK time.
+          </p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            <Badge variant="secondary">{leadTotals.leads.toLocaleString('en-GB')} leads in</Badge>
+            <Badge variant="secondary">{leadTotals.converted.toLocaleString('en-GB')} converted</Badge>
+            <Badge variant="outline">Overall {leadTotals.rate}%</Badge>
+            <Badge variant="outline">
+              Overnight 10pm–6am {leadTotals.overnightLeads.toLocaleString('en-GB')} leads · {leadTotals.overnightConverted} converted ({leadTotals.overnightRate}%)
+            </Badge>
+            <Badge variant="outline">Best hour {leadTotals.bestHour} ({leadTotals.bestRate}%)</Badge>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={leadHours}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="hour" tick={{ fontSize: 10 }} interval={0} angle={-45} textAnchor="end" height={50} />
+              <YAxis yAxisId="left" allowDecimals={false} />
+              <YAxis yAxisId="right" orientation="right" tickFormatter={(v) => `${v}%`} />
+              <Tooltip
+                formatter={(value: number, name: string) => {
+                  if (name === 'rate') return [`${value}%`, 'Conversion rate'];
+                  return [Number(value).toLocaleString('en-GB'), name === 'leads' ? 'Leads in' : 'Converted'];
+                }}
+                labelStyle={{ fontWeight: 'bold' }}
+                contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+              />
+              <Legend formatter={(v) => v === 'leads' ? 'Leads in' : v === 'converted' ? 'Converted' : 'Conversion rate'} />
+              <Bar yAxisId="left" dataKey="leads" fill="#93c5fd" radius={[4, 4, 0, 0]} />
+              <Bar yAxisId="left" dataKey="converted" fill="#2563eb" radius={[4, 4, 0, 0]} />
+              <Line yAxisId="right" type="monotone" dataKey="rate" stroke="#f97316" strokeWidth={2} dot={{ fill: '#f97316', r: 2 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
         </div>
       </CardContent>
     </Card>
