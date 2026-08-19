@@ -1398,6 +1398,11 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
         <SalesByWeekdayPanel customers={customers} sourceFilter={sourceFilter} />
 
+        <AnalyticsSectionHeading id="agent-sales-vs-leads" title="Agent sales vs leads" description="Per-agent warranties sold per day, week or month against the leads they were given, with conversion and AOV." accent="border-amber-500/60" />
+
+        <AgentSalesVsLeadsPanel />
+
+
 
 
 
