@@ -1775,10 +1775,18 @@ export const CustomersTab = ({
       return { recoveredRows: customerRows, recoveredCount: 0 };
     }
 
+    const wantedEmails = Array.from(
+      new Set(missing.map((c) => normaliseEmail(c.email)).filter(Boolean)),
+    );
+    const wantedRegs = Array.from(
+      new Set(missing.map((c) => (c as any).registration_plate || '').map((r: string) => r.trim()).filter(Boolean)),
+    );
+
     const [salesPhones, cartPhones] = await Promise.all([
-      fetchPhoneSources('sales_leads'),
-      fetchPhoneSources('abandoned_carts'),
+      fetchPhoneSources('sales_leads', wantedEmails, wantedRegs),
+      fetchPhoneSources('abandoned_carts', wantedEmails, wantedRegs),
     ]);
+
 
     const phoneByEmail = new Map<string, string>();
     const phoneByReg = new Map<string, string>();
