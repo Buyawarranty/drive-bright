@@ -20,9 +20,6 @@ const MAX_PAGED_LEADS = 5000;
 // Safety cap for an agent's unfiltered "all my leads" view so agents with huge
 // histories don't time out and end up seeing nothing.
 const AGENT_UNFILTERED_LEADS_CAP = 2000;
-// Chunk size for an agent's own leads. Chunks are fetched in parallel so a
-// 1000+ lead history paints in one round-trip instead of sequential pages.
-const AGENT_CHUNK_SIZE = 500;
 const PENDING_STATUS_UPDATES_STORAGE_KEY = 'new-leads:pending-status-updates';
 let latestAccessToken: string | null = null;
 
@@ -720,70 +717,41 @@ export const useLeads = (options?: UseLeadsOptions) => {
           // narrower assigned+unassigned scope.
           const hasActiveSearch = !!serverSearchTermRef.current?.trim();
           if (isAgentScoped && currentAdmin?.id && !hasActiveSearch) {
-            // 1) Leads assigned to this agent. Agents with very large histories
-            // (thousands of leads) used to page through everything, blowing the
-            // 25s fetch timeout and leaving them with an EMPTY list (the "blank
-            // New Leads screen"). The unfiltered view now fetches its chunks in
-            // PARALLEL instead of walking 1000-row pages one after another, so
-            // an agent with ~1000+ leads paints in one round-trip instead of
-            // several sequential ones.
+            // FLATTENED AGENT PATH: assigned + unassigned in a SINGLE indexed
+            // query. Previously this fired 4 parallel 500-row chunks plus a
+            // separate unassigned query and merged them client-side, which is
+            // what made agents' New Leads slower and flakier than the admin
+            // view (5 round-trips, any one of which could stall the whole
+            // paint). One ordered query now serves the same rows.
             const agentDateFilter = serverDateFilterRef.current;
             const agentHasDateWindow = !!agentDateFilter?.from || !!agentDateFilter?.to;
-            const assignedMaxRows = agentHasDateWindow || serverCallbacksOnlyRef.current
+            const agentMaxRows = agentHasDateWindow || serverCallbacksOnlyRef.current
               ? MAX_PAGED_LEADS
               : AGENT_UNFILTERED_LEADS_CAP;
 
-            const buildAssignedChunk = (from: number, to: number) =>
+            const buildAgentScopedQuery = (from: number, to: number) =>
               applyHiddenFromAgent(applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
-                  .eq('assigned_to', currentAdmin.id)
+                  .or(`assigned_to.eq.${currentAdmin.id},assigned_to.is.null`)
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
               ))));
 
-            const assignedQ = (async () => {
-              const chunks: Promise<any>[] = [];
-              for (let offset = 0; offset < assignedMaxRows; offset += AGENT_CHUNK_SIZE) {
-                chunks.push(buildAssignedChunk(offset, offset + AGENT_CHUNK_SIZE - 1));
-              }
-              const results = await Promise.all(chunks);
-              const failed = results.find((r: any) => r?.error);
-              if (failed) return failed;
-              const rows: any[] = [];
-              results.forEach((r: any) => rows.push(...(r.data || [])));
-              return { data: rows, error: null } as any;
-            })();
+            if (!agentHasDateWindow && !serverCallbacksOnlyRef.current) {
+              // Unfiltered view: exactly one round-trip.
+              const res = await buildAgentScopedQuery(0, agentMaxRows - 1);
+              if (res.error) return res;
+              return { data: res.data || [], error: null } as any;
+            }
 
-            // 2) Recent unassigned leads so the agent can still claim
-            let unassignedQ = supabase
-              .from('sales_leads')
-              .select(SELECT_COLUMNS)
-              .is('assigned_to', null)
-              .order('created_at', { ascending: false })
-              .order('id', { ascending: false })
-              .limit(300);
-            unassignedQ = applyServerDateFilter(unassignedQ);
-            unassignedQ = applyServerSearchFilter(unassignedQ);
-            unassignedQ = applyCallbacksFilter(unassignedQ);
-            unassignedQ = applyHiddenFromAgent(unassignedQ);
-
-            const [assignedRes, unassignedRes] = await Promise.all([assignedQ, unassignedQ]);
-            if (assignedRes.error) return assignedRes;
-            if (unassignedRes.error) return unassignedRes;
-
-            const merged = [...(assignedRes.data || []), ...(unassignedRes.data || [])];
-            // Dedupe by id
-            const seen = new Set<string>();
-            const data = merged.filter((r: any) => {
-              if (seen.has(r.id)) return false;
-              seen.add(r.id);
-              return true;
-            });
-            return { data, error: null } as any;
+            // Date-window / callbacks views can legitimately span more rows —
+            // keep paging, but still on the single flattened query.
+            return await fetchPagedLeads(buildAgentScopedQuery, agentMaxRows);
           }
+
 
           const hasServerSearch = !!serverSearchTermRef.current?.trim();
           if (hasServerSearch) {
