@@ -39,6 +39,13 @@ interface CustomerClaimsSummaryProps {
 const CLAIMS_CACHE_TTL_MS = 60_000;
 const _claimsCache = new Map<string, { at: number; rows: Claim[]; inflight?: Promise<Claim[]> }>();
 
+const claimsCacheKey = (email?: string, reg?: string) =>
+  `${(email || '').trim().toLowerCase()}|${(reg || '').trim().toUpperCase()}`;
+
+const invalidateClaimsCache = (email?: string, reg?: string) => {
+  _claimsCache.delete(claimsCacheKey(email, reg));
+};
+
 const fetchClaimsFor = (email?: string, reg?: string): Promise<Claim[]> => {
   const key = `${(email || '').trim().toLowerCase()}|${(reg || '').trim().toUpperCase()}`;
   const entry = _claimsCache.get(key);
