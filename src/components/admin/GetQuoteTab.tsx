@@ -1330,8 +1330,26 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     return calculateBasePrice();
   };
 
-  const currentPrice = calculatePrice();
-  const basePrice = calculateBasePrice();
+  /**
+   * SPEED: the pricing engine ran twice on every single render (so twice per
+   * keystroke in the step 2 / step 3 forms). Same maths, same inputs — just
+   * cached until a pricing input actually changes.
+   */
+  const basePrice = React.useMemo(
+    () => calculateBasePrice(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      paymentType, excessAmount, claimLimit, labourRate, boostAddon,
+      selectedAddOns, includePayInFullDiscount, mileage, regNumber,
+      vehicleData, pricingModel, ABSOLUTE_MIN_TOTAL,
+    ]
+  );
+  const currentPrice = React.useMemo(
+    () => (isPriceOverridden ? calculatePrice() : basePrice),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [basePrice, isPriceOverridden, customFullPrice, customMonthlyPrice, includePayInFullDiscount]
+  );
+
   // When a custom price is set, the custom total is authoritative
   const displayedTotalPrice = isPriceOverridden
     ? Number(currentPrice.totalPrice || 0)
