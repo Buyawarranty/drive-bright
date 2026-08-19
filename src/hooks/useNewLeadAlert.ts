@@ -109,7 +109,6 @@ const fetchAgentAlertLeads = (adminId: string): Promise<any[]> => {
 
 export interface NewLeadAlertData {
   id: string;
-  id: string;
   first_name: string | null;
   last_name: string | null;
   phone: string | null;
