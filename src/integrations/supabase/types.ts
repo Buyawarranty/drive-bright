@@ -599,6 +599,51 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_ui_events: {
+        Row: {
+          admin_email: string | null
+          admin_user_id: string | null
+          created_at: string
+          detail: Json | null
+          duration_ms: number | null
+          event_type: string
+          id: string
+          label: string | null
+          path: string | null
+          session_id: string | null
+          tab: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          admin_email?: string | null
+          admin_user_id?: string | null
+          created_at?: string
+          detail?: Json | null
+          duration_ms?: number | null
+          event_type: string
+          id?: string
+          label?: string | null
+          path?: string | null
+          session_id?: string | null
+          tab?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          admin_email?: string | null
+          admin_user_id?: string | null
+          created_at?: string
+          detail?: Json | null
+          duration_ms?: number | null
+          event_type?: string
+          id?: string
+          label?: string | null
+          path?: string | null
+          session_id?: string | null
+          tab?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       admin_user_access_periods: {
         Row: {
           admin_user_id: string
