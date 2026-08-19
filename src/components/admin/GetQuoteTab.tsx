@@ -2893,8 +2893,7 @@ Questions? Call 0330 229 5040`;
     const payInFullPrice = currentPrice.payInFullPrice || Math.ceil(contractTotal * 0.90);
     
     try {
-      const { data, error } = await supabase.functions.invoke('create-live-quote', {
-        body: {
+      const { data, error } = await invokeWithFreshSession<any>('create-live-quote', {
           customerName,
           customerEmail,
           customerPhone: customerPhone || '',
@@ -2922,7 +2921,6 @@ Questions? Call 0330 229 5040`;
           createdByName: 'Admin',
           customerDob: customerDob || null,
           warrantyStartDate: warrantyStartDate?.toISOString() || null
-        }
       });
 
       if (error) throw error;

@@ -16,14 +16,14 @@ export async function invokeWithFreshSession<T = any>(
   // A stalled auth call (long-open admin tab, flaky network) must never hang the
   // caller — bound getSession/refreshSession and carry on with what we have.
   const bounded = async <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> => {
-    let timer: ReturnType<typeof setTimeout>;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const timeout = new Promise<T>((resolve) => {
       timer = setTimeout(() => resolve(fallback), ms);
     });
     try {
       return await Promise.race([p, timeout]);
     } finally {
-      clearTimeout(timer!);
+      if (timer) clearTimeout(timer);
     }
   };
 
@@ -45,9 +45,11 @@ export async function invokeWithFreshSession<T = any>(
   };
 
   const isAuthError = (err: any) => {
-    const msg = `${err?.message || ''} ${err?.status || ''}`.toLowerCase();
+    const contextStatus = err?.context instanceof Response ? err.context.status : undefined;
+    const msg = `${err?.message || ''} ${err?.status || ''} ${contextStatus || ''}`.toLowerCase();
     return (
       err?.status === 401 ||
+      contextStatus === 401 ||
       msg.includes('401') ||
       msg.includes('jwt') ||
       msg.includes('unauthor')
@@ -76,11 +78,13 @@ export async function invokeWithFreshSession<T = any>(
     };
   }
 
-  const call = async (token: string) =>
-    supabase.functions.invoke(fn, {
+  const call = async (token: string) => {
+    const timeoutError = new Error(`${fn} timed out. Please try again.`);
+    return bounded(supabase.functions.invoke(fn, {
       body: body as any,
       headers: { Authorization: `Bearer ${token}` },
-    });
+    }), 20_000, { data: null, error: timeoutError } as any);
+  };
 
   let { data, error } = await call(session.access_token);
 
