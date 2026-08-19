@@ -83,3 +83,53 @@ export const clearTabUsage = (userId: string | null | undefined) => {
   }
   window.dispatchEvent(new Event(EVENT));
 };
+
+/* ------------------------------------------------------------------ *
+ * Custom (pinned) shortcuts — user-chosen tabs that replace the
+ * automatic most-visited list when set.
+ * ------------------------------------------------------------------ */
+
+const PINNED_PREFIX = 'admin-tab-pinned:';
+
+const pinnedKey = (userId: string | null | undefined) =>
+  `${PINNED_PREFIX}${userId || 'anon'}`;
+
+export const readPinnedTabs = (userId: string | null | undefined): string[] => {
+  try {
+    const raw = localStorage.getItem(pinnedKey(userId));
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((id) => typeof id === 'string') : [];
+  } catch {
+    return [];
+  }
+};
+
+export const writePinnedTabs = (userId: string | null | undefined, ids: string[]) => {
+  try {
+    if (ids.length === 0) localStorage.removeItem(pinnedKey(userId));
+    else localStorage.setItem(pinnedKey(userId), JSON.stringify(ids));
+  } catch {
+    /* ignore */
+  }
+  window.dispatchEvent(new Event(EVENT));
+};
+
+/** Live list of the user's pinned shortcut tab ids (empty = use automatic). */
+export const usePinnedTabs = (userId: string | null | undefined): string[] => {
+  const [ids, setIds] = useState<string[]>(() => readPinnedTabs(userId));
+
+  useEffect(() => {
+    setIds(readPinnedTabs(userId));
+    const onChange = () => setIds(readPinnedTabs(userId));
+    window.addEventListener(EVENT, onChange);
+    window.addEventListener('storage', onChange);
+    return () => {
+      window.removeEventListener(EVENT, onChange);
+      window.removeEventListener('storage', onChange);
+    };
+  }, [userId]);
+
+  return ids;
+};
+
