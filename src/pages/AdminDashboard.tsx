@@ -414,6 +414,7 @@ const AdminDashboard = () => {
     setSearchParams({ tab: publicSlugFor(newTab) }, { replace: true });
     // Track per-user tab visits so the shortcuts bar can surface favourites
     recordTabVisit(session?.user?.id ?? null, newTab);
+    logAdminUiEvent({ event_type: 'tab_view', tab: newTab, label: `Opened ${newTab}` });
   }, [setSearchParams, session?.user?.id]);
 
   // Back navigation within the dashboard
