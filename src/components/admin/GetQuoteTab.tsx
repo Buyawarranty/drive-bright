@@ -1,5 +1,5 @@
 import { getVehicleAge } from '@/lib/vehicleAge';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,8 +14,8 @@ import { globalMinTotalFor, loadRiskBandConfig } from '@/lib/pricing/vehicleRisk
 import { isVehicleBlockedByRules, MANUAL_REFERRAL_MESSAGE } from '@/lib/pricing/vehicleRules';
 import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, RotateCcw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling, ChevronRight, Check, Lock as LockIcon, Ban, CalendarDays, Sparkles, LifeBuoy, AlertTriangle } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
-import { QuotesSentPanel } from './QuotesSentPanel';
+const DuplicateWarrantyDialog = lazy(() => import('./DuplicateWarrantyDialog').then(m => ({ default: m.DuplicateWarrantyDialog })));
+const QuotesSentPanel = lazy(() => import('./QuotesSentPanel').then(m => ({ default: m.QuotesSentPanel })));
 import { WidgetErrorBoundary } from './WidgetErrorBoundary';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useDiscountAuthRequests } from '@/hooks/useDiscountAuthRequests';
@@ -25,10 +25,10 @@ import { useLeadOwner } from '@/hooks/useLeadOwner';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { ConcessionAllowanceStrip } from './quote/ConcessionAllowanceStrip';
 
-import { PaidOrdersTab } from './PaidOrdersTab';
-import CustomerLoginsTab from './CustomerLoginsTab';
+const PaidOrdersTab = lazy(() => import('./PaidOrdersTab').then(m => ({ default: m.PaidOrdersTab })));
+const CustomerLoginsTab = lazy(() => import('./CustomerLoginsTab'));
 import DobTypeOrSelect from './DobTypeOrSelect';
-import CustomerPolicyUpdateTab from './CustomerPolicyUpdateTab';
+const CustomerPolicyUpdateTab = lazy(() => import('./CustomerPolicyUpdateTab'));
 import { format, addDays, isBefore, startOfDay, isToday } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -40,7 +40,7 @@ import { getExclusionReason, EXCLUSION_MESSAGE } from '@/lib/vehicleExclusions';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
 import UnsubscribeQuickLink from '@/components/admin/UnsubscribeQuickLink';
 import { UnsubscribeLeadButton } from '@/components/admin/leads/UnsubscribeLeadButton';
-import { QuoteInvoiceDialog } from './QuoteInvoiceDialog';
+const QuoteInvoiceDialog = lazy(() => import('./QuoteInvoiceDialog').then(m => ({ default: m.QuoteInvoiceDialog })));
 import MileageSlider from '@/components/MileageSlider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -76,11 +76,10 @@ import { calculateVehiclePriceAdjustment, isMotorbikeAdjustment } from '@/lib/ve
 import { useMotMileage } from '@/hooks/useMotMileage';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBlockedClaimLimits, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { DeliveryStatusBadge } from './DeliveryStatusBadge';
-import WorldpayPaymentPanel from './WorldpayPaymentPanel';
-import PaymentAssistPanel from './PaymentAssistPanel';
-import BumperPaymentPanel from './BumperPaymentPanel';
+const PaymentAssistPanel = lazy(() => import('./PaymentAssistPanel'));
+const BumperPaymentPanel = lazy(() => import('./BumperPaymentPanel'));
 import { useAgentDiscountCap } from '@/hooks/useAgentDiscountCap';
-import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
+const DiscountCapManagerDialog = lazy(() => import('./quote/DiscountCapManagerDialog').then(m => ({ default: m.DiscountCapManagerDialog })));
 import { useIsManagement } from '@/hooks/useIsManagement';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
 import { getVehicleIdentificationGap } from '@/lib/vehicleIdentification';
@@ -3781,11 +3780,15 @@ Questions? Call 0330 229 5040`;
 
   return (
     <>
+    {duplicateWarning.show && (
+    <Suspense fallback={null}>
     <DuplicateWarrantyDialog
       isOpen={duplicateWarning.show}
       onClose={() => setDuplicateWarning({ show: false })}
       record={duplicateWarning.record}
     />
+    </Suspense>
+    )}
     <div className="max-w-6xl mx-auto space-y-4">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
@@ -4303,6 +4306,8 @@ Questions? Call 0330 229 5040`;
           )}
 
           {/* Invoice builder — open to every sales agent from Step 2 */}
+          {invoiceDialogOpen && (
+          <Suspense fallback={null}>
           <QuoteInvoiceDialog
             open={invoiceDialogOpen}
             onOpenChange={setInvoiceDialogOpen}
@@ -4331,6 +4336,9 @@ Questions? Call 0330 229 5040`;
                 .map(([key]) => key),
             }}
           />
+          </Suspense>
+          )}
+
 
           {/* Step 2: Quote Details */}
           {step === 2 && vehicleData && (
@@ -6767,6 +6775,7 @@ Questions? Call 0330 229 5040`;
                     <ChevronDown className="w-4 h-4 text-slate-500 ml-auto transition-transform group-open:rotate-180" />
                   </summary>
                   <div className="p-4 grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <Suspense fallback={null}>
                     <PaymentAssistPanel
                       amountPounds={currentPrice.payInFullPrice || Math.ceil(currentPrice.totalPrice * 0.9)}
                       description={`Vehicle warranty${customerFirstName ? ` — ${customerFirstName} ${customerLastName}`.trim() : ''}`}
@@ -6792,6 +6801,7 @@ Questions? Call 0330 229 5040`;
                       customerAddressLine1={[customerBuildingNumber, customerStreet].filter(Boolean).join(' ').trim()}
                       vehicleReg={vehicleData?.regNumber}
                     />
+                    </Suspense>
 
 
                     {/* Worldpay — temporarily disabled */}
@@ -9001,28 +9011,38 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
 
         {/* Paid Orders Tab */}
         <TabsContent value="paid" className="space-y-6 mt-6">
-          <PaidOrdersTab onRefresh={loadPaidOrdersCount} />
+          <Suspense fallback={<div className="p-6 text-sm text-gray-500">Loading…</div>}>
+            <PaidOrdersTab onRefresh={loadPaidOrdersCount} />
+          </Suspense>
         </TabsContent>
 
         {/* Customer Logins Tab */}
         <TabsContent value="logins" className="space-y-6 mt-6">
-          <CustomerLoginsTab />
+          <Suspense fallback={<div className="p-6 text-sm text-gray-500">Loading…</div>}>
+            <CustomerLoginsTab />
+          </Suspense>
         </TabsContent>
 
         {/* Update Policy Tab */}
         <TabsContent value="update" className="space-y-6 mt-6">
-          <CustomerPolicyUpdateTab />
+          <Suspense fallback={<div className="p-6 text-sm text-gray-500">Loading…</div>}>
+            <CustomerPolicyUpdateTab />
+          </Suspense>
         </TabsContent>
       </Tabs>
 
       {/* Managers-only board, kept at the bottom so it doesn't push the form down */}
       <WidgetErrorBoundary label="Quotes sent per agent">
-        <QuotesSentPanel currentAdminId={currentAdminId} currentUserRole={userRole} className="mt-6" />
+        <Suspense fallback={null}>
+          <QuotesSentPanel currentAdminId={currentAdminId} currentUserRole={userRole} className="mt-6" />
+        </Suspense>
       </WidgetErrorBoundary>
     </div>
 
     {isManagementRole && (
-      <DiscountCapManagerDialog open={showDiscountCapManager} onOpenChange={setShowDiscountCapManager} />
+      <Suspense fallback={null}>
+        <DiscountCapManagerDialog open={showDiscountCapManager} onOpenChange={setShowDiscountCapManager} />
+      </Suspense>
     )}
     </>
   );
