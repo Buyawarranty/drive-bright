@@ -78,10 +78,28 @@ export const useAgentActivity = (leadIds: string[]) => {
             .not('changed_by', 'is', null)
             .order('changed_at', { ascending: false })
             .limit(batch.length * 5),
+          // Click-to-dial from Zoiper / Dial 9 (agent actually rang the customer)
+          supabase
+            .from('phone_events')
+            .select('lead_id, created_at')
+            .in('lead_id', batch)
+            .order('created_at', { ascending: false })
+            .limit(batch.length * 3),
+          // Inbound / tracked calls matched to this lead
+          supabase
+            .from('callrail_calls')
+            .select('matched_lead_id, started_at, answered_at')
+            .in('matched_lead_id', batch)
+            .order('started_at', { ascending: false })
+            .limit(batch.length * 2),
         ]);
 
         (notes.data || []).forEach((r: any) => upsert(r.lead_id, r.created_at, 'note'));
         (calls.data || []).forEach((r: any) => upsert(r.lead_id, r.created_at, 'call'));
+        (dials.data || []).forEach((r: any) => upsert(r.lead_id, r.created_at, 'dial'));
+        (crCalls.data || []).forEach((r: any) =>
+          upsert(r.matched_lead_id, r.answered_at || r.started_at, 'call')
+        );
         (changes.data || []).forEach((r: any) => {
           if (!r.new_status || r.old_status === r.new_status) return;
           upsert(r.lead_id, r.changed_at, 'status');
