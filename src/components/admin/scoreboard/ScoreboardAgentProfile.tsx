@@ -53,7 +53,7 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
     const monthEnd = endOfMonth(new Date());
 
     const fetchDailyTrend = async () => {
-      const startDate = subDays(new Date(), 13);
+      const startDate = subDays(new Date(), 29);
       const { data: customers } = await supabase
         .from('customers')
         .select('created_at, final_amount')
@@ -63,8 +63,8 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
         .gte('created_at', startDate.toISOString());
 
       const dayMap = new Map<string, { count: number; revenue: number }>();
-      for (let i = 0; i < 14; i++) {
-        const d = subDays(new Date(), 13 - i);
+      for (let i = 0; i < 30; i++) {
+        const d = subDays(new Date(), 29 - i);
         const key = format(d, 'yyyy-MM-dd');
         dayMap.set(key, { count: 0, revenue: 0 });
       }
@@ -290,7 +290,7 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            Last 14 days sales
+            Last 30 days sales
           </CardTitle>
         </CardHeader>
         <CardContent>
