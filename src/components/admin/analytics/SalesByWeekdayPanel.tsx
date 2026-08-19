@@ -186,6 +186,48 @@ export const SalesByWeekdayPanel: React.FC<Props> = ({ customers, sourceFilter }
     };
   }, [customers, sourceFilter, period, grouping, leadRows]);
 
+  // Conversion by the day the lead ARRIVED on, regardless of when it converted.
+  const { arrivalRows, arrivalTotals } = useMemo(() => {
+    const from = periodStart(period);
+    const buckets = DAY_LABELS.map(day => ({ day, leads: 0, converted: 0, conversion: 0 }));
+    let leads = 0;
+    let converted = 0;
+
+    (leadRows || []).forEach(lead => {
+      if (!lead.created_at) return;
+      const d = new Date(lead.created_at);
+      if (Number.isNaN(d.getTime())) return;
+      if (from && d < from) return;
+      const idx = (d.getDay() + 6) % 7;
+      buckets[idx].leads += 1;
+      leads += 1;
+      if ((lead.status || '').toLowerCase() === 'converted') {
+        buckets[idx].converted += 1;
+        converted += 1;
+      }
+    });
+
+    buckets.forEach(b => {
+      b.conversion = b.leads > 0 ? Math.round((b.converted / b.leads) * 1000) / 10 : 0;
+    });
+
+    const eligible = buckets.filter(b => b.leads >= 20);
+    const pool = eligible.length ? eligible : buckets.filter(b => b.leads > 0);
+    const best = pool.reduce((acc, b) => (!acc || b.conversion > acc.conversion ? b : acc), undefined as typeof buckets[number] | undefined);
+    const worst = pool.reduce((acc, b) => (!acc || b.conversion < acc.conversion ? b : acc), undefined as typeof buckets[number] | undefined);
+
+    return {
+      arrivalRows: buckets,
+      arrivalTotals: {
+        leads,
+        converted,
+        rate: leads > 0 ? Math.round((converted / leads) * 1000) / 10 : 0,
+        best,
+        worst: worst && best && worst.day !== best.day ? worst : undefined,
+      },
+    };
+  }, [leadRows, period]);
+
   return (
     <Card className="border-2 border-indigo-500/30">
       <CardHeader className="pb-3">
