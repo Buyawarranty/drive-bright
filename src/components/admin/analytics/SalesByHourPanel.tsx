@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -6,6 +7,8 @@ import {
   Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, ComposedChart,
 } from 'recharts';
 import { subDays, subMonths, startOfDay } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 
 type Period = '7' | '30' | '90' | '180' | '365' | 'all';
 
