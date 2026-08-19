@@ -58,14 +58,14 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
     // popover spinning forever with no result and no error. Every request is now
     // time-bounded and degrades to whatever came back.
     const bounded = async <T,>(p: PromiseLike<T>, ms = 8000): Promise<T | { data: null; error: Error }> => {
-      let timer: ReturnType<typeof setTimeout>;
+      let timer: ReturnType<typeof setTimeout> | undefined;
       const timeout = new Promise<{ data: null; error: Error }>((resolve) => {
         timer = setTimeout(() => resolve({ data: null, error: new Error('Search timed out') }), ms);
       });
       try {
         return (await Promise.race([Promise.resolve(p), timeout])) as any;
       } finally {
-        clearTimeout(timer!);
+        if (timer) clearTimeout(timer);
       }
     };
 
@@ -126,7 +126,12 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         }
 
 
-        let [slRes, cartRes]: any[] = await Promise.all([bounded(query), bounded(cartQuery)]);
+        // The sales lead result is the primary import path. Do not make agents
+        // wait for the optional abandoned-cart enrichment before showing it.
+        const slResPromise = bounded(query, 6000);
+        const cartResPromise = bounded(cartQuery, 3500);
+        let slRes: any = await slResPromise;
+        let cartRes: any = await cartResPromise;
         if (cancelled) return;
 
         if (slRes.error) console.error('Error fetching leads:', slRes.error);
