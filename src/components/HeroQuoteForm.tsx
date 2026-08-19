@@ -427,9 +427,6 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                           <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />
                         </span>
                       </Button>
-                      <p className="text-sm text-gray-600 text-center">
-                        No mileage needed — we use your last MOT reading and confirm it with you at checkout.
-                      </p>
                       {vehicleAgeError && (
                         <div className="flex items-center gap-2 text-red-600 font-medium bg-red-50 border border-red-200 rounded-lg px-3 py-2">
                           <AlertCircle className="w-5 h-5 flex-shrink-0" />
