@@ -337,6 +337,10 @@ export const ClaimsTab = ({
           <Button onClick={() => setShowFilesDialog(true)} variant="outline" size="sm">
             <Paperclip className="h-4 w-4 mr-1" /> Upload file
           </Button>
+          <Button onClick={() => setShowAppealDialog(true)} variant="outline" size="sm">
+            <Gavel className="h-4 w-4 mr-1" /> Appeals
+          </Button>
+
 
 
           <Button onClick={handleExportCSV} variant="outline" size="sm">
