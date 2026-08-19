@@ -567,6 +567,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     if (!agentActivity || b < a) return null;
     return agentActivity.source === 'note' ? 'note'
       : agentActivity.source === 'call' ? 'call'
+      : agentActivity.source === 'dial' ? 'dialled'
       : 'status change';
   }, [agentActivity, lead.last_contacted_at, lastQuoteSentAt]);
 
