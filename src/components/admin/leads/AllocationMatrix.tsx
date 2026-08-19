@@ -218,6 +218,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   // Keep the "Leads today" and "Since 6pm" columns live: refresh every 30s AND on realtime inserts/updates.
   useEffect(() => {
     const iv = setInterval(() => {
+      if (document.hidden) return;
       fetchTodayLeadCounts();
       fetchSince6pmCounts();
     }, 30000);
@@ -839,7 +840,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   // Live count of waiting leads — refresh every 20s and after every action.
   useEffect(() => {
     fetchUnassignedCount();
-    const t = setInterval(fetchUnassignedCount, 20000);
+    const t = setInterval(() => { if (document.hidden) return; fetchUnassignedCount(); }, 20000);
     return () => clearInterval(t);
   }, []);
 
@@ -971,7 +972,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   // While the switch is ON, keep sweeping new unassigned leads every 20s.
   useEffect(() => {
     if (!strictEnabled || !canEdit) return;
-    const t = setInterval(() => { strictRotationDistribute(true); }, 20000);
+    const t = setInterval(() => { if (document.hidden) return; strictRotationDistribute(true); }, 20000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [strictEnabled, canEdit, rotationAgents, strictCursor, strictRunning]);

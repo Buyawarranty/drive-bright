@@ -493,7 +493,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   useEffect(() => { fetchCounts(); }, [fetchCounts]);
   useEffect(() => {
     fetchLeaderboard();
-    const t = setInterval(fetchLeaderboard, 30000);
+    const t = setInterval(() => { if (document.hidden) return; fetchLeaderboard(); }, 30000);
     return () => clearInterval(t);
   }, [fetchLeaderboard]);
 

@@ -240,7 +240,7 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
   // Live tick for "active now" computations
   useEffect(() => {
     if (!isTodayView) return;
-    const t = setInterval(() => setNow(Date.now()), 15000);
+    const t = setInterval(() => { if (document.hidden) return; setNow(Date.now()); }, 15000);
     return () => clearInterval(t);
   }, [isTodayView]);
 

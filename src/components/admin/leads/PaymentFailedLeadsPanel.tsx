@@ -151,7 +151,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
         () => fetchActive()
       )
       .subscribe();
-    const t = window.setInterval(fetchActive, 60_000);
+    const t = window.setInterval(() => { if (document.hidden) return; fetchActive(); }, 60_000);
     return () => {
       supabase.removeChannel(channel);
       window.clearInterval(t);

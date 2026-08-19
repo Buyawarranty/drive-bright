@@ -22,7 +22,7 @@ export const SandboxHandoverAlerts: React.FC = () => {
 
   React.useEffect(() => {
     if (waiting.length === 0) return;
-    const t = window.setInterval(() => force((n) => n + 1), 1000);
+    const t = window.setInterval(() => { if (document.hidden) return; force((n) => n + 1); }, 1000);
     return () => window.clearInterval(t);
   }, [waiting.length]);
 

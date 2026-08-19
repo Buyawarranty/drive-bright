@@ -43,7 +43,7 @@ export function useSandboxSpecialistPresence() {
 
   useEffect(() => {
     load();
-    const interval = window.setInterval(load, 30000);
+    const interval = window.setInterval(() => { if (document.hidden) return; load(); }, 30000);
     return () => window.clearInterval(interval);
   }, [load]);
 
@@ -90,7 +90,7 @@ export function useSandboxSpecialistPresence() {
         .update({ last_seen_at: new Date().toISOString(), is_online: true })
         .eq('user_id', userId);
     };
-    const interval = window.setInterval(beat, 60000);
+    const interval = window.setInterval(() => { if (document.hidden) return; beat(); }, 60000);
     return () => window.clearInterval(interval);
   }, [meOnline, userId]);
 

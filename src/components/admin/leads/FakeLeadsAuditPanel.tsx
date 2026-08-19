@@ -217,7 +217,7 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
 
     const onFocus = () => { if (document.visibilityState === 'visible') fetchData(); };
     document.addEventListener('visibilitychange', onFocus);
-    const interval = window.setInterval(fetchData, 60000);
+    const interval = window.setInterval(() => { if (document.hidden) return; fetchData(); }, 60000);
 
     return () => {
       supabase.removeChannel(channel);

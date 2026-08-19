@@ -310,7 +310,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
       .channel('lead-assignment-stream')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_leads' }, () => load())
       .subscribe();
-    const t = setInterval(() => load(), 30000);
+    const t = setInterval(() => { if (document.hidden) return; load(); }, 30000);
     return () => { supabase.removeChannel(channel); clearInterval(t); };
   }, [load]);
 

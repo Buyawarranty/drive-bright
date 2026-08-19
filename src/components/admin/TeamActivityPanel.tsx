@@ -200,6 +200,7 @@ export const TeamActivityPanel = () => {
 
     // Refresh every 30 seconds as backup
     const interval = setInterval(() => {
+      if (document.hidden) return;
       fetchTeamPresence();
       fetchActivityLogs();
     }, 30000);

@@ -87,7 +87,7 @@ export function useReservationCountdown(reservation: OpenPoolReservation): numbe
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!reservation || reservation.phase !== 'reserved') return;
-    const t = setInterval(() => setNow(Date.now()), 1000);
+    const t = setInterval(() => { if (document.hidden) return; setNow(Date.now()); }, 1000);
     return () => clearInterval(t);
   }, [reservation?.lead.id, reservation?.lockedAt, reservation?.phase]);
 
@@ -101,7 +101,7 @@ export function useCallingElapsed(reservation: OpenPoolReservation): number {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!reservation || reservation.phase !== 'calling' || !reservation.callStartedAt) return;
-    const t = setInterval(() => setNow(Date.now()), 1000);
+    const t = setInterval(() => { if (document.hidden) return; setNow(Date.now()); }, 1000);
     return () => clearInterval(t);
   }, [reservation?.lead.id, reservation?.phase, reservation?.callStartedAt]);
 

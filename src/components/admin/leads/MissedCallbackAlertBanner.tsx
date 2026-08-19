@@ -53,7 +53,7 @@ export const MissedCallbackAlertBanner: React.FC<Props> = ({ onNavigate }) => {
 
   // Live-tick the timer every second
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
+    const t = setInterval(() => { if (document.hidden) return; setNow(Date.now()); }, 1000);
     return () => clearInterval(t);
   }, []);
 

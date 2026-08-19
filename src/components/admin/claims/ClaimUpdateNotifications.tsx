@@ -36,7 +36,7 @@ export const ClaimUpdateNotifications = () => {
 
   useEffect(() => {
     fetchUnread();
-    const interval = setInterval(fetchUnread, 30000); // Poll every 30s
+    const interval = setInterval(() => { if (document.hidden) return; fetchUnread(); }, 30000); // Poll every 30s
     return () => clearInterval(interval);
   }, []);
 

@@ -337,7 +337,7 @@ export const useNewLeadAlert = () => {
   useEffect(() => {
     // Elapsed-time ticker only matters while a pop-up is on screen.
     if (!hasQueue) return;
-    const t = setInterval(() => setNow(Date.now()), 1000);
+    const t = setInterval(() => { if (document.hidden) return; setNow(Date.now()); }, 1000);
     return () => clearInterval(t);
   }, [hasQueue]);
 

@@ -106,7 +106,7 @@ export const SpeedToDialPanel: React.FC = () => {
 
   useEffect(() => {
     load();
-    const iv = setInterval(load, 30_000);
+    const iv = setInterval(() => { if (document.hidden) return; load(); }, 30_000);
     return () => clearInterval(iv);
   }, [load]);
 

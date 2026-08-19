@@ -504,13 +504,26 @@ export const useLeadDistribution = () => {
     // Run auto-init after a short delay to avoid blocking initial render
     const initTimer = setTimeout(autoInit, 1500);
 
+    // user_presence fires on every agent heartbeat, so coalesce the refetches
+    // instead of re-querying on each individual event (that was the CRM lag).
+    let presenceTimer: ReturnType<typeof setTimeout> | null = null;
+    const debouncedPresenceRefetch = () => {
+      if (presenceTimer) clearTimeout(presenceTimer);
+      presenceTimer = setTimeout(() => {
+        presenceTimer = null;
+        if (document.hidden) return;
+        fetchAgentPresences();
+      }, 3000);
+    };
+
     const presenceChannel = supabase
       .channel('presence-changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'user_presence' },
-        () => fetchAgentPresences()
+        () => debouncedPresenceRefetch()
       )
       .subscribe();
+
 
     const settingsChannel = supabase
       .channel('distribution-settings-sync')
@@ -537,6 +550,7 @@ export const useLeadDistribution = () => {
       .subscribe();
 
     const refreshInterval = setInterval(() => {
+      if (document.hidden) return;
       fetchAgentCaps();
       fetchAgentPresences();
       fetchTodayLeadCounts();
@@ -549,6 +563,8 @@ export const useLeadDistribution = () => {
       overflowChannel.unsubscribe();
       clearInterval(refreshInterval);
       clearTimeout(initTimer);
+      if (presenceTimer) clearTimeout(presenceTimer);
+
     };
   }, [fetchSettings, fetchAgentCaps, fetchAgentPresences, fetchOverflowRecipients, fetchTodayLeadCounts]);
 

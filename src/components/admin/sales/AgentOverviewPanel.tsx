@@ -94,6 +94,7 @@ export const AgentOverviewPanel: React.FC<AgentOverviewPanelProps> = ({ leads, s
     fetchLeadCounts();
 
     const interval = setInterval(() => {
+      if (document.hidden) return;
       fetchPresence();
       fetchOnlineTime();
     }, 30000);

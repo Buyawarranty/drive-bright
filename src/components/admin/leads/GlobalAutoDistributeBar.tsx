@@ -118,7 +118,7 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool }: Props) => {
   useEffect(() => {
     if (!isManager) return;
     loadPoolCount();
-    const t = setInterval(loadPoolCount, POOL_POLL_MS);
+    const t = setInterval(() => { if (document.hidden) return; loadPoolCount(); }, POOL_POLL_MS);
     return () => clearInterval(t);
   }, [isManager, loadPoolCount]);
 
@@ -207,7 +207,7 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool }: Props) => {
   useEffect(() => {
     if (!isManager || !autoOn) return;
     const kick = setTimeout(() => runSweep(), 1500);
-    const t = setInterval(() => runSweep(), AUTO_SWEEP_INTERVAL_MS);
+    const t = setInterval(() => { if (document.hidden) return; runSweep(); }, AUTO_SWEEP_INTERVAL_MS);
     return () => { clearTimeout(kick); clearInterval(t); };
   }, [isManager, autoOn, runSweep]);
 
