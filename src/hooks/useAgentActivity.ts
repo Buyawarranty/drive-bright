@@ -57,7 +57,7 @@ export const useAgentActivity = (leadIds: string[]) => {
     try {
       for (let i = 0; i < ids.length; i += BATCH) {
         const batch = ids.slice(i, i + BATCH);
-        const [notes, calls, changes] = await Promise.all([
+        const [notes, calls, changes, dials, crCalls] = await Promise.all([
           supabase
             .from('lead_quick_notes')
             .select('lead_id, created_at, created_by')
