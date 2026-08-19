@@ -207,40 +207,27 @@ export const WorkingWeekRotaCard = ({ isManagement }: Props) => {
     }
     setSaving(true);
     try {
-      const existing = toChange.filter(({ d }) => !!getRow(agentId, d));
-      const missing = toChange.filter(({ d }) => !getRow(agentId, d));
-
-      const updatedIds: Record<string, DayType> = {};
-      for (const { d, type } of existing) {
-        const row = getRow(agentId, d)!;
-        const { error } = await (supabase as any)
-          .from('agent_working_days')
-          .update({ day_type: type })
-          .eq('id', row.id);
-        if (error) throw error;
-        updatedIds[row.id] = type;
-      }
-
-      let inserted: WorkingDayRow[] = [];
-      if (missing.length) {
-        const { data, error } = await (supabase as any)
-          .from('agent_working_days')
-          .insert(
-            missing.map(({ d, type }) => ({
-              admin_user_id: agentId,
-              work_date: format(d, 'yyyy-MM-dd'),
-              day_type: type,
-              created_by: user?.id ?? null,
-            })),
-          )
-          .select('id, admin_user_id, work_date, day_type');
-        if (error) throw error;
-        inserted = (data as WorkingDayRow[]) || [];
-      }
+      const { data, error } = await (supabase as any)
+        .from('agent_working_days')
+        .upsert(
+          toChange.map(({ d, type }) => ({
+            admin_user_id: agentId,
+            work_date: format(d, 'yyyy-MM-dd'),
+            day_type: type,
+            created_by: user?.id ?? null,
+          })),
+          { onConflict: 'admin_user_id,work_date' },
+        )
+        .select('id, admin_user_id, work_date, day_type');
+      if (error) throw error;
+      const saved = (data as WorkingDayRow[]) || [];
       setRows((prev) => [
-        ...prev.map((r) => (updatedIds[r.id] ? { ...r, day_type: updatedIds[r.id] } : r)),
-        ...inserted,
+        ...prev.filter(
+          (r) => !saved.some((s) => s.admin_user_id === r.admin_user_id && s.work_date === r.work_date),
+        ),
+        ...saved,
       ]);
+
       if (!opts?.silent) toast.success('Mon–Sat set to full days');
     } catch (e: any) {
       toast.error(e?.message ?? 'Could not set default days');
