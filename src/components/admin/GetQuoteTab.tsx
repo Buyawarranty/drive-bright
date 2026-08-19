@@ -4336,6 +4336,9 @@ Questions? Call 0330 229 5040`;
                 .map(([key]) => key),
             }}
           />
+          </Suspense>
+          )}
+
 
           {/* Step 2: Quote Details */}
           {step === 2 && vehicleData && (
