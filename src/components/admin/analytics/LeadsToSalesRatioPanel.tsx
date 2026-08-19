@@ -33,6 +33,8 @@ interface DayRow {
 }
 
 const money = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
+const cpl = (cost: number, leads: number) => (leads > 0 ? cost / leads : 0);
+
 
 const DEFAULT_LEAD_COST = 21;
 
