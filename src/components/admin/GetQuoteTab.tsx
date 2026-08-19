@@ -2192,25 +2192,27 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       toast({ title: 'Preview mode', description: 'This is a beta preview — nothing is sent, saved or charged.' });
       return;
     }
-    if (!quoteLink) {
-      toast({
-        title: "Quote Link Required",
-        description: "Please wait for the quote link to be generated first.",
-        variant: "destructive",
-      });
-      return;
-    }
     // Safety: never email a link that belongs to a different vehicle/customer.
-    // Verified against the stored quote, not just local state.
-    const sendLink = await getVerifiedQuoteLink();
+    // Verified against the stored quote, not just local state. If no link exists
+    // yet (generation was still running, or failed once) this mints a fresh one
+    // rather than silently doing nothing.
+    setIsSendingEmail(true);
+    let sendLink: string | null = null;
+    try {
+      sendLink = await getVerifiedQuoteLink();
+    } catch (e) {
+      console.error('Quote link verification failed', e);
+    }
     if (!sendLink) {
+      setIsSendingEmail(false);
       toast({
-        title: "Quote link is out of date",
-        description: "The vehicle or customer changed and a fresh link couldn't be created. Please try again.",
+        title: "Quote link couldn't be created",
+        description: "We couldn't generate the customer quote link. Please check the vehicle and customer details, then try again.",
         variant: "destructive",
       });
       return;
     }
+
 
 
     setIsSendingEmail(true);
