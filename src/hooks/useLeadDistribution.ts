@@ -563,6 +563,8 @@ export const useLeadDistribution = () => {
       overflowChannel.unsubscribe();
       clearInterval(refreshInterval);
       clearTimeout(initTimer);
+      if (presenceTimer) clearTimeout(presenceTimer);
+
     };
   }, [fetchSettings, fetchAgentCaps, fetchAgentPresences, fetchOverflowRecipients, fetchTodayLeadCounts]);
 
