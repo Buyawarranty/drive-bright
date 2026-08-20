@@ -1,11 +1,11 @@
-// Warranty specialist opening hours — Monday to Saturday, 9am to 5pm UK time.
+// Warranty specialist opening hours — Monday to Saturday, 9am to 6pm UK time.
 // Mirrors the same rule used by the ai-sandbox-chat edge function.
 
-export const openingHoursLabel = 'Mon–Sat, 9am–5pm';
+export const openingHoursLabel = 'Mon–Sat, 9am–6pm';
 
 const OPEN_DAYS = [1, 2, 3, 4, 5, 6];
 const START_HOUR = 9;
-const END_HOUR = 17;
+const END_HOUR = 18;
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
