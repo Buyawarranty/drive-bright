@@ -111,7 +111,12 @@ export const ProgressOverviewStrip: React.FC = () => {
       const weekEndStr = format(addDays(weekStart, 6), 'yyyy-MM-dd');
       const dayStart = new Date(`${todayStr}T00:00:00.000Z`).toISOString();
 
-      const [scoreRes, daysRes, statusRes, logRes, reviewRes, salesRes] = await Promise.all([
+      // allSettled, never all: one failing read (scoreboard RPC, rota RLS, break
+      // tables) must not wipe out every other cell. Before this, a single rejection
+      // left the whole strip on EMPTY — which showed "Receiving leads / no working
+      // days without a sale / no sale in the last 180 days" for agents who plainly
+      // had sales in Customer Management.
+      const settled = await Promise.allSettled([
         supabase.rpc('get_team_scoreboard', {
           p_start: monthStart.toISOString(),
           p_end: endOfMonth(now).toISOString(),
@@ -138,8 +143,9 @@ export const ProgressOverviewStrip: React.FC = () => {
           .eq('admin_user_id', adminId)
           .eq('week_start', weekStartStr),
         // My own sales, filtered server-side on every attribution column so the
-        // row can never be lost to a page limit. 180-day window so the "last sale"
-        // proof is always found even after a long gap.
+        // row can never be lost to a page limit. Same four credit columns that
+        // Customer Management uses, so the two screens always agree. 180-day
+        // window so the "last sale" proof is always found after a long gap.
         supabase
           .from('customers')
           .select('signup_date, name, registration_plate, final_amount, status, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, assigned_to')
@@ -151,6 +157,14 @@ export const ProgressOverviewStrip: React.FC = () => {
           .order('signup_date', { ascending: false })
           .limit(1000),
       ]);
+
+      const val = (i: number): any => (settled[i].status === 'fulfilled' ? (settled[i] as any).value : null);
+      settled.forEach((s, i) => {
+        if (s.status === 'rejected') console.warn('[ProgressOverviewStrip] read failed', i, s.reason);
+        else if ((s.value as any)?.error) console.warn('[ProgressOverviewStrip] read error', i, (s.value as any).error);
+      });
+      const [scoreRes, daysRes, statusRes, logRes, reviewRes, salesRes] = [0, 1, 2, 3, 4, 5].map(val);
+
 
 
       const mine = ((scoreRes.data || []) as any[]).find((r) => r.admin_user_id === adminId);
