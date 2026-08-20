@@ -14,6 +14,7 @@ import {
   getExcessBracketBasis,
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
+import { applyWebsiteSellFloor } from '@/lib/pricing/netFloor';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import ClaimLimitDetails from './ClaimLimitDetails';
@@ -73,6 +74,7 @@ interface Step3DesktopProps {
   selectedProtectionAddOns: { [key: string]: boolean };
   monthlyPrice: number;
   totalPrice: number;
+  boostAddon?: boolean;
 
   // Available durations (vehicle age/mileage filtered)
   availableDurations: PaymentType[];
@@ -124,6 +126,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   selectedProtectionAddOns,
   monthlyPrice,
   totalPrice,
+  boostAddon = false,
   availableDurations,
   onSelectPlan,
   validationErrors,
@@ -184,8 +187,8 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     );
 
     const durationMonths = durationId === '12months' ? 12 : durationId === '24months' ? 24 : 36;
-    const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : (selectedLabourRate === 150 || selectedLabourRate === 200) ? 24 : 0;
-    const labourTotalAdjust = labourMonthlyAdjust * durationMonths;
+    // Canonical multiplicative labour factors (same helper as the selected price / Step 4).
+    const labourTotalAdjust = calculateLabourRateAdjustment(selectedLabourRate, durationId as PaymentPeriod, adjustedBasePrice);
 
     const thisCardAutoIncluded = getAutoIncludedAddOns(durationId);
     const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental'];
@@ -195,12 +198,23 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
 
     const cardPremiumSurcharge = getClaimLimitSurcharge(selectedClaimLimit, durationId, voluntaryExcess || 100);
 
-    // Boost addon: +£5/mo × 12 = £60 total (same for all durations) — must be included
-    // to match PricingTable's basePlanPrice + boostTotalAdjustment formula
-    const boostTotalAdjust = 0; // boostAddon not currently passed to Step3Desktop; included as 0 for parity
+    // Boost addon: +£5/mo × 12 = £60 total (same for all durations)
+    const boostTotalAdjust = boostAddon ? 60 : 0;
 
-    const total = adjustedBasePrice + labourTotalAdjust + durationAddOnPrice + cardPremiumSurcharge + boostTotalAdjust + getExcessTotalAdjustment(durationId as PaymentPeriod, voluntaryExcess ?? 100, adjustedBasePrice);
+    // Website sell floor MUST be applied here too — without it the duration cards
+    // sat £1+ below the selected / sticky / Step 4 price on floor-bound vehicles.
+    const total = applyWebsiteSellFloor(
+      adjustedBasePrice + labourTotalAdjust + durationAddOnPrice + cardPremiumSurcharge + boostTotalAdjust + getExcessTotalAdjustment(durationId as PaymentPeriod, voluntaryExcess ?? 100, adjustedBasePrice),
+      {
+        paymentPeriod: durationId as PaymentPeriod,
+        voluntaryExcess: voluntaryExcess ?? 100,
+        claimLimit: selectedClaimLimit,
+        labourRate: selectedLabourRate,
+        isMotorbike: isMotorbikeAdjustment(vehicleAdjustment),
+      }
+    );
     return Math.ceil(total / 12);
+
   };
 
   // Approx +£/mo for excess pills (relative to current selection). Excess is
