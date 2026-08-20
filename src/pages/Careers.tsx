@@ -99,8 +99,8 @@ const Careers: React.FC = () => {
     <main className="min-h-screen bg-[#F9FAFB] text-[#111827]">
       <SEOHead
         title="Warranty Sales Jobs UK | Remote PAYE Careers"
-        description="Remote UK Vehicle Warranty Sales Executive role. Full-time PAYE, warm leads, uncapped commission, OTE £35,000–£60,000+. Apply to join the Buyawarranty sales team."
-        keywords="warranty sales jobs, remote sales jobs UK, telesales jobs, vehicle warranty sales executive, PAYE sales jobs, work from home sales UK, uncapped commission sales, buyawarranty careers"
+        description="Remote UK Vehicle Warranty Sales Executive role. Ideal for extensive telesales experience or car finance broker backgrounds. Full-time PAYE, warm leads, uncapped commission, OTE £35,000–£60,000+."
+        keywords="warranty sales jobs, remote sales jobs UK, telesales jobs, experienced telesales jobs, extensive telesales experience, telesales executive jobs, vehicle warranty sales executive, car finance broker jobs, finance broker jobs, car finance brokerage jobs, motor finance sales jobs, vehicle finance sales jobs, dealership finance and insurance jobs, GAP insurance sales jobs, PAYE sales jobs, work from home sales UK, uncapped commission sales, buyawarranty careers"
         canonical={CAREERS_URL}
         ogTitle="Vehicle Warranty Sales Executive – Remote UK | Buyawarranty Careers"
         ogDescription="Warm leads, full-time PAYE employment, uncapped commission. OTE £35,000–£60,000+. Join our UK vehicle warranty sales team."
