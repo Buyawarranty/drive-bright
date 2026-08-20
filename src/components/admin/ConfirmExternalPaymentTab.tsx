@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 import { getNetPayableFloor } from '@/lib/pricing/netFloor';
+import { getSoldVsReference } from '@/lib/pricing/soldVsReference';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -812,8 +813,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
         // Validation: the recorded quote can never sit below the Quotes & Orders
         // grid price for these exact options, so a low figure can't quietly zero
         // out the discount an agent gave.
-        const gridReference = withPricingAsOf(pricingVersionsForCheck, new Date().toISOString(), () =>
-          getSoldVsReference({
+        const gridReference = getSoldVsReference({
             registration_plate: editableRegNumber,
             vehicle_make: vehicleData?.make ?? null,
             vehicle_model: vehicleData?.model ?? null,
@@ -826,8 +826,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
             claim_limit: claimLimit,
             labour_rate: labourRate,
             final_amount: collected || quotedTotal,
-          })
-        );
+        });
         if (gridReference && gridReference.qop > effectiveQuoted) {
           effectiveQuoted = Math.round(gridReference.qop * 100) / 100;
         }
