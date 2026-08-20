@@ -2,12 +2,15 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { isTeamOpenNow, openingHoursLabel } from '@/lib/aiSandbox/openingHours';
+import { useIsManagement } from '@/hooks/useIsManagement';
 
 export type SpecialistPresence = {
   user_id: string;
   display_name: string | null;
   is_online: boolean;
   last_seen_at: string;
+  /** Manager override: counts as live even outside opening hours. */
+  override_hours?: boolean;
 };
 
 /** A specialist counts as live only if they ticked on-duty and pinged recently. */
@@ -28,6 +31,7 @@ export function useSandboxSpecialistPresence() {
   const [rows, setRows] = useState<SpecialistPresence[]>([]);
   const [meOnline, setMeOnline] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const { isManagement } = useIsManagement();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
@@ -36,7 +40,7 @@ export function useSandboxSpecialistPresence() {
   const load = useCallback(async () => {
     const { data } = await supabase
       .from('ai_sandbox_specialist_presence')
-      .select('user_id, display_name, is_online, last_seen_at');
+      .select('user_id, display_name, is_online, last_seen_at, override_hours');
     const list = ((data as SpecialistPresence[]) ?? []).filter(isFresh);
     setRows(list);
     if (userId) setMeOnline(list.some((r) => r.user_id === userId));
@@ -60,8 +64,10 @@ export function useSandboxSpecialistPresence() {
         toast.error('Sign in again to go on duty.');
         return;
       }
-      // Live agent availability is hard-limited to opening hours (Mon–Sat, 9am–6pm UK).
-      if (online && !isTeamOpenNow()) {
+      // Live agent availability is limited to opening hours (Mon–Sat, 9am–6pm UK).
+      // Management can override and open live chat outside those hours.
+      const outsideHours = online && !isTeamOpenNow();
+      if (outsideHours && !isManagement) {
         toast.error(`Live chat is only available ${openingHoursLabel} (UK time).`);
         return;
       }
@@ -71,6 +77,7 @@ export function useSandboxSpecialistPresence() {
           user_id: id,
           display_name: displayName ?? null,
           is_online: online,
+          override_hours: outsideHours,
           last_seen_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' },
@@ -80,10 +87,14 @@ export function useSandboxSpecialistPresence() {
         toast.error(`Could not update duty status: ${error.message}`);
         return;
       }
-      toast.success(online ? 'You are on duty for live chats.' : 'You are off duty.');
+      if (outsideHours) {
+        toast.success('Manager override: live chat is open outside normal hours.');
+      } else {
+        toast.success(online ? 'You are on duty for live chats.' : 'You are off duty.');
+      }
       load();
     },
-    [userId, load],
+    [userId, load, isManagement],
   );
 
 
@@ -100,16 +111,18 @@ export function useSandboxSpecialistPresence() {
     return () => window.clearInterval(interval);
   }, [meOnline, userId]);
 
-  // Outside opening hours nobody counts as live, whatever the presence rows say.
+  // Outside opening hours only manager-overridden rows count as live.
   const withinHours = isTeamOpenNow();
-  const liveRows = withinHours ? rows : [];
+  const liveRows = withinHours ? rows : rows.filter((r) => r.override_hours);
 
   return {
     specialists: liveRows,
     liveCount: liveRows.length,
     liveNames: liveRows.map((r) => r.display_name).filter(Boolean) as string[],
-    meOnline: withinHours && meOnline,
+    meOnline: meOnline && (withinHours || liveRows.some((r) => r.user_id === userId)),
     setOnDuty,
+    canOverrideHours: isManagement,
+    withinHours,
     refresh: load,
   };
 }
