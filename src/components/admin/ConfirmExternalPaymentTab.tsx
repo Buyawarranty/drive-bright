@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 import { getNetPayableFloor } from '@/lib/pricing/netFloor';
+import { getSoldVsReference } from '@/lib/pricing/soldVsReference';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -809,7 +810,28 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
         } catch {
           /* fall back to the grid price shown at confirmation */
         }
+        // Validation: the recorded quote can never sit below the Quotes & Orders
+        // grid price for these exact options, so a low figure can't quietly zero
+        // out the discount an agent gave.
+        const gridReference = getSoldVsReference({
+            registration_plate: editableRegNumber,
+            vehicle_make: vehicleData?.make ?? null,
+            vehicle_model: vehicleData?.model ?? null,
+            vehicle_fuel_type: vehicleData?.fuelType ?? null,
+            vehicle_year: vehicleData?.year ?? null,
+            vehicle_type: (vehicleData as any)?.vehicleType ?? null,
+            mileage: mileage ?? null,
+            payment_type: paymentType,
+            voluntary_excess: excessAmount,
+            claim_limit: claimLimit,
+            labour_rate: labourRate,
+            final_amount: collected || quotedTotal,
+        });
+        if (gridReference && gridReference.qop > effectiveQuoted) {
+          effectiveQuoted = Math.round(gridReference.qop * 100) / 100;
+        }
         const givenAway = Math.max(0, Math.round((effectiveQuoted - collected) * 100) / 100);
+
 
         try {
           await supabase
