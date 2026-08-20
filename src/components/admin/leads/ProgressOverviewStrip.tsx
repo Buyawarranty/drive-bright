@@ -516,15 +516,58 @@ export const ProgressOverviewStrip: React.FC = () => {
 
                 <div className="space-y-1">
                   <label className="font-medium" htmlFor="review-customer-name">
-                    Customer name on the review <span className="text-destructive">*</span>
+                    Find the customer — name or reg plate <span className="text-destructive">*</span>
                   </label>
                   <input
                     id="review-customer-name"
                     value={reviewName}
-                    onChange={(e) => setReviewName(e.target.value)}
-                    placeholder="e.g. Tim Hubbard"
+                    onChange={(e) => {
+                      setReviewName(e.target.value);
+                      setPicked(null);
+                      searchCustomers(e.target.value);
+                    }}
+                    placeholder="e.g. Tim Hubbard or YN73WZH"
                     className="h-7 w-full rounded-md border border-input bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
                   />
+                  {searching && <p className="text-[10px] text-muted-foreground">Searching…</p>}
+                  {picked ? (
+                    <div className="flex items-center justify-between gap-2 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1">
+                      <span className="truncate font-semibold text-emerald-900">
+                        {picked.name || 'Unnamed'}
+                        {picked.registration_plate ? ` · ${picked.registration_plate}` : ''}
+                      </span>
+                      <button
+                        type="button"
+                        className="text-[10px] underline text-emerald-800"
+                        onClick={() => {
+                          setPicked(null);
+                          setReviewName('');
+                        }}
+                      >
+                        change
+                      </button>
+                    </div>
+                  ) : results.length > 0 ? (
+                    <div className="max-h-32 overflow-y-auto rounded-md border">
+                      {results.map((r) => (
+                        <button
+                          key={r.id}
+                          type="button"
+                          className="block w-full px-2 py-1 text-left hover:bg-muted"
+                          onClick={() => {
+                            setPicked(r);
+                            setReviewName(r.name || '');
+                            setResults([]);
+                          }}
+                        >
+                          <span className="font-medium">{r.name || 'Unnamed'}</span>
+                          {r.registration_plate ? (
+                            <span className="ml-1 text-muted-foreground">· {r.registration_plate}</span>
+                          ) : null}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
                   <div className="flex gap-1 pt-1">
                     {['call', 'whatsapp', 'email'].map((c) => (
                       <button
