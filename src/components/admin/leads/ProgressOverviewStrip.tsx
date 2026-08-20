@@ -463,8 +463,8 @@ export const ProgressOverviewStrip: React.FC = () => {
             </div>
             <div className="text-[11px] text-muted-foreground whitespace-nowrap">
               {data.lowSaleDays === 0
-                ? 'On target — no missed service days'
-                : `${data.lowSaleDays} service day${data.lowSaleDays === 1 ? '' : 's'} since your last sale`}
+                ? 'No working days without a sale'
+                : `${data.lowSaleDays} working day${data.lowSaleDays === 1 ? '' : 's'} without a sale`}
             </div>
             <div className="mt-1 rounded border border-border bg-muted/40 px-1.5 py-1 text-[11px] leading-tight">
               {data.lastSaleAt ? (
