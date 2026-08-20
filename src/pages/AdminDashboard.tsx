@@ -169,7 +169,20 @@ const canonicalTabId = (tab: string) => (LIVE_CALLS_TAB_IDS.has(tab) ? 'overview
 
 // Roles that always keep access to Live Calls Data. What they can actually see
 // inside is governed by lead_team_members.call_data_scope (off / own / team / all).
-const LIVE_CALLS_ALWAYS_ALLOWED_ROLES = new Set(['sales', 'sales_lead', 'sales_manager', 'performance_manager', 'admin']);
+
+// Shared "no access" screen for sections a login is explicitly blocked from
+// (used by the shared backup sales login, which is denied Analytics,
+// Lead Allocation, Open Round Robin, ORR Test Lab and Vehicle Intelligence).
+const AccessDenied: React.FC<{ label: string }> = ({ label }) => (
+  <div className="p-6">
+    <h2 className="text-xl font-semibold">Access denied</h2>
+    <p className="text-sm text-muted-foreground mt-1">
+      {label} is not available for this login.
+    </p>
+  </div>
+);
+
+
 
 const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: Record<string, boolean> | null) => {
   const tab = canonicalTabId(rawTab);
