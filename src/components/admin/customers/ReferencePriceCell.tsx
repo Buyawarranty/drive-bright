@@ -69,6 +69,13 @@ export const ReferencePriceCell: React.FC<{ order: SoldOrderLike | null | undefi
       ? { quoted: storedQuoted, pct: Number(storedPct), paid: Number((order as any)?.final_amount) || 0 }
       : getRecordedOrderDiscount(order as any);
 
+  // Sold ABOVE the quoted price — a premium, not a discount. Shown explicitly so
+  // "No discount given" only ever means sold exactly at the quote.
+  const premiumPct =
+    recorded && recorded.quoted > 0 && recorded.paid > recorded.quoted
+      ? ((recorded.paid - recorded.quoted) / recorded.quoted) * 100
+      : 0;
+
   if (recorded) {
     return (
       <div className="flex flex-col gap-1 min-w-[150px]">
@@ -79,10 +86,18 @@ export const ReferencePriceCell: React.FC<{ order: SoldOrderLike | null | undefi
         </div>
         <Badge
           variant="outline"
-          className={`text-xs whitespace-nowrap ${discountBandClass(recorded.pct)}`}
+          className={`text-xs whitespace-nowrap ${
+            premiumPct > 0 && recorded.pct <= 0
+              ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+              : discountBandClass(recorded.pct)
+          }`}
           title={`Discount recorded when this sale was confirmed: ${gbp(recorded.quoted - recorded.paid)} off the quoted ${gbp(recorded.quoted)}. This is the figure used for commission.`}
         >
-          {recorded.pct > 0 ? `${recorded.pct.toFixed(1)}% off given` : 'No discount given'}
+          {recorded.pct > 0
+            ? `${recorded.pct.toFixed(1)}% off given`
+            : premiumPct > 0
+              ? `Sold above quote +${premiumPct.toFixed(1)}%`
+              : 'No discount given'}
         </Badge>
         {recorded.pct > DISCOUNT_CEILING_PCT && (
           <span className="flex items-center gap-1 text-[11px] font-semibold text-red-700">
