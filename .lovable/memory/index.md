@@ -151,6 +151,7 @@ Updated: just now
 - [Manager Reassign Bypass](mem://admin/leads/manager-reassign-bypass) — Touched-lead protection triggers must allow can_manage_lead_routing callers, else manager reassigns silently snap back
 - Website sale credit never an agent: self-serve website/Google/Facebook/Bing purchases stay with Website. See mem://admin/website-sale-credit-never-agent
 - [Duplicate Customer One Owner](mem://admin/leads/duplicate-customer-one-owner) — Same customer (email or phone tail-9) can never sit with 2 agents; owner change propagates to uncalled duplicates, split-call pairs get manager alert tag
+- [Sale Today Clears Freeze](mem://admin/leads/sale-today-clears-freeze) — A sale credited today immediately unpauses leads and zeroes the days-without-a-sale counter
 - [Departed Agent Lead Recovery](mem://admin/leads/departed-agent-lead-recovery) — Any leaver's ex-owned unassigned leads recovered all-time via audit trail, live counter, ignores date range
 - [Note-lock Reassign Authorisation](mem://admin/leads/note-lock-reassign-authorisation) — Calls/status changes never block a reassign; an agent-written note locks the lead until a manager ticks explicit authorisation
 - [AI Sandbox Grounding](mem://features/ai-sandbox-grounding) — Sandbox chatbot answers cover/T&C questions only from approved site material; not confident = specialist handover, never a guess
