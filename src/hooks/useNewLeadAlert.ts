@@ -360,15 +360,21 @@ export const useNewLeadAlert = () => {
   const loadRef = useRef(load);
   loadRef.current = load;
 
-  // Polling safety net. 15s, plus an immediate refetch whenever the tab
+  // Polling safety net. 30s, plus an immediate refetch whenever the tab
   // becomes visible again or the network comes back — timers are frozen while
   // a laptop sleeps, which is why the queue used to look "stuck".
+  // While a heavy screen (Quotes & Orders) is booting we skip the cycle so the
+  // agent's own polling can't queue in front of the screen they're waiting on.
   useEffect(() => {
     load();
-    const stopPoll = setVisibleInterval(() => loadRef.current(), 30000);
+    const stopPoll = setVisibleInterval(() => {
+      if (isHeavyTabBusy()) return;
+      loadRef.current();
+    }, 30000);
     const wake = () => {
-      if (document.visibilityState === 'visible') loadRef.current();
+      if (document.visibilityState === 'visible' && !isHeavyTabBusy()) loadRef.current();
     };
+
     document.addEventListener('visibilitychange', wake);
     window.addEventListener('focus', wake);
     window.addEventListener('online', wake);
