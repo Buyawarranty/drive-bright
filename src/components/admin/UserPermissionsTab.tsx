@@ -1989,7 +1989,11 @@ export const UserPermissionsTab = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Backup emergency login for sales */}
+      <BackupLoginPanel allTabIds={ADMIN_TABS.map(t => t.id)} />
+
       {/* Bulk Access Management */}
+
       <Card className="border-primary/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
