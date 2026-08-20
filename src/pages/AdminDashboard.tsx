@@ -1241,6 +1241,7 @@ const AdminDashboardInner: React.FC<{
             userId={session?.user?.id ?? null}
             activeTab={activeTab}
             onSelect={handleTabChange}
+            canAccessTab={(tabId) => isTabAllowedForRole(tabId, displayRole, displayPermissions)}
           />
           <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-104px)]">
             <TabErrorBoundary

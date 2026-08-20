@@ -20,6 +20,8 @@ interface Props {
   minVisits?: number;
   /** How many shortcut pills to display. */
   limit?: number;
+  /** Restricts both the pills and the picker to tabs this user may open. */
+  canAccessTab?: (tabId: string) => boolean;
 }
 
 const MAX_PINNED = 10;
@@ -34,6 +36,7 @@ export const FrequentTabsBar: React.FC<Props> = ({
   activeTab,
   onSelect,
   limit = 5,
+  canAccessTab,
 }) => {
   const topIds = useTopTabs(userId, limit);
   const pinned = usePinnedTabs(userId);
@@ -43,18 +46,23 @@ export const FrequentTabsBar: React.FC<Props> = ({
   const isCustom = pinned.length > 0;
   const shownIds = isCustom ? pinned.slice(0, MAX_PINNED) : topIds;
 
+  const allowedTabs = useMemo(
+    () => (canAccessTab ? defaultTabs.filter((t) => canAccessTab(t.id)) : defaultTabs),
+    [canAccessTab]
+  );
+
   const items = useMemo(() => {
     return shownIds
-      .map((id) => defaultTabs.find((t) => t.id === id))
+      .map((id) => allowedTabs.find((t) => t.id === id))
       .filter((t): t is (typeof defaultTabs)[number] => !!t);
-  }, [shownIds]);
+  }, [shownIds, allowedTabs]);
 
   const options = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return defaultTabs.filter(
+    return allowedTabs.filter(
       (t) => !q || t.label.toLowerCase().includes(q) || t.id.toLowerCase().includes(q)
     );
-  }, [query]);
+  }, [query, allowedTabs]);
 
   const togglePin = (id: string) => {
     const next = pinned.includes(id)
