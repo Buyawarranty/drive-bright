@@ -4230,12 +4230,11 @@ Questions? Call 0330 229 5040`;
                         value={mileage}
                         onChange={handleMileageChange}
                         placeholder={step1MotMileageResolved ? `e.g. ${(Number(step1MotMileageResolved) + 5000).toLocaleString('en-GB')}` : 'e.g. 105,000'}
-                        className={`h-11 sm:h-12 w-full rounded-lg border bg-background px-3 pr-10 text-base text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                          (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) > 150000
-                            ? 'border-[#FF385C] focus-visible:ring-[#FF385C]'
-                            : (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) >= 1000
-                              ? 'border-[#0BA360]'
-                              : 'border-input'
+                        className={`h-11 sm:h-12 w-full rounded-lg border-2 bg-background px-3 pr-10 text-base text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                          (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) >= 1000 &&
+                          (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) <= 150000
+                            ? 'border-[#0BA360]'
+                            : 'border-[#FF385C] focus-visible:ring-[#FF385C]'
                         }`}
                       />
                       {(parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) >= 1000 &&
@@ -4243,6 +4242,17 @@ Questions? Call 0330 229 5040`;
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0BA360] pointer-events-none" />
                       )}
                     </div>
+
+                    {(parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) > 150000 ? (
+                      <p className="text-sm font-semibold text-[#FF385C]">
+                        We can only cover vehicles up to 150,000 miles.
+                      </p>
+                    ) : (parseInt(mileage.replace(/[^0-9]/g, ''), 10) || 0) < 1000 ? (
+                      <p className="text-sm font-semibold text-[#FF385C]">
+                        Mileage is required — the price is based on it.
+                      </p>
+                    ) : null}
+
 
                     {step1MotMileageResolved ? (
                       <div className="mt-1">
