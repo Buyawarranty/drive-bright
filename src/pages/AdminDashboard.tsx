@@ -828,6 +828,10 @@ const AdminDashboard = () => {
         }
         return <UnifiedEmailHub />;
       case 'analytics':
+        if (!isTabAllowedForRole('analytics', effectiveUserRole, effectiveUserPermissions)) {
+          return <AccessDenied label="Analytics" />;
+        }
+
         return (
           <div className="space-y-6">
             <AnalyticsTab userRole={effectiveUserRole} />
