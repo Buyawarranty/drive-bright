@@ -105,7 +105,7 @@ export const ProgressOverviewStrip: React.FC = () => {
           .from('agent_working_days')
           .select('work_date, day_type')
           .eq('admin_user_id', adminId)
-          .gte('work_date', weekStartStr)
+          .gte('work_date', format(addDays(now, -21), 'yyyy-MM-dd'))
           .lte('work_date', weekEndStr),
         (supabase as any)
           .from('agent_break_status')
