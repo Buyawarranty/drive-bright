@@ -6,6 +6,8 @@ import { WidgetErrorBoundary } from '../WidgetErrorBoundary';
 import { MyTargetStrip } from './MyTargetStrip';
 import { WeekRotaStrip } from './WeekRotaStrip';
 import { AgentBreakStrip } from './AgentBreakStrip';
+import { LeadFreezeRulesCard } from './LeadFreezeRulesCard';
+
 
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
 import { ConvertedSalesLogPanel } from './ConvertedSalesLogPanel';
@@ -1604,6 +1606,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       <WidgetErrorBoundary label="This week's rota"><WeekRotaStrip /></WidgetErrorBoundary>
       <WidgetErrorBoundary label="Break status"><AgentBreakStrip /></WidgetErrorBoundary>
       <WidgetErrorBoundary label="Your target"><MyTargetStrip /></WidgetErrorBoundary>
+      <WidgetErrorBoundary label="Lead Freeze rules"><LeadFreezeRulesCard /></WidgetErrorBoundary>
+
 
       {/* Header — compact, action-dense, grouped card */}
 
