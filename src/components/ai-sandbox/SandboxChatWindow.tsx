@@ -29,8 +29,14 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-c
 
 const AGENT_PREFIX = '(Warranty specialist)';
 
-const OPENING_LINE =
-  "Hey — I'm Miles, the AI assistant here (a real specialist can jump in whenever you want one). Give me a minute and I'll find you the right cover. What's the vehicle? Pop the reg in if you've got it, or just the make, model and year.";
+const OPENING_LINE = [
+  "Hi, I'm Miles — the AI assistant here.",
+  '',
+  "- Tell me your **reg**, or the make, model and year",
+  '- I’ll find the right cover and price for you',
+  '- Want a human? A real specialist can jump in any time',
+].join('\n');
+
 
 const STARTERS = [
   "What's covered on Platinum?",
