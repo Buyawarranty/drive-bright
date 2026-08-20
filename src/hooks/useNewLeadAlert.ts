@@ -120,6 +120,67 @@ const fetchAgentAlertLeads = (adminId: string): Promise<any[]> => {
   return inflight;
 };
 
+/** Drop the shared caches so the next load hits the database (realtime push). */
+const invalidateAgentAlertCache = (adminId: string) => {
+  _alertCache.delete(adminId);
+  _queueCache.delete(adminId);
+};
+
+/**
+ * Full pop-up queue for one agent — leads plus the "already worked by me"
+ * filtering. Shared and TTL-cached so the four mounted consumers (sidebar,
+ * top banner, alert stack, open-pool alert) cost ONE set of reads per cycle.
+ */
+const computeAgentQueue = (adminId: string): Promise<any[]> => {
+  const entry = _queueCache.get(adminId);
+  const now = Date.now();
+  if (entry) {
+    if (entry.inflight) return entry.inflight;
+    if (now - entry.at < QUEUE_CACHE_TTL_MS) return Promise.resolve(entry.rows);
+  }
+  const inflight = (async () => {
+    const data = await fetchAgentAlertLeads(adminId);
+    let rows: any[] = [];
+    if (data && data.length > 0) {
+      // Only alert on genuinely fresh assignments: an assigned_at stamp inside
+      // MAX_ALERT_AGE_MS. Keeps overnight/stale leads out of the pop-up stack.
+      const actionable = data.filter((l: any) => {
+        const status = (l.status || 'new').toLowerCase();
+        if (!ACTIVE_ALERT_STATUSES.includes(status)) return false;
+        if (!l.assigned_at) return false;
+        if (Date.now() - new Date(l.assigned_at).getTime() > MAX_ALERT_AGE_MS) return false;
+        return true;
+      });
+
+      // HARD RULE: never pop up a lead THIS agent has already worked (own note
+      // or own call). Work by a previous owner must not silence it.
+      const offered = actionable.filter((l: any) => l.pool_status === 'offered');
+      const nonOffered = actionable.filter((l: any) => l.pool_status !== 'offered');
+      rows = offered;
+      if (nonOffered.length > 0) {
+        const ids = nonOffered.map((l: any) => l.id);
+        const [noteRows, callRows] = await Promise.all([
+          fetchByIdsInBatches<any>(ids, (batch) =>
+            supabase.from('lead_quick_notes').select('lead_id, created_by').in('lead_id', batch).eq('created_by', adminId),
+            { label: 'new lead alert notes' }),
+          fetchByIdsInBatches<any>(ids, (batch) =>
+            supabase.from('lead_call_logs').select('lead_id').in('lead_id', batch).eq('agent_id', adminId),
+            { label: 'new lead alert calls' }),
+        ]);
+        const touched = new Set<string>();
+        noteRows.forEach((r) => { if (r?.lead_id && r.created_by) touched.add(r.lead_id); });
+        callRows.forEach((r) => { if (r?.lead_id) touched.add(r.lead_id); });
+        rows = [...offered, ...nonOffered.filter((l: any) => !touched.has(l.id))];
+      }
+    }
+    _queueCache.set(adminId, { at: Date.now(), rows });
+    return rows;
+  })();
+  _queueCache.set(adminId, { at: entry?.at ?? 0, rows: entry?.rows ?? [], inflight });
+  return inflight;
+};
+
+
 export interface NewLeadAlertData {
   id: string;
   first_name: string | null;
