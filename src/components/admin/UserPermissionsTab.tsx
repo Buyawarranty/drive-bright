@@ -2095,6 +2095,14 @@ export const UserPermissionsTab = () => {
                 >
                   {bulkApplying ? 'Applying…' : bulkMode === 'grant' ? 'Grant to selected users' : 'Revoke from selected users'}
                 </Button>
+                <Button
+                  onClick={handleBulkSave}
+                  disabled={bulkApplying || selectedUsers.size === 0}
+                  variant="secondary"
+                  title="Save the ticked sections as the exact access for the selected users"
+                >
+                  {bulkApplying ? 'Saving…' : 'Save'}
+                </Button>
               </div>
             </div>
 
