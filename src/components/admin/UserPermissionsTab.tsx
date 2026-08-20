@@ -415,6 +415,54 @@ export const UserPermissionsTab = () => {
     }
   };
 
+  // Save exactly what's ticked: ticked sections on, every other section off,
+  // for each selected user. Use this instead of grant/revoke when you want the
+  // ticked list to become the user's full section access.
+  const handleBulkSave = async () => {
+    if (selectedUsers.size === 0) {
+      toast.error('Select at least one user in the table below');
+      return;
+    }
+    const affectedUsers = users.filter(u => selectedUsers.has(u.id));
+    if (!confirm(`Save this exact set of ${bulkTabs.size} section(s) for ${affectedUsers.length} user(s)?\n\nAny section not ticked will be removed for them.`)) return;
+
+    setBulkApplying(true);
+    try {
+      const results = await Promise.all(
+        affectedUsers.map(async u => {
+          const nextPerms: Record<string, boolean> = { ...(u.permissions || {}) };
+          ADMIN_TABS.forEach(t => { nextPerms[`tab_${t.id}`] = bulkTabs.has(t.id); });
+          const { data, error } = await supabase
+            .from('admin_users')
+            .update({ permissions: nextPerms })
+            .eq('id', u.id)
+            .select('id, permissions');
+          if (error) return { id: u.id, ok: false, message: error.message };
+          if (!data || data.length === 0) return { id: u.id, ok: false, message: 'no rows updated (access blocked)' };
+          return { id: u.id, ok: true, permissions: (data[0] as any).permissions as Record<string, boolean> };
+        })
+      );
+
+      const failures = results.filter(r => !r.ok);
+      if (failures.length > 0) {
+        console.error('Bulk save failures:', failures);
+        toast.error(`${failures.length} user(s) failed to save: ${failures[0].message}`);
+      } else {
+        toast.success(`Saved section access for ${results.length} user(s)`);
+      }
+
+      const patchMap = new Map(
+        results.filter(r => r.ok).map(r => [r.id, (r as any).permissions as Record<string, boolean>])
+      );
+      setUsers(prev => prev.map(u => patchMap.has(u.id) ? { ...u, permissions: patchMap.get(u.id)! } : u));
+    } catch (err: any) {
+      console.error('Bulk save error:', err);
+      toast.error(err.message || 'Save failed');
+    } finally {
+      setBulkApplying(false);
+    }
+  };
+
 
   const handleSendLoginDetails = async (u: AdminUser) => {
     if (!confirm(`Reset password for ${u.email} and email them the new login details?\n\nTheir current password will be replaced.`)) return;
