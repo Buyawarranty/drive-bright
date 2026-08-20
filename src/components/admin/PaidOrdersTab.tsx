@@ -133,11 +133,15 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
         if (quote.payment_confirmed_by) adminUserIds.add(quote.payment_confirmed_by);
       });
 
+      // Emails are stored inconsistently cased, so match on both the raw value
+      // and its lowercase form — an indexed `in` beats one ilike per row.
       const emails = Array.from(
         new Set(
           quotesData
-            .map(q => (q.customer_email || '').trim().toLowerCase())
-            .filter(Boolean),
+            .flatMap(q => {
+              const raw = (q.customer_email || '').trim();
+              return raw ? [raw, raw.toLowerCase()] : [];
+            }),
         ),
       );
       const policyNumbers = Array.from(
