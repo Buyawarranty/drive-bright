@@ -219,12 +219,18 @@ export const ProgressOverviewStrip: React.FC = () => {
         return SERVICE_TYPES.has(String(type).toLowerCase());
       };
 
+      // A sale today clears the run immediately — you can never be shown as paused
+      // on a day you have already sold. Otherwise count back over completed
+      // service days until the day of your last sale.
       let lowSaleDays = 0;
-      for (let i = 1; i <= 21; i++) {
-        const d = addDays(now, -i);
-        if (!isServiceDay(d)) continue;
-        if ((perDay.get(format(d, 'yyyy-MM-dd')) || 0) > 0) break;
-        lowSaleDays += 1;
+      const soldToday = (perDay.get(format(now, 'yyyy-MM-dd')) || 0) > 0;
+      if (!soldToday) {
+        for (let i = 1; i <= 21; i++) {
+          const d = addDays(now, -i);
+          if (!isServiceDay(d)) continue;
+          if ((perDay.get(format(d, 'yyyy-MM-dd')) || 0) > 0) break;
+          lowSaleDays += 1;
+        }
       }
 
       setData({
