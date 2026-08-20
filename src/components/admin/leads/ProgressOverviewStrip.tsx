@@ -69,7 +69,7 @@ export const ProgressOverviewStrip: React.FC = () => {
       <div className="flex items-center gap-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Progress overview</span>
         <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-          Design preview · super admin only · sample figures
+          Design preview · super admin & admin only · sample figures
         </span>
       </div>
 
