@@ -37,6 +37,8 @@ import { recordTabVisit } from '@/hooks/useTabUsage';
 import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
 import { initAdminTelemetry, logAdminUiEvent, logAdminSlowLoad } from '@/lib/adminTelemetry';
 const AdminUiEventLogPanel = lazy(() => import('@/components/admin/AdminUiEventLogPanel'));
+const SalesStaffPerformancePanel = lazy(() => import('@/components/admin/SalesStaffPerformancePanel'));
+
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
 import { DiscountAuthBanner } from '@/components/admin/DiscountAuthBanner';
 import { DiscountAuthPopup } from '@/components/admin/DiscountAuthPopup';
@@ -873,9 +875,11 @@ const AdminDashboard = () => {
             <AnalyticsTab userRole={effectiveUserRole} />
             {['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole) && (
               <Suspense fallback={null}>
+                <SalesStaffPerformancePanel />
                 <AdminUiEventLogPanel />
               </Suspense>
             )}
+
           </div>
         );
       case 'page-analytics':
