@@ -6,6 +6,8 @@ import { WidgetErrorBoundary } from '../WidgetErrorBoundary';
 import { MyTargetStrip } from './MyTargetStrip';
 import { WeekRotaStrip } from './WeekRotaStrip';
 import { AgentBreakStrip } from './AgentBreakStrip';
+import { LeadFreezeRulesCard } from './LeadFreezeRulesCard';
+
 
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
 import { ConvertedSalesLogPanel } from './ConvertedSalesLogPanel';
