@@ -40,7 +40,7 @@ const jobPostingSchema = {
   },
   datePosted: JOB_POSTED,
   validThrough: JOB_VALID_THROUGH,
-  employmentType: 'FULL_TIME',
+  employmentType: ['FULL_TIME', 'PERMANENT', 'CONTRACTOR', 'TEMPORARY'],
   hiringOrganization: {
     '@type': 'Organization',
     name: 'Buyawarranty',
@@ -73,6 +73,8 @@ const jobPostingSchema = {
     '@type': 'OccupationalExperienceRequirements',
     monthsOfExperience: 24,
   },
+  jobBenefits:
+    'Fully remote home-based working, warm inbound and outbound leads, full product and systems training, uncapped commission, monthly incentives, permanent and contract options',
   industry: 'Automotive Warranty Sales',
   occupationalCategory: '41-3099.00 Sales Representatives',
   workHours: 'UK business hours, Monday to Friday',
@@ -83,6 +85,61 @@ const jobPostingSchema = {
     email: 'careers@buyawarranty.co.uk',
     telephone: '+44-330-229-5040',
   },
+};
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Is this vehicle warranty sales job fully remote?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. The Vehicle Warranty Sales Executive role is fully remote and home-based anywhere in the UK. There is no office attendance and no commuting. You need reliable home broadband, a laptop or desktop, a quiet workspace and availability during UK business hours. A headset can be provided where required.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Do you offer contract roles as well as permanent roles?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. We hire on both bases. Permanent roles are full-time PAYE employment with a basic salary plus uncapped commission and long-term progression. Contract roles are available for experienced sales people who prefer fixed-term, seasonal or self-employed contract work, with commission-led earnings. Tell us which you prefer when you apply and we can discuss both.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What experience do I need for this telesales role?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'A minimum of two years telesales experience is required, and extensive telesales experience is preferred. Car finance broker or car finance brokerage experience is highly valued, as are backgrounds in motor finance, vehicle finance, dealership finance and insurance (F&I), GAP insurance or add-on product sales, insurance sales and high-volume outbound call-centre sales.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How much can I earn as a Vehicle Warranty Sales Executive?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Realistic on-target earnings are £35,000 to £60,000 or more. New starters typically earn £25,000 to £35,000, experienced sales executives £35,000 to £50,000, and top performers £50,000 to £60,000 or more. Commission is uncapped and paid on every warranty sale. Earnings examples are based on performance in similar sales roles and are not guaranteed.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Is this a cold-calling job?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No, it is not a cold-calling-only position. You work warm inbound and outbound enquiries from customers who have already asked about vehicle warranty cover, plus follow-ups on existing quotations.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How do I apply for the sales job at Buyawarranty?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Apply on the Buyawarranty careers page by uploading your CV in the quick apply form, or email your CV to info@buyawarranty.co.uk. Include a short note on your sales experience, your strongest results and whether you are looking for a permanent or contract role.',
+      },
+    },
+  ],
 };
 
 const breadcrumbSchema = {
@@ -98,15 +155,16 @@ const Careers: React.FC = () => {
   return (
     <main className="min-h-screen bg-[#F9FAFB] text-[#111827]">
       <SEOHead
-        title="Warranty Sales Jobs UK | Remote PAYE Careers"
-        description="Remote UK Vehicle Warranty Sales Executive role. Ideal for extensive telesales experience or car finance broker backgrounds. Full-time PAYE, warm leads, uncapped commission, OTE £35,000–£60,000+."
-        keywords="warranty sales jobs, remote sales jobs UK, telesales jobs, experienced telesales jobs, extensive telesales experience, telesales executive jobs, vehicle warranty sales executive, car finance broker jobs, finance broker jobs, car finance brokerage jobs, motor finance sales jobs, vehicle finance sales jobs, dealership finance and insurance jobs, GAP insurance sales jobs, PAYE sales jobs, work from home sales UK, uncapped commission sales, buyawarranty careers"
+        title="Fully Remote Telesales Jobs UK | Warranty Sales Careers"
+        description="Fully remote UK Vehicle Warranty Sales Executive jobs — permanent PAYE or contract roles. Ideal for extensive telesales or car finance broker experience. Warm leads, uncapped commission, OTE £35,000–£60,000+."
+        keywords="fully remote sales jobs UK, work from home telesales jobs, remote telesales jobs UK, contract sales jobs, permanent sales jobs, fixed-term contract telesales, self-employed sales roles, warranty sales jobs, experienced telesales jobs, extensive telesales experience, telesales executive jobs, vehicle warranty sales executive, car finance broker jobs, finance broker jobs, car finance brokerage jobs, motor finance sales jobs, vehicle finance sales jobs, dealership finance and insurance jobs, GAP insurance sales jobs, PAYE sales jobs, uncapped commission sales, buyawarranty careers"
         canonical={CAREERS_URL}
-        ogTitle="Vehicle Warranty Sales Executive – Remote UK | Buyawarranty Careers"
-        ogDescription="Warm leads, full-time PAYE employment, uncapped commission. OTE £35,000–£60,000+. Join our UK vehicle warranty sales team."
+        ogTitle="Fully Remote Vehicle Warranty Sales Jobs – Contract or Permanent | Buyawarranty"
+        ogDescription="Fully remote UK telesales role, permanent PAYE or contract. Warm leads, uncapped commission, OTE £35,000–£60,000+."
       />
       <Helmet>
         <script type="application/ld+json">{JSON.stringify(jobPostingSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
       </Helmet>
 
@@ -126,7 +184,8 @@ const Careers: React.FC = () => {
                 Vehicle Warranty Sales Executive
               </p>
               <p className="mt-3 max-w-xl text-base leading-7 text-[#6B7280]">
-                Remote, UK · Full-time PAYE · Warm leads · Basic salary + uncapped commission ·
+                Fully remote (work from home anywhere in the UK) · Contract or permanent roles ·
+                Full-time PAYE or contract · Warm leads · Basic salary + uncapped commission ·
                 OTE £35,000–£60,000+
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -168,19 +227,41 @@ const Careers: React.FC = () => {
               into sales.
             </p>
             <p>
-              This is a fully remote telephone sales role working with customers who have already
-              shown an interest in vehicle warranty products. You will help customers understand
-              their options, recommend suitable levels of cover and guide them through the sales
-              process.
+              This is a fully remote, work-from-home telephone sales role working with customers
+              who have already shown an interest in vehicle warranty products. You will help
+              customers understand their options, recommend suitable levels of cover and guide them
+              through the sales process. There is no office attendance and no commuting — you can
+              be based anywhere in the UK.
             </p>
             <p>
-              The position is offered on a full-time PAYE basis and is open to candidates based in
-              the UK who can work UK business hours.
+              We hire on both a permanent and a contract basis. Permanent roles are full-time PAYE
+              employment with a basic salary plus uncapped commission. Contract roles are open to
+              experienced sales people who prefer fixed-term, seasonal or self-employed contract
+              work with commission-led earnings. Either way, the role is open to candidates based
+              in the UK who can work UK business hours.
             </p>
             <p>
               High performers will also have opportunities for long-term career development and
               progression within the business.
             </p>
+          </div>
+
+          <div className="mt-6 grid gap-5 md:grid-cols-3">
+            <PerkCard
+              Icon={Briefcase}
+              title="Permanent roles"
+              body="Full-time PAYE employment, basic salary, uncapped commission and progression."
+            />
+            <PerkCard
+              Icon={Clock}
+              title="Contract roles"
+              body="Fixed-term, seasonal or self-employed contracts for experienced sales people."
+            />
+            <PerkCard
+              Icon={Home}
+              title="Fully remote"
+              body="Home-based anywhere in the UK — no office, no commute, UK business hours."
+            />
           </div>
         </section>
 
@@ -351,6 +432,24 @@ const Careers: React.FC = () => {
               with follow-up, comfortable working to targets and motivated by uncapped earning
               potential.
             </p>
+          </div>
+        </section>
+
+        {/* FAQs */}
+        <section aria-labelledby="careers-faq" className="mb-14">
+          <SectionHeader id="careers-faq" number={9} title="Frequently asked questions" />
+          <div className="space-y-4">
+            {faqSchema.mainEntity.map((item) => (
+              <div
+                key={item.name}
+                className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm"
+              >
+                <h3 className="text-sm font-bold text-[#111827]">{item.name}</h3>
+                <p className="mt-2 text-sm leading-7 text-[#374151]">
+                  {item.acceptedAnswer.text}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
 
