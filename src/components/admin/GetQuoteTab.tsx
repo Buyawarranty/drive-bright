@@ -3896,7 +3896,7 @@ Questions? Call 0330 229 5040`;
                       </div>
                       <div>
                         <CardTitle className="text-lg">Step 1: Vehicle Details</CardTitle>
-                        <CardDescription className="text-xs">Enter the customer's vehicle registration and mileage</CardDescription>
+                        <CardDescription className="text-xs">Enter the customer's vehicle registration and mileage (both required — mileage sets the price)</CardDescription>
                       </div>
                     </div>
                     <Button
