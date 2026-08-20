@@ -272,12 +272,73 @@ const PrivacyPolicy = () => {
                 </li>
                 <li className="flex items-start">
                   <span className="w-2 h-2 bg-[#eb4b00] rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  Contact you by phone, text, WhatsApp or email about a quote or enquiry you started with us
+                </li>
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-[#eb4b00] rounded-full mt-2 mr-3 flex-shrink-0"></span>
                   Send you relevant marketing communications (with your consent)
                 </li>
               </ul>
             </div>
           </div>
         </section>
+
+        {/* Contacting you about your quote */}
+        <section className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center">
+            <Shield className="w-8 h-8 text-[#eb4b00] mr-3" />
+            4a. Contacting You About a Quote or Enquiry
+          </h2>
+          <p className="text-lg text-gray-700 leading-relaxed mb-4">
+            When you give us your details — for example your name, phone number, email address, vehicle
+            registration or mileage — on our website, on a landing page, in our live chat, by email, or over
+            the phone, we may contact you about that quote or enquiry. This includes contacting you if you
+            started a quote and did not finish it.
+          </p>
+          <p className="text-lg text-gray-700 leading-relaxed mb-4">
+            How we may contact you:
+          </p>
+          <ul className="space-y-3 text-gray-700 mb-6">
+            <li className="flex items-start">
+              <span className="w-2 h-2 bg-[#eb4b00] rounded-full mt-2 mr-3 flex-shrink-0"></span>
+              <span><strong>By phone.</strong> A member of our UK team may call you to confirm your vehicle details, explain the cover options, give you an accurate price, or answer questions you raised.</span>
+            </li>
+            <li className="flex items-start">
+              <span className="w-2 h-2 bg-[#eb4b00] rounded-full mt-2 mr-3 flex-shrink-0"></span>
+              <span><strong>By text or WhatsApp.</strong> To send a quote summary, a secure payment or quote link, or a short follow-up message.</span>
+            </li>
+            <li className="flex items-start">
+              <span className="w-2 h-2 bg-[#eb4b00] rounded-full mt-2 mr-3 flex-shrink-0"></span>
+              <span><strong>By email.</strong> To send your quote, policy documents, service updates and reminders such as renewals.</span>
+            </li>
+          </ul>
+          <p className="text-lg text-gray-700 leading-relaxed mb-4">
+            <strong>Why we do this.</strong> Quotes depend on details such as the vehicle's age, mileage, claim
+            limit and excess. Speaking to you is often the quickest way to get these right and to make sure the
+            cover we offer is suitable. We rely on our legitimate interests to contact you about a quote or
+            enquiry you have already started with us, and on your consent where we send you wider marketing.
+          </p>
+          <p className="text-lg text-gray-700 leading-relaxed mb-4">
+            <strong>How often.</strong> Follow-up contact about a live quote is limited and time-bound. If you
+            tell us you are not interested, or you do not respond, we stop contacting you about it.
+          </p>
+          <p className="text-lg text-gray-700 leading-relaxed mb-4">
+            <strong>Calls may be recorded.</strong> Calls to and from our sales and claims teams may be recorded
+            or monitored for training, quality and record-keeping purposes. Where a call is recorded you will be
+            told at the start of the call.
+          </p>
+          <div className="border-l-4 border-orange-400 bg-orange-50 p-4 rounded-r-lg">
+            <h3 className="font-bold text-gray-900 mb-2">How to stop us contacting you</h3>
+            <p className="text-gray-700">
+              Tell the agent on the call, reply STOP to a text, use the unsubscribe link in any email, or email{' '}
+              <a href="mailto:info@buyawarranty.co.uk" className="text-[#eb4b00] underline">info@buyawarranty.co.uk</a>.
+              We will stop sales and marketing contact. We may still need to contact you about an active policy
+              or claim, or where the law requires it. Being registered with the TPS does not prevent calls about
+              a quote you asked us for, but we will remove you from calling as soon as you ask.
+            </p>
+          </div>
+        </section>
+
 
         {/* Legal Basis for Processing - Now Section 5 */}
         <section className="bg-white rounded-2xl shadow-lg p-8 mb-8">
@@ -303,7 +364,8 @@ const PrivacyPolicy = () => {
             </div>
             <div className="border-l-4 border-purple-400 bg-purple-50 p-4 rounded-r-lg">
               <h3 className="font-bold text-gray-900 mb-2">Legitimate interests</h3>
-              <p className="text-gray-700">To improve our services and prevent fraud</p>
+              <p className="text-gray-700">To follow up on a quote or enquiry you started with us, improve our services and prevent fraud</p>
+
             </div>
           </div>
         </section>
