@@ -328,12 +328,13 @@ class TabErrorBoundary extends React.Component<
 
       );
     }
-    return this.props.children;
+    return <React.Fragment key={this.state.remountKey}>{this.props.children}</React.Fragment>;
   }
   componentDidUpdate(prev: { tabKey?: string }) {
     // Switching tabs clears any prior error so users are never trapped.
     if (this.state.hasError && prev.tabKey !== this.props.tabKey) {
-      this.setState({ hasError: false, error: null });
+      this.autoRecoveries = 0;
+      this.setState((s) => ({ hasError: false, error: null, remountKey: s.remountKey + 1 }));
     }
   }
 }
