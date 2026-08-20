@@ -4,6 +4,8 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { isAlertsMuted } from '@/lib/alertSoundPreference';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { fetchByIdsInBatches } from '@/utils/batchedIn';
+import { isHeavyTabBusy } from '@/lib/heavyTabBusy';
+
 
 // Business-hours gate — pop-ups AND beeps only fire 09:00–18:00 Europe/London.
 // Outside this window nothing appears: overnight assignments are picked up
@@ -84,6 +86,16 @@ export const playNewLeadBeep = () => {
 // in-flight request with a short TTL cache, so the DB sees one read per cycle.
 const ALERT_CACHE_TTL_MS = 12_000;
 const _alertCache = new Map<string, { at: number; rows: any[]; inflight?: Promise<any[]> }>();
+// Agent role, resolved once per session per agent (shared by all hook mounts).
+const _roleCache = new Map<string, string>();
+// Fully-computed pop-up queue (leads + own-note/own-call filtering), shared so
+// four mounted consumers cost one set of reads instead of four.
+const _queueCache = new Map<
+  string,
+  { at: number; rows: any[]; inflight?: Promise<any[]> }
+>();
+const QUEUE_CACHE_TTL_MS = 12_000;
+
 
 const fetchAgentAlertLeads = (adminId: string): Promise<any[]> => {
   const entry = _alertCache.get(adminId);
@@ -107,6 +119,67 @@ const fetchAgentAlertLeads = (adminId: string): Promise<any[]> => {
   _alertCache.set(adminId, { at: entry?.at ?? 0, rows: entry?.rows ?? [], inflight });
   return inflight;
 };
+
+/** Drop the shared caches so the next load hits the database (realtime push). */
+const invalidateAgentAlertCache = (adminId: string) => {
+  _alertCache.delete(adminId);
+  _queueCache.delete(adminId);
+};
+
+/**
+ * Full pop-up queue for one agent — leads plus the "already worked by me"
+ * filtering. Shared and TTL-cached so the four mounted consumers (sidebar,
+ * top banner, alert stack, open-pool alert) cost ONE set of reads per cycle.
+ */
+const computeAgentQueue = (adminId: string): Promise<any[]> => {
+  const entry = _queueCache.get(adminId);
+  const now = Date.now();
+  if (entry) {
+    if (entry.inflight) return entry.inflight;
+    if (now - entry.at < QUEUE_CACHE_TTL_MS) return Promise.resolve(entry.rows);
+  }
+  const inflight = (async () => {
+    const data = await fetchAgentAlertLeads(adminId);
+    let rows: any[] = [];
+    if (data && data.length > 0) {
+      // Only alert on genuinely fresh assignments: an assigned_at stamp inside
+      // MAX_ALERT_AGE_MS. Keeps overnight/stale leads out of the pop-up stack.
+      const actionable = data.filter((l: any) => {
+        const status = (l.status || 'new').toLowerCase();
+        if (!ACTIVE_ALERT_STATUSES.includes(status)) return false;
+        if (!l.assigned_at) return false;
+        if (Date.now() - new Date(l.assigned_at).getTime() > MAX_ALERT_AGE_MS) return false;
+        return true;
+      });
+
+      // HARD RULE: never pop up a lead THIS agent has already worked (own note
+      // or own call). Work by a previous owner must not silence it.
+      const offered = actionable.filter((l: any) => l.pool_status === 'offered');
+      const nonOffered = actionable.filter((l: any) => l.pool_status !== 'offered');
+      rows = offered;
+      if (nonOffered.length > 0) {
+        const ids = nonOffered.map((l: any) => l.id);
+        const [noteRows, callRows] = await Promise.all([
+          fetchByIdsInBatches<any>(ids, (batch) =>
+            supabase.from('lead_quick_notes').select('lead_id, created_by').in('lead_id', batch).eq('created_by', adminId),
+            { label: 'new lead alert notes' }),
+          fetchByIdsInBatches<any>(ids, (batch) =>
+            supabase.from('lead_call_logs').select('lead_id').in('lead_id', batch).eq('agent_id', adminId),
+            { label: 'new lead alert calls' }),
+        ]);
+        const touched = new Set<string>();
+        noteRows.forEach((r) => { if (r?.lead_id && r.created_by) touched.add(r.lead_id); });
+        callRows.forEach((r) => { if (r?.lead_id) touched.add(r.lead_id); });
+        rows = [...offered, ...nonOffered.filter((l: any) => !touched.has(l.id))];
+      }
+    }
+    _queueCache.set(adminId, { at: Date.now(), rows });
+    return rows;
+  })();
+  _queueCache.set(adminId, { at: entry?.at ?? 0, rows: entry?.rows ?? [], inflight });
+  return inflight;
+};
+
 
 export interface NewLeadAlertData {
   id: string;
@@ -223,6 +296,14 @@ export const useNewLeadAlert = () => {
     let timer: ReturnType<typeof setTimeout> | null = null;
 
     const resolve = async () => {
+      // Shared across every mount of this hook (sidebar, top banner, alert
+      // stack, open-pool alert) — four identical admin_users reads per agent
+      // per session was pure waste.
+      const cached = _roleCache.get(adminId);
+      if (cached !== undefined) {
+        setAlertsAllowed(LEAD_ALERT_ROLES.includes(cached));
+        return;
+      }
       const { data, error } = await supabase
         .from('admin_users')
         .select('role')
@@ -236,8 +317,11 @@ export const useNewLeadAlert = () => {
         return;
       }
       attempt = 0;
-      setAlertsAllowed(LEAD_ALERT_ROLES.includes(String((data as any).role || '')));
+      const role = String((data as any).role || '');
+      _roleCache.set(adminId, role);
+      setAlertsAllowed(LEAD_ALERT_ROLES.includes(role));
     };
+
 
     resolve();
     // Re-resolve when the agent comes back to the tab (session may have been
@@ -267,90 +351,30 @@ export const useNewLeadAlert = () => {
       setQueue([]);
       return;
     }
-    const data = await fetchAgentAlertLeads(adminId);
-
-    if (!data || data.length === 0) {
-      setQueue([]);
-      return;
-    }
-
-    // Only alert on genuinely fresh assignments: must have an assigned_at
-    // stamp AND that stamp must be within MAX_ALERT_AGE_MS. This kills the
-    // overnight queue of 200h+ old leads bubbling up first thing in the
-    // morning — those go to Recontact/Unworked instead.
-    // Every lead assigned to this agent within the age window pops for them
-    // — regardless of how it was assigned (auto round-robin, manual allocate,
-    // recontact claim, bulk move). The pop-up stays visible with the beep
-    // until the agent clicks X to dismiss it themselves. Notes/calls from
-    // other agents no longer silence it — only this agent's own dismissal
-    // (persisted in localStorage) removes the card from their view.
-    const actionable = (data as any[]).filter((l) => {
-      const status = (l.status || 'new').toLowerCase();
-      if (!ACTIVE_ALERT_STATUSES.includes(status)) return false;
-      if (!l.assigned_at) return false;
-      const assignedTs = new Date(l.assigned_at).getTime();
-      const ageMs = Date.now() - assignedTs;
-      if (ageMs > MAX_ALERT_AGE_MS) return false;
-      // Leads assigned overnight / before 09:00 still pop — but only once the
-      // agent is inside business hours (the gate above already enforces that).
-      // The 12h age cap keeps stale leads out.
-      return true;
-    }) as NewLeadAlertData[];
-
-    // HARD RULE: never pop up a lead a HUMAN agent has already worked. A lead
-    // is "touched" if it has an agent-written note (created_by set) or a call
-    // log. System-generated notes (arrival timestamps, status stamps, routing
-    // audit rows) do NOT count — they exist on every lead and were silently
-    // suppressing every pop-up.
-    if (actionable.length > 0) {
-      // Offered ORR leads always pop — they're brand new offers to THIS
-      // agent, even if the lead was previously offered to (and passed by)
-      // other ORR agents. Only filter the "touched" rule against
-      // non-offered leads.
-      const offered = actionable.filter((l: any) => l.pool_status === 'offered');
-      const nonOffered = actionable.filter((l: any) => l.pool_status !== 'offered');
-      let clean: NewLeadAlertData[] = offered;
-      if (nonOffered.length > 0) {
-        const ids = nonOffered.map((l) => l.id);
-        // Only THIS agent's own work silences their pop-up. Notes/calls left by
-        // a previous owner (bulk reassign, holiday cover, recontact moves) must
-        // NOT suppress the alert — that was hiding nearly every reassigned lead.
-        const [noteRows, callRows] = await Promise.all([
-          fetchByIdsInBatches<any>(ids, (batch) =>
-            supabase.from('lead_quick_notes').select('lead_id, created_by').in('lead_id', batch).eq('created_by', adminId),
-            { label: 'new lead alert notes' }),
-          fetchByIdsInBatches<any>(ids, (batch) =>
-            supabase.from('lead_call_logs').select('lead_id').in('lead_id', batch).eq('agent_id', adminId),
-            { label: 'new lead alert calls' }),
-        ]);
-        const touched = new Set<string>();
-        noteRows.forEach((r) => {
-          if (r?.lead_id && r.created_by) touched.add(r.lead_id);
-        });
-        callRows.forEach((r) => r?.lead_id && touched.add(r.lead_id));
-        clean = [...offered, ...nonOffered.filter((l) => !touched.has(l.id))];
-      }
-      setQueue(clean);
-      return;
-    }
-
-    setQueue(actionable);
+    setQueue(await computeAgentQueue(adminId));
   }, [adminId, alertsAllowed]);
+
 
   // Keep a stable ref to the latest loader so the realtime channel is created
   // ONCE per agent and never torn down/rebuilt on every state change.
   const loadRef = useRef(load);
   loadRef.current = load;
 
-  // Polling safety net. 15s, plus an immediate refetch whenever the tab
+  // Polling safety net. 30s, plus an immediate refetch whenever the tab
   // becomes visible again or the network comes back — timers are frozen while
   // a laptop sleeps, which is why the queue used to look "stuck".
+  // While a heavy screen (Quotes & Orders) is booting we skip the cycle so the
+  // agent's own polling can't queue in front of the screen they're waiting on.
   useEffect(() => {
     load();
-    const stopPoll = setVisibleInterval(() => loadRef.current(), 30000);
+    const stopPoll = setVisibleInterval(() => {
+      if (isHeavyTabBusy()) return;
+      loadRef.current();
+    }, 30000);
     const wake = () => {
-      if (document.visibilityState === 'visible') loadRef.current();
+      if (document.visibilityState === 'visible' && !isHeavyTabBusy()) loadRef.current();
     };
+
     document.addEventListener('visibilitychange', wake);
     window.addEventListener('focus', wake);
     window.addEventListener('online', wake);
@@ -388,8 +412,12 @@ export const useNewLeadAlert = () => {
         .on(
           'postgres_changes',
           { event: '*', schema: 'public', table: 'sales_leads', filter: `assigned_to=eq.${adminId}` },
-          () => loadRef.current()
+          () => {
+            invalidateAgentAlertCache(adminId);
+            loadRef.current();
+          }
         )
+
         .subscribe((status) => {
           if (disposed) return;
           if (status === 'SUBSCRIBED') {

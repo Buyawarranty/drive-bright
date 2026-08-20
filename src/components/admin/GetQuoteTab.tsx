@@ -86,6 +86,8 @@ import { getVehicleIdentificationGap } from '@/lib/vehicleIdentification';
 import { isNorthernIrelandPlate } from '@/lib/niPlate';
 import { useSavedPricingModel } from './pricing/useSavedPricingModel';
 import { invokeWithFreshSession } from '@/lib/invokeWithFreshSession';
+import { markHeavyTabBusy } from '@/lib/heavyTabBusy';
+
 
 
 
@@ -326,6 +328,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   } = useConcessionAllowance(currentAdminId);
   const { isManagement } = useIsManagement();
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
+  // PERF: while this screen boots, pause the agent-only background pollers
+  // (new-lead pop-ups, open-pool alerts). Those were the heaviest reads in the
+  // database and only sales staff run them, which is why only sales staff saw
+  // Quotes & Orders take 90s+ to appear.
+  useEffect(() => markHeavyTabBusy(15000), []);
+
   // Free bonus months currently selected. 'peryear' gives 1 free month per year of cover
   // (12mo -> 1, 24mo -> 2, 36mo -> 3).
   const coverYears = Math.max(1, Math.round((parseInt(paymentType, 10) || 12) / 12));
