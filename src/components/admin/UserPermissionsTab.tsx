@@ -380,6 +380,10 @@ export const UserPermissionsTab = () => {
     setBulkApplying(true);
     try {
       const updates = affectedUsers.map(u => {
+        // Super admin is the source of truth — always full access, never revoked.
+        if (u.role === 'super_admin') {
+          return { id: u.id, permissions: { ...(u.permissions || {}), ...SUPER_ADMIN_FULL_PERMISSIONS() } };
+        }
         const nextPerms: Record<string, boolean> = { ...(u.permissions || {}) };
         bulkTabs.forEach(tabId => { nextPerms[`tab_${tabId}`] = value; });
         return { id: u.id, permissions: nextPerms };
