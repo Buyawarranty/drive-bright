@@ -203,6 +203,10 @@ export interface Lead {
   // Recontact bulk-claim tracking — how many times this lead has been claimed
   // from the recontact pool (via ClaimRecontactBatchButton). >1 means it's
   // been through multiple agents' hands.
+  /** Manager raised this as a "save the cancellation" rescue job. */
+  save_cancellation?: boolean | null;
+  save_reward_amount?: number | null;
+  save_reason?: string | null;
   claim_count?: number;
   last_claimed_at?: string | null;
   // Agent ids the lead should be hidden from in normal lists (previous owners
@@ -501,7 +505,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
         last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
         created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
         call_count, is_callback, resubmission_count, last_resubmitted_at, hidden_from_agent_ids,
-        no_callback_until, inbound_spoken_at
+        no_callback_until, inbound_spoken_at,
+        save_cancellation, save_reward_amount, save_reason
 
       `;
 

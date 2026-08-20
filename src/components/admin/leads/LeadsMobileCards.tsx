@@ -9,6 +9,7 @@ import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { useRepeatCustomers } from '@/hooks/useRepeatCustomers';
 import { RepeatCustomerBadge } from './RepeatCustomerBadge';
 import { ManualLeadBadge } from './ManualLeadBadge';
+import { SaveCancellationBadge } from './SaveCancellationBadge';
 
 interface LeadsMobileCardsProps {
   leads: Lead[];
@@ -84,6 +85,13 @@ export const LeadsMobileCards: React.FC<LeadsMobileCardsProps> = ({
                     </Badge>
                     {lead.is_paid && (
                       <Badge className="bg-emerald-600 text-white text-[10px]">Paid</Badge>
+                    )}
+                    {(lead as any).save_cancellation && (
+                      <SaveCancellationBadge
+                        reward={(lead as any).save_reward_amount}
+                        reason={(lead as any).save_reason}
+                        compact
+                      />
                     )}
                     {repeatByLeadId[lead.id] ? (
                       <RepeatCustomerBadge info={repeatByLeadId[lead.id]} />

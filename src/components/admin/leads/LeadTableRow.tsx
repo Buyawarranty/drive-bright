@@ -30,6 +30,7 @@ import { TimeToContactCell } from './TimeToContactCell';
 import { UnsubscribeLeadButton } from './UnsubscribeLeadButton';
 import { RepeatCustomerBadge } from './RepeatCustomerBadge';
 import { ManualLeadBadge } from './ManualLeadBadge';
+import { SaveCancellationBadge } from './SaveCancellationBadge';
 import { EditLeadInfoDialog } from './EditLeadInfoDialog';
 import { useIsManagement } from '@/hooks/useIsManagement';
 
@@ -1096,6 +1097,12 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 Reminder due today at {format(new Date(reminderTime), 'h:mm a')}
               </TooltipContent>
             </Tooltip>
+          )}
+          {(lead as any).save_cancellation && (
+            <SaveCancellationBadge
+              reward={(lead as any).save_reward_amount}
+              reason={(lead as any).save_reason}
+            />
           )}
           {(() => {
             // Show the REPEAT CUSTOMER tag either from a matched prior policy or
