@@ -168,12 +168,17 @@ export const ProgressOverviewStrip: React.FC = () => {
       // never counts, Sundays are not service days, and a day I was not rota'd on
       // (day off, holiday, sick) is skipped rather than held against me. Any day
       // with a sale resets the run — so a sale three days ago means three days.
+      // Rota day types that mean "I was on service that day". The rota card stores
+      // full_day/half_day; timesheet-style rows use worked/wfh/training. Anything
+      // else (off, holiday, sick, unpaid) is skipped rather than held against me.
+      const SERVICE_TYPES = new Set(['full_day', 'half_day', 'worked', 'wfh', 'training']);
       const isServiceDay = (d: Date) => {
         if (d.getDay() === 0) return false;
         const type = workDays[format(d, 'yyyy-MM-dd')];
         if (!type) return d.getDay() !== 6; // no rota row: weekdays count, Saturdays don't
-        return type === 'worked' || type === 'wfh' || type === 'training';
+        return SERVICE_TYPES.has(String(type).toLowerCase());
       };
+
       let lowSaleDays = 0;
       for (let i = 1; i <= 21; i++) {
         const d = addDays(now, -i);
