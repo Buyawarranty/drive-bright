@@ -612,6 +612,9 @@ export const CustomersTab = ({
   const isAdmin = normalizedRole === 'admin';
   const isLeadGen = normalizedRole === 'lead_gen';
   const isClaimsManager = normalizedRole === 'claims_manager';
+  // Management only: raise a "save the deal" rescue lead straight from a customer record
+  const canRaiseSaveDeal = isSuperAdmin || isAdmin || normalizedRole === 'sales_manager';
+
   // See Source column — granular permission with role-based defaults
   // (super_admin, admin, lead_gen ON by default; togglable per user)
   const seeSourceGranular = hasGranularPermission('customers', 'see-source');
