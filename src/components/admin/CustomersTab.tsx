@@ -59,6 +59,7 @@ import { BulkEmailDialog } from './BulkEmailDialog';
 import { BulkTagDialog } from './BulkTagDialog';
 import { CancelWarrantyDialog } from './CancelWarrantyDialog';
 import { ArchiveCustomerDialog } from './ArchiveCustomerDialog';
+import { SaveCancellationDialog } from './leads/SaveCancellationDialog';
 import { MergeDuplicateDialog } from './MergeDuplicateDialog';
 import { InvoiceDialog } from './InvoiceDialog';
 import CoverageDetailsDisplay from '@/components/CoverageDetailsDisplay';
@@ -611,6 +612,9 @@ export const CustomersTab = ({
   const isAdmin = normalizedRole === 'admin';
   const isLeadGen = normalizedRole === 'lead_gen';
   const isClaimsManager = normalizedRole === 'claims_manager';
+  // Management only: raise a "save the deal" rescue lead straight from a customer record
+  const canRaiseSaveDeal = isSuperAdmin || isAdmin || normalizedRole === 'sales_manager';
+
   // See Source column — granular permission with role-based defaults
   // (super_admin, admin, lead_gen ON by default; togglable per user)
   const seeSourceGranular = hasGranularPermission('customers', 'see-source');
@@ -5223,6 +5227,24 @@ Buyawarranty.co.uk`,
                               <DialogTitle>Manage Customer: {selectedCustomer?.name}</DialogTitle>
                               {selectedCustomer && (
                                 <div className="flex items-center gap-2">
+                                  {canRaiseSaveDeal && (
+                                    <SaveCancellationDialog
+                                      customer={{
+                                        id: selectedCustomer.id,
+                                        name: selectedCustomer.name,
+                                        email: selectedCustomer.email,
+                                        phone: selectedCustomer.phone,
+                                        registration_plate: selectedCustomer.registration_plate,
+                                        vehicle_make: selectedCustomer.vehicle_make,
+                                        vehicle_model: selectedCustomer.vehicle_model,
+                                        plan_type: selectedCustomer.plan_type,
+                                        final_amount: selectedCustomer.final_amount,
+                                      }}
+                                      requestedBy={currentAdminUser?.id || null}
+                                      buttonLabel="Save the deal"
+                                      buttonClassName="h-9 gap-1 border-amber-400 bg-amber-50 px-3 text-sm font-semibold text-amber-900 hover:bg-amber-100"
+                                    />
+                                  )}
                                   <Button
                                     variant="outline"
                                     size="sm"
