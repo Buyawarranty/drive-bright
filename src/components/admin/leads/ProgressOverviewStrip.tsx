@@ -72,6 +72,7 @@ const EMPTY: MyData = {
   breakSessionsToday: 0,
   breakMinutesToday: 0,
   lowSaleDays: 0,
+  lastSaleAt: null,
   positives: 0,
   negatives: 0,
 };
