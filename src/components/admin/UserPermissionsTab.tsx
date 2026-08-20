@@ -156,6 +156,16 @@ const CLAIMS_MANAGER_PERMISSIONS: Record<string, boolean> = {
   'tab_account': true,
 };
 
+// Super admin is the source of truth: it always holds every section, and no
+// bulk grant/revoke/save can ever take a section away from it.
+export const SUPER_ADMIN_FULL_PERMISSIONS = (): Record<string, boolean> => ({
+  ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
+  'tab_customers_see-source': true,
+  'tab_new-leads_see-source': true,
+  'tab_new-leads_lead-routing': true,
+  'tab_new-leads_live-tracking': true,
+});
+
 // Default tab permissions per role - auto-applied when role is selected
 const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
   super_admin: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true, 'tab_new-leads_lead-routing': true, 'tab_new-leads_live-tracking': true },
@@ -370,6 +380,10 @@ export const UserPermissionsTab = () => {
     setBulkApplying(true);
     try {
       const updates = affectedUsers.map(u => {
+        // Super admin is the source of truth — always full access, never revoked.
+        if (u.role === 'super_admin') {
+          return { id: u.id, permissions: { ...(u.permissions || {}), ...SUPER_ADMIN_FULL_PERMISSIONS() } };
+        }
         const nextPerms: Record<string, boolean> = { ...(u.permissions || {}) };
         bulkTabs.forEach(tabId => { nextPerms[`tab_${tabId}`] = value; });
         return { id: u.id, permissions: nextPerms };
@@ -431,7 +445,12 @@ export const UserPermissionsTab = () => {
       const results = await Promise.all(
         affectedUsers.map(async u => {
           const nextPerms: Record<string, boolean> = { ...(u.permissions || {}) };
-          ADMIN_TABS.forEach(t => { nextPerms[`tab_${t.id}`] = bulkTabs.has(t.id); });
+          if (u.role === 'super_admin') {
+            // Never strip a super admin — keep every section on.
+            Object.assign(nextPerms, SUPER_ADMIN_FULL_PERMISSIONS());
+          } else {
+            ADMIN_TABS.forEach(t => { nextPerms[`tab_${t.id}`] = bulkTabs.has(t.id); });
+          }
           const { data, error } = await supabase
             .from('admin_users')
             .update({ permissions: nextPerms })
@@ -666,6 +685,20 @@ export const UserPermissionsTab = () => {
       const currentPerms: Record<string, boolean> = { ...(u.permissions || {}) };
       const roleDefaults = ROLE_DEFAULT_PERMISSIONS[u.role] || {};
       let changed = false;
+
+      // Super admin is the source of truth: self-heal any missing or switched-off
+      // section so every feature always works for that login.
+      if (u.role === 'super_admin') {
+        const full = SUPER_ADMIN_FULL_PERMISSIONS();
+        for (const [key, val] of Object.entries(full)) {
+          if (currentPerms[key] !== val) {
+            currentPerms[key] = val;
+            changed = true;
+          }
+        }
+        if (changed) updates.push({ id: u.id, permissions: currentPerms });
+        continue;
+      }
 
       for (const key of tabKeys) {
         if (!(key in currentPerms)) {
