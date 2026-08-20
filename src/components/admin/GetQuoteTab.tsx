@@ -915,7 +915,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     // with no usable mileage we keep them on Step 1 and point at the field.
     if (newReg) {
       setStep(1);
-      if (numMileage !== null && numMileage >= 1000 && numMileage <= 150000) {
+      // The lead's own mileage wins, but a mileage already typed for the same
+      // vehicle is just as good — otherwise a lead with no mileage stranded the
+      // agent on Step 1 even though the field was already filled in.
+      const typedMileage = parseInt((mileage || '').replace(/[^0-9]/g, ''), 10);
+      const usableMileage =
+        numMileage !== null
+          ? numMileage
+          : (!regChanged && !isNaN(typedMileage) ? typedMileage : null);
+      if (usableMileage !== null && usableMileage >= 1000 && usableMileage <= 150000) {
         setPendingLeadLookupReg(newReg);
       } else {
         setPendingLeadLookupReg(null);
@@ -927,6 +935,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         toastDescription += ' Enter the current mileage to price the quote.';
       }
     }
+
 
     toast({
       title: "Lead imported",
