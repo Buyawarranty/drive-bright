@@ -1623,7 +1623,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   return (
     <div className="space-y-4">
       {/* MissedCallAlertBar now mounted globally in AdminDashboard so it shows on every tab */}
-      {isManagerView ? (
+      {isAdminOrSuperAdmin || userRole === 'sales_manager' ? (
         /* Management sees every agent's lead access, not a personal strip */
         <details className="rounded-xl border border-border bg-card shadow-sm">
           <summary className="cursor-pointer select-none px-4 py-3 text-sm font-semibold">
