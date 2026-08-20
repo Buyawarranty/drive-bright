@@ -16,6 +16,7 @@ type ClaimRow = {
   kind: string;
   week_start: string;
   customer_name: string | null;
+  registration_plate?: string | null;
   channel: string | null;
   notes: string | null;
   created_at: string;
@@ -63,7 +64,7 @@ export const ReviewClaimsSection: React.FC<ReviewClaimsSectionProps> = ({ curren
       const to = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
       const { data } = await (supabase as any)
         .from('agent_review_claims')
-        .select('id, kind, week_start, customer_name, channel, notes, created_at')
+        .select('id, kind, week_start, customer_name, registration_plate, channel, notes, created_at')
         .eq('admin_user_id', adminId)
         .gte('week_start', from)
         .lte('week_start', to)
@@ -141,7 +142,10 @@ export const ReviewClaimsSection: React.FC<ReviewClaimsSectionProps> = ({ curren
                           {KIND_LABEL[r.kind] ?? r.kind}
                         </span>
                         {r.customer_name ? (
-                          <span className="ml-2 text-xs text-muted-foreground">{r.customer_name}</span>
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            {r.customer_name}
+                            {r.registration_plate ? ` · ${r.registration_plate}` : ''}
+                          </span>
                         ) : null}
                         {r.channel ? <span className="ml-2 text-xs text-muted-foreground">· {r.channel}</span> : null}
                       </td>
