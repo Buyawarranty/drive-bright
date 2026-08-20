@@ -462,6 +462,36 @@ export const ProgressOverviewStrip: React.FC = () => {
                   comes from Trustpilot automatic emails.
                 </div>
 
+                <div className="space-y-1">
+                  <label className="font-medium" htmlFor="review-customer-name">
+                    Customer name on the review <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    id="review-customer-name"
+                    value={reviewName}
+                    onChange={(e) => setReviewName(e.target.value)}
+                    placeholder="e.g. Tim Hubbard"
+                    className="h-7 w-full rounded-md border border-input bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
+                  />
+                  <div className="flex gap-1 pt-1">
+                    {['call', 'whatsapp', 'email'].map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setReviewChannel(c)}
+                        className={`rounded-full border px-2 py-0.5 text-[10px] capitalize ${
+                          reviewChannel === c ? 'border-primary bg-primary/10 font-semibold' : 'border-border text-muted-foreground'
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    Managers check the named review on Trustpilot before it is paid.
+                  </p>
+                </div>
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <span>Positive review (£5)</span>
