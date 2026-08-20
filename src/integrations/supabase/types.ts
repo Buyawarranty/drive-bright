@@ -10528,6 +10528,12 @@ export type Database = {
           recovery_outcome: string | null
           recovery_worked_at: string | null
           resubmission_count: number | null
+          save_cancellation: boolean
+          save_reason: string | null
+          save_requested_at: string | null
+          save_requested_by: string | null
+          save_reward_amount: number | null
+          save_source_customer_id: string | null
           status: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at: string | null
           updated_at: string
@@ -10639,6 +10645,12 @@ export type Database = {
           recovery_outcome?: string | null
           recovery_worked_at?: string | null
           resubmission_count?: number | null
+          save_cancellation?: boolean
+          save_reason?: string | null
+          save_requested_at?: string | null
+          save_requested_by?: string | null
+          save_reward_amount?: number | null
+          save_source_customer_id?: string | null
           status?: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at?: string | null
           updated_at?: string
@@ -10750,6 +10762,12 @@ export type Database = {
           recovery_outcome?: string | null
           recovery_worked_at?: string | null
           resubmission_count?: number | null
+          save_cancellation?: boolean
+          save_reason?: string | null
+          save_requested_at?: string | null
+          save_requested_by?: string | null
+          save_reward_amount?: number | null
+          save_source_customer_id?: string | null
           status?: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at?: string | null
           updated_at?: string
