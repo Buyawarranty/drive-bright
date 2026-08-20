@@ -510,21 +510,41 @@ export const useLeads = (options?: UseLeadsOptions) => {
       // leads even when searching by phone / reg). Managers keep global search.
       let teamMemberIds: string[] | null = null;
       if (isSalesAgent && currentAdmin?.id) {
-        const { data: myMembership } = await supabase
-          .from('lead_team_members')
-          .select('team_id')
-          .eq('admin_user_id', currentAdmin.id)
-          .maybeSingle();
-        if (myMembership?.team_id) {
-          const { data: teamMates } = await supabase
-            .from('lead_team_members')
-            .select('admin_user_id')
-            .eq('team_id', myMembership.team_id);
-          teamMemberIds = Array.from(new Set([
-            currentAdmin.id,
-            ...((teamMates || []) as any[]).map((r) => r.admin_user_id).filter(Boolean),
-          ]));
-        } else {
+        // Bound these too — unprotected awaits here left agents on slow/lossy
+        // connections stuck forever: isFetchingRef never clears because the
+        // surrounding try/finally never gets a chance to run, so every future
+        // refetch silently no-ops until the tab is reloaded. Degrade to
+        // self-only scope on a timeout rather than hang the whole fetch.
+        try {
+          const { data: myMembership } = await withTimeout(
+            (async () =>
+              await supabase
+                .from('lead_team_members')
+                .select('team_id')
+                .eq('admin_user_id', currentAdmin.id)
+                .maybeSingle())(),
+            LEAD_TAG_BATCH_TIMEOUT_MS,
+            'Team membership lookup timed out'
+          );
+          if (myMembership?.team_id) {
+            const { data: teamMates } = await withTimeout(
+              (async () =>
+                await supabase
+                  .from('lead_team_members')
+                  .select('admin_user_id')
+                  .eq('team_id', myMembership.team_id))(),
+              LEAD_TAG_BATCH_TIMEOUT_MS,
+              'Team members lookup timed out'
+            );
+            teamMemberIds = Array.from(new Set([
+              currentAdmin.id,
+              ...((teamMates || []) as any[]).map((r) => r.admin_user_id).filter(Boolean),
+            ]));
+          } else {
+            teamMemberIds = [currentAdmin.id];
+          }
+        } catch (teamErr) {
+          console.warn('[Leads] Team membership lookup timed out, scoping to self only:', teamErr);
           teamMemberIds = [currentAdmin.id];
         }
       }
@@ -825,7 +845,14 @@ export const useLeads = (options?: UseLeadsOptions) => {
         // than rendering a completely blank New Leads screen.
         if (!currentAdmin?.id) throw wideErr;
         console.warn('[Leads] Wide fetch failed, falling back to recent assigned leads:', wideErr);
-        allSalesLeadsResult = await fetchAgentFallbackLeads();
+        // This fallback runs precisely when the connection is already struggling
+        // (the wide fetch just timed out), so it needs its own timeout too —
+        // otherwise it can hang forever and permanently wedge isFetchingRef.
+        allSalesLeadsResult = await withTimeout(
+          fetchAgentFallbackLeads(),
+          LEADS_FETCH_TIMEOUT_MS,
+          'Fallback leads fetch timed out'
+        );
         if (allSalesLeadsResult?.error) throw allSalesLeadsResult.error;
       }
 
