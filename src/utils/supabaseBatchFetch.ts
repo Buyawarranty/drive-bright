@@ -95,6 +95,19 @@ export async function fetchAllRows<T = any>(
     offset += CONCURRENCY * BATCH_SIZE;
   }
 
+  // Parallel paging can only shift rows between pages when the caller's query
+  // has no deterministic order, so drop any row seen twice by id.
+  const first0 = allData[0] as any;
+  if (first0 && typeof first0 === 'object' && 'id' in first0) {
+    const seen = new Set<any>();
+    const unique = allData.filter((row: any) => {
+      if (seen.has(row.id)) return false;
+      seen.add(row.id);
+      return true;
+    });
+    return { data: unique, error: null };
+  }
+
   return { data: allData, error: null };
 }
 
