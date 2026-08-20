@@ -300,7 +300,7 @@ class TabErrorBoundary extends React.Component<
           <div className="flex gap-2">
             <button
               onClick={() => {
-                this.setState({ hasError: false, error: null });
+                this.setState((s) => ({ hasError: false, error: null, remountKey: s.remountKey + 1 }));
                 this.props.onRetry();
               }}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90"
