@@ -7,6 +7,8 @@ import { WidgetErrorBoundary } from '../WidgetErrorBoundary';
 import { LeadFreezeRulesCard } from './LeadFreezeRulesCard';
 import { ProgressOverviewStrip } from './ProgressOverviewStrip';
 import { LeadFreezeNoticeBanner } from './LeadFreezeNoticeBanner';
+import { AutoLeadFreezePanel } from './AutoLeadFreezePanel';
+
 
 
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
@@ -1621,9 +1623,26 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   return (
     <div className="space-y-4">
       {/* MissedCallAlertBar now mounted globally in AdminDashboard so it shows on every tab */}
-      <WidgetErrorBoundary label="Lead freeze notice"><LeadFreezeNoticeBanner adminUserId={currentAdminId} /></WidgetErrorBoundary>
-      <WidgetErrorBoundary label="Progress overview"><ProgressOverviewStrip /></WidgetErrorBoundary>
+      {isAdminOrSuperAdmin || userRole === 'sales_manager' ? (
+        /* Management sees every agent's lead access, not a personal strip */
+        <details className="rounded-xl border border-border bg-card shadow-sm">
+          <summary className="cursor-pointer select-none px-4 py-3 text-sm font-semibold">
+            All agents · lead access &amp; freeze status
+          </summary>
+          <div className="px-2 pb-3">
+            <WidgetErrorBoundary label="All agents lead access">
+              <AutoLeadFreezePanel canEdit />
+            </WidgetErrorBoundary>
+          </div>
+        </details>
+      ) : (
+        <>
+          <WidgetErrorBoundary label="Lead freeze notice"><LeadFreezeNoticeBanner adminUserId={currentAdminId} /></WidgetErrorBoundary>
+          <WidgetErrorBoundary label="Progress overview"><ProgressOverviewStrip /></WidgetErrorBoundary>
+        </>
+      )}
       <WidgetErrorBoundary label="Lead Freeze rules"><LeadFreezeRulesCard /></WidgetErrorBoundary>
+
 
 
       {/* Header — compact, action-dense, grouped card */}
