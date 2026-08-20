@@ -431,10 +431,6 @@ export const ProgressOverviewStrip: React.FC = () => {
               </span>
               <span className="text-sm font-semibold">{gbp(bonus)} bonus</span>
             </div>
-            <div className="mt-1 max-w-[22rem] rounded-md border-2 border-emerald-500 bg-emerald-50 px-2 py-1 text-[11px] font-bold leading-snug text-emerald-900">
-              Only tick reviews where the customer names you following a call, WhatsApp or personal email. Nothing here comes
-              from Trustpilot automatic emails.
-            </div>
             <Popover>
               <PopoverTrigger asChild>
                 <Button size="sm" variant="outline" className="mt-1 h-6 gap-1 px-2 text-[11px]">
@@ -443,9 +439,11 @@ export const ProgressOverviewStrip: React.FC = () => {
               </PopoverTrigger>
               <PopoverContent align="start" className="w-72 space-y-3 text-xs">
                 <div className="font-semibold text-sm">Log a review you asked for</div>
-                <p className="text-muted-foreground">
-                  Only tick reviews where the customer names you. Nothing here comes from Trustpilot automatically.
-                </p>
+                <div className="rounded-md border-2 border-emerald-500 bg-emerald-50 px-2 py-1 text-[11px] font-bold leading-snug text-emerald-900">
+                  Only tick reviews where the customer names you following a call, WhatsApp or personal email. Nothing here
+                  comes from Trustpilot automatic emails.
+                </div>
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <span>Positive review (£5)</span>
