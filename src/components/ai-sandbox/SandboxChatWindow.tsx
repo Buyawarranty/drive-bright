@@ -33,7 +33,6 @@ const OPENING_LINE =
   "Hey — I'm Miles, the AI assistant here (a real specialist can jump in whenever you want one). Give me a minute and I'll find you the right cover. What's the vehicle? Pop the reg in if you've got it, or just the make, model and year.";
 
 const STARTERS = [
-  'AB12 CDE, 2018 Ford Focus, 62,000 miles',
   "What's covered on Platinum?",
   'Can I pay monthly?',
   "Feels a bit pricey — can I talk to someone?",
@@ -536,6 +535,12 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
               />
 
               <RegQuickStart disabled={busy} onSubmit={(reg) => send(`My reg is ${reg} — what would my warranty cost?`)} />
+
+              <p className="max-w-sm text-center text-sm text-muted-foreground">
+                Just type your registration plate and mileage — that's all we need to find your vehicle.
+                <br />
+                For example: <span className="font-medium text-foreground">AB12 CDE, 62,000 miles</span>
+              </p>
 
               <div className="flex flex-wrap justify-center gap-2">
                 {STARTERS.map((s) => (
