@@ -387,7 +387,10 @@ const AdminDashboard = () => {
     document.addEventListener('visibilitychange', onVisibility);
     const raf = requestAnimationFrame(() => {
       const ms = performance.now() - loadStartedAt;
-      if (wentHidden) return;
+      if (wentHidden || !document.hasFocus()) return;
+      // Anything beyond half a minute is a throttled/parked tab, not a real
+      // render — logging it only buries the genuine slow loads.
+      if (ms > 30000) return;
       logAdminUiEvent({ event_type: 'page_load', label: 'Admin dashboard loaded', duration_ms: ms });
       if (ms > 8000) logAdminSlowLoad('Admin dashboard slow load', ms);
     });
