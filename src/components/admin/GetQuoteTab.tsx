@@ -1777,9 +1777,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
 
   const handleVehicleLookup = async () => {
-    // Mileage is pricing input, but it comes from the MOT record via the API —
-    // an agent must never be blocked for "missing mileage" before we've asked
-    // the API. Only the registration is required up front.
+    // MOT mileage lookup is OFF in Quotes & Orders, and mileage dictates the price —
+    // so the agent must type it in before Step 2.
     const effectiveMileage = mileage.trim() || (sliderMileage > 0 ? sliderMileage.toLocaleString() : '');
     if (!mileage.trim() && sliderMileage > 0) {
       setMileage(sliderMileage.toLocaleString());
@@ -1794,6 +1793,14 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     }
 
     const numericMileage = parseInt(effectiveMileage.replace(/[^0-9]/g, ''), 10);
+    if (!effectiveMileage || isNaN(numericMileage) || numericMileage < 100) {
+      toast({
+        title: "Mileage required",
+        description: "Ask the customer for their current mileage and enter it — the price is based on it.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (!isNaN(numericMileage) && numericMileage > 150000) {
       toast({
         title: "Vehicle Not Eligible",
@@ -1980,8 +1987,17 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     }
 
 
-    // If no mileage, default to 0 - can be edited in dialog
-    const effectiveMileage = mileage.trim() || '0';
+    // Mileage sets the price, so it can never be assumed here — the agent types it in.
+    const effectiveMileage = mileage.trim();
+    const quickMileage = parseInt(effectiveMileage.replace(/[^0-9]/g, ''), 10);
+    if (!effectiveMileage || isNaN(quickMileage) || quickMileage < 100) {
+      toast({
+        title: "Mileage required",
+        description: "Enter the customer's current mileage before confirming — the price is based on it.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsQuickConfirming(true);
     try {
@@ -3889,7 +3905,7 @@ Questions? Call 0330 229 5040`;
                       </div>
                       <div>
                         <CardTitle className="text-lg">Step 1: Vehicle Details</CardTitle>
-                        <CardDescription className="text-xs">Enter the customer's vehicle registration and mileage</CardDescription>
+                        <CardDescription className="text-xs">Enter the customer's vehicle registration and mileage (both required — mileage sets the price)</CardDescription>
                       </div>
                     </div>
                     <Button
@@ -4168,12 +4184,12 @@ Questions? Call 0330 229 5040`;
                 {/* Mileage — mirrors Step 4 customer checkout */}
                   <div>
                   <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-1">
-                    Confirm your current mileage
+                    Confirm your current mileage <span className="text-[#FF385C]">*</span>
                   </Label>
                   <p className="mb-3 text-sm text-muted-foreground">
                     {step1MotMileageResolved
                       ? "We've suggested this using your latest MOT record."
-                      : 'Up to 150,000 miles.'}
+                      : 'Required — the price is based on mileage. Ask the customer and type it in (up to 150,000 miles).'}
                   </p>
 
                   {step1MotMileageResolved && (
