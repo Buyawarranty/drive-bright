@@ -44,9 +44,9 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
  * waves and returns the concatenated rows. Failed or timed-out batches are
  * skipped with a console warning so partial data still renders.
  */
-export async function fetchByIdsInBatches<T = any>(
-  ids: Array<string | number>,
-  buildQuery: (batch: Array<string | number>) => any,
+export async function fetchByIdsInBatches<T = any, I extends string | number = string>(
+  ids: readonly I[],
+  buildQuery: (batch: I[]) => any,
   options?: {
     batchSize?: number;
     concurrency?: number;
@@ -54,7 +54,7 @@ export async function fetchByIdsInBatches<T = any>(
     label?: string;
   },
 ): Promise<T[]> {
-  const unique = Array.from(new Set(ids.filter((id) => id !== null && id !== undefined)));
+  const unique = Array.from(new Set(ids.filter((id) => id !== null && id !== undefined))) as I[];
   if (unique.length === 0) return [];
 
   const batchSize = options?.batchSize ?? ID_BATCH_SIZE;
