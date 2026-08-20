@@ -824,9 +824,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
   // Handle lead selection (from search or pre-populated)
   const handleLeadSelect = (lead: LeadData) => {
-    setSelectedLeadId(lead.id);
-    setSelectedLeadOwner(lead.owner_name || null);
-    setSelectedLeadOwnerId(lead.assigned_to || null);
+    // Abandoned-cart rows arrive with a synthetic id ("cart:<uuid>"). Storing that
+    // as the sales lead id broke everything downstream that writes it to a uuid
+    // column (payment links, "mark lead converted"), so the import looked dead.
+    // Real lead ids only; cart rows fall back to the email/phone owner lookup.
+    const isCartRow = /^cart:/i.test(lead.id);
+    setSelectedLeadId(isCartRow ? null : lead.id);
+    setSelectedLeadOwner(isCartRow ? null : (lead.owner_name || null));
+    setSelectedLeadOwnerId(isCartRow ? null : (lead.assigned_to || null));
+
     setCustomerEmail(lead.email || '');
     setCustomerFirstName(lead.first_name || '');
     setCustomerLastName(lead.last_name || '');
