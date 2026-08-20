@@ -84,6 +84,8 @@ export const ProgressOverviewStrip: React.FC = () => {
   const [data, setData] = useState<MyData>(EMPTY);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [reviewName, setReviewName] = useState('');
+  const [reviewChannel, setReviewChannel] = useState('call');
 
   const now = new Date();
   const weekStart = useMemo(() => startOfWeek(now, { weekStartsOn: 1 }), [now.toDateString()]);
