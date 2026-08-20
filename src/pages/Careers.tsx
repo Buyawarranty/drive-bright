@@ -40,7 +40,7 @@ const jobPostingSchema = {
   },
   datePosted: JOB_POSTED,
   validThrough: JOB_VALID_THROUGH,
-  employmentType: 'FULL_TIME',
+  employmentType: ['FULL_TIME', 'PERMANENT', 'CONTRACTOR', 'TEMPORARY'],
   hiringOrganization: {
     '@type': 'Organization',
     name: 'Buyawarranty',
