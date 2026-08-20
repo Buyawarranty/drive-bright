@@ -1987,8 +1987,17 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     }
 
 
-    // If no mileage, default to 0 - can be edited in dialog
-    const effectiveMileage = mileage.trim() || '0';
+    // Mileage sets the price, so it can never be assumed here — the agent types it in.
+    const effectiveMileage = mileage.trim();
+    const quickMileage = parseInt(effectiveMileage.replace(/[^0-9]/g, ''), 10);
+    if (!effectiveMileage || isNaN(quickMileage) || quickMileage < 100) {
+      toast({
+        title: "Mileage required",
+        description: "Enter the customer's current mileage before confirming — the price is based on it.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsQuickConfirming(true);
     try {
