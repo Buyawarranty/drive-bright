@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw, Search, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
+import { fetchByIdsInBatches } from '@/utils/batchedIn';
 
 interface LeadRow {
   id: string;
@@ -151,12 +152,14 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
       // Who wrote the last note on each lead in view (name shown on the row)
       const allIds = combined.map(l => l.id);
       if (allIds.length > 0) {
-        const { data: notes } = await supabase
-          .from('lead_quick_notes')
-          .select('lead_id, note_text, created_by, created_at')
-          .in('lead_id', allIds.slice(0, 500))
-          .order('created_at', { ascending: false });
-        const authorIds = Array.from(new Set((notes || []).map((n: any) => n.created_by).filter(Boolean)));
+        const notes = await fetchByIdsInBatches<any>(allIds.slice(0, 500), (batch) =>
+          supabase
+            .from('lead_quick_notes')
+            .select('lead_id, note_text, created_by, created_at')
+            .in('lead_id', batch)
+            .order('created_at', { ascending: false }),
+          { label: 'lead picker notes' });
+        const authorIds = Array.from(new Set(notes.map((n: any) => n.created_by).filter(Boolean)));
         const nameById = new Map<string, string>();
         if (authorIds.length > 0) {
           const { data: authors } = await supabase
@@ -184,14 +187,16 @@ export const LeadPickerList: React.FC<LeadPickerListProps> = ({
       // Look up the former agent for any unassigned rows in view
       const unassignedIds = combined.filter(l => !l.assigned_to).map(l => l.id);
       if (unassignedIds.length > 0) {
-        const { data: audit } = await supabase
-          .from('lead_assignment_audit')
-          .select('lead_id, assigned_to_id, created_at')
-          .in('lead_id', unassignedIds)
-          .not('assigned_to_id', 'is', null)
-          .order('created_at', { ascending: false });
+        const audit = await fetchByIdsInBatches<any>(unassignedIds, (batch) =>
+          supabase
+            .from('lead_assignment_audit')
+            .select('lead_id, assigned_to_id, created_at')
+            .in('lead_id', batch)
+            .not('assigned_to_id', 'is', null)
+            .order('created_at', { ascending: false }),
+          { label: 'lead picker previous agents' });
         const map = new Map<string, string>();
-        (audit || []).forEach((row: any) => {
+        audit.forEach((row: any) => {
           if (!map.has(row.lead_id) && row.assigned_to_id) map.set(row.lead_id, row.assigned_to_id);
         });
         setPreviousAgents(map);

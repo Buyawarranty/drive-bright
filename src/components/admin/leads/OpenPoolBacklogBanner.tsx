@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
+import { fetchByIdsInBatches } from '@/utils/batchedIn';
 
 /**
  * Live Open Pool banner for managers. Shows the current unclaimed pool count,
@@ -150,19 +151,19 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
         .select('phone_number, event_type, selected_outcome, agent_name, created_at')
         .gte('created_at', since)
         .limit(5000),
-      leadIds.length
-        ? (supabase as any)
-            .from('lead_call_logs')
-            .select('lead_id, outcome, notes, agent_name, created_at')
-            .in('lead_id', leadIds)
-        : Promise.resolve({ data: [] }),
-      leadIds.length
-        ? (supabase as any)
-            .from('lead_quick_notes')
-            .select('lead_id, note, author_name, created_at')
-            .in('lead_id', leadIds)
-            .order('created_at', { ascending: false })
-        : Promise.resolve({ data: [] }),
+      fetchByIdsInBatches<any>(leadIds, (batch) =>
+        (supabase as any)
+          .from('lead_call_logs')
+          .select('lead_id, outcome, notes, agent_name, created_at')
+          .in('lead_id', batch),
+        { label: 'open pool call logs' }).then((data) => ({ data })),
+      fetchByIdsInBatches<any>(leadIds, (batch) =>
+        (supabase as any)
+          .from('lead_quick_notes')
+          .select('lead_id, note, author_name, created_at')
+          .in('lead_id', batch)
+          .order('created_at', { ascending: false }),
+        { label: 'open pool quick notes' }).then((data) => ({ data })),
     ]);
 
     const zoiperByPhone: Record<string, any[]> = {};

@@ -30,7 +30,7 @@ const SOURCE_LABEL: Record<AgentActivity['source'], string> = {
 
 export const getAgentActivityLabel = (s: AgentActivity['source']) => SOURCE_LABEL[s];
 
-const BATCH = 200;
+const BATCH = 60;
 
 export const useAgentActivity = (leadIds: string[]) => {
   const [activityByLead, setActivityByLead] = useState<Record<string, AgentActivity>>({});

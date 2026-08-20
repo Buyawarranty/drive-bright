@@ -244,8 +244,8 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
       if (at && (!cur.lastAt || new Date(at) > new Date(cur.lastAt))) cur.lastAt = at;
     };
 
-    for (let i = 0; i < ids.length; i += 200) {
-      const slice = ids.slice(i, i + 200);
+    for (let i = 0; i < ids.length; i += 60) {
+      const slice = ids.slice(i, i + 60);
       const [callsRes, notesRes, actRes] = await Promise.all([
         supabase.from('lead_call_logs').select('lead_id, created_at, call_started_at').in('lead_id', slice),
         supabase.from('lead_quick_notes').select('lead_id, created_at').in('lead_id', slice),
@@ -279,11 +279,11 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
       // Latest assignment audit entry per lead tells us how it got there.
       const ids = leads.map(l => l.id);
       const types = new Map<string, string>();
-      for (let i = 0; i < ids.length; i += 200) {
+      for (let i = 0; i < ids.length; i += 60) {
         const { data: aud } = await supabase
           .from('lead_assignment_audit')
           .select('lead_id, assignment_type, created_at')
-          .in('lead_id', ids.slice(i, i + 200))
+          .in('lead_id', ids.slice(i, i + 60))
           .order('created_at', { ascending: true });
         (aud ?? []).forEach((a: any) => { if (a.assignment_type) types.set(a.lead_id, a.assignment_type); });
       }

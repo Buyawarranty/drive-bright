@@ -50,7 +50,7 @@ export const responseTone = (sec: number | null | undefined): string => {
   return 'text-rose-700';
 };
 
-const BATCH = 200;
+const BATCH = 60;
 
 interface LeadInput {
   id: string;

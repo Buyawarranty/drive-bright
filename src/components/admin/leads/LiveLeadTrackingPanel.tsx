@@ -164,7 +164,7 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
     const leadIds = rows.map(r => r.id);
     if (leadIds.length > 0) {
       const chunks: string[][] = [];
-      for (let i = 0; i < leadIds.length; i += 200) chunks.push(leadIds.slice(i, i + 200));
+      for (let i = 0; i < leadIds.length; i += 60) chunks.push(leadIds.slice(i, i + 60));
       const actionMap: Record<string, number> = {};
       for (const ch of chunks) {
         const [notesRes, callsRes] = await Promise.all([
