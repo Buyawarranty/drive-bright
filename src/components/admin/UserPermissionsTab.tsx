@@ -445,7 +445,12 @@ export const UserPermissionsTab = () => {
       const results = await Promise.all(
         affectedUsers.map(async u => {
           const nextPerms: Record<string, boolean> = { ...(u.permissions || {}) };
-          ADMIN_TABS.forEach(t => { nextPerms[`tab_${t.id}`] = bulkTabs.has(t.id); });
+          if (u.role === 'super_admin') {
+            // Never strip a super admin — keep every section on.
+            Object.assign(nextPerms, SUPER_ADMIN_FULL_PERMISSIONS());
+          } else {
+            ADMIN_TABS.forEach(t => { nextPerms[`tab_${t.id}`] = bulkTabs.has(t.id); });
+          }
           const { data, error } = await supabase
             .from('admin_users')
             .update({ permissions: nextPerms })
