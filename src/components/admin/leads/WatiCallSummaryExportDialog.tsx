@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useDataExport } from '@/hooks/useDataExport';
 import { toWatiNumber } from '@/lib/watiExport';
-import { batchedIn } from '@/utils/batchedIn';
+import { fetchByIdsInBatches } from '@/utils/batchedIn';
 
 interface SummaryLead {
   id: string;
