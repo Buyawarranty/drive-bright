@@ -67,6 +67,7 @@ interface MyData {
   breakMinutesToday: number;
   lowSaleDays: number; // completed rota'd service days since my last sale
   lastSaleAt: string | null;
+  salesReadFailed: boolean;
   lastSaleProof: string | null;
   positives: number;
   negatives: number;
@@ -82,6 +83,7 @@ const EMPTY: MyData = {
   breakMinutesToday: 0,
   lowSaleDays: 0,
   lastSaleAt: null,
+  salesReadFailed: false,
   lastSaleProof: null,
   positives: 0,
   negatives: 0,
@@ -226,6 +228,7 @@ export const ProgressOverviewStrip: React.FC = () => {
       }
 
       setData({
+        salesReadFailed: !salesRes || !!(salesRes as any)?.error,
         lastSaleAt,
         lastSaleProof,
         revenue: Number(mine?.revenue) || 0,
@@ -371,8 +374,8 @@ export const ProgressOverviewStrip: React.FC = () => {
   const bonus = data.positives * 5 + data.negatives * 10;
 
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  const frozen = data.lowSaleDays >= 2;
-  const atRisk = data.lowSaleDays === 1;
+  const frozen = !data.salesReadFailed && data.lowSaleDays >= 2;
+  const atRisk = !data.salesReadFailed && data.lowSaleDays === 1;
 
   if (!adminId) return null;
 
@@ -509,7 +512,9 @@ export const ProgressOverviewStrip: React.FC = () => {
               {frozen ? 'Leads paused' : atRisk ? 'At risk' : 'Receiving leads'}
             </div>
             <div className="text-[11px] text-muted-foreground whitespace-nowrap">
-              {data.lowSaleDays === 0
+              {data.salesReadFailed
+                ? 'Sales figures unavailable — refresh'
+                : data.lowSaleDays === 0
                 ? 'No working days without a sale'
                 : `${data.lowSaleDays} working day${data.lowSaleDays === 1 ? '' : 's'} without a sale`}
             </div>
@@ -527,7 +532,9 @@ export const ProgressOverviewStrip: React.FC = () => {
                 </>
               ) : (
                 <div className="font-semibold text-muted-foreground whitespace-nowrap">
-                  No sale recorded in the last 180 days
+                  {data.salesReadFailed
+                    ? 'Could not read your sales — refresh the page'
+                    : 'No sale recorded in the last 180 days'}
                 </div>
               )}
             </div>
