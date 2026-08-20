@@ -95,24 +95,37 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
   // PERF: this tab used to pull every paid quote with `select('*')` and then fire
   // two extra queries per row (customer + policy) — 400+ paid orders meant ~900
   // round trips and a multi-second spinner. It now loads a capped, newest-first
-  // page of quotes and resolves customers/policies in two batched `.in()` calls.
+  // page of quotes and resolves customers/policies in batched `.in()` calls.
+  // Because the list is capped, a search term is sent to the database as well so
+  // older orders outside the first page are still findable.
   const PAGE_SIZE = 200;
 
-  const fetchPaidOrders = async () => {
+  const fetchPaidOrders = async (search?: string) => {
     setIsLoading(true);
     try {
+      const term = (search || '').trim();
+      const quoteQuery = supabase
+        .from('live_quotes')
+        .select('*')
+        .in('status', ['paid', 'paid_externally'])
+        .order('paid_at', { ascending: false })
+        .limit(PAGE_SIZE);
+
+      if (term.length >= 2) {
+        const like = `%${term.replace(/[%,]/g, '')}%`;
+        quoteQuery.or(
+          `customer_name.ilike.${like},customer_email.ilike.${like},vehicle_reg.ilike.${like},policy_number.ilike.${like}`,
+        );
+      }
+
       const [adminsRes, quotesRes] = await Promise.all([
         supabase
           .from('admin_users')
           .select('id, user_id, first_name, last_name, email, role')
           .eq('is_active', true),
-        supabase
-          .from('live_quotes')
-          .select('*')
-          .in('status', ['paid', 'paid_externally'])
-          .order('paid_at', { ascending: false })
-          .limit(PAGE_SIZE),
+        quoteQuery,
       ]);
+
 
       const allAdmins = adminsRes.data;
       if (allAdmins) {
