@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ShieldAlert, LifeBuoy } from 'lucide-react';
+import { ShieldAlert, LifeBuoy, UserCog } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ReassignSaleButton } from '@/components/admin/scoreboard/ReassignSaleButton';
+
 
 // Sections the backup login can never open.
 export const BACKUP_BLOCKED_TABS = ['analytics', 'lead-teams', 'open-round-robin', 'orr-test-lab', 'vehicle-stats'];
