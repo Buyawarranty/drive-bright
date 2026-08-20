@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { lazyWithRetry, forceFreshReload } from '@/utils/lazyWithRetry';
 import { SEOHead } from '@/components/SEOHead';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
@@ -53,7 +54,7 @@ const SemrushSeoTab = lazy(() => import('@/components/admin/semrush/SemrushSeoTa
 const ContactSubmissionsTab = lazy(() => import('@/components/admin/ContactSubmissionsTab'));
 const ComplaintsTab = lazy(() => import('@/components/admin/ComplaintsTab'));
 const AbandonedCartsTab = lazy(() => import('@/components/admin/AbandonedCartsTab').then(m => ({ default: m.AbandonedCartsTab })));
-const GetQuoteTab = lazy(() => import('@/components/admin/GetQuoteTab').then(m => ({ default: m.GetQuoteTab })));
+const GetQuoteTab = lazyWithRetry(() => import('@/components/admin/GetQuoteTab').then(m => ({ default: m.GetQuoteTab })));
 const CustomersTab = lazy(() => import('@/components/admin/CustomersTab').then(m => ({ default: m.CustomersTab })));
 const TermsAndConditionsTab = lazy(() => import('@/components/admin/TermsAndConditionsTab'));
 const SpecialVehiclePlansTab = lazy(() => import('@/components/admin/SpecialVehiclePlansTab'));
@@ -76,7 +77,7 @@ const LandingPageBuilder = lazy(() => import('@/components/admin/LandingPageBuil
 const ClickFraudTab = lazy(() => import('@/components/admin/ClickFraudTab').then(m => ({ default: m.ClickFraudTab })));
 
 const TestingTabContent = lazy(() => import('@/components/admin/TestingTabContent').then(m => ({ default: m.TestingTabContent })));
-const NewLeadsTab = lazy(() => import('@/components/admin/leads/NewLeadsTab').then(m => ({ default: m.NewLeadsTab })));
+const NewLeadsTab = lazyWithRetry(() => import('@/components/admin/leads/NewLeadsTab').then(m => ({ default: m.NewLeadsTab })));
 const GoldenLeadsTab = lazy(() => import('@/components/admin/leads/LeadRecoveryTab').then(m => ({ default: m.LeadRecoveryTab })));
 const RetentionTab = lazy(() => import('@/components/admin/retention/RetentionTab').then(m => ({ default: m.RetentionTab })));
 const RenewalsQueueTab = lazy(() => import('@/components/admin/renewals/RenewalsQueueTab').then(m => ({ default: m.RenewalsQueueTab })));
@@ -267,16 +268,7 @@ class TabErrorBoundary extends React.Component<
         msg,
       );
     if (isChunk) {
-      try {
-        const flag = 'baw_admin_chunk_reload_at';
-        const last = Number(sessionStorage.getItem(flag) || '0');
-        if (Date.now() - last > 60_000) {
-          sessionStorage.setItem(flag, String(Date.now()));
-          window.location.reload();
-        }
-      } catch {
-        /* noop */
-      }
+      forceFreshReload();
     }
   }
   render() {
