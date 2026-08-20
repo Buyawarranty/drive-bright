@@ -57,7 +57,8 @@ interface MyData {
   breakStartedAt: string | null;
   breakSessionsToday: number;
   breakMinutesToday: number;
-  lowSaleDays: number; // consecutive recent working days with 1 sale or fewer
+  lowSaleDays: number; // completed rota'd service days since my last sale
+  lastSaleAt: string | null;
   positives: number;
   negatives: number;
 }
