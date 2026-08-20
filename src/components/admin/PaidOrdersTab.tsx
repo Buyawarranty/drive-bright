@@ -92,15 +92,42 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [allAdminUsers, setAllAdminUsers] = useState<Array<{ id: string; user_id: string; name: string }>>([]);
 
-  const fetchPaidOrders = async () => {
+  // PERF: this tab used to pull every paid quote with `select('*')` and then fire
+  // two extra queries per row (customer + policy) — 400+ paid orders meant ~900
+  // round trips and a multi-second spinner. It now loads a capped, newest-first
+  // page of quotes and resolves customers/policies in batched `.in()` calls.
+  // Because the list is capped, a search term is sent to the database as well so
+  // older orders outside the first page are still findable.
+  const PAGE_SIZE = 200;
+
+  const fetchPaidOrders = async (search?: string) => {
     setIsLoading(true);
     try {
-      // Fetch all sales agents/admin users for the dropdown
-      const { data: allAdmins } = await supabase
-        .from('admin_users')
-        .select('id, user_id, first_name, last_name, email, role')
-        .eq('is_active', true);
-      
+      const term = (search || '').trim();
+      const quoteQuery = supabase
+        .from('live_quotes')
+        .select('*')
+        .in('status', ['paid', 'paid_externally'])
+        .order('paid_at', { ascending: false })
+        .limit(PAGE_SIZE);
+
+      if (term.length >= 2) {
+        const like = `%${term.replace(/[%,]/g, '')}%`;
+        quoteQuery.or(
+          `customer_name.ilike.${like},customer_email.ilike.${like},vehicle_reg.ilike.${like},policy_number.ilike.${like}`,
+        );
+      }
+
+      const [adminsRes, quotesRes] = await Promise.all([
+        supabase
+          .from('admin_users')
+          .select('id, user_id, first_name, last_name, email, role')
+          .eq('is_active', true),
+        quoteQuery,
+      ]);
+
+
+      const allAdmins = adminsRes.data;
       if (allAdmins) {
         setAllAdminUsers(allAdmins.map(admin => ({
           id: admin.id,           // admin_users.id - for FK references
@@ -109,83 +136,91 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
         })).filter(a => a.id));
       }
 
-      // Fetch paid quotes from live_quotes
-      const { data: quotesData, error: quotesError } = await supabase
-        .from('live_quotes')
-        .select('*')
-        .in('status', ['paid', 'paid_externally'])
-        .order('paid_at', { ascending: false });
-
-      if (quotesError) throw quotesError;
+      if (quotesRes.error) throw quotesRes.error;
+      const quotesData = quotesRes.data || [];
 
       // Collect unique admin user IDs for batch lookup
       const adminUserIds = new Set<string>();
-      (quotesData || []).forEach(quote => {
+      quotesData.forEach(quote => {
         if (quote.created_by) adminUserIds.add(quote.created_by);
         if (quote.payment_confirmed_by) adminUserIds.add(quote.payment_confirmed_by);
       });
 
-      // Fetch admin user names in batch
-      let adminUsersMap: Record<string, string> = {};
-      if (adminUserIds.size > 0) {
-        const { data: adminUsers } = await supabase
-          .from('admin_users')
-          .select('user_id, first_name, last_name, email')
-          .in('user_id', Array.from(adminUserIds));
-        
-        if (adminUsers) {
-          adminUsers.forEach(admin => {
-            const name = [admin.first_name, admin.last_name].filter(Boolean).join(' ') || admin.email?.split('@')[0] || 'Unknown';
-            adminUsersMap[admin.user_id] = name;
-          });
-        }
-      }
-
-      // For each paid quote, try to fetch associated customer and policy data
-      const ordersWithDetails = await Promise.all(
-        (quotesData || []).map(async (quote) => {
-          let customerData = null;
-          let policyData = null;
-
-          // Try to find customer by email
-          if (quote.customer_email) {
-            const { data: customer } = await supabase
-              .from('customers')
-              .select('id, status, street, town, county, postcode, building_number, phone')
-              .ilike('email', quote.customer_email)
-              .maybeSingle();
-            customerData = customer;
-          }
-
-          // Try to find policy by policy_number
-          if (quote.policy_number) {
-            const { data: policy } = await supabase
-              .from('customer_policies')
-              .select('id, status, email')
-              .eq('policy_number', quote.policy_number)
-              .maybeSingle();
-            policyData = policy;
-          }
-
-          return {
-            ...quote,
-            customer_id: customerData?.id,
-            customer_status: customerData?.status,
-            policy_id: policyData?.id,
-            policy_status: policyData?.status,
-            customer_address: customerData ? {
-              street: customerData.street,
-              town: customerData.town,
-              county: customerData.county,
-              postcode: customerData.postcode,
-              building_number: customerData.building_number,
-            } : undefined,
-            customer_phone: quote.customer_phone || customerData?.phone || '',
-            // Add agent names
-            payment_confirmed_by_name: quote.payment_confirmed_by ? adminUsersMap[quote.payment_confirmed_by] : undefined,
-          };
-        })
+      // Emails are stored inconsistently cased, so match on both the raw value
+      // and its lowercase form — an indexed `in` beats one ilike per row.
+      const emails = Array.from(
+        new Set(
+          quotesData
+            .flatMap(q => {
+              const raw = (q.customer_email || '').trim();
+              return raw ? [raw, raw.toLowerCase()] : [];
+            }),
+        ),
       );
+      const policyNumbers = Array.from(
+        new Set(quotesData.map(q => q.policy_number).filter(Boolean) as string[]),
+      );
+
+      const [adminUsersRes, customersRes, policiesRes] = await Promise.all([
+        adminUserIds.size > 0
+          ? supabase
+              .from('admin_users')
+              .select('user_id, first_name, last_name, email')
+              .in('user_id', Array.from(adminUserIds))
+          : Promise.resolve({ data: [] as any[] }),
+        emails.length > 0
+          ? supabase
+              .from('customers')
+              .select('id, email, status, street, town, county, postcode, building_number, phone')
+              .in('email', emails)
+          : Promise.resolve({ data: [] as any[] }),
+        policyNumbers.length > 0
+          ? supabase
+              .from('customer_policies')
+              .select('id, status, email, policy_number')
+              .in('policy_number', policyNumbers)
+          : Promise.resolve({ data: [] as any[] }),
+      ]);
+
+      const adminUsersMap: Record<string, string> = {};
+      (adminUsersRes.data || []).forEach((admin: any) => {
+        const name = [admin.first_name, admin.last_name].filter(Boolean).join(' ') || admin.email?.split('@')[0] || 'Unknown';
+        adminUsersMap[admin.user_id] = name;
+      });
+
+      const customersByEmail = new Map<string, any>();
+      (customersRes.data || []).forEach((c: any) => {
+        const key = (c.email || '').trim().toLowerCase();
+        if (key && !customersByEmail.has(key)) customersByEmail.set(key, c);
+      });
+
+      const policiesByNumber = new Map<string, any>();
+      (policiesRes.data || []).forEach((p: any) => {
+        if (p.policy_number && !policiesByNumber.has(p.policy_number)) policiesByNumber.set(p.policy_number, p);
+      });
+
+      const ordersWithDetails = quotesData.map((quote) => {
+        const customerData = customersByEmail.get((quote.customer_email || '').trim().toLowerCase()) || null;
+        const policyData = quote.policy_number ? policiesByNumber.get(quote.policy_number) || null : null;
+
+        return {
+          ...quote,
+          customer_id: customerData?.id,
+          customer_status: customerData?.status,
+          policy_id: policyData?.id,
+          policy_status: policyData?.status,
+          customer_address: customerData ? {
+            street: customerData.street,
+            town: customerData.town,
+            county: customerData.county,
+            postcode: customerData.postcode,
+            building_number: customerData.building_number,
+          } : undefined,
+          customer_phone: quote.customer_phone || customerData?.phone || '',
+          // Add agent names
+          payment_confirmed_by_name: quote.payment_confirmed_by ? adminUsersMap[quote.payment_confirmed_by] : undefined,
+        };
+      });
 
       setPaidOrders(ordersWithDetails);
     } catch (error) {
@@ -195,19 +230,25 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
     }
   };
 
+  // Debounced: first paint loads the newest page, then each search re-queries the
+  // database so nothing older than the cap is ever hidden from the agent.
   useEffect(() => {
-    fetchPaidOrders();
-  }, []);
+    const t = setTimeout(() => {
+      fetchPaidOrders(searchTerm);
+    }, searchTerm.trim() ? 350 : 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
   const handleRefresh = () => {
-    fetchPaidOrders();
+    fetchPaidOrders(searchTerm);
     onRefresh?.();
   };
 
   const handleEditComplete = () => {
     setIsEditDialogOpen(false);
     setSelectedOrder(null);
-    fetchPaidOrders();
+    fetchPaidOrders(searchTerm);
   };
 
   const filteredOrders = useMemo(() => {
