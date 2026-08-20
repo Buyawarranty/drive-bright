@@ -18,6 +18,7 @@ import { UnwindsSection } from './UnwindsSection';
 import { StaffInvoiceDialog } from './StaffInvoiceDialog';
 
 import { WeekendShiftsCard } from './WeekendShiftsCard';
+import { BreakLogSection } from './BreakLogSection';
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -316,6 +317,9 @@ export function TimesheetsTab({ onNavigateToTab }: TimesheetsTabProps = {}) {
               <AdditionalBonuses currentMonth={currentMonth} />
             </div>
             <div className="mt-4">
+              <BreakLogSection currentMonth={currentMonth} viewingUserId={effectiveViewingUserId || session?.user?.id || undefined} />
+            </div>
+            <div className="mt-4">
               <TimesheetComments currentMonth={currentMonth} />
             </div>
           </TabsContent>
@@ -333,6 +337,7 @@ export function TimesheetsTab({ onNavigateToTab }: TimesheetsTabProps = {}) {
           <UnwindsSection currentMonth={currentMonth} viewingUserId={effectiveViewingUserId || session?.user?.id || undefined} />
           <CommissionsSection commissions={commissions} />
           <AdditionalBonuses currentMonth={currentMonth} />
+          <BreakLogSection currentMonth={currentMonth} viewingUserId={effectiveViewingUserId || session?.user?.id || undefined} />
           <TimesheetComments currentMonth={currentMonth} />
         </div>
       </div>
