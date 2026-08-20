@@ -144,6 +144,7 @@ export const LostLeadsSection: React.FC<LostLeadsSectionProps> = ({ onRecovered,
           supabase
             .from('sales_leads')
             .select('id, email, abandoned_cart_id, status, phone')
+            .order('id', { ascending: true })
         ),
       ]);
 
