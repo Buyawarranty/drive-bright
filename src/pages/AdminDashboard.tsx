@@ -873,9 +873,11 @@ const AdminDashboard = () => {
             <AnalyticsTab userRole={effectiveUserRole} />
             {['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole) && (
               <Suspense fallback={null}>
+                <SalesStaffPerformancePanel />
                 <AdminUiEventLogPanel />
               </Suspense>
             )}
+
           </div>
         );
       case 'page-analytics':
