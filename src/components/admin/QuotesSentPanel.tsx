@@ -85,13 +85,19 @@ export const QuotesSentPanel: React.FC<QuotesSentPanelProps> = ({ currentAdminId
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    // Safety net: never leave the spinner up if a request hangs.
+    const safetyTimer = setTimeout(() => {
+      console.warn('[QuotesSent] Loading safety timeout triggered');
+      setLoading(false);
+    }, 12000);
     (async () => {
       const [quotesRes, usersRes, membersRes] = await Promise.all([
         supabase
           .from('admin_sent_quotes')
           .select('sent_by, sent_at')
           .gte('sent_at', from.toISOString())
-          .lte('sent_at', to.toISOString()),
+          .lte('sent_at', to.toISOString())
+          .limit(5000),
         supabase
           .from('admin_users')
           .select('id, user_id, first_name, last_name, email, role, is_active'),
@@ -142,9 +148,14 @@ export const QuotesSentPanel: React.FC<QuotesSentPanelProps> = ({ currentAdminId
       }
 
       setRows(displayable);
+      clearTimeout(safetyTimer);
       setLoading(false);
-    })();
-    return () => { cancelled = true; };
+    })().catch((error) => {
+      console.error('[QuotesSent] Failed to load quotes sent:', error);
+      clearTimeout(safetyTimer);
+      setLoading(false);
+    });
+    return () => { cancelled = true; clearTimeout(safetyTimer); };
   }, [from.getTime(), to.getTime(), currentAdminId, isManager]);
 
 
