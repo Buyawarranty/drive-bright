@@ -877,9 +877,16 @@ const AdminDashboard = () => {
         }
         return <LeadTeamsTab onNavigateToTab={handleTabChange} />;
       case 'open-round-robin':
+        if (!isTabAllowedForRole('open-round-robin', effectiveUserRole, effectiveUserPermissions)) {
+          return <AccessDenied label="Open Round Robin" />;
+        }
         return <OpenRoundRobinPage onNavigateToTab={handleTabChange} />;
       case 'orr-test-lab':
+        if (!isTabAllowedForRole('orr-test-lab', effectiveUserRole, effectiveUserPermissions)) {
+          return <AccessDenied label="ORR Test Lab" />;
+        }
         return <OrrTestLabPage onNavigateToTab={handleTabChange} />;
+
       case 'price-updates':
         return <PriceUpdatesTab />;
       case 'sms-tracking':
