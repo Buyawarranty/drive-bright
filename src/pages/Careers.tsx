@@ -87,6 +87,61 @@ const jobPostingSchema = {
   },
 };
 
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Is this vehicle warranty sales job fully remote?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. The Vehicle Warranty Sales Executive role is fully remote and home-based anywhere in the UK. There is no office attendance and no commuting. You need reliable home broadband, a laptop or desktop, a quiet workspace and availability during UK business hours. A headset can be provided where required.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Do you offer contract roles as well as permanent roles?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. We hire on both bases. Permanent roles are full-time PAYE employment with a basic salary plus uncapped commission and long-term progression. Contract roles are available for experienced sales people who prefer fixed-term, seasonal or self-employed contract work, with commission-led earnings. Tell us which you prefer when you apply and we can discuss both.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What experience do I need for this telesales role?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'A minimum of two years telesales experience is required, and extensive telesales experience is preferred. Car finance broker or car finance brokerage experience is highly valued, as are backgrounds in motor finance, vehicle finance, dealership finance and insurance (F&I), GAP insurance or add-on product sales, insurance sales and high-volume outbound call-centre sales.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How much can I earn as a Vehicle Warranty Sales Executive?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Realistic on-target earnings are £35,000 to £60,000 or more. New starters typically earn £25,000 to £35,000, experienced sales executives £35,000 to £50,000, and top performers £50,000 to £60,000 or more. Commission is uncapped and paid on every warranty sale. Earnings examples are based on performance in similar sales roles and are not guaranteed.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Is this a cold-calling job?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No, it is not a cold-calling-only position. You work warm inbound and outbound enquiries from customers who have already asked about vehicle warranty cover, plus follow-ups on existing quotations.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How do I apply for the sales job at Buyawarranty?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Apply on the Buyawarranty careers page by uploading your CV in the quick apply form, or email your CV to info@buyawarranty.co.uk. Include a short note on your sales experience, your strongest results and whether you are looking for a permanent or contract role.',
+      },
+    },
+  ],
+};
+
 const breadcrumbSchema = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
