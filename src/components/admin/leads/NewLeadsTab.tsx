@@ -45,6 +45,7 @@ import ClaimRecontactBatchButton from './ClaimRecontactBatchButton';
 import UnsubscribeQuickLink from '@/components/admin/UnsubscribeQuickLink';
 import { buildWatiRows } from '@/lib/watiExport';
 import { LeadNotesExportDialog } from '@/components/admin/leads/LeadNotesExportDialog';
+import { WatiCallSummaryExportDialog } from '@/components/admin/leads/WatiCallSummaryExportDialog';
 
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck, MoreHorizontal, BarChart3, Network, ChevronDown, ChevronUp } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
@@ -291,6 +292,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }, [focusQuery]);
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [leadNotesExportOpen, setLeadNotesExportOpen] = useState(false);
+  const [watiSummaryOpen, setWatiSummaryOpen] = useState(false);
   // Managers (admin / super_admin / sales_manager) default to "today" so the
   // New Leads view always opens on the current day. Everyone else keeps
   // "all time" so agents see their full queue.
@@ -1701,11 +1703,28 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 Lead with notes
               </Button>
             )}
+            {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setWatiSummaryOpen(true)}
+                title="Export a WATI call summary for a chosen day: talk time, calls attempted, agent and status, excluding existing customers and contacts"
+                className="h-7 px-3 text-[11px] font-semibold gap-1.5 border-teal-300 bg-teal-50 text-teal-800 hover:bg-teal-100 hover:border-teal-400"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                WATI call summary
+              </Button>
+            )}
             <LeadNotesExportDialog
               open={leadNotesExportOpen}
               onOpenChange={setLeadNotesExportOpen}
               leads={(selectedLeads.size > 0 ? filteredLeads.filter(l => selectedLeads.has(l.id)) : filteredLeads) as any}
               sourceHidden={sourceHidden}
+            />
+            <WatiCallSummaryExportDialog
+              open={watiSummaryOpen}
+              onOpenChange={setWatiSummaryOpen}
+              leads={(selectedLeads.size > 0 ? filteredLeads.filter(l => selectedLeads.has(l.id)) : filteredLeads) as any}
             />
             {(() => {
               const inReminders = activeFilter === 'reminders' || (activeFilter as string) === 'due_today';
