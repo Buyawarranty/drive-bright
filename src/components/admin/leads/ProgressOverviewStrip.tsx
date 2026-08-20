@@ -145,24 +145,37 @@ export const ProgressOverviewStrip: React.FC = () => {
       const positives = reviews.filter((r) => r.kind === 'positive').length;
       const negatives = reviews.filter((r) => r.kind === 'negative_removed').length;
 
-      // Consecutive recent days (mine only) where I made 1 sale or fewer.
+      // My own sales per day, plus the date of my most recent sale.
       const perDay = new Map<string, number>();
+      let lastSaleAt: string | null = null;
       ((salesRes as any)?.data || []).forEach((s: any) => {
         const aid = s.sale_credit_admin_user_id || s.payment_confirmed_by || s.quote_sent_by || s.assigned_to;
         if (aid !== adminId || !s.signup_date) return;
         const key = format(new Date(s.signup_date), 'yyyy-MM-dd');
         perDay.set(key, (perDay.get(key) || 0) + 1);
+        if (!lastSaleAt || new Date(s.signup_date) > new Date(lastSaleAt)) lastSaleAt = s.signup_date;
       });
+
+      // Completed service days since my last sale. Today is still in progress so it
+      // never counts, Sundays are not service days, and a day I was not rota'd on
+      // (day off, holiday, sick) is skipped rather than held against me. Any day
+      // with a sale resets the run — so a sale three days ago means three days.
+      const isServiceDay = (d: Date) => {
+        if (d.getDay() === 0) return false;
+        const type = workDays[format(d, 'yyyy-MM-dd')];
+        if (!type) return d.getDay() !== 6; // no rota row: weekdays count, Saturdays don't
+        return type === 'worked' || type === 'wfh' || type === 'training';
+      };
       let lowSaleDays = 0;
-      for (let i = 0; i < 14; i++) {
+      for (let i = 1; i <= 21; i++) {
         const d = addDays(now, -i);
-        const key = format(d, 'yyyy-MM-dd');
-        if (d.getDay() === 0) continue; // Sundays are not service days
-        if ((perDay.get(key) || 0) <= 1) lowSaleDays += 1;
-        else break;
+        if (!isServiceDay(d)) continue;
+        if ((perDay.get(format(d, 'yyyy-MM-dd')) || 0) > 0) break;
+        lowSaleDays += 1;
       }
 
       setData({
+        lastSaleAt,
         revenue: Number(mine?.revenue) || 0,
         target: mine?.revenue_target != null ? Number(mine.revenue_target) : null,
         workDays,
