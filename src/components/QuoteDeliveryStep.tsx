@@ -902,6 +902,12 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           <p className="flex items-center justify-center gap-1">
             <span>🔒 We never share your details.</span>
           </p>
+          <p className="mt-1 text-gray-500 max-w-md mx-auto">
+            By continuing, you agree that our UK team may call, text or email you about this
+            quote and your vehicle cover. You can ask us to stop at any time — see our{' '}
+            <a href="/privacy/" className="underline hover:text-brand-orange">Privacy Policy</a>.
+          </p>
+
           <p className="mt-1">
             <span className="text-gray-600">Prefer to speak to someone? </span>
             <a href={SALES_PHONE_TEL} className="font-bold text-brand-orange hover:underline whitespace-nowrap">
