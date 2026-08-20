@@ -1823,10 +1823,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Apply minimum BASE price floor (acquisition + lead cost protection).
               const finalBasePrice = applyBasePriceFloor(adjustedBasePrice, durationId as PaymentPeriod, voluntaryExcess, isMotorbikeAdjustment(vehicleAdjustment), 'customer', [vehicleData?.make, vehicleData?.model].filter(Boolean).join(' '), selectedClaimLimit);
               
-              // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£8/mo, £150=+£24/mo
-              // Apply user's selection consistently to all cards for fair comparison
-              const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 150 ? 24 : 0;
-              const labourTotalAdjust = labourMonthlyAdjust * durationMonths;
+              // Labour rate adjustment — MUST use the canonical multiplicative factors
+              // (calculateLabourRateAdjustment), the same helper the selected/sticky/Step 4
+              // price uses. The old flat -£5/0/+£8/+£24 per month table drifted by £1+.
+              const labourTotalAdjust = calculateLabourRateAdjustment(selectedLabourRate, durationId as PaymentPeriod, finalBasePrice);
+
               
               // Boost addon: +£5/month × 12 payments = £60 total (same for all durations)
               // Apply user's selection consistently to all cards for fair comparison
