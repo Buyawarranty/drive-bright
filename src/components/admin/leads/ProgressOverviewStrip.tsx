@@ -501,7 +501,7 @@ export const ProgressOverviewStrip: React.FC = () => {
             icon={<Star className="h-4 w-4 text-emerald-700" />}
             iconClass="bg-emerald-100"
             label="My reviews · this week"
-            help="These are not pulled from Trustpilot and they are not the marketing review emails. Tick a review only when you personally asked the customer on a call, WhatsApp or email and they name you in it. £5 per named positive review, £10 per negative review you get resolved and removed."
+            help="These are not pulled from Trustpilot and they are not the marketing review emails. Add a review only when you personally asked the customer on a call, WhatsApp or email and they name you in it. £5 per named positive review, £10 per negative review you get resolved and removed."
           >
             <div className="flex items-baseline gap-3 whitespace-nowrap">
               <span className="text-sm">
@@ -515,13 +515,13 @@ export const ProgressOverviewStrip: React.FC = () => {
             <Popover>
               <PopoverTrigger asChild>
                 <Button size="sm" variant="outline" className="mt-1 h-6 gap-1 px-2 text-[11px]">
-                  <Plus className="h-3 w-3" /> Tick a review
+                  <Plus className="h-3 w-3" /> Add a review
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="start" className="w-72 space-y-3 text-xs">
                 <div className="font-semibold text-sm">Log a review you asked for</div>
                 <div className="rounded-md border-2 border-emerald-500 bg-emerald-50 px-2 py-1 text-[11px] font-bold leading-snug text-emerald-900">
-                  Only tick reviews where the customer names you following a call, WhatsApp or personal email. Nothing here
+                  Only add reviews where the customer names you following a call, WhatsApp or personal email. Nothing here
                   comes from Trustpilot automatic emails.
                 </div>
 
