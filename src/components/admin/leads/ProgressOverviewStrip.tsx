@@ -57,7 +57,8 @@ interface MyData {
   breakStartedAt: string | null;
   breakSessionsToday: number;
   breakMinutesToday: number;
-  lowSaleDays: number; // consecutive recent working days with 1 sale or fewer
+  lowSaleDays: number; // completed rota'd service days since my last sale
+  lastSaleAt: string | null;
   positives: number;
   negatives: number;
 }
@@ -71,6 +72,7 @@ const EMPTY: MyData = {
   breakSessionsToday: 0,
   breakMinutesToday: 0,
   lowSaleDays: 0,
+  lastSaleAt: null,
   positives: 0,
   negatives: 0,
 };
@@ -103,7 +105,7 @@ export const ProgressOverviewStrip: React.FC = () => {
           .from('agent_working_days')
           .select('work_date, day_type')
           .eq('admin_user_id', adminId)
-          .gte('work_date', weekStartStr)
+          .gte('work_date', format(addDays(now, -21), 'yyyy-MM-dd'))
           .lte('work_date', weekEndStr),
         (supabase as any)
           .from('agent_break_status')
@@ -143,24 +145,37 @@ export const ProgressOverviewStrip: React.FC = () => {
       const positives = reviews.filter((r) => r.kind === 'positive').length;
       const negatives = reviews.filter((r) => r.kind === 'negative_removed').length;
 
-      // Consecutive recent days (mine only) where I made 1 sale or fewer.
+      // My own sales per day, plus the date of my most recent sale.
       const perDay = new Map<string, number>();
+      let lastSaleAt: string | null = null;
       ((salesRes as any)?.data || []).forEach((s: any) => {
         const aid = s.sale_credit_admin_user_id || s.payment_confirmed_by || s.quote_sent_by || s.assigned_to;
         if (aid !== adminId || !s.signup_date) return;
         const key = format(new Date(s.signup_date), 'yyyy-MM-dd');
         perDay.set(key, (perDay.get(key) || 0) + 1);
+        if (!lastSaleAt || new Date(s.signup_date) > new Date(lastSaleAt)) lastSaleAt = s.signup_date;
       });
+
+      // Completed service days since my last sale. Today is still in progress so it
+      // never counts, Sundays are not service days, and a day I was not rota'd on
+      // (day off, holiday, sick) is skipped rather than held against me. Any day
+      // with a sale resets the run — so a sale three days ago means three days.
+      const isServiceDay = (d: Date) => {
+        if (d.getDay() === 0) return false;
+        const type = workDays[format(d, 'yyyy-MM-dd')];
+        if (!type) return d.getDay() !== 6; // no rota row: weekdays count, Saturdays don't
+        return type === 'worked' || type === 'wfh' || type === 'training';
+      };
       let lowSaleDays = 0;
-      for (let i = 0; i < 14; i++) {
+      for (let i = 1; i <= 21; i++) {
         const d = addDays(now, -i);
-        const key = format(d, 'yyyy-MM-dd');
-        if (d.getDay() === 0) continue; // Sundays are not service days
-        if ((perDay.get(key) || 0) <= 1) lowSaleDays += 1;
-        else break;
+        if (!isServiceDay(d)) continue;
+        if ((perDay.get(format(d, 'yyyy-MM-dd')) || 0) > 0) break;
+        lowSaleDays += 1;
       }
 
       setData({
+        lastSaleAt,
         revenue: Number(mine?.revenue) || 0,
         target: mine?.revenue_target != null ? Number(mine.revenue_target) : null,
         workDays,
@@ -357,9 +372,10 @@ export const ProgressOverviewStrip: React.FC = () => {
             label="My lead access"
             help={
               <span>
-                <strong>Lead freeze rules:</strong> a service day where you make 1 sale or fewer counts against you. One such day
-                puts you at risk, two in a row pauses your new leads for the next working day. Sundays are not counted.
-                Management can lift a freeze if you are on track for your monthly target or after a one-to-one.
+                <strong>Lead freeze rules:</strong> counted from your last sale, using completed service days only — today is
+                still in progress, Sundays are not service days and days you were not rota'd on (day off, holiday, sick) are
+                skipped. One service day without a sale puts you at risk, two in a row pauses your new leads for the next
+                working day. Management can lift a freeze if you are on track for your monthly target or after a one-to-one.
               </span>
             }
           >
@@ -368,8 +384,13 @@ export const ProgressOverviewStrip: React.FC = () => {
             </div>
             <div className="text-[11px] text-muted-foreground whitespace-nowrap">
               {data.lowSaleDays === 0
-                ? 'On target — no low-sale days'
-                : `${data.lowSaleDays} day${data.lowSaleDays === 1 ? '' : 's'} in a row with 1 sale or fewer`}
+                ? 'On target — no missed service days'
+                : `${data.lowSaleDays} service day${data.lowSaleDays === 1 ? '' : 's'} since your last sale`}
+            </div>
+            <div className="text-[11px] text-muted-foreground whitespace-nowrap">
+              {data.lastSaleAt
+                ? `Last sale: ${format(new Date(data.lastSaleAt), 'EEE d MMM, HH:mm')}`
+                : 'No sale recorded in the last 21 days'}
             </div>
           </Cell>
 
@@ -387,6 +408,10 @@ export const ProgressOverviewStrip: React.FC = () => {
                 <span className="font-semibold text-orange-600">{data.negatives}</span> removed
               </span>
               <span className="text-sm font-semibold">{gbp(bonus)} bonus</span>
+            </div>
+            <div className="mt-1 max-w-[22rem] rounded-md border-2 border-emerald-500 bg-emerald-50 px-2 py-1 text-[11px] font-bold leading-snug text-emerald-900">
+              Only tick reviews where the customer names you following a call, WhatsApp or personal email. Nothing here comes
+              from Trustpilot automatic emails.
             </div>
             <Popover>
               <PopoverTrigger asChild>
