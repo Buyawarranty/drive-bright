@@ -73,6 +73,8 @@ const jobPostingSchema = {
     '@type': 'OccupationalExperienceRequirements',
     monthsOfExperience: 24,
   },
+  jobBenefits:
+    'Fully remote home-based working, warm inbound and outbound leads, full product and systems training, uncapped commission, monthly incentives, permanent and contract options',
   industry: 'Automotive Warranty Sales',
   occupationalCategory: '41-3099.00 Sales Representatives',
   workHours: 'UK business hours, Monday to Friday',
