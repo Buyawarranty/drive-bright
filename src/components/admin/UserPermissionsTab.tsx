@@ -156,6 +156,16 @@ const CLAIMS_MANAGER_PERMISSIONS: Record<string, boolean> = {
   'tab_account': true,
 };
 
+// Super admin is the source of truth: it always holds every section, and no
+// bulk grant/revoke/save can ever take a section away from it.
+export const SUPER_ADMIN_FULL_PERMISSIONS = (): Record<string, boolean> => ({
+  ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
+  'tab_customers_see-source': true,
+  'tab_new-leads_see-source': true,
+  'tab_new-leads_lead-routing': true,
+  'tab_new-leads_live-tracking': true,
+});
+
 // Default tab permissions per role - auto-applied when role is selected
 const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
   super_admin: { ...ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>), 'tab_customers_see-source': true, 'tab_new-leads_see-source': true, 'tab_new-leads_lead-routing': true, 'tab_new-leads_live-tracking': true },
