@@ -216,6 +216,9 @@ function PriceOptionsPanel({
   const [limit, setLimit] = useState(2000);
   const [excess, setExcess] = useState(100);
   const [labour, setLabour] = useState(70);
+  // Price first, payment second: the card/monthly buttons and the payment-link
+  // wording only appear once the customer has asked to see their price.
+  const [priceRequested, setPriceRequested] = useState(false);
 
   const combo = `${term} months, £${limit.toLocaleString()} claim limit, £${excess} excess, £${labour}/hr labour rate`;
 
@@ -223,7 +226,7 @@ function PriceOptionsPanel({
     <div className="rounded-2xl border border-border bg-card p-4 text-left shadow-sm">
       <p className="text-sm font-semibold text-foreground">Build your price</p>
       <p className="mt-0.5 text-xs text-muted-foreground">
-        Pick your options and I'll price it, then send you a secure payment link.
+        Pick your options and I'll show you the price.
       </p>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -236,37 +239,52 @@ function PriceOptionsPanel({
       <div className="mt-3 flex flex-wrap gap-2">
         <Button
           size="sm"
-          variant="secondary"
+          variant={priceRequested ? 'secondary' : 'default'}
           disabled={disabled}
-          onClick={() => onSend(`Price this for me: ${combo}. What's the total?`)}
+          onClick={() => {
+            setPriceRequested(true);
+            onSend(`Price this for me: ${combo}. What's the total?`);
+          }}
         >
           Show my price
         </Button>
-        <Button
-          size="sm"
-          disabled={disabled}
-          onClick={() =>
-            onSend(`I'd like ${combo}. Please confirm the total and send me a card payment link.`)
-          }
-        >
-          Pay by card
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={disabled}
-          onClick={() =>
-            onSend(
-              `I'd like ${combo}. Please confirm the total and send me a monthly instalments link (Bumper).`,
-            )
-          }
-        >
-          Pay monthly
-        </Button>
+
+        {priceRequested && (
+          <>
+            <Button
+              size="sm"
+              disabled={disabled}
+              onClick={() =>
+                onSend(`I'd like ${combo}. Please confirm the total and send me a card payment link.`)
+              }
+            >
+              Pay by card
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={disabled}
+              onClick={() =>
+                onSend(
+                  `I'd like ${combo}. Please confirm the total and send me a monthly instalments link (Bumper).`,
+                )
+              }
+            >
+              Pay monthly
+            </Button>
+          </>
+        )}
       </div>
+
+      {priceRequested && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Happy with the price? Choose how you'd like to pay and I'll send you a secure payment link.
+        </p>
+      )}
     </div>
   );
 }
+
 
 
 export function SandboxChatWindow({ threadId }: { threadId: string }) {
