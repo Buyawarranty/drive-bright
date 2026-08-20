@@ -381,6 +381,11 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
+    // Safety net: force the spinner off if any request hangs.
+    const safetyTimer = setTimeout(() => {
+      console.warn('[LeadRecovery] Loading safety timeout triggered');
+      setLoading(false);
+    }, 12000);
     try {
       let q = buildBaseQuery();
       q = applySegment(q, segment);
@@ -434,6 +439,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     } catch (e: any) {
       toast.error('Failed to load recontact leads', { description: e.message });
     } finally {
+      clearTimeout(safetyTimer);
       setLoading(false);
     }
   }, [buildBaseQuery, applySegment, segment, currentRole, currentUserId, currentAuthUserId]);
