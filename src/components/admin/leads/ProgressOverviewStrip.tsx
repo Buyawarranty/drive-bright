@@ -372,9 +372,10 @@ export const ProgressOverviewStrip: React.FC = () => {
             label="My lead access"
             help={
               <span>
-                <strong>Lead freeze rules:</strong> a service day where you make 1 sale or fewer counts against you. One such day
-                puts you at risk, two in a row pauses your new leads for the next working day. Sundays are not counted.
-                Management can lift a freeze if you are on track for your monthly target or after a one-to-one.
+                <strong>Lead freeze rules:</strong> counted from your last sale, using completed service days only — today is
+                still in progress, Sundays are not service days and days you were not rota'd on (day off, holiday, sick) are
+                skipped. One service day without a sale puts you at risk, two in a row pauses your new leads for the next
+                working day. Management can lift a freeze if you are on track for your monthly target or after a one-to-one.
               </span>
             }
           >
@@ -383,8 +384,13 @@ export const ProgressOverviewStrip: React.FC = () => {
             </div>
             <div className="text-[11px] text-muted-foreground whitespace-nowrap">
               {data.lowSaleDays === 0
-                ? 'On target — no low-sale days'
-                : `${data.lowSaleDays} day${data.lowSaleDays === 1 ? '' : 's'} in a row with 1 sale or fewer`}
+                ? 'On target — no missed service days'
+                : `${data.lowSaleDays} service day${data.lowSaleDays === 1 ? '' : 's'} since your last sale`}
+            </div>
+            <div className="text-[11px] text-muted-foreground whitespace-nowrap">
+              {data.lastSaleAt
+                ? `Last sale: ${format(new Date(data.lastSaleAt), 'EEE d MMM, HH:mm')}`
+                : 'No sale recorded in the last 21 days'}
             </div>
           </Cell>
 
