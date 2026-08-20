@@ -277,18 +277,45 @@ export default function AiSandbox() {
 
         {threadId ? (
           <div className="flex flex-1 justify-center overflow-auto bg-muted/30 p-4">
-            {/* Real on-site widget footprint: 400x600 desktop panel, 360x640 mobile sheet */}
-            <div
-              className={`flex flex-col overflow-hidden rounded-xl border border-border bg-background shadow-xl ${
-                previewSize === 'desktop' ? 'h-[600px] w-full max-w-[400px]' : 'h-[640px] w-full max-w-[360px]'
-              }`}
-            >
-              <SandboxChatWindow key={threadId} threadId={threadId} />
-            </div>
+            {previewSize === 'mobile' ? (
+              /* Mobile: full-screen sheet inside a phone frame (390 x 760) */
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-[390px] max-w-full rounded-[2.25rem] border-[10px] border-neutral-900 bg-neutral-900 shadow-2xl">
+                  <div className="relative overflow-hidden rounded-[1.6rem] bg-background">
+                    <div className="flex items-center justify-center bg-neutral-900 py-1.5">
+                      <span className="h-1.5 w-20 rounded-full bg-neutral-700" />
+                    </div>
+                    <div className="flex h-[700px] flex-col">
+                      <SandboxChatWindow key={threadId} threadId={threadId} />
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">Mobile · 390 × 760 full-screen sheet</p>
+              </div>
+            ) : (
+              /* Desktop: floating 400x600 panel anchored bottom-right of a browser window */
+              <div className="flex w-full max-w-[1100px] flex-col gap-2">
+                <div className="relative flex h-[720px] w-full flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl">
+                  <div className="flex items-center gap-1.5 border-b border-border bg-muted/60 px-3 py-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                    <span className="ml-2 truncate text-xs text-muted-foreground">buyawarranty.co.uk</span>
+                  </div>
+                  <div className="relative flex-1 bg-muted/20">
+                    <div className="absolute bottom-4 right-4 flex h-[600px] w-[400px] max-w-[calc(100%-2rem)] flex-col overflow-hidden rounded-xl border border-border bg-background shadow-xl">
+                      <SandboxChatWindow key={threadId} threadId={threadId} />
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">Desktop · 400 × 600 panel anchored bottom-right</p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="p-6 text-sm text-muted-foreground">Setting up your chat…</div>
         )}
+
       </main>
     </div>
   );
