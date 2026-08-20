@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { isToday, isPast } from 'date-fns';
+import { useSearchParams } from 'react-router-dom';
 import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { WidgetErrorBoundary } from '../WidgetErrorBoundary';
@@ -271,6 +272,23 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // continue to behave as before.
   const [additionalFilters, setAdditionalFilters] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
+  // Deep-link focus: the "Open lead" banner sends ?q=<reg|phone|name> so the
+  // agent lands on that exact lead instead of the raw queue.
+  const [urlParams, setUrlParams] = useSearchParams();
+  const focusQuery = urlParams.get('q');
+  useEffect(() => {
+    if (!focusQuery) return;
+    setSearchTerm(focusQuery);
+    setActiveFilter('all');
+    setDatePeriod('all');
+    setDateRange({ from: undefined, to: undefined });
+    setAgeWindow('all');
+    const next = new URLSearchParams(urlParams);
+    next.delete('q');
+    next.delete('leadId');
+    setUrlParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusQuery]);
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [leadNotesExportOpen, setLeadNotesExportOpen] = useState(false);
   // Managers (admin / super_admin / sales_manager) default to "today" so the

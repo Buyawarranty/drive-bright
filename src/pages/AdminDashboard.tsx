@@ -1187,13 +1187,22 @@ const AdminDashboardInner: React.FC<{
       {/* Global missed inbound call bar — visible on every admin tab */}
       <MissedCallAlertBar
         userRole={userRole}
-        onOpenLead={(leadId) => navigate(`/admin-dashboard/?tab=new-leads&leadId=${leadId}`)}
+        onOpenLead={(leadId) => {
+          handleTabChange('new-leads');
+          setSearchParams({ tab: 'new-leads', leadId }, { replace: true });
+        }}
       />
 
 
       {/* Full-width top banner (beep + mute lives here) so agents can't miss a lead */}
       <NewLeadTopBanner
-        onGo={(leadId) => navigate(`/admin-dashboard/?tab=new-leads&leadId=${leadId}`)}
+        onGo={(leadId, focus) => {
+          handleTabChange('new-leads');
+          setSearchParams(
+            { tab: 'new-leads', leadId, ...(focus ? { q: focus } : {}) },
+            { replace: true }
+          );
+        }}
       />
 
       {/* Fresh-lead top banner + floating popup for the current agent */}

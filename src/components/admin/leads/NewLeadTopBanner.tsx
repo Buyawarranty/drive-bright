@@ -13,8 +13,11 @@ const formatUKPhoneShort = (p: string) => {
 };
 
 interface Props {
-  /** Jump to the New Leads tab (optionally focused on a lead). */
-  onGo: (leadId: string) => void;
+  /**
+   * Jump to the New Leads tab focused on this lead. `focus` is a human search
+   * term (reg / phone / name) the New Leads search box can actually match.
+   */
+  onGo: (leadId: string, focus?: string) => void;
 }
 
 /**
@@ -91,7 +94,9 @@ export const NewLeadTopBanner: React.FC<Props> = ({ onGo }) => {
           )}
           <button
             type="button"
-            onClick={() => onGo(lead.id)}
+            onClick={() =>
+              onGo(lead.id, lead.vehicle_reg || lead.phone || name)
+            }
             className="inline-flex items-center gap-1 text-xs font-semibold bg-white/15 hover:bg-white/25 rounded-full px-3 py-1"
           >
             Open lead
