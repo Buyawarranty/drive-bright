@@ -7,6 +7,8 @@ import { WidgetErrorBoundary } from '../WidgetErrorBoundary';
 import { LeadFreezeRulesCard } from './LeadFreezeRulesCard';
 import { ProgressOverviewStrip } from './ProgressOverviewStrip';
 import { LeadFreezeNoticeBanner } from './LeadFreezeNoticeBanner';
+import { AutoLeadFreezePanel } from './AutoLeadFreezePanel';
+
 
 
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
