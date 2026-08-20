@@ -45,6 +45,8 @@ const computeQuickRange = (key: QuickRange): DateRange | undefined => {
   }
 };
 
+import { SaveCancellationDialog } from './leads/SaveCancellationDialog';
+
 interface CancellationRecord {
   id: string;
   name: string;
@@ -711,12 +713,13 @@ export const CancellationsTab: React.FC<{
                   <TableHead>Date</TableHead>
                   <TableHead>Agent</TableHead>
                   <TableHead className="min-w-[260px]">Note</TableHead>
+                  {isFinancialRole && <TableHead className="w-[150px]">Save the deal</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {pagination.paginatedData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={isFinancialRole ? 9 : 8} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={isFinancialRole ? 10 : 8} className="text-center py-8 text-muted-foreground">
                       <Ban className="h-8 w-8 mx-auto mb-2 opacity-40" />
                       No cancellations found for this period
                     </TableCell>
