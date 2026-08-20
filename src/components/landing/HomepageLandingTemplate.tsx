@@ -1,4 +1,5 @@
 import React, { useState, lazy, Suspense } from 'react';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import { Button } from '@/components/ui/button';
 import { Check, ArrowRight, Star, Shield, Clock, Zap, ChevronDown, ChevronUp, Phone } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -12,7 +13,7 @@ import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 // Lazy load heavy sections
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
 const VideoSection = lazy(() => import('@/components/homepage/VideoSection'));
-const WarrantyBenefitsSection = lazy(() => import('@/components/homepage/WarrantyBenefitsSection'));
+const WarrantyBenefitsSection = lazyWithRetry(() => import('@/components/homepage/WarrantyBenefitsSection'));
 const CoverClaritySection = lazy(() => import('@/components/homepage/CoverClaritySection'));
 
 interface VehicleData {
