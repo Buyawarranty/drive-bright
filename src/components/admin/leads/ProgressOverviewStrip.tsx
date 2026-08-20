@@ -86,6 +86,9 @@ export const ProgressOverviewStrip: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [reviewName, setReviewName] = useState('');
   const [reviewChannel, setReviewChannel] = useState('call');
+  const [results, setResults] = useState<CustomerHit[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [picked, setPicked] = useState<CustomerHit | null>(null);
 
   const now = new Date();
   const weekStart = useMemo(() => startOfWeek(now, { weekStartsOn: 1 }), [now.toDateString()]);
