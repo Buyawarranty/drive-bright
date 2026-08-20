@@ -287,6 +287,13 @@ const Careers: React.FC = () => {
           </p>
           <div className="flex flex-wrap gap-2">
             {[
+              'Extensive telesales experience',
+              'Car finance broker',
+              'Car finance brokerage',
+              'Motor finance sales',
+              'Vehicle finance sales',
+              'Dealership finance and insurance (F&I)',
+              'GAP insurance or add-on product sales',
               'Vehicle warranty sales',
               'Automotive sales',
               'Insurance sales',
