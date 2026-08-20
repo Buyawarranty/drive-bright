@@ -969,66 +969,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   }, [regNumber, selectedLeadId]);
 
 
-  // MOT history is now a BACKGROUND HINT ONLY. It used to fire a mot_history
-  // query per keystroke (Step 1 and again in the payment dialog) and could hang
-  // the tab mid-call. Now nothing on this page waits on it: the reg search and
-  // the whole quote journey work with MOT off, and if the reading arrives late
-  // it just appears as a suggestion. Any failure is swallowed.
-  const [bgMot, setBgMot] = useState<{ reg: string; mileage: number | null; date: string | null } | null>(null);
-
-  useEffect(() => {
-    const reg = (regNumber || '').replace(/\s+/g, '').toUpperCase();
-    if (reg.length < 5) return;
-    if (bgMot?.reg === reg) return;
-
-    let cancelled = false;
-    // Long debounce: only look once the agent has clearly stopped typing, and
-    // never on the critical path of the price/lookup.
-    const timer = setTimeout(async () => {
-      try {
-        const spaced = `${reg.slice(0, -3)} ${reg.slice(-3)}`;
-        const { data: rows, error } = await supabase
-          .from('mot_history')
-          .select('mot_tests')
-          .in('registration', [reg, spaced])
-          .limit(2);
-        if (cancelled || error || !rows?.length) return;
-
-        const tests = (rows.find((r) => Array.isArray(r.mot_tests) && (r.mot_tests as any[]).length > 0)?.mot_tests ??
-          []) as Array<{ odometerValue?: number; completedDate?: string }>;
-        if (!Array.isArray(tests) || tests.length === 0) return;
-
-        const latest = [...tests]
-          .sort((a, b) => new Date(b.completedDate || 0).getTime() - new Date(a.completedDate || 0).getTime())
-          .find((t) => t.odometerValue && t.odometerValue > 0);
-
-        if (!cancelled && latest?.odometerValue) {
-          setBgMot({ reg, mileage: latest.odometerValue, date: latest.completedDate || null });
-        }
-      } catch {
-        /* never surface — MOT is optional here */
-      }
-    }, 1500);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [regNumber]);
-
-  const bgMotForReg =
-    bgMot && bgMot.reg === (regNumber || '').replace(/\s+/g, '').toUpperCase() ? bgMot : null;
-
+  // MOT mileage lookup is OFF in Quotes & Orders. Only the registration plate is
+  // searched (DVLA/DVSA vehicle identification); mileage is typed by the agent.
+  // The old mot_history query fired on every keystroke here and in the payment
+  // dialog and could hang the tab mid-call, so it is gone entirely.
   const motMileage: number | null = null;
   const motDate: string | null = null;
   const motMileageLoading = false;
   const step1MotLoading = false;
   const step1MotMileage: number | null = null;
-  const step1MotMileageResolved =
-    (autoPreview.data?.motMileage as number | null | undefined) ?? bgMotForReg?.mileage ?? null;
-  const step1MotDate =
-    (autoPreview.data?.motMileageDate as string | null | undefined) ?? bgMotForReg?.date ?? null;
+  const step1MotMileageResolved: number | null = null;
+  const step1MotDate: string | null = null;
+
 
 
 
