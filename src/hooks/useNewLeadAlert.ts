@@ -86,6 +86,16 @@ export const playNewLeadBeep = () => {
 // in-flight request with a short TTL cache, so the DB sees one read per cycle.
 const ALERT_CACHE_TTL_MS = 12_000;
 const _alertCache = new Map<string, { at: number; rows: any[]; inflight?: Promise<any[]> }>();
+// Agent role, resolved once per session per agent (shared by all hook mounts).
+const _roleCache = new Map<string, string>();
+// Fully-computed pop-up queue (leads + own-note/own-call filtering), shared so
+// four mounted consumers cost one set of reads instead of four.
+const _queueCache = new Map<
+  string,
+  { at: number; rows: any[]; inflight?: Promise<any[]> }
+>();
+const QUEUE_CACHE_TTL_MS = 12_000;
+
 
 const fetchAgentAlertLeads = (adminId: string): Promise<any[]> => {
   const entry = _alertCache.get(adminId);
