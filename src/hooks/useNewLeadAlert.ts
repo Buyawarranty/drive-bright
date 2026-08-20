@@ -412,8 +412,12 @@ export const useNewLeadAlert = () => {
         .on(
           'postgres_changes',
           { event: '*', schema: 'public', table: 'sales_leads', filter: `assigned_to=eq.${adminId}` },
-          () => loadRef.current()
+          () => {
+            invalidateAgentAlertCache(adminId);
+            loadRef.current();
+          }
         )
+
         .subscribe((status) => {
           if (disposed) return;
           if (status === 'SUBSCRIBED') {
