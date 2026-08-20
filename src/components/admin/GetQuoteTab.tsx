@@ -4175,12 +4175,12 @@ Questions? Call 0330 229 5040`;
                 {/* Mileage — mirrors Step 4 customer checkout */}
                   <div>
                   <Label htmlFor="mileage" className="block text-base font-semibold text-foreground mb-1">
-                    Confirm your current mileage
+                    Confirm your current mileage <span className="text-[#FF385C]">*</span>
                   </Label>
                   <p className="mb-3 text-sm text-muted-foreground">
                     {step1MotMileageResolved
                       ? "We've suggested this using your latest MOT record."
-                      : 'Up to 150,000 miles.'}
+                      : 'Required — the price is based on mileage. Ask the customer and type it in (up to 150,000 miles).'}
                   </p>
 
                   {step1MotMileageResolved && (
