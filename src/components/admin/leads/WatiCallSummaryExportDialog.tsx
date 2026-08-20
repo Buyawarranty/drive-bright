@@ -62,7 +62,7 @@ export const WatiCallSummaryExportDialog: React.FC<Props> = ({ open, onOpenChang
       const start = new Date(`${targetDate}T00:00:00`);
       const end = new Date(`${targetDate}T23:59:59.999`);
 
-      const callLogs = await batchedIn<any>(
+      const callLogs = await fetchByIdsInBatches<any>(
         leadIds,
         (chunk) =>
           supabase
