@@ -583,7 +583,8 @@ export const ProgressOverviewStrip: React.FC = () => {
                     ))}
                   </div>
                   <p className="text-[10px] text-muted-foreground">
-                    Managers check the named review on Trustpilot before it is paid.
+                    The customer record is marked as reviewed in Customer management, and managers check the named review
+                    on Trustpilot before it is paid.
                   </p>
                 </div>
 
