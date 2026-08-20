@@ -43,7 +43,7 @@ const WINDOWS = [
   { id: '7d', label: 'Last 7 days', hours: 24 * 7 },
 ] as const;
 
-const SALES_ROLES = ['sales', 'sales_lead'];
+const SALES_ROLES = ['sales', 'sales_lead'] as const;
 
 // Anything past this is a genuinely bad experience for someone on a call.
 const SLOW_MS = 8000;
