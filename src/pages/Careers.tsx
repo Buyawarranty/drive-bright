@@ -155,15 +155,16 @@ const Careers: React.FC = () => {
   return (
     <main className="min-h-screen bg-[#F9FAFB] text-[#111827]">
       <SEOHead
-        title="Warranty Sales Jobs UK | Remote PAYE Careers"
-        description="Remote UK Vehicle Warranty Sales Executive role. Ideal for extensive telesales experience or car finance broker backgrounds. Full-time PAYE, warm leads, uncapped commission, OTE £35,000–£60,000+."
-        keywords="warranty sales jobs, remote sales jobs UK, telesales jobs, experienced telesales jobs, extensive telesales experience, telesales executive jobs, vehicle warranty sales executive, car finance broker jobs, finance broker jobs, car finance brokerage jobs, motor finance sales jobs, vehicle finance sales jobs, dealership finance and insurance jobs, GAP insurance sales jobs, PAYE sales jobs, work from home sales UK, uncapped commission sales, buyawarranty careers"
+        title="Fully Remote Telesales Jobs UK | Warranty Sales Careers"
+        description="Fully remote UK Vehicle Warranty Sales Executive jobs — permanent PAYE or contract roles. Ideal for extensive telesales or car finance broker experience. Warm leads, uncapped commission, OTE £35,000–£60,000+."
+        keywords="fully remote sales jobs UK, work from home telesales jobs, remote telesales jobs UK, contract sales jobs, permanent sales jobs, fixed-term contract telesales, self-employed sales roles, warranty sales jobs, experienced telesales jobs, extensive telesales experience, telesales executive jobs, vehicle warranty sales executive, car finance broker jobs, finance broker jobs, car finance brokerage jobs, motor finance sales jobs, vehicle finance sales jobs, dealership finance and insurance jobs, GAP insurance sales jobs, PAYE sales jobs, uncapped commission sales, buyawarranty careers"
         canonical={CAREERS_URL}
-        ogTitle="Vehicle Warranty Sales Executive – Remote UK | Buyawarranty Careers"
-        ogDescription="Warm leads, full-time PAYE employment, uncapped commission. OTE £35,000–£60,000+. Join our UK vehicle warranty sales team."
+        ogTitle="Fully Remote Vehicle Warranty Sales Jobs – Contract or Permanent | Buyawarranty"
+        ogDescription="Fully remote UK telesales role, permanent PAYE or contract. Warm leads, uncapped commission, OTE £35,000–£60,000+."
       />
       <Helmet>
         <script type="application/ld+json">{JSON.stringify(jobPostingSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
       </Helmet>
 
