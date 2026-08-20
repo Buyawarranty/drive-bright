@@ -66,11 +66,11 @@ function toolResultText(value: unknown) {
 }
 
 const OPENING_HOURS = {
-  // Monday–Saturday, 9am–5pm Europe/London. Sunday closed.
+  // Monday–Saturday, 9am–6pm Europe/London. Sunday closed.
   startHour: 9,
-  endHour: 17,
+  endHour: 18,
   openDays: [1, 2, 3, 4, 5, 6],
-  label: "Monday to Saturday, 9am to 5pm",
+  label: "Monday to Saturday, 9am to 6pm",
 };
 
 function londonParts(now = new Date()) {

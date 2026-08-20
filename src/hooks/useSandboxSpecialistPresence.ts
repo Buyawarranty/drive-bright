@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { isTeamOpenNow, openingHoursLabel } from '@/lib/aiSandbox/openingHours';
 
 export type SpecialistPresence = {
   user_id: string;
@@ -59,6 +60,11 @@ export function useSandboxSpecialistPresence() {
         toast.error('Sign in again to go on duty.');
         return;
       }
+      // Live agent availability is hard-limited to opening hours (Mon–Sat, 9am–6pm UK).
+      if (online && !isTeamOpenNow()) {
+        toast.error(`Live chat is only available ${openingHoursLabel} (UK time).`);
+        return;
+      }
       setMeOnline(online);
       const { error } = await supabase.from('ai_sandbox_specialist_presence').upsert(
         {
@@ -94,11 +100,15 @@ export function useSandboxSpecialistPresence() {
     return () => window.clearInterval(interval);
   }, [meOnline, userId]);
 
+  // Outside opening hours nobody counts as live, whatever the presence rows say.
+  const withinHours = isTeamOpenNow();
+  const liveRows = withinHours ? rows : [];
+
   return {
-    specialists: rows,
-    liveCount: rows.length,
-    liveNames: rows.map((r) => r.display_name).filter(Boolean) as string[],
-    meOnline,
+    specialists: liveRows,
+    liveCount: liveRows.length,
+    liveNames: liveRows.map((r) => r.display_name).filter(Boolean) as string[],
+    meOnline: withinHours && meOnline,
     setOnDuty,
     refresh: load,
   };
