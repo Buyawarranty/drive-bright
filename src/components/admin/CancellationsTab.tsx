@@ -838,7 +838,16 @@ export const CancellationsTab: React.FC<{
                           </button>
                         )}
                       </TableCell>
+                      {isFinancialRole && (
+                        <TableCell>
+                          <SaveCancellationDialog
+                            customer={record}
+                            requestedBy={currentAdminUser?.id || null}
+                          />
+                        </TableCell>
+                      )}
                     </TableRow>
+
                     );
                   })
                 )}
