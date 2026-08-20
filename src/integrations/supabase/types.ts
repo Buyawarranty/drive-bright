@@ -1233,6 +1233,47 @@ export type Database = {
           },
         ]
       }
+      agent_review_claims: {
+        Row: {
+          admin_user_id: string
+          channel: string | null
+          created_at: string
+          customer_name: string | null
+          id: string
+          kind: string
+          notes: string | null
+          week_start: string
+        }
+        Insert: {
+          admin_user_id: string
+          channel?: string | null
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          kind: string
+          notes?: string | null
+          week_start: string
+        }
+        Update: {
+          admin_user_id?: string
+          channel?: string | null
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          kind?: string
+          notes?: string | null
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_review_claims_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_schedules: {
         Row: {
           admin_user_id: string
