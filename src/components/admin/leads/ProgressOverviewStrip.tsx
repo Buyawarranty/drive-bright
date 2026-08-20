@@ -167,13 +167,16 @@ export const ProgressOverviewStrip: React.FC = () => {
       const positives = reviews.filter((r) => r.kind === 'positive').length;
       const negatives = reviews.filter((r) => r.kind === 'negative_removed').length;
 
-      // My own sales per day, plus the date of my most recent sale.
+      // My own sales per day, plus the date of my most recent sale. Cancelled and
+      // refunded rows never count as a sale; anything else does.
+      const DEAD_STATUSES = ['cancelled', 'canceled', 'refunded'];
       const perDay = new Map<string, number>();
       let lastSaleAt: string | null = null;
       let lastSaleProof: string | null = null;
       ((salesRes as any)?.data || []).forEach((s: any) => {
-        const aid = s.sale_credit_admin_user_id || s.payment_confirmed_by || s.quote_sent_by || s.assigned_to;
-        if (aid !== adminId || !s.signup_date) return;
+        if (!s.signup_date) return;
+        const st = String(s.status || '').toLowerCase();
+        if (DEAD_STATUSES.some((d) => st.includes(d))) return;
         const key = format(new Date(s.signup_date), 'yyyy-MM-dd');
         perDay.set(key, (perDay.get(key) || 0) + 1);
         if (!lastSaleAt || new Date(s.signup_date) > new Date(lastSaleAt)) {
@@ -183,6 +186,7 @@ export const ProgressOverviewStrip: React.FC = () => {
             .join(' · ') || null;
         }
       });
+
 
       // Completed service days since my last sale. Today is still in progress so it
       // never counts, Sundays are not service days, and a day I was not rota'd on
