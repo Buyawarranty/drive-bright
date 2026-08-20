@@ -126,16 +126,14 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         }
 
 
-        // The sales lead result is the primary import path. Do not make agents
-        // wait for the optional abandoned-cart enrichment before showing it.
-        const slResPromise = bounded(query, 6000);
+        // The sales lead result is the primary import path. Show it as soon as it
+        // lands — agents were left staring at a spinner while the optional
+        // abandoned-cart enrichment finished (or timed out).
         const cartResPromise = bounded(cartQuery, 3500);
-        let slRes: any = await slResPromise;
-        let cartRes: any = await cartResPromise;
+        let slRes: any = await bounded(query, 6000);
         if (cancelled) return;
 
         if (slRes.error) console.error('Error fetching leads:', slRes.error);
-        if (cartRes.error) console.error('Error fetching abandoned carts:', cartRes.error);
 
         // Fallback: if the combined search filter failed, try a plain reg/email
         // match so the agent still gets the lead instead of an empty list.
@@ -154,6 +152,15 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         setLoadError(
           slRes.error ? (slRes.error.message || 'Lead search failed — try again.') : null
         );
+
+        // Render the lead matches immediately, then top up with cart-only rows.
+        setLeads(((slRes.data as any[]) || []) as LeadData[]);
+        setLoading(false);
+
+        const cartRes: any = await cartResPromise;
+        if (cancelled) return;
+        if (cartRes.error) console.error('Error fetching abandoned carts:', cartRes.error);
+
 
         const merged: LeadData[] = [...((slRes.data as any[]) || [])];
         const seen = new Set(
