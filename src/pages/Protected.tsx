@@ -698,6 +698,10 @@ const Protected = () => {
             })}
           </div>
 
+          <div className="bg-brand-orange/5 border border-brand-orange/20 rounded-xl px-5 py-4 text-sm text-foreground transition-all">
+            💡 <strong>Quick example:</strong> {claimLimits[selectedLimitIndex].example}
+          </div>
+
 
           {/* ── 6. REPAIR COSTS — directly below limits to confirm the choice ── */}
           <div className="mt-16">
