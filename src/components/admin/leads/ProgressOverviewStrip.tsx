@@ -236,11 +236,34 @@ export const ProgressOverviewStrip: React.FC = () => {
     }
   };
 
+  // Look the customer up from the CRM by name, registration plate or email so the
+  // claim is tied to a real record rather than a typed name.
+  const searchCustomers = useCallback(async (term: string) => {
+    const q = term.trim();
+    if (q.length < 2) {
+      setResults([]);
+      return;
+    }
+    setSearching(true);
+    try {
+      const plate = q.replace(/\s+/g, '');
+      const { data } = await supabase
+        .from('customers')
+        .select('id, name, email, registration_plate, plan_type')
+        .eq('is_deleted', false)
+        .or(`name.ilike.%${q}%,registration_plate.ilike.%${plate}%,email.ilike.%${q}%`)
+        .order('signup_date', { ascending: false })
+        .limit(8);
+      setResults((data as CustomerHit[]) || []);
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
   const logReview = async (kind: 'positive' | 'negative_removed') => {
     if (!adminId) return;
-    const name = reviewName.trim();
-    if (name.length < 2) {
-      toast.error('Add the customer name the review is for');
+    if (!picked) {
+      toast.error('Find and select the customer this review is for');
       return;
     }
     setSaving(true);
@@ -249,14 +272,32 @@ export const ProgressOverviewStrip: React.FC = () => {
         admin_user_id: adminId,
         week_start: format(weekStart, 'yyyy-MM-dd'),
         kind,
-        customer_name: name,
+        customer_id: picked.id,
+        customer_name: picked.name,
+        registration_plate: picked.registration_plate,
         channel: reviewChannel,
       });
       if (error) throw error;
+
+      // Reflect it on the customer record so Customer management shows the review.
+      if (kind === 'positive') {
+        await supabase
+          .from('customers')
+          .update({
+            trustpilot_review_completed: true,
+            trustpilot_review_completed_at: new Date().toISOString(),
+          })
+          .eq('id', picked.id);
+      }
+
       toast.success(
-        kind === 'positive' ? `Positive review logged for ${name}` : `Negative review removal logged for ${name}`,
+        kind === 'positive'
+          ? `Positive review logged for ${picked.name}`
+          : `Negative review removal logged for ${picked.name}`,
       );
+      setPicked(null);
       setReviewName('');
+      setResults([]);
       await load();
     } catch (e: any) {
       toast.error(e?.message || 'Could not log that review');
