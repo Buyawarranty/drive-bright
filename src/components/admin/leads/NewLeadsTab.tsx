@@ -1604,6 +1604,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       <WidgetErrorBoundary label="This week's rota"><WeekRotaStrip /></WidgetErrorBoundary>
       <WidgetErrorBoundary label="Break status"><AgentBreakStrip /></WidgetErrorBoundary>
       <WidgetErrorBoundary label="Your target"><MyTargetStrip /></WidgetErrorBoundary>
+      <WidgetErrorBoundary label="Lead Freeze rules"><LeadFreezeRulesCard /></WidgetErrorBoundary>
+
 
       {/* Header — compact, action-dense, grouped card */}
 
