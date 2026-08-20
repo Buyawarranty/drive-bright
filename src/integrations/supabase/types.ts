@@ -1238,30 +1238,36 @@ export type Database = {
           admin_user_id: string
           channel: string | null
           created_at: string
+          customer_id: string | null
           customer_name: string | null
           id: string
           kind: string
           notes: string | null
+          registration_plate: string | null
           week_start: string
         }
         Insert: {
           admin_user_id: string
           channel?: string | null
           created_at?: string
+          customer_id?: string | null
           customer_name?: string | null
           id?: string
           kind: string
           notes?: string | null
+          registration_plate?: string | null
           week_start: string
         }
         Update: {
           admin_user_id?: string
           channel?: string | null
           created_at?: string
+          customer_id?: string | null
           customer_name?: string | null
           id?: string
           kind?: string
           notes?: string | null
+          registration_plate?: string | null
           week_start?: string
         }
         Relationships: [
@@ -1270,6 +1276,13 @@ export type Database = {
             columns: ["admin_user_id"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_review_claims_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
             referencedColumns: ["id"]
           },
         ]

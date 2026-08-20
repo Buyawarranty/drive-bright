@@ -19,6 +19,14 @@ import { toast } from 'sonner';
 
 const gbp = (n: number) => `£${Math.round(n || 0).toLocaleString('en-GB')}`;
 
+type CustomerHit = {
+  id: string;
+  name: string | null;
+  email: string | null;
+  registration_plate: string | null;
+  plan_type: string | null;
+};
+
 const Cell: React.FC<{
   icon: React.ReactNode;
   iconClass: string;
@@ -86,6 +94,9 @@ export const ProgressOverviewStrip: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [reviewName, setReviewName] = useState('');
   const [reviewChannel, setReviewChannel] = useState('call');
+  const [results, setResults] = useState<CustomerHit[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [picked, setPicked] = useState<CustomerHit | null>(null);
 
   const now = new Date();
   const weekStart = useMemo(() => startOfWeek(now, { weekStartsOn: 1 }), [now.toDateString()]);
@@ -236,11 +247,34 @@ export const ProgressOverviewStrip: React.FC = () => {
     }
   };
 
+  // Look the customer up from the CRM by name, registration plate or email so the
+  // claim is tied to a real record rather than a typed name.
+  const searchCustomers = useCallback(async (term: string) => {
+    const q = term.trim();
+    if (q.length < 2) {
+      setResults([]);
+      return;
+    }
+    setSearching(true);
+    try {
+      const plate = q.replace(/\s+/g, '');
+      const { data } = await supabase
+        .from('customers')
+        .select('id, name, email, registration_plate, plan_type')
+        .eq('is_deleted', false)
+        .or(`name.ilike.%${q}%,registration_plate.ilike.%${plate}%,email.ilike.%${q}%`)
+        .order('signup_date', { ascending: false })
+        .limit(8);
+      setResults((data as CustomerHit[]) || []);
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
   const logReview = async (kind: 'positive' | 'negative_removed') => {
     if (!adminId) return;
-    const name = reviewName.trim();
-    if (name.length < 2) {
-      toast.error('Add the customer name the review is for');
+    if (!picked) {
+      toast.error('Find and select the customer this review is for');
       return;
     }
     setSaving(true);
@@ -249,14 +283,32 @@ export const ProgressOverviewStrip: React.FC = () => {
         admin_user_id: adminId,
         week_start: format(weekStart, 'yyyy-MM-dd'),
         kind,
-        customer_name: name,
+        customer_id: picked.id,
+        customer_name: picked.name,
+        registration_plate: picked.registration_plate,
         channel: reviewChannel,
       });
       if (error) throw error;
+
+      // Reflect it on the customer record so Customer management shows the review.
+      if (kind === 'positive') {
+        await supabase
+          .from('customers')
+          .update({
+            trustpilot_review_completed: true,
+            trustpilot_review_completed_at: new Date().toISOString(),
+          })
+          .eq('id', picked.id);
+      }
+
       toast.success(
-        kind === 'positive' ? `Positive review logged for ${name}` : `Negative review removal logged for ${name}`,
+        kind === 'positive'
+          ? `Positive review logged for ${picked.name}`
+          : `Negative review removal logged for ${picked.name}`,
       );
+      setPicked(null);
       setReviewName('');
+      setResults([]);
       await load();
     } catch (e: any) {
       toast.error(e?.message || 'Could not log that review');
@@ -464,15 +516,58 @@ export const ProgressOverviewStrip: React.FC = () => {
 
                 <div className="space-y-1">
                   <label className="font-medium" htmlFor="review-customer-name">
-                    Customer name on the review <span className="text-destructive">*</span>
+                    Find the customer — name or reg plate <span className="text-destructive">*</span>
                   </label>
                   <input
                     id="review-customer-name"
                     value={reviewName}
-                    onChange={(e) => setReviewName(e.target.value)}
-                    placeholder="e.g. Tim Hubbard"
+                    onChange={(e) => {
+                      setReviewName(e.target.value);
+                      setPicked(null);
+                      searchCustomers(e.target.value);
+                    }}
+                    placeholder="e.g. Tim Hubbard or YN73WZH"
                     className="h-7 w-full rounded-md border border-input bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
                   />
+                  {searching && <p className="text-[10px] text-muted-foreground">Searching…</p>}
+                  {picked ? (
+                    <div className="flex items-center justify-between gap-2 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1">
+                      <span className="truncate font-semibold text-emerald-900">
+                        {picked.name || 'Unnamed'}
+                        {picked.registration_plate ? ` · ${picked.registration_plate}` : ''}
+                      </span>
+                      <button
+                        type="button"
+                        className="text-[10px] underline text-emerald-800"
+                        onClick={() => {
+                          setPicked(null);
+                          setReviewName('');
+                        }}
+                      >
+                        change
+                      </button>
+                    </div>
+                  ) : results.length > 0 ? (
+                    <div className="max-h-32 overflow-y-auto rounded-md border">
+                      {results.map((r) => (
+                        <button
+                          key={r.id}
+                          type="button"
+                          className="block w-full px-2 py-1 text-left hover:bg-muted"
+                          onClick={() => {
+                            setPicked(r);
+                            setReviewName(r.name || '');
+                            setResults([]);
+                          }}
+                        >
+                          <span className="font-medium">{r.name || 'Unnamed'}</span>
+                          {r.registration_plate ? (
+                            <span className="ml-1 text-muted-foreground">· {r.registration_plate}</span>
+                          ) : null}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
                   <div className="flex gap-1 pt-1">
                     {['call', 'whatsapp', 'email'].map((c) => (
                       <button
@@ -488,7 +583,8 @@ export const ProgressOverviewStrip: React.FC = () => {
                     ))}
                   </div>
                   <p className="text-[10px] text-muted-foreground">
-                    Managers check the named review on Trustpilot before it is paid.
+                    The customer record is marked as reviewed in Customer management, and managers check the named review
+                    on Trustpilot before it is paid.
                   </p>
                 </div>
 
