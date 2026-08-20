@@ -1777,9 +1777,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
 
   const handleVehicleLookup = async () => {
-    // Mileage is pricing input, but it comes from the MOT record via the API —
-    // an agent must never be blocked for "missing mileage" before we've asked
-    // the API. Only the registration is required up front.
+    // MOT mileage lookup is OFF in Quotes & Orders, and mileage dictates the price —
+    // so the agent must type it in before Step 2.
     const effectiveMileage = mileage.trim() || (sliderMileage > 0 ? sliderMileage.toLocaleString() : '');
     if (!mileage.trim() && sliderMileage > 0) {
       setMileage(sliderMileage.toLocaleString());
@@ -1794,6 +1793,14 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     }
 
     const numericMileage = parseInt(effectiveMileage.replace(/[^0-9]/g, ''), 10);
+    if (!effectiveMileage || isNaN(numericMileage) || numericMileage < 100) {
+      toast({
+        title: "Mileage required",
+        description: "Ask the customer for their current mileage and enter it — the price is based on it.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (!isNaN(numericMileage) && numericMileage > 150000) {
       toast({
         title: "Vehicle Not Eligible",
