@@ -30,8 +30,10 @@ const Card: React.FC<{
   </div>
 );
 
+const ALLOWED = ['super_admin', 'admin'];
+
 export const ProgressOverviewStrip: React.FC = () => {
-  const [isSuper, setIsSuper] = useState(false);
+  const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -39,18 +41,26 @@ export const ProgressOverviewStrip: React.FC = () => {
       const { data: authData } = await supabase.auth.getUser();
       const uid = authData?.user?.id;
       if (!uid) return;
-      const { data } = await supabase
-        .from('admin_users')
-        .select('role')
-        .eq('user_id', uid)
-        .eq('is_active', true)
-        .maybeSingle();
-      if (mounted) setIsSuper((data as any)?.role === 'super_admin');
+
+      // Must be an active admin_users row with an allowed role AND hold that
+      // role in user_roles — anything else (sales, sales_lead, managers) is hidden.
+      const [{ data: adminRows }, { data: roleRows }] = await Promise.all([
+        supabase.from('admin_users').select('role').eq('user_id', uid).eq('is_active', true),
+        supabase.from('user_roles').select('role').eq('user_id', uid),
+      ]);
+
+      const adminRoles = (adminRows || []).map((r: any) => String(r.role));
+      const userRoles = (roleRows || []).map((r: any) => String(r.role));
+      const ok =
+        adminRoles.some((r) => ALLOWED.includes(r)) &&
+        userRoles.some((r) => ALLOWED.includes(r));
+
+      if (mounted) setAllowed(ok);
     })();
     return () => { mounted = false; };
   }, []);
 
-  if (!isSuper) return null;
+  if (!allowed) return null;
 
   const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
