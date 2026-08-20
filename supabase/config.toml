@@ -293,3 +293,6 @@ verify_jwt = false
 
 [functions.trustpilot-rating]
 verify_jwt = false
+
+[functions.provision-backup-login]
+verify_jwt = true
