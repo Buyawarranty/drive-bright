@@ -45,6 +45,7 @@ import ClaimRecontactBatchButton from './ClaimRecontactBatchButton';
 import UnsubscribeQuickLink from '@/components/admin/UnsubscribeQuickLink';
 import { buildWatiRows } from '@/lib/watiExport';
 import { LeadNotesExportDialog } from '@/components/admin/leads/LeadNotesExportDialog';
+import { WatiCallSummaryExportDialog } from '@/components/admin/leads/WatiCallSummaryExportDialog';
 
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Ban, XCircle, RotateCcw, ShieldCheck, MoreHorizontal, BarChart3, Network, ChevronDown, ChevronUp } from 'lucide-react';
 import { BulkReassignDialog } from './BulkReassignDialog';
@@ -291,6 +292,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }, [focusQuery]);
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [leadNotesExportOpen, setLeadNotesExportOpen] = useState(false);
+  const [watiSummaryOpen, setWatiSummaryOpen] = useState(false);
   // Managers (admin / super_admin / sales_manager) default to "today" so the
   // New Leads view always opens on the current day. Everyone else keeps
   // "all time" so agents see their full queue.
