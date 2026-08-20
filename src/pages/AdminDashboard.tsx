@@ -242,11 +242,12 @@ const TabFallback = () => (
 // never traps the user; they can navigate away and keep working.
 class TabErrorBoundary extends React.Component<
   { children: React.ReactNode; onRetry: () => void; tabKey?: string },
-  { hasError: boolean; error: Error | null }
+  { hasError: boolean; error: Error | null; remountKey: number }
 > {
+  private autoRecoveries = 0;
   constructor(props: any) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, remountKey: 0 };
   }
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
@@ -270,6 +271,17 @@ class TabErrorBoundary extends React.Component<
       );
     if (isChunk) {
       forceFreshReload();
+      return;
+    }
+
+    // DOM desync (browser translate, password managers, extensions removing
+    // nodes React still owns) throws NotFoundError/removeChild and blanks the
+    // tab. Nothing is actually broken, so remount the tab silently.
+    const isDomDesync =
+      /removeChild|insertBefore|The node (to be removed|before which)|NotFoundError/i.test(msg);
+    if (isDomDesync && this.autoRecoveries < 2) {
+      this.autoRecoveries += 1;
+      this.setState((s) => ({ hasError: false, error: null, remountKey: s.remountKey + 1 }));
     }
   }
   render() {
@@ -288,7 +300,7 @@ class TabErrorBoundary extends React.Component<
           <div className="flex gap-2">
             <button
               onClick={() => {
-                this.setState({ hasError: false, error: null });
+                this.setState((s) => ({ hasError: false, error: null, remountKey: s.remountKey + 1 }));
                 this.props.onRetry();
               }}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90"
@@ -316,12 +328,13 @@ class TabErrorBoundary extends React.Component<
 
       );
     }
-    return this.props.children;
+    return <React.Fragment key={this.state.remountKey}>{this.props.children}</React.Fragment>;
   }
   componentDidUpdate(prev: { tabKey?: string }) {
     // Switching tabs clears any prior error so users are never trapped.
     if (this.state.hasError && prev.tabKey !== this.props.tabKey) {
-      this.setState({ hasError: false, error: null });
+      this.autoRecoveries = 0;
+      this.setState((s) => ({ hasError: false, error: null, remountKey: s.remountKey + 1 }));
     }
   }
 }
@@ -387,7 +400,10 @@ const AdminDashboard = () => {
     document.addEventListener('visibilitychange', onVisibility);
     const raf = requestAnimationFrame(() => {
       const ms = performance.now() - loadStartedAt;
-      if (wentHidden) return;
+      if (wentHidden || !document.hasFocus()) return;
+      // Anything beyond half a minute is a throttled/parked tab, not a real
+      // render — logging it only buries the genuine slow loads.
+      if (ms > 30000) return;
       logAdminUiEvent({ event_type: 'page_load', label: 'Admin dashboard loaded', duration_ms: ms });
       if (ms > 8000) logAdminSlowLoad('Admin dashboard slow load', ms);
     });
