@@ -45,7 +45,7 @@ const Cell: React.FC<{
               <Info className="h-3 w-3" />
             </button>
           </TooltipTrigger>
-          <TooltipContent side="bottom" className="max-w-xs text-xs leading-relaxed">
+          <TooltipContent side="bottom" className="max-w-xs normal-case tracking-normal text-xs leading-relaxed text-left">
             {help}
           </TooltipContent>
         </Tooltip>
