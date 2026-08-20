@@ -119,7 +119,7 @@ const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager',
 const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'attendance', 'hr', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 const SALES_TABS = ['overview', 'new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
-const SALES_LEAD_TABS = ['overview', 'new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'lead-teams', 'agent-feedback', 'unsubscribe', 'account'];
+const SALES_LEAD_TABS = ['overview', 'new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 const SALES_MANAGER_TABS = ['overview', 'concessions', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'open-round-robin', 'orr-test-lab', 'price-updates', 'vehicle-stats', 'banners-billboards', 'sms-tracking', 'user-permissions', 'unsubscribe', 'account'];
 const PERFORMANCE_MANAGER_TABS = SALES_MANAGER_TABS;
 
@@ -162,6 +162,9 @@ const MANAGEMENT_ONLY_TABS = new Set<string>(['claims']);
 // Old bookmarks (?tab=call-stats) and the public slug must never be treated as
 // a different, un-permitted tab — that used to bounce agents to Quotes & Orders.
 const LIVE_CALLS_TAB_IDS = new Set(['overview', 'call-stats', 'live-calls-data']);
+const LEAD_ALLOCATION_TABS = new Set(['lead-teams', 'open-round-robin', 'orr-test-lab']);
+const LEAD_ALLOCATION_BLOCKED_ROLES = new Set(['sales', 'sales_lead']);
+
 const canonicalTabId = (tab: string) => (LIVE_CALLS_TAB_IDS.has(tab) ? 'overview' : tab);
 
 // Roles that always keep access to Live Calls Data. What they can actually see
@@ -174,6 +177,9 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   if (tab === 'account') return true;
   if (tab === 'unsubscribe') return true;
   if (role === 'super_admin' || role === 'dev_tester') return true;
+  // Lead Allocation is management-only: sales and sales_lead can never see or open
+  // it, not even via an explicit tab_ grant or a saved shortcut.
+  if (LEAD_ALLOCATION_BLOCKED_ROLES.has(role || '') && LEAD_ALLOCATION_TABS.has(tab)) return false;
   if (tab === 'overview' && role && LIVE_CALLS_ALWAYS_ALLOWED_ROLES.has(role)) return true;
   // Permissions win over role hardcoding: any user (any role, now or in future)
   // granted tab_<id> = true in User Permissions gets the tab. This is what makes
