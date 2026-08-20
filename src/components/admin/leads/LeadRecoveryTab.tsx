@@ -24,6 +24,7 @@ import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/a
 import type { DateRange } from 'react-day-picker';
 import type { LeadStatus } from '@/hooks/useLeads';
 import { useLeadRoutingPermission } from '@/hooks/useLeadRoutingPermission';
+import { fetchByIdsInBatches } from '@/utils/batchedIn';
 
 type SegmentId =
   | 'due_today'
@@ -414,12 +415,14 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       // filter by tags such as "Not spoken to".
       if (fetched.length > 0) {
         const leadIds = fetched.map((l: any) => l.id);
-        const { data: tagData, error: tagError } = await (supabase.from('lead_tag_assignments') as any)
-          .select('lead_id, tag_id')
-          .in('lead_id', leadIds);
-        if (!tagError && tagData) {
+        const tagData = await fetchByIdsInBatches<{ lead_id: string; tag_id: string }>(
+          leadIds,
+          (batch) => (supabase.from('lead_tag_assignments') as any).select('lead_id, tag_id').in('lead_id', batch),
+          { label: 'recontact lead tags' },
+        );
+        {
           const map: Record<string, string[]> = {};
-          for (const assignment of tagData as Array<{ lead_id: string; tag_id: string }>) {
+          for (const assignment of tagData) {
             if (!map[assignment.lead_id]) map[assignment.lead_id] = [];
             map[assignment.lead_id].push(assignment.tag_id);
           }

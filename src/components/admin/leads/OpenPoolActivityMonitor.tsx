@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { formatDistanceToNowStrict } from 'date-fns';
+import { fetchByIdsInBatches } from '@/utils/batchedIn';
 
 /**
  * Manager-only view of Open Lead Pool activity.
@@ -87,20 +88,24 @@ export function OpenPoolActivityMonitor() {
     const leadIds = Array.from(new Set(takes.map(t => t.lead_id)));
 
     // 2. Lead details
-    const { data: leads } = await supabase
-      .from('sales_leads')
-      .select('id, first_name, last_name, phone, vehicle_reg, lead_source')
-      .in('id', leadIds);
+    const leads = await fetchByIdsInBatches<any>(leadIds, (batch) =>
+      supabase
+        .from('sales_leads')
+        .select('id, first_name, last_name, phone, vehicle_reg, lead_source')
+        .in('id', batch),
+      { label: 'open pool leads' });
     const leadMap = new Map((leads ?? []).map(l => [l.id, l]));
 
     // 3. Status→contacted change events for those leads in window
-    const { data: changes } = await supabase
-      .from('sales_leads_changelog')
-      .select('lead_id, changed_by, changed_at, new_status, old_status')
-      .in('lead_id', leadIds)
-      .eq('new_status', 'contacted')
-      .gte('changed_at', since)
-      .order('changed_at', { ascending: true });
+    const changes = await fetchByIdsInBatches<any>(leadIds, (batch) =>
+      supabase
+        .from('sales_leads_changelog')
+        .select('lead_id, changed_by, changed_at, new_status, old_status')
+        .in('lead_id', batch)
+        .eq('new_status', 'contacted')
+        .gte('changed_at', since)
+        .order('changed_at', { ascending: true }),
+      { label: 'open pool status changes' });
 
     // Build a map: `${lead_id}|${actor_id}` -> earliest spoken timestamp AFTER a take
     const spokenLookup = new Map<string, string[]>();

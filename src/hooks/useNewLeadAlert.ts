@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { isAlertsMuted } from '@/lib/alertSoundPreference';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
+import { fetchByIdsInBatches } from '@/utils/batchedIn';
 
 // Business-hours gate — pop-ups AND beeps only fire 09:00–18:00 Europe/London.
 // Outside this window nothing appears: overnight assignments are picked up
@@ -314,15 +315,19 @@ export const useNewLeadAlert = () => {
         // Only THIS agent's own work silences their pop-up. Notes/calls left by
         // a previous owner (bulk reassign, holiday cover, recontact moves) must
         // NOT suppress the alert — that was hiding nearly every reassigned lead.
-        const [notesRes, callsRes] = await Promise.all([
-          supabase.from('lead_quick_notes').select('lead_id, created_by').in('lead_id', ids).eq('created_by', adminId),
-          supabase.from('lead_call_logs').select('lead_id').in('lead_id', ids).eq('agent_id', adminId),
+        const [noteRows, callRows] = await Promise.all([
+          fetchByIdsInBatches<any>(ids, (batch) =>
+            supabase.from('lead_quick_notes').select('lead_id, created_by').in('lead_id', batch).eq('created_by', adminId),
+            { label: 'new lead alert notes' }),
+          fetchByIdsInBatches<any>(ids, (batch) =>
+            supabase.from('lead_call_logs').select('lead_id').in('lead_id', batch).eq('agent_id', adminId),
+            { label: 'new lead alert calls' }),
         ]);
         const touched = new Set<string>();
-        (notesRes.data as any[] | null)?.forEach((r) => {
+        noteRows.forEach((r) => {
           if (r?.lead_id && r.created_by) touched.add(r.lead_id);
         });
-        (callsRes.data as any[] | null)?.forEach((r) => r?.lead_id && touched.add(r.lead_id));
+        callRows.forEach((r) => r?.lead_id && touched.add(r.lead_id));
         clean = [...offered, ...nonOffered.filter((l) => !touched.has(l.id))];
       }
       setQueue(clean);
