@@ -59,6 +59,7 @@ import { BulkEmailDialog } from './BulkEmailDialog';
 import { BulkTagDialog } from './BulkTagDialog';
 import { CancelWarrantyDialog } from './CancelWarrantyDialog';
 import { ArchiveCustomerDialog } from './ArchiveCustomerDialog';
+import { SaveCancellationDialog } from './leads/SaveCancellationDialog';
 import { MergeDuplicateDialog } from './MergeDuplicateDialog';
 import { InvoiceDialog } from './InvoiceDialog';
 import CoverageDetailsDisplay from '@/components/CoverageDetailsDisplay';
@@ -5223,6 +5224,24 @@ Buyawarranty.co.uk`,
                               <DialogTitle>Manage Customer: {selectedCustomer?.name}</DialogTitle>
                               {selectedCustomer && (
                                 <div className="flex items-center gap-2">
+                                  {canRaiseSaveDeal && (
+                                    <SaveCancellationDialog
+                                      customer={{
+                                        id: selectedCustomer.id,
+                                        name: selectedCustomer.name,
+                                        email: selectedCustomer.email,
+                                        phone: selectedCustomer.phone,
+                                        registration_plate: selectedCustomer.registration_plate,
+                                        vehicle_make: selectedCustomer.vehicle_make,
+                                        vehicle_model: selectedCustomer.vehicle_model,
+                                        plan_type: selectedCustomer.plan_type,
+                                        final_amount: selectedCustomer.final_amount,
+                                      }}
+                                      requestedBy={currentAdminUser?.id || null}
+                                      buttonLabel="Save the deal"
+                                      buttonClassName="h-9 gap-1 border-amber-400 bg-amber-50 px-3 text-sm font-semibold text-amber-900 hover:bg-amber-100"
+                                    />
+                                  )}
                                   <Button
                                     variant="outline"
                                     size="sm"
