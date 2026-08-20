@@ -32,7 +32,7 @@ const jobPostingSchema = {
   '@type': 'JobPosting',
   title: 'Vehicle Warranty Sales Executive',
   description:
-    '<p>Buyawarranty is hiring a remote UK-based Vehicle Warranty Sales Executive. Full-time PAYE employment with warm inbound and outbound leads, full training, uncapped commission and long-term career progression. Realistic OTE £35,000–£60,000+.</p><p>You will handle warm enquiries, recommend suitable vehicle warranty cover, explain benefits, close sales over the telephone and maintain accurate CRM records. Minimum two years telesales experience required.</p>',
+    '<p>Buyawarranty is hiring a remote UK-based Vehicle Warranty Sales Executive. Full-time PAYE employment with warm inbound and outbound leads, full training, uncapped commission and long-term career progression. Realistic OTE £35,000–£60,000+.</p><p>You will handle warm enquiries, recommend suitable vehicle warranty cover, explain benefits, close sales over the telephone and maintain accurate CRM records. Minimum two years telesales experience required.</p><p>This role would suit someone with extensive telesales experience, or a car finance broker / finance broker from a car finance brokerage, motor finance, vehicle finance, dealership F&amp;I, GAP insurance or add-on product sales background.</p>',
   identifier: {
     '@type': 'PropertyValue',
     name: 'Buyawarranty',
