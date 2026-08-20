@@ -27,22 +27,43 @@ export async function invokeWithFreshSession<T = any>(
     }
   };
 
+  const getSessionBounded = async (ms: number) => {
+    const { data } = await bounded(
+      supabase.auth.getSession(),
+      ms,
+      { data: { session: null } } as any
+    );
+    return data?.session ?? null;
+  };
+
   const ensureSession = async (forceRefresh = false) => {
-    const { data } = await bounded(supabase.auth.getSession(), 4000, { data: { session: null } } as any);
-    const session = data?.session;
+    // A single stalled getSession() must never be reported as "session expired" —
+    // agents were signed in fine and still got kicked out of Generate Quote Link.
+    let session = await getSessionBounded(5000);
+    if (!session) session = await getSessionBounded(8000);
+    if (!session) {
+      // Last resort: ask the auth server directly, then re-read the session.
+      const { data: refreshed } = await bounded(
+        supabase.auth.refreshSession(),
+        8000,
+        { data: { session: null } } as any
+      );
+      session = refreshed?.session ?? (await getSessionBounded(5000));
+    }
     if (!session) return null;
     const expiresAt = (session.expires_at ?? 0) * 1000;
     const expiringSoon = expiresAt > 0 && expiresAt - Date.now() < 90_000;
     if (forceRefresh || expiringSoon) {
       const { data: refreshed } = await bounded(
         supabase.auth.refreshSession(),
-        4000,
+        6000,
         { data: { session: null } } as any
       );
       return refreshed?.session ?? session;
     }
     return session;
   };
+
 
   const isAuthError = (err: any) => {
     const contextStatus = err?.context instanceof Response ? err.context.status : undefined;
