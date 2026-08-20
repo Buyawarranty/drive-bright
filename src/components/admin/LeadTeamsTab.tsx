@@ -36,6 +36,7 @@ import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { Button } from '@/components/ui/button';
 import { Percent } from 'lucide-react';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
+import { AutoLeadFreezePanel } from './leads/AutoLeadFreezePanel';
 import { ScoreboardTargetsSection } from './leads/ScoreboardTargetsSection';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
@@ -49,6 +50,7 @@ const QUICK_LINKS = [
   { id: 'rebalance-reassign', label: 'Rebalance Leads', className: 'bg-orange-300/50 text-orange-900 border-orange-200/50 hover:bg-orange-400/50' },
   { id: 'offboard-agent', label: 'Offboard an agent', className: 'bg-amber-300/50 text-amber-900 border-amber-200/50 hover:bg-amber-400/50' },
 
+  { id: 'lead-freeze', label: 'Leads on / off', className: 'bg-teal-300/50 text-teal-900 border-teal-200/50 hover:bg-teal-400/50' },
   { id: 'staff-lead-access', label: 'Staff Lead Access', className: 'bg-indigo-300/50 text-indigo-900 border-indigo-200/50 hover:bg-indigo-400/50' },
   { id: 'scoreboard-targets', label: 'Scoreboard targets', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
   { id: 'open-round-robin', label: 'Open Round Robin →', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
@@ -283,6 +285,22 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           STAFF LEAD ACCESS — who can assign leads to other agents,
           and the single toggle that grants it to sales leads.
          ───────────────────────────────────────────────────────────── */}
+      {/* ─────────────────────────────────────────────────────────────
+          LEADS ON / OFF — per-agent switch plus the automatic
+          two-day no-sales freeze (pro-rata on-target agents exempt).
+         ───────────────────────────────────────────────────────────── */}
+      {isManagement && (
+        <div id="lead-freeze" className="space-y-4">
+          <div className="border-l-4 border-teal-500/60 pl-3">
+            <h2 className="text-lg font-semibold text-foreground">Leads on / off</h2>
+            <p className="text-xs text-muted-foreground">
+              Switch each agent's leads on or off, and see who the automatic no-sales freeze has paused.
+            </p>
+          </div>
+          <AutoLeadFreezePanel canEdit={canEdit} />
+        </div>
+      )}
+
       {isManagement && <StaffLeadAccessPanel />}
 
       {/* Quotes & Orders — Confirm external payment price block master switch */}

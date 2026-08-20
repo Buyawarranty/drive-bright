@@ -985,10 +985,15 @@ export type Database = {
           allowed_sources: string[] | null
           assigned_today: number | null
           assignment_mode: string
+          auto_freeze_enabled: boolean
           can_reassign_leads: boolean
           cap_reset_date: string | null
           created_at: string | null
           daily_cap: number | null
+          freeze_reason: string | null
+          freeze_source: string | null
+          frozen_at: string | null
+          frozen_until: string | null
           id: string
           last_assigned_at: string | null
           paused: boolean | null
@@ -1003,10 +1008,15 @@ export type Database = {
           allowed_sources?: string[] | null
           assigned_today?: number | null
           assignment_mode?: string
+          auto_freeze_enabled?: boolean
           can_reassign_leads?: boolean
           cap_reset_date?: string | null
           created_at?: string | null
           daily_cap?: number | null
+          freeze_reason?: string | null
+          freeze_source?: string | null
+          frozen_at?: string | null
+          frozen_until?: string | null
           id?: string
           last_assigned_at?: string | null
           paused?: boolean | null
@@ -1021,10 +1031,15 @@ export type Database = {
           allowed_sources?: string[] | null
           assigned_today?: number | null
           assignment_mode?: string
+          auto_freeze_enabled?: boolean
           can_reassign_leads?: boolean
           cap_reset_date?: string | null
           created_at?: string | null
           daily_cap?: number | null
+          freeze_reason?: string | null
+          freeze_source?: string | null
+          frozen_at?: string | null
+          frozen_until?: string | null
           id?: string
           last_assigned_at?: string | null
           paused?: boolean | null
@@ -7886,6 +7901,54 @@ export type Database = {
           },
         ]
       }
+      lead_freeze_log: {
+        Row: {
+          acknowledged_at: string | null
+          action: string
+          admin_user_id: string
+          created_at: string
+          freeze_days: number | null
+          frozen_until: string | null
+          id: string
+          monthly_target: number | null
+          pro_rata_target: number | null
+          reason: string | null
+          revenue_mtd: number | null
+          sales_in_window: number | null
+          window_days: string[] | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          action: string
+          admin_user_id: string
+          created_at?: string
+          freeze_days?: number | null
+          frozen_until?: string | null
+          id?: string
+          monthly_target?: number | null
+          pro_rata_target?: number | null
+          reason?: string | null
+          revenue_mtd?: number | null
+          sales_in_window?: number | null
+          window_days?: string[] | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          action?: string
+          admin_user_id?: string
+          created_at?: string
+          freeze_days?: number | null
+          frozen_until?: string | null
+          id?: string
+          monthly_target?: number | null
+          pro_rata_target?: number | null
+          reason?: string | null
+          revenue_mtd?: number | null
+          sales_in_window?: number | null
+          window_days?: string[] | null
+        }
+        Relationships: []
+      }
       lead_quick_notes: {
         Row: {
           created_at: string | null
@@ -13034,6 +13097,20 @@ export type Database = {
         Args: { p_agent_id: string; p_override?: boolean }
         Returns: Json
       }
+      evaluate_agent_lead_freeze: {
+        Args: never
+        Returns: {
+          admin_user_id: string
+          freeze_days: number
+          frozen_until: string
+          monthly_target: number
+          outcome: string
+          pro_rata_target: number
+          reason: string
+          revenue_mtd: number
+          sales_in_window: number
+        }[]
+      }
       find_open_cart_id_by_reg: {
         Args: { _vehicle_reg: string }
         Returns: string
@@ -13674,6 +13751,14 @@ export type Database = {
         }[]
       }
       rota_sync_in_progress: { Args: never; Returns: boolean }
+      set_agent_auto_freeze: {
+        Args: { _admin_user_id: string; _enabled: boolean }
+        Returns: undefined
+      }
+      set_agent_lead_allocation: {
+        Args: { _admin_user_id: string; _enabled: boolean }
+        Returns: undefined
+      }
       set_user_offline: { Args: never; Returns: undefined }
       shark_tank_agent_stats: {
         Args: never
