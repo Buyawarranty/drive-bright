@@ -855,7 +855,11 @@ const AdminDashboard = () => {
       case 'banners-billboards':
         return <OfflineCampaignsTab />;
       case 'vehicle-stats':
+        if (!isTabAllowedForRole('vehicle-stats', effectiveUserRole, effectiveUserPermissions)) {
+          return <AccessDenied label="Vehicle Intelligence" />;
+        }
         return <VehicleStatsTab />;
+
       case 'security':
         return <ClickFraudTab />;
       case 'user-permissions':
