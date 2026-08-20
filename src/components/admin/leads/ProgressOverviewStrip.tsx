@@ -366,12 +366,13 @@ export const ProgressOverviewStrip: React.FC = () => {
           >
             <div className="flex items-center gap-2">
               <span className={`text-sm font-semibold ${onBreak ? 'text-amber-600' : 'text-emerald-600'}`}>
-                {onBreak ? 'On break' : 'Off break'}
+                {onBreak ? 'On break' : 'On duty'}
               </span>
               <Button size="sm" variant={onBreak ? 'default' : 'outline'} className="h-6 gap-1 px-2 text-[11px]" disabled={saving} onClick={toggleBreak}>
                 {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : onBreak ? <Play className="h-3 w-3" /> : <Coffee className="h-3 w-3" />}
-                {onBreak ? 'Off break' : 'On break'}
+                {onBreak ? 'On duty' : 'On break'}
               </Button>
+
             </div>
             <div className="mt-0.5 text-[11px] text-muted-foreground whitespace-nowrap">
               {data.breakSessionsToday > 0
