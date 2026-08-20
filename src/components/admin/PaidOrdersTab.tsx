@@ -241,14 +241,14 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
   }, [searchTerm]);
 
   const handleRefresh = () => {
-    fetchPaidOrders();
+    fetchPaidOrders(searchTerm);
     onRefresh?.();
   };
 
   const handleEditComplete = () => {
     setIsEditDialogOpen(false);
     setSelectedOrder(null);
-    fetchPaidOrders();
+    fetchPaidOrders(searchTerm);
   };
 
   const filteredOrders = useMemo(() => {
