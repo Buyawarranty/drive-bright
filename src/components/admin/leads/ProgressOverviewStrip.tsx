@@ -19,6 +19,14 @@ import { toast } from 'sonner';
 
 const gbp = (n: number) => `£${Math.round(n || 0).toLocaleString('en-GB')}`;
 
+type CustomerHit = {
+  id: string;
+  name: string | null;
+  email: string | null;
+  registration_plate: string | null;
+  plan_type: string | null;
+};
+
 const Cell: React.FC<{
   icon: React.ReactNode;
   iconClass: string;
