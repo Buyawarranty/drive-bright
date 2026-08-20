@@ -723,7 +723,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       if (typeof d.customerLastName === 'string') setCustomerLastName(d.customerLastName);
       if (typeof d.customerPhone === 'string') setCustomerPhone(d.customerPhone);
       if (typeof d.customerDob === 'string') setCustomerDob(d.customerDob);
-      if (d.selectedLeadId !== undefined) setSelectedLeadId(d.selectedLeadId);
+      // Never restore a synthetic cart id into the sales lead id (invalid uuid).
+      if (d.selectedLeadId !== undefined)
+        setSelectedLeadId(typeof d.selectedLeadId === 'string' && /^cart:/i.test(d.selectedLeadId) ? null : d.selectedLeadId);
+
       if (typeof d.paymentType === 'string') setPaymentType(d.paymentType as PaymentPeriod);
       if (typeof d.excessAmount === 'number') setExcessAmount(d.excessAmount);
       if (typeof d.claimLimit === 'number') setClaimLimit(d.claimLimit);
