@@ -242,11 +242,12 @@ const TabFallback = () => (
 // never traps the user; they can navigate away and keep working.
 class TabErrorBoundary extends React.Component<
   { children: React.ReactNode; onRetry: () => void; tabKey?: string },
-  { hasError: boolean; error: Error | null }
+  { hasError: boolean; error: Error | null; remountKey: number }
 > {
+  private autoRecoveries = 0;
   constructor(props: any) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, remountKey: 0 };
   }
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
@@ -270,6 +271,17 @@ class TabErrorBoundary extends React.Component<
       );
     if (isChunk) {
       forceFreshReload();
+      return;
+    }
+
+    // DOM desync (browser translate, password managers, extensions removing
+    // nodes React still owns) throws NotFoundError/removeChild and blanks the
+    // tab. Nothing is actually broken, so remount the tab silently.
+    const isDomDesync =
+      /removeChild|insertBefore|The node (to be removed|before which)|NotFoundError/i.test(msg);
+    if (isDomDesync && this.autoRecoveries < 2) {
+      this.autoRecoveries += 1;
+      this.setState((s) => ({ hasError: false, error: null, remountKey: s.remountKey + 1 }));
     }
   }
   render() {
