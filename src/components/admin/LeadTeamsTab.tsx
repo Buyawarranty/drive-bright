@@ -16,6 +16,7 @@ import { NewSince6pmBadge } from './leads/NewSince6pmBadge';
 import { RebalanceWindowPicker } from './leads/RebalanceWindowPicker';
 import { AgentOffboardingPanel } from './leads/AgentOffboardingPanel';
 import { QuickReassignPanel } from './leads/QuickReassignPanel';
+import { ReassignRequestsPanel } from './leads/ReassignRequestsPanel';
 import { Switch } from '@/components/ui/switch';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
 
@@ -276,6 +277,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           </section>
         )}
 
+        {isManagement && <ReassignRequestsPanel />}
         {(isManagement || (isSalesLead && salesLeadsCanReassign)) && <QuickReassignPanel />}
         {isManagement && <AgentOffboardingPanel />}
       </div>

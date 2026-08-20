@@ -27,6 +27,7 @@ import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 import SandboxHandoverAlerts from '@/components/admin/SandboxHandoverAlerts';
 import { NewLeadTopBanner } from '@/components/admin/leads/NewLeadTopBanner';
+import { ReassignRequestPopup } from '@/components/admin/leads/ReassignRequestPopup';
 
 import { OpenPoolLeadAlert } from '@/components/admin/leads/OpenPoolLeadAlert';
 import { MissedCallbackAlertBanner } from '@/components/admin/leads/MissedCallbackAlertBanner';
@@ -1103,6 +1104,7 @@ const AdminDashboardInner: React.FC<{
       <WorkingWeekReminderBanner userRole={displayRole} />
       <DiscountAuthBanner userRole={displayRole} />
       <DiscountAuthPopup userRole={displayRole} />
+      <ReassignRequestPopup userRole={displayRole} />
 
       
       
