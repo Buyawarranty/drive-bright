@@ -970,13 +970,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   }, [regNumber, selectedLeadId]);
 
 
-  // MOT mileage lookup for external payment dialog
-  const { motMileage, motDate, isLoading: motMileageLoading } = useMotMileage(editableRegNumber);
+  // MOT history lookups are DISABLED in Quotes & Orders — they were adding a
+  // mot_history query per keystroke on Step 1 and again in the payment dialog,
+  // which made the tab feel slow mid-call. Agents type mileage manually; any
+  // MOT figure still shown comes free with the vehicle lookup response.
+  const motMileage: number | null = null;
+  const motDate: string | null = null;
+  const motMileageLoading = false;
+  const step1MotLoading = false;
+  const step1MotMileage: number | null = null;
+  const step1MotMileageResolved = (autoPreview.data?.motMileage as number | null | undefined) ?? null;
+  const step1MotDate = (autoPreview.data?.motMileageDate as string | null | undefined) ?? null;
 
-  // MOT mileage lookup for Step 1 registration input (mirrors customer journey)
-  const { motMileage: step1MotMileage, motDate: step1MotDateRaw, isLoading: step1MotLoading } = useMotMileage(regNumber);
-  const step1MotMileageResolved = (autoPreview.data?.motMileage as number | null | undefined) ?? step1MotMileage ?? null;
-  const step1MotDate = (autoPreview.data?.motMileageDate as string | null | undefined) ?? step1MotDateRaw ?? null;
 
   // Auto-prefill Step 1 mileage from MOT history (mirrors Step 4 behaviour).
   // We remember the value we auto-filled so a new registration replaces a stale
