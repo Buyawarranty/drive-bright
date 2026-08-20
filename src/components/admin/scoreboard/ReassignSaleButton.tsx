@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { UserCog, Search, Loader2 } from 'lucide-react';
+import { UserCog, Search, Loader2, ShieldAlert } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { SaleCreditOverrideDialog } from './SaleCreditOverrideDialog';
@@ -22,31 +22,45 @@ interface CustomerRow {
 
 interface AdminMap { [id: string]: string }
 
-export const ReassignSaleButton: React.FC = () => {
+interface Props {
+  /** Button label — e.g. "Reassign backup-login sales". */
+  label?: string;
+  /** Open the dialog already filtered to sales taken on a shared/backup login. */
+  defaultBackupOnly?: boolean;
+}
+
+export const ReassignSaleButton: React.FC<Props> = ({ label = 'Reassign a sale', defaultBackupOnly = false }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [rows, setRows] = useState<CustomerRow[]>([]);
   const [admins, setAdmins] = useState<AdminMap>({});
+  const [sharedIds, setSharedIds] = useState<string[]>([]);
+  const [backupOnly, setBackupOnly] = useState(defaultBackupOnly);
   const [loading, setLoading] = useState(false);
   const [override, setOverride] = useState<CustomerRow | null>(null);
 
   useEffect(() => {
     if (!open) return;
     (async () => {
+      // Everyone who can hold sale credit, plus the shared/backup logins so we
+      // can spot sales that still need giving to the real agent.
       const { data } = await supabase
         .from('admin_users')
-        .select('id, first_name, last_name, email')
-        .in('role', ['sales', 'sales_lead']);
+        .select('id, first_name, last_name, email, role');
       const map: AdminMap = {};
+      const shared: string[] = [];
       (data || []).forEach((u: any) => {
         map[u.id] = `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email;
+        if (typeof u.email === 'string' && u.email.toLowerCase().startsWith('backup')) shared.push(u.id);
       });
       setAdmins(map);
+      setSharedIds(shared);
     })();
   }, [open]);
 
   useEffect(() => {
     if (!open) return;
+    if (backupOnly && sharedIds.length === 0) return;
     let cancelled = false;
     const run = async () => {
       setLoading(true);
@@ -68,13 +82,19 @@ export const ReassignSaleButton: React.FC = () => {
         const regClauses = Array.from(regVariants).map(v => `registration_plate.ilike.%${v}%`).join(',');
         q = q.or(`name.ilike.${like},email.ilike.${like},${regClauses}`);
       }
+      if (backupOnly) {
+        const list = `(${sharedIds.join(',')})`;
+        q = q.or(
+          `sale_credit_admin_user_id.in.${list},payment_confirmed_by.in.${list},quote_sent_by.in.${list},assigned_to.in.${list}`,
+        );
+      }
       const { data } = await q;
       if (!cancelled) setRows((data || []) as any);
       setLoading(false);
     };
     const t = setTimeout(run, 200);
     return () => { cancelled = true; clearTimeout(t); };
-  }, [open, search]);
+  }, [open, search, backupOnly, sharedIds]);
 
   const creditedTo = (c: CustomerRow) =>
     c.sale_credit_admin_user_id || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to;
@@ -87,7 +107,7 @@ export const ReassignSaleButton: React.FC = () => {
     <>
       <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
         <UserCog className="h-4 w-4 mr-2" />
-        Reassign a sale
+        {label}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -95,7 +115,8 @@ export const ReassignSaleButton: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Reassign sale credit</DialogTitle>
             <DialogDescription>
-              Search any recent sale and give credit to the correct agent.
+              Search any recent sale and give credit to the correct agent. Sales taken on the
+              shared emergency backup login always need reassigning here afterwards.
             </DialogDescription>
           </DialogHeader>
 
@@ -110,6 +131,21 @@ export const ReassignSaleButton: React.FC = () => {
             />
           </div>
 
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant={backupOnly ? 'default' : 'outline'}
+              onClick={() => setBackupOnly(v => !v)}
+              disabled={sharedIds.length === 0}
+            >
+              <ShieldAlert className="h-3.5 w-3.5 mr-1" />
+              {backupOnly ? 'Showing backup-login sales' : 'Backup-login sales only'}
+            </Button>
+            {sharedIds.length === 0 && (
+              <span className="text-xs text-muted-foreground">No backup login provisioned yet.</span>
+            )}
+          </div>
+
           <div className="max-h-96 overflow-y-auto divide-y border rounded-md">
             {loading ? (
               <div className="p-8 text-center text-sm text-muted-foreground">
@@ -122,6 +158,7 @@ export const ReassignSaleButton: React.FC = () => {
               rows.map(c => {
                 const creditId = creditedTo(c);
                 const creditName = creditId ? (admins[creditId] || 'Unknown') : 'Unassigned';
+                const onBackup = !!creditId && sharedIds.includes(creditId);
                 return (
                   <div key={c.id} className="flex items-center justify-between gap-3 p-3 hover:bg-muted/30">
                     <div className="min-w-0 flex-1">
@@ -136,6 +173,11 @@ export const ReassignSaleButton: React.FC = () => {
                         <span>· Credit: <strong>{creditName}</strong></span>
                         {c.sale_credit_admin_user_id && (
                           <span className="text-[10px] uppercase bg-secondary px-1.5 py-0.5 rounded">overridden</span>
+                        )}
+                        {onBackup && (
+                          <span className="text-[10px] uppercase bg-destructive/10 text-destructive px-1.5 py-0.5 rounded">
+                            backup login — needs agent
+                          </span>
                         )}
                       </div>
                     </div>

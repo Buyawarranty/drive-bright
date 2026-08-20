@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ShieldAlert, LifeBuoy } from 'lucide-react';
+import { ShieldAlert, LifeBuoy, UserCog } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ReassignSaleButton } from '@/components/admin/scoreboard/ReassignSaleButton';
+
 
 // Sections the backup login can never open.
 export const BACKUP_BLOCKED_TABS = ['analytics', 'lead-teams', 'open-round-robin', 'orr-test-lab', 'vehicle-stats'];
@@ -95,6 +97,18 @@ export const BackupLoginPanel: React.FC<BackupLoginPanelProps> = ({ allTabIds })
           </p>
         </div>
 
+        <div className="rounded-md border border-amber-200 bg-white p-3 space-y-2">
+          <p className="text-sm font-medium flex items-center gap-2">
+            <UserCog className="h-4 w-4 text-amber-600" /> Sale credit after using the backup login
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Anything sold on this shared login is attributed to “Backup Access”, not to an agent.
+            Super admin or admin must reassign each of those sales to the agent who made it —
+            scoreboard, targets, commission and freeze rules all read the reassigned credit.
+          </p>
+          <ReassignSaleButton label="Reassign backup-login sales" defaultBackupOnly />
+        </div>
+
         <div className="flex items-center gap-3">
           <Button onClick={provision} disabled={saving}>
             {saving ? 'Setting up…' : 'Create / reset backup login'}
@@ -103,6 +117,7 @@ export const BackupLoginPanel: React.FC<BackupLoginPanelProps> = ({ allTabIds })
             Share the password only with sales staff who need it, and reset it after use.
           </span>
         </div>
+
       </CardContent>
     </Card>
   );
