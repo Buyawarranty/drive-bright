@@ -536,6 +536,12 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
 
               <RegQuickStart disabled={busy} onSubmit={(reg) => send(`My reg is ${reg} — what would my warranty cost?`)} />
 
+              <p className="max-w-sm text-center text-sm text-muted-foreground">
+                Just type your registration plate and mileage — that's all we need to find your vehicle.
+                <br />
+                For example: <span className="font-medium text-foreground">AB12 CDE, 62,000 miles</span>
+              </p>
+
               <div className="flex flex-wrap justify-center gap-2">
                 {STARTERS.map((s) => (
                   <button
