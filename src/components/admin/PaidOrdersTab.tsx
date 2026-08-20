@@ -230,9 +230,15 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
     }
   };
 
+  // Debounced: first paint loads the newest page, then each search re-queries the
+  // database so nothing older than the cap is ever hidden from the agent.
   useEffect(() => {
-    fetchPaidOrders();
-  }, []);
+    const t = setTimeout(() => {
+      fetchPaidOrders(searchTerm);
+    }, searchTerm.trim() ? 350 : 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
   const handleRefresh = () => {
     fetchPaidOrders();
