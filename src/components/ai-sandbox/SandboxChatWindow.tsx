@@ -559,6 +559,24 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
                         output?: unknown;
                         errorText?: string;
                       };
+
+                      // Customers must never see raw tool names/JSON — it reads like
+                      // code and looks unprofessional. Show a plain-English status
+                      // while we work, and nothing once it's done (the answer follows).
+                      if (!agentMode) {
+                        const done = p.state === 'output-available' || p.state === 'output-error';
+                        if (done) return null;
+                        const labels: Record<string, string> = {
+                          'tool-lookup_vehicle': 'Checking your vehicle details…',
+                          'tool-get_indicative_price': 'Working out your price…',
+                        };
+                        return (
+                          <p key={i} className="text-xs text-muted-foreground">
+                            {labels[p.type] || 'Just checking a few details…'}
+                          </p>
+                        );
+                      }
+
                       return (
                         <Tool key={i} defaultOpen={false}>
                           <ToolHeader type={p.type as `tool-${string}`} state={p.state as never} />
@@ -569,6 +587,7 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
                         </Tool>
                       );
                     }
+
                     return null;
                   })}
                 </MessageContent>
