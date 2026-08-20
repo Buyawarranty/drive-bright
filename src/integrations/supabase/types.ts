@@ -777,6 +777,47 @@ export type Database = {
           },
         ]
       }
+      agent_break_log: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          ended_at: string | null
+          id: string
+          minutes: number | null
+          reason: string | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          minutes?: number | null
+          reason?: string | null
+          started_at?: string
+          status: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          minutes?: number | null
+          reason?: string | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_break_log_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_break_status: {
         Row: {
           admin_user_id: string
