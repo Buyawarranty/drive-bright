@@ -105,84 +105,89 @@ export const LeadSpeedTable: React.FC<Props> = ({ dateFrom, dateTo, teamFilter }
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const from = new Date(dateFrom); from.setHours(0, 0, 0, 0);
-      const to = new Date(dateTo); to.setHours(23, 59, 59, 999);
+      // Safety net: never leave sales agents stuck on a spinner if a query stalls.
+      const safety = window.setTimeout(() => { if (!cancelled) setLoading(false); }, 12000);
+      try {
+        const from = new Date(dateFrom); from.setHours(0, 0, 0, 0);
+        const to = new Date(dateTo); to.setHours(23, 59, 59, 999);
 
-      // 1. Leads in window
-      const { data: leads } = await supabase
-        .from('sales_leads')
-        .select('id, first_name, last_name, email, phone, status, assigned_to, created_at, last_activity_date, last_contacted_at, fake_marked_at, vehicle_reg')
-        .gte('created_at', from.toISOString())
-        .lte('created_at', to.toISOString())
-        .order('created_at', { ascending: false })
-        .limit(5000);
-      if (cancelled) return;
-      const leadRows = (leads as LeadRow[]) || [];
+        // 1. Leads in window
+        const { data: leads } = await supabase
+          .from('sales_leads')
+          .select('id, first_name, last_name, email, phone, status, assigned_to, created_at, last_activity_date, last_contacted_at, fake_marked_at, vehicle_reg')
+          .gte('created_at', from.toISOString())
+          .lte('created_at', to.toISOString())
+          .order('created_at', { ascending: false })
+          .limit(2000);
+        if (cancelled) return;
+        const leadRows = (leads as LeadRow[]) || [];
 
-      const leadIds = leadRows.map(l => l.id);
-      const ownerIds = Array.from(new Set(leadRows.map(l => l.assigned_to).filter(Boolean))) as string[];
-      const emails = Array.from(new Set(leadRows.map(l => l.email?.toLowerCase()).filter(Boolean))) as string[];
+        const leadIds = leadRows.map(l => l.id);
+        const ownerIds = Array.from(new Set(leadRows.map(l => l.assigned_to).filter(Boolean))) as string[];
+        const emails = Array.from(new Set(leadRows.map(l => l.email?.toLowerCase()).filter(Boolean))) as string[];
 
-      // 2. First call per lead (min created_at from lead_call_logs.lead_id which is text)
-      const [callRes, ownerRes, teamRes, emailRes] = await Promise.all([
-        leadIds.length
-          ? supabase
+        // 2. First call per lead. These id lists run into the thousands, so they
+        // MUST be batched — a single .in() blows the URL limit and the request
+        // hangs, which is what stalled this tab and then threw on null data.
+        const [callRows, ownerRows, teamRes, emailRows] = await Promise.all([
+          fetchByIdsInBatches<any>(leadIds, (batch) =>
+            supabase
               .from('lead_call_logs')
               .select('lead_id, created_at')
-              .in('lead_id', leadIds)
-              .order('created_at', { ascending: true })
-          : Promise.resolve({ data: [] as any[] }),
-        ownerIds.length
-          ? supabase
-              .from('admin_users')
-              .select('id, first_name, last_name, email')
-              .in('id', ownerIds)
-          : Promise.resolve({ data: [] as any[] }),
-        supabase
-          .from('lead_team_members')
-          .select('admin_user_id, lead_teams!inner(name)'),
-        emails.length
-          ? supabase
-              .from('email_logs')
-              .select('recipient_email')
-              .in('recipient_email', emails)
-              .limit(5000)
-          : Promise.resolve({ data: [] as any[] }),
-      ]);
-      if (cancelled) return;
+              .in('lead_id', batch)
+              .order('created_at', { ascending: true }),
+            { label: 'lead_call_logs by lead' },
+          ),
+          fetchByIdsInBatches<any>(ownerIds, (batch) =>
+            supabase.from('admin_users').select('id, first_name, last_name, email').in('id', batch),
+            { label: 'admin_users by id' },
+          ),
+          supabase.from('lead_team_members').select('admin_user_id, lead_teams!inner(name)'),
+          fetchByIdsInBatches<any>(emails, (batch) =>
+            supabase.from('email_logs').select('recipient_email').in('recipient_email', batch),
+            { label: 'email_logs by recipient' },
+          ),
+        ]);
+        if (cancelled) return;
 
-      const first: Record<string, string> = {};
-      (callRes.data as any[]).forEach(c => {
-        if (!first[c.lead_id]) first[c.lead_id] = c.created_at;
-      });
+        const first: Record<string, string> = {};
+        callRows.forEach(c => {
+          if (!first[c.lead_id]) first[c.lead_id] = c.created_at;
+        });
 
-      const owners: Record<string, string> = {};
-      (ownerRes.data as any[]).forEach(u => {
-        owners[u.id] = [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email;
-      });
+        const owners: Record<string, string> = {};
+        ownerRows.forEach(u => {
+          owners[u.id] = [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email;
+        });
 
-      const teams: Record<string, { name: string }> = {};
-      (teamRes.data as any[]).forEach(m => {
-        if (m.lead_teams) teams[m.admin_user_id] = { name: m.lead_teams.name };
-      });
+        const teams: Record<string, { name: string }> = {};
+        ((teamRes?.data as any[]) || []).forEach(m => {
+          if (m.lead_teams) teams[m.admin_user_id] = { name: m.lead_teams.name };
+        });
 
-      const emailed = new Set<string>();
-      const emailedAddrs = new Set(
-        (emailRes.data as any[]).map(e => (e.recipient_email || '').toLowerCase()).filter(Boolean)
-      );
-      leadRows.forEach(l => {
-        if (l.email && emailedAddrs.has(l.email.toLowerCase())) emailed.add(l.id);
-      });
+        const emailed = new Set<string>();
+        const emailedAddrs = new Set(
+          emailRows.map(e => (e.recipient_email || '').toLowerCase()).filter(Boolean)
+        );
+        leadRows.forEach(l => {
+          if (l.email && emailedAddrs.has(l.email.toLowerCase())) emailed.add(l.id);
+        });
 
-      setRows(leadRows);
-      setFirstCallByLead(first);
-      setOwnerNames(owners);
-      setTeamByAgent(teams);
-      setEmailedLeadIds(emailed);
-      setLoading(false);
+        setRows(leadRows);
+        setFirstCallByLead(first);
+        setOwnerNames(owners);
+        setTeamByAgent(teams);
+        setEmailedLeadIds(emailed);
+      } catch (error) {
+        console.error('[LeadSpeedTable] load failed', error);
+      } finally {
+        window.clearTimeout(safety);
+        if (!cancelled) setLoading(false);
+      }
     })();
     return () => { cancelled = true; };
   }, [dateFrom, dateTo]);
+
 
   const filtered = useMemo(() => {
     return rows.filter(r => {
