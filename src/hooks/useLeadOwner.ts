@@ -5,6 +5,8 @@ import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 export interface LeadOwnerInfo {
   ownerName: string | null;
   ownerId: string | null;
+  /** Id of the most recent matching lead — used for handover requests. */
+  leadId: string | null;
   leadFound: boolean;
   loading: boolean;
 }
@@ -20,6 +22,7 @@ export const useLeadOwner = (email?: string | null, phone?: string | null): Lead
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
   const adminMap = useAllAdminUsersMap(assignedTo);
   const [leadFound, setLeadFound] = useState(false);
+  const [leadId, setLeadId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const emailKey = (email || '').trim().toLowerCase();
@@ -31,6 +34,7 @@ export const useLeadOwner = (email?: string | null, phone?: string | null): Lead
     if (!hasEmail && !hasPhone) {
       setAssignedTo(null);
       setLeadFound(false);
+      setLeadId(null);
       return;
     }
 
@@ -54,10 +58,12 @@ export const useLeadOwner = (email?: string | null, phone?: string | null): Lead
         const rows = (data as any[]) || [];
         setLeadFound(rows.length > 0);
         setAssignedTo(rows.find((r) => r.assigned_to)?.assigned_to ?? null);
+        setLeadId(rows[0]?.id ?? null);
       } catch {
         if (!cancelled) {
           setAssignedTo(null);
           setLeadFound(false);
+          setLeadId(null);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -76,5 +82,5 @@ export const useLeadOwner = (email?: string | null, phone?: string | null): Lead
     ? [user.first_name, user.last_name].filter(Boolean).join(' ').trim() || user.email
     : null;
 
-  return { ownerName, ownerId: assignedTo, leadFound, loading };
+  return { ownerName, ownerId: assignedTo, leadId, leadFound, loading };
 };
