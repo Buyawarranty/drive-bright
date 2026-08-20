@@ -290,75 +290,9 @@ export const useNewLeadAlert = () => {
       setQueue([]);
       return;
     }
-    const data = await fetchAgentAlertLeads(adminId);
-
-    if (!data || data.length === 0) {
-      setQueue([]);
-      return;
-    }
-
-    // Only alert on genuinely fresh assignments: must have an assigned_at
-    // stamp AND that stamp must be within MAX_ALERT_AGE_MS. This kills the
-    // overnight queue of 200h+ old leads bubbling up first thing in the
-    // morning — those go to Recontact/Unworked instead.
-    // Every lead assigned to this agent within the age window pops for them
-    // — regardless of how it was assigned (auto round-robin, manual allocate,
-    // recontact claim, bulk move). The pop-up stays visible with the beep
-    // until the agent clicks X to dismiss it themselves. Notes/calls from
-    // other agents no longer silence it — only this agent's own dismissal
-    // (persisted in localStorage) removes the card from their view.
-    const actionable = (data as any[]).filter((l) => {
-      const status = (l.status || 'new').toLowerCase();
-      if (!ACTIVE_ALERT_STATUSES.includes(status)) return false;
-      if (!l.assigned_at) return false;
-      const assignedTs = new Date(l.assigned_at).getTime();
-      const ageMs = Date.now() - assignedTs;
-      if (ageMs > MAX_ALERT_AGE_MS) return false;
-      // Leads assigned overnight / before 09:00 still pop — but only once the
-      // agent is inside business hours (the gate above already enforces that).
-      // The 12h age cap keeps stale leads out.
-      return true;
-    }) as NewLeadAlertData[];
-
-    // HARD RULE: never pop up a lead a HUMAN agent has already worked. A lead
-    // is "touched" if it has an agent-written note (created_by set) or a call
-    // log. System-generated notes (arrival timestamps, status stamps, routing
-    // audit rows) do NOT count — they exist on every lead and were silently
-    // suppressing every pop-up.
-    if (actionable.length > 0) {
-      // Offered ORR leads always pop — they're brand new offers to THIS
-      // agent, even if the lead was previously offered to (and passed by)
-      // other ORR agents. Only filter the "touched" rule against
-      // non-offered leads.
-      const offered = actionable.filter((l: any) => l.pool_status === 'offered');
-      const nonOffered = actionable.filter((l: any) => l.pool_status !== 'offered');
-      let clean: NewLeadAlertData[] = offered;
-      if (nonOffered.length > 0) {
-        const ids = nonOffered.map((l) => l.id);
-        // Only THIS agent's own work silences their pop-up. Notes/calls left by
-        // a previous owner (bulk reassign, holiday cover, recontact moves) must
-        // NOT suppress the alert — that was hiding nearly every reassigned lead.
-        const [noteRows, callRows] = await Promise.all([
-          fetchByIdsInBatches<any>(ids, (batch) =>
-            supabase.from('lead_quick_notes').select('lead_id, created_by').in('lead_id', batch).eq('created_by', adminId),
-            { label: 'new lead alert notes' }),
-          fetchByIdsInBatches<any>(ids, (batch) =>
-            supabase.from('lead_call_logs').select('lead_id').in('lead_id', batch).eq('agent_id', adminId),
-            { label: 'new lead alert calls' }),
-        ]);
-        const touched = new Set<string>();
-        noteRows.forEach((r) => {
-          if (r?.lead_id && r.created_by) touched.add(r.lead_id);
-        });
-        callRows.forEach((r) => r?.lead_id && touched.add(r.lead_id));
-        clean = [...offered, ...nonOffered.filter((l) => !touched.has(l.id))];
-      }
-      setQueue(clean);
-      return;
-    }
-
-    setQueue(actionable);
+    setQueue(await computeAgentQueue(adminId));
   }, [adminId, alertsAllowed]);
+
 
   // Keep a stable ref to the latest loader so the realtime channel is created
   // ONCE per agent and never torn down/rebuilt on every state change.
