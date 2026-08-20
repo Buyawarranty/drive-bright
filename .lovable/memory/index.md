@@ -140,6 +140,7 @@ Updated: just now
 - [ClickSend SMS Config](mem://integrations/clicksend-sms-system-v5) — Rule sorting and timing offsets
 - [Trustpilot Automations](mem://integrations/trustpilot-automation-v2) — BCC timing and trigger blocking
 - [Bumper Credentials](mem://integrations/bumper-agent-credentials) — Agent specific integration variables
+- [Save Cancellation Rescue Leads](mem://features/admin/save-cancellation-rescue-leads) — Cancellations tab "Save this deal" creates an unassigned £15-reward urgent lead in New Leads
 - [Dealer Portal](mem://features/dealer-portal) — Dealer sub-app with auth, quotes, warranties at /dealer-portal/
 - [AI Sandbox Tone & Handover](mem://features/ai-sandbox-tone-and-handover) — Ruby semi-casual voice, never claims to be human, specialist on-duty presence, ringing manager alert
 
