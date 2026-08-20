@@ -225,6 +225,14 @@ export const useNewLeadAlert = () => {
     let timer: ReturnType<typeof setTimeout> | null = null;
 
     const resolve = async () => {
+      // Shared across every mount of this hook (sidebar, top banner, alert
+      // stack, open-pool alert) — four identical admin_users reads per agent
+      // per session was pure waste.
+      const cached = _roleCache.get(adminId);
+      if (cached !== undefined) {
+        setAlertsAllowed(LEAD_ALERT_ROLES.includes(cached));
+        return;
+      }
       const { data, error } = await supabase
         .from('admin_users')
         .select('role')
@@ -238,8 +246,11 @@ export const useNewLeadAlert = () => {
         return;
       }
       attempt = 0;
-      setAlertsAllowed(LEAD_ALERT_ROLES.includes(String((data as any).role || '')));
+      const role = String((data as any).role || '');
+      _roleCache.set(adminId, role);
+      setAlertsAllowed(LEAD_ALERT_ROLES.includes(role));
     };
+
 
     resolve();
     // Re-resolve when the agent comes back to the tab (session may have been
