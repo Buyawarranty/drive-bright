@@ -1,155 +1,439 @@
-import React, { useState } from 'react';
-import { Target, Headphones, ShieldAlert, Star, Coffee, CalendarDays, ChevronRight, Info } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Target, ShieldAlert, Star, Coffee, CalendarDays, Info, Loader2, Plus, Play, Minus } from 'lucide-react';
+import { endOfMonth, startOfMonth, startOfWeek, addDays, format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 /**
- * Per-agent progress strip — every sales agent sees their OWN figures.
- * Purely presentational layout (no lead logic, no writes). One single line,
- * horizontally scrollable on narrow screens.
+ * Per-agent progress strip — every sales agent sees ONLY their own figures.
+ *
+ * No team-wide numbers, no sample data: every value is read live for the signed-in
+ * agent. Reviews are self-logged by the agent (there is no Trustpilot API feed),
+ * so the card starts at zero until they tick a review they personally asked for.
+ * Guidance is delivered by hover tooltips rather than dead "expand" links.
  */
+
+const gbp = (n: number) => `£${Math.round(n || 0).toLocaleString('en-GB')}`;
 
 const Cell: React.FC<{
   icon: React.ReactNode;
   iconClass: string;
   label: string;
+  help: React.ReactNode;
   children: React.ReactNode;
-  link?: string;
-  className?: string;
-}> = ({ icon, iconClass, label, children, link, className }) => (
-  <div className={`shrink-0 px-4 py-2.5 flex gap-2.5 items-start ${className || ''}`}>
+}> = ({ icon, iconClass, label, help, children }) => (
+  <div className="shrink-0 px-4 py-2.5 flex gap-2.5 items-start">
     <div className={`h-8 w-8 shrink-0 rounded-full flex items-center justify-center ${iconClass}`}>{icon}</div>
     <div className="min-w-0">
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+        {label}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button type="button" aria-label={`About ${label}`} className="text-muted-foreground hover:text-foreground">
+              <Info className="h-3 w-3" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="max-w-xs text-xs leading-relaxed">
+            {help}
+          </TooltipContent>
+        </Tooltip>
+      </div>
       {children}
-      {link && (
-        <button type="button" className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline">
-          {link} <ChevronRight className="h-3 w-3" />
-        </button>
-      )}
     </div>
   </div>
 );
 
-const Divider = () => <div className="shrink-0 w-px self-stretch bg-border" />;
+type BreakStatus = 'available' | 'break' | 'lunch' | 'training' | 'meeting' | 'off';
+
+interface MyData {
+  revenue: number;
+  target: number | null;
+  workDays: Record<string, string>; // yyyy-MM-dd -> day_type
+  breakStatus: BreakStatus;
+  breakStartedAt: string | null;
+  breakSessionsToday: number;
+  breakMinutesToday: number;
+  lowSaleDays: number; // consecutive recent working days with 1 sale or fewer
+  positives: number;
+  negatives: number;
+}
+
+const EMPTY: MyData = {
+  revenue: 0,
+  target: null,
+  workDays: {},
+  breakStatus: 'available',
+  breakStartedAt: null,
+  breakSessionsToday: 0,
+  breakMinutesToday: 0,
+  lowSaleDays: 0,
+  positives: 0,
+  negatives: 0,
+};
 
 export const ProgressOverviewStrip: React.FC = () => {
-  const [showReviewInfo, setShowReviewInfo] = useState(false);
-  const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const adminId = useCurrentAdminId();
+  const [data, setData] = useState<MyData>(EMPTY);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const now = new Date();
+  const weekStart = useMemo(() => startOfWeek(now, { weekStartsOn: 1 }), [now.toDateString()]);
+  const monthStart = useMemo(() => startOfMonth(now), [now.getMonth()]);
+
+  const load = useCallback(async () => {
+    if (!adminId) return;
+    setLoading(true);
+    try {
+      const todayStr = format(now, 'yyyy-MM-dd');
+      const weekStartStr = format(weekStart, 'yyyy-MM-dd');
+      const weekEndStr = format(addDays(weekStart, 6), 'yyyy-MM-dd');
+      const dayStart = new Date(`${todayStr}T00:00:00.000Z`).toISOString();
+
+      const [scoreRes, daysRes, statusRes, logRes, reviewRes, salesRes] = await Promise.all([
+        supabase.rpc('get_team_scoreboard', {
+          p_start: monthStart.toISOString(),
+          p_end: endOfMonth(now).toISOString(),
+        }),
+        (supabase as any)
+          .from('agent_working_days')
+          .select('work_date, day_type')
+          .eq('admin_user_id', adminId)
+          .gte('work_date', weekStartStr)
+          .lte('work_date', weekEndStr),
+        (supabase as any)
+          .from('agent_break_status')
+          .select('status, started_at')
+          .eq('admin_user_id', adminId)
+          .maybeSingle(),
+        (supabase as any)
+          .from('agent_break_log')
+          .select('minutes, started_at')
+          .eq('admin_user_id', adminId)
+          .gte('started_at', dayStart),
+        (supabase as any)
+          .from('agent_review_claims')
+          .select('kind')
+          .eq('admin_user_id', adminId)
+          .eq('week_start', weekStartStr),
+        supabase
+          .from('customers')
+          .select('signup_date, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, assigned_to')
+          .eq('is_deleted', false)
+          .ilike('status', 'active')
+          .gte('signup_date', addDays(now, -21).toISOString())
+          .limit(2000),
+      ]);
+
+      const mine = ((scoreRes.data || []) as any[]).find((r) => r.admin_user_id === adminId);
+
+      const workDays: Record<string, string> = {};
+      ((daysRes as any)?.data || []).forEach((r: any) => {
+        workDays[String(r.work_date)] = r.day_type || 'worked';
+      });
+
+      const logs = ((logRes as any)?.data || []) as Array<{ minutes: number | null }>;
+      const breakMinutesToday = logs.reduce((s, l) => s + (Number(l.minutes) || 0), 0);
+
+      const reviews = ((reviewRes as any)?.data || []) as Array<{ kind: string }>;
+      const positives = reviews.filter((r) => r.kind === 'positive').length;
+      const negatives = reviews.filter((r) => r.kind === 'negative_removed').length;
+
+      // Consecutive recent days (mine only) where I made 1 sale or fewer.
+      const perDay = new Map<string, number>();
+      ((salesRes as any)?.data || []).forEach((s: any) => {
+        const aid = s.sale_credit_admin_user_id || s.payment_confirmed_by || s.quote_sent_by || s.assigned_to;
+        if (aid !== adminId || !s.signup_date) return;
+        const key = format(new Date(s.signup_date), 'yyyy-MM-dd');
+        perDay.set(key, (perDay.get(key) || 0) + 1);
+      });
+      let lowSaleDays = 0;
+      for (let i = 0; i < 14; i++) {
+        const d = addDays(now, -i);
+        const key = format(d, 'yyyy-MM-dd');
+        if (d.getDay() === 0) continue; // Sundays are not service days
+        if ((perDay.get(key) || 0) <= 1) lowSaleDays += 1;
+        else break;
+      }
+
+      setData({
+        revenue: Number(mine?.revenue) || 0,
+        target: mine?.revenue_target != null ? Number(mine.revenue_target) : null,
+        workDays,
+        breakStatus: ((statusRes as any)?.data?.status as BreakStatus) || 'available',
+        breakStartedAt: (statusRes as any)?.data?.started_at || null,
+        breakSessionsToday: logs.length,
+        breakMinutesToday,
+        lowSaleDays,
+        positives,
+        negatives,
+      });
+    } finally {
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminId, weekStart.toDateString()]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const toggleBreak = async () => {
+    if (!adminId) return;
+    setSaving(true);
+    const goingOnBreak = data.breakStatus === 'available';
+    try {
+      const { error } = await (supabase as any).from('agent_break_status').upsert(
+        {
+          admin_user_id: adminId,
+          status: goingOnBreak ? 'break' : 'available',
+          started_at: new Date().toISOString(),
+        },
+        { onConflict: 'admin_user_id' },
+      );
+      if (error) throw error;
+      toast.success(goingOnBreak ? 'You are on break' : 'Welcome back — you are off break');
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not update your break status');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const logReview = async (kind: 'positive' | 'negative_removed') => {
+    if (!adminId) return;
+    setSaving(true);
+    try {
+      const { error } = await (supabase as any).from('agent_review_claims').insert({
+        admin_user_id: adminId,
+        week_start: format(weekStart, 'yyyy-MM-dd'),
+        kind,
+      });
+      if (error) throw error;
+      toast.success(kind === 'positive' ? 'Positive review logged' : 'Negative review removal logged');
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not log that review');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const removeLastReview = async (kind: 'positive' | 'negative_removed') => {
+    if (!adminId) return;
+    setSaving(true);
+    try {
+      const { data: rows } = await (supabase as any)
+        .from('agent_review_claims')
+        .select('id')
+        .eq('admin_user_id', adminId)
+        .eq('week_start', format(weekStart, 'yyyy-MM-dd'))
+        .eq('kind', kind)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      const id = rows?.[0]?.id;
+      if (!id) {
+        toast.info('Nothing logged to remove');
+        return;
+      }
+      await (supabase as any).from('agent_review_claims').delete().eq('id', id);
+      await load();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const pct = data.target && data.target > 0 ? Math.min(100, Math.round((data.revenue / data.target) * 100)) : null;
+  const onBreak = data.breakStatus !== 'available' && data.breakStatus !== 'off';
+  const bonus = data.positives * 5 + data.negatives * 10;
+
+  const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const frozen = data.lowSaleDays >= 2;
+  const atRisk = data.lowSaleDays === 1;
+
+  if (!adminId) return null;
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">My progress today</span>
-        <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-          Your own figures · sample layout
-        </span>
-      </div>
-
-      <div className="flex items-stretch overflow-x-auto rounded-xl border border-border bg-card shadow-sm divide-x divide-border">
-        <Cell
-          icon={<Target className="h-4 w-4 text-orange-600" />}
-          iconClass="bg-orange-100"
-          label="My target · August"
-        >
-          <div className="flex items-baseline gap-2 whitespace-nowrap">
-            <span className="text-lg font-bold">£16,249</span>
-            <span className="text-xs text-muted-foreground">of £32,000 · 51%</span>
-          </div>
-          <div className="mt-1 h-1.5 w-40 rounded-full bg-muted">
-            <div className="h-1.5 rounded-full bg-orange-500" style={{ width: '51%' }} />
-          </div>
-          <div className="mt-0.5 text-[11px] text-muted-foreground whitespace-nowrap">£1,432 a day to hit target</div>
-        </Cell>
-
-        <Cell
-          icon={<CalendarDays className="h-4 w-4 text-emerald-600" />}
-          iconClass="bg-emerald-100"
-          label="My attendance · this week"
-        >
-          <div className="mt-0.5 flex gap-1">
-            {days.map((d, i) => (
-              <span
-                key={i}
-                className={`h-6 w-6 rounded-md text-[11px] font-semibold flex items-center justify-center ${
-                  i < 5
-                    ? 'bg-emerald-600 text-primary-foreground'
-                    : i === 5
-                      ? 'bg-emerald-600/60 text-primary-foreground'
-                      : 'bg-muted text-muted-foreground'
-                } ${i === 3 ? 'ring-2 ring-orange-500' : ''}`}
-              >
-                {d}
-              </span>
-            ))}
-          </div>
-          <div className="mt-0.5 text-[11px] text-muted-foreground whitespace-nowrap">5 full days · Sat half day</div>
-        </Cell>
-
-        <Cell
-          icon={<Headphones className="h-4 w-4 text-indigo-600" />}
-          iconClass="bg-indigo-100"
-          label="My phone status"
-        >
-          <div className="text-sm font-semibold text-emerald-600 whitespace-nowrap">Available</div>
-          <div className="text-[11px] text-muted-foreground whitespace-nowrap">18 calls today · 12 connected</div>
-        </Cell>
-
-        <Cell
-          icon={<Coffee className="h-4 w-4 text-sky-600" />}
-          iconClass="bg-sky-100"
-          label="My break time"
-        >
-          <div className="text-sm font-semibold whitespace-nowrap">42 min used</div>
-          <div className="text-[11px] text-muted-foreground whitespace-nowrap">Lunch (1 hour) allowance</div>
-        </Cell>
-
-        <Cell
-          icon={<ShieldAlert className="h-4 w-4 text-purple-600" />}
-          iconClass="bg-purple-100"
-          label="My lead access"
-          link="Lead rules"
-        >
-          <div className="text-sm font-semibold text-emerald-600 whitespace-nowrap">Receiving leads</div>
-          <div className="text-[11px] text-muted-foreground whitespace-nowrap">1 sale or fewer for 2 days pauses leads</div>
-        </Cell>
-
-        <Cell
-          icon={<Star className="h-4 w-4 text-emerald-700" />}
-          iconClass="bg-emerald-100"
-          label="My reviews I've asked for · this week"
-        >
-          <div className="flex items-baseline gap-2 whitespace-nowrap">
-            <span className="text-sm"><span className="font-semibold text-emerald-600">4</span> named reviews</span>
-            <span className="text-sm"><span className="font-semibold text-orange-600">1</span> negative removed</span>
-          </div>
-          <div className="text-sm font-semibold whitespace-nowrap">£30 review bonus potential</div>
-          <button
-            type="button"
-            onClick={() => setShowReviewInfo((v) => !v)}
-            className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
-          >
-            <Info className="h-3 w-3" /> How this bonus works
-          </button>
-        </Cell>
-      </div>
-
-      {showReviewInfo && (
-        <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground space-y-1.5">
-          <div className="font-semibold text-foreground">How the review bonus works</div>
-          <p>
-            These numbers are <span className="font-medium text-foreground">not</span> pulled from the Trustpilot API and they are
-            not the automated review emails our marketing sends out. They only count reviews you personally asked the customer for
-            &mdash; on a phone call, over WhatsApp or by email &mdash; where the customer{' '}
-            <span className="font-medium text-foreground">mentions your name in the review</span>.
-          </p>
-          <p>
-            Commission: <span className="font-medium text-foreground">£5</span> for every positive review that names you, and{' '}
-            <span className="font-medium text-foreground">£10</span> for every negative review you get resolved and removed.
-            A review only counts once, and only where your name is clearly in the review text so it can be verified.
-          </p>
-          <p>Bonuses are checked at the end of each week and paid with your normal commission run.</p>
+    <TooltipProvider delayDuration={100}>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">My progress</span>
+          <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+            Your own figures only
+          </span>
+          {loading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
         </div>
-      )}
-    </div>
+
+        <div className="flex items-stretch overflow-x-auto rounded-xl border border-border bg-card shadow-sm divide-x divide-border">
+          <Cell
+            icon={<Target className="h-4 w-4 text-orange-600" />}
+            iconClass="bg-orange-100"
+            label={`My target · ${format(now, 'MMMM')}`}
+            help="Your own confirmed sales this month against your monthly revenue target, taken from the same figures as the Sales Scoreboard."
+          >
+            <div className="flex items-baseline gap-2 whitespace-nowrap">
+              <span className="text-lg font-bold">{gbp(data.revenue)}</span>
+              <span className="text-xs text-muted-foreground">
+                {data.target ? `of ${gbp(data.target)}${pct != null ? ` · ${pct}%` : ''}` : 'no target set'}
+              </span>
+            </div>
+            <div className="mt-1 h-1.5 w-40 rounded-full bg-muted">
+              <div className="h-1.5 rounded-full bg-orange-500" style={{ width: `${pct ?? 0}%` }} />
+            </div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground whitespace-nowrap">
+              {data.target ? `${gbp(Math.max(0, data.target - data.revenue))} to go` : 'Ask your manager to set a target'}
+            </div>
+          </Cell>
+
+          <Cell
+            icon={<CalendarDays className="h-4 w-4 text-emerald-600" />}
+            iconClass="bg-emerald-100"
+            label="My attendance · this week"
+            help="The days you have marked yourself as working on the rota calendar. Only your own days are shown here."
+          >
+            <div className="mt-0.5 flex gap-1">
+              {dayLabels.map((d, i) => {
+                const date = addDays(weekStart, i);
+                const key = format(date, 'yyyy-MM-dd');
+                const type = data.workDays[key];
+                const isToday = format(now, 'yyyy-MM-dd') === key;
+                return (
+                  <Tooltip key={i}>
+                    <TooltipTrigger asChild>
+                      <span
+                        className={`h-6 w-6 rounded-md text-[11px] font-semibold flex items-center justify-center ${
+                          !type
+                            ? 'bg-muted text-muted-foreground'
+                            : type === 'worked'
+                              ? 'bg-emerald-600 text-primary-foreground'
+                              : 'bg-emerald-600/50 text-primary-foreground'
+                        } ${isToday ? 'ring-2 ring-orange-500' : ''}`}
+                      >
+                        {d}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="text-xs">
+                      {format(date, 'EEE d MMM')} · {type ? type.replace('_', ' ') : 'not marked'}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+            </div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground whitespace-nowrap">
+              {Object.keys(data.workDays).length} day{Object.keys(data.workDays).length === 1 ? '' : 's'} marked
+            </div>
+          </Cell>
+
+          <Cell
+            icon={<Coffee className="h-4 w-4 text-sky-600" />}
+            iconClass="bg-sky-100"
+            label="My break"
+            help="One tap to go on break and one to come back. Your average break length today is worked out from your own logged breaks."
+          >
+            <div className="flex items-center gap-2">
+              <span className={`text-sm font-semibold ${onBreak ? 'text-amber-600' : 'text-emerald-600'}`}>
+                {onBreak ? 'On break' : 'Off break'}
+              </span>
+              <Button size="sm" variant={onBreak ? 'default' : 'outline'} className="h-6 gap-1 px-2 text-[11px]" disabled={saving} onClick={toggleBreak}>
+                {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : onBreak ? <Play className="h-3 w-3" /> : <Coffee className="h-3 w-3" />}
+                {onBreak ? 'Off break' : 'On break'}
+              </Button>
+            </div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground whitespace-nowrap">
+              {data.breakSessionsToday > 0
+                ? `${Math.round(data.breakMinutesToday / data.breakSessionsToday)} min average · ${data.breakSessionsToday} today`
+                : 'No breaks logged today'}
+            </div>
+          </Cell>
+
+          <Cell
+            icon={<ShieldAlert className={`h-4 w-4 ${frozen ? 'text-red-600' : atRisk ? 'text-amber-600' : 'text-purple-600'}`} />}
+            iconClass={frozen ? 'bg-red-100' : atRisk ? 'bg-amber-100' : 'bg-purple-100'}
+            label="My lead access"
+            help={
+              <span>
+                <strong>Lead freeze rules:</strong> a service day where you make 1 sale or fewer counts against you. One such day
+                puts you at risk, two in a row pauses your new leads for the next working day. Sundays are not counted.
+                Management can lift a freeze if you are on track for your monthly target or after a one-to-one.
+              </span>
+            }
+          >
+            <div className={`text-sm font-semibold whitespace-nowrap ${frozen ? 'text-red-600' : atRisk ? 'text-amber-600' : 'text-emerald-600'}`}>
+              {frozen ? 'Leads paused' : atRisk ? 'At risk' : 'Receiving leads'}
+            </div>
+            <div className="text-[11px] text-muted-foreground whitespace-nowrap">
+              {data.lowSaleDays === 0
+                ? 'On target — no low-sale days'
+                : `${data.lowSaleDays} day${data.lowSaleDays === 1 ? '' : 's'} in a row with 1 sale or fewer`}
+            </div>
+          </Cell>
+
+          <Cell
+            icon={<Star className="h-4 w-4 text-emerald-700" />}
+            iconClass="bg-emerald-100"
+            label="My reviews · this week"
+            help="These are not pulled from Trustpilot and they are not the marketing review emails. Tick a review only when you personally asked the customer on a call, WhatsApp or email and they name you in it. £5 per named positive review, £10 per negative review you get resolved and removed."
+          >
+            <div className="flex items-baseline gap-3 whitespace-nowrap">
+              <span className="text-sm">
+                <span className="font-semibold text-emerald-600">{data.positives}</span> positive
+              </span>
+              <span className="text-sm">
+                <span className="font-semibold text-orange-600">{data.negatives}</span> removed
+              </span>
+              <span className="text-sm font-semibold">{gbp(bonus)} bonus</span>
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button size="sm" variant="outline" className="mt-1 h-6 gap-1 px-2 text-[11px]">
+                  <Plus className="h-3 w-3" /> Tick a review
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-72 space-y-3 text-xs">
+                <div className="font-semibold text-sm">Log a review you asked for</div>
+                <p className="text-muted-foreground">
+                  Only tick reviews where the customer names you. Nothing here comes from Trustpilot automatically.
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span>Positive review (£5)</span>
+                    <div className="flex items-center gap-1">
+                      <Button size="sm" variant="outline" className="h-6 w-6 p-0" disabled={saving} onClick={() => removeLastReview('positive')}>
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <span className="w-5 text-center font-semibold">{data.positives}</span>
+                      <Button size="sm" className="h-6 w-6 p-0" disabled={saving} onClick={() => logReview('positive')}>
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span>Negative review removed (£10)</span>
+                    <div className="flex items-center gap-1">
+                      <Button size="sm" variant="outline" className="h-6 w-6 p-0" disabled={saving} onClick={() => removeLastReview('negative_removed')}>
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <span className="w-5 text-center font-semibold">{data.negatives}</span>
+                      <Button size="sm" className="h-6 w-6 p-0" disabled={saving} onClick={() => logReview('negative_removed')}>
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-muted-foreground">
+                  Checked at the end of each week and paid with your normal commission run.
+                </p>
+              </PopoverContent>
+            </Popover>
+          </Cell>
+        </div>
+      </div>
+    </TooltipProvider>
   );
 };
 
