@@ -67,6 +67,7 @@ interface MyData {
   breakMinutesToday: number;
   lowSaleDays: number; // completed rota'd service days since my last sale
   lastSaleAt: string | null;
+  salesReadFailed: boolean;
   lastSaleProof: string | null;
   positives: number;
   negatives: number;
@@ -82,6 +83,7 @@ const EMPTY: MyData = {
   breakMinutesToday: 0,
   lowSaleDays: 0,
   lastSaleAt: null,
+  salesReadFailed: false,
   lastSaleProof: null,
   positives: 0,
   negatives: 0,
@@ -111,7 +113,12 @@ export const ProgressOverviewStrip: React.FC = () => {
       const weekEndStr = format(addDays(weekStart, 6), 'yyyy-MM-dd');
       const dayStart = new Date(`${todayStr}T00:00:00.000Z`).toISOString();
 
-      const [scoreRes, daysRes, statusRes, logRes, reviewRes, salesRes] = await Promise.all([
+      // allSettled, never all: one failing read (scoreboard RPC, rota RLS, break
+      // tables) must not wipe out every other cell. Before this, a single rejection
+      // left the whole strip on EMPTY — which showed "Receiving leads / no working
+      // days without a sale / no sale in the last 180 days" for agents who plainly
+      // had sales in Customer Management.
+      const settled = await Promise.allSettled([
         supabase.rpc('get_team_scoreboard', {
           p_start: monthStart.toISOString(),
           p_end: endOfMonth(now).toISOString(),
@@ -138,8 +145,9 @@ export const ProgressOverviewStrip: React.FC = () => {
           .eq('admin_user_id', adminId)
           .eq('week_start', weekStartStr),
         // My own sales, filtered server-side on every attribution column so the
-        // row can never be lost to a page limit. 180-day window so the "last sale"
-        // proof is always found even after a long gap.
+        // row can never be lost to a page limit. Same four credit columns that
+        // Customer Management uses, so the two screens always agree. 180-day
+        // window so the "last sale" proof is always found after a long gap.
         supabase
           .from('customers')
           .select('signup_date, name, registration_plate, final_amount, status, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, assigned_to')
@@ -151,6 +159,14 @@ export const ProgressOverviewStrip: React.FC = () => {
           .order('signup_date', { ascending: false })
           .limit(1000),
       ]);
+
+      const val = (i: number): any => (settled[i].status === 'fulfilled' ? (settled[i] as any).value : null);
+      settled.forEach((s, i) => {
+        if (s.status === 'rejected') console.warn('[ProgressOverviewStrip] read failed', i, s.reason);
+        else if ((s.value as any)?.error) console.warn('[ProgressOverviewStrip] read error', i, (s.value as any).error);
+      });
+      const [scoreRes, daysRes, statusRes, logRes, reviewRes, salesRes] = [0, 1, 2, 3, 4, 5].map(val);
+
 
 
       const mine = ((scoreRes.data || []) as any[]).find((r) => r.admin_user_id === adminId);
@@ -212,6 +228,7 @@ export const ProgressOverviewStrip: React.FC = () => {
       }
 
       setData({
+        salesReadFailed: !salesRes || !!(salesRes as any)?.error,
         lastSaleAt,
         lastSaleProof,
         revenue: Number(mine?.revenue) || 0,
@@ -357,8 +374,8 @@ export const ProgressOverviewStrip: React.FC = () => {
   const bonus = data.positives * 5 + data.negatives * 10;
 
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  const frozen = data.lowSaleDays >= 2;
-  const atRisk = data.lowSaleDays === 1;
+  const frozen = !data.salesReadFailed && data.lowSaleDays >= 2;
+  const atRisk = !data.salesReadFailed && data.lowSaleDays === 1;
 
   if (!adminId) return null;
 
@@ -495,7 +512,9 @@ export const ProgressOverviewStrip: React.FC = () => {
               {frozen ? 'Leads paused' : atRisk ? 'At risk' : 'Receiving leads'}
             </div>
             <div className="text-[11px] text-muted-foreground whitespace-nowrap">
-              {data.lowSaleDays === 0
+              {data.salesReadFailed
+                ? 'Sales figures unavailable — refresh'
+                : data.lowSaleDays === 0
                 ? 'No working days without a sale'
                 : `${data.lowSaleDays} working day${data.lowSaleDays === 1 ? '' : 's'} without a sale`}
             </div>
@@ -513,7 +532,9 @@ export const ProgressOverviewStrip: React.FC = () => {
                 </>
               ) : (
                 <div className="font-semibold text-muted-foreground whitespace-nowrap">
-                  No sale recorded in the last 180 days
+                  {data.salesReadFailed
+                    ? 'Could not read your sales — refresh the page'
+                    : 'No sale recorded in the last 180 days'}
                 </div>
               )}
             </div>
