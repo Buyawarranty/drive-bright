@@ -3,9 +3,6 @@ import { isToday, isPast } from 'date-fns';
 import { useLeadAccessRequests } from '@/hooks/useLeadAccessRequests';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { WidgetErrorBoundary } from '../WidgetErrorBoundary';
-import { MyTargetStrip } from './MyTargetStrip';
-import { WeekRotaStrip } from './WeekRotaStrip';
-import { AgentBreakStrip } from './AgentBreakStrip';
 import { LeadFreezeRulesCard } from './LeadFreezeRulesCard';
 import { ProgressOverviewStrip } from './ProgressOverviewStrip';
 
@@ -1605,9 +1602,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     <div className="space-y-4">
       {/* MissedCallAlertBar now mounted globally in AdminDashboard so it shows on every tab */}
       <WidgetErrorBoundary label="Progress overview"><ProgressOverviewStrip /></WidgetErrorBoundary>
-      <WidgetErrorBoundary label="This week's rota"><WeekRotaStrip /></WidgetErrorBoundary>
-      <WidgetErrorBoundary label="Break status"><AgentBreakStrip /></WidgetErrorBoundary>
-      <WidgetErrorBoundary label="Your target"><MyTargetStrip /></WidgetErrorBoundary>
       <WidgetErrorBoundary label="Lead Freeze rules"><LeadFreezeRulesCard /></WidgetErrorBoundary>
 
 
