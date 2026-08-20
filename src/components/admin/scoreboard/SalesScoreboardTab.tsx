@@ -11,6 +11,7 @@ import { ScoreboardAgentProfile } from './ScoreboardAgentProfile';
 import { ScoreboardTargetManager } from './ScoreboardTargetManager';
 import { ScoreboardMonthCompare } from './ScoreboardMonthCompare';
 import { ReassignSaleButton } from './ReassignSaleButton';
+import { ScoreboardReviewsPanel } from './ScoreboardReviewsPanel';
 
 
 import { DateRangeFilter } from '../DateRangeFilter';
