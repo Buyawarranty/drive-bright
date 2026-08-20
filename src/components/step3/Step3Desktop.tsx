@@ -14,6 +14,7 @@ import {
   getExcessBracketBasis,
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
+import { applyWebsiteSellFloor } from '@/lib/pricing/netFloor';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import ClaimLimitDetails from './ClaimLimitDetails';
@@ -73,6 +74,7 @@ interface Step3DesktopProps {
   selectedProtectionAddOns: { [key: string]: boolean };
   monthlyPrice: number;
   totalPrice: number;
+  boostAddon?: boolean;
 
   // Available durations (vehicle age/mileage filtered)
   availableDurations: PaymentType[];
@@ -124,6 +126,7 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   selectedProtectionAddOns,
   monthlyPrice,
   totalPrice,
+  boostAddon = false,
   availableDurations,
   onSelectPlan,
   validationErrors,
