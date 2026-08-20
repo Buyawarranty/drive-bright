@@ -111,6 +111,25 @@ interface SalesCustomerManagementProps {
   currentUserId?: string;
 }
 
+// Bounds a Supabase call so a stalled connection (common on high-latency /
+// unreliable links) can't leave this tab spinning forever with no error and
+// no way to retry — it resolves to `null` instead so the caller can degrade
+// gracefully, mirroring the pattern already used for leads/admin access.
+const withTimeout = <T,>(p: PromiseLike<T>, ms = 12000): Promise<T | null> =>
+  Promise.race([
+    Promise.resolve(p) as Promise<T>,
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
+  ]);
+
+// Same idea, but rejects on timeout so call sites already wrapped in a
+// try/catch (like fetchCustomers below) surface it through their existing
+// error handling instead of needing a separate null-check branch.
+const withTimeoutOrThrow = <T,>(p: PromiseLike<T>, ms = 12000, message = 'Request timed out'): Promise<T> =>
+  Promise.race([
+    Promise.resolve(p) as Promise<T>,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(message)), ms)),
+  ]);
+
 const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ currentUserId: propUserId }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [availableTags, setAvailableTags] = useState<CustomerTag[]>([]);
@@ -146,16 +165,28 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
           return;
         }
         
-        const { data: adminUser, error: adminError } = await supabase
-          .from('admin_users')
-          .select('id, role')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
+        const adminUserResult = await withTimeout(
+          (async () =>
+            await supabase
+              .from('admin_users')
+              .select('id, role')
+              .eq('user_id', user.id)
+              .maybeSingle())()
+        );
+
+        if (!adminUserResult) {
+          console.warn('[SalesCustomerManagement] Admin user lookup timed out');
+          toast.error('Connection is slow — could not load your orders. Please try again.');
+          setLoading(false);
+          return;
+        }
+
+        const { data: adminUser, error: adminError } = adminUserResult;
+
         if (adminError) {
           console.error('[SalesCustomerManagement] Error fetching admin user:', adminError);
         }
-        
+
         if (adminUser) {
           console.log('[SalesCustomerManagement] Admin user found:', adminUser.id, 'role:', adminUser.role);
           setCurrentUserId(adminUser.id);
@@ -208,18 +239,25 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
       // 3. Sent the original quote (quote_sent_by)
       // 4. Manually created the record (is_manual_entry)
       // We use .or() to combine these conditions
-      const { data: customerData, error: customersError } = await supabase
-        .from('customers')
-        .select(`
-          *,
-          customer_tag_assignments (
-            tag_id,
-            customer_tags (id, name, color, category)
-          )
-        `)
-        .eq('is_deleted', false)
-        .or(`assigned_to.eq.${userIdToUse},payment_confirmed_by.eq.${userIdToUse},quote_sent_by.eq.${userIdToUse}`)
-        .order('created_at', { ascending: false });
+      // Bounded so a stalled/high-latency connection surfaces as a retryable
+      // error instead of leaving the tab on a spinner indefinitely.
+      const { data: customerData, error: customersError } = await withTimeoutOrThrow(
+        (async () =>
+          await supabase
+            .from('customers')
+            .select(`
+              *,
+              customer_tag_assignments (
+                tag_id,
+                customer_tags (id, name, color, category)
+              )
+            `)
+            .eq('is_deleted', false)
+            .or(`assigned_to.eq.${userIdToUse},payment_confirmed_by.eq.${userIdToUse},quote_sent_by.eq.${userIdToUse}`)
+            .order('created_at', { ascending: false }))(),
+        20000,
+        'Loading orders timed out'
+      );
 
       if (customersError) throw customersError;
 
@@ -229,11 +267,16 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
       let policies: any[] = [];
       if (customerData && customerData.length > 0) {
         const customerIds = customerData.map(c => c.id);
-        const { data: policiesData, error: policiesError } = await supabase
-          .from('customer_policies')
-          .select('*')
-          .in('customer_id', customerIds)
-          .eq('is_deleted', false);
+        const { data: policiesData, error: policiesError } = await withTimeoutOrThrow(
+          (async () =>
+            await supabase
+              .from('customer_policies')
+              .select('*')
+              .in('customer_id', customerIds)
+              .eq('is_deleted', false))(),
+          20000,
+          'Loading policies timed out'
+        );
 
         if (policiesError) throw policiesError;
         policies = policiesData || [];
