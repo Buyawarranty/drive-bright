@@ -376,16 +376,29 @@ const AdminDashboard = () => {
     // this dashboard took to become usable so slow/blank loads are visible later.
     const detachTelemetry = initAdminTelemetry();
     const loadStartedAt = performance.now();
+    // Browsers pause requestAnimationFrame while a tab is hidden, so a
+    // backgrounded tab used to report minutes-long "slow loads" that never
+    // happened. Only record the timing when the tab stayed visible.
+    const startedHidden = document.visibilityState === 'hidden';
+    let wentHidden = startedHidden;
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') wentHidden = true;
+    };
+    document.addEventListener('visibilitychange', onVisibility);
     const raf = requestAnimationFrame(() => {
       const ms = performance.now() - loadStartedAt;
+      if (wentHidden) return;
       logAdminUiEvent({ event_type: 'page_load', label: 'Admin dashboard loaded', duration_ms: ms });
       if (ms > 8000) logAdminSlowLoad('Admin dashboard slow load', ms);
     });
 
+
     return () => {
       cancelAnimationFrame(raf);
+      document.removeEventListener('visibilitychange', onVisibility);
       detachTelemetry();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [isCheckingRole, setIsCheckingRole] = useState(true);
