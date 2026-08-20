@@ -1,5 +1,6 @@
 import React from 'react';
 import { logAdminUiEvent } from '@/lib/adminTelemetry';
+import { forceFreshReload } from '@/utils/lazyWithRetry';
 
 interface State {
   hasError: boolean;
@@ -46,16 +47,7 @@ export class AdminShellErrorBoundary extends React.Component<
         msg,
       );
     if (isChunkError) {
-      try {
-        const flag = 'baw_admin_chunk_reload_at';
-        const last = Number(sessionStorage.getItem(flag) || '0');
-        if (Date.now() - last > 60_000) {
-          sessionStorage.setItem(flag, String(Date.now()));
-          window.location.reload();
-        }
-      } catch {
-        /* noop */
-      }
+      forceFreshReload();
     }
   }
 
