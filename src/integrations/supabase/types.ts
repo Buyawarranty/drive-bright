@@ -1611,6 +1611,7 @@ export type Database = {
           display_name: string | null
           is_online: boolean
           last_seen_at: string
+          override_hours: boolean
           updated_at: string
           user_id: string
         }
@@ -1619,6 +1620,7 @@ export type Database = {
           display_name?: string | null
           is_online?: boolean
           last_seen_at?: string
+          override_hours?: boolean
           updated_at?: string
           user_id: string
         }
@@ -1627,6 +1629,7 @@ export type Database = {
           display_name?: string | null
           is_online?: boolean
           last_seen_at?: string
+          override_hours?: boolean
           updated_at?: string
           user_id?: string
         }

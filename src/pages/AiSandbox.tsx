@@ -31,7 +31,7 @@ export default function AiSandbox() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [displayName, setDisplayName] = useState<string | null>(null);
-  const { liveCount, meOnline, setOnDuty } = useSandboxSpecialistPresence();
+  const { liveCount, meOnline, setOnDuty, canOverrideHours, withinHours } = useSandboxSpecialistPresence();
   const [previewSize, setPreviewSize] = useState<'desktop' | 'mobile'>('desktop');
 
 
@@ -237,10 +237,22 @@ export default function AiSandbox() {
               variant={meOnline ? 'default' : 'outline'}
               className="h-7 px-2 text-xs"
               onClick={() => setOnDuty(!meOnline, displayName)}
-              title="Customers see 'a specialist is online now' while you are on duty"
+              title={
+                withinHours
+                  ? "Customers see 'a specialist is online now' while you are on duty"
+                  : canOverrideHours
+                    ? 'Manager override: opens live chat outside Mon–Sat 9am–6pm'
+                    : 'Live chat is only available Mon–Sat, 9am–6pm (UK time)'
+              }
             >
               <Headset className="mr-1.5 h-3.5 w-3.5" />
-              {meOnline ? 'On duty for live chats' : 'Go on duty'}
+              {meOnline
+                ? withinHours
+                  ? 'On duty for live chats'
+                  : 'On duty (manager override)'
+                : !withinHours && canOverrideHours
+                  ? 'Go on duty (override hours)'
+                  : 'Go on duty'}
             </Button>
             {liveCount > 0 && (
               <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-700">
