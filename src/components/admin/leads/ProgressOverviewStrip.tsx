@@ -84,6 +84,8 @@ export const ProgressOverviewStrip: React.FC = () => {
   const [data, setData] = useState<MyData>(EMPTY);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [reviewName, setReviewName] = useState('');
+  const [reviewChannel, setReviewChannel] = useState('call');
 
   const now = new Date();
   const weekStart = useMemo(() => startOfWeek(now, { weekStartsOn: 1 }), [now.toDateString()]);
@@ -236,15 +238,25 @@ export const ProgressOverviewStrip: React.FC = () => {
 
   const logReview = async (kind: 'positive' | 'negative_removed') => {
     if (!adminId) return;
+    const name = reviewName.trim();
+    if (name.length < 2) {
+      toast.error('Add the customer name the review is for');
+      return;
+    }
     setSaving(true);
     try {
       const { error } = await (supabase as any).from('agent_review_claims').insert({
         admin_user_id: adminId,
         week_start: format(weekStart, 'yyyy-MM-dd'),
         kind,
+        customer_name: name,
+        channel: reviewChannel,
       });
       if (error) throw error;
-      toast.success(kind === 'positive' ? 'Positive review logged' : 'Negative review removal logged');
+      toast.success(
+        kind === 'positive' ? `Positive review logged for ${name}` : `Negative review removal logged for ${name}`,
+      );
+      setReviewName('');
       await load();
     } catch (e: any) {
       toast.error(e?.message || 'Could not log that review');
@@ -448,6 +460,36 @@ export const ProgressOverviewStrip: React.FC = () => {
                 <div className="rounded-md border-2 border-emerald-500 bg-emerald-50 px-2 py-1 text-[11px] font-bold leading-snug text-emerald-900">
                   Only tick reviews where the customer names you following a call, WhatsApp or personal email. Nothing here
                   comes from Trustpilot automatic emails.
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-medium" htmlFor="review-customer-name">
+                    Customer name on the review <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    id="review-customer-name"
+                    value={reviewName}
+                    onChange={(e) => setReviewName(e.target.value)}
+                    placeholder="e.g. Tim Hubbard"
+                    className="h-7 w-full rounded-md border border-input bg-background px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
+                  />
+                  <div className="flex gap-1 pt-1">
+                    {['call', 'whatsapp', 'email'].map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setReviewChannel(c)}
+                        className={`rounded-full border px-2 py-0.5 text-[10px] capitalize ${
+                          reviewChannel === c ? 'border-primary bg-primary/10 font-semibold' : 'border-border text-muted-foreground'
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    Managers check the named review on Trustpilot before it is paid.
+                  </p>
                 </div>
 
                 <div className="space-y-2">
