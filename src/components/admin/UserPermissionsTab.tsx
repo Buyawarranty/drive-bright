@@ -686,6 +686,20 @@ export const UserPermissionsTab = () => {
       const roleDefaults = ROLE_DEFAULT_PERMISSIONS[u.role] || {};
       let changed = false;
 
+      // Super admin is the source of truth: self-heal any missing or switched-off
+      // section so every feature always works for that login.
+      if (u.role === 'super_admin') {
+        const full = SUPER_ADMIN_FULL_PERMISSIONS();
+        for (const [key, val] of Object.entries(full)) {
+          if (currentPerms[key] !== val) {
+            currentPerms[key] = val;
+            changed = true;
+          }
+        }
+        if (changed) updates.push({ id: u.id, permissions: currentPerms });
+        continue;
+      }
+
       for (const key of tabKeys) {
         if (!(key in currentPerms)) {
           currentPerms[key] = roleDefaults[key] === true;
