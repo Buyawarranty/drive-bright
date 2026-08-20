@@ -1,8 +1,8 @@
 // Builds the approved-material knowledge base for the sandbox AI chatbot.
 //
 // SOURCE OF TRUTH (nothing else):
-//   1. public/Platinum-Warranty-Plan-v2.4.pdf      — latest Platinum plan document
-//   2. public/Terms-and-Conditions-v2.3.pdf        — latest terms & conditions
+//   1. Platinum Warranty Plan v3.7 (src/assets/Platinum-Warranty-Plan-v3.7.pdf.asset.json)
+//   2. Terms and Conditions v3.7 (src/assets/Terms-and-Conditions-v3.7.pdf.asset.json)
 //   3. The step 3 pricing page options (term, claim limit, excess, labour rate)
 //
 // Website marketing pages (FAQ, WarrantyPlan, Protected, blog, etc.) are
@@ -14,9 +14,12 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
+// The PDFs are too large for the repo, so they live as Lovable assets. Pass a
+// local override path as env PLAN_PDF / TERMS_PDF when rebuilding from a fresh
+// upload; otherwise the asset URL is downloaded.
 const PDFS = [
-  ['Platinum Warranty Plan v2.4', 'public/Platinum-Warranty-Plan-v2.4.pdf'],
-  ['Terms and Conditions v2.3', 'public/Terms-and-Conditions-v2.3.pdf'],
+  ['Platinum Warranty Plan v3.7', process.env.PLAN_PDF, 'src/assets/Platinum-Warranty-Plan-v3.7.pdf.asset.json'],
+  ['Terms and Conditions v3.7', process.env.TERMS_PDF, 'src/assets/Terms-and-Conditions-v3.7.pdf.asset.json'],
 ];
 
 // Step 3 of the customer pricing journey — the actual options a customer picks.
@@ -84,7 +87,13 @@ function addChunks(source, lines, limit = 1400) {
   flush();
 }
 
-for (const [title, path] of PDFS) {
+for (const [title, override, pointerPath] of PDFS) {
+  let path = override;
+  if (!path) {
+    const pointer = JSON.parse(readFileSync(pointerPath, 'utf8'));
+    path = `/tmp/kb-${pointer.original_filename}`;
+    execFileSync('curl', ['-sSfL', '-o', path, `https://cdn.lovable.dev${pointer.url}`]);
+  }
   addChunks(title, pdfLines(path));
 }
 
