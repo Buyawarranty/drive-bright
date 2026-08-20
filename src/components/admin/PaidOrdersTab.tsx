@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { PaidOrderEditDialog } from './PaidOrderEditDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import CustomerLoginDebugTool from './CustomerLoginDebugTool';
+import { fetchByIdsInBatches } from '@/utils/batchedIn';
 
 interface PaidOrder {
   id: string;
@@ -100,8 +101,15 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
   // older orders outside the first page are still findable.
   const PAGE_SIZE = 200;
 
+  // Safety net: never leave the spinner up if any request hangs.
+  const LOADING_TIMEOUT_MS = 12000;
+
   const fetchPaidOrders = async (search?: string) => {
     setIsLoading(true);
+    const safetyTimer = setTimeout(() => {
+      console.warn('[PaidOrders] Loading safety timeout triggered');
+      setIsLoading(false);
+    }, LOADING_TIMEOUT_MS);
     try {
       const term = (search || '').trim();
       const quoteQuery = supabase
@@ -161,26 +169,32 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
         new Set(quotesData.map(q => q.policy_number).filter(Boolean) as string[]),
       );
 
-      const [adminUsersRes, customersRes, policiesRes] = await Promise.all([
-        adminUserIds.size > 0
-          ? supabase
-              .from('admin_users')
-              .select('user_id, first_name, last_name, email')
-              .in('user_id', Array.from(adminUserIds))
-          : Promise.resolve({ data: [] as any[] }),
-        emails.length > 0
-          ? supabase
-              .from('customers')
-              .select('id, email, status, street, town, county, postcode, building_number, phone')
-              .in('email', emails)
-          : Promise.resolve({ data: [] as any[] }),
-        policyNumbers.length > 0
-          ? supabase
-              .from('customer_policies')
-              .select('id, status, email, policy_number')
-              .in('policy_number', policyNumbers)
-          : Promise.resolve({ data: [] as any[] }),
+      // Batched in SMALL groups: a single `.in()` with hundreds of emails or
+      // policy numbers produces a URL long enough to be rejected/stalled by the
+      // proxy, which used to hang this tab on its spinner.
+      const [adminRows, customerRows, policyRows] = await Promise.all([
+        fetchByIdsInBatches<any>(Array.from(adminUserIds), (batch) =>
+          supabase
+            .from('admin_users')
+            .select('user_id, first_name, last_name, email')
+            .in('user_id', batch),
+          { label: 'paid orders admins' }),
+        fetchByIdsInBatches<any>(emails, (batch) =>
+          supabase
+            .from('customers')
+            .select('id, email, status, street, town, county, postcode, building_number, phone')
+            .in('email', batch),
+          { label: 'paid orders customers' }),
+        fetchByIdsInBatches<any>(policyNumbers, (batch) =>
+          supabase
+            .from('customer_policies')
+            .select('id, status, email, policy_number')
+            .in('policy_number', batch),
+          { label: 'paid orders policies' }),
       ]);
+      const adminUsersRes = { data: adminRows };
+      const customersRes = { data: customerRows };
+      const policiesRes = { data: policyRows };
 
       const adminUsersMap: Record<string, string> = {};
       (adminUsersRes.data || []).forEach((admin: any) => {
