@@ -240,8 +240,10 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
     } catch (error) {
       console.error('Error fetching paid orders:', error);
     } finally {
+      clearTimeout(safetyTimer);
       setIsLoading(false);
     }
+
   };
 
   // Debounced: first paint loads the newest page, then each search re-queries the
