@@ -904,11 +904,42 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       toastDescription = `Contact details for ${lead.first_name || lead.email || lead.phone || 'the selected lead'} imported. The lead has no vehicle registration — enter it manually to price the quote.`;
     }
 
+    // Importing a lead used to leave the agent on Step 1 with nothing happening.
+    // With a plate we now drive the vehicle lookup straight through to Step 2;
+    // with no usable mileage we keep them on Step 1 and point at the field.
+    if (newReg) {
+      setStep(1);
+      if (numMileage !== null && numMileage >= 1000 && numMileage <= 150000) {
+        setPendingLeadLookupReg(newReg);
+      } else {
+        setPendingLeadLookupReg(null);
+        setTimeout(() => {
+          const el = document.getElementById('mileage') as HTMLInputElement | null;
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el?.focus();
+        }, 150);
+        toastDescription += ' Enter the current mileage to price the quote.';
+      }
+    }
+
     toast({
       title: "Lead imported",
       description: toastDescription,
     });
   };
+
+  // Continue the imported lead into Step 2 once reg + mileage state has settled.
+  const [pendingLeadLookupReg, setPendingLeadLookupReg] = useState<string | null>(null);
+  useEffect(() => {
+    if (!pendingLeadLookupReg) return;
+    const clean = (regNumber || '').replace(/\s+/g, '').toUpperCase();
+    if (clean !== pendingLeadLookupReg) return;
+    const m = parseInt((mileage || '').replace(/[^0-9]/g, ''), 10) || 0;
+    if (m < 1000 || m > 150000) return;
+    setPendingLeadLookupReg(null);
+    void handleVehicleLookup();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingLeadLookupReg, regNumber, mileage]);
 
   // Handle pre-populated lead on mount
   useEffect(() => {
@@ -916,6 +947,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       handleLeadSelect(prePopulatedLead);
     }
   }, [prePopulatedLead]);
+
 
   // Auto-pull the customer's name / email / phone from a matching lead when the
   // agent types a registration and hasn't picked a lead from the search popover.
