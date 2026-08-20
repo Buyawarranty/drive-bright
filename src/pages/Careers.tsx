@@ -435,6 +435,24 @@ const Careers: React.FC = () => {
           </div>
         </section>
 
+        {/* FAQs */}
+        <section aria-labelledby="careers-faq" className="mb-14">
+          <SectionHeader id="careers-faq" number={9} title="Frequently asked questions" />
+          <div className="space-y-4">
+            {faqSchema.mainEntity.map((item) => (
+              <div
+                key={item.name}
+                className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm"
+              >
+                <h3 className="text-sm font-bold text-[#111827]">{item.name}</h3>
+                <p className="mt-2 text-sm leading-7 text-[#374151]">
+                  {item.acceptedAnswer.text}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Apply */}
         <section
           id="apply"
