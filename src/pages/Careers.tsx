@@ -249,11 +249,14 @@ const Careers: React.FC = () => {
               <SectionHeader id="looking-for" number={5} title="What we are looking for" />
               <p className="mb-6 max-w-2xl text-sm leading-6 text-[#6B7280]">
                 We are looking for reliable, motivated and experienced sales professionals who
-                are confident working independently from home.
+                are confident working independently from home. This role is well suited to
+                someone with extensive telesales experience, or a car finance broker from a car
+                finance brokerage or motor finance background.
               </p>
               <TickList
                 items={[
-                  'A minimum of two years’ telesales experience',
+                  'A minimum of two years’ telesales experience (extensive telesales experience preferred)',
+                  'Car finance broker or car finance brokerage experience is highly valued',
                   'Strong telephone sales and closing skills',
                   'A confident and professional telephone manner',
                   'Experience handling objections',
