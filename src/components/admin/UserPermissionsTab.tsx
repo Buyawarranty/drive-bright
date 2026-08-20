@@ -329,6 +329,26 @@ export const UserPermissionsTab = () => {
     });
   };
 
+  // Pre-select the sections the chosen users already have, so the panel opens
+  // reflecting current access instead of an empty list. With several users
+  // selected we tick the sections every one of them already has.
+  const selectionSignature = Array.from(selectedUsers).sort().join(',');
+  useEffect(() => {
+    if (selectedUsers.size === 0) {
+      setBulkTabs(new Set());
+      return;
+    }
+    const chosen = users.filter(u => selectedUsers.has(u.id));
+    if (chosen.length === 0) return;
+    const granted = ADMIN_TABS
+      .map(t => t.id)
+      .filter(id => chosen.every(u => (u.permissions || {})[`tab_${id}`] === true));
+    setBulkTabs(new Set(granted));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectionSignature, users]);
+
+
+
 
   const handleBulkApply = async () => {
     if (selectedUsers.size === 0) {
