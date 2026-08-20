@@ -236,15 +236,25 @@ export const ProgressOverviewStrip: React.FC = () => {
 
   const logReview = async (kind: 'positive' | 'negative_removed') => {
     if (!adminId) return;
+    const name = reviewName.trim();
+    if (name.length < 2) {
+      toast.error('Add the customer name the review is for');
+      return;
+    }
     setSaving(true);
     try {
       const { error } = await (supabase as any).from('agent_review_claims').insert({
         admin_user_id: adminId,
         week_start: format(weekStart, 'yyyy-MM-dd'),
         kind,
+        customer_name: name,
+        channel: reviewChannel,
       });
       if (error) throw error;
-      toast.success(kind === 'positive' ? 'Positive review logged' : 'Negative review removal logged');
+      toast.success(
+        kind === 'positive' ? `Positive review logged for ${name}` : `Negative review removal logged for ${name}`,
+      );
+      setReviewName('');
       await load();
     } catch (e: any) {
       toast.error(e?.message || 'Could not log that review');
