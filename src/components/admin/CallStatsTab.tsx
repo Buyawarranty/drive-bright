@@ -160,7 +160,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
 
   const teamByAgent = useMemo(() => {
     const m: Record<string, { name: string; color: string | null }> = {};
-    teamMembers.forEach(tm => {
+    (teamMembers || []).forEach(tm => {
       if (tm.lead_teams) m[tm.admin_user_id] = tm.lead_teams;
     });
     return m;
@@ -168,13 +168,13 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
 
   const availableTeams = useMemo(() => {
     const set = new Map<string, { name: string; color: string | null }>();
-    Object.values(teamByAgent).forEach(t => set.set(t.name.toLowerCase(), t));
+    Object.values(teamByAgent || {}).forEach(t => { if (t?.name) set.set(t.name.toLowerCase(), t); });
     return Array.from(set.values());
   }, [teamByAgent]);
 
   const filteredAgents = useMemo(() => {
     const allowed = restrictToAgentIds ? new Set(restrictToAgentIds) : null;
-    return agents.filter(a => {
+    return (agents || []).filter(a => {
       if (allowed && !allowed.has(a.id)) return false;
       const team = teamByAgent[a.id];
       const teamName = team?.name?.toLowerCase() || '';
@@ -187,7 +187,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
 
   const eventsByAgent = useMemo(() => {
     const map: Record<string, CallEvent[]> = {};
-    events.forEach(e => {
+    (events || []).forEach(e => {
       // Match by agent_user_id first, else by email (case-insensitive)
       let key: string | null = e.agent_user_id;
       if (!key && e.agent_email) {
@@ -205,7 +205,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
   }, [events, agents]);
 
   const rows = useMemo(() => {
-    const built = filteredAgents.map(a => {
+    const built = (filteredAgents || []).map(a => {
       // De-dupe events keyed by (direction, started_at rounded to second, dialed_number)
       // in case both Dial 9 poller and Zoiper webhook wrote the same call.
       const seen = new Set<string>();
