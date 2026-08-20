@@ -4,6 +4,8 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { isAlertsMuted } from '@/lib/alertSoundPreference';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { fetchByIdsInBatches } from '@/utils/batchedIn';
+import { isHeavyTabBusy } from '@/lib/heavyTabBusy';
+
 
 // Business-hours gate — pop-ups AND beeps only fire 09:00–18:00 Europe/London.
 // Outside this window nothing appears: overnight assignments are picked up
