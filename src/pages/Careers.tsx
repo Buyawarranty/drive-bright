@@ -227,19 +227,41 @@ const Careers: React.FC = () => {
               into sales.
             </p>
             <p>
-              This is a fully remote telephone sales role working with customers who have already
-              shown an interest in vehicle warranty products. You will help customers understand
-              their options, recommend suitable levels of cover and guide them through the sales
-              process.
+              This is a fully remote, work-from-home telephone sales role working with customers
+              who have already shown an interest in vehicle warranty products. You will help
+              customers understand their options, recommend suitable levels of cover and guide them
+              through the sales process. There is no office attendance and no commuting — you can
+              be based anywhere in the UK.
             </p>
             <p>
-              The position is offered on a full-time PAYE basis and is open to candidates based in
-              the UK who can work UK business hours.
+              We hire on both a permanent and a contract basis. Permanent roles are full-time PAYE
+              employment with a basic salary plus uncapped commission. Contract roles are open to
+              experienced sales people who prefer fixed-term, seasonal or self-employed contract
+              work with commission-led earnings. Either way, the role is open to candidates based
+              in the UK who can work UK business hours.
             </p>
             <p>
               High performers will also have opportunities for long-term career development and
               progression within the business.
             </p>
+          </div>
+
+          <div className="mt-6 grid gap-5 md:grid-cols-3">
+            <PerkCard
+              Icon={Briefcase}
+              title="Permanent roles"
+              body="Full-time PAYE employment, basic salary, uncapped commission and progression."
+            />
+            <PerkCard
+              Icon={Clock}
+              title="Contract roles"
+              body="Fixed-term, seasonal or self-employed contracts for experienced sales people."
+            />
+            <PerkCard
+              Icon={Home}
+              title="Fully remote"
+              body="Home-based anywhere in the UK — no office, no commute, UK business hours."
+            />
           </div>
         </section>
 
