@@ -323,6 +323,13 @@ export const SalesScoreboardTab: React.FC = () => {
         })()}
       </div>
 
+      {/* Trustpilot review bonuses for the selected month */}
+      <ScoreboardReviewsPanel
+        monthDate={dateRange?.from ?? new Date()}
+        agents={visibleAgents.map(a => ({ id: a.id, name: a.name }))}
+      />
+
+
 
       {/* Everything on one page — expand/collapse sections */}
       <Accordion
