@@ -1928,14 +1928,26 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       setStep(2);
     } catch (error: any) {
       console.error('Error looking up vehicle:', error);
-      const msg = error?.name === 'AbortError' 
-        ? 'Request timed out. Please try again.' 
-        : (error?.message || 'Unable to connect to vehicle database. Please try again.');
-      toast({
-        title: "Lookup Failed",
-        description: msg,
-        variant: "destructive",
+      // Manual override: a dead/slow vehicle API must never trap the agent on
+      // Step 1. Continue to Step 2 with whatever was typed by hand (or the
+      // auto-preview) so the quote journey can always be completed.
+      const preview = autoPreview.data;
+      setVehicleData({
+        regNumber: regNumber.toUpperCase(),
+        mileage: effectiveMileage,
+        make: manualMake.trim() || preview?.make || '',
+        model: manualModel.trim() || preview?.model || '',
+        fuelType: preview?.fuelType || '',
+        transmission: '',
+        year: manualYear.trim() || preview?.year || '',
+        vehicleType: '',
       });
+      toast({
+        title: 'Vehicle lookup unavailable',
+        description: 'Continuing with manual entry — check make, model, year and mileage before quoting.',
+      });
+      setStep(2);
+
     } finally {
       setIsLookingUp(false);
     }
