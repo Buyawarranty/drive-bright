@@ -59,6 +59,7 @@ interface MyData {
   breakMinutesToday: number;
   lowSaleDays: number; // completed rota'd service days since my last sale
   lastSaleAt: string | null;
+  lastSaleProof: string | null;
   positives: number;
   negatives: number;
 }
@@ -73,6 +74,7 @@ const EMPTY: MyData = {
   breakMinutesToday: 0,
   lowSaleDays: 0,
   lastSaleAt: null,
+  lastSaleProof: null,
   positives: 0,
   negatives: 0,
 };
@@ -124,7 +126,7 @@ export const ProgressOverviewStrip: React.FC = () => {
           .eq('week_start', weekStartStr),
         supabase
           .from('customers')
-          .select('signup_date, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, assigned_to')
+          .select('signup_date, name, registration_plate, final_amount, plan_type, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, assigned_to')
           .eq('is_deleted', false)
           .ilike('status', 'active')
           .gte('signup_date', addDays(now, -21).toISOString())
@@ -148,12 +150,18 @@ export const ProgressOverviewStrip: React.FC = () => {
       // My own sales per day, plus the date of my most recent sale.
       const perDay = new Map<string, number>();
       let lastSaleAt: string | null = null;
+      let lastSaleProof: string | null = null;
       ((salesRes as any)?.data || []).forEach((s: any) => {
         const aid = s.sale_credit_admin_user_id || s.payment_confirmed_by || s.quote_sent_by || s.assigned_to;
         if (aid !== adminId || !s.signup_date) return;
         const key = format(new Date(s.signup_date), 'yyyy-MM-dd');
         perDay.set(key, (perDay.get(key) || 0) + 1);
-        if (!lastSaleAt || new Date(s.signup_date) > new Date(lastSaleAt)) lastSaleAt = s.signup_date;
+        if (!lastSaleAt || new Date(s.signup_date) > new Date(lastSaleAt)) {
+          lastSaleAt = s.signup_date;
+          lastSaleProof = [s.name, s.registration_plate, s.final_amount != null ? gbp(Number(s.final_amount)) : null]
+            .filter(Boolean)
+            .join(' · ') || null;
+        }
       });
 
       // Completed service days since my last sale. Today is still in progress so it
@@ -176,6 +184,7 @@ export const ProgressOverviewStrip: React.FC = () => {
 
       setData({
         lastSaleAt,
+        lastSaleProof,
         revenue: Number(mine?.revenue) || 0,
         target: mine?.revenue_target != null ? Number(mine.revenue_target) : null,
         workDays,
@@ -387,10 +396,23 @@ export const ProgressOverviewStrip: React.FC = () => {
                 ? 'On target — no missed service days'
                 : `${data.lowSaleDays} service day${data.lowSaleDays === 1 ? '' : 's'} since your last sale`}
             </div>
-            <div className="text-[11px] text-muted-foreground whitespace-nowrap">
-              {data.lastSaleAt
-                ? `Last sale: ${format(new Date(data.lastSaleAt), 'EEE d MMM, HH:mm')}`
-                : 'No sale recorded in the last 21 days'}
+            <div className="mt-1 rounded border border-border bg-muted/40 px-1.5 py-1 text-[11px] leading-tight">
+              {data.lastSaleAt ? (
+                <>
+                  <div className="font-semibold whitespace-nowrap">
+                    Last sale: {format(new Date(data.lastSaleAt), 'EEE d MMM yyyy, HH:mm')}
+                  </div>
+                  {data.lastSaleProof && (
+                    <div className="text-muted-foreground truncate max-w-[220px]" title={data.lastSaleProof}>
+                      {data.lastSaleProof}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="font-semibold text-muted-foreground whitespace-nowrap">
+                  No sale recorded in the last 21 days
+                </div>
+              )}
             </div>
           </Cell>
 
