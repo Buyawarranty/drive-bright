@@ -99,10 +99,19 @@ const flush = async (immediate = false) => {
     await resolveIdentity();
     const rows = batch.map((row) => ({ ...row, ...(identity || {}) })) as any[];
     const { error } = await supabase.from('admin_ui_events').insert(rows);
-    if (error) console.warn('[admin-telemetry] insert failed', error.message);
+    if (error) {
+      // Direct insert blocked (RLS, missing admin row, stale token) — fall back
+      // to the edge function so crashes on sales accounts are never lost.
+      console.warn('[admin-telemetry] insert failed, using edge fallback', error.message);
+      const { error: fnError } = await supabase.functions.invoke('log-admin-ui-event', {
+        body: { events: batch },
+      });
+      if (fnError) console.warn('[admin-telemetry] edge fallback failed', fnError.message);
+    }
   } catch (e) {
     console.warn('[admin-telemetry] flush failed', e);
   }
+
 
   if (queue.length > 0 && !immediate) scheduleFlush();
 };
