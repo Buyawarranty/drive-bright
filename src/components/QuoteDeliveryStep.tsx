@@ -638,6 +638,11 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               <Lock className="w-4 h-4" />
               We never share your details.
             </p>
+            <p className="mt-1.5 text-gray-500 max-w-md mx-auto">
+              By continuing, you agree that our UK team may call, text or email you about this
+              quote and your vehicle cover. You can ask us to stop at any time — see our{' '}
+              <a href="/privacy/" className="underline hover:text-brand-orange">Privacy Policy</a>.
+            </p>
             <p className="mt-1.5">
               Prefer to speak to someone?{' '}
               <a href={SALES_PHONE_TEL} className="font-bold text-brand-orange hover:underline whitespace-nowrap">
@@ -645,6 +650,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               </a>
             </p>
           </div>
+
 
           {/* Reassurance block – appears on tall screens to fill empty space */}
           <div className="mq-post-cta hidden flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-5 text-sm text-gray-700">
