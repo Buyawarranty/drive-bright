@@ -461,12 +461,34 @@ export const ProgressOverviewStrip: React.FC = () => {
             iconClass={frozen ? 'bg-red-100' : atRisk ? 'bg-amber-100' : 'bg-purple-100'}
             label="My lead access"
             help={
-              <span>
-                <strong>Lead freeze rules:</strong> counted from your last sale, using completed service days only — today is
-                still in progress, Sundays are not service days and days you were not rota'd on (day off, holiday, sick) are
-                skipped. One service day without a sale puts you at risk, two in a row pauses your new leads for the next
-                working day. Management can lift a freeze if you are on track for your monthly target or after a one-to-one.
-              </span>
+              <div className="space-y-2">
+                <p className="font-semibold">Lead freeze rules</p>
+
+                <div>
+                  <p className="font-medium">How days are counted</p>
+                  <ul className="mt-0.5 list-disc pl-4 space-y-0.5">
+                    <li>Counted from your last sale</li>
+                    <li>Completed service days only — today is still in progress</li>
+                    <li>Sundays are not service days</li>
+                    <li>Days you were not rota'd on (day off, holiday, sick) are skipped</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="font-medium">What happens</p>
+                  <ul className="mt-0.5 list-disc pl-4 space-y-0.5">
+                    <li>1 service day without a sale — you are at risk</li>
+                    <li>2 in a row — new leads pause for the next working day</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="font-medium">Getting a freeze lifted</p>
+                  <p className="mt-0.5">
+                    Management can lift a freeze if you are on track for your monthly target, or after a one-to-one.
+                  </p>
+                </div>
+              </div>
             }
           >
             <div className={`text-sm font-semibold whitespace-nowrap ${frozen ? 'text-red-600' : atRisk ? 'text-amber-600' : 'text-emerald-600'}`}>
