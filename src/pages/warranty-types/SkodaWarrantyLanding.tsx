@@ -1,4 +1,5 @@
 import React, { useState, lazy, Suspense, useMemo } from 'react';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Check, ArrowRight, Shield, Phone, ChevronDown, ChevronUp, MapPin, Clock, Users, Car, Wrench, Zap, Star, Award, ThumbsUp, FileCheck, MessageCircle, Truck, Battery, Search } from 'lucide-react';
@@ -22,7 +23,7 @@ const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
 const VehicleCoverageSection = lazy(() => import('@/components/homepage/VehicleCoverageSection'));
 const CoverClaritySection = lazy(() => import('@/components/homepage/CoverClaritySection'));
 const VideoSection = lazy(() => import('@/components/homepage/VideoSection'));
-const WarrantyBenefitsSection = lazy(() => import('@/components/homepage/WarrantyBenefitsSection'));
+const WarrantyBenefitsSection = lazyWithRetry(() => import('@/components/homepage/WarrantyBenefitsSection'));
 
 // Assets
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';

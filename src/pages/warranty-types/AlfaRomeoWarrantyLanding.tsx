@@ -1,4 +1,5 @@
 import React, { useState, lazy, Suspense, useMemo } from 'react';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Check, ArrowRight, Shield, Phone, MapPin, Clock, Car, Wrench, Zap, Star, Battery, Truck } from 'lucide-react';
@@ -15,7 +16,7 @@ import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallb
 import MinimalLandingFooter from '@/components/brand-pages/MinimalLandingFooter';
 import TrustCallbackPanel from '@/components/TrustCallbackPanel';
 
-const WarrantyBenefitsSection = lazy(() => import('@/components/homepage/WarrantyBenefitsSection'));
+const WarrantyBenefitsSection = lazyWithRetry(() => import('@/components/homepage/WarrantyBenefitsSection'));
 const VehicleCoverageSection = lazy(() => import('@/components/homepage/VehicleCoverageSection'));
 const CoverClaritySection = lazy(() => import('@/components/homepage/CoverClaritySection'));
 const VideoSection = lazy(() => import('@/components/homepage/VideoSection'));
