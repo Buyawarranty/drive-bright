@@ -1456,6 +1456,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
           selectedProtectionAddOns={selectedProtectionAddOns}
           monthlyPrice={monthlyPrice}
           totalPrice={totalPrice}
+          boostAddon={boostAddon}
+
           availableDurations={availableDurations as ('12months' | '24months' | '36months')[]}
           onSelectPlan={handleSelectPlan}
           validationErrors={validationErrors}
