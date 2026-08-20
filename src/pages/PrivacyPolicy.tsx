@@ -364,7 +364,8 @@ const PrivacyPolicy = () => {
             </div>
             <div className="border-l-4 border-purple-400 bg-purple-50 p-4 rounded-r-lg">
               <h3 className="font-bold text-gray-900 mb-2">Legitimate interests</h3>
-              <p className="text-gray-700">To improve our services and prevent fraud</p>
+              <p className="text-gray-700">To follow up on a quote or enquiry you started with us, improve our services and prevent fraud</p>
+
             </div>
           </div>
         </section>
