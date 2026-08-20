@@ -491,7 +491,7 @@ export const ProgressOverviewStrip: React.FC = () => {
                 </>
               ) : (
                 <div className="font-semibold text-muted-foreground whitespace-nowrap">
-                  No sale recorded in the last 21 days
+                  No sale recorded in the last 180 days
                 </div>
               )}
             </div>
