@@ -95,6 +95,18 @@ export const BackupLoginPanel: React.FC<BackupLoginPanelProps> = ({ allTabIds })
           </p>
         </div>
 
+        <div className="rounded-md border border-amber-200 bg-white p-3 space-y-2">
+          <p className="text-sm font-medium flex items-center gap-2">
+            <UserCog className="h-4 w-4 text-amber-600" /> Sale credit after using the backup login
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Anything sold on this shared login is attributed to “Backup Access”, not to an agent.
+            Super admin or admin must reassign each of those sales to the agent who made it —
+            scoreboard, targets, commission and freeze rules all read the reassigned credit.
+          </p>
+          <ReassignSaleButton label="Reassign backup-login sales" defaultBackupOnly />
+        </div>
+
         <div className="flex items-center gap-3">
           <Button onClick={provision} disabled={saving}>
             {saving ? 'Setting up…' : 'Create / reset backup login'}
@@ -103,6 +115,7 @@ export const BackupLoginPanel: React.FC<BackupLoginPanelProps> = ({ allTabIds })
             Share the password only with sales staff who need it, and reset it after use.
           </span>
         </div>
+
       </CardContent>
     </Card>
   );
