@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { BackupLoginPanel } from '@/components/admin/BackupLoginPanel';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -1989,7 +1991,11 @@ export const UserPermissionsTab = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Backup emergency login for sales */}
+      <BackupLoginPanel allTabIds={ADMIN_TABS.map(t => t.id)} />
+
       {/* Bulk Access Management */}
+
       <Card className="border-primary/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

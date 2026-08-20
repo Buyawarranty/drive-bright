@@ -171,6 +171,20 @@ const canonicalTabId = (tab: string) => (LIVE_CALLS_TAB_IDS.has(tab) ? 'overview
 // inside is governed by lead_team_members.call_data_scope (off / own / team / all).
 const LIVE_CALLS_ALWAYS_ALLOWED_ROLES = new Set(['sales', 'sales_lead', 'sales_manager', 'performance_manager', 'admin']);
 
+// Shared "no access" screen for sections a login is explicitly blocked from
+// (used by the shared backup sales login, which is denied Analytics,
+// Lead Allocation, Open Round Robin, ORR Test Lab and Vehicle Intelligence).
+const AccessDenied: React.FC<{ label: string }> = ({ label }) => (
+  <div className="p-6">
+    <h2 className="text-xl font-semibold">Access denied</h2>
+    <p className="text-sm text-muted-foreground mt-1">
+      {label} is not available for this login.
+    </p>
+  </div>
+);
+
+
+
 const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: Record<string, boolean> | null) => {
   const tab = canonicalTabId(rawTab);
   const permKey = `tab_${tab}`;
@@ -828,6 +842,10 @@ const AdminDashboard = () => {
         }
         return <UnifiedEmailHub />;
       case 'analytics':
+        if (!isTabAllowedForRole('analytics', effectiveUserRole, effectiveUserPermissions)) {
+          return <AccessDenied label="Analytics" />;
+        }
+
         return (
           <div className="space-y-6">
             <AnalyticsTab userRole={effectiveUserRole} />
@@ -855,7 +873,11 @@ const AdminDashboard = () => {
       case 'banners-billboards':
         return <OfflineCampaignsTab />;
       case 'vehicle-stats':
+        if (!isTabAllowedForRole('vehicle-stats', effectiveUserRole, effectiveUserPermissions)) {
+          return <AccessDenied label="Vehicle Intelligence" />;
+        }
         return <VehicleStatsTab />;
+
       case 'security':
         return <ClickFraudTab />;
       case 'user-permissions':
@@ -873,9 +895,16 @@ const AdminDashboard = () => {
         }
         return <LeadTeamsTab onNavigateToTab={handleTabChange} />;
       case 'open-round-robin':
+        if (!isTabAllowedForRole('open-round-robin', effectiveUserRole, effectiveUserPermissions)) {
+          return <AccessDenied label="Open Round Robin" />;
+        }
         return <OpenRoundRobinPage onNavigateToTab={handleTabChange} />;
       case 'orr-test-lab':
+        if (!isTabAllowedForRole('orr-test-lab', effectiveUserRole, effectiveUserPermissions)) {
+          return <AccessDenied label="ORR Test Lab" />;
+        }
         return <OrrTestLabPage onNavigateToTab={handleTabChange} />;
+
       case 'price-updates':
         return <PriceUpdatesTab />;
       case 'sms-tracking':
