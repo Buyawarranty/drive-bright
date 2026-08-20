@@ -340,8 +340,11 @@ const Careers: React.FC = () => {
               remotely, speak with warm prospects and be rewarded for strong performance.
             </p>
             <p>
-              It may suit candidates from automotive sales, warranty sales, insurance, finance,
-              call-centre sales or another high-volume telephone sales environment.
+              It is particularly well suited to someone with extensive telesales experience, or a
+              car finance broker from a car finance brokerage, motor finance or vehicle finance
+              background. It may also suit candidates from automotive sales, warranty sales,
+              insurance, dealership finance and insurance (F&amp;I), GAP insurance, call-centre
+              sales or another high-volume telephone sales environment.
             </p>
             <p>
               You are likely to succeed in this role if you are confident on the phone, consistent
