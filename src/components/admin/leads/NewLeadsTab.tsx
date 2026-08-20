@@ -7,6 +7,7 @@ import { MyTargetStrip } from './MyTargetStrip';
 import { WeekRotaStrip } from './WeekRotaStrip';
 import { AgentBreakStrip } from './AgentBreakStrip';
 import { LeadFreezeRulesCard } from './LeadFreezeRulesCard';
+import { ProgressOverviewStrip } from './ProgressOverviewStrip';
 
 
 import { PendingAccessRequestsPanel } from './PendingAccessRequestsPanel';
