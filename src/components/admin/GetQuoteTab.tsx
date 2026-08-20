@@ -73,6 +73,7 @@ import { useFeatureEnabled } from '@/hooks/useFeatureFlags';
 import { useAuth } from '@/hooks/useAuth';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { calculateVehiclePriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
+import { RequestReassignDialog } from './leads/RequestReassignDialog';
 import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBlockedClaimLimits, getBaseClaimLimit, getClaimLimitSurcharge, getClaimLimitSurchargeMonthly, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { DeliveryStatusBadge } from './DeliveryStatusBadge';
 const PaymentAssistPanel = lazy(() => import('./PaymentAssistPanel'));
@@ -3999,19 +4000,35 @@ Questions? Call 0330 229 5040`;
                     : (matchedLeadOwner.ownerId && matchedLeadOwner.ownerId !== currentAdminId ? matchedLeadOwner.ownerId : null);
                   if (!otherOwnerId) return null;
                   const ownerLabel = (selectedLeadId ? selectedLeadOwner : matchedLeadOwner.ownerName) || 'another agent';
+                  const handoverLeadId = selectedLeadId || matchedLeadOwner.leadId;
                   return (
-                    <div className="flex items-start gap-2 rounded-md border-2 border-amber-400 bg-amber-50 px-3 py-2 text-sm">
-                      <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5 text-amber-600" />
-                      <div className="text-amber-900">
-                        <p className="font-semibold">This lead already belongs to {ownerLabel}.</p>
-                        <p className="text-xs">
-                          Quoting or calling it doubles up on {ownerLabel}'s work — the quote credits you, the lead stays with them.
-                          Only continue if {ownerLabel} asked you to, or get a manager to reassign the lead first.
-                        </p>
+                    <div className="rounded-md border-2 border-amber-400 bg-amber-50 px-3 py-2 text-sm">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5 text-amber-600" />
+                        <div className="text-amber-900">
+                          <p className="font-semibold">This lead already belongs to {ownerLabel}.</p>
+                          <p className="text-xs">
+                            Quoting or calling it doubles up on {ownerLabel}'s work — the quote credits you, the lead stays with them.
+                            Only continue if {ownerLabel} asked you to, or request a handover below — a manager has to authorise it.
+                          </p>
+                        </div>
                       </div>
+                      {handoverLeadId && (
+                        <div className="mt-2 pl-6">
+                          <RequestReassignDialog
+                            leadId={handoverLeadId}
+                            leadLabel={customerName || undefined}
+                            leadReg={regNumber || undefined}
+                            currentOwnerId={otherOwnerId}
+                            currentOwnerName={ownerLabel}
+                            userRole={userRole}
+                          />
+                        </div>
+                      )}
                     </div>
                   );
                 })()}
+
                 <div className="flex flex-col gap-4 max-w-2xl">
                   <div className="space-y-3">
                 {/* Registration — yellow UK plate */}

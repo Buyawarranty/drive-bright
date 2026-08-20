@@ -7994,6 +7994,57 @@ export type Database = {
           },
         ]
       }
+      lead_reassign_requests: {
+        Row: {
+          created_at: string
+          current_owner_id: string | null
+          id: string
+          lead_id: string
+          lead_label: string | null
+          lead_reg: string | null
+          manager_note: string | null
+          reason: string
+          requested_by: string
+          requested_to: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_owner_id?: string | null
+          id?: string
+          lead_id: string
+          lead_label?: string | null
+          lead_reg?: string | null
+          manager_note?: string | null
+          reason: string
+          requested_by: string
+          requested_to: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_owner_id?: string | null
+          id?: string
+          lead_id?: string
+          lead_label?: string | null
+          lead_reg?: string | null
+          manager_note?: string | null
+          reason?: string
+          requested_by?: string
+          requested_to?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lead_reminders: {
         Row: {
           created_at: string

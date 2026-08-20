@@ -16,6 +16,7 @@ import { NewSince6pmBadge } from './leads/NewSince6pmBadge';
 import { RebalanceWindowPicker } from './leads/RebalanceWindowPicker';
 import { AgentOffboardingPanel } from './leads/AgentOffboardingPanel';
 import { QuickReassignPanel } from './leads/QuickReassignPanel';
+import { ReassignRequestsPanel } from './leads/ReassignRequestsPanel';
 import { Switch } from '@/components/ui/switch';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
 
@@ -48,6 +49,7 @@ const QUICK_LINKS = [
   { id: 'new-leads', label: 'New leads', className: 'bg-sky-300/50 text-sky-900 border-sky-200/50 hover:bg-sky-400/50' },
   { id: 'who-gets-leads', label: 'Who gets the leads?', className: 'bg-blue-300/50 text-blue-900 border-blue-200/50 hover:bg-blue-400/50' },
   { id: 'rebalance-reassign', label: 'Rebalance Leads', className: 'bg-orange-300/50 text-orange-900 border-orange-200/50 hover:bg-orange-400/50' },
+  { id: 'handover-requests', label: 'Handover requests', className: 'bg-purple-300/50 text-purple-900 border-purple-200/50 hover:bg-purple-400/50' },
   { id: 'offboard-agent', label: 'Offboard an agent', className: 'bg-amber-300/50 text-amber-900 border-amber-200/50 hover:bg-amber-400/50' },
 
   { id: 'lead-freeze', label: 'Leads on / off', className: 'bg-teal-300/50 text-teal-900 border-teal-200/50 hover:bg-teal-400/50' },
@@ -276,6 +278,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           </section>
         )}
 
+        {isManagement && <ReassignRequestsPanel />}
         {(isManagement || (isSalesLead && salesLeadsCanReassign)) && <QuickReassignPanel />}
         {isManagement && <AgentOffboardingPanel />}
       </div>
