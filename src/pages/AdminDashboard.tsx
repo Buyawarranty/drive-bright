@@ -1050,6 +1050,8 @@ const AdminDashboardInner: React.FC<{
 }> = ({ activeTab, handleTabChange, userRole, userPermissions, isMobileMenuOpen, setIsMobileMenuOpen, navigateToQuoteForm, renderContent, navigate, accessFromCache }) => {
 
   const [tabRetryKey, setTabRetryKey] = useState(0);
+  const [, setSearchParams] = useSearchParams();
+
   const { effectiveRole, effectivePermissions, isImpersonating, viewAsAgent } = useViewAs();
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
   const { session } = useAuth();
