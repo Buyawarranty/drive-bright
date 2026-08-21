@@ -50,14 +50,19 @@ export function sourceLetterFromAdSource(
 /**
  * Build the subject prefix used after "New Sale".
  * Agent sales get the S- prefix so management can tell staff sales apart.
+ *
+ * A quote-link sale keeps the marketing channel visible: "Q/G" is a quote-link
+ * sale from a Google lead, "S-Q/F" an agent-closed quote link from a Facebook
+ * lead. When the channel is unknown the plain "Q" is used.
  */
 export function saleSubjectPrefix(opts: {
   letter: SourceLetter;
   isAgentSale?: boolean;
   isQuote?: boolean;
 }): string {
-  if (opts.isQuote) return opts.isAgentSale ? 'S-Q' : 'Q';
-  return opts.isAgentSale ? `S-${opts.letter}` : opts.letter;
+  const channel = opts.letter === 'Q' ? null : opts.letter;
+  const core = opts.isQuote ? (channel ? `Q/${channel}` : 'Q') : opts.letter;
+  return opts.isAgentSale ? `S-${core}` : core;
 }
 
 /** Human label for the letter, for use inside the email body. */
@@ -71,3 +76,15 @@ export const SOURCE_LETTER_LABEL: Record<SourceLetter, string> = {
   P: 'Phone enquiry',
   Q: 'Live quote link',
 };
+
+/** Human label for a full prefix such as "S-Q/G" or "O". */
+export function describeSalePrefix(prefix: string): string {
+  const isAgent = prefix.startsWith('S-');
+  const core = isAgent ? prefix.slice(2) : prefix;
+  const [route, channel] = core.split('/');
+  const parts: string[] = [];
+  parts.push(SOURCE_LETTER_LABEL[route as SourceLetter] || route);
+  if (channel) parts.push(`from ${SOURCE_LETTER_LABEL[channel as SourceLetter] || channel}`);
+  parts.push(isAgent ? '— agent closed' : '— self-serve web sale');
+  return parts.join(' ');
+}

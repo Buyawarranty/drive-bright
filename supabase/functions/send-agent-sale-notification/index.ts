@@ -267,10 +267,16 @@ serve(async (req: Request) => {
       </div>
     `;
 
-    // Determine source prefix
+    // Determine source prefix. Quote-link sales keep the marketing channel
+    // visible ("S-Q/G" = agent quote link from a Google lead).
     const leadSource = lead.lead_source || "unknown";
     const letter = sourceLetterFromLeadSource(leadSource);
-    const sourcePrefix = saleSubjectPrefix({ letter, isAgentSale: true, isQuote: letter === 'Q' });
+    const isQuoteSale = letter === 'Q';
+    const rawChannel = (lead as any).acquisition_source || (lead as any).utm_source || (customer as any)?.acquisition_source;
+    const channelLetter = isQuoteSale
+      ? (rawChannel ? sourceLetterFromLeadSource(rawChannel) : 'Q')
+      : letter;
+    const sourcePrefix = saleSubjectPrefix({ letter: channelLetter, isAgentSale: true, isQuote: isQuoteSale });
 
     const amountPart = saleValue ? ` - ${saleValueDisplay}` : '';
     const paymentPart = paymentType ? ` via ${paymentType}` : '';
