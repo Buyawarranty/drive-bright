@@ -261,6 +261,8 @@ export const ProgressOverviewStrip: React.FC = () => {
         lowSaleDays,
         positives,
         negatives,
+        monthPositives,
+        monthNegatives,
       });
     } finally {
       setLoading(false);
