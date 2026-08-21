@@ -36,8 +36,8 @@ interface CustomerClaimsSummaryProps {
  * Requests are now shared per email/reg with a short-lived cache, so each
  * customer costs one read per page view regardless of how many widgets show it.
  */
-const CLAIMS_CACHE_TTL_MS = 60_000;
-const _claimsCache = new Map<string, { at: number; rows: Claim[]; inflight?: Promise<Claim[]> }>();
+const CLAIMS_CACHE_TTL_MS = 5 * 60_000;
+const _claimsCache = new Map<string, { at: number; rows: Claim[] }>();
 
 const claimsCacheKey = (email?: string, reg?: string) =>
   `${(email || '').trim().toLowerCase()}|${(reg || '').trim().toUpperCase()}`;
@@ -46,39 +46,75 @@ const invalidateClaimsCache = (email?: string, reg?: string) => {
   _claimsCache.delete(claimsCacheKey(email, reg));
 };
 
-const fetchClaimsFor = (email?: string, reg?: string): Promise<Claim[]> => {
-  const key = `${(email || '').trim().toLowerCase()}|${(reg || '').trim().toUpperCase()}`;
-  const entry = _claimsCache.get(key);
-  const now = Date.now();
-  if (entry) {
-    if (entry.inflight) return entry.inflight;
-    if (now - entry.at < CLAIMS_CACHE_TTL_MS) return Promise.resolve(entry.rows);
+/**
+ * PERFORMANCE: a page of 50 customers used to issue 50+ separate
+ * `claims_submissions` reads (each an unindexable `ilike`) — nearly 800k calls
+ * in the query stats and one of the main reasons the CRM crawled for sales
+ * staff. Requests raised in the same tick are now coalesced into ONE read that
+ * fetches every requested email/reg at once, then fanned back out.
+ */
+interface PendingReq {
+  email: string;
+  reg: string;
+  key: string;
+  resolve: (rows: Claim[]) => void;
+}
+let _batch: PendingReq[] = [];
+let _batchTimer: ReturnType<typeof setTimeout> | null = null;
+
+const runBatch = async () => {
+  const batch = _batch;
+  _batch = [];
+  _batchTimer = null;
+  if (batch.length === 0) return;
+
+  const emails = Array.from(new Set(batch.map((b) => b.email).filter(Boolean)));
+  const regs = Array.from(new Set(batch.map((b) => b.reg).filter(Boolean)));
+
+  let rows: any[] = [];
+  try {
+    const filters: string[] = [];
+    if (emails.length) filters.push(`email.in.(${emails.map((e) => `"${e}"`).join(',')})`);
+    if (regs.length) filters.push(`vehicle_registration.in.(${regs.map((r) => `"${r}"`).join(',')})`);
+    if (filters.length) {
+      const { data, error } = await supabase
+        .from('claims_submissions')
+        .select('id, claim_reason, payment_amount, status, created_at, paid_at, vehicle_registration, email')
+        .or(filters.join(','))
+        .order('created_at', { ascending: false });
+      if (!error && data) rows = data as any[];
+    }
+  } catch {
+    rows = [];
   }
 
-  const inflight = (async () => {
-    let query = supabase
-      .from('claims_submissions')
-      .select('id, claim_reason, payment_amount, status, created_at, paid_at, vehicle_registration')
-      .order('created_at', { ascending: false });
-
-    // Match by email OR vehicle registration
-    if (email && reg) {
-      query = query.or(`email.ilike.${email},vehicle_registration.ilike.${reg}`);
-    } else if (email) {
-      query = query.ilike('email', email);
-    } else if (reg) {
-      query = query.ilike('vehicle_registration', reg);
-    }
-
-    const { data, error } = await query;
-    const rows = error || !data ? [] : (data as Claim[]);
-    _claimsCache.set(key, { at: Date.now(), rows });
-    return rows;
-  })();
-
-  _claimsCache.set(key, { at: entry?.at ?? 0, rows: entry?.rows ?? [], inflight });
-  return inflight;
+  batch.forEach((req) => {
+    const mine = rows.filter((r) => {
+      const rEmail = String(r.email || '').trim().toLowerCase();
+      const rReg = String(r.vehicle_registration || '').trim().toUpperCase();
+      return (req.email && rEmail === req.email) || (req.reg && rReg === req.reg);
+    }) as Claim[];
+    _claimsCache.set(req.key, { at: Date.now(), rows: mine });
+    req.resolve(mine);
+  });
 };
+
+const fetchClaimsFor = (email?: string, reg?: string): Promise<Claim[]> => {
+  const normEmail = (email || '').trim().toLowerCase();
+  const normReg = (reg || '').trim().toUpperCase();
+  const key = `${normEmail}|${normReg}`;
+
+  const entry = _claimsCache.get(key);
+  if (entry && Date.now() - entry.at < CLAIMS_CACHE_TTL_MS) {
+    return Promise.resolve(entry.rows);
+  }
+
+  return new Promise<Claim[]>((resolve) => {
+    _batch.push({ email: normEmail, reg: normReg, key, resolve });
+    if (!_batchTimer) _batchTimer = setTimeout(runBatch, 60);
+  });
+};
+
 
 
 export const CustomerClaimsSummary: React.FC<CustomerClaimsSummaryProps> = ({
