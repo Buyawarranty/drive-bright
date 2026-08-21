@@ -73,6 +73,13 @@ interface MyData {
   negatives: number;
   monthPositives: number;
   monthNegatives: number;
+  // Authoritative allocation state, straight from agent_distribution_caps — the
+  // same row the New leads freeze banner and the manager panels read. Never
+  // re-derive "paused" locally, or the strip contradicts the banner.
+  allocationPaused: boolean;
+  freezeSource: string | null;
+  freezeReason: string | null;
+  frozenUntil: string | null;
 }
 
 const EMPTY: MyData = {
@@ -91,6 +98,10 @@ const EMPTY: MyData = {
   negatives: 0,
   monthPositives: 0,
   monthNegatives: 0,
+  allocationPaused: false,
+  freezeSource: null,
+  freezeReason: null,
+  frozenUntil: null,
 };
 
 export const ProgressOverviewStrip: React.FC = () => {
@@ -168,6 +179,12 @@ export const ProgressOverviewStrip: React.FC = () => {
           .select('kind')
           .eq('admin_user_id', adminId)
           .gte('created_at', monthStart.toISOString()),
+        // Authoritative allocation state — same row as the freeze banner.
+        (supabase as any)
+          .from('agent_distribution_caps')
+          .select('paused, freeze_source, freeze_reason, frozen_until')
+          .eq('admin_user_id', adminId)
+          .maybeSingle(),
       ]);
 
       const val = (i: number): any => (settled[i].status === 'fulfilled' ? (settled[i] as any).value : null);
@@ -175,7 +192,8 @@ export const ProgressOverviewStrip: React.FC = () => {
         if (s.status === 'rejected') console.warn('[ProgressOverviewStrip] read failed', i, s.reason);
         else if ((s.value as any)?.error) console.warn('[ProgressOverviewStrip] read error', i, (s.value as any).error);
       });
-      const [scoreRes, daysRes, statusRes, logRes, reviewRes, salesRes, monthReviewRes] = [0, 1, 2, 3, 4, 5, 6].map(val);
+      const [scoreRes, daysRes, statusRes, logRes, reviewRes, salesRes, monthReviewRes, capsRes] = [0, 1, 2, 3, 4, 5, 6, 7].map(val);
+      const caps = (capsRes as any)?.data || null;
 
 
 
@@ -263,6 +281,10 @@ export const ProgressOverviewStrip: React.FC = () => {
         negatives,
         monthPositives,
         monthNegatives,
+        allocationPaused: caps?.paused === true,
+        freezeSource: caps?.freeze_source ?? null,
+        freezeReason: caps?.freeze_reason ?? null,
+        frozenUntil: caps?.frozen_until ?? null,
       });
     } finally {
       setLoading(false);
@@ -398,8 +420,11 @@ export const ProgressOverviewStrip: React.FC = () => {
   const monthReviewsTotal = data.monthPositives + data.monthNegatives;
 
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  const frozen = !data.salesReadFailed && data.lowSaleDays >= 2;
-  const atRisk = !data.salesReadFailed && data.lowSaleDays === 1;
+  // "Paused" is whatever agent_distribution_caps says — the same source as the
+  // New leads freeze banner, so the two can never disagree. lowSaleDays is only
+  // ever used as an early "at risk" warning while allocation is still on.
+  const frozen = data.allocationPaused;
+  const atRisk = !frozen && !data.salesReadFailed && data.lowSaleDays >= 1;
 
   if (!adminId) return null;
 
@@ -508,25 +533,25 @@ export const ProgressOverviewStrip: React.FC = () => {
                 <div>
                   <p className="font-medium">How days are counted</p>
                   <ul className="mt-0.5 list-disc pl-4 space-y-0.5">
-                    <li>Counted from your last sale</li>
-                    <li>Completed service days only — today is still in progress</li>
-                    <li>Sundays are not service days</li>
-                    <li>Days you were not rota'd on (day off, holiday, sick) are skipped</li>
+                    <li>Agreed service days only — days you are rota'd to work</li>
+                    <li>Today is still in progress and is not counted</li>
+                    <li>Days off, holiday and sick are skipped</li>
                   </ul>
                 </div>
 
                 <div>
                   <p className="font-medium">What happens</p>
                   <ul className="mt-0.5 list-disc pl-4 space-y-0.5">
-                    <li>1 service day without a sale — you are at risk</li>
-                    <li>2 in a row — new leads pause for the next working day</li>
+                    <li>1 sale or fewer across any 2 consecutive service days — new leads pause for one service day</li>
+                    <li>1 sale or fewer across any 3 consecutive service days — new leads pause for two service days</li>
                   </ul>
                 </div>
 
                 <div>
                   <p className="font-medium">Getting a freeze lifted</p>
                   <p className="mt-0.5">
-                    Management can lift a freeze if you are on track for your monthly target, or after a one-to-one.
+                    Hitting your monthly target pro-rata lifts an automatic pause. Management can also lift or hold a
+                    freeze at their discretion.
                   </p>
                 </div>
               </div>
@@ -535,13 +560,26 @@ export const ProgressOverviewStrip: React.FC = () => {
             <div className={`text-sm font-semibold whitespace-nowrap ${frozen ? 'text-red-600' : atRisk ? 'text-amber-600' : 'text-emerald-600'}`}>
               {frozen ? 'Leads paused' : atRisk ? 'At risk' : 'Receiving leads'}
             </div>
-            <div className="text-[11px] text-muted-foreground whitespace-nowrap">
-              {data.salesReadFailed
-                ? 'Sales figures unavailable — refresh'
-                : data.lowSaleDays === 0
-                ? 'No working days without a sale'
-                : `${data.lowSaleDays} working day${data.lowSaleDays === 1 ? '' : 's'} without a sale`}
+            <div className="text-[11px] text-muted-foreground max-w-[240px] leading-tight">
+              {frozen ? (
+                <>
+                  {data.freezeReason ||
+                    (data.freezeSource === 'auto'
+                      ? 'Automatic pause from your recent sales.'
+                      : 'A manager has paused your new leads.')}
+                  {data.freezeSource === 'auto' && data.frozenUntil
+                    ? ` Leads resume on ${format(new Date(data.frozenUntil), 'EEE d MMM')}.`
+                    : ''}
+                </>
+              ) : data.salesReadFailed ? (
+                'Sales figures unavailable — refresh'
+              ) : data.lowSaleDays === 0 ? (
+                'No service days without a sale'
+              ) : (
+                `${data.lowSaleDays} service day${data.lowSaleDays === 1 ? '' : 's'} without a sale`
+              )}
             </div>
+
             <div className="mt-1 rounded border border-border bg-muted/40 px-1.5 py-1 text-[11px] leading-tight">
               {data.lastSaleAt ? (
                 <>
