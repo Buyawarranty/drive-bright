@@ -232,9 +232,18 @@ const MAX_ALERT_AGE_MS = 12 * 60 * 60 * 1000;
 const LEAD_ALERT_ROLES = ['sales', 'sales_lead', 'sales_manager'];
 
 export const useNewLeadAlert = () => {
-  const adminId = useCurrentAdminId();
+  // HARD RULE: pop-ups only ever show leads assigned to the SIGNED-IN agent.
+  // `useCurrentAdminId` swaps to the impersonated agent under "View As", which
+  // made a manager simulating an agent see that agent's leads pop up on their
+  // own screen. Alerts therefore use the real account and are switched off
+  // entirely while impersonating (read-only simulation must not beep).
+  const viewedAdminId = useCurrentAdminId();
+  const { isImpersonating } = useViewAs();
+  const realAdminId = useRealAdminId();
+  const adminId = isImpersonating ? null : (realAdminId || viewedAdminId);
   const [alertsAllowed, setAlertsAllowed] = useState<boolean | null>(null);
   const [queue, setQueue] = useState<NewLeadAlertData[]>([]);
+
 
   const [now, setNow] = useState(() => Date.now());
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => {
