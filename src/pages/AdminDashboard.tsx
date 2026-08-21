@@ -852,6 +852,19 @@ const AdminDashboard = () => {
           );
         }
         return <ComplaintsTab />;
+      case 'careers-applications': {
+        const careersAllowed = ['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole)
+          || effectiveUserPermissions?.tab_hr === true;
+        if (!careersAllowed) {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">Careers Applications is restricted to management.</p>
+            </div>
+          );
+        }
+        return <CareerApplicationsTab />;
+      }
       case 'abandoned-carts':
         return <AbandonedCartsTab />;
       case 'marketing-audience':
