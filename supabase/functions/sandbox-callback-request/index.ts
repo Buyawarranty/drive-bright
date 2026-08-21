@@ -110,18 +110,37 @@ Deno.serve(async (req) => {
     // Never split one customer across two agents: reuse an existing lead.
     let leadId: string | null = null;
     let duplicate = false;
+    let matched: { id: string; status: string | null; do_not_contact: boolean; notes: string | null } | null = null;
     try {
       const { data: byPhone } = await admin.rpc("find_sales_lead_by_phone_tail9", { tail_digits: tail9 });
       const existingId = Array.isArray(byPhone) ? (byPhone[0]?.id ?? byPhone[0]) : byPhone;
       if (existingId) {
-        leadId = String(existingId);
-        duplicate = true;
+        const { data: row } = await admin
+          .from("sales_leads")
+          .select("id, status, do_not_contact, notes")
+          .eq("id", String(existingId))
+          .maybeSingle();
+        if (row) matched = row as typeof matched;
       }
     } catch (e) {
       console.error("[sandbox-callback-request] phone dedupe failed", e);
     }
 
-    if (leadId) {
+    // Suppressed records are never revived or duplicated by a web request.
+    if (matched && (matched.do_not_contact || matched.status === "fake_lead" || matched.status === "unsubscribed")) {
+      return json({
+        ok: true,
+        suppressed: true,
+        is_open: plan.isOpen,
+        when_label: plan.label,
+        phone,
+        message: "Please give us a ring on 0330 229 5040 and we'll help straight away.",
+      });
+    }
+
+    if (matched) {
+      leadId = matched.id;
+      duplicate = true;
       const { error: updateError } = await admin
         .from("sales_leads")
         .update({
@@ -131,10 +150,12 @@ Deno.serve(async (req) => {
           next_action_date: plan.callAt.toISOString(),
           follow_up_status: "scheduled",
           last_activity_date: new Date().toISOString(),
+          notes: [matched.notes, ...noteLines].filter(Boolean).join("\n"),
         })
         .eq("id", leadId);
       if (updateError) console.error("[sandbox-callback-request] callback update failed", updateError);
     } else {
+
       const { data: inserted, error: insertError } = await admin
         .from("sales_leads")
         .insert({
