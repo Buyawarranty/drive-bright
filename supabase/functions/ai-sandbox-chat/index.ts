@@ -138,23 +138,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const authHeader = req.headers.get("Authorization") ?? "";
-    const userClient = createClient(SUPABASE_URL, ANON_KEY, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: userData } = await userClient.auth.getUser();
-    const user = userData?.user;
-    if (!user) {
-      return new Response(JSON.stringify({ error: "Not signed in" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
 
     const body = await req.json();
-    const threadId: string | undefined = body?.threadId;
+
     // Be tolerant about the incoming shape: the UI transport sends an array of
     // UIMessages, but a malformed/legacy payload used to crash streamText with
     // "messages.some is not a function".
@@ -167,25 +154,75 @@ Deno.serve(async (req) => {
     if (!Array.isArray(rawMessages)) {
       console.warn("[ai-sandbox-chat] non-array messages payload", typeof rawMessages);
     }
-    if (!threadId) {
-      return new Response(JSON.stringify({ error: "threadId is required" }), {
-        status: 400,
+
+    // Website visitors are not signed in: the widget generates a random token,
+    // keeps it in the browser and owns exactly one conversation with it.
+    const rawGuestToken = typeof body?.guestToken === "string" ? body.guestToken.trim() : "";
+    const guestToken = /^[a-zA-Z0-9-]{16,64}$/.test(rawGuestToken) ? rawGuestToken : null;
+    const pageSource = typeof body?.source === "string" ? body.source.slice(0, 80) : null;
+
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const userClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData } = await userClient.auth.getUser();
+    const user = userData?.user ?? null;
+    const userId: string | null = user?.id ?? null;
+
+    if (!user && !guestToken) {
+      return new Response(JSON.stringify({ error: "Not signed in" }), {
+        status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const { data: thread, error: threadError } = await admin
-      .from("ai_sandbox_threads")
-      .select("id, user_id, title")
-      .eq("id", threadId)
-      .maybeSingle();
+    let thread: { id: string; user_id: string | null; title: string | null } | null = null;
+    let threadId: string | undefined;
 
-    if (threadError) throw threadError;
-    if (!thread || thread.user_id !== user.id) {
-      return new Response(JSON.stringify({ error: "Thread not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (!user && guestToken) {
+      const { data: existing } = await admin
+        .from("ai_sandbox_threads")
+        .select("id, user_id, title")
+        .eq("guest_token", guestToken)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existing) {
+        thread = existing as typeof thread;
+      } else {
+        const { data: created, error: createError } = await admin
+          .from("ai_sandbox_threads")
+          .insert({ guest_token: guestToken, source: pageSource, title: "Website chat" })
+          .select("id, user_id, title")
+          .single();
+        if (createError) throw createError;
+        thread = created as typeof thread;
+      }
+      threadId = thread!.id;
+    } else {
+      threadId = body?.threadId;
+      if (!threadId) {
+        return new Response(JSON.stringify({ error: "threadId is required" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: found, error: threadError } = await admin
+        .from("ai_sandbox_threads")
+        .select("id, user_id, title")
+        .eq("id", threadId)
+        .maybeSingle();
+
+      if (threadError) throw threadError;
+      if (!found || found.user_id !== userId) {
+        return new Response(JSON.stringify({ error: "Thread not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      thread = found as typeof thread;
     }
 
     // Persist the newest user message
