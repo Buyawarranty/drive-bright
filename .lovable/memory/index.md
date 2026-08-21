@@ -25,6 +25,7 @@ Updated: just now
 - Excluded vehicle matrix is a hard non-overridable gate on every price and every push live. See mem://pricing/exclusions-apply-to-all-prices
 
 - ORR never parks or gates live leads: out-of-hours holds only apply when Open Round Robin is switched on. See mem://constraints/orr-never-blocks-live-leads
+- RLS policies must use (SELECT auth.uid()), never bare auth.uid(); no per-row queries in grids. See mem://architecture/rls-auth-uid-must-be-wrapped
 
 ## Memories
 - [Website Floor = Grid Floor](mem://pricing/website-floor-same-as-grid) — Step 3/4 and checkout clamped to the shaped £399/£699/£999 floor; promos exempt
