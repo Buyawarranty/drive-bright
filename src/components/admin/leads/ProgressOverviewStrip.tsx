@@ -192,7 +192,8 @@ export const ProgressOverviewStrip: React.FC = () => {
         if (s.status === 'rejected') console.warn('[ProgressOverviewStrip] read failed', i, s.reason);
         else if ((s.value as any)?.error) console.warn('[ProgressOverviewStrip] read error', i, (s.value as any).error);
       });
-      const [scoreRes, daysRes, statusRes, logRes, reviewRes, salesRes, monthReviewRes] = [0, 1, 2, 3, 4, 5, 6].map(val);
+      const [scoreRes, daysRes, statusRes, logRes, reviewRes, salesRes, monthReviewRes, capsRes] = [0, 1, 2, 3, 4, 5, 6, 7].map(val);
+      const caps = (capsRes as any)?.data || null;
 
 
 
