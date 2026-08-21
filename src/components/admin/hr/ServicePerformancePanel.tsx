@@ -41,6 +41,43 @@ const STAGES: Row[] = [
   },
 ];
 
+// Employee (capability) wording — used where the salesperson is on a contract of
+// employment rather than a contract for services. Same triggers, but named
+// capability warnings, with the £25,000 standard target, six-month warning
+// currency, reasonable adjustments and a right of appeal.
+const EMPLOYEE_STAGES: Row[] = [
+  {
+    c1: 'One underperformance month',
+    c2: 'Stage 1 — first written capability warning',
+    c3: 'A formal capability meeting may be held. Following that meeting, a first written capability warning and a 30-day performance improvement plan may be issued. During the plan, the employee must normally achieve the applicable monthly revenue target, a conversion rate of at least 10%, and at least 150 valid customer call attempts per full scheduled working day, with the normal expected range being 200 to 250. The standard monthly revenue target is £25,000. Where fewer Company-provided leads are allocated during the review period, the Company will apply a proportionately reduced revenue target based on the number of leads allocated compared with the normal monthly lead allocation. The 10% conversion minimum and applicable call-activity standards will continue to apply. The employee must also maintain satisfactory call handling, follow-ups, CRM records, attendance, availability and lead management.',
+    c4: 'If the plan is passed, normal performance management resumes, but the warning remains active for six months. Failure of the plan, or another underperformance month while the warning is active, may move the employee to Stage 2.',
+  },
+  {
+    c1: 'Two consecutive underperformance months, two underperformance months within any rolling three-month period, or failure of Stage 1',
+    c2: 'Stage 2 — final written capability warning',
+    c3: 'A further formal capability meeting may be held. Following that meeting, a final written capability warning and a final 30-day performance improvement plan may be issued. The applicable monthly revenue target, the 10% conversion minimum and the 150-call daily minimum will continue to apply. The standard monthly revenue target is £25,000. Where fewer Company-provided leads are allocated during the review period, the Company will apply a proportionately reduced revenue target based on the number of leads allocated compared with the normal monthly lead allocation. Monitoring may be daily or weekly. Leads may be reduced, paused or reallocated where customer service or sales opportunities are at risk.',
+    c4: 'Failure of the final plan, or further underperformance while the final warning is active, may move the employee to Stage 3.',
+  },
+  {
+    c1: 'Three underperformance months within any rolling six-month period, or failure of the final improvement plan',
+    c2: 'Stage 3 — final capability hearing',
+    c3: 'The Company will hold a final formal hearing and review the performance evidence, support already provided, the employee’s explanation, any relevant health or disability issues, reasonable adjustments and whether a suitable alternative role is available.',
+    c4: 'Dismissal is not automatic. Possible outcomes include a short final review period where justified, an agreed change of duties, or dismissal with contractual or statutory notice or payment in lieu of notice. The decision will be confirmed in writing and may be appealed.',
+  },
+  {
+    c1: 'Serious underperformance in any month',
+    c2: 'Direct escalation to Stage 2',
+    c3: 'Where qualifying monthly revenue is below 60% of the applicable monthly revenue target, or conversion is below 5%, together with materially inadequate activity, repeated daily call shortfalls, repeated missed calls, unavailability, failure to follow up leads, inaccurate CRM records or customer risk without a reasonable explanation, the Company may start at Stage 2 after a fair meeting. For the standard £25,000 monthly target, 60% is £15,000. Where a proportionately reduced revenue target applies because fewer Company-provided leads were allocated, the 60% threshold will be calculated using that reduced target.',
+    c4: 'A final written capability warning and final improvement plan may be issued without first issuing a Stage 1 warning. Further failure may lead to Stage 3 and possible dismissal with notice or payment in lieu of notice.',
+  },
+  {
+    c1: 'During any active Stage 1 or Stage 2 performance improvement plan',
+    c2: 'Weekly PIP reviews and regular process-improvement meetings',
+    c3: 'The manager will normally hold a weekly one-to-one review covering revenue against the applicable monthly revenue target, conversion, valid call activity against the 150 minimum and 200 to 250 expected range, follow-ups, CRM records, attendance, availability, agreed actions and support. Where fewer Company-provided leads have been allocated, the review will record the proportionately reduced revenue target based on the number of leads allocated compared with the normal monthly lead allocation. The Company may also hold regular group meetings to improve scripts, lead handling, missed-call processes, CRM practice, compliance and the customer journey.',
+    c4: 'Actions, responsibilities and review dates will be recorded. Group meetings are supportive and not disciplinary; individual performance will be discussed privately. Failure to engage with reasonable agreed actions without a satisfactory explanation may be considered at the next formal review.',
+  },
+];
+
 const FREEZE_HEADERS = ['Condition or review point', 'Lead allocation action', 'Additional provisions or possible outcome'];
 
 const FREEZE: Row[] = [
