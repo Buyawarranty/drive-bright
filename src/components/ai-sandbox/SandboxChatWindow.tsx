@@ -735,14 +735,6 @@ export function SandboxChatWindow({
               <RegQuickStart disabled={busy} onSubmit={(reg) => send(`My reg is ${reg} — what would my warranty cost?`)} />
 
               <div className="flex flex-col gap-2">
-                <button
-                  onClick={requestLiveAgent}
-                  disabled={holdState === 'connecting' || holdState === 'on_hold'}
-                  className="flex w-full items-center gap-3 rounded-xl border border-primary/40 bg-primary/5 px-3.5 py-3 text-left text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-primary/10"
-                >
-                  <Headset className="h-4 w-4 shrink-0 text-primary" />
-                  <span className="min-w-0">Speak to a live agent</span>
-                </button>
                 {STARTERS.map(({ text, Icon }) => (
                   <button
                     key={text}
