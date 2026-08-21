@@ -225,6 +225,8 @@ function PriceOptionsPanel({
   // Price first, payment second: the card/monthly buttons and the payment-link
   // wording only appear once the customer has asked to see their price.
   const [priceRequested, setPriceRequested] = useState(false);
+  const [pending, setPending] = useState<'full' | 'monthly' | null>(null);
+
 
   const termLabel = (v: number) => (v % 12 === 0 ? `${v / 12} year${v / 12 > 1 ? 's' : ''}` : `${v} months`);
   const combo = `${termLabel(term)} cover, £${limit.toLocaleString()} claim limit, £${excess} excess, £${labour}/hr labour rate`;
