@@ -420,8 +420,11 @@ export const ProgressOverviewStrip: React.FC = () => {
   const monthReviewsTotal = data.monthPositives + data.monthNegatives;
 
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  const frozen = !data.salesReadFailed && data.lowSaleDays >= 2;
-  const atRisk = !data.salesReadFailed && data.lowSaleDays === 1;
+  // "Paused" is whatever agent_distribution_caps says — the same source as the
+  // New leads freeze banner, so the two can never disagree. lowSaleDays is only
+  // ever used as an early "at risk" warning while allocation is still on.
+  const frozen = data.allocationPaused;
+  const atRisk = !frozen && !data.salesReadFailed && data.lowSaleDays >= 1;
 
   if (!adminId) return null;
 
