@@ -272,10 +272,9 @@ serve(async (req: Request) => {
     const leadSource = lead.lead_source || "unknown";
     const letter = sourceLetterFromLeadSource(leadSource);
     const isQuoteSale = letter === 'Q';
+    const rawChannel = (lead as any).acquisition_source || (lead as any).utm_source || (customer as any)?.acquisition_source;
     const channelLetter = isQuoteSale
-      ? sourceLetterFromLeadSource(
-          (lead as any).acquisition_source || (lead as any).utm_source || (customer as any)?.acquisition_source,
-        )
+      ? (rawChannel ? sourceLetterFromLeadSource(rawChannel) : 'Q')
       : letter;
     const sourcePrefix = saleSubjectPrefix({ letter: channelLetter, isAgentSale: true, isQuote: isQuoteSale });
 

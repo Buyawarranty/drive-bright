@@ -285,8 +285,9 @@ serve(async (req: Request) => {
     // "New Sale <SOURCE>: <REG> - £<AMOUNT> via <PAYMENT>"
     // Quote-link sales keep the marketing channel visible: "Q/G" / "S-Q/F".
     const isQuoteSale = saleType === 'Q';
+    const rawChannel = saleExtras.acquisition_source || saleExtras.purchase_source;
     const channelLetter = isQuoteSale
-      ? sourceLetterFromLeadSource(saleExtras.acquisition_source || saleExtras.purchase_source)
+      ? (rawChannel ? sourceLetterFromLeadSource(rawChannel) : 'Q')
       : ((saleType as any) || 'O');
     const subjectSource = saleSubjectPrefix({
       letter: channelLetter,
