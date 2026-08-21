@@ -2573,35 +2573,47 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         console.log('✅ Updated abandoned_carts to quote_sent');
       }
 
-      // Add to abandoned_carts if no existing cart (for tracking purposes)
+      // Add to abandoned_carts if no existing cart (for tracking purposes).
+      // There is no unique constraint on email, so an upsert with
+      // onConflict:'email' was rejected with a 400 — check then insert instead.
       console.log('📋 Adding to abandoned_carts with quote_sent status...');
-      await supabase
+      const { data: existingCartRow } = await supabase
         .from('abandoned_carts')
-        .upsert({
-          email: cleanCustomerEmail,
-          full_name: cleanCustomerName,
-          phone: '',
-          vehicle_reg: cleanVehicleData.regNumber,
-          vehicle_make: cleanVehicleData.make,
-          vehicle_model: cleanVehicleData.model,
-          vehicle_year: cleanVehicleData.year,
-          vehicle_type: vehicleData?.vehicleType,
-          mileage: cleanVehicleData.mileage,
-          plan_name: 'Platinum',
-          payment_type: paymentType,
-          step_abandoned: 3,
-          contact_status: 'quote_sent',
-          cart_metadata: {
-            excess: excessAmount,
-            claimLimit: displayClaimLimit,
-            labourRate,
-            boostAddon,
-            totalPrice: displayedTotalPrice,
-            quoteSource: 'admin_sent',
-            quoteId,
-            additionalNotes
-          }
-        }, { onConflict: 'email', ignoreDuplicates: true });
+        .select('id')
+        .ilike('email', cleanCustomerEmail)
+        .limit(1)
+        .maybeSingle();
+
+      if (!existingCartRow) {
+        await supabase
+          .from('abandoned_carts')
+          .insert({
+            email: cleanCustomerEmail,
+            full_name: cleanCustomerName,
+            phone: '',
+            vehicle_reg: cleanVehicleData.regNumber,
+            vehicle_make: cleanVehicleData.make,
+            vehicle_model: cleanVehicleData.model,
+            vehicle_year: cleanVehicleData.year,
+            vehicle_type: vehicleData?.vehicleType,
+            mileage: cleanVehicleData.mileage,
+            plan_name: 'Platinum',
+            payment_type: paymentType,
+            step_abandoned: 3,
+            contact_status: 'quote_sent',
+            cart_metadata: {
+              excess: excessAmount,
+              claimLimit: displayClaimLimit,
+              labourRate,
+              boostAddon,
+              totalPrice: displayedTotalPrice,
+              quoteSource: 'admin_sent',
+              quoteId,
+              additionalNotes
+            }
+          });
+      }
+
 
       const totalCopies = [
         adminEmail && adminEmail.toLowerCase() !== cleanCustomerEmail ? adminEmail : null,
