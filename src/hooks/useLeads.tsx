@@ -780,28 +780,14 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
           const hasServerSearch = !!serverSearchTermRef.current?.trim();
           if (hasServerSearch) {
-            // Sales agents searching should stay scoped to their own team's
-            // leads (plus unassigned so they can claim). Managers/admins see
-            // the global result set unchanged.
-            if (isSalesAgent && teamMemberIds && teamMemberIds.length > 0) {
-              const idsCsv = teamMemberIds.join(',');
-              // Allow searching within: own team, unassigned, OR any lead the
-              // current agent used to own (so they can help returning callers).
-              // The row will be badged "Old lead — new owner" in the UI.
-              const scopeOr = `assigned_to.in.(${idsCsv}),assigned_to.is.null,hidden_from_agent_ids.cs.{${currentAdmin.id}}`;
-              return await fetchPagedLeads((from, to) =>
-                applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
-                  supabase
-                    .from('sales_leads')
-                    .select(SELECT_COLUMNS)
-                    .or(scopeOr)
-                    .order('created_at', { ascending: false })
-                    .order('id', { ascending: false })
-                    .range(from, to)
-                )))
-              );
-            }
+            // SEARCH IS ALWAYS GLOBAL. Previously a sales agent's search was
+            // scoped to their own team (plus unassigned), so anyone searching a
+            // customer owned by another team got "no results" and had to fall
+            // back to Quotes & Orders to find their own customers. Every staff
+            // member can already read leads (RLS), and the row is badged with
+            // its owner, so a search now hits every lead in the system.
             return await fetchPagedLeads((from, to) =>
+
               applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
