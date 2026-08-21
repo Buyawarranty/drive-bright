@@ -27,6 +27,7 @@ export function CallMeBackPanel({
   registration,
   quotedPrice,
   compact = false,
+  asChip = false,
 }: {
   guestToken?: string;
   threadId?: string;
@@ -34,6 +35,8 @@ export function CallMeBackPanel({
   registration?: string | null;
   quotedPrice?: number | null;
   compact?: boolean;
+  /** Render the idle state as a small one-line chip (for the top action row). */
+  asChip?: boolean;
 }) {
   const [step, setStep] = useState<Step>('closed');
   const [collapsed, setCollapsed] = useState(true);
