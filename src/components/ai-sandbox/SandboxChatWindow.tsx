@@ -742,7 +742,8 @@ export function SandboxChatWindow({
         resize="smooth"
       >
         <ConversationContent className={compact ? 'w-full px-3' : 'mx-auto w-full max-w-3xl'}>
-          <Message from="assistant">
+          <Message from="assistant" className="flex-row items-start gap-2">
+            <ChatAvatar sender="ai" />
             <MessageContent>
               <SenderLabel sender="ai" />
               <MessageResponse>{OPENING_LINE}</MessageResponse>
