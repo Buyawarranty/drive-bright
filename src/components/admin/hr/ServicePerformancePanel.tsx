@@ -44,19 +44,19 @@ const STAGES: Row[] = [
 
 // Employee (capability) wording — used where the salesperson is on a contract of
 // employment rather than a contract for services. Same triggers, but named
-// capability warnings, with the £25,000 standard target, six-month warning
+// capability warnings, with the £35,000 standard target, six-month warning
 // currency, reasonable adjustments and a right of appeal.
 const EMPLOYEE_STAGES: Row[] = [
   {
     c1: 'One underperformance month',
     c2: 'Stage 1 — first written capability warning',
-    c3: 'A formal capability meeting may be held. Following that meeting, a first written capability warning and a 30-day performance improvement plan may be issued. During the plan, the employee must normally achieve the applicable monthly revenue target, a conversion rate of at least 10%, and at least 150 valid customer call attempts per full scheduled working day, with the normal expected range being 200 to 250. The standard monthly revenue target is £25,000. Where fewer Company-provided leads are allocated during the review period, the Company will apply a proportionately reduced revenue target based on the number of leads allocated compared with the normal monthly lead allocation. The 10% conversion minimum and applicable call-activity standards will continue to apply. The employee must also maintain satisfactory call handling, follow-ups, CRM records, attendance, availability and lead management.',
+    c3: 'A formal capability meeting may be held. Following that meeting, a first written capability warning and a 30-day performance improvement plan may be issued. During the plan, the employee must normally achieve the applicable monthly revenue target, a conversion rate of at least 10%, and at least 150 valid customer call attempts per full scheduled working day, with the normal expected range being 200 to 250. The standard monthly revenue target is £35,000. Where fewer Company-provided leads are allocated during the review period, the Company will apply a proportionately reduced revenue target based on the number of leads allocated compared with the normal monthly lead allocation. The 10% conversion minimum and applicable call-activity standards will continue to apply. The employee must also maintain satisfactory call handling, follow-ups, CRM records, attendance, availability and lead management.',
     c4: 'If the plan is passed, normal performance management resumes, but the warning remains active for six months. Failure of the plan, or another underperformance month while the warning is active, may move the employee to Stage 2.',
   },
   {
     c1: 'Two consecutive underperformance months, two underperformance months within any rolling three-month period, or failure of Stage 1',
     c2: 'Stage 2 — final written capability warning',
-    c3: 'A further formal capability meeting may be held. Following that meeting, a final written capability warning and a final 30-day performance improvement plan may be issued. The applicable monthly revenue target, the 10% conversion minimum and the 150-call daily minimum will continue to apply. The standard monthly revenue target is £25,000. Where fewer Company-provided leads are allocated during the review period, the Company will apply a proportionately reduced revenue target based on the number of leads allocated compared with the normal monthly lead allocation. Monitoring may be daily or weekly. Leads may be reduced, paused or reallocated where customer service or sales opportunities are at risk.',
+    c3: 'A further formal capability meeting may be held. Following that meeting, a final written capability warning and a final 30-day performance improvement plan may be issued. The applicable monthly revenue target, the 10% conversion minimum and the 150-call daily minimum will continue to apply. The standard monthly revenue target is £35,000. Where fewer Company-provided leads are allocated during the review period, the Company will apply a proportionately reduced revenue target based on the number of leads allocated compared with the normal monthly lead allocation. Monitoring may be daily or weekly. Leads may be reduced, paused or reallocated where customer service or sales opportunities are at risk.',
     c4: 'Failure of the final plan, or further underperformance while the final warning is active, may move the employee to Stage 3.',
   },
   {
@@ -68,7 +68,7 @@ const EMPLOYEE_STAGES: Row[] = [
   {
     c1: 'Serious underperformance in any month',
     c2: 'Direct escalation to Stage 2',
-    c3: 'Where qualifying monthly revenue is below 60% of the applicable monthly revenue target, or conversion is below 5%, together with materially inadequate activity, repeated daily call shortfalls, repeated missed calls, unavailability, failure to follow up leads, inaccurate CRM records or customer risk without a reasonable explanation, the Company may start at Stage 2 after a fair meeting. For the standard £25,000 monthly target, 60% is £15,000. Where a proportionately reduced revenue target applies because fewer Company-provided leads were allocated, the 60% threshold will be calculated using that reduced target.',
+    c3: 'Where qualifying monthly revenue is below 60% of the applicable monthly revenue target, or conversion is below 5%, together with materially inadequate activity, repeated daily call shortfalls, repeated missed calls, unavailability, failure to follow up leads, inaccurate CRM records or customer risk without a reasonable explanation, the Company may start at Stage 2 after a fair meeting. For the standard £35,000 monthly target, 60% is £21,000. Where a proportionately reduced revenue target applies because fewer Company-provided leads were allocated, the 60% threshold will be calculated using that reduced target.',
     c4: 'A final written capability warning and final improvement plan may be issued without first issuing a Stage 1 warning. Further failure may lead to Stage 3 and possible dismissal with notice or payment in lieu of notice.',
   },
   {
@@ -222,7 +222,7 @@ export const ServicePerformancePanel: React.FC = () => {
           </div>
           <p className="text-xs text-muted-foreground">
             {variant === 'employee'
-              ? 'Employee capability wording: named Stage 1–3 warnings, £25,000 standard monthly target with pro-rata reduction for lower lead allocation, six-month warning currency, reasonable adjustments and a right of appeal. Use this for anyone on a contract of employment.'
+              ? 'Employee capability wording: named Stage 1–3 warnings, £35,000 standard monthly target with pro-rata reduction for lower lead allocation, six-month warning currency, reasonable adjustments and a right of appeal. Use this for anyone on a contract of employment.'
               : 'Contractor service wording: same triggers framed as service-standard reviews with no employment-law language. Use this only for genuine contracts for services.'}
           </p>
           <PolicyTable headers={STAGE_HEADERS} rows={variant === 'employee' ? EMPLOYEE_STAGES : STAGES} />
