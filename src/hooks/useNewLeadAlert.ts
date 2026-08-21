@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { useCurrentAdminId, useRealAdminId } from '@/hooks/useCurrentAdminId';
+import { useViewAs } from '@/contexts/ViewAsContext';
 import { isAlertsMuted } from '@/lib/alertSoundPreference';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { fetchByIdsInBatches } from '@/utils/batchedIn';
