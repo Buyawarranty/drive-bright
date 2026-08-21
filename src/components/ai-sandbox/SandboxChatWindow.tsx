@@ -1,7 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
-import { Headset, PhoneCall, Clock } from 'lucide-react';
+import {
+  Headset,
+  PhoneCall,
+  Clock,
+  ShieldCheck,
+  CalendarDays,
+  UserRound,
+  FileText,
+  type LucideIcon,
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Conversation,
