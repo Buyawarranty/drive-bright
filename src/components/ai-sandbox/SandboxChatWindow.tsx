@@ -109,7 +109,7 @@ function SenderLabel({ sender }: { sender: Sender }) {
     );
   }
   return (
-    <div className="mb-1 flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+    <div className="mb-1.5 flex items-center gap-1.5 border-b border-border pb-1.5 text-sm font-bold text-foreground">
       <img
         src={milesAvatar.url}
         alt="Miles the panda"
@@ -122,6 +122,7 @@ function SenderLabel({ sender }: { sender: Sender }) {
     </div>
   );
 }
+
 
 function RegQuickStart({
   onSubmit,
