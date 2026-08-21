@@ -155,7 +155,7 @@ function RegQuickStart({
             className="min-w-0 flex-1 bg-[hsl(48,100%,55%)] px-1.5 py-2 text-sm font-black uppercase tracking-normal text-black outline-none placeholder:text-black/50 sm:px-2 sm:text-base sm:tracking-wide"
           />
         </div>
-        <Button type="submit" disabled={!valid || disabled} className="shrink-0 whitespace-nowrap px-2.5 text-xs font-semibold sm:px-3 sm:text-sm">
+        <Button type="submit" disabled={!valid || disabled} className="shrink-0 whitespace-nowrap px-2.5 text-sm font-semibold sm:px-3">
           Get my price
         </Button>
 
