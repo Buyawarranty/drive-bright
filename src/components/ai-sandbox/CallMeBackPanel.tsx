@@ -178,7 +178,7 @@ export function CallMeBackPanel({
 
 
   return (
-    <div className={`mx-3 mb-2 rounded-lg border border-primary/40 bg-primary/5 ${compact ? 'p-3' : 'p-4'}`}>
+    <div className={`${asChip ? 'w-full' : 'mx-3'} mb-2 rounded-lg border border-primary/40 bg-primary/5 ${compact ? 'p-3' : 'p-4'}`}>
       <div className="mb-2 flex items-start justify-between gap-2">
         <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
           <PhoneCall className="h-4 w-4 text-primary" />
