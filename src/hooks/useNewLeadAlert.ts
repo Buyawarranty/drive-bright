@@ -384,10 +384,13 @@ export const useNewLeadAlert = () => {
   // agent's own polling can't queue in front of the screen they're waiting on.
   useEffect(() => {
     load();
+    // Safety-net poll only — realtime (filtered to this agent) is what actually
+    // delivers new leads and it invalidates the shared cache on every push.
+    // Was 30s per tab, which made this the heaviest query in the database.
     const stopPoll = setVisibleInterval(() => {
       if (isHeavyTabBusy()) return;
       loadRef.current();
-    }, 30000);
+    }, 150000);
     const wake = () => {
       if (document.visibilityState === 'visible' && !isHeavyTabBusy()) loadRef.current();
     };
