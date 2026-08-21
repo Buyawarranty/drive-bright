@@ -974,9 +974,13 @@ const Index = () => {
       if (selectedPlan) setSelectedPlan(null);
     }
 
-    const isStep2 = stepNumber(stepParam) === 2;
+    // Step 2 (external widgets) and step 3 (AI chat "Continue to checkout"
+    // hand-off) both arrive with the reg in the URL and must hydrate the cart.
+    const paramStep = stepNumber(stepParam);
+    const isRegLandingStep = paramStep === 2 || paramStep === 3;
     
-    if (regParam && isStep2) {
+    if (regParam && isRegLandingStep) {
+
       const normalizedUrlReg = decodeURIComponent(regParam).replace(/\s+/g, '').toUpperCase();
       const normalizedCurrentReg = vehicleData?.regNumber?.replace(/\s+/g, '').toUpperCase();
       

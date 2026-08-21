@@ -215,9 +215,13 @@ function OptionRow({
 function PriceOptionsPanel({
   disabled,
   onSend,
+  reg,
+  mileage,
 }: {
   disabled?: boolean;
   onSend: (text: string) => void;
+  reg?: string | null;
+  mileage?: string | null;
 }) {
   const [term, setTerm] = useState(24);
   const [limit, setLimit] = useState(2000);
@@ -227,6 +231,14 @@ function PriceOptionsPanel({
   // wording only appear once the customer has asked to see their price.
   const [priceRequested, setPriceRequested] = useState(false);
   const [pending, setPending] = useState<'full' | 'monthly' | null>(null);
+
+  // Chat does persuasion and price; the real cart takes the money. Once we know
+  // the reg we can hand the customer straight to plan selection (step 3) with
+  // their vehicle pre-filled so nothing is re-typed.
+  const checkoutHref = reg
+    ? `/?step=3&from=chat&reg=${encodeURIComponent(reg)}${mileage ? `&mileage=${encodeURIComponent(mileage)}` : ''}`
+    : null;
+
 
 
   const termLabel = (v: number) => (v % 12 === 0 ? `${v / 12} year${v / 12 > 1 ? 's' : ''}` : `${v} months`);
@@ -295,11 +307,25 @@ function PriceOptionsPanel({
         )}
       </div>
 
+      {priceRequested && !pending && checkoutHref && (
+        <div className="mt-3 rounded-xl border border-dashed border-border bg-muted/40 p-3">
+          <p className="text-xs font-semibold text-foreground">Prefer to finish it yourself?</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            I'll open your cart with {reg} already filled in — pick your plan and pay securely on site. This chat stays
+            open if you need me.
+          </p>
+          <Button asChild size="sm" variant="outline" className="mt-2 font-semibold">
+            <a href={checkoutHref}>Continue to checkout →</a>
+          </Button>
+        </div>
+      )}
+
       {priceRequested && !pending && (
         <p className="mt-2 text-xs text-muted-foreground">
           Happy with the price? Pay in full and you save 10%, or spread it over 12 monthly instalments at 0% APR.
         </p>
       )}
+
 
       {pending && (
         <p className="mt-2 text-xs text-muted-foreground">
@@ -414,6 +440,31 @@ export function SandboxChatWindow({
   }, [chatId, status, agentMode, autoFocus]);
 
   const busy = status === 'submitted' || status === 'streaming';
+
+  // Pull the reg and mileage back out of the conversation so the "Continue to
+  // checkout" hand-off can pre-fill the real cart. Latest mention wins.
+  const { detectedReg, detectedMileage } = useMemo(() => {
+    const texts: string[] = [];
+    for (const m of messages) {
+      for (const p of m.parts) {
+        if (p.type === 'text' && typeof (p as { text?: string }).text === 'string') {
+          texts.push((p as { text: string }).text);
+        }
+      }
+    }
+    const joined = texts.join('\n');
+    const regMatches = joined.match(
+      /\b([A-Z]{2}[0-9]{2}\s?[A-Z]{3}|[A-Z][0-9]{1,3}\s?[A-Z]{3}|[A-Z]{3}\s?[0-9]{1,3}[A-Z]?)\b/gi,
+    );
+    const mileMatches = joined.match(/([0-9][0-9,\.]{2,9})\s*(?:miles|mile|mi\b|k\b)/gi);
+    const rawMileage = mileMatches?.[mileMatches.length - 1]?.replace(/[^0-9]/g, '') ?? '';
+    const mileageNum = Number(rawMileage);
+    return {
+      detectedReg: regMatches?.[regMatches.length - 1]?.replace(/\s+/g, '').toUpperCase() ?? null,
+      detectedMileage: mileageNum >= 100 && mileageNum <= 300000 ? String(mileageNum) : null,
+    };
+  }, [messages]);
+
 
   // Show the price builder once Miles has looked the vehicle up or quoted a price
   const hasPriceQuote = useMemo(
@@ -670,7 +721,7 @@ export function SandboxChatWindow({
 
           {!agentMode && hasPriceQuote && (
             <div className="px-2 pb-2">
-              <PriceOptionsPanel disabled={busy} onSend={send} />
+              <PriceOptionsPanel disabled={busy} onSend={send} reg={detectedReg} mileage={detectedMileage} />
             </div>
           )}
 
