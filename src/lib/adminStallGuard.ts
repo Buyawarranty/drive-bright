@@ -120,9 +120,17 @@ export const installAdminStallGuard = (): (() => void) => {
 
   // Coming back from sleep / a dropped connection: get a valid token in place
   // before the screens start reading, so the first read doesn't have to fail.
-  const onWake = () => {
+  // Only when the token is actually expiring — never refresh on every tab switch.
+  const onWake = async () => {
     if (document.visibilityState !== 'visible') return;
-    void refreshStaffToken();
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data } = await supabase.auth.getSession();
+      const expiresAt = (data?.session?.expires_at ?? 0) * 1000;
+      if (!expiresAt || expiresAt - Date.now() < 120_000) await refreshStaffToken();
+    } catch {
+      /* never block the UI */
+    }
   };
   document.addEventListener('visibilitychange', onWake);
   window.addEventListener('online', onWake);
