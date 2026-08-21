@@ -71,6 +71,8 @@ interface MyData {
   lastSaleProof: string | null;
   positives: number;
   negatives: number;
+  monthPositives: number;
+  monthNegatives: number;
 }
 
 const EMPTY: MyData = {
@@ -87,6 +89,8 @@ const EMPTY: MyData = {
   lastSaleProof: null,
   positives: 0,
   negatives: 0,
+  monthPositives: 0,
+  monthNegatives: 0,
 };
 
 export const ProgressOverviewStrip: React.FC = () => {
@@ -158,6 +162,12 @@ export const ProgressOverviewStrip: React.FC = () => {
           .gte('signup_date', addDays(now, -180).toISOString())
           .order('signup_date', { ascending: false })
           .limit(1000),
+        // Month-to-date reviews, for the 10-a-month minimum target.
+        (supabase as any)
+          .from('agent_review_claims')
+          .select('kind')
+          .eq('admin_user_id', adminId)
+          .gte('created_at', monthStart.toISOString()),
       ]);
 
       const val = (i: number): any => (settled[i].status === 'fulfilled' ? (settled[i] as any).value : null);
