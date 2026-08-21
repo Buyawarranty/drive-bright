@@ -308,3 +308,6 @@ verify_jwt = false
 
 [functions.career-rejection-sweep]
 verify_jwt = false
+
+[functions.sandbox-transcribe]
+verify_jwt = false

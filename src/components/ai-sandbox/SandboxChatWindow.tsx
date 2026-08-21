@@ -18,6 +18,7 @@ import {
   ConversationScrollButton,
 } from '@/components/ai-elements/conversation';
 import { Message, MessageContent, MessageResponse } from '@/components/ai-elements/message';
+import { VoiceDictateButton } from './VoiceDictateButton';
 import {
   PromptInput,
   PromptInputTextarea,
@@ -886,8 +887,8 @@ export function SandboxChatWindow({
                 : 'Ask about cover, pricing, claims…'
             }
           />
-          <PromptInputFooter className="justify-between">
-            <div className="flex items-center gap-2">
+          <PromptInputFooter className="justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               {!isGuest && (
                 <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
                   Sandbox · test links only
@@ -897,6 +898,24 @@ export function SandboxChatWindow({
                 <Badge className="text-[10px] uppercase tracking-wide">Human specialist</Badge>
               )}
             </div>
+            <VoiceDictateButton
+              disabled={busy}
+              onTranscript={(text) => {
+                const ta = composerRef.current?.querySelector('textarea');
+                if (ta) {
+                  const setter = Object.getOwnPropertyDescriptor(
+                    window.HTMLTextAreaElement.prototype,
+                    'value',
+                  )?.set;
+                  const next = ta.value ? `${ta.value} ${text}` : text;
+                  setter ? setter.call(ta, next) : (ta.value = next);
+                  ta.dispatchEvent(new Event('input', { bubbles: true }));
+                  ta.focus();
+                } else {
+                  send(text);
+                }
+              }}
+            />
             <PromptInputSubmit
               status={status}
               onClick={busy ? () => stop() : undefined}
