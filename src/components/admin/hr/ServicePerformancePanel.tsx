@@ -198,11 +198,33 @@ export const ServicePerformancePanel: React.FC = () => {
       <AccordionItem value="stages" className="rounded-lg border bg-card px-3">
         <AccordionTrigger className="text-sm font-semibold">
           <span className="flex items-center gap-2">
-            <Gavel className="h-4 w-4 text-primary" /> 7. Service-performance stages
+            <Gavel className="h-4 w-4 text-primary" /> 7. Performance stages
           </span>
         </AccordionTrigger>
-        <AccordionContent className="pb-4">
-          <PolicyTable headers={STAGE_HEADERS} rows={STAGES} />
+        <AccordionContent className="space-y-3 pb-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-medium text-muted-foreground">Wording:</span>
+            <Button
+              size="sm"
+              variant={variant === 'employee' ? 'default' : 'outline'}
+              onClick={() => setVariant('employee')}
+            >
+              Employee — capability
+            </Button>
+            <Button
+              size="sm"
+              variant={variant === 'contractor' ? 'default' : 'outline'}
+              onClick={() => setVariant('contractor')}
+            >
+              Contractor — services
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {variant === 'employee'
+              ? 'Employee capability wording: named Stage 1–3 warnings, £25,000 standard monthly target with pro-rata reduction for lower lead allocation, six-month warning currency, reasonable adjustments and a right of appeal. Use this for anyone on a contract of employment.'
+              : 'Contractor service wording: same triggers framed as service-standard reviews with no employment-law language. Use this only for genuine contracts for services.'}
+          </p>
+          <PolicyTable headers={STAGE_HEADERS} rows={variant === 'employee' ? EMPLOYEE_STAGES : STAGES} />
         </AccordionContent>
       </AccordionItem>
 
