@@ -283,10 +283,15 @@ serve(async (req: Request) => {
 
     // Send main sale notification — unified subject format:
     // "New Sale <SOURCE>: <REG> - £<AMOUNT> via <PAYMENT>"
+    // Quote-link sales keep the marketing channel visible: "Q/G" / "S-Q/F".
+    const isQuoteSale = saleType === 'Q';
+    const channelLetter = isQuoteSale
+      ? sourceLetterFromLeadSource(saleExtras.acquisition_source || saleExtras.purchase_source)
+      : ((saleType as any) || 'O');
     const subjectSource = saleSubjectPrefix({
-      letter: (saleType as any) || 'O',
+      letter: channelLetter,
       isAgentSale: !!isAgentSale,
-      isQuote: saleType === 'Q',
+      isQuote: isQuoteSale,
     });
 
     // Use the dedicated notify.buyawarranty.co.uk sender so mail to
