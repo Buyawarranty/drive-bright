@@ -86,13 +86,15 @@ export default function SiteChatWidget({
             className="group flex items-center gap-3 rounded-full border-2 border-[#1F2A5B] bg-background py-2 pl-2 pr-5 shadow-xl transition-transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
             <span className="relative shrink-0">
-              <img
-                src={milesAvatar.url}
-                alt="Miles the panda"
-                width={48}
-                height={48}
-                className="h-12 w-12 rounded-full object-cover ring-1 ring-border"
-              />
+              <span className="block h-12 w-12 overflow-hidden rounded-full ring-1 ring-border">
+                <img
+                  src={milesAvatar.url}
+                  alt="Miles the panda"
+                  width={48}
+                  height={48}
+                  className="h-full w-full scale-[1.35] object-cover object-center"
+                />
+              </span>
               <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-background bg-green-500" />
             </span>
             <span className="hidden text-left leading-tight sm:block">
@@ -117,14 +119,16 @@ export default function SiteChatWidget({
         >
           <div className="flex shrink-0 items-center gap-3 border-b border-border bg-background px-4 py-3">
             <span className="relative shrink-0">
-              <img
-                src={milesAvatar.url}
-                alt="Miles the panda"
-                width={44}
-                height={44}
-                className="h-11 w-11 rounded-full object-cover ring-1 ring-border"
-                loading="lazy"
-              />
+              <span className="block h-11 w-11 overflow-hidden rounded-full ring-1 ring-border">
+                <img
+                  src={milesAvatar.url}
+                  alt="Miles the panda"
+                  width={44}
+                  height={44}
+                  className="h-full w-full scale-[1.35] object-cover object-center"
+                  loading="lazy"
+                />
+              </span>
               <span className="absolute -bottom-0.5 -left-0.5 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
             </span>
             <div className="min-w-0 flex-1">
