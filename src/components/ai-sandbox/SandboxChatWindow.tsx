@@ -39,10 +39,11 @@ const OPENING_LINE = [
 ].join('\n');
 
 
-const STARTERS = [
-  "What's covered in my warranty?",
-  'Can I pay monthly?',
-  "Feels a bit pricey — can I talk to someone?",
+const STARTERS: Array<{ text: string; Icon: LucideIcon }> = [
+  { text: "What's covered in my warranty?", Icon: ShieldCheck },
+  { text: 'Can I pay monthly?', Icon: CalendarDays },
+  { text: 'Feels a bit pricey — can I talk to someone?', Icon: UserRound },
+  { text: 'I need help with a claim', Icon: FileText },
 ];
 
 
