@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MessageCircle, X, Minus } from 'lucide-react';
+import { MessageCircle, X, Minus, Expand, Shrink } from 'lucide-react';
 import SandboxChatWindow from '@/components/ai-sandbox/SandboxChatWindow';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
 
