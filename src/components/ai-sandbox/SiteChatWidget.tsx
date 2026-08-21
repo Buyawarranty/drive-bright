@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MessageCircle, X, Minus } from 'lucide-react';
+import { MessageCircle, X, Minus, Expand, Shrink } from 'lucide-react';
 import SandboxChatWindow from '@/components/ai-sandbox/SandboxChatWindow';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
 
@@ -38,6 +38,7 @@ export default function SiteChatWidget({
 }) {
   const [open, setOpen] = useState(false);
   const [everOpened, setEverOpened] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [showNudge, setShowNudge] = useState(false);
   const tokenRef = useRef<string | null>(null);
   if (tokenRef.current === null) tokenRef.current = getGuestToken();
@@ -94,34 +95,43 @@ export default function SiteChatWidget({
         <div
           className={`fixed z-[70] flex flex-col overflow-hidden border border-border bg-background shadow-2xl ${
             open ? 'flex' : 'hidden'
-          } inset-0 rounded-none sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[600px] sm:max-h-[calc(100vh-3rem)] sm:w-[400px] sm:rounded-2xl`}
+          } inset-0 rounded-none sm:inset-auto sm:bottom-6 sm:right-6 sm:max-h-[calc(100vh-3rem)] sm:rounded-2xl ${
+            expanded ? 'sm:h-[760px] sm:w-[520px]' : 'sm:h-[600px] sm:w-[400px]'
+          }`}
           role="dialog"
           aria-label="Chat with Miles"
         >
-          <div className="flex shrink-0 items-center gap-2 border-b border-border bg-primary px-3 py-2 text-primary-foreground">
+          <div className="flex shrink-0 items-center gap-3 border-b border-border bg-background px-4 py-3">
             <img
               src={milesAvatar.url}
               alt="Miles the panda"
-              width={28}
-              height={28}
-              className="h-7 w-7 rounded-full ring-1 ring-primary-foreground/40"
+              width={44}
+              height={44}
+              className="h-11 w-11 shrink-0 rounded-full ring-1 ring-border"
               loading="lazy"
             />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">Miles · warranty assistant</p>
-              <p className="truncate text-[11px] opacity-80">Instant prices · a specialist can join</p>
+              <p className="truncate text-base font-bold text-foreground">Miles · Warranty Assistant</p>
+              <p className="truncate text-sm text-muted-foreground">AI assistant · Specialist available</p>
             </div>
             <button
               onClick={() => setOpen(false)}
               aria-label="Minimise chat"
-              className="rounded-md p-1 hover:bg-primary-foreground/15"
+              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <Minus className="h-4 w-4" />
             </button>
             <button
+              onClick={() => setExpanded((v) => !v)}
+              aria-label={expanded ? 'Shrink chat' : 'Expand chat'}
+              className="hidden rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:block"
+            >
+              {expanded ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
+            </button>
+            <button
               onClick={() => setOpen(false)}
               aria-label="Close chat"
-              className="rounded-md p-1 hover:bg-primary-foreground/15 sm:hidden"
+              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <X className="h-4 w-4" />
             </button>

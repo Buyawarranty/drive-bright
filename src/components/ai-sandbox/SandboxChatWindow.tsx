@@ -1,7 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
-import { Headset, PhoneCall, Clock } from 'lucide-react';
+import {
+  Headset,
+  PhoneCall,
+  Clock,
+  ShieldCheck,
+  CalendarDays,
+  UserRound,
+  FileText,
+  type LucideIcon,
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Conversation,
@@ -31,18 +40,17 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-c
 const AGENT_PREFIX = '(Warranty specialist)';
 
 const OPENING_LINE = [
-  "Hey, I'm Miles — the AI assistant here. Happy to help.",
+  "Hey, I'm Miles. I can help you get a quote, check what's covered, or start a claim.",
   '',
-  "- Pop your **reg** in, or the make, model and year",
-  "- I'll sort out the right cover and price for you",
-  '- Want a human? A real specialist can jump in any time',
+  'What would you like to do?',
 ].join('\n');
 
 
-const STARTERS = [
-  "What's covered in my warranty?",
-  'Can I pay monthly?',
-  "Feels a bit pricey — can I talk to someone?",
+const STARTERS: Array<{ text: string; Icon: LucideIcon }> = [
+  { text: "What's covered in my warranty?", Icon: ShieldCheck },
+  { text: 'Can I pay monthly?', Icon: CalendarDays },
+  { text: 'Feels a bit pricey — can I talk to someone?', Icon: UserRound },
+  { text: 'I need help with a claim', Icon: FileText },
 ];
 
 
@@ -127,14 +135,11 @@ function RegQuickStart({
   const valid = clean.length >= 5;
 
   return (
-    <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-3 text-left shadow-sm sm:p-4">
-      <p className="text-sm font-semibold text-foreground">Get an instant price or advice</p>
-      <p className="mt-0.5 text-sm text-muted-foreground">
-        Pop your reg in — I'll pull your vehicle details and come straight back with cover options.
-      </p>
+    <div className="w-full rounded-2xl border border-border bg-card p-3.5 text-left shadow-sm sm:p-4">
+      <p className="text-base font-bold text-foreground">Get your price in seconds</p>
 
       <form
-        className="mt-3 flex w-full items-stretch gap-1.5 sm:gap-2"
+        className="mt-3 flex w-full items-stretch gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           if (valid && !disabled) onSubmit(clean.toUpperCase());
@@ -155,16 +160,17 @@ function RegQuickStart({
             className="min-w-0 flex-1 bg-[#F0CF5C] px-2 py-2 text-base font-extrabold uppercase tracking-wide text-[#3A3323] outline-none placeholder:text-[#3A3323]/80 sm:text-lg"
           />
         </div>
-        <Button type="submit" disabled={!valid || disabled} className="shrink-0 whitespace-nowrap px-2.5 text-sm font-semibold sm:px-3">
+        <Button
+          type="submit"
+          disabled={!valid || disabled}
+          className="h-auto shrink-0 whitespace-nowrap rounded-lg bg-[#EF6C33] px-3.5 text-sm font-bold text-white shadow-sm hover:bg-[#DC5F27] sm:px-4 sm:text-base"
+        >
           Get my price
         </Button>
-
-
       </form>
 
-
-      <p className="mt-2 text-sm text-muted-foreground">
-        Free quote · no card details needed · takes about 20 seconds
+      <p className="mt-2 text-xs text-muted-foreground">
+        Free quote · No card details needed · Takes about 20 seconds
       </p>
 
     </div>
@@ -538,57 +544,41 @@ export function SandboxChatWindow({
   return (
     <div className="flex h-full min-h-0 flex-col">
       {/* Who you are talking to */}
-      <div
-        className={`flex flex-wrap items-center gap-2 border-b px-4 py-2 text-sm ${
-          agentMode
-            ? 'border-primary/30 bg-primary/10 text-primary'
-            : 'border-border bg-muted/40 text-muted-foreground'
-        }`}
-      >
-        {agentMode ? (
-          <>
-            <Headset className="h-3.5 w-3.5" />
-            <span className="font-medium">You are replying as a human warranty specialist</span>
-            <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => setAgentMode(false)}>
-              Hand back to AI
-            </Button>
-          </>
-        ) : (
-          <>
-            <img
-              src={milesAvatar.url}
-              alt="Miles the panda"
-              width={24}
-              height={24}
-              className="h-6 w-6 rounded-full ring-1 ring-border"
-              loading="lazy"
-            />
-            <span className="font-medium">You're chatting with Miles, our AI assistant</span>
-            <span className="opacity-70">·</span>
-            {liveCount > 0 ? (
-              <span className="flex items-center gap-1.5 font-medium text-emerald-700">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-emerald-500 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
-                </span>
-                <Headset className="h-3.5 w-3.5" />
-                {liveCount === 1 ? 'A warranty specialist is online now' : `${liveCount} warranty specialists are online now`}
-                {liveNames.length > 0 ? ` (${liveNames.slice(0, 2).join(', ')})` : ''} — just say the word
-              </span>
-            ) : (
-              <>
-                <Clock className="h-3.5 w-3.5" />
-                <span>
-                  {open
-                    ? `Specialists are around ${openingHoursLabel.toLowerCase()} — I can call one in`
-                    : `I'm here 24/7 — specialists are back ${nextOpeningLabel()}`}
-                </span>
-              </>
-            )}
-          </>
-
-        )}
-      </div>
+      {agentMode ? (
+        <div className="flex flex-wrap items-center gap-2 border-b border-primary/30 bg-primary/10 px-4 py-2 text-sm text-primary">
+          <Headset className="h-3.5 w-3.5" />
+          <span className="font-medium">You are replying as a human warranty specialist</span>
+          <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => setAgentMode(false)}>
+            Hand back to AI
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-1 border-b border-border bg-background px-4 py-2.5 text-sm">
+          <p className="flex items-center gap-2 font-semibold text-foreground">
+            <span className="relative flex h-2.5 w-2.5 shrink-0">
+              <span className="absolute inline-flex h-2.5 w-2.5 animate-ping rounded-full bg-emerald-500 opacity-70" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-600" />
+            </span>
+            AI assistant online
+          </p>
+          {liveCount > 0 ? (
+            <p className="flex items-center gap-2 font-medium text-emerald-700">
+              <span className="ml-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-600" />
+              {liveCount === 1 ? 'A specialist is online now' : `${liveCount} specialists are online now`}
+              {liveNames.length > 0 ? ` (${liveNames.slice(0, 2).join(', ')})` : ''}
+            </p>
+          ) : (
+            <p className="flex items-center gap-2 text-muted-foreground">
+              {open ? (
+                <span className="ml-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/50" />
+              ) : (
+                <Clock className="h-3.5 w-3.5 shrink-0" />
+              )}
+              {open ? `Specialist available ${openingHoursLabel}` : `Specialists back ${nextOpeningLabel()} · ${openingHoursLabel}`}
+            </p>
+          )}
+        </div>
+      )}
 
       {(waiting || leadCaptured) && (
         <div className="flex flex-wrap items-center gap-2 border-b border-amber-300 bg-amber-50 px-4 py-2 text-xs text-amber-900">
@@ -625,32 +615,27 @@ export function SandboxChatWindow({
           </Message>
 
           {messages.length === 0 && (
-            <div className="flex flex-col items-center gap-3 py-4 text-center">
+            <div className="flex flex-col gap-3 py-2">
               {!compact && <img
                 src={milesCalls.url}
                 alt="Miles the panda in a buyawarranty polo with a headset, saying hi and offering to check your coverage, file a claim or get answers"
                 width={760}
                 height={512}
-                className="h-auto w-full max-w-[220px]"
+                className="mx-auto h-auto w-full max-w-[220px]"
                 loading="lazy"
               />}
 
               <RegQuickStart disabled={busy} onSubmit={(reg) => send(`My reg is ${reg} — what would my warranty cost?`)} />
 
-              <p className="max-w-sm text-center text-sm text-muted-foreground">
-                Just type your registration plate and mileage — that's all we need to find your vehicle.
-                <br />
-                For example: <span className="font-medium text-foreground">AB12 CDE, 62,000 miles</span>
-              </p>
-
-              <div className="flex flex-wrap justify-center gap-2">
-                {STARTERS.map((s) => (
+              <div className="flex flex-col gap-2">
+                {STARTERS.map(({ text, Icon }) => (
                   <button
-                    key={s}
-                    onClick={() => send(s)}
-                    className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    key={text}
+                    onClick={() => send(text)}
+                    className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-3 text-left text-sm font-medium text-foreground shadow-sm transition-colors hover:border-primary/40 hover:bg-muted"
                   >
-                    {s}
+                    <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="min-w-0">{text}</span>
                   </button>
                 ))}
               </div>
