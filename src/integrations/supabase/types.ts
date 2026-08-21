@@ -13189,6 +13189,14 @@ export type Database = {
           sales_in_window: number
         }[]
       }
+      find_lead_owner_by_contact: {
+        Args: { _email?: string; _phone9?: string }
+        Returns: {
+          assigned_to: string
+          created_at: string
+          id: string
+        }[]
+      }
       find_open_cart_id_by_reg: {
         Args: { _vehicle_reg: string }
         Returns: string
