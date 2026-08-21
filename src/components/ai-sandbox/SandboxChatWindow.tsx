@@ -314,9 +314,26 @@ function PriceOptionsPanel({
 
 
 
-export function SandboxChatWindow({ threadId }: { threadId: string }) {
+export function SandboxChatWindow({
+  threadId,
+  guestToken,
+  source,
+  compact = false,
+  autoFocus = true,
+}: {
+  threadId?: string;
+  /** Website visitor mode: the browser owns the conversation via this random token. */
+  guestToken?: string;
+  /** Which page the chat was opened from (stored with the conversation). */
+  source?: string;
+  /** Tighter spacing + no staff-only chrome, for the floating website widget. */
+  compact?: boolean;
+  autoFocus?: boolean;
+}) {
+  const isGuest = Boolean(guestToken);
+  const chatId = threadId || `guest-${guestToken}`;
 
-  const [initialMessages, setInitialMessages] = useState<UIMessage[] | null>(null);
+  const [initialMessages, setInitialMessages] = useState<UIMessage[] | null>(isGuest ? [] : null);
   const [handover, setHandover] = useState<Handover | null>(null);
   const [agentMode, setAgentMode] = useState(false);
   const composerRef = useRef<HTMLDivElement | null>(null);
@@ -325,6 +342,7 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
 
 
   useEffect(() => {
+    if (isGuest || !threadId) return;
     let active = true;
     setInitialMessages(null);
     setAgentMode(false);
@@ -345,9 +363,10 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
     return () => {
       active = false;
     };
-  }, [threadId]);
+  }, [threadId, isGuest]);
 
   const loadHandover = useCallback(async () => {
+    if (isGuest || !threadId) return;
     const { data } = await supabase
       .from('ai_sandbox_handovers')
       .select('id, kind, status, reason, customer_name, cover_summary, quoted_price, created_at')
@@ -356,7 +375,7 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
       .limit(1)
       .maybeSingle();
     setHandover((data as Handover) ?? null);
-  }, [threadId]);
+  }, [threadId, isGuest]);
 
   useEffect(() => {
     loadHandover();
@@ -367,19 +386,20 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
       new DefaultChatTransport({
         api: CHAT_URL,
         headers: async () => {
+          if (isGuest) return { 'Content-Type': 'application/json' };
           const { data } = await supabase.auth.getSession();
           return {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${data.session?.access_token ?? ''}`,
           };
         },
-        body: { threadId },
+        body: isGuest ? { guestToken, source: source ?? null } : { threadId },
       }),
-    [threadId],
+    [threadId, guestToken, source, isGuest],
   );
 
   const { messages, setMessages, sendMessage, status, error, stop } = useChat({
-    id: threadId,
+    id: chatId,
     transport,
     messages: initialMessages ?? [],
     onFinish: () => {
@@ -388,8 +408,9 @@ export function SandboxChatWindow({ threadId }: { threadId: string }) {
   });
 
   useEffect(() => {
+    if (!autoFocus) return;
     composerRef.current?.querySelector('textarea')?.focus();
-  }, [threadId, status, agentMode]);
+  }, [chatId, status, agentMode, autoFocus]);
 
   const busy = status === 'submitted' || status === 'streaming';
 
