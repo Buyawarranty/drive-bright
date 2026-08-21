@@ -94,14 +94,14 @@ function SenderLabel({ sender }: { sender: Sender }) {
   if (sender === 'customer') return null;
   if (sender === 'agent') {
     return (
-      <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-primary">
+      <div className="mb-1 flex items-center gap-1.5 text-sm font-medium text-primary">
         <Headset className="h-3.5 w-3.5" />
         Warranty specialist · human
       </div>
     );
   }
   return (
-    <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+    <div className="mb-1 flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
       <img
         src={milesAvatar.url}
         alt="Miles the panda"
@@ -129,7 +129,7 @@ function RegQuickStart({
   return (
     <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-3 text-left shadow-sm sm:p-4">
       <p className="text-sm font-semibold text-foreground">Get an instant price or advice</p>
-      <p className="mt-0.5 text-xs text-muted-foreground">
+      <p className="mt-0.5 text-sm text-muted-foreground">
         Pop your reg in — I'll pull your vehicle details and come straight back with cover options.
       </p>
 
@@ -155,7 +155,7 @@ function RegQuickStart({
             className="min-w-0 flex-1 bg-[hsl(48,100%,55%)] px-1.5 py-2 text-sm font-black uppercase tracking-normal text-black outline-none placeholder:text-black/50 sm:px-2 sm:text-base sm:tracking-wide"
           />
         </div>
-        <Button type="submit" disabled={!valid || disabled} className="shrink-0 whitespace-nowrap px-2.5 text-xs font-semibold sm:px-3 sm:text-sm">
+        <Button type="submit" disabled={!valid || disabled} className="shrink-0 whitespace-nowrap px-2.5 text-sm font-semibold sm:px-3">
           Get my price
         </Button>
 
@@ -163,7 +163,7 @@ function RegQuickStart({
       </form>
 
 
-      <p className="mt-2 text-[11px] text-muted-foreground">
+      <p className="mt-2 text-sm text-muted-foreground">
         Free quote · no card details needed · takes about 20 seconds
       </p>
 
@@ -539,7 +539,7 @@ export function SandboxChatWindow({
     <div className="flex h-full min-h-0 flex-col">
       {/* Who you are talking to */}
       <div
-        className={`flex flex-wrap items-center gap-2 border-b px-4 py-2 text-xs ${
+        className={`flex flex-wrap items-center gap-2 border-b px-4 py-2 text-sm ${
           agentMode
             ? 'border-primary/30 bg-primary/10 text-primary'
             : 'border-border bg-muted/40 text-muted-foreground'
@@ -581,7 +581,7 @@ export function SandboxChatWindow({
                 <span>
                   {open
                     ? `Specialists are around ${openingHoursLabel.toLowerCase()} — I can call one in`
-                    : `Team's closed just now — back ${nextOpeningLabel()}`}
+                    : `I'm here 24/7 — specialists are back ${nextOpeningLabel()}`}
                 </span>
               </>
             )}
@@ -648,7 +648,7 @@ export function SandboxChatWindow({
                   <button
                     key={s}
                     onClick={() => send(s)}
-                    className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   >
                     {s}
                   </button>
