@@ -305,6 +305,12 @@ export const defaultTabs: Tab[] = [
     description: 'Track page visits, traffic sources & Google Ads'
   },
   {
+    id: 'payments-pending',
+    label: 'Payments Pending',
+    icon: PoundSterling,
+    description: 'Confirmed sales with no verified payment — accounts verification queue'
+  },
+  {
     id: 'admin-logs',
     label: 'Admin Logs',
     icon: ScrollText,
