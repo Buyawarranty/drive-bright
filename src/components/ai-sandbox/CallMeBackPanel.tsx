@@ -68,6 +68,10 @@ export function CallMeBackPanel({
         setError(data?.message ?? "We couldn't save that — please call 0330 229 5040.");
         return;
       }
+      if (data.suppressed) {
+        setError(data.message ?? 'Please give us a ring on 0330 229 5040 and we\'ll help straight away.');
+        return;
+      }
       setWhenLabel(data.when_label ?? (open ? 'in the next few minutes' : `from 9am ${nextOpeningLabel()}`));
       setStep('done');
     } catch {
