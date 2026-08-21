@@ -23,6 +23,7 @@ import milesAvatar from '@/assets/miles-avatar.png.asset.json';
 import milesCalls from '@/assets/miles-calls.png.asset.json';
 import { isTeamOpenNow, openingHoursLabel, nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
 import { useSandboxSpecialistPresence } from '@/hooks/useSandboxSpecialistPresence';
+import { CallMeBackPanel } from '@/components/ai-sandbox/CallMeBackPanel';
 
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-chat`;
@@ -690,7 +691,19 @@ export function SandboxChatWindow({
         <ConversationScrollButton />
       </Conversation>
 
+      {!agentMode && (
+        <div className={compact ? '' : 'mx-auto w-full max-w-3xl'}>
+          <CallMeBackPanel
+            guestToken={guestToken}
+            threadId={threadId}
+            source={source}
+            compact={compact}
+          />
+        </div>
+      )}
+
       <div className={compact ? 'w-full p-3' : 'mx-auto w-full max-w-3xl p-4'} ref={composerRef}>
+
         <PromptInput onSubmit={(message) => send(message.text ?? '')}>
           <PromptInputTextarea
             placeholder={
