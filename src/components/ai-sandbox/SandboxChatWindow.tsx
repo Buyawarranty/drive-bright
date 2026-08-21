@@ -129,7 +129,7 @@ function ChatAvatar({ sender }: { sender: Sender }) {
   if (sender === 'customer') {
     return (
       <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground ring-1 ring-border">
-        <User className="h-4 w-4" />
+        <UserRound className="h-4 w-4" />
       </span>
     );
   }
