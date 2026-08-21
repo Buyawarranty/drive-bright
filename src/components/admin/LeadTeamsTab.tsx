@@ -38,6 +38,8 @@ import { Button } from '@/components/ui/button';
 import { Percent } from 'lucide-react';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
 import { AutoLeadFreezePanel } from './leads/AutoLeadFreezePanel';
+import { PausedAgentsOverrideBar } from './leads/PausedAgentsOverrideBar';
+
 import { ScoreboardTargetsSection } from './leads/ScoreboardTargetsSection';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
@@ -194,7 +196,10 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+      {isManagement && <PausedAgentsOverrideBar canEdit={canEdit} />}
+
       <QuickLinksBar />
+
 
       {/* ─────────────────────────────────────────────────────────────
           NEW LEADS — manually add a lead straight from Lead Allocation.
