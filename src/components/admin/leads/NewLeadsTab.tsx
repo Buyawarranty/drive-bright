@@ -991,9 +991,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   // Apply optional team filter on top of freshLeads (no-op when teamFilter is null).
   const teamFilteredFreshLeads = useMemo(() => {
-    if (!teamFilter) return freshLeads;
+    // While searching, never apply the team chip — an agent typing a customer's
+    // name/phone/reg must find them even if the lead belongs to another team
+    // (the row shows who owns it). This is why searches used to come back empty
+    // and agents had to hunt for their own customers in Quotes & Orders.
+    if (!teamFilter || debouncedSearchTerm.trim()) return freshLeads;
     return freshLeads.filter(l => agentBelongsToTeam(l.assigned_to, teamFilter));
-  }, [freshLeads, teamFilter, agentBelongsToTeam]);
+  }, [freshLeads, teamFilter, agentBelongsToTeam, debouncedSearchTerm]);
+
 
   // Scope sales agents to the selected team so Reassign, agent filter, and the Agents view
   // only act on that team. When no team is selected, behaviour is unchanged.
@@ -1102,9 +1107,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       result = deduped;
     }
 
-    if (teamFilter) {
+    if (teamFilter && !debouncedSearchTerm.trim()) {
       result = result.filter(lead => agentBelongsToTeam(lead.assigned_to, teamFilter));
     }
+
 
     return result;
   }, [statusFilteredLeads, assignmentFilter, agentFilter, filter, debouncedSearchTerm, dateRange, getLeadSubmissionDate, visibleLeads, canSeeUnworked, isRecoveredLead, teamFilter, agentBelongsToTeam, wasContactedInRange]);

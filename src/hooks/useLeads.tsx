@@ -510,49 +510,10 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
       `;
 
-      // For a sales agent, resolve the ids of everyone on their team so
-      // searches stay scoped to that team (they should NOT see other teams'
-      // leads even when searching by phone / reg). Managers keep global search.
-      let teamMemberIds: string[] | null = null;
-      if (isSalesAgent && currentAdmin?.id) {
-        // Bound these too — unprotected awaits here left agents on slow/lossy
-        // connections stuck forever: isFetchingRef never clears because the
-        // surrounding try/finally never gets a chance to run, so every future
-        // refetch silently no-ops until the tab is reloaded. Degrade to
-        // self-only scope on a timeout rather than hang the whole fetch.
-        try {
-          const { data: myMembership } = await withTimeout(
-            (async () =>
-              await supabase
-                .from('lead_team_members')
-                .select('team_id')
-                .eq('admin_user_id', currentAdmin.id)
-                .maybeSingle())(),
-            LEAD_TAG_BATCH_TIMEOUT_MS,
-            'Team membership lookup timed out'
-          );
-          if (myMembership?.team_id) {
-            const { data: teamMates } = await withTimeout(
-              (async () =>
-                await supabase
-                  .from('lead_team_members')
-                  .select('admin_user_id')
-                  .eq('team_id', myMembership.team_id))(),
-              LEAD_TAG_BATCH_TIMEOUT_MS,
-              'Team members lookup timed out'
-            );
-            teamMemberIds = Array.from(new Set([
-              currentAdmin.id,
-              ...((teamMates || []) as any[]).map((r) => r.admin_user_id).filter(Boolean),
-            ]));
-          } else {
-            teamMemberIds = [currentAdmin.id];
-          }
-        } catch (teamErr) {
-          console.warn('[Leads] Team membership lookup timed out, scoping to self only:', teamErr);
-          teamMemberIds = [currentAdmin.id];
-        }
-      }
+      // NOTE: searches are global for every staff role now, so no team
+      // membership lookup is needed here (it also cost two extra round trips
+      // on every agent fetch).
+
 
       // When a lead has been claimed away from a previous owner via the
       // Recontact pool, the previous owner id is stored in
@@ -780,28 +741,14 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
           const hasServerSearch = !!serverSearchTermRef.current?.trim();
           if (hasServerSearch) {
-            // Sales agents searching should stay scoped to their own team's
-            // leads (plus unassigned so they can claim). Managers/admins see
-            // the global result set unchanged.
-            if (isSalesAgent && teamMemberIds && teamMemberIds.length > 0) {
-              const idsCsv = teamMemberIds.join(',');
-              // Allow searching within: own team, unassigned, OR any lead the
-              // current agent used to own (so they can help returning callers).
-              // The row will be badged "Old lead — new owner" in the UI.
-              const scopeOr = `assigned_to.in.(${idsCsv}),assigned_to.is.null,hidden_from_agent_ids.cs.{${currentAdmin.id}}`;
-              return await fetchPagedLeads((from, to) =>
-                applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
-                  supabase
-                    .from('sales_leads')
-                    .select(SELECT_COLUMNS)
-                    .or(scopeOr)
-                    .order('created_at', { ascending: false })
-                    .order('id', { ascending: false })
-                    .range(from, to)
-                )))
-              );
-            }
+            // SEARCH IS ALWAYS GLOBAL. Previously a sales agent's search was
+            // scoped to their own team (plus unassigned), so anyone searching a
+            // customer owned by another team got "no results" and had to fall
+            // back to Quotes & Orders to find their own customers. Every staff
+            // member can already read leads (RLS), and the row is badged with
+            // its owner, so a search now hits every lead in the system.
             return await fetchPagedLeads((from, to) =>
+
               applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
                 supabase
                   .from('sales_leads')
