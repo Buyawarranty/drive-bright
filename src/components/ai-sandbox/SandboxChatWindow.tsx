@@ -581,7 +581,7 @@ export function SandboxChatWindow({
                 <span>
                   {open
                     ? `Specialists are around ${openingHoursLabel.toLowerCase()} — I can call one in`
-                    : `Team's closed just now — back ${nextOpeningLabel()}`}
+                    : `I'm here 24/7 — specialists are back ${nextOpeningLabel()}`}
                 </span>
               </>
             )}
