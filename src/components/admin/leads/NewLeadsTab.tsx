@@ -1107,9 +1107,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       result = deduped;
     }
 
-    if (teamFilter) {
+    if (teamFilter && !debouncedSearchTerm.trim()) {
       result = result.filter(lead => agentBelongsToTeam(lead.assigned_to, teamFilter));
     }
+
 
     return result;
   }, [statusFilteredLeads, assignmentFilter, agentFilter, filter, debouncedSearchTerm, dateRange, getLeadSubmissionDate, visibleLeads, canSeeUnworked, isRecoveredLead, teamFilter, agentBelongsToTeam, wasContactedInRange]);
