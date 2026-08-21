@@ -373,6 +373,20 @@ export function SandboxChatWindow({
   const open = isTeamOpenNow();
   const { liveCount, liveNames } = useSandboxSpecialistPresence();
 
+  // "Speak to a live agent" — puts the visitor on hold and rings the CRM.
+  const [holdState, setHoldState] = useState<'idle' | 'connecting' | 'on_hold' | 'failed'>('idle');
+  const [holdError, setHoldError] = useState<string | null>(null);
+  const [holdSince, setHoldSince] = useState<number | null>(null);
+  const [holdTick, setHoldTick] = useState(0);
+
+  useEffect(() => {
+    if (holdState !== 'on_hold') return;
+    const t = window.setInterval(() => setHoldTick((n) => n + 1), 1000);
+    return () => window.clearInterval(t);
+  }, [holdState]);
+
+
+
 
   useEffect(() => {
     if (isGuest || !threadId) return;
@@ -519,6 +533,50 @@ export function SandboxChatWindow({
     sendMessage({ text: trimmed });
   };
 
+  /**
+   * Quick link: connect to a live agent. Puts the visitor on hold in the chat
+   * and rings the admin / super admin dashboards until someone takes the chat.
+   */
+  const requestLiveAgent = async () => {
+    if (holdState === 'connecting' || holdState === 'on_hold') return;
+    setHoldState('connecting');
+    setHoldError(null);
+    // Make sure there's a conversation for staff to pick up.
+    if (messages.length === 0) sendMessage({ text: 'Please can I speak to a live agent?' });
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-live-agent-request`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            guestToken: guestToken ?? null,
+            threadId: threadId ?? null,
+            source: source ?? 'website-chat',
+            registration: detectedReg,
+          }),
+        },
+      );
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) {
+        setHoldError(data?.message ?? "We couldn't connect you — please call 0330 229 5040.");
+        setHoldState('failed');
+        return;
+      }
+      setHoldSince(Date.now());
+      setHoldState('on_hold');
+      loadHandover();
+    } catch {
+      setHoldError('Network problem — please call us on 0330 229 5040.');
+      setHoldState('failed');
+    }
+  };
+
+  void holdTick; // re-renders the hold timer each second
+  const holdSeconds = holdSince ? Math.max(0, Math.round((Date.now() - holdSince) / 1000)) : 0;
+
+
+
   const takeChat = async () => {
     setAgentMode(true);
     if (!handover) return;
@@ -632,6 +690,14 @@ export function SandboxChatWindow({
               <RegQuickStart disabled={busy} onSubmit={(reg) => send(`My reg is ${reg} — what would my warranty cost?`)} />
 
               <div className="flex flex-col gap-2">
+                <button
+                  onClick={requestLiveAgent}
+                  disabled={holdState === 'connecting' || holdState === 'on_hold'}
+                  className="flex w-full items-center gap-3 rounded-xl border border-primary/40 bg-primary/5 px-3.5 py-3 text-left text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-primary/10"
+                >
+                  <Headset className="h-4 w-4 shrink-0 text-primary" />
+                  <span className="min-w-0">Speak to a live agent</span>
+                </button>
                 {STARTERS.map(({ text, Icon }) => (
                   <button
                     key={text}
@@ -733,6 +799,60 @@ export function SandboxChatWindow({
 
       {!agentMode && (
         <div className={compact ? '' : 'mx-auto w-full max-w-3xl'}>
+          {holdState === 'on_hold' || waiting ? (
+            <div className="mx-3 mb-2 rounded-2xl border border-primary/40 bg-primary/5 px-3.5 py-3">
+              <p className="flex items-center gap-2 text-sm font-bold text-foreground">
+                <span className="relative flex h-2.5 w-2.5 shrink-0">
+                  <span className="absolute inline-flex h-2.5 w-2.5 animate-ping rounded-full bg-primary opacity-70" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
+                </span>
+                {open ? 'Connecting you to a live agent…' : 'Your request is with the team'}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {open
+                  ? `You're on hold — we're ringing the team now. Please hold${holdSeconds ? ` (${holdSeconds}s)` : ''}. Keep chatting with Miles meanwhile.`
+                  : `We're closed just now — a specialist picks this up ${nextOpeningLabel()} (${openingHoursLabel}).`}
+              </p>
+              {open && (
+                <a
+                  href="tel:03302295040"
+                  className="mt-2 inline-flex items-center gap-1.5 text-sm font-bold text-primary underline underline-offset-2"
+                >
+                  <PhoneCall className="h-3.5 w-3.5" />
+                  Rather not wait? Call 0330 229 5040
+                </a>
+              )}
+            </div>
+          ) : (
+            <div className="mx-3 mb-2 flex items-center gap-3 rounded-2xl border border-border bg-card px-3.5 py-3 shadow-sm">
+              <Headset className="h-5 w-5 shrink-0 text-primary" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-foreground">Speak to a live agent</p>
+                <p className="text-sm text-muted-foreground">
+                  {open
+                    ? "We'll put you on hold and ring the team straight away."
+                    : `Leave it with us — a specialist picks this up ${nextOpeningLabel()}.`}
+                </p>
+                {open && (
+                  <a
+                    href="tel:03302295040"
+                    className="mt-1 inline-flex items-center gap-1.5 text-sm font-bold text-primary underline underline-offset-2"
+                  >
+                    <PhoneCall className="h-3.5 w-3.5" />
+                    Or call 0330 229 5040
+                  </a>
+                )}
+                {holdError && <p className="mt-1 text-sm font-medium text-destructive">{holdError}</p>}
+              </div>
+              <Button
+                onClick={requestLiveAgent}
+                disabled={holdState === 'connecting'}
+                className="h-10 shrink-0 rounded-xl text-sm font-bold"
+              >
+                {holdState === 'connecting' ? 'Connecting…' : 'Connect me'}
+              </Button>
+            </div>
+          )}
           <CallMeBackPanel
             guestToken={guestToken}
             threadId={threadId}
