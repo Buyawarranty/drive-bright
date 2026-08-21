@@ -125,6 +125,34 @@ function SenderLabel({ sender }: { sender: Sender }) {
 }
 
 
+function ChatAvatar({ sender }: { sender: Sender }) {
+  if (sender === 'customer') {
+    return (
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground ring-1 ring-border">
+        <User className="h-4 w-4" />
+      </span>
+    );
+  }
+  if (sender === 'agent') {
+    return (
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+        <Headset className="h-4 w-4" />
+      </span>
+    );
+  }
+  return (
+    <img
+      src={milesAvatar.url}
+      alt="Miles the panda"
+      width={32}
+      height={32}
+      className="mt-0.5 h-8 w-8 shrink-0 rounded-full bg-card object-cover ring-1 ring-border"
+      loading="lazy"
+    />
+  );
+}
+
+
 function RegQuickStart({
   onSubmit,
   disabled,
