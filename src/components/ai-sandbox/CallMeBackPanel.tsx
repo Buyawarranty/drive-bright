@@ -27,6 +27,7 @@ export function CallMeBackPanel({
   registration,
   quotedPrice,
   compact = false,
+  asChip = false,
 }: {
   guestToken?: string;
   threadId?: string;
@@ -34,6 +35,8 @@ export function CallMeBackPanel({
   registration?: string | null;
   quotedPrice?: number | null;
   compact?: boolean;
+  /** Render the idle state as a small one-line chip (for the top action row). */
+  asChip?: boolean;
 }) {
   const [step, setStep] = useState<Step>('closed');
   const [collapsed, setCollapsed] = useState(true);
@@ -84,7 +87,8 @@ export function CallMeBackPanel({
 
   if (step === 'done') {
     return (
-      <div className="mx-3 mb-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-900">
+      <div className={`${asChip ? '' : 'mx-3'} mb-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-900`}>
+
         <p className="flex items-center gap-1.5 font-semibold">
           <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600">
             <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
@@ -101,6 +105,20 @@ export function CallMeBackPanel({
   }
 
   if (step === 'closed') {
+    if (asChip) {
+      return (
+        <button
+          type="button"
+          onClick={() => setStep('number')}
+          title={open ? 'Request a call back' : `Request a call back — we ring you ${nextOpeningLabel()}`}
+          className="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+        >
+          <PhoneCall className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
+          <span className="truncate">Call me back</span>
+        </button>
+      );
+    }
+
     if (collapsed) {
       return (
         <button
@@ -160,7 +178,7 @@ export function CallMeBackPanel({
 
 
   return (
-    <div className={`mx-3 mb-2 rounded-lg border border-primary/40 bg-primary/5 ${compact ? 'p-3' : 'p-4'}`}>
+    <div className={`${asChip ? 'w-full' : 'mx-3'} mb-2 rounded-lg border border-primary/40 bg-primary/5 ${compact ? 'p-3' : 'p-4'}`}>
       <div className="mb-2 flex items-start justify-between gap-2">
         <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
           <PhoneCall className="h-4 w-4 text-primary" />
