@@ -235,7 +235,7 @@ Deno.serve(async (req) => {
 
       const { error: insertError } = await admin.from("ai_sandbox_messages").insert({
         thread_id: threadId,
-        user_id: user.id,
+        user_id: userId,
         role: "user",
         sdk_message_id: lastMessage.id ?? null,
         parts: lastMessage.parts ?? [],
@@ -261,7 +261,7 @@ Deno.serve(async (req) => {
       try {
         const { error } = await admin.from("ai_chat_events").insert({
           thread_id: threadId,
-          user_id: user.id,
+          user_id: userId,
           is_sandbox: true,
           ...row,
         });
@@ -677,7 +677,7 @@ Deno.serve(async (req) => {
             .from("ai_sandbox_handovers")
             .insert({
               thread_id: threadId,
-              created_by: user.id,
+              created_by: userId,
               kind: "live_handover",
               reason: args.reason,
               customer_name: args.customer_name,
@@ -741,7 +741,7 @@ Deno.serve(async (req) => {
             .from("ai_sandbox_handovers")
             .insert({
               thread_id: threadId,
-              created_by: user.id,
+              created_by: userId,
               kind: state.is_open ? "callback_request" : "out_of_hours_lead",
               reason: args.notes ?? "lead_capture",
               customer_name: args.customer_name,
@@ -832,7 +832,7 @@ Deno.serve(async (req) => {
             .join("\n");
           const { error } = await admin.from("ai_sandbox_messages").insert({
             thread_id: threadId,
-            user_id: user.id,
+            user_id: userId,
             role: "assistant",
             sdk_message_id: responseMessage?.id ?? null,
             parts: responseMessage?.parts ?? [],
