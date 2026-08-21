@@ -842,10 +842,17 @@ export function SandboxChatWindow({
       </Conversation>
 
 
-      <div className={compact ? 'w-full p-3' : 'mx-auto w-full max-w-3xl p-4'} ref={composerRef}>
+      <div
+        className={`${compact ? 'w-full p-3' : 'mx-auto w-full max-w-3xl p-4'} border-t border-border bg-background`}
+        ref={composerRef}
+      >
 
-        <PromptInput onSubmit={(message) => send(message.text ?? '')}>
+        <PromptInput
+          onSubmit={(message) => send(message.text ?? '')}
+          className="rounded-xl border-2 border-primary/50 bg-card shadow-lg ring-2 ring-primary/10 transition-shadow focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20"
+        >
           <PromptInputTextarea
+            className="min-h-[56px] text-base font-medium placeholder:font-normal placeholder:text-muted-foreground"
             placeholder={
               agentMode
                 ? 'Reply as the warranty specialist…'
