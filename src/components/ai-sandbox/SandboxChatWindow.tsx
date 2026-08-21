@@ -307,11 +307,25 @@ function PriceOptionsPanel({
         )}
       </div>
 
+      {priceRequested && !pending && checkoutHref && (
+        <div className="mt-3 rounded-xl border border-dashed border-border bg-muted/40 p-3">
+          <p className="text-xs font-semibold text-foreground">Prefer to finish it yourself?</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            I'll open your cart with {reg} already filled in — pick your plan and pay securely on site. This chat stays
+            open if you need me.
+          </p>
+          <Button asChild size="sm" variant="outline" className="mt-2 font-semibold">
+            <a href={checkoutHref}>Continue to checkout →</a>
+          </Button>
+        </div>
+      )}
+
       {priceRequested && !pending && (
         <p className="mt-2 text-xs text-muted-foreground">
           Happy with the price? Pay in full and you save 10%, or spread it over 12 monthly instalments at 0% APR.
         </p>
       )}
+
 
       {pending && (
         <p className="mt-2 text-xs text-muted-foreground">
