@@ -365,6 +365,7 @@ export const ServicePerformancePanel: React.FC = () => {
       </AccordionItem>
     </Accordion>
   </div>
-);
+  );
+};
 
 export default ServicePerformancePanel;
