@@ -373,6 +373,20 @@ export function SandboxChatWindow({
   const open = isTeamOpenNow();
   const { liveCount, liveNames } = useSandboxSpecialistPresence();
 
+  // "Speak to a live agent" — puts the visitor on hold and rings the CRM.
+  const [holdState, setHoldState] = useState<'idle' | 'connecting' | 'on_hold' | 'failed'>('idle');
+  const [holdError, setHoldError] = useState<string | null>(null);
+  const [holdSince, setHoldSince] = useState<number | null>(null);
+  const [holdTick, setHoldTick] = useState(0);
+
+  useEffect(() => {
+    if (holdState !== 'on_hold') return;
+    const t = window.setInterval(() => setHoldTick((n) => n + 1), 1000);
+    return () => window.clearInterval(t);
+  }, [holdState]);
+
+
+
 
   useEffect(() => {
     if (isGuest || !threadId) return;
