@@ -1,9 +1,10 @@
 import React, { lazy, Suspense, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, MapPin, Users, CalendarClock, Wifi, History } from 'lucide-react';
+import { Loader2, MapPin, Users, CalendarClock, Wifi, History, ShieldAlert } from 'lucide-react';
 import { StaffLocationPanel } from '@/components/admin/hr/StaffLocationPanel';
 import { StaffDirectoryPanel } from '@/components/admin/hr/StaffDirectoryPanel';
+import { ServicePerformancePanel } from '@/components/admin/hr/ServicePerformancePanel';
 import AdminAccessLogPanel from '@/components/admin/AdminAccessLogPanel';
 
 const TimesheetsTab = lazy(() =>
