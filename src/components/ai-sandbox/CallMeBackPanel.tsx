@@ -101,17 +101,23 @@ export function CallMeBackPanel({
 
   if (step === 'closed') {
     return (
-      <div className="mx-3 mb-2">
+      <div className="mx-3 mb-2 flex items-center gap-3 rounded-2xl bg-[#FDEBDF] px-3.5 py-3">
+        <PhoneCall className="h-5 w-5 shrink-0 text-[#B4501F]" />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold text-foreground">Prefer to talk?</p>
+          <p className="text-xs text-muted-foreground">
+            {open
+              ? 'Request a call back and a UK specialist rings you in minutes.'
+              : `Request a call back — we'll ring you ${nextOpeningLabel()} (${openingHoursLabel}).`}
+          </p>
+        </div>
         <Button
           onClick={() => setStep('number')}
-          className="h-11 w-full gap-2 bg-primary text-base font-semibold shadow-sm"
+          variant="outline"
+          className="h-10 shrink-0 rounded-xl border-border bg-background text-sm font-bold shadow-sm hover:bg-muted"
         >
-          <PhoneCall className="h-4 w-4" />
           Call me back
         </Button>
-        <p className="mt-1 text-center text-[11px] text-muted-foreground">
-          {open ? 'A UK specialist rings you in minutes' : `We'll ring you ${nextOpeningLabel()} — ${openingHoursLabel}`}
-        </p>
       </div>
     );
   }
