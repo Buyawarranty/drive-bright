@@ -28,6 +28,7 @@ const Fallback = () => (
 
 export const HRTab: React.FC<HRTabProps> = ({ userRole }) => {
   const [tab, setTab] = useState('locations');
+  const canSeeConduct = !userRole || CONDUCT_ROLES.includes(userRole);
 
   if (userRole && !MANAGEMENT_ROLES.includes(userRole)) {
     return (
