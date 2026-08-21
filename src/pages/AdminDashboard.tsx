@@ -39,6 +39,7 @@ import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
 import { initAdminTelemetry, logAdminUiEvent, logAdminSlowLoad } from '@/lib/adminTelemetry';
 import { installAdminStallGuard } from '@/lib/adminStallGuard';
 const AdminUiEventLogPanel = lazy(() => import('@/components/admin/AdminUiEventLogPanel'));
+const PaymentsPendingTab = lazy(() => import('@/components/admin/PaymentsPendingTab'));
 const SalesStaffPerformancePanel = lazy(() => import('@/components/admin/SalesStaffPerformancePanel'));
 
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
