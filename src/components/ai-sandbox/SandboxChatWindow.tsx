@@ -785,7 +785,15 @@ export function SandboxChatWindow({
                 key={message.id}
                 className={msgIndex > 0 ? 'mt-3 border-t border-border/70 pt-3' : undefined}
               >
-              <Message from={message.role}>
+              <Message
+                from={message.role}
+                className={
+                  message.role === 'user'
+                    ? 'flex-row-reverse items-start gap-2'
+                    : 'flex-row items-start gap-2'
+                }
+              >
+                <ChatAvatar sender={sender} />
                 <MessageContent>
                   <SenderLabel sender={sender} />
 
