@@ -257,40 +257,55 @@ function PriceOptionsPanel({
         </Button>
 
 
-        {priceRequested && (
+        {priceRequested && !pending && (
+          <>
+            <Button size="sm" variant="outline" disabled={disabled} onClick={() => setPending('full')}>
+              Pay in full — save 10%
+            </Button>
+            <Button size="sm" variant="outline" disabled={disabled} onClick={() => setPending('monthly')}>
+              Pay monthly — 0% APR
+            </Button>
+          </>
+        )}
+
+        {pending && (
           <>
             <Button
               size="sm"
-              variant="outline"
               disabled={disabled}
-
-              onClick={() =>
-                onSend(`I'd like ${combo}. Please confirm the total and send me a card payment link.`)
-              }
-            >
-              Pay by card
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={disabled}
-              onClick={() =>
+              className="bg-[#0BA360] font-bold text-white hover:bg-[#099455]"
+              onClick={() => {
                 onSend(
-                  `I'd like ${combo}. Please confirm the total and send me a monthly instalments link (Bumper).`,
-                )
-              }
+                  pending === 'full'
+                    ? `Yes — I'll pay in full for ${combo}. Please confirm the discounted total with the 10% pay-in-full saving, then send me a secure card payment link.`
+                    : `Yes — I'll pay monthly for ${combo}. Please confirm the monthly amount and the 12-instalment total (0% APR), then send me a secure monthly payment link.`,
+                );
+                setPending(null);
+              }}
             >
-              Pay monthly
+              Yes, send my payment link
+            </Button>
+            <Button size="sm" variant="ghost" disabled={disabled} onClick={() => setPending(null)}>
+              No, go back
             </Button>
           </>
         )}
       </div>
 
-      {priceRequested && (
+      {priceRequested && !pending && (
         <p className="mt-2 text-xs text-muted-foreground">
-          Happy with the price? Choose how you'd like to pay and I'll send you a secure payment link.
+          Happy with the price? Pay in full and you save 10%, or spread it over 12 monthly instalments at 0% APR.
         </p>
       )}
+
+      {pending && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          {pending === 'full'
+            ? "Just to confirm — you'd like to pay in full with the 10% saving applied? I'll confirm the exact total before sending your secure payment link."
+            : "Just to confirm — you'd like to pay monthly over 12 instalments at 0% APR? I'll confirm the monthly amount before sending your secure payment link."}
+        </p>
+      )}
+
     </div>
   );
 }
