@@ -137,14 +137,11 @@ function RegQuickStart({
   const valid = clean.length >= 5;
 
   return (
-    <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-3 text-left shadow-sm sm:p-4">
-      <p className="text-sm font-semibold text-foreground">Get an instant price or advice</p>
-      <p className="mt-0.5 text-sm text-muted-foreground">
-        Pop your reg in — I'll pull your vehicle details and come straight back with cover options.
-      </p>
+    <div className="w-full rounded-2xl border border-border bg-card p-3.5 text-left shadow-sm sm:p-4">
+      <p className="text-base font-bold text-foreground">Get your price in seconds</p>
 
       <form
-        className="mt-3 flex w-full items-stretch gap-1.5 sm:gap-2"
+        className="mt-3 flex w-full items-stretch gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           if (valid && !disabled) onSubmit(clean.toUpperCase());
