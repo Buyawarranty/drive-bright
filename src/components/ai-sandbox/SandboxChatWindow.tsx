@@ -721,7 +721,7 @@ export function SandboxChatWindow({
 
           {!agentMode && hasPriceQuote && (
             <div className="px-2 pb-2">
-              <PriceOptionsPanel disabled={busy} onSend={send} />
+              <PriceOptionsPanel disabled={busy} onSend={send} reg={detectedReg} mileage={detectedMileage} />
             </div>
           )}
 
