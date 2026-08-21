@@ -907,7 +907,11 @@ export function SandboxChatWindow({
                 <Badge className="text-[10px] uppercase tracking-wide">Human specialist</Badge>
               )}
             </div>
-            <PromptInputSubmit status={status} onClick={busy ? () => stop() : undefined} />
+            <PromptInputSubmit
+              status={status}
+              onClick={busy ? () => stop() : undefined}
+              className="h-11 w-11 rounded-full bg-primary text-primary-foreground shadow-md transition-transform hover:scale-105 hover:bg-primary/90 [&_svg]:size-5"
+            />
           </PromptInputFooter>
         </PromptInput>
       </div>
