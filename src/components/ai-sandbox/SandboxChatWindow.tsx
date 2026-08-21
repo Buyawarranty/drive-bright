@@ -163,7 +163,7 @@ function RegQuickStart({
       </form>
 
 
-      <p className="mt-2 text-[11px] text-muted-foreground">
+      <p className="mt-2 text-sm text-muted-foreground">
         Free quote · no card details needed · takes about 20 seconds
       </p>
 
