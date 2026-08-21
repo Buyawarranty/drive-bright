@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.find_lead_owner_by_contact(text, text) TO service_role;
