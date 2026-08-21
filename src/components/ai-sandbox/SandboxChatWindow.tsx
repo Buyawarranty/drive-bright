@@ -140,10 +140,10 @@ function RegQuickStart({
           if (valid && !disabled) onSubmit(clean.toUpperCase());
         }}
       >
-        <div className="flex min-w-0 flex-1 items-stretch overflow-hidden rounded-lg border-2 border-foreground">
-          <div className="flex min-w-[22px] flex-col items-center justify-center bg-[hsl(220,90%,45%)] px-0.5 text-[8px] font-bold leading-none text-white sm:min-w-[26px] sm:px-1 sm:text-[9px]">
-            <span className="text-[9px] sm:text-[10px]">🇬🇧</span>
-            UK
+        <div className="flex min-w-0 flex-1 items-stretch overflow-hidden rounded-lg border-[3px] border-black bg-[#F0CF5C]">
+          <div className="flex min-w-[30px] flex-col items-center justify-center gap-0.5 bg-[#3B6FE0] px-1 py-1 text-[10px] font-extrabold leading-none tracking-wide text-white sm:min-w-[34px] sm:text-[11px]">
+            <span>GB</span>
+            <span>UK</span>
           </div>
           <input
             value={reg}
@@ -152,7 +152,7 @@ function RegQuickStart({
             aria-label="Vehicle registration"
             maxLength={9}
             disabled={disabled}
-            className="min-w-0 flex-1 bg-[hsl(48,100%,55%)] px-1.5 py-2 text-sm font-black uppercase tracking-normal text-black outline-none placeholder:text-black/50 sm:px-2 sm:text-base sm:tracking-wide"
+            className="min-w-0 flex-1 bg-[#F0CF5C] px-2 py-2 text-base font-extrabold uppercase tracking-wide text-[#3A3323] outline-none placeholder:text-[#3A3323]/80 sm:text-lg"
           />
         </div>
         <Button type="submit" disabled={!valid || disabled} className="shrink-0 whitespace-nowrap px-2.5 text-sm font-semibold sm:px-3">
