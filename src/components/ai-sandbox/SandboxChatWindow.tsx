@@ -691,7 +691,19 @@ export function SandboxChatWindow({
         <ConversationScrollButton />
       </Conversation>
 
+      {!agentMode && (
+        <div className={compact ? '' : 'mx-auto w-full max-w-3xl'}>
+          <CallMeBackPanel
+            guestToken={guestToken}
+            threadId={threadId}
+            source={source}
+            compact={compact}
+          />
+        </div>
+      )}
+
       <div className={compact ? 'w-full p-3' : 'mx-auto w-full max-w-3xl p-4'} ref={composerRef}>
+
         <PromptInput onSubmit={(message) => send(message.text ?? '')}>
           <PromptInputTextarea
             placeholder={
