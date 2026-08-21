@@ -921,7 +921,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
 
     return result;
-  }, [statusFilteredLeads, visibleLeads, leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, ageWindow, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter, showFakeLeads, selectedFilters, wasContactedInRange]);
+  }, [statusFilteredLeads, visibleLeads, leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, ageWindow, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter, showFakeLeads, selectedFilters, wasContactedInRange, hideSandboxLeads, isSandboxTestLead]);
   const isRecoveredLead = useCallback((lead: Lead) => {
     // A lead is "recovered/unworked" only if it came from an abandoned cart,
     // was never assigned to any agent, and never completed step 2
