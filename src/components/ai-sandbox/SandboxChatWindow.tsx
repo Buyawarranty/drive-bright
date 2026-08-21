@@ -226,7 +226,8 @@ function PriceOptionsPanel({
   // wording only appear once the customer has asked to see their price.
   const [priceRequested, setPriceRequested] = useState(false);
 
-  const combo = `${term} months, £${limit.toLocaleString()} claim limit, £${excess} excess, £${labour}/hr labour rate`;
+  const termLabel = (v: number) => (v % 12 === 0 ? `${v / 12} year${v / 12 > 1 ? 's' : ''}` : `${v} months`);
+  const combo = `${termLabel(term)} cover, £${limit.toLocaleString()} claim limit, £${excess} excess, £${labour}/hr labour rate`;
 
   return (
     <div className="rounded-2xl border border-border bg-card p-4 text-left shadow-sm">
@@ -236,7 +237,7 @@ function PriceOptionsPanel({
       </p>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <OptionRow label="Cover length" options={TERM_OPTIONS} value={term} onChange={setTerm} format={(v) => `${v} months`} />
+        <OptionRow label="Cover length" options={TERM_OPTIONS} value={term} onChange={setTerm} format={termLabel} />
         <OptionRow label="Claim limit" options={LIMIT_OPTIONS} value={limit} onChange={setLimit} format={(v) => `£${v.toLocaleString()}`} />
         <OptionRow label="Excess" options={EXCESS_OPTIONS} value={excess} onChange={setExcess} format={(v) => `£${v}`} />
         <OptionRow label="Labour rate" options={LABOUR_OPTIONS} value={labour} onChange={setLabour} format={(v) => `£${v}/hr`} />
@@ -245,8 +246,8 @@ function PriceOptionsPanel({
       <div className="mt-3 flex flex-wrap gap-2">
         <Button
           size="sm"
-          variant={priceRequested ? 'secondary' : 'default'}
           disabled={disabled}
+          className="bg-[#FF6B00] font-bold text-white shadow-sm hover:bg-[#E85F00]"
           onClick={() => {
             setPriceRequested(true);
             onSend(`Price this for me: ${combo}. What's the total?`);
@@ -254,6 +255,7 @@ function PriceOptionsPanel({
         >
           Show my price
         </Button>
+
 
         {priceRequested && (
           <>
