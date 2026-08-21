@@ -38,6 +38,7 @@ export default function SiteChatWidget({
 }) {
   const [open, setOpen] = useState(false);
   const [everOpened, setEverOpened] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [showNudge, setShowNudge] = useState(false);
   const tokenRef = useRef<string | null>(null);
   if (tokenRef.current === null) tokenRef.current = getGuestToken();
