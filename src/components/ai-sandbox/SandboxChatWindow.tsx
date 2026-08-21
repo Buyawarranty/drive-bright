@@ -102,14 +102,15 @@ function SenderLabel({ sender }: { sender: Sender }) {
   if (sender === 'customer') return null;
   if (sender === 'agent') {
     return (
-      <div className="mb-1 flex items-center gap-1.5 text-sm font-medium text-primary">
+      <div className="mb-1.5 flex items-center gap-1.5 border-b border-primary/30 pb-1.5 text-sm font-bold text-primary">
         <Headset className="h-3.5 w-3.5" />
         Warranty specialist · human
       </div>
     );
   }
+
   return (
-    <div className="mb-1 flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+    <div className="mb-1.5 flex items-center gap-1.5 border-b border-border pb-1.5 text-sm font-bold text-foreground">
       <img
         src={milesAvatar.url}
         alt="Miles the panda"
@@ -122,6 +123,7 @@ function SenderLabel({ sender }: { sender: Sender }) {
     </div>
   );
 }
+
 
 function RegQuickStart({
   onSubmit,
@@ -713,12 +715,17 @@ export function SandboxChatWindow({
           )}
 
 
-          {messages.map((message) => {
+          {messages.map((message, msgIndex) => {
             const sender = senderOf(message);
             return (
-              <Message from={message.role} key={message.id}>
+              <div
+                key={message.id}
+                className={msgIndex > 0 ? 'mt-3 border-t border-border/70 pt-3' : undefined}
+              >
+              <Message from={message.role}>
                 <MessageContent>
                   <SenderLabel sender={sender} />
+
                   {message.parts.map((part, i) => {
                     if (part.type === 'text') {
                       return <MessageResponse key={i}>{stripPrefix(part.text)}</MessageResponse>;
@@ -771,7 +778,9 @@ export function SandboxChatWindow({
                   })}
                 </MessageContent>
               </Message>
+              </div>
             );
+
           })}
 
           {!agentMode && hasPriceQuote && (
