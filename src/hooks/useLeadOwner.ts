@@ -43,16 +43,15 @@ export const useLeadOwner = (email?: string | null, phone?: string | null): Lead
 
     const run = async () => {
       try {
-        const clauses: string[] = [];
-        if (hasEmail) clauses.push(`email.ilike.${emailKey}`);
-        if (hasPhone) clauses.push(`phone.ilike.%${phoneKey}`);
+        // PERF: the old `.or(email.ilike…,phone.ilike.%…)` could not use any
+        // index (a leading-wildcard ilike scans every lead — ~1s per lookup and
+        // one of the heaviest reads in the database). This RPC hits the
+        // lower(btrim(email)) and RIGHT(normalize_uk_phone(phone),9) indexes.
+        const { data } = await supabase.rpc('find_lead_owner_by_contact', {
+          _email: hasEmail ? emailKey : null,
+          _phone9: hasPhone ? phoneKey : null,
+        });
 
-        const { data } = await supabase
-          .from('sales_leads')
-          .select('id, assigned_to, created_at')
-          .or(clauses.join(','))
-          .order('created_at', { ascending: false })
-          .limit(10);
 
         if (cancelled) return;
         const rows = (data as any[]) || [];
