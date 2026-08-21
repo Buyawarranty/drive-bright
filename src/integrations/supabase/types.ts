@@ -1502,7 +1502,7 @@ export type Database = {
           claimed_by: string | null
           cover_summary: string | null
           created_at: string
-          created_by: string
+          created_by: string | null
           customer_email: string | null
           customer_name: string | null
           customer_phone: string | null
@@ -1521,7 +1521,7 @@ export type Database = {
           claimed_by?: string | null
           cover_summary?: string | null
           created_at?: string
-          created_by: string
+          created_by?: string | null
           customer_email?: string | null
           customer_name?: string | null
           customer_phone?: string | null
@@ -1540,7 +1540,7 @@ export type Database = {
           claimed_by?: string | null
           cover_summary?: string | null
           created_at?: string
-          created_by?: string
+          created_by?: string | null
           customer_email?: string | null
           customer_name?: string | null
           customer_phone?: string | null
@@ -1573,7 +1573,7 @@ export type Database = {
           role: string
           sdk_message_id: string | null
           thread_id: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           content?: string
@@ -1583,7 +1583,7 @@ export type Database = {
           role: string
           sdk_message_id?: string | null
           thread_id: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           content?: string
@@ -1593,7 +1593,7 @@ export type Database = {
           role?: string
           sdk_message_id?: string | null
           thread_id?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1638,27 +1638,33 @@ export type Database = {
       ai_sandbox_threads: {
         Row: {
           created_at: string
+          guest_token: string | null
           id: string
           is_sandbox: boolean
+          source: string | null
           title: string
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
+          guest_token?: string | null
           id?: string
           is_sandbox?: boolean
+          source?: string | null
           title?: string
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
+          guest_token?: string | null
           id?: string
           is_sandbox?: boolean
+          source?: string | null
           title?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }

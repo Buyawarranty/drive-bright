@@ -296,3 +296,6 @@ verify_jwt = false
 
 [functions.provision-backup-login]
 verify_jwt = true
+
+[functions.ai-sandbox-chat]
+verify_jwt = false
