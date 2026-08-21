@@ -36,6 +36,7 @@ export function CallMeBackPanel({
   compact?: boolean;
 }) {
   const [step, setStep] = useState<Step>('closed');
+  const [collapsed, setCollapsed] = useState(true);
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
