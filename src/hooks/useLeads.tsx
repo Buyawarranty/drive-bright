@@ -510,49 +510,10 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
       `;
 
-      // For a sales agent, resolve the ids of everyone on their team so
-      // searches stay scoped to that team (they should NOT see other teams'
-      // leads even when searching by phone / reg). Managers keep global search.
-      let teamMemberIds: string[] | null = null;
-      if (isSalesAgent && currentAdmin?.id) {
-        // Bound these too — unprotected awaits here left agents on slow/lossy
-        // connections stuck forever: isFetchingRef never clears because the
-        // surrounding try/finally never gets a chance to run, so every future
-        // refetch silently no-ops until the tab is reloaded. Degrade to
-        // self-only scope on a timeout rather than hang the whole fetch.
-        try {
-          const { data: myMembership } = await withTimeout(
-            (async () =>
-              await supabase
-                .from('lead_team_members')
-                .select('team_id')
-                .eq('admin_user_id', currentAdmin.id)
-                .maybeSingle())(),
-            LEAD_TAG_BATCH_TIMEOUT_MS,
-            'Team membership lookup timed out'
-          );
-          if (myMembership?.team_id) {
-            const { data: teamMates } = await withTimeout(
-              (async () =>
-                await supabase
-                  .from('lead_team_members')
-                  .select('admin_user_id')
-                  .eq('team_id', myMembership.team_id))(),
-              LEAD_TAG_BATCH_TIMEOUT_MS,
-              'Team members lookup timed out'
-            );
-            teamMemberIds = Array.from(new Set([
-              currentAdmin.id,
-              ...((teamMates || []) as any[]).map((r) => r.admin_user_id).filter(Boolean),
-            ]));
-          } else {
-            teamMemberIds = [currentAdmin.id];
-          }
-        } catch (teamErr) {
-          console.warn('[Leads] Team membership lookup timed out, scoping to self only:', teamErr);
-          teamMemberIds = [currentAdmin.id];
-        }
-      }
+      // NOTE: searches are global for every staff role now, so no team
+      // membership lookup is needed here (it also cost two extra round trips
+      // on every agent fetch).
+
 
       // When a lead has been claimed away from a previous owner via the
       // Recontact pool, the previous owner id is stored in
