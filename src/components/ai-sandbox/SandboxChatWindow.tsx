@@ -441,6 +441,31 @@ export function SandboxChatWindow({
 
   const busy = status === 'submitted' || status === 'streaming';
 
+  // Pull the reg and mileage back out of the conversation so the "Continue to
+  // checkout" hand-off can pre-fill the real cart. Latest mention wins.
+  const { detectedReg, detectedMileage } = useMemo(() => {
+    const texts: string[] = [];
+    for (const m of messages) {
+      for (const p of m.parts) {
+        if (p.type === 'text' && typeof (p as { text?: string }).text === 'string') {
+          texts.push((p as { text: string }).text);
+        }
+      }
+    }
+    const joined = texts.join('\n');
+    const regMatches = joined.match(
+      /\b([A-Z]{2}[0-9]{2}\s?[A-Z]{3}|[A-Z][0-9]{1,3}\s?[A-Z]{3}|[A-Z]{3}\s?[0-9]{1,3}[A-Z]?)\b/gi,
+    );
+    const mileMatches = joined.match(/([0-9][0-9,\.]{2,9})\s*(?:miles|mile|mi\b|k\b)/gi);
+    const rawMileage = mileMatches?.[mileMatches.length - 1]?.replace(/[^0-9]/g, '') ?? '';
+    const mileageNum = Number(rawMileage);
+    return {
+      detectedReg: regMatches?.[regMatches.length - 1]?.replace(/\s+/g, '').toUpperCase() ?? null,
+      detectedMileage: mileageNum >= 100 && mileageNum <= 300000 ? String(mileageNum) : null,
+    };
+  }, [messages]);
+
+
   // Show the price builder once Miles has looked the vehicle up or quoted a price
   const hasPriceQuote = useMemo(
     () =>
