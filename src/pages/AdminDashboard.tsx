@@ -913,6 +913,17 @@ const AdminDashboard = () => {
             <AdminUiEventLogPanel />
           </Suspense>
         );
+      // Payments pending: accounts verification queue for confirmed sales with no
+      // Stripe / Bumper / Payment Assist evidence on the system.
+      case 'payments-pending':
+        if (!isTabAllowedForRole('payments-pending', effectiveUserRole, effectiveUserPermissions)) {
+          return <AccessDenied label="Payments pending" />;
+        }
+        return (
+          <Suspense fallback={<TabFallback />}>
+            <PaymentsPendingTab />
+          </Suspense>
+        );
       case 'page-analytics':
         return <PageAnalyticsTab />;
       case 'google-ads':
