@@ -391,6 +391,9 @@ const AdminDashboard = () => {
     // Attach CRM telemetry (CTA clicks, JS errors, crashes) and record how long
     // this dashboard took to become usable so slow/blank loads are visible later.
     const detachTelemetry = initAdminTelemetry();
+    // Stop dead connections from leaving a screen buffering forever — every data
+    // read is time-limited and retried once on a fresh session instead.
+    const detachStallGuard = installAdminStallGuard();
     const loadStartedAt = performance.now();
     // Browsers pause requestAnimationFrame while a tab is hidden, so a
     // backgrounded tab used to report minutes-long "slow loads" that never
