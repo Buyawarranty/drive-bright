@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HomepageAlt from '@/components/HomepageAlt';
+
+// Live test of the Miles chat widget on this page only (not the homepage yet).
+const SiteChatWidget = lazy(() => import('@/components/ai-sandbox/SiteChatWidget'));
 
 interface VehicleData {
   registration: string;
@@ -25,6 +28,9 @@ const UsedCarWarrantyUK = () => {
   return (
     <div>
       <HomepageAlt onRegistrationSubmit={handleRegistrationSubmit} />
+      <Suspense fallback={null}>
+        <SiteChatWidget source="used-car-warranty-uk" greeting="Hi — want an instant warranty price?" />
+      </Suspense>
     </div>
   );
 };
