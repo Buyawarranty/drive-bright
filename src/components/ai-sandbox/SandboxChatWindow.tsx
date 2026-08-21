@@ -261,7 +261,9 @@ function PriceOptionsPanel({
           <>
             <Button
               size="sm"
+              variant="outline"
               disabled={disabled}
+
               onClick={() =>
                 onSend(`I'd like ${combo}. Please confirm the total and send me a card payment link.`)
               }
