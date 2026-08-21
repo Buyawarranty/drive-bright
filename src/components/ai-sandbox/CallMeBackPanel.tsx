@@ -100,6 +100,23 @@ export function CallMeBackPanel({
   }
 
   if (step === 'closed') {
+    if (collapsed) {
+      return (
+        <button
+          type="button"
+          onClick={() => setCollapsed(false)}
+          className="mx-3 mb-2 flex w-[calc(100%-1.5rem)] items-center gap-2 rounded-xl bg-[#FDEBDF] px-3 py-1.5 text-left transition-colors hover:bg-[#FBE0CE]"
+          aria-expanded={false}
+        >
+          <PhoneCall className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
+          <span className="flex-1 truncate text-xs font-bold text-foreground">
+            Prefer to talk? Request a call back
+          </span>
+          <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
+        </button>
+      );
+    }
+
     return (
       <div className="mx-3 mb-2 flex items-center gap-3 rounded-2xl bg-[#FDEBDF] px-3.5 py-3">
         <PhoneCall className="h-5 w-5 shrink-0 text-[#B4501F]" />
@@ -127,9 +144,18 @@ export function CallMeBackPanel({
         >
           Call me back
         </Button>
+        <button
+          type="button"
+          onClick={() => setCollapsed(true)}
+          aria-label="Collapse call back prompt"
+          className="shrink-0 rounded p-0.5 text-[#B4501F] hover:text-foreground"
+        >
+          <ChevronUp className="h-4 w-4" />
+        </button>
       </div>
     );
   }
+
 
 
   return (
