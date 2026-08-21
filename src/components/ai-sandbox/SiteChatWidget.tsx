@@ -69,13 +69,13 @@ export default function SiteChatWidget({
 
   return (
     <>
-      {/* Launcher */}
+      {/* Launcher — closed state */}
       {!open && (
         <div className="fixed bottom-4 right-4 z-[60] flex items-end gap-2 sm:bottom-6 sm:right-6">
           {showNudge && (
             <button
               onClick={openChat}
-              className="mb-1 hidden max-w-[220px] rounded-2xl rounded-br-sm border border-border bg-background px-3 py-2 text-left text-sm shadow-lg sm:block"
+              className="mb-2 hidden max-w-[220px] rounded-2xl rounded-br-sm border border-border bg-background px-3 py-2 text-left text-sm shadow-lg sm:block"
             >
               {greeting}
             </button>
@@ -83,9 +83,23 @@ export default function SiteChatWidget({
           <button
             onClick={openChat}
             aria-label="Chat with Miles, our AI warranty assistant"
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            className="group flex items-center gap-3 rounded-full border-2 border-[#1F2A5B] bg-background py-2 pl-2 pr-5 shadow-xl transition-transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <MessageCircle className="h-6 w-6" />
+            <span className="relative shrink-0">
+              <img
+                src={milesAvatar.url}
+                alt="Miles the panda"
+                width={48}
+                height={48}
+                className="h-12 w-12 rounded-full object-cover ring-1 ring-border"
+              />
+              <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-background bg-green-500" />
+            </span>
+            <span className="hidden text-left leading-tight sm:block">
+              <span className="block text-base font-bold text-foreground">Ask Miles</span>
+              <span className="block text-sm text-muted-foreground">AI assistant + live team</span>
+            </span>
+            <MessageCircle className="h-5 w-5 text-muted-foreground sm:hidden" />
           </button>
         </div>
       )}
@@ -102,14 +116,17 @@ export default function SiteChatWidget({
           aria-label="Chat with Miles"
         >
           <div className="flex shrink-0 items-center gap-3 border-b border-border bg-background px-4 py-3">
-            <img
-              src={milesAvatar.url}
-              alt="Miles the panda"
-              width={44}
-              height={44}
-              className="h-11 w-11 shrink-0 rounded-full ring-1 ring-border"
-              loading="lazy"
-            />
+            <span className="relative shrink-0">
+              <img
+                src={milesAvatar.url}
+                alt="Miles the panda"
+                width={44}
+                height={44}
+                className="h-11 w-11 rounded-full object-cover ring-1 ring-border"
+                loading="lazy"
+              />
+              <span className="absolute -bottom-0.5 -left-0.5 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
+            </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-base font-bold text-foreground">Miles · Warranty Assistant</p>
               <p className="truncate text-sm text-muted-foreground">AI assistant · Specialist available</p>
