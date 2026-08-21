@@ -194,7 +194,10 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+      {isManagement && <PausedAgentsOverrideBar canEdit={canEdit} />}
+
       <QuickLinksBar />
+
 
       {/* ─────────────────────────────────────────────────────────────
           NEW LEADS — manually add a lead straight from Lead Allocation.
