@@ -619,32 +619,27 @@ export function SandboxChatWindow({
           </Message>
 
           {messages.length === 0 && (
-            <div className="flex flex-col items-center gap-3 py-4 text-center">
+            <div className="flex flex-col gap-3 py-2">
               {!compact && <img
                 src={milesCalls.url}
                 alt="Miles the panda in a buyawarranty polo with a headset, saying hi and offering to check your coverage, file a claim or get answers"
                 width={760}
                 height={512}
-                className="h-auto w-full max-w-[220px]"
+                className="mx-auto h-auto w-full max-w-[220px]"
                 loading="lazy"
               />}
 
               <RegQuickStart disabled={busy} onSubmit={(reg) => send(`My reg is ${reg} — what would my warranty cost?`)} />
 
-              <p className="max-w-sm text-center text-sm text-muted-foreground">
-                Just type your registration plate and mileage — that's all we need to find your vehicle.
-                <br />
-                For example: <span className="font-medium text-foreground">AB12 CDE, 62,000 miles</span>
-              </p>
-
-              <div className="flex flex-wrap justify-center gap-2">
-                {STARTERS.map((s) => (
+              <div className="flex flex-col gap-2">
+                {STARTERS.map(({ text, Icon }) => (
                   <button
-                    key={s}
-                    onClick={() => send(s)}
-                    className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    key={text}
+                    onClick={() => send(text)}
+                    className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-3 text-left text-sm font-medium text-foreground shadow-sm transition-colors hover:border-primary/40 hover:bg-muted"
                   >
-                    {s}
+                    <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="min-w-0">{text}</span>
                   </button>
                 ))}
               </div>
