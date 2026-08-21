@@ -394,6 +394,8 @@ export const ProgressOverviewStrip: React.FC = () => {
   const pct = data.target && data.target > 0 ? Math.min(100, Math.round((data.revenue / data.target) * 100)) : null;
   const onBreak = data.breakStatus !== 'available' && data.breakStatus !== 'off';
   const bonus = data.positives * 5 + data.negatives * 10;
+  const REVIEW_MONTH_TARGET = 10;
+  const monthReviewsTotal = data.monthPositives + data.monthNegatives;
 
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const frozen = !data.salesReadFailed && data.lowSaleDays >= 2;
@@ -566,7 +568,7 @@ export const ProgressOverviewStrip: React.FC = () => {
             icon={<Star className="h-4 w-4 text-emerald-700" />}
             iconClass="bg-emerald-100"
             label="My reviews · this week"
-            help="These are not pulled from Trustpilot and they are not the marketing review emails. Add a review only when you personally asked the customer on a call, WhatsApp or email and they name you in it. £5 per named positive review, £10 per negative review you get resolved and removed."
+            help="Target: minimum 10 named reviews a month. These are not pulled from Trustpilot and they are not the marketing review emails. Add a review only when you personally asked the customer on a call, WhatsApp or email and they name you in it. £5 per named positive review, £10 per negative review you get resolved and removed."
           >
             <div className="flex items-baseline gap-3 whitespace-nowrap">
               <span className="text-sm">
@@ -577,6 +579,29 @@ export const ProgressOverviewStrip: React.FC = () => {
               </span>
               <span className="text-sm font-semibold">{gbp(bonus)} bonus</span>
             </div>
+            <div className="mt-1 flex items-center gap-2 whitespace-nowrap">
+              <span
+                className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${
+                  monthReviewsTotal >= REVIEW_MONTH_TARGET
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}
+              >
+                {monthReviewsTotal}/{REVIEW_MONTH_TARGET} this month
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                {monthReviewsTotal >= REVIEW_MONTH_TARGET
+                  ? 'Monthly minimum met'
+                  : `${REVIEW_MONTH_TARGET - monthReviewsTotal} more to hit the 10 a month minimum`}
+              </span>
+            </div>
+            <div className="mt-1 h-1.5 w-full max-w-[220px] overflow-hidden rounded-full bg-muted">
+              <div
+                className={`h-full ${monthReviewsTotal >= REVIEW_MONTH_TARGET ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                style={{ width: `${Math.min(100, Math.round((monthReviewsTotal / REVIEW_MONTH_TARGET) * 100))}%` }}
+              />
+            </div>
+
             <Popover>
               <PopoverTrigger asChild>
                 <Button size="sm" variant="outline" className="mt-1 h-6 gap-1 px-2 text-[11px]">
