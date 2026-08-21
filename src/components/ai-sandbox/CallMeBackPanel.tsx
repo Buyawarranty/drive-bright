@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { PhoneCall, Check, Loader2, X, Clock } from 'lucide-react';
+import { PhoneCall, Phone, Check, Loader2, X, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isTeamOpenNow, nextOpeningLabel, openingHoursLabel } from '@/lib/aiSandbox/openingHours';
 
@@ -110,6 +110,15 @@ export function CallMeBackPanel({
               ? 'Request a call back and a UK specialist rings you in minutes.'
               : `Request a call back — we'll ring you ${nextOpeningLabel()} (${openingHoursLabel}).`}
           </p>
+          {open && (
+            <a
+              href="tel:03302295040"
+              className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-[#B4501F] underline underline-offset-2"
+            >
+              <Phone className="h-3 w-3" />
+              Or call us now on 0330 229 5040
+            </a>
+          )}
         </div>
         <Button
           onClick={() => setStep('number')}
@@ -121,6 +130,7 @@ export function CallMeBackPanel({
       </div>
     );
   }
+
 
   return (
     <div className={`mx-3 mb-2 rounded-lg border border-primary/40 bg-primary/5 ${compact ? 'p-3' : 'p-4'}`}>
