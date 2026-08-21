@@ -1198,10 +1198,15 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
     // Note: abandoned_carts channel removed — leads are sourced only from sales_leads now
 
-    // Polling fallback: refresh every 60s (realtime handles fast sync, this is a safety net)
+    // Polling fallback: realtime above is the primary sync path, so this is only
+    // a safety net for a dropped socket. It was 60s, which meant every open tab
+    // re-pulled the whole lead list 60 times an hour on top of realtime — one of
+    // the top three consumers of database CPU. 3 minutes is still well inside
+    // the window an agent would notice, and tab focus forces an immediate catch-up.
     const stopPolling = setVisibleInterval(() => {
+      lastRefetchTimeRef.current = Date.now();
       fetchLeadsRef.current();
-    }, 60000);
+    }, 180000);
 
     const flushPendingStatusQueue = () => {
       const pending = Object.values(readPendingStatusUpdates()).sort(
