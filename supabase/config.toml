@@ -299,3 +299,6 @@ verify_jwt = true
 
 [functions.ai-sandbox-chat]
 verify_jwt = false
+
+[functions.sandbox-callback-request]
+verify_jwt = false
