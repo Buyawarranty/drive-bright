@@ -305,6 +305,12 @@ export const defaultTabs: Tab[] = [
     description: 'Track page visits, traffic sources & Google Ads'
   },
   {
+    id: 'admin-logs',
+    label: 'Admin Logs',
+    icon: ScrollText,
+    description: 'Dashboard activity & issue log: button presses, load times, crashes and errors'
+  },
+  {
     id: 'google-ads',
     label: 'Marketing Analytics',
     icon: Target,
