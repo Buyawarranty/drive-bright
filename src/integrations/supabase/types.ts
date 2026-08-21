@@ -2360,6 +2360,83 @@ export type Database = {
           },
         ]
       }
+      career_applications: {
+        Row: {
+          acknowledgement_sent_at: string | null
+          applied_at: string
+          auto_reject_enabled: boolean
+          covering_note: string | null
+          created_at: string
+          cv_file_name: string | null
+          cv_storage_path: string | null
+          decided_at: string | null
+          decided_by: string | null
+          email: string | null
+          full_name: string
+          id: string
+          internal_notes: string | null
+          phone: string | null
+          rejection_due_at: string | null
+          rejection_sent_at: string | null
+          role_applied: string
+          source_ip: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          acknowledgement_sent_at?: string | null
+          applied_at?: string
+          auto_reject_enabled?: boolean
+          covering_note?: string | null
+          created_at?: string
+          cv_file_name?: string | null
+          cv_storage_path?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          internal_notes?: string | null
+          phone?: string | null
+          rejection_due_at?: string | null
+          rejection_sent_at?: string | null
+          role_applied?: string
+          source_ip?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          acknowledgement_sent_at?: string | null
+          applied_at?: string
+          auto_reject_enabled?: boolean
+          covering_note?: string | null
+          created_at?: string
+          cv_file_name?: string | null
+          cv_storage_path?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          internal_notes?: string | null
+          phone?: string | null
+          rejection_due_at?: string | null
+          rejection_sent_at?: string | null
+          role_applied?: string
+          source_ip?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "career_applications_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checkout_struggle_alerts: {
         Row: {
           acknowledged_at: string | null
@@ -13053,6 +13130,10 @@ export type Database = {
       }
     }
     Functions: {
+      add_working_days: {
+        Args: { _days: number; _from: string }
+        Returns: string
+      }
       adjust_sales_lead_call_count: {
         Args: { p_delta: number; p_lead_id: string }
         Returns: number
