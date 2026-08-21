@@ -102,12 +102,13 @@ function SenderLabel({ sender }: { sender: Sender }) {
   if (sender === 'customer') return null;
   if (sender === 'agent') {
     return (
-      <div className="mb-1 flex items-center gap-1.5 text-sm font-medium text-primary">
+      <div className="mb-1.5 flex items-center gap-1.5 border-b border-primary/30 pb-1.5 text-sm font-bold text-primary">
         <Headset className="h-3.5 w-3.5" />
         Warranty specialist · human
       </div>
     );
   }
+
   return (
     <div className="mb-1.5 flex items-center gap-1.5 border-b border-border pb-1.5 text-sm font-bold text-foreground">
       <img
