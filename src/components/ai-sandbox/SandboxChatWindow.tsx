@@ -539,7 +539,7 @@ export function SandboxChatWindow({
     <div className="flex h-full min-h-0 flex-col">
       {/* Who you are talking to */}
       <div
-        className={`flex flex-wrap items-center gap-2 border-b px-4 py-2 text-xs ${
+        className={`flex flex-wrap items-center gap-2 border-b px-4 py-2 text-sm ${
           agentMode
             ? 'border-primary/30 bg-primary/10 text-primary'
             : 'border-border bg-muted/40 text-muted-foreground'
