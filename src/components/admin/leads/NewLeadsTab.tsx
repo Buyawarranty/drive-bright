@@ -488,13 +488,25 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return () => window.clearTimeout(timeoutId);
   }, [loading, leads.length]);
 
-  // Set default filter on mount + silently import any orphaned carts into sales_leads
+  // Set default filter on mount. The orphaned-cart import is heavy server work,
+  // so it runs at most once every 10 minutes per browser and only after the
+  // leads themselves have had a chance to load — running it on every mount for
+  // every agent was timing out and blanking the page.
   useEffect(() => {
     setFilter('live');
     setActiveFilter('live');
-    // Auto-import orphaned abandoned carts so they appear as regular leads
-    migrateFromAbandonedCarts(true).catch(() => {});
+
+    const LAST_KEY = 'baw:lastCartMigrationAt';
+    const last = Number(localStorage.getItem(LAST_KEY) || 0);
+    if (Date.now() - last < 10 * 60 * 1000) return;
+    localStorage.setItem(LAST_KEY, String(Date.now()));
+
+    const timer = window.setTimeout(() => {
+      migrateFromAbandonedCarts(true).catch(() => {});
+    }, 4000);
+    return () => window.clearTimeout(timer);
   }, [setFilter, migrateFromAbandonedCarts]);
+
 
   // Handle filter change (single-select code path — used when the user picks
   // via legacy handlers like nav shortcuts). Clears additional pills.

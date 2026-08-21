@@ -22,6 +22,31 @@ import { logAdminSlowLoad } from '@/lib/adminTelemetry';
 
 const READ_TIMEOUT_MS = 20_000;
 const SLOW_READ_MS = 8_000;
+/**
+ * Chrome runs out of sockets/memory (net::ERR_INSUFFICIENT_RESOURCES) once a
+ * page has thousands of reads in flight — that is what blanked the sales CRM.
+ * We cap how many CRM reads run at once and queue the rest, and we share one
+ * response between identical reads fired at the same moment.
+ */
+const MAX_CONCURRENT_READS = 10;
+
+let inFlight = 0;
+const waiters: Array<() => void> = [];
+const dedupe = new Map<string, Promise<Response>>();
+
+const acquireSlot = (): Promise<void> => {
+  if (inFlight < MAX_CONCURRENT_READS) {
+    inFlight++;
+    return Promise.resolve();
+  }
+  return new Promise<void>((resolve) => waiters.push(resolve));
+};
+
+const releaseSlot = () => {
+  const next = waiters.shift();
+  if (next) next();
+  else inFlight = Math.max(0, inFlight - 1);
+};
 
 let installed = false;
 
@@ -30,6 +55,7 @@ const isGuardedRead = (url: string, method: string): boolean => {
   const m = method.toUpperCase();
   return m === 'GET' || m === 'HEAD';
 };
+
 
 const withTimeout = async (
   input: RequestInfo | URL,
@@ -75,12 +101,11 @@ export const installAdminStallGuard = (): (() => void) => {
 
   const originalFetch = window.fetch.bind(window);
 
-  const guarded: typeof fetch = async (input, init) => {
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request).url;
-    const method = init?.method || (input instanceof Request ? input.method : 'GET');
-
-    if (!isGuardedRead(url || '', method)) return originalFetch(input as any, init);
-
+  const runGuardedRead = async (
+    input: RequestInfo | URL,
+    init: RequestInit | undefined,
+    url: string,
+  ): Promise<Response> => {
     const startedAt = performance.now();
     try {
       const res = await withTimeout(input, init, originalFetch, READ_TIMEOUT_MS);
@@ -115,6 +140,34 @@ export const installAdminStallGuard = (): (() => void) => {
       }
     }
   };
+
+  const guarded: typeof fetch = async (input, init) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request).url;
+    const method = init?.method || (input instanceof Request ? input.method : 'GET');
+
+    if (!isGuardedRead(url || '', method)) return originalFetch(input as any, init);
+
+    // Identical reads fired in the same instant (one screen, many rows/widgets
+    // asking for the same thing) share one network request instead of opening
+    // hundreds of sockets.
+    const key = `${method.toUpperCase()} ${url}`;
+    const existing = dedupe.get(key);
+    if (existing) return existing.then((r) => r.clone());
+
+    const task = (async () => {
+      await acquireSlot();
+      try {
+        return await runGuardedRead(input, init, url);
+      } finally {
+        releaseSlot();
+        dedupe.delete(key);
+      }
+    })();
+
+    dedupe.set(key, task);
+    return task.then((r) => r.clone());
+  };
+
 
   window.fetch = guarded;
 
