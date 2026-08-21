@@ -52,6 +52,8 @@ Deno.serve(async (req) => {
       { url: '/cookies/', priority: '0.9' },
       { url: '/complaints/', priority: '0.9' },
       { url: '/thewarrantyhub/', priority: '0.9' },
+      { url: '/thewarrantyhub/platinum-warranty-cover-modifications-uk-vehicle-protection-guide/', priority: '0.8' },
+      { url: '/thewarrantyhub/top-rated-car-warranty-uk-buyer-guide/', priority: '0.8' },
       { url: '/used-car-warranty-uk/', priority: '0.9' },
       { url: '/cancel-warranty/', priority: '0.9' },
       { url: '/warranty-plan/', priority: '0.9' },
