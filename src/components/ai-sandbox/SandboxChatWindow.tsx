@@ -125,6 +125,34 @@ function SenderLabel({ sender }: { sender: Sender }) {
 }
 
 
+function ChatAvatar({ sender }: { sender: Sender }) {
+  if (sender === 'customer') {
+    return (
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground ring-1 ring-border">
+        <UserRound className="h-4 w-4" />
+      </span>
+    );
+  }
+  if (sender === 'agent') {
+    return (
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+        <Headset className="h-4 w-4" />
+      </span>
+    );
+  }
+  return (
+    <img
+      src={milesAvatar.url}
+      alt="Miles the panda"
+      width={32}
+      height={32}
+      className="mt-0.5 h-8 w-8 shrink-0 rounded-full bg-card object-cover ring-1 ring-border"
+      loading="lazy"
+    />
+  );
+}
+
+
 function RegQuickStart({
   onSubmit,
   disabled,
@@ -714,7 +742,8 @@ export function SandboxChatWindow({
         resize="smooth"
       >
         <ConversationContent className={compact ? 'w-full px-3' : 'mx-auto w-full max-w-3xl'}>
-          <Message from="assistant">
+          <Message from="assistant" className="flex-row items-start gap-2">
+            <ChatAvatar sender="ai" />
             <MessageContent>
               <SenderLabel sender="ai" />
               <MessageResponse>{OPENING_LINE}</MessageResponse>
@@ -757,7 +786,15 @@ export function SandboxChatWindow({
                 key={message.id}
                 className={msgIndex > 0 ? 'mt-3 border-t border-border/70 pt-3' : undefined}
               >
-              <Message from={message.role}>
+              <Message
+                from={message.role}
+                className={
+                  message.role === 'user'
+                    ? 'flex-row-reverse items-start gap-2'
+                    : 'flex-row items-start gap-2'
+                }
+              >
+                <ChatAvatar sender={sender} />
                 <MessageContent>
                   <SenderLabel sender={sender} />
 
@@ -870,7 +907,11 @@ export function SandboxChatWindow({
                 <Badge className="text-[10px] uppercase tracking-wide">Human specialist</Badge>
               )}
             </div>
-            <PromptInputSubmit status={status} onClick={busy ? () => stop() : undefined} />
+            <PromptInputSubmit
+              status={status}
+              onClick={busy ? () => stop() : undefined}
+              className="h-11 w-11 rounded-full bg-primary text-primary-foreground shadow-md transition-transform hover:scale-105 hover:bg-primary/90 [&_svg]:size-5"
+            />
           </PromptInputFooter>
         </PromptInput>
       </div>
