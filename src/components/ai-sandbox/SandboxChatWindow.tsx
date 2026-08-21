@@ -101,7 +101,7 @@ function SenderLabel({ sender }: { sender: Sender }) {
     );
   }
   return (
-    <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+    <div className="mb-1 flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
       <img
         src={milesAvatar.url}
         alt="Miles the panda"
