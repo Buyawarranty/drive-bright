@@ -38,6 +38,8 @@ import { Button } from '@/components/ui/button';
 import { Percent } from 'lucide-react';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
 import { AutoLeadFreezePanel } from './leads/AutoLeadFreezePanel';
+import { PausedAgentsOverrideBar } from './leads/PausedAgentsOverrideBar';
+
 import { ScoreboardTargetsSection } from './leads/ScoreboardTargetsSection';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
