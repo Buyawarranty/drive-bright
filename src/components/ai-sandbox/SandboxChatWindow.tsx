@@ -31,10 +31,10 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-c
 const AGENT_PREFIX = '(Warranty specialist)';
 
 const OPENING_LINE = [
-  "Hi, I'm Miles — the AI assistant here.",
+  "Hey, I'm Miles — the AI assistant here. Happy to help.",
   '',
-  "- Tell me your **reg**, or the make, model and year",
-  '- I’ll find the right cover and price for you',
+  "- Pop your **reg** in, or the make, model and year",
+  "- I'll sort out the right cover and price for you",
   '- Want a human? A real specialist can jump in any time',
 ].join('\n');
 
