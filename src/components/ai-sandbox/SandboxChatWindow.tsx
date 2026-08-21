@@ -39,7 +39,7 @@ const OPENING_LINE = [
 
 
 const STARTERS = [
-  "What's covered on Platinum?",
+  "What's covered in my warranty?",
   'Can I pay monthly?',
   "Feels a bit pricey — can I talk to someone?",
 ];
