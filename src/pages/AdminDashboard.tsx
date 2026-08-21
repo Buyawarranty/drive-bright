@@ -420,6 +420,7 @@ const AdminDashboard = () => {
       cancelAnimationFrame(raf);
       document.removeEventListener('visibilitychange', onVisibility);
       detachTelemetry();
+      detachStallGuard();
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
