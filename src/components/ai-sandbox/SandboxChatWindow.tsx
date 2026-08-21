@@ -564,7 +564,7 @@ export function SandboxChatWindow({
       )}
 
       <Conversation className="flex-1">
-        <ConversationContent className="mx-auto w-full max-w-3xl">
+        <ConversationContent className={compact ? 'w-full px-3' : 'mx-auto w-full max-w-3xl'}>
           <Message from="assistant">
             <MessageContent>
               <SenderLabel sender="ai" />
@@ -574,14 +574,14 @@ export function SandboxChatWindow({
 
           {messages.length === 0 && (
             <div className="flex flex-col items-center gap-3 py-4 text-center">
-              <img
+              {!compact && <img
                 src={milesCalls.url}
                 alt="Miles the panda in a buyawarranty polo with a headset, saying hi and offering to check your coverage, file a claim or get answers"
                 width={760}
                 height={512}
                 className="h-auto w-full max-w-[220px]"
                 loading="lazy"
-              />
+              />}
 
               <RegQuickStart disabled={busy} onSubmit={(reg) => send(`My reg is ${reg} — what would my warranty cost?`)} />
 
@@ -690,7 +690,7 @@ export function SandboxChatWindow({
         <ConversationScrollButton />
       </Conversation>
 
-      <div className="mx-auto w-full max-w-3xl p-4" ref={composerRef}>
+      <div className={compact ? 'w-full p-3' : 'mx-auto w-full max-w-3xl p-4'} ref={composerRef}>
         <PromptInput onSubmit={(message) => send(message.text ?? '')}>
           <PromptInputTextarea
             placeholder={
@@ -701,9 +701,11 @@ export function SandboxChatWindow({
           />
           <PromptInputFooter className="justify-between">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
-                Sandbox · test links only
-              </Badge>
+              {!isGuest && (
+                <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
+                  Sandbox · test links only
+                </Badge>
+              )}
               {agentMode && (
                 <Badge className="text-[10px] uppercase tracking-wide">Human specialist</Badge>
               )}
