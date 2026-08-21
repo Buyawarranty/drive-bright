@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Clock, AlertTriangle, Check, BellOff, CalendarClock } from 'lucide-react';
+import { X, Clock, AlertTriangle, Check, BellOff, CalendarClock, ExternalLink, Copy } from 'lucide-react';
 import { format, differenceInMinutes, addMinutes } from 'date-fns';
 import { useDueReminders, DueReminder } from '@/hooks/useDueReminders';
 import { supabase } from '@/integrations/supabase/client';
@@ -43,26 +43,15 @@ const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate }) => {
   // because the agent is on a different screen.
   const visibleReminders = dueReminders.filter((r) => !autoDismissed.has(r.id));
 
-  // Auto-dismiss after 15 seconds — but only for non-overdue reminders.
-  // Overdue reminders persist until the agent takes action.
+  // NO auto-dismiss. Reminder cards stay on screen until the agent presses the
+  // X (or actions them), so nobody loses a callback because a card vanished
+  // before they could read, copy or open it.
   useEffect(() => {
-    visibleReminders.forEach((reminder) => {
-      const overdueMin = differenceInMinutes(new Date(), new Date(reminder.reminder_time));
-      const isOverdue = overdueMin > 2;
-      if (isOverdue) return;
-      if (editingId === reminder.id) return;
-      if (!timersRef.current.has(reminder.id)) {
-        const timer = setTimeout(() => {
-          setAutoDismissed((prev) => new Set([...prev, reminder.id]));
-          timersRef.current.delete(reminder.id);
-        }, 15000);
-        timersRef.current.set(reminder.id, timer);
-      }
-    });
     return () => {
       timersRef.current.forEach((t) => clearTimeout(t));
+      timersRef.current.clear();
     };
-  }, [visibleReminders.map((r) => r.id).join(','), editingId]);
+  }, []);
 
   if (visibleReminders.length === 0) return null;
 
@@ -89,11 +78,23 @@ const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate }) => {
     return differenceInMinutes(new Date(), new Date(reminderTime));
   };
 
-  const handleOpen = (reminder: DueReminder) => {
+  // Opening the lead deliberately KEEPS the card on screen — the agent may
+  // still need the details to copy, and only the X closes it.
+  const handleOpen = (e: React.MouseEvent, reminder: DueReminder) => {
+    e.stopPropagation();
     if (reminder.lead_id.startsWith('personal_')) return;
     const type = getLeadType(reminder.lead_id);
     onNavigate?.(reminder.lead_id, type);
-    setAutoDismissed((prev) => new Set([...prev, reminder.id]));
+  };
+
+  const copyText = async (e: React.MouseEvent, text: string) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Copied');
+    } catch {
+      toast.error('Could not copy');
+    }
   };
 
   const handleKeep = (e: React.MouseEvent, reminderId: string) => {
@@ -183,7 +184,7 @@ const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate }) => {
                 : 'bg-amber-50 border-amber-300'
             }`}
           >
-            <div className="p-3" onClick={() => handleOpen(reminder)} role={isPersonal ? undefined : 'button'}>
+            <div className="p-3 select-text">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2 min-w-0 flex-1">
                   {isOverdue ? (
@@ -192,10 +193,20 @@ const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate }) => {
                     <Clock className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className={`text-sm font-semibold truncate ${isOverdue ? 'text-red-800' : 'text-amber-900'}`}>
+                    <p className={`text-sm font-semibold break-words select-text ${isOverdue ? 'text-red-800' : 'text-amber-900'}`}>
                       {getName(reminder)}
                     </p>
-                    <p className={`text-xs truncate ${isOverdue ? 'text-red-700' : 'text-amber-700'}`}>
+                    {reminder.lead?.vehicle_reg && (
+                      <p className={`text-xs font-mono select-text ${isOverdue ? 'text-red-700' : 'text-amber-800'}`}>
+                        {reminder.lead.vehicle_reg}
+                      </p>
+                    )}
+                    {reminder.lead?.email && (
+                      <p className={`text-xs break-all select-text ${isOverdue ? 'text-red-700' : 'text-amber-800'}`}>
+                        {reminder.lead.email}
+                      </p>
+                    )}
+                    <p className={`text-xs break-words select-text ${isOverdue ? 'text-red-700' : 'text-amber-700'}`}>
                       {reminder.label || 'Follow up'} · {format(new Date(reminder.reminder_time), 'h:mm a')}
                       {isOverdue && ` · ${overdueMin}m late`}
                     </p>
@@ -233,6 +244,30 @@ const ReminderDuePopup: React.FC<ReminderDuePopupProps> = ({ onNavigate }) => {
                 </div>
               ) : (
                 <div className="mt-2 flex flex-wrap items-center gap-1">
+                  {!isPersonal && (
+                    <button
+                      onClick={(e) => handleOpen(e, reminder)}
+                      className="text-[11px] px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 inline-flex items-center gap-1"
+                    >
+                      <ExternalLink className="h-3 w-3" /> Open lead
+                    </button>
+                  )}
+                  {(reminder.lead?.vehicle_reg || reminder.lead?.email) && (
+                    <button
+                      onClick={(e) =>
+                        copyText(
+                          e,
+                          [getName(reminder), reminder.lead?.vehicle_reg, reminder.lead?.email]
+                            .filter(Boolean)
+                            .join(' · '),
+                        )
+                      }
+                      title="Copy lead details"
+                      className="text-[11px] px-2 py-1 rounded bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 inline-flex items-center gap-1"
+                    >
+                      <Copy className="h-3 w-3" /> Copy
+                    </button>
+                  )}
                   <button
                     onClick={(e) => handleSnooze(e, reminder.id, 5)}
                     className="text-[11px] px-2 py-1 rounded bg-white border border-amber-300 hover:bg-amber-100 text-amber-800"
