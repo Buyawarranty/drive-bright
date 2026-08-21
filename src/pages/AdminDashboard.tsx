@@ -173,6 +173,17 @@ const LIVE_CALLS_TAB_IDS = new Set(['overview', 'call-stats', 'live-calls-data']
 const LEAD_ALLOCATION_TABS = new Set(['lead-teams', 'open-round-robin', 'orr-test-lab']);
 const LEAD_ALLOCATION_BLOCKED_ROLES = new Set(['sales', 'sales_lead']);
 
+// Payments pending belongs to accounts: the accounts team plus management always
+// see it, everyone else only via an explicit tab_payments-pending grant.
+const ACCOUNTS_ALLOWED_ROLES = new Set([
+  'admin',
+  'super_admin',
+  'accounts',
+  'accounts_manager',
+  'accounts_payroll',
+  'sales_manager',
+]);
+
 const canonicalTabId = (tab: string) => (LIVE_CALLS_TAB_IDS.has(tab) ? 'overview' : tab);
 
 // Roles that always keep access to Live Calls Data. What they can actually see
