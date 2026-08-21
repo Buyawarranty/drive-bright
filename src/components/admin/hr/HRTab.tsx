@@ -82,6 +82,11 @@ export const HRTab: React.FC<HRTabProps> = ({ userRole }) => {
         <TabsContent value="access" className="mt-4">
           <AdminAccessLogPanel />
         </TabsContent>
+        {canSeeConduct && (
+          <TabsContent value="conduct" className="mt-4">
+            <ServicePerformancePanel />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
