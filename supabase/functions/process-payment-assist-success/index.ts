@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { sourceLetterFromLeadSource, saleSubjectPrefix } from "../_shared/saleSubjectPrefix.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -269,7 +270,7 @@ serve(async (req) => {
         const gclid = transaction.gclid || null;
         const cartMeta = transaction.customer_data?.cart_metadata || {};
         const fbclid = cartMeta?.fbclid || null;
-        let saleType = 'WEB';
+        let saleType: 'G' | 'F' | 'O' = 'O';
         if (gclid) saleType = 'G';
         else if (fbclid) saleType = 'F';
         // Get timing info
@@ -368,9 +369,10 @@ serve(async (req) => {
           await supabase.from('sales_leads').update({ status: 'converted', updated_at: new Date().toISOString() }).eq('id', matchedLead.id);
 
           const leadSource = matchedLead.lead_source || 'unknown';
-          let sourcePrefix = 'S';
-          if (leadSource === 'google_ad') sourcePrefix = 'S-G';
-          else if (leadSource === 'social_ad') sourcePrefix = 'S-F';
+          const agentLetter = sourceLetterFromLeadSource(leadSource) === 'O'
+            ? saleType
+            : sourceLetterFromLeadSource(leadSource);
+          const sourcePrefix = saleSubjectPrefix({ letter: agentLetter, isAgentSale: true });
 
           const agentSaleHtml = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

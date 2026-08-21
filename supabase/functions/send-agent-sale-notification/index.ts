@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sendInternalNotification } from "../_shared/send-internal-notification.ts";
+import { sourceLetterFromLeadSource, saleSubjectPrefix } from "../_shared/saleSubjectPrefix.ts";
 
 
 const corsHeaders = {
@@ -268,9 +269,8 @@ serve(async (req: Request) => {
 
     // Determine source prefix
     const leadSource = lead.lead_source || "unknown";
-    let sourcePrefix = "S"; // S for Sales agent
-    if (leadSource === "google_ad") sourcePrefix = "S-G Ad";
-    else if (leadSource === "social_ad") sourcePrefix = "S-F";
+    const letter = sourceLetterFromLeadSource(leadSource);
+    const sourcePrefix = saleSubjectPrefix({ letter, isAgentSale: true, isQuote: letter === 'Q' });
 
     const amountPart = saleValue ? ` - ${saleValueDisplay}` : '';
     const paymentPart = paymentType ? ` via ${paymentType}` : '';

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sendInternalNotification } from "../_shared/send-internal-notification.ts";
+import { sourceLetterFromLeadSource, saleSubjectPrefix } from "../_shared/saleSubjectPrefix.ts";
 
 
 const corsHeaders = {
@@ -193,15 +194,13 @@ serve(async (req: Request) => {
     // Determine source prefix
     const leadSource = matchedLead?.lead_source || 'unknown';
     if (!saleSource) {
-      if (leadSource === 'google_ad') saleType = 'G Ad';
-      else if (leadSource === 'social_ad') saleType = 'F';
-      else saleType = 'WEB';
+      saleType = sourceLetterFromLeadSource(leadSource);
     } else {
       // Normalize provided saleSource (Web -> WEB, quote -> QUOTE)
       const s = String(saleSource).toLowerCase();
-      if (s === 'web') saleType = 'WEB';
-      else if (s === 'quote') saleType = 'QUOTE';
-      else saleType = saleSource;
+      if (s === 'quote' || s === 'live_quote') saleType = 'Q';
+      else if (s === 'web' || s === 'website' || s === 'organic') saleType = sourceLetterFromLeadSource(leadSource);
+      else saleType = sourceLetterFromLeadSource(saleSource);
     }
 
     // Build standard sale email
@@ -284,12 +283,11 @@ serve(async (req: Request) => {
 
     // Send main sale notification — unified subject format:
     // "New Sale <SOURCE>: <REG> - £<AMOUNT> via <PAYMENT>"
-    let subjectSource: string;
-    if (isAgentSale) {
-      subjectSource = leadSource === 'google_ad' ? 'S-G Ad' : leadSource === 'social_ad' ? 'S-F' : 'S';
-    } else {
-      subjectSource = saleType;
-    }
+    const subjectSource = saleSubjectPrefix({
+      letter: (saleType as any) || 'O',
+      isAgentSale: !!isAgentSale,
+      isQuote: saleType === 'Q',
+    });
 
     // Use the dedicated notify.buyawarranty.co.uk sender so mail to
     // @buyawarranty.co.uk mailboxes isn't dropped by same-domain anti-spoof.
