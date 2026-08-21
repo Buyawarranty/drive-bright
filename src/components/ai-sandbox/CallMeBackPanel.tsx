@@ -87,7 +87,8 @@ export function CallMeBackPanel({
 
   if (step === 'done') {
     return (
-      <div className="mx-3 mb-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-900">
+      <div className={`${asChip ? '' : 'mx-3'} mb-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-900`}>
+
         <p className="flex items-center gap-1.5 font-semibold">
           <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600">
             <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
