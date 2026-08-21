@@ -36,6 +36,7 @@ import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
 import { recordTabVisit } from '@/hooks/useTabUsage';
 import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
 import { initAdminTelemetry, logAdminUiEvent, logAdminSlowLoad } from '@/lib/adminTelemetry';
+import { installAdminStallGuard } from '@/lib/adminStallGuard';
 const AdminUiEventLogPanel = lazy(() => import('@/components/admin/AdminUiEventLogPanel'));
 const SalesStaffPerformancePanel = lazy(() => import('@/components/admin/SalesStaffPerformancePanel'));
 
@@ -391,6 +392,9 @@ const AdminDashboard = () => {
     // Attach CRM telemetry (CTA clicks, JS errors, crashes) and record how long
     // this dashboard took to become usable so slow/blank loads are visible later.
     const detachTelemetry = initAdminTelemetry();
+    // Stop dead connections from leaving a screen buffering forever — every data
+    // read is time-limited and retried once on a fresh session instead.
+    const detachStallGuard = installAdminStallGuard();
     const loadStartedAt = performance.now();
     // Browsers pause requestAnimationFrame while a tab is hidden, so a
     // backgrounded tab used to report minutes-long "slow loads" that never
@@ -416,6 +420,7 @@ const AdminDashboard = () => {
       cancelAnimationFrame(raf);
       document.removeEventListener('visibilitychange', onVisibility);
       detachTelemetry();
+      detachStallGuard();
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

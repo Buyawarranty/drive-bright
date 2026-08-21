@@ -332,7 +332,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // (new-lead pop-ups, open-pool alerts). Those were the heaviest reads in the
   // database and only sales staff run them, which is why only sales staff saw
   // Quotes & Orders take 90s+ to appear.
-  useEffect(() => markHeavyTabBusy(15000), []);
+  // 45s, not 15s: on a bad connection this screen's own boot reads take longer
+  // than 15s, and the pollers used to wake up mid-boot and queue in front of them.
+  useEffect(() => markHeavyTabBusy(45000), []);
 
   // Free bonus months currently selected. 'peryear' gives 1 free month per year of cover
   // (12mo -> 1, 24mo -> 2, 36mo -> 3).
