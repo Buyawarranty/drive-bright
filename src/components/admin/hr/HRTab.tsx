@@ -6,6 +6,7 @@ import { StaffLocationPanel } from '@/components/admin/hr/StaffLocationPanel';
 import { StaffDirectoryPanel } from '@/components/admin/hr/StaffDirectoryPanel';
 import { ServicePerformancePanel } from '@/components/admin/hr/ServicePerformancePanel';
 import AdminAccessLogPanel from '@/components/admin/AdminAccessLogPanel';
+import { useIsManagement } from '@/hooks/useIsManagement';
 
 const TimesheetsTab = lazy(() =>
   import('@/components/admin/timesheets/TimesheetsTab').then((m) => ({ default: m.TimesheetsTab }))
@@ -16,8 +17,9 @@ const AttendanceTab = lazy(() =>
 
 const MANAGEMENT_ROLES = ['admin', 'super_admin', 'sales_manager', 'accounts_manager', 'accounts_payroll', 'claims_manager', 'performance_manager'];
 
-// Service performance & conduct is a narrower, managers-only reference.
-const CONDUCT_ROLES = ['admin', 'super_admin', 'sales_manager', 'performance_manager'];
+// Service performance & conduct is a management reference — visible to anyone
+// who can open HR at all (HR itself is already restricted to management).
+const CONDUCT_ROLES = MANAGEMENT_ROLES;
 
 interface HRTabProps {
   userRole?: string;
@@ -30,8 +32,9 @@ const Fallback = () => (
 );
 
 export const HRTab: React.FC<HRTabProps> = ({ userRole }) => {
+  const { isManagement } = useIsManagement();
   const [tab, setTab] = useState('locations');
-  const canSeeConduct = !userRole || CONDUCT_ROLES.includes(userRole);
+  const canSeeConduct = !userRole || CONDUCT_ROLES.includes(userRole) || isManagement;
 
   if (userRole && !MANAGEMENT_ROLES.includes(userRole)) {
     return (
