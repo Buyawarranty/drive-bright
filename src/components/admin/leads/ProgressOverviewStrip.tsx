@@ -281,6 +281,10 @@ export const ProgressOverviewStrip: React.FC = () => {
         negatives,
         monthPositives,
         monthNegatives,
+        allocationPaused: caps?.paused === true,
+        freezeSource: caps?.freeze_source ?? null,
+        freezeReason: caps?.freeze_reason ?? null,
+        frozenUntil: caps?.frozen_until ?? null,
       });
     } finally {
       setLoading(false);
