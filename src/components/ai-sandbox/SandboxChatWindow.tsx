@@ -608,6 +608,7 @@ export function SandboxChatWindow({
       <Conversation
         className="flex-1"
         initial={messages.some((m) => m.role === 'user') ? 'smooth' : false}
+        resize={messages.some((m) => m.role === 'user') ? 'smooth' : false}
       >
         <ConversationContent className={compact ? 'w-full px-3' : 'mx-auto w-full max-w-3xl'}>
           <Message from="assistant">
