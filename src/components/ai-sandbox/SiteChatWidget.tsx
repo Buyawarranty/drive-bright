@@ -116,14 +116,17 @@ export default function SiteChatWidget({
           aria-label="Chat with Miles"
         >
           <div className="flex shrink-0 items-center gap-3 border-b border-border bg-background px-4 py-3">
-            <img
-              src={milesAvatar.url}
-              alt="Miles the panda"
-              width={44}
-              height={44}
-              className="h-11 w-11 shrink-0 rounded-full ring-1 ring-border"
-              loading="lazy"
-            />
+            <span className="relative shrink-0">
+              <img
+                src={milesAvatar.url}
+                alt="Miles the panda"
+                width={44}
+                height={44}
+                className="h-11 w-11 rounded-full object-cover ring-1 ring-border"
+                loading="lazy"
+              />
+              <span className="absolute -bottom-0.5 -left-0.5 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
+            </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-base font-bold text-foreground">Miles · Warranty Assistant</p>
               <p className="truncate text-sm text-muted-foreground">AI assistant · Specialist available</p>
