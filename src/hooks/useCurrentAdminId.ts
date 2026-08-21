@@ -10,7 +10,33 @@ import { useViewAs } from '@/contexts/ViewAsContext';
  * this returns the impersonated agent's admin_users.id so role-scoped UI (team
  * locks, "My leads only", etc.) reflects the user being viewed.
  */
+/**
+ * The signed-in user's own admin_users.id — NEVER the impersonated agent.
+ * Use for anything personal to the real account (new-lead pop-ups, beeps).
+ */
+export const useRealAdminId = () => {
+  const { user } = useAuth();
+  const { data } = useQuery({
+    queryKey: ['current-admin-id', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data?.id) return data.id;
+      const { data: rpcId } = await supabase.rpc('current_admin_user_id');
+      return (rpcId as string | null) || null;
+    },
+    enabled: !!user?.id,
+    staleTime: Infinity,
+  });
+  return data || null;
+};
+
 export const useCurrentAdminId = () => {
+
   const { user } = useAuth();
   const { isImpersonating, effectiveAdminUserId } = useViewAs();
 
