@@ -153,10 +153,31 @@ serve(async (req) => {
   }
 
   try {
+    // Staff-only tool. JWT is validated in code (gateway verify_jwt is off so
+    // the browser preflight always gets CORS headers back).
+    const authHeader = req.headers.get('Authorization') || '';
+    if (!authHeader.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
+    }
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    const { data: authData, error: authError } = await supabase.auth.getUser(
+      authHeader.replace(/^Bearer\s+/i, '').trim(),
+    );
+    if (authError || !authData?.user) {
+      return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
+    }
+
 
     const { registration, mileage } = await req.json();
     
