@@ -215,9 +215,13 @@ function OptionRow({
 function PriceOptionsPanel({
   disabled,
   onSend,
+  reg,
+  mileage,
 }: {
   disabled?: boolean;
   onSend: (text: string) => void;
+  reg?: string | null;
+  mileage?: string | null;
 }) {
   const [term, setTerm] = useState(24);
   const [limit, setLimit] = useState(2000);
@@ -227,6 +231,14 @@ function PriceOptionsPanel({
   // wording only appear once the customer has asked to see their price.
   const [priceRequested, setPriceRequested] = useState(false);
   const [pending, setPending] = useState<'full' | 'monthly' | null>(null);
+
+  // Chat does persuasion and price; the real cart takes the money. Once we know
+  // the reg we can hand the customer straight to plan selection (step 3) with
+  // their vehicle pre-filled so nothing is re-typed.
+  const checkoutHref = reg
+    ? `/?step=3&from=chat&reg=${encodeURIComponent(reg)}${mileage ? `&mileage=${encodeURIComponent(mileage)}` : ''}`
+    : null;
+
 
 
   const termLabel = (v: number) => (v % 12 === 0 ? `${v / 12} year${v / 12 > 1 ? 's' : ''}` : `${v} months`);
