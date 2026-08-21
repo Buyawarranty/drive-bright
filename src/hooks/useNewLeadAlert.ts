@@ -85,7 +85,14 @@ export const playNewLeadBeep = () => {
 // 15s poll, so a single agent fired 4 identical `sales_leads` reads every 15s —
 // by far the heaviest query in the database. All instances now share one
 // in-flight request with a short TTL cache, so the DB sees one read per cycle.
-const ALERT_CACHE_TTL_MS = 12_000;
+//
+// Measured follow-up: even shared, this read was the single most expensive
+// statement in the database (988k calls, >12 hours of DB time) because the poll
+// ran every 30s in every open tab. Realtime on `sales_leads` (filtered to this
+// agent, below) is the real delivery path and invalidates the cache instantly,
+// so the poll is now only a dropped-socket safety net and the TTL is long
+// enough that four mounts plus a wake event cost one read, not five.
+const ALERT_CACHE_TTL_MS = 45_000;
 const _alertCache = new Map<string, { at: number; rows: any[]; inflight?: Promise<any[]> }>();
 // Agent role, resolved once per session per agent (shared by all hook mounts).
 const _roleCache = new Map<string, string>();
@@ -95,7 +102,7 @@ const _queueCache = new Map<
   string,
   { at: number; rows: any[]; inflight?: Promise<any[]> }
 >();
-const QUEUE_CACHE_TTL_MS = 12_000;
+const QUEUE_CACHE_TTL_MS = 45_000;
 
 
 const fetchAgentAlertLeads = (adminId: string): Promise<any[]> => {
@@ -377,10 +384,13 @@ export const useNewLeadAlert = () => {
   // agent's own polling can't queue in front of the screen they're waiting on.
   useEffect(() => {
     load();
+    // Safety-net poll only — realtime (filtered to this agent) is what actually
+    // delivers new leads and it invalidates the shared cache on every push.
+    // Was 30s per tab, which made this the heaviest query in the database.
     const stopPoll = setVisibleInterval(() => {
       if (isHeavyTabBusy()) return;
       loadRef.current();
-    }, 30000);
+    }, 150000);
     const wake = () => {
       if (document.visibilityState === 'visible' && !isHeavyTabBusy()) loadRef.current();
     };

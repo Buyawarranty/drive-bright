@@ -30,30 +30,58 @@ const setDismissedCount = (n: number) => {
   try { localStorage.setItem(DISMISS_KEY, String(n)); } catch {}
 };
 
-export const NIVerifyBanner: React.FC<Props> = ({ userRole, onNavigate }) => {
-  const [count, setCount] = useState(0);
-  const [dismissedCount, setDismissedCountState] = useState<number>(getDismissedCount);
+/**
+ * PERFORMANCE: this count comes from a leading-wildcard `ilike` on `customers`,
+ * which can only be answered by scanning the table — and it ran every 60s in
+ * every open CRM tab (100k+ calls in the query stats). The number of NI vehicles
+ * awaiting verification changes a handful of times a day, so the result is now
+ * shared across every mounted banner and refreshed every 10 minutes.
+ */
+const NI_CACHE_TTL_MS = 10 * 60_000;
+let _niCache: { at: number; count: number } | null = null;
+let _niInflight: Promise<number> | null = null;
 
-  const load = async () => {
-    // NI plates start with letters containing I or Z. Do a broad server-side
-    // filter (contains I or Z anywhere) then refine client-side with regex.
-    const { data, error } = await supabase
-      .from('customers')
-      .select('registration_plate')
-      .eq('ni_verified', false)
-      .eq('is_deleted', false)
-      .or('registration_plate.ilike.%I%,registration_plate.ilike.%Z%')
-      .limit(1000);
-    if (error) return;
-    const n = (data || []).filter((r: any) => isNorthernIrelandPlate(r.registration_plate)).length;
-    setCount(n);
-  };
+const fetchNiCount = (): Promise<number> => {
+  if (_niCache && Date.now() - _niCache.at < NI_CACHE_TTL_MS) {
+    return Promise.resolve(_niCache.count);
+  }
+  if (_niInflight) return _niInflight;
+  _niInflight = (async () => {
+    try {
+      // NI plates start with letters containing I or Z. Do a broad server-side
+      // filter (contains I or Z anywhere) then refine client-side with regex.
+      const { data, error } = await supabase
+        .from('customers')
+        .select('registration_plate')
+        .eq('ni_verified', false)
+        .eq('is_deleted', false)
+        .or('registration_plate.ilike.%I%,registration_plate.ilike.%Z%')
+        .limit(1000);
+      if (error) return _niCache?.count ?? 0;
+      const n = (data || []).filter((r: any) => isNorthernIrelandPlate(r.registration_plate)).length;
+      _niCache = { at: Date.now(), count: n };
+      return n;
+    } finally {
+      _niInflight = null;
+    }
+  })();
+  return _niInflight;
+};
+
+export const NIVerifyBanner: React.FC<Props> = ({ userRole, onNavigate }) => {
+  const [count, setCount] = useState(_niCache?.count ?? 0);
+  const [dismissedCount, setDismissedCountState] = useState<number>(getDismissedCount);
 
   useEffect(() => {
     if (!ALLOWED.has(userRole || '')) return;
+    let cancelled = false;
+    const load = async () => {
+      const n = await fetchNiCount();
+      if (!cancelled) setCount(n);
+    };
     load();
-    const stop = setVisibleInterval(load, 60_000);
-    return () => stop();
+    const stop = setVisibleInterval(load, NI_CACHE_TTL_MS);
+    return () => { cancelled = true; stop(); };
   }, [userRole]);
 
   const handleDismiss = () => {
