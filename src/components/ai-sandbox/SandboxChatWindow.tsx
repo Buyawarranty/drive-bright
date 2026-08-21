@@ -538,57 +538,41 @@ export function SandboxChatWindow({
   return (
     <div className="flex h-full min-h-0 flex-col">
       {/* Who you are talking to */}
-      <div
-        className={`flex flex-wrap items-center gap-2 border-b px-4 py-2 text-sm ${
-          agentMode
-            ? 'border-primary/30 bg-primary/10 text-primary'
-            : 'border-border bg-muted/40 text-muted-foreground'
-        }`}
-      >
-        {agentMode ? (
-          <>
-            <Headset className="h-3.5 w-3.5" />
-            <span className="font-medium">You are replying as a human warranty specialist</span>
-            <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => setAgentMode(false)}>
-              Hand back to AI
-            </Button>
-          </>
-        ) : (
-          <>
-            <img
-              src={milesAvatar.url}
-              alt="Miles the panda"
-              width={24}
-              height={24}
-              className="h-6 w-6 rounded-full ring-1 ring-border"
-              loading="lazy"
-            />
-            <span className="font-medium">You're chatting with Miles, our AI assistant</span>
-            <span className="opacity-70">·</span>
-            {liveCount > 0 ? (
-              <span className="flex items-center gap-1.5 font-medium text-emerald-700">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-emerald-500 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
-                </span>
-                <Headset className="h-3.5 w-3.5" />
-                {liveCount === 1 ? 'A warranty specialist is online now' : `${liveCount} warranty specialists are online now`}
-                {liveNames.length > 0 ? ` (${liveNames.slice(0, 2).join(', ')})` : ''} — just say the word
-              </span>
-            ) : (
-              <>
-                <Clock className="h-3.5 w-3.5" />
-                <span>
-                  {open
-                    ? `Specialists are around ${openingHoursLabel.toLowerCase()} — I can call one in`
-                    : `I'm here 24/7 — specialists are back ${nextOpeningLabel()}`}
-                </span>
-              </>
-            )}
-          </>
-
-        )}
-      </div>
+      {agentMode ? (
+        <div className="flex flex-wrap items-center gap-2 border-b border-primary/30 bg-primary/10 px-4 py-2 text-sm text-primary">
+          <Headset className="h-3.5 w-3.5" />
+          <span className="font-medium">You are replying as a human warranty specialist</span>
+          <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => setAgentMode(false)}>
+            Hand back to AI
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-1 border-b border-border bg-background px-4 py-2.5 text-sm">
+          <p className="flex items-center gap-2 font-semibold text-foreground">
+            <span className="relative flex h-2.5 w-2.5 shrink-0">
+              <span className="absolute inline-flex h-2.5 w-2.5 animate-ping rounded-full bg-emerald-500 opacity-70" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-600" />
+            </span>
+            AI assistant online
+          </p>
+          {liveCount > 0 ? (
+            <p className="flex items-center gap-2 font-medium text-emerald-700">
+              <span className="ml-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-600" />
+              {liveCount === 1 ? 'A specialist is online now' : `${liveCount} specialists are online now`}
+              {liveNames.length > 0 ? ` (${liveNames.slice(0, 2).join(', ')})` : ''}
+            </p>
+          ) : (
+            <p className="flex items-center gap-2 text-muted-foreground">
+              {open ? (
+                <span className="ml-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/50" />
+              ) : (
+                <Clock className="h-3.5 w-3.5 shrink-0" />
+              )}
+              {open ? `Specialist available ${openingHoursLabel}` : `Specialists back ${nextOpeningLabel()} · ${openingHoursLabel}`}
+            </p>
+          )}
+        </div>
+      )}
 
       {(waiting || leadCaptured) && (
         <div className="flex flex-wrap items-center gap-2 border-b border-amber-300 bg-amber-50 px-4 py-2 text-xs text-amber-900">
