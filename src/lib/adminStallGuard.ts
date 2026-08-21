@@ -101,12 +101,11 @@ export const installAdminStallGuard = (): (() => void) => {
 
   const originalFetch = window.fetch.bind(window);
 
-  const guarded: typeof fetch = async (input, init) => {
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request).url;
-    const method = init?.method || (input instanceof Request ? input.method : 'GET');
-
-    if (!isGuardedRead(url || '', method)) return originalFetch(input as any, init);
-
+  const runGuardedRead = async (
+    input: RequestInfo | URL,
+    init: RequestInit | undefined,
+    url: string,
+  ): Promise<Response> => {
     const startedAt = performance.now();
     try {
       const res = await withTimeout(input, init, originalFetch, READ_TIMEOUT_MS);
@@ -141,6 +140,34 @@ export const installAdminStallGuard = (): (() => void) => {
       }
     }
   };
+
+  const guarded: typeof fetch = async (input, init) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request).url;
+    const method = init?.method || (input instanceof Request ? input.method : 'GET');
+
+    if (!isGuardedRead(url || '', method)) return originalFetch(input as any, init);
+
+    // Identical reads fired in the same instant (one screen, many rows/widgets
+    // asking for the same thing) share one network request instead of opening
+    // hundreds of sockets.
+    const key = `${method.toUpperCase()} ${url}`;
+    const existing = dedupe.get(key);
+    if (existing) return existing.then((r) => r.clone());
+
+    const task = (async () => {
+      await acquireSlot();
+      try {
+        return await runGuardedRead(input, init, url);
+      } finally {
+        releaseSlot();
+        dedupe.delete(key);
+      }
+    })();
+
+    dedupe.set(key, task);
+    return task.then((r) => r.clone());
+  };
+
 
   window.fetch = guarded;
 
