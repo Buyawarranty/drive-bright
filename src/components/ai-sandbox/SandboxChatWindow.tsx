@@ -129,7 +129,7 @@ function RegQuickStart({
   return (
     <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-3 text-left shadow-sm sm:p-4">
       <p className="text-sm font-semibold text-foreground">Get an instant price or advice</p>
-      <p className="mt-0.5 text-xs text-muted-foreground">
+      <p className="mt-0.5 text-sm text-muted-foreground">
         Pop your reg in — I'll pull your vehicle details and come straight back with cover options.
       </p>
 
