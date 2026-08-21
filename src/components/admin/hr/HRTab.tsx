@@ -1,9 +1,10 @@
 import React, { lazy, Suspense, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, MapPin, Users, CalendarClock, Wifi, History } from 'lucide-react';
+import { Loader2, MapPin, Users, CalendarClock, Wifi, History, ShieldAlert } from 'lucide-react';
 import { StaffLocationPanel } from '@/components/admin/hr/StaffLocationPanel';
 import { StaffDirectoryPanel } from '@/components/admin/hr/StaffDirectoryPanel';
+import { ServicePerformancePanel } from '@/components/admin/hr/ServicePerformancePanel';
 import AdminAccessLogPanel from '@/components/admin/AdminAccessLogPanel';
 
 const TimesheetsTab = lazy(() =>
@@ -14,6 +15,9 @@ const AttendanceTab = lazy(() =>
 );
 
 const MANAGEMENT_ROLES = ['admin', 'super_admin', 'sales_manager', 'accounts_manager', 'accounts_payroll', 'claims_manager', 'performance_manager'];
+
+// Service performance & conduct is a narrower, managers-only reference.
+const CONDUCT_ROLES = ['admin', 'super_admin', 'sales_manager', 'performance_manager'];
 
 interface HRTabProps {
   userRole?: string;
@@ -27,6 +31,7 @@ const Fallback = () => (
 
 export const HRTab: React.FC<HRTabProps> = ({ userRole }) => {
   const [tab, setTab] = useState('locations');
+  const canSeeConduct = !userRole || CONDUCT_ROLES.includes(userRole);
 
   if (userRole && !MANAGEMENT_ROLES.includes(userRole)) {
     return (
@@ -57,6 +62,9 @@ export const HRTab: React.FC<HRTabProps> = ({ userRole }) => {
           <TabsTrigger value="attendance" className="gap-2"><Wifi className="w-4 h-4" /> Attendance</TabsTrigger>
           <TabsTrigger value="timesheets" className="gap-2"><CalendarClock className="w-4 h-4" /> Timesheets</TabsTrigger>
           <TabsTrigger value="access" className="gap-2"><History className="w-4 h-4" /> Access history</TabsTrigger>
+          {canSeeConduct && (
+            <TabsTrigger value="conduct" className="gap-2"><ShieldAlert className="w-4 h-4" /> Service performance &amp; conduct</TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="locations" className="mt-4">
@@ -74,6 +82,11 @@ export const HRTab: React.FC<HRTabProps> = ({ userRole }) => {
         <TabsContent value="access" className="mt-4">
           <AdminAccessLogPanel />
         </TabsContent>
+        {canSeeConduct && (
+          <TabsContent value="conduct" className="mt-4">
+            <ServicePerformancePanel />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
