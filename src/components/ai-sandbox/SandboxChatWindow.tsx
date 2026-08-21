@@ -779,7 +779,13 @@ export function SandboxChatWindow({
                 }
               >
                 <ChatAvatar sender={sender} />
-                <MessageContent>
+                <MessageContent
+                  className={
+                    message.role === 'user'
+                      ? 'rounded-2xl rounded-tr-sm bg-primary px-4 py-3 text-primary-foreground shadow-sm [&_*]:text-primary-foreground'
+                      : 'rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-foreground'
+                  }
+                >
                   <SenderLabel sender={sender} />
 
                   {message.parts.map((part, i) => {
