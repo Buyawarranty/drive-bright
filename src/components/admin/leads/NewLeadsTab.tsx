@@ -820,6 +820,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       }
     }
 
+    // Hide AI chat sandbox test leads while the widget is still in testing
+    if (hideSandboxLeads) {
+      result = result.filter(lead => !isSandboxTestLead(lead));
+    }
+
     // Apply source filter
     if (sourceFilter !== 'all') {
       result = result.filter(lead => lead.lead_source === sourceFilter);
