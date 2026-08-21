@@ -162,16 +162,17 @@ function RegQuickStart({
             className="min-w-0 flex-1 bg-[#F0CF5C] px-2 py-2 text-base font-extrabold uppercase tracking-wide text-[#3A3323] outline-none placeholder:text-[#3A3323]/80 sm:text-lg"
           />
         </div>
-        <Button type="submit" disabled={!valid || disabled} className="shrink-0 whitespace-nowrap px-2.5 text-sm font-semibold sm:px-3">
+        <Button
+          type="submit"
+          disabled={!valid || disabled}
+          className="h-auto shrink-0 whitespace-nowrap rounded-lg bg-[#EF6C33] px-3.5 text-sm font-bold text-white shadow-sm hover:bg-[#DC5F27] sm:px-4 sm:text-base"
+        >
           Get my price
         </Button>
-
-
       </form>
 
-
-      <p className="mt-2 text-sm text-muted-foreground">
-        Free quote · no card details needed · takes about 20 seconds
+      <p className="mt-2 text-xs text-muted-foreground">
+        Free quote · No card details needed · Takes about 20 seconds
       </p>
 
     </div>
