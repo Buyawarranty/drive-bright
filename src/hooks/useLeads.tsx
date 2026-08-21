@@ -1099,22 +1099,41 @@ export const useLeads = (options?: UseLeadsOptions) => {
   // Debounce guard for focus/visibility to prevent double-firing
   const lastRefetchTimeRef = useRef(0);
 
+  /**
+   * PERFORMANCE (resource-exhaustion fix): the realtime channel this feeds is
+   * unfiltered — EVERY lead write anywhere in the business used to trigger a
+   * full wide-column lead refetch in EVERY open CRM tab. Measured, that single
+   * read shape was ~500k calls and >30 hours of database time, and the same
+   * query runs in 0.4ms when the instance isn't saturated by itself.
+   *
+   * So realtime is coalesced twice over:
+   *  - a longer 8s debounce, so a burst of writes is one refetch
+   *  - a hard floor of one realtime-driven refetch per 25s per tab
+   * Anything suppressed by the floor stays flagged and is picked up by the next
+   * poll / tab focus, so the list never goes stale — it just stops stampeding.
+   */
+  const REALTIME_DEBOUNCE_MS = 8000;
+  const REALTIME_MIN_GAP_MS = 25000;
+
   const debouncedRealtimeRefetch = useCallback(() => {
     pendingRealtimeRef.current = true;
-    
+
     if (realtimeRefetchTimerRef.current) {
       clearTimeout(realtimeRefetchTimerRef.current);
     }
-    
+
     realtimeRefetchTimerRef.current = setTimeout(() => {
       if (!pendingRealtimeRef.current) return;
       // Hidden tab: keep the pending flag set and let the visibility/focus
       // handler do a single catch-up fetch when the agent comes back. This
       // stops background tabs re-pulling the whole lead list all day.
       if (document.visibilityState === 'hidden') return;
+      // Rate floor — leave the pending flag set so the poll catches up.
+      if (Date.now() - lastRefetchTimeRef.current < REALTIME_MIN_GAP_MS) return;
       pendingRealtimeRef.current = false;
+      lastRefetchTimeRef.current = Date.now();
       fetchLeadsRef.current();
-    }, 2500);
+    }, REALTIME_DEBOUNCE_MS);
   }, []);
 
   // Initial fetch: flush any queued status changes first, then load once.
