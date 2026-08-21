@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { sourceLetterFromLeadSource, sourceLetterFromAdSource, saleSubjectPrefix } from "../_shared/saleSubjectPrefix.ts";
 
 const INTERNAL_NOTIFICATION_FROM =
   Deno.env.get("INTERNAL_NOTIFICATION_FROM") ||
@@ -1067,7 +1068,7 @@ serve(async (req) => {
           </div>
         `;
 
-        const saleSubject = `New Sale ${metadata?.source === 'live_quote' ? 'QUOTE' : (detectedAdSource === 'google' ? 'G' : detectedAdSource === 'facebook' ? 'F' : 'WEB')}: ${regPlate} - ${saleValueDisplay} via ${paymentMethod}`;
+        const saleSubject = `New Sale ${saleSubjectPrefix({ letter: sourceLetterFromAdSource(detectedAdSource), isQuote: metadata?.source === 'live_quote' })}: ${regPlate} - ${saleValueDisplay} via ${paymentMethod}`;
         const saleRecipients = ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'];
         try {
           const sendResult = await resend.emails.send({
@@ -1171,9 +1172,9 @@ serve(async (req) => {
 
           // Determine source prefix for agent sale
           const leadSource = matchedLead.lead_source || 'unknown';
-          let sourcePrefix = 'S';
-          if (leadSource === 'google_ad') sourcePrefix = 'S-G';
-          else if (leadSource === 'social_ad') sourcePrefix = 'S-F';
+          const leadLetter = sourceLetterFromLeadSource(leadSource);
+          const agentLetter = leadLetter === 'O' ? sourceLetterFromAdSource(detectedAdSource) : leadLetter;
+          const sourcePrefix = saleSubjectPrefix({ letter: agentLetter, isAgentSale: true });
 
           const leadCreatedAt = (matchedLead as any).created_at
             ? new Date((matchedLead as any).created_at).toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
