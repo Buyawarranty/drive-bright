@@ -641,30 +641,14 @@ export function SandboxChatWindow({
           </Button>
         </div>
       ) : (
-        <div className="space-y-1 border-b border-border bg-background px-4 py-2.5 text-sm">
+        <div className="border-b border-border bg-background px-4 py-2 text-sm">
           <p className="flex items-center gap-2 font-semibold text-foreground">
             <span className="relative flex h-2.5 w-2.5 shrink-0">
               <span className="absolute inline-flex h-2.5 w-2.5 animate-ping rounded-full bg-emerald-500 opacity-70" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-600" />
             </span>
-            AI assistant online
+            Miles · AI agent online
           </p>
-          {liveCount > 0 ? (
-            <p className="flex items-center gap-2 font-medium text-emerald-700">
-              <span className="ml-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-600" />
-              {liveCount === 1 ? 'A specialist is online now' : `${liveCount} specialists are online now`}
-              {liveNames.length > 0 ? ` (${liveNames.slice(0, 2).join(', ')})` : ''}
-            </p>
-          ) : (
-            <p className="flex items-center gap-2 text-muted-foreground">
-              {open ? (
-                <span className="ml-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/50" />
-              ) : (
-                <Clock className="h-3.5 w-3.5 shrink-0" />
-              )}
-              {open ? `Specialist available ${openingHoursLabel}` : `Specialists back ${nextOpeningLabel()} · ${openingHoursLabel}`}
-            </p>
-          )}
         </div>
       )}
 
