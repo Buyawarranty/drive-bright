@@ -715,12 +715,17 @@ export function SandboxChatWindow({
           )}
 
 
-          {messages.map((message) => {
+          {messages.map((message, msgIndex) => {
             const sender = senderOf(message);
             return (
-              <Message from={message.role} key={message.id}>
+              <div
+                key={message.id}
+                className={msgIndex > 0 ? 'mt-3 border-t border-border/70 pt-3' : undefined}
+              >
+              <Message from={message.role}>
                 <MessageContent>
                   <SenderLabel sender={sender} />
+
                   {message.parts.map((part, i) => {
                     if (part.type === 'text') {
                       return <MessageResponse key={i}>{stripPrefix(part.text)}</MessageResponse>;
