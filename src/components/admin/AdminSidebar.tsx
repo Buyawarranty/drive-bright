@@ -257,6 +257,12 @@ export const defaultTabs: Tab[] = [
     description: 'Manage customer complaints and resolutions'
   },
   {
+    id: 'careers-applications',
+    label: 'Careers Applications',
+    icon: FileText,
+    description: 'Job applications, shortlisting and automatic 5-day rejections'
+  },
+  {
     id: 'reviews',
     label: 'Reviews',
     icon: Star,

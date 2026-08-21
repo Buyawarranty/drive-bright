@@ -56,6 +56,7 @@ const ChatbotDataTab = lazy(() => import('@/components/admin/chatbot/ChatbotData
 const SemrushSeoTab = lazy(() => import('@/components/admin/semrush/SemrushSeoTab'));
 const ContactSubmissionsTab = lazy(() => import('@/components/admin/ContactSubmissionsTab'));
 const ComplaintsTab = lazy(() => import('@/components/admin/ComplaintsTab'));
+const CareerApplicationsTab = lazy(() => import('@/components/admin/CareerApplicationsTab'));
 const AbandonedCartsTab = lazy(() => import('@/components/admin/AbandonedCartsTab').then(m => ({ default: m.AbandonedCartsTab })));
 const GetQuoteTab = lazyWithRetry(() => import('@/components/admin/GetQuoteTab').then(m => ({ default: m.GetQuoteTab })));
 const CustomersTab = lazy(() => import('@/components/admin/CustomersTab').then(m => ({ default: m.CustomersTab })));
@@ -851,6 +852,19 @@ const AdminDashboard = () => {
           );
         }
         return <ComplaintsTab />;
+      case 'careers-applications': {
+        const careersAllowed = ['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole)
+          || effectiveUserPermissions?.tab_hr === true;
+        if (!careersAllowed) {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-sm text-muted-foreground mt-1">Careers Applications is restricted to management.</p>
+            </div>
+          );
+        }
+        return <CareerApplicationsTab />;
+      }
       case 'abandoned-carts':
         return <AbandonedCartsTab />;
       case 'marketing-audience':

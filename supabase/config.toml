@@ -305,3 +305,6 @@ verify_jwt = false
 
 [functions.sandbox-live-agent-request]
 verify_jwt = false
+
+[functions.career-rejection-sweep]
+verify_jwt = false
