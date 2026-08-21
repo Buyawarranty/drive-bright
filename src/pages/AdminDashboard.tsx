@@ -36,6 +36,7 @@ import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
 import { recordTabVisit } from '@/hooks/useTabUsage';
 import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
 import { initAdminTelemetry, logAdminUiEvent, logAdminSlowLoad } from '@/lib/adminTelemetry';
+import { installAdminStallGuard } from '@/lib/adminStallGuard';
 const AdminUiEventLogPanel = lazy(() => import('@/components/admin/AdminUiEventLogPanel'));
 const SalesStaffPerformancePanel = lazy(() => import('@/components/admin/SalesStaffPerformancePanel'));
 
