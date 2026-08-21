@@ -199,6 +199,9 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   if (tab === 'account') return true;
   if (tab === 'unsubscribe') return true;
   if (role === 'super_admin' || role === 'dev_tester') return true;
+  // Payments pending is the accounts team's verification queue — accounts roles and
+  // management always get it, without needing a per-user grant.
+  if (tab === 'payments-pending' && ACCOUNTS_ALLOWED_ROLES.has(role || '')) return true;
   // Lead Allocation is management-only: sales and sales_lead can never see or open
   // it, not even via an explicit tab_ grant or a saved shortcut.
   if (LEAD_ALLOCATION_BLOCKED_ROLES.has(role || '') && LEAD_ALLOCATION_TABS.has(tab)) return false;
