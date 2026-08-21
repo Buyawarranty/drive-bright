@@ -109,6 +109,21 @@ for (const path of STEP3_FILES) {
 }
 addChunks('Pricing page step 3 (cover options)', [...new Set(stepLines)]);
 
+// Approved clarifications to v3.7 — confirmed by management, must survive a rebuild.
+chunks.push({
+  source: 'Platinum Warranty Plan v3.7',
+  section: 'Platinum Warranty Plan v3.7 (replaced turbo and replaced hybrid battery clarification)',
+  text: [
+    'Replaced turbo unit and replaced hybrid/EV drive battery — approved clarification to the Platinum Warranty Plan v3.7.',
+    'If the turbo unit has been replaced with a new or replacement unit, it remains covered even on an older or higher-mileage vehicle, provided a valid receipt and proof of purchase for the replacement part is supplied.',
+    'If the hybrid or EV drive battery has been replaced, it remains covered on the same basis, provided a valid receipt and proof of purchase is supplied.',
+    "The turbo age/mileage limit (7 years or 80,000 miles) and the drive battery limit (10 years or 80,000 miles) are measured from the replacement part, not from the vehicle's original registration date or lifetime mileage. In other words, the duration of cover for that component starts again from the date the replacement part was fitted, as evidenced by the receipt and proof of purchase.",
+    'Normal exclusions still apply to the rest of the plan, and each claim is assessed when it is made.',
+  ].join('\n'),
+});
+
+
+
 writeFileSync(
   'supabase/functions/ai-sandbox-chat/site-knowledge.json',
   JSON.stringify(chunks, null, 0)
