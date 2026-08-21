@@ -71,6 +71,8 @@ interface MyData {
   lastSaleProof: string | null;
   positives: number;
   negatives: number;
+  monthPositives: number;
+  monthNegatives: number;
 }
 
 const EMPTY: MyData = {
@@ -87,6 +89,8 @@ const EMPTY: MyData = {
   lastSaleProof: null,
   positives: 0,
   negatives: 0,
+  monthPositives: 0,
+  monthNegatives: 0,
 };
 
 export const ProgressOverviewStrip: React.FC = () => {
@@ -158,6 +162,12 @@ export const ProgressOverviewStrip: React.FC = () => {
           .gte('signup_date', addDays(now, -180).toISOString())
           .order('signup_date', { ascending: false })
           .limit(1000),
+        // Month-to-date reviews, for the 10-a-month minimum target.
+        (supabase as any)
+          .from('agent_review_claims')
+          .select('kind')
+          .eq('admin_user_id', adminId)
+          .gte('created_at', monthStart.toISOString()),
       ]);
 
       const val = (i: number): any => (settled[i].status === 'fulfilled' ? (settled[i] as any).value : null);
@@ -165,7 +175,7 @@ export const ProgressOverviewStrip: React.FC = () => {
         if (s.status === 'rejected') console.warn('[ProgressOverviewStrip] read failed', i, s.reason);
         else if ((s.value as any)?.error) console.warn('[ProgressOverviewStrip] read error', i, (s.value as any).error);
       });
-      const [scoreRes, daysRes, statusRes, logRes, reviewRes, salesRes] = [0, 1, 2, 3, 4, 5].map(val);
+      const [scoreRes, daysRes, statusRes, logRes, reviewRes, salesRes, monthReviewRes] = [0, 1, 2, 3, 4, 5, 6].map(val);
 
 
 
@@ -182,6 +192,10 @@ export const ProgressOverviewStrip: React.FC = () => {
       const reviews = ((reviewRes as any)?.data || []) as Array<{ kind: string }>;
       const positives = reviews.filter((r) => r.kind === 'positive').length;
       const negatives = reviews.filter((r) => r.kind === 'negative_removed').length;
+
+      const monthReviews = ((monthReviewRes as any)?.data || []) as Array<{ kind: string }>;
+      const monthPositives = monthReviews.filter((r) => r.kind === 'positive').length;
+      const monthNegatives = monthReviews.filter((r) => r.kind === 'negative_removed').length;
 
       // My own sales per day, plus the date of my most recent sale. Cancelled and
       // refunded rows never count as a sale; anything else does.
@@ -247,6 +261,8 @@ export const ProgressOverviewStrip: React.FC = () => {
         lowSaleDays,
         positives,
         negatives,
+        monthPositives,
+        monthNegatives,
       });
     } finally {
       setLoading(false);
@@ -378,6 +394,8 @@ export const ProgressOverviewStrip: React.FC = () => {
   const pct = data.target && data.target > 0 ? Math.min(100, Math.round((data.revenue / data.target) * 100)) : null;
   const onBreak = data.breakStatus !== 'available' && data.breakStatus !== 'off';
   const bonus = data.positives * 5 + data.negatives * 10;
+  const REVIEW_MONTH_TARGET = 10;
+  const monthReviewsTotal = data.monthPositives + data.monthNegatives;
 
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const frozen = !data.salesReadFailed && data.lowSaleDays >= 2;
@@ -550,7 +568,7 @@ export const ProgressOverviewStrip: React.FC = () => {
             icon={<Star className="h-4 w-4 text-emerald-700" />}
             iconClass="bg-emerald-100"
             label="My reviews · this week"
-            help="These are not pulled from Trustpilot and they are not the marketing review emails. Add a review only when you personally asked the customer on a call, WhatsApp or email and they name you in it. £5 per named positive review, £10 per negative review you get resolved and removed."
+            help="Target: minimum 10 named reviews a month. These are not pulled from Trustpilot and they are not the marketing review emails. Add a review only when you personally asked the customer on a call, WhatsApp or email and they name you in it. £5 per named positive review, £10 per negative review you get resolved and removed."
           >
             <div className="flex items-baseline gap-3 whitespace-nowrap">
               <span className="text-sm">
@@ -561,6 +579,29 @@ export const ProgressOverviewStrip: React.FC = () => {
               </span>
               <span className="text-sm font-semibold">{gbp(bonus)} bonus</span>
             </div>
+            <div className="mt-1 flex items-center gap-2 whitespace-nowrap">
+              <span
+                className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${
+                  monthReviewsTotal >= REVIEW_MONTH_TARGET
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}
+              >
+                {monthReviewsTotal}/{REVIEW_MONTH_TARGET} this month
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                {monthReviewsTotal >= REVIEW_MONTH_TARGET
+                  ? 'Monthly minimum met'
+                  : `${REVIEW_MONTH_TARGET - monthReviewsTotal} more to hit the 10 a month minimum`}
+              </span>
+            </div>
+            <div className="mt-1 h-1.5 w-full max-w-[220px] overflow-hidden rounded-full bg-muted">
+              <div
+                className={`h-full ${monthReviewsTotal >= REVIEW_MONTH_TARGET ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                style={{ width: `${Math.min(100, Math.round((monthReviewsTotal / REVIEW_MONTH_TARGET) * 100))}%` }}
+              />
+            </div>
+
             <Popover>
               <PopoverTrigger asChild>
                 <Button size="sm" variant="outline" className="mt-1 h-6 gap-1 px-2 text-[11px]">
