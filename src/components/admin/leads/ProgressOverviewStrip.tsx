@@ -98,6 +98,10 @@ const EMPTY: MyData = {
   negatives: 0,
   monthPositives: 0,
   monthNegatives: 0,
+  allocationPaused: false,
+  freezeSource: null,
+  freezeReason: null,
+  frozenUntil: null,
 };
 
 export const ProgressOverviewStrip: React.FC = () => {
@@ -175,6 +179,12 @@ export const ProgressOverviewStrip: React.FC = () => {
           .select('kind')
           .eq('admin_user_id', adminId)
           .gte('created_at', monthStart.toISOString()),
+        // Authoritative allocation state — same row as the freeze banner.
+        (supabase as any)
+          .from('agent_distribution_caps')
+          .select('paused, freeze_source, freeze_reason, frozen_until')
+          .eq('admin_user_id', adminId)
+          .maybeSingle(),
       ]);
 
       const val = (i: number): any => (settled[i].status === 'fulfilled' ? (settled[i] as any).value : null);
