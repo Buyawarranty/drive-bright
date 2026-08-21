@@ -371,6 +371,30 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const sourceHidden = !sourceVisible;
   const canSeeSourceFilter = sourceVisible;
 
+  // Sandbox chat test leads (AI chat widget on the /used-car-warranty-uk test page).
+  // Managers get a toggle to hide them while the widget is still being tested —
+  // once the chat goes live on the main site these become real leads, so the
+  // toggle can simply be switched off (nothing is ever deleted).
+  const canToggleSandboxLeads =
+    userRole === 'super_admin' || userRole === 'admin' || userRole === 'sales_manager';
+  const [hideSandboxLeads, setHideSandboxLeads] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    const stored = localStorage.getItem('newLeads.hideSandboxTestLeads');
+    return stored === null ? true : stored === '1';
+  });
+  const toggleHideSandboxLeads = () => {
+    setHideSandboxLeads((prev) => {
+      const next = !prev;
+      try { localStorage.setItem('newLeads.hideSandboxTestLeads', next ? '1' : '0'); } catch {}
+      return next;
+    });
+  };
+  const isSandboxTestLead = useCallback((lead: Lead) => {
+    const notes = (lead as any)?.notes;
+    if (typeof notes !== 'string') return false;
+    return notes.toLowerCase().includes('used-car-warranty-uk');
+  }, []);
+
   // Fetch active reminder lead IDs for the current admin user
   const fetchReminderLeadIds = useCallback(async () => {
     try {
