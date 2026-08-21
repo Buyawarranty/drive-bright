@@ -58,6 +58,9 @@ export const HRTab: React.FC<HRTabProps> = ({ userRole }) => {
           <TabsTrigger value="attendance" className="gap-2"><Wifi className="w-4 h-4" /> Attendance</TabsTrigger>
           <TabsTrigger value="timesheets" className="gap-2"><CalendarClock className="w-4 h-4" /> Timesheets</TabsTrigger>
           <TabsTrigger value="access" className="gap-2"><History className="w-4 h-4" /> Access history</TabsTrigger>
+          {canSeeConduct && (
+            <TabsTrigger value="conduct" className="gap-2"><ShieldAlert className="w-4 h-4" /> Service performance &amp; conduct</TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="locations" className="mt-4">
