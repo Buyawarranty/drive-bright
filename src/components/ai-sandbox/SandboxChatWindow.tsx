@@ -572,6 +572,7 @@ export function SandboxChatWindow({
     }
   };
 
+  void holdTick; // re-renders the hold timer each second
   const holdSeconds = holdSince ? Math.max(0, Math.round((Date.now() - holdSince) / 1000)) : 0;
 
 
@@ -790,6 +791,60 @@ export function SandboxChatWindow({
 
       {!agentMode && (
         <div className={compact ? '' : 'mx-auto w-full max-w-3xl'}>
+          {holdState === 'on_hold' || waiting ? (
+            <div className="mx-3 mb-2 rounded-2xl border border-primary/40 bg-primary/5 px-3.5 py-3">
+              <p className="flex items-center gap-2 text-sm font-bold text-foreground">
+                <span className="relative flex h-2.5 w-2.5 shrink-0">
+                  <span className="absolute inline-flex h-2.5 w-2.5 animate-ping rounded-full bg-primary opacity-70" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
+                </span>
+                {open ? 'Connecting you to a live agent…' : 'Your request is with the team'}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {open
+                  ? `You're on hold — we're ringing the team now. Please hold${holdSeconds ? ` (${holdSeconds}s)` : ''}. Keep chatting with Miles meanwhile.`
+                  : `We're closed just now — a specialist picks this up ${nextOpeningLabel()} (${openingHoursLabel}).`}
+              </p>
+              {open && (
+                <a
+                  href="tel:03302295040"
+                  className="mt-2 inline-flex items-center gap-1.5 text-sm font-bold text-primary underline underline-offset-2"
+                >
+                  <PhoneCall className="h-3.5 w-3.5" />
+                  Rather not wait? Call 0330 229 5040
+                </a>
+              )}
+            </div>
+          ) : (
+            <div className="mx-3 mb-2 flex items-center gap-3 rounded-2xl border border-border bg-card px-3.5 py-3 shadow-sm">
+              <Headset className="h-5 w-5 shrink-0 text-primary" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-foreground">Speak to a live agent</p>
+                <p className="text-sm text-muted-foreground">
+                  {open
+                    ? "We'll put you on hold and ring the team straight away."
+                    : `Leave it with us — a specialist picks this up ${nextOpeningLabel()}.`}
+                </p>
+                {open && (
+                  <a
+                    href="tel:03302295040"
+                    className="mt-1 inline-flex items-center gap-1.5 text-sm font-bold text-primary underline underline-offset-2"
+                  >
+                    <PhoneCall className="h-3.5 w-3.5" />
+                    Or call 0330 229 5040
+                  </a>
+                )}
+                {holdError && <p className="mt-1 text-sm font-medium text-destructive">{holdError}</p>}
+              </div>
+              <Button
+                onClick={requestLiveAgent}
+                disabled={holdState === 'connecting'}
+                className="h-10 shrink-0 rounded-xl text-sm font-bold"
+              >
+                {holdState === 'connecting' ? 'Connecting…' : 'Connect me'}
+              </Button>
+            </div>
+          )}
           <CallMeBackPanel
             guestToken={guestToken}
             threadId={threadId}
