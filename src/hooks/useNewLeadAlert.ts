@@ -230,7 +230,7 @@ const MAX_ALERT_AGE_MS = 12 * 60 * 60 * 1000;
 // Only sales agents who actually work leads ever see new-lead pop-ups.
 // Claims agents/managers and every other non-sales role are HARD excluded —
 // they don't work leads and the cards were covering their claims screens.
-const LEAD_ALERT_ROLES = ['sales', 'sales_lead', 'sales_manager'];
+const LEAD_ALERT_ROLES = ['sales', 'sales_lead', 'sales_manager', 'admin', 'super_admin'];
 
 export const useNewLeadAlert = () => {
   // HARD RULE: pop-ups only ever show leads assigned to the SIGNED-IN agent.

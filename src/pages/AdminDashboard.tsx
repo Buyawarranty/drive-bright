@@ -27,6 +27,7 @@ import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 import SandboxHandoverAlerts from '@/components/admin/SandboxHandoverAlerts';
 import { NewLeadTopBanner } from '@/components/admin/leads/NewLeadTopBanner';
+import { NewLeadDock } from '@/components/admin/leads/NewLeadDock';
 import { ReassignRequestPopup } from '@/components/admin/leads/ReassignRequestPopup';
 
 import { OpenPoolLeadAlert } from '@/components/admin/leads/OpenPoolLeadAlert';
@@ -1294,6 +1295,17 @@ const AdminDashboardInner: React.FC<{
 
       {/* Fresh-lead top banner + floating popup for the current agent */}
       <NewLeadAlerts />
+
+      {/* Permanently docked, always-visible stack of new leads (never scrolls away) */}
+      <NewLeadDock
+        onGo={(leadId, focus) => {
+          handleTabChange('new-leads');
+          setSearchParams(
+            { tab: 'new-leads', leadId, ...(focus ? { q: focus } : {}) },
+            { replace: true }
+          );
+        }}
+      />
       <SandboxHandoverAlerts />
 
 
