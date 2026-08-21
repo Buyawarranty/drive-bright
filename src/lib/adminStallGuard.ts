@@ -22,6 +22,31 @@ import { logAdminSlowLoad } from '@/lib/adminTelemetry';
 
 const READ_TIMEOUT_MS = 20_000;
 const SLOW_READ_MS = 8_000;
+/**
+ * Chrome runs out of sockets/memory (net::ERR_INSUFFICIENT_RESOURCES) once a
+ * page has thousands of reads in flight — that is what blanked the sales CRM.
+ * We cap how many CRM reads run at once and queue the rest, and we share one
+ * response between identical reads fired at the same moment.
+ */
+const MAX_CONCURRENT_READS = 10;
+
+let inFlight = 0;
+const waiters: Array<() => void> = [];
+const dedupe = new Map<string, Promise<Response>>();
+
+const acquireSlot = (): Promise<void> => {
+  if (inFlight < MAX_CONCURRENT_READS) {
+    inFlight++;
+    return Promise.resolve();
+  }
+  return new Promise<void>((resolve) => waiters.push(resolve));
+};
+
+const releaseSlot = () => {
+  const next = waiters.shift();
+  if (next) next();
+  else inFlight = Math.max(0, inFlight - 1);
+};
 
 let installed = false;
 
@@ -30,6 +55,7 @@ const isGuardedRead = (url: string, method: string): boolean => {
   const m = method.toUpperCase();
   return m === 'GET' || m === 'HEAD';
 };
+
 
 const withTimeout = async (
   input: RequestInfo | URL,
