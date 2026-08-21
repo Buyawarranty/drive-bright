@@ -6,6 +6,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { WidgetErrorBoundary } from '../WidgetErrorBoundary';
 import { LeadFreezeRulesCard } from './LeadFreezeRulesCard';
 import { ProgressOverviewStrip } from './ProgressOverviewStrip';
+import { AllAgentsProgressPanel } from './AllAgentsProgressPanel';
 import { LeadFreezeNoticeBanner } from './LeadFreezeNoticeBanner';
 import { AutoLeadFreezePanel } from './AutoLeadFreezePanel';
 
