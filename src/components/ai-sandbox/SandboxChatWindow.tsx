@@ -778,7 +778,9 @@ export function SandboxChatWindow({
                   })}
                 </MessageContent>
               </Message>
+              </div>
             );
+
           })}
 
           {!agentMode && hasPriceQuote && (
