@@ -16,6 +16,9 @@ const AttendanceTab = lazy(() =>
 
 const MANAGEMENT_ROLES = ['admin', 'super_admin', 'sales_manager', 'accounts_manager', 'accounts_payroll', 'claims_manager', 'performance_manager'];
 
+// Service performance & conduct is a narrower, managers-only reference.
+const CONDUCT_ROLES = ['admin', 'super_admin', 'sales_manager', 'performance_manager'];
+
 interface HRTabProps {
   userRole?: string;
 }
