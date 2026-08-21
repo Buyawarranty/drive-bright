@@ -39,6 +39,7 @@ import { initPhoneClickTracker } from '@/utils/phoneEventLogger';
 import { initAdminTelemetry, logAdminUiEvent, logAdminSlowLoad } from '@/lib/adminTelemetry';
 import { installAdminStallGuard } from '@/lib/adminStallGuard';
 const AdminUiEventLogPanel = lazy(() => import('@/components/admin/AdminUiEventLogPanel'));
+const PaymentsPendingTab = lazy(() => import('@/components/admin/PaymentsPendingTab'));
 const SalesStaffPerformancePanel = lazy(() => import('@/components/admin/SalesStaffPerformancePanel'));
 
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
@@ -172,6 +173,17 @@ const LIVE_CALLS_TAB_IDS = new Set(['overview', 'call-stats', 'live-calls-data']
 const LEAD_ALLOCATION_TABS = new Set(['lead-teams', 'open-round-robin', 'orr-test-lab']);
 const LEAD_ALLOCATION_BLOCKED_ROLES = new Set(['sales', 'sales_lead']);
 
+// Payments pending belongs to accounts: the accounts team plus management always
+// see it, everyone else only via an explicit tab_payments-pending grant.
+const ACCOUNTS_ALLOWED_ROLES = new Set([
+  'admin',
+  'super_admin',
+  'accounts',
+  'accounts_manager',
+  'accounts_payroll',
+  'sales_manager',
+]);
+
 const canonicalTabId = (tab: string) => (LIVE_CALLS_TAB_IDS.has(tab) ? 'overview' : tab);
 
 // Roles that always keep access to Live Calls Data. What they can actually see
@@ -198,6 +210,9 @@ const isTabAllowedForRole = (rawTab: string, role: string | null, permissions?: 
   if (tab === 'account') return true;
   if (tab === 'unsubscribe') return true;
   if (role === 'super_admin' || role === 'dev_tester') return true;
+  // Payments pending is the accounts team's verification queue — accounts roles and
+  // management always get it, without needing a per-user grant.
+  if (tab === 'payments-pending' && ACCOUNTS_ALLOWED_ROLES.has(role || '')) return true;
   // Lead Allocation is management-only: sales and sales_lead can never see or open
   // it, not even via an explicit tab_ grant or a saved shortcut.
   if (LEAD_ALLOCATION_BLOCKED_ROLES.has(role || '') && LEAD_ALLOCATION_TABS.has(tab)) return false;
@@ -910,6 +925,17 @@ const AdminDashboard = () => {
         return (
           <Suspense fallback={<TabFallback />}>
             <AdminUiEventLogPanel />
+          </Suspense>
+        );
+      // Payments pending: accounts verification queue for confirmed sales with no
+      // Stripe / Bumper / Payment Assist evidence on the system.
+      case 'payments-pending':
+        if (!isTabAllowedForRole('payments-pending', effectiveUserRole, effectiveUserPermissions)) {
+          return <AccessDenied label="Payments pending" />;
+        }
+        return (
+          <Suspense fallback={<TabFallback />}>
+            <PaymentsPendingTab />
           </Suspense>
         );
       case 'page-analytics':

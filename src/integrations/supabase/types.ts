@@ -4475,7 +4475,13 @@ export type Database = {
           payment_due_date: string | null
           payment_status: string | null
           payment_type: string | null
+          payment_verification_note: string | null
+          payment_verification_ref: string | null
+          payment_verification_source: string | null
+          payment_verification_status: string
           payment_verified: boolean | null
+          payment_verified_at: string | null
+          payment_verified_by: string | null
           phone: string | null
           plan_type: string
           postcode: string | null
@@ -4594,7 +4600,13 @@ export type Database = {
           payment_due_date?: string | null
           payment_status?: string | null
           payment_type?: string | null
+          payment_verification_note?: string | null
+          payment_verification_ref?: string | null
+          payment_verification_source?: string | null
+          payment_verification_status?: string
           payment_verified?: boolean | null
+          payment_verified_at?: string | null
+          payment_verified_by?: string | null
           phone?: string | null
           plan_type: string
           postcode?: string | null
@@ -4713,7 +4725,13 @@ export type Database = {
           payment_due_date?: string | null
           payment_status?: string | null
           payment_type?: string | null
+          payment_verification_note?: string | null
+          payment_verification_ref?: string | null
+          payment_verification_source?: string | null
+          payment_verification_status?: string
           payment_verified?: boolean | null
+          payment_verified_at?: string | null
+          payment_verified_by?: string | null
           phone?: string | null
           plan_type?: string
           postcode?: string | null
