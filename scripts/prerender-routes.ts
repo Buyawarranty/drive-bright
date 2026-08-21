@@ -109,6 +109,24 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
 
   // ---------------- The Warranty Hub articles ----------------
   {
+    path: "/thewarrantyhub/platinum-warranty-cover-modifications-uk-vehicle-protection-guide/",
+    title: "Platinum Warranty Cover & Modifications | UK Guide 2026",
+    description:
+      "What Platinum car warranty cover includes for petrol, diesel, hybrid, EV and motorbike vehicles in the UK, plus exclusions and how engine remaps affect claims.",
+    ogType: "article",
+    ogImage:
+      "https://buyawarranty.co.uk/blog/platinum-warranty-cover-modifications-uk.jpg",
+  },
+  {
+    path: "/thewarrantyhub/top-rated-car-warranty-uk-buyer-guide/",
+    title: "Top Rated Car Warranty UK 2026 | Buyer Guide & Cover Tiers",
+    description:
+      "How the top rated UK car warranties compare on cover tiers, labour rate limits, claim limits and garage choice, and how to pick the right plan in 2026.",
+    ogType: "article",
+    ogImage:
+      "https://buyawarranty.co.uk/blog/top-rated-car-warranty-uk-claim-approved.jpg",
+  },
+  {
     path: "/thewarrantyhub/stop-overpaying-for-repairs-maintenance-warranty-vs-extended-warranty/",
     title: "Maintenance Warranty vs Extended Warranty UK | Key Differences",
     description:
