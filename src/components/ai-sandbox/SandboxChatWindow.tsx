@@ -605,7 +605,11 @@ export function SandboxChatWindow({
         </div>
       )}
 
-      <Conversation className="flex-1">
+      <Conversation
+        className="flex-1"
+        initial={messages.some((m) => m.role === 'user') ? 'smooth' : false}
+        resize="smooth"
+      >
         <ConversationContent className={compact ? 'w-full px-3' : 'mx-auto w-full max-w-3xl'}>
           <Message from="assistant">
             <MessageContent>
