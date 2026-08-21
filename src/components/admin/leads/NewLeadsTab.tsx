@@ -1727,6 +1727,24 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               ↓ Newest first
             </Button>
             <UnsubscribeQuickLink />
+            {canToggleSandboxLeads && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleHideSandboxLeads}
+                title={hideSandboxLeads
+                  ? 'AI chat test leads from the /used-car-warranty-uk test page are hidden. Turn this off when the chat widget goes live so those leads show as normal.'
+                  : 'AI chat test leads from the /used-car-warranty-uk test page are showing. Turn this on to hide them while testing.'}
+                className={`h-7 px-3 text-[11px] font-semibold gap-1.5 ${
+                  hideSandboxLeads
+                    ? 'border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    : 'border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100'
+                }`}
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                {hideSandboxLeads ? 'Chat test leads hidden' : 'Chat test leads showing'}
+              </Button>
+            )}
             {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager') && (
               <Button
                 variant="outline"
