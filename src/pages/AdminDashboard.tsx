@@ -895,11 +895,21 @@ const AdminDashboard = () => {
             {['admin', 'super_admin', 'sales_manager', 'performance_manager'].includes(effectiveUserRole) && (
               <Suspense fallback={null}>
                 <SalesStaffPerformancePanel />
-                <AdminUiEventLogPanel />
               </Suspense>
             )}
 
           </div>
+        );
+      // Admin logs: the CRM's own activity and issue log. Kept out of Analytics
+      // because it is about how the dashboard behaves, not about sales numbers.
+      case 'admin-logs':
+        if (!isTabAllowedForRole('admin-logs', effectiveUserRole, effectiveUserPermissions)) {
+          return <AccessDenied label="Admin logs" />;
+        }
+        return (
+          <Suspense fallback={<TabFallback />}>
+            <AdminUiEventLogPanel />
+          </Suspense>
         );
       case 'page-analytics':
         return <PageAnalyticsTab />;
