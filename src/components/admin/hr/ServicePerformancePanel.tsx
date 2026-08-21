@@ -168,7 +168,10 @@ const Para: React.FC<{ children: React.ReactNode }> = ({ children }) => (
  * contractor service-performance stages, Lead Freeze rules, availability
  * rules and termination provisions. Reference document only; no actions here.
  */
-export const ServicePerformancePanel: React.FC = () => (
+export const ServicePerformancePanel: React.FC = () => {
+  const [variant, setVariant] = React.useState<'contractor' | 'employee'>('employee');
+
+  return (
   <div className="space-y-4">
     <Card>
       <CardHeader className="pb-3">
