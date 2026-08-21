@@ -175,7 +175,7 @@ export const ProgressOverviewStrip: React.FC = () => {
         if (s.status === 'rejected') console.warn('[ProgressOverviewStrip] read failed', i, s.reason);
         else if ((s.value as any)?.error) console.warn('[ProgressOverviewStrip] read error', i, (s.value as any).error);
       });
-      const [scoreRes, daysRes, statusRes, logRes, reviewRes, salesRes] = [0, 1, 2, 3, 4, 5].map(val);
+      const [scoreRes, daysRes, statusRes, logRes, reviewRes, salesRes, monthReviewRes] = [0, 1, 2, 3, 4, 5, 6].map(val);
 
 
 
@@ -192,6 +192,10 @@ export const ProgressOverviewStrip: React.FC = () => {
       const reviews = ((reviewRes as any)?.data || []) as Array<{ kind: string }>;
       const positives = reviews.filter((r) => r.kind === 'positive').length;
       const negatives = reviews.filter((r) => r.kind === 'negative_removed').length;
+
+      const monthReviews = ((monthReviewRes as any)?.data || []) as Array<{ kind: string }>;
+      const monthPositives = monthReviews.filter((r) => r.kind === 'positive').length;
+      const monthNegatives = monthReviews.filter((r) => r.kind === 'negative_removed').length;
 
       // My own sales per day, plus the date of my most recent sale. Cancelled and
       // refunded rows never count as a sale; anything else does.
