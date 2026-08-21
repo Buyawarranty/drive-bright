@@ -73,6 +73,13 @@ interface MyData {
   negatives: number;
   monthPositives: number;
   monthNegatives: number;
+  // Authoritative allocation state, straight from agent_distribution_caps — the
+  // same row the New leads freeze banner and the manager panels read. Never
+  // re-derive "paused" locally, or the strip contradicts the banner.
+  allocationPaused: boolean;
+  freezeSource: string | null;
+  freezeReason: string | null;
+  frozenUntil: string | null;
 }
 
 const EMPTY: MyData = {
