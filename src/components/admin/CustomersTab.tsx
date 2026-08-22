@@ -6652,12 +6652,26 @@ Please log in and change your password after first login.`;
 
                   {showPaymentColumn && (() => {
                     const quoteRoute = quotePaymentRouteForReg(customer.registration_plate);
+                    const SOURCE_LABELS: Record<string, string> = {
+                      bumper: 'Bumper',
+                      bumper_portal: 'Bumper',
+                      stripe: 'Stripe',
+                      stripe_dashboard: 'Stripe',
+                      payment_assist: 'Payment Assist',
+                      bank_transfer: 'Bank Transfer',
+                      phone_card: 'Phone Card',
+                      dealer_portal: 'Dealer Portal',
+                      dealer: 'Dealer Portal',
+                    };
+                    const sourceLabel = SOURCE_LABELS[String((customer as any).purchase_source || '').toLowerCase()];
                     const routeLabel =
                       customer.bumper_order_id ? 'Bumper' :
                       customer.stripe_session_id ? 'Stripe' :
+                      sourceLabel ??
                       quoteRoute ??
                       (customer.is_manual_entry ? 'Manual' : 'N/A');
                     const agentTaken = !customer.bumper_order_id && !customer.stripe_session_id;
+
                     return (
                     <TableCell>
                       <div className="flex flex-col gap-1">
