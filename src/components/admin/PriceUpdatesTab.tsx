@@ -24,6 +24,7 @@ import Aug26PricingPanel from '@/components/admin/pricing/Aug26PricingPanel';
 import LiveVsAug26Panel from '@/components/admin/pricing/LiveVsAug26Panel';
 import AugHybridVsLivePanel from '@/components/admin/pricing/AugHybridVsLivePanel';
 import CodebaseVsLivePanel from '@/components/admin/pricing/CodebaseVsLivePanel';
+import AnyModelComparePanel from '@/components/admin/pricing/AnyModelComparePanel';
 import CodebaseVsHybridPanel from '@/components/admin/pricing/CodebaseVsHybridPanel';
 import PricingEngineDraftPanel from '@/components/admin/pricing/PricingEngineDraftPanel';
 
@@ -93,6 +94,7 @@ const PERIOD_LABELS: Record<string, string> = {
 
 /** Top-level tabs — managers can reorder these left/right and the order sticks. */
 const TOP_TABS = [
+  { value: 'any-compare', label: 'Compare any two models', icon: GitCompare },
   { value: 'hybrid', label: 'Live Vs Test Hybrid Aug', icon: FlaskConical },
   { value: 'codebase-live', label: 'Code base vs Live', icon: GitCompare },
   { value: 'codebase-hybrid', label: 'Code base vs Test Hybrid Aug', icon: FlaskConical },
@@ -957,6 +959,10 @@ export default function PriceUpdatesTab() {
           })}
         </TabsList>
 
+
+        <TabsContent value="any-compare" className="space-y-6 mt-4">
+          <AnyModelComparePanel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />
+        </TabsContent>
 
         <TabsContent value="hybrid" className="space-y-6 mt-4">
           <AugHybridVsLivePanel liveModel={effectiveLiveModel} liveLabel={liveVersion?.label ?? null} busy={busy} onPushModel={handlePushModelLive} />

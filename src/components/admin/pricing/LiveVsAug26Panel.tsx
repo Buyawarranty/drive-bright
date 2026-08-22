@@ -25,7 +25,7 @@ import QuickUpliftBar, { applyModelUplift, useUpliftPct } from './QuickUpliftBar
 
 /** Turn a saved pricing version into the shape PriceTestStep2 expects, keeping
  *  the live builder's band keys/labels so both columns offer the same profile. */
-function versionToModel(version: any | null, saved: ReturnType<typeof useSavedPricingModel>) {
+export function versionToModel(version: any | null, saved: ReturnType<typeof useSavedPricingModel>) {
   if (!version) return null;
   const vfm = version.vehicle_factor_model;
 
