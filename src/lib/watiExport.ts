@@ -42,7 +42,10 @@ export interface WatiLeadLike {
   plan_interest?: string | null;
   quote_amount?: number | string | null;
   created_at?: string | null;
-  assigned_user?: { email?: string | null } | null;
+  call_count?: number | null;
+  last_contacted_at?: string | null;
+  notes?: string | null;
+  assigned_user?: { first_name?: string | null; last_name?: string | null; email?: string | null } | null;
 }
 
 export interface WatiRow {
@@ -58,6 +61,10 @@ export interface WatiRow {
   'Lead Status': string;
   'Lead Source': string;
   'Assigned Agent': string;
+  'Agent Email': string;
+  'Calls Attempted': string;
+  'Last Contacted': string;
+  Notes: string;
   'Enquiry Date': string;
 }
 
@@ -74,6 +81,10 @@ export function buildWatiRows(leads: WatiLeadLike[], options: { includeSource?: 
     const first = (lead.first_name || '').trim();
     const last = (lead.last_name || '').trim();
     const name = [first, last].filter(Boolean).join(' ') || 'Customer';
+    const agentName =
+      [lead.assigned_user?.first_name, lead.assigned_user?.last_name].filter(Boolean).join(' ') ||
+      lead.assigned_user?.email ||
+      'Unassigned';
 
     rows.push({
       'WhatsApp Number': number,
@@ -87,7 +98,14 @@ export function buildWatiRows(leads: WatiLeadLike[], options: { includeSource?: 
       'Quote Amount': lead.quote_amount != null && lead.quote_amount !== '' ? String(lead.quote_amount) : '',
       'Lead Status': lead.status || '',
       'Lead Source': options.includeSource === false ? '' : lead.lead_source || '',
-      'Assigned Agent': lead.assigned_user?.email || '',
+      'Assigned Agent': agentName,
+      'Agent Email': lead.assigned_user?.email || '',
+      'Calls Attempted': String(lead.call_count ?? 0),
+      'Last Contacted': lead.last_contacted_at
+        ? new Date(lead.last_contacted_at).toLocaleString('en-GB')
+        : '',
+      // Full note history, flattened so it stays on one CSV cell.
+      Notes: (lead.notes || '').replace(/\r?\n+/g, ' | ').trim(),
       'Enquiry Date': lead.created_at ? new Date(lead.created_at).toLocaleDateString('en-GB') : '',
     });
   }
