@@ -40,7 +40,21 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-c
 
 const AGENT_PREFIX = '(Warranty specialist)';
 
+// Pulls a short trailing question off the end of a reply so it can be
+// highlighted separately from the guidance above it.
+const splitTrailingQuestion = (text: string): { body: string; question: string } => {
+  const trimmed = text.trimEnd();
+  const idx = trimmed.lastIndexOf('\n\n');
+  if (idx === -1) return { body: trimmed, question: '' };
+  const tail = trimmed.slice(idx + 2).trim();
+  const isPlainQuestion =
+    tail.endsWith('?') && tail.length <= 200 && !/^[-*#>\d]/.test(tail);
+  if (!isPlainQuestion) return { body: trimmed, question: '' };
+  return { body: trimmed.slice(0, idx).trimEnd(), question: tail };
+};
+
 // Keeps every markdown element (headings, list items, paragraphs, bold) at one
+
 // consistent chat body size so replies don't render at mixed font sizes.
 const CHAT_TEXT = [
   'text-sm leading-relaxed',
@@ -805,8 +819,23 @@ export function SandboxChatWindow({
 
                   {message.parts.map((part, i) => {
                     if (part.type === 'text') {
-                      return <MessageResponse key={i} className={CHAT_TEXT}>{stripPrefix(part.text)}</MessageResponse>;
+                      const text = stripPrefix(part.text);
+                      if (message.role !== 'user') {
+                        const { body, question } = splitTrailingQuestion(text);
+                        return (
+                          <div key={i}>
+                            {body && <MessageResponse className={CHAT_TEXT}>{body}</MessageResponse>}
+                            {question && (
+                              <p className="mt-2 border-l-2 border-primary pl-3 text-sm font-semibold leading-relaxed text-primary">
+                                {question}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      }
+                      return <MessageResponse key={i} className={CHAT_TEXT}>{text}</MessageResponse>;
                     }
+
                     if (part.type === 'reasoning' && part.text) {
                       return (
                         <p key={i} className="text-xs italic text-muted-foreground">
