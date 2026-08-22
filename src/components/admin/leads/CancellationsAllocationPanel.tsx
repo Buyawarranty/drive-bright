@@ -17,7 +17,7 @@ import { format } from 'date-fns';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 
 interface CancellationRow {
-  id: string;
+  id: string | null;
   name: string | null;
   email: string | null;
   phone: string | null;
