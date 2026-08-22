@@ -1377,13 +1377,15 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                       {!editableLastName.trim() && <p className="text-[11px] text-destructive">Last name is required</p>}
                     </div>
 
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-500">Email *</Label>
-                      <Input value={editableCustomerEmail} onChange={(e) => setEditableCustomerEmail(e.target.value)} />
+                    <div className="space-y-1.5" id="confirm-email-field">
+                      <Label className="text-xs font-semibold text-slate-500">Email <span className="text-destructive">*</span></Label>
+                      <Input type="email" value={editableCustomerEmail} onChange={(e) => setEditableCustomerEmail(e.target.value)} className={!editableCustomerEmail.trim() ? 'border-destructive focus-visible:ring-destructive' : ''} />
+                      {!editableCustomerEmail.trim() && <p className="text-[11px] text-destructive">Email address is required</p>}
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-500">Phone</Label>
-                      <Input value={editableCustomerPhone} onChange={(e) => setEditableCustomerPhone(e.target.value)} placeholder="07xxx xxxxxx" />
+                    <div className="space-y-1.5" id="confirm-phone-field">
+                      <Label className="text-xs font-semibold text-slate-500">Phone <span className="text-destructive">*</span></Label>
+                      <Input type="tel" value={editableCustomerPhone} onChange={(e) => setEditableCustomerPhone(e.target.value)} placeholder="07xxx xxxxxx" className={!editableCustomerPhone.trim() ? 'border-destructive focus-visible:ring-destructive' : ''} />
+                      {!editableCustomerPhone.trim() && <p className="text-[11px] text-destructive">Phone number is required</p>}
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-semibold text-slate-500">Registration *</Label>
