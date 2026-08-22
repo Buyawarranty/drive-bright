@@ -227,7 +227,21 @@ export default function ChatbotDataTab() {
           <Button size="sm" variant="outline" onClick={exportCsv} disabled={!filtered.length}>
             <Download className="h-4 w-4 mr-1" /> Export CSV
           </Button>
+          <Button size="sm" variant="outline" asChild>
+            <a href="/used-car-warranty-uk/" target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-4 w-4 mr-1" /> Open chatbot
+            </a>
+          </Button>
+          <Button size="sm" variant="outline" asChild>
+            <a href="/ai-sandbox" target="_blank" rel="noopener noreferrer">
+              <Bot className="h-4 w-4 mr-1" /> AI sandbox
+            </a>
+          </Button>
+          <Button size="sm" variant="outline" onClick={resetChatSession}>
+            <Eraser className="h-4 w-4 mr-1" /> Clear chat cookies
+          </Button>
         </div>
+
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
