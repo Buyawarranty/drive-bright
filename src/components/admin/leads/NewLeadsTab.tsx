@@ -8,7 +8,6 @@ import { LeadFreezeRulesCard } from './LeadFreezeRulesCard';
 import { ProgressOverviewStrip } from './ProgressOverviewStrip';
 import { AllAgentsProgressPanel } from './AllAgentsProgressPanel';
 import { LeadFreezeNoticeBanner } from './LeadFreezeNoticeBanner';
-import { AutoLeadFreezePanel } from './AutoLeadFreezePanel';
 
 
 
@@ -1675,16 +1674,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         /* Management sees every agent's figures, not a personal strip */
         <>
           <WidgetErrorBoundary label="All agents progress"><AllAgentsProgressPanel /></WidgetErrorBoundary>
-          <details className="rounded-xl border border-border bg-card shadow-sm">
-            <summary className="cursor-pointer select-none px-4 py-3 text-sm font-semibold">
-              All agents · lead access &amp; freeze status
-            </summary>
-            <div className="px-2 pb-3">
-              <WidgetErrorBoundary label="All agents lead access">
-                <AutoLeadFreezePanel canEdit />
-              </WidgetErrorBoundary>
-            </div>
-          </details>
         </>
       ) : (
         <>

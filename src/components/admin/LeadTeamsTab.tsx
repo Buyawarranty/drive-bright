@@ -37,7 +37,6 @@ import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { Button } from '@/components/ui/button';
 import { Percent } from 'lucide-react';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
-import { AutoLeadFreezePanel } from './leads/AutoLeadFreezePanel';
 import { PausedAgentsOverrideBar } from './leads/PausedAgentsOverrideBar';
 
 import { ScoreboardTargetsSection } from './leads/ScoreboardTargetsSection';
@@ -302,10 +301,9 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           <div className="border-l-4 border-teal-500/60 pl-3">
             <h2 className="text-lg font-semibold text-foreground">Leads on / off</h2>
             <p className="text-xs text-muted-foreground">
-              Switch each agent's leads on or off, and see who the automatic no-sales freeze has paused.
+              Switch each agent's leads on or off manually. Nothing pauses leads automatically.
             </p>
           </div>
-          <AutoLeadFreezePanel canEdit={canEdit} />
         </div>
       )}
 

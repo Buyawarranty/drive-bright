@@ -528,32 +528,14 @@ export const ProgressOverviewStrip: React.FC = () => {
             label="My lead access"
             help={
               <div className="space-y-2">
-                <p className="font-semibold">Lead freeze rules</p>
-
-                <div>
-                  <p className="font-medium">How days are counted</p>
-                  <ul className="mt-0.5 list-disc pl-4 space-y-0.5">
-                    <li>Agreed service days only — days you are rota'd to work</li>
-                    <li>Today is still in progress and is not counted</li>
-                    <li>Days off, holiday and sick are skipped</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <p className="font-medium">What happens</p>
-                  <ul className="mt-0.5 list-disc pl-4 space-y-0.5">
-                    <li>1 sale or fewer across any 2 consecutive service days — new leads pause for one service day</li>
-                    <li>1 sale or fewer across any 3 consecutive service days — new leads pause for two service days</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <p className="font-medium">Getting a freeze lifted</p>
-                  <p className="mt-0.5">
-                    Hitting your monthly target pro-rata lifts an automatic pause. Management can also lift or hold a
-                    freeze at their discretion.
-                  </p>
-                </div>
+                <p className="font-semibold">Lead access</p>
+                <p>
+                  Lead access is managed by hand. Nothing pauses your leads automatically — only a manager can pause or
+                  resume new leads from the lead allocation section.
+                </p>
+                <p className="text-muted-foreground">
+                  The sales-day counter below is for information only and never affects allocation.
+                </p>
               </div>
             }
           >
@@ -563,13 +545,7 @@ export const ProgressOverviewStrip: React.FC = () => {
             <div className="text-[11px] text-muted-foreground max-w-[240px] leading-tight">
               {frozen ? (
                 <>
-                  {data.freezeReason ||
-                    (data.freezeSource === 'auto'
-                      ? 'Automatic pause from your recent sales.'
-                      : 'A manager has paused your new leads.')}
-                  {data.freezeSource === 'auto' && data.frozenUntil
-                    ? ` Leads resume on ${format(new Date(data.frozenUntil), 'EEE d MMM')}.`
-                    : ''}
+                  {data.freezeReason || 'A manager has paused your new leads.'}
                 </>
               ) : data.salesReadFailed ? (
                 'Sales figures unavailable — refresh'
