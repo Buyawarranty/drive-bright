@@ -279,6 +279,6 @@ function OpenPoolLeadAlertInner() {
         </div>
       </div>
     </div>
-    </AlertRailSlot>
+    </div>
   );
 }
