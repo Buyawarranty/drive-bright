@@ -934,7 +934,7 @@ export function SandboxChatWindow({
                 : 'Ask about cover, pricing, claims…'
             }
           />
-          <PromptInputFooter className="justify-between gap-2">
+          <PromptInputFooter className="items-center justify-between gap-1 border-0 pt-0">
             <div className="flex min-w-0 items-center gap-2">
               {!isGuest && (
                 <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
@@ -946,6 +946,7 @@ export function SandboxChatWindow({
               )}
             </div>
             <VoiceDictateButton
+              iconOnly
               disabled={busy}
               onTranscript={(text) => {
                 const ta = composerRef.current?.querySelector('textarea');
