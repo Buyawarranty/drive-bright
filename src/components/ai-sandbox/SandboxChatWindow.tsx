@@ -785,10 +785,13 @@ export function SandboxChatWindow({
                   <button
                     key={text}
                     onClick={() => send(text)}
-                    className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-3 text-left text-sm font-medium text-foreground shadow-sm transition-colors hover:border-primary/40 hover:bg-muted"
+                    className="group flex w-full items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-3 text-left text-sm font-semibold text-foreground shadow-sm transition-all hover:border-primary/50 hover:bg-primary/5"
                   >
-                    <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    <span className="min-w-0">{text}</span>
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted transition-colors group-hover:bg-primary/10">
+                      <Icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
+                    </span>
+                    <span className="min-w-0 flex-1">{text}</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
                   </button>
                 ))}
               </div>
@@ -799,10 +802,7 @@ export function SandboxChatWindow({
           {messages.map((message, msgIndex) => {
             const sender = senderOf(message);
             return (
-              <div
-                key={message.id}
-                className={msgIndex > 0 ? 'mt-3 border-t border-border/70 pt-3' : undefined}
-              >
+              <div key={message.id} className={msgIndex > 0 ? 'mt-4' : undefined}>
               <Message
                 from={message.role}
                 className={
