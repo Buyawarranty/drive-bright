@@ -40,7 +40,21 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-c
 
 const AGENT_PREFIX = '(Warranty specialist)';
 
+// Pulls a short trailing question off the end of a reply so it can be
+// highlighted separately from the guidance above it.
+const splitTrailingQuestion = (text: string): { body: string; question: string } => {
+  const trimmed = text.trimEnd();
+  const idx = trimmed.lastIndexOf('\n\n');
+  if (idx === -1) return { body: trimmed, question: '' };
+  const tail = trimmed.slice(idx + 2).trim();
+  const isPlainQuestion =
+    tail.endsWith('?') && tail.length <= 200 && !/^[-*#>\d]/.test(tail);
+  if (!isPlainQuestion) return { body: trimmed, question: '' };
+  return { body: trimmed.slice(0, idx).trimEnd(), question: tail };
+};
+
 // Keeps every markdown element (headings, list items, paragraphs, bold) at one
+
 // consistent chat body size so replies don't render at mixed font sizes.
 const CHAT_TEXT = [
   'text-sm leading-relaxed',
