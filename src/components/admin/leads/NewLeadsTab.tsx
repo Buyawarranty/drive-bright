@@ -8,7 +8,6 @@ import { LeadFreezeRulesCard } from './LeadFreezeRulesCard';
 import { ProgressOverviewStrip } from './ProgressOverviewStrip';
 import { AllAgentsProgressPanel } from './AllAgentsProgressPanel';
 import { LeadFreezeNoticeBanner } from './LeadFreezeNoticeBanner';
-import { AutoLeadFreezePanel } from './AutoLeadFreezePanel';
 
 
 
@@ -1681,7 +1680,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </summary>
             <div className="px-2 pb-3">
               <WidgetErrorBoundary label="All agents lead access">
-                <AutoLeadFreezePanel canEdit />
               </WidgetErrorBoundary>
             </div>
           </details>

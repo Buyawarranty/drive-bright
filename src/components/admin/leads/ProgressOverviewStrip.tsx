@@ -545,13 +545,7 @@ export const ProgressOverviewStrip: React.FC = () => {
             <div className="text-[11px] text-muted-foreground max-w-[240px] leading-tight">
               {frozen ? (
                 <>
-                  {data.freezeReason ||
-                    (data.freezeSource === 'auto'
-                      ? 'Automatic pause from your recent sales.'
-                      : 'A manager has paused your new leads.')}
-                  {data.freezeSource === 'auto' && data.frozenUntil
-                    ? ` Leads resume on ${format(new Date(data.frozenUntil), 'EEE d MMM')}.`
-                    : ''}
+                  {data.freezeReason || 'A manager has paused your new leads.'}
                 </>
               ) : data.salesReadFailed ? (
                 'Sales figures unavailable — refresh'
