@@ -9,6 +9,9 @@ import {
   CalendarDays,
   UserRound,
   FileText,
+  Lock,
+  ArrowRight,
+  ChevronRight,
   type LucideIcon,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
