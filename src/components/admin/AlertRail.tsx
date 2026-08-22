@@ -13,10 +13,9 @@ import { createPortal } from 'react-dom';
 const RAIL_ID = 'admin-alert-rail';
 
 export const ALERT_RAIL_ORDER = {
-  handover: 10,
-  openPool: 20,
-  newLeadPopup: 30,
-  newLeadDock: 40,
+  openPool: 10,
+  newLeadPopup: 20,
+  newLeadDock: 30,
 } as const;
 
 export const AlertRailHost: React.FC = () => (
