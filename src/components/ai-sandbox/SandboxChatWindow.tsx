@@ -805,8 +805,23 @@ export function SandboxChatWindow({
 
                   {message.parts.map((part, i) => {
                     if (part.type === 'text') {
-                      return <MessageResponse key={i} className={CHAT_TEXT}>{stripPrefix(part.text)}</MessageResponse>;
+                      const text = stripPrefix(part.text);
+                      if (message.role !== 'user') {
+                        const { body, question } = splitTrailingQuestion(text);
+                        return (
+                          <div key={i}>
+                            {body && <MessageResponse className={CHAT_TEXT}>{body}</MessageResponse>}
+                            {question && (
+                              <p className="mt-2 border-l-2 border-primary pl-3 text-sm font-semibold leading-relaxed text-primary">
+                                {question}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      }
+                      return <MessageResponse key={i} className={CHAT_TEXT}>{text}</MessageResponse>;
                     }
+
                     if (part.type === 'reasoning' && part.text) {
                       return (
                         <p key={i} className="text-xs italic text-muted-foreground">
