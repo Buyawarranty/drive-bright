@@ -163,7 +163,24 @@ export default function ChatbotDataTab() {
     return [...map.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 12);
   }, [filtered]);
 
+  /** Clears the local chat session so the widget starts a brand new thread. */
+  const resetChatSession = () => {
+    try {
+      const keys = Object.keys(window.localStorage).filter(
+        (k) => k.startsWith('baw_chat') || k.startsWith('sandbox_chat') || k.includes('miles_chat'),
+      );
+      keys.forEach((k) => window.localStorage.removeItem(k));
+      Object.keys(window.sessionStorage)
+        .filter((k) => k.startsWith('baw_chat') || k.startsWith('sandbox_chat'))
+        .forEach((k) => window.sessionStorage.removeItem(k));
+      toast.success(keys.length ? `Cleared ${keys.length} chat session key(s)` : 'No chat session data found — already clean');
+    } catch {
+      toast.error('Could not clear chat session data in this browser');
+    }
+  };
+
   const exportCsv = () => {
+
     const header = ['created_at', 'event_type', 'topic', 'customer_wording', 'registration', 'vehicle', 'quoted_price', 'term_months', 'grounded'];
     const rows = filtered.map((e) => [
       e.created_at,
