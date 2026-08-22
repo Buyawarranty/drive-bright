@@ -577,6 +577,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       !customerFirstName.trim() && 'first name',
       !customerLastName.trim() && 'last name',
       !customerEmail.trim() && 'email',
+      !customerPhone.trim() && 'phone number',
     ].filter(Boolean) as string[];
 
     if (missingCustomerFields.length > 0) {
@@ -636,6 +637,23 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       });
       return;
     }
+
+    // Name, email and phone are the minimum needed to confirm a payment.
+    const missingContact = [
+      !editableCustomerEmail.trim() && 'email address',
+      !editableCustomerPhone.trim() && 'phone number',
+    ].filter(Boolean) as string[];
+    if (missingContact.length > 0) {
+      toast({
+        title: "Contact details required",
+        description: `Please add the customer's ${missingContact.join(' and ')} before confirming the payment.`,
+        variant: "destructive",
+      });
+      document.getElementById(!editableCustomerEmail.trim() ? 'confirm-email-field' : 'confirm-phone-field')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
 
     if (!skipAddressDetails) {
       const missing = [
@@ -704,6 +722,18 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const handleConfirmPayment = async () => {
     // Prevent double-click race condition
     if (isConfirming) return;
+
+    // Minimum customer record: full name, email and phone.
+    if (!editableFirstName.trim() || !editableLastName.trim() || !editableCustomerEmail.trim() || !editableCustomerPhone.trim()) {
+      toast({
+        title: "Name, email and phone required",
+        description: "Add the customer's full name, email address and phone number before confirming the payment.",
+        variant: "destructive",
+      });
+      setExternalPaymentStep('details');
+      return;
+    }
+
 
     // Price match journey: answered, file uploaded and confirmed as received.
     const pmGate = priceMatchGate();
@@ -1359,13 +1389,15 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                       {!editableLastName.trim() && <p className="text-[11px] text-destructive">Last name is required</p>}
                     </div>
 
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-500">Email *</Label>
-                      <Input value={editableCustomerEmail} onChange={(e) => setEditableCustomerEmail(e.target.value)} />
+                    <div className="space-y-1.5" id="confirm-email-field">
+                      <Label className="text-xs font-semibold text-slate-500">Email <span className="text-destructive">*</span></Label>
+                      <Input type="email" value={editableCustomerEmail} onChange={(e) => setEditableCustomerEmail(e.target.value)} className={!editableCustomerEmail.trim() ? 'border-destructive focus-visible:ring-destructive' : ''} />
+                      {!editableCustomerEmail.trim() && <p className="text-[11px] text-destructive">Email address is required</p>}
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-500">Phone</Label>
-                      <Input value={editableCustomerPhone} onChange={(e) => setEditableCustomerPhone(e.target.value)} placeholder="07xxx xxxxxx" />
+                    <div className="space-y-1.5" id="confirm-phone-field">
+                      <Label className="text-xs font-semibold text-slate-500">Phone <span className="text-destructive">*</span></Label>
+                      <Input type="tel" value={editableCustomerPhone} onChange={(e) => setEditableCustomerPhone(e.target.value)} placeholder="07xxx xxxxxx" className={!editableCustomerPhone.trim() ? 'border-destructive focus-visible:ring-destructive' : ''} />
+                      {!editableCustomerPhone.trim() && <p className="text-[11px] text-destructive">Phone number is required</p>}
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-semibold text-slate-500">Registration *</Label>
