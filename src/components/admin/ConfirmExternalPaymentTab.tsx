@@ -638,6 +638,23 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       return;
     }
 
+    // Name, email and phone are the minimum needed to confirm a payment.
+    const missingContact = [
+      !editableCustomerEmail.trim() && 'email address',
+      !editableCustomerPhone.trim() && 'phone number',
+    ].filter(Boolean) as string[];
+    if (missingContact.length > 0) {
+      toast({
+        title: "Contact details required",
+        description: `Please add the customer's ${missingContact.join(' and ')} before confirming the payment.`,
+        variant: "destructive",
+      });
+      document.getElementById(!editableCustomerEmail.trim() ? 'confirm-email-field' : 'confirm-phone-field')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+
     if (!skipAddressDetails) {
       const missing = [
         !customerBuildingNumber.trim() && 'house/building number',
