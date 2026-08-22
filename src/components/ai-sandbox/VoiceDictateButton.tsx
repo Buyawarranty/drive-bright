@@ -148,21 +148,29 @@ export function VoiceDictateButton({ disabled, onTranscript, iconOnly }: Props) 
       onClick={recording ? stop : start}
       aria-label={recording ? 'Stop recording and send to Miles' : 'Dictate your question by voice'}
       title={recording ? 'Stop recording' : 'Speak your question'}
-      className={`flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors disabled:opacity-60 ${
-        recording
-          ? 'border-destructive bg-destructive/10 text-destructive'
-          : 'border-border bg-background text-foreground hover:bg-muted'
-      }`}
+      className={
+        iconOnly
+          ? `flex h-9 w-9 items-center justify-center rounded-full transition-colors disabled:opacity-60 ${
+              recording
+                ? 'bg-destructive/10 text-destructive'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            }`
+          : `flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors disabled:opacity-60 ${
+              recording
+                ? 'border-destructive bg-destructive/10 text-destructive'
+                : 'border-border bg-background text-foreground hover:bg-muted'
+            }`
+      }
     >
       {state === 'sending' ? (
         <Loader2 className="h-4 w-4 animate-spin" />
       ) : recording ? (
         <Square className="h-3.5 w-3.5 fill-current" />
       ) : (
-        <Mic className="h-4 w-4" />
+        <Mic className={iconOnly ? 'h-5 w-5' : 'h-4 w-4'} />
       )}
-      <span>{state === 'sending' ? 'Transcribing…' : recording ? 'Stop' : 'Speak'}</span>
-      {recording && (
+      {!iconOnly && <span>{state === 'sending' ? 'Transcribing…' : recording ? 'Stop' : 'Speak'}</span>}
+      {recording && !iconOnly && (
         <span className="relative ml-0.5 flex h-2 w-2">
           <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-destructive opacity-70" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-destructive" />
