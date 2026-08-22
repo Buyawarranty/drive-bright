@@ -3,7 +3,7 @@ import { PhoneCall, X, Volume2, VolumeX, Headset } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSandboxHandoverAlert } from '@/hooks/useSandboxHandoverAlert';
 import { Button } from '@/components/ui/button';
-import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
+
 
 const since = (iso: string) => {
   const s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
@@ -30,8 +30,7 @@ export const SandboxHandoverAlerts: React.FC = () => {
   if (waiting.length === 0) return null;
 
   return (
-    <AlertRailSlot order={ALERT_RAIL_ORDER.handover}>
-    <div className="flex w-full flex-col gap-2">
+    <div className="fixed left-2 bottom-2 z-[120] flex w-[300px] max-w-[calc(100vw-1rem)] flex-col gap-2">
       {waiting.map((w) => (
         <div
           key={w.id}
@@ -87,7 +86,6 @@ export const SandboxHandoverAlerts: React.FC = () => {
         </div>
       ))}
     </div>
-    </AlertRailSlot>
   );
 };
 
