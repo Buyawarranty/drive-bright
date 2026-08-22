@@ -79,7 +79,7 @@ export const AdminUiEventLogPanel = () => {
       <CardHeader className="pb-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <CardTitle className="text-base">Dashboard activity &amp; issue log</CardTitle>
+            <CardTitle className="text-base">Error logs &amp; dashboard activity</CardTitle>
             <CardDescription>
               Button presses, page load times, and any crash or error staff hit in the CRM.
               {problemCount > 0 && filter !== 'all' ? ` ${problemCount} problem${problemCount === 1 ? '' : 's'} in view.` : ''}
