@@ -119,6 +119,7 @@ export const NewLeadDock: React.FC<Props> = ({ onGo }) => {
         )}
       </div>
     </div>
+    </AlertRailSlot>
   );
 };
 

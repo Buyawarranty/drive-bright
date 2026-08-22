@@ -87,6 +87,7 @@ export const SandboxHandoverAlerts: React.FC = () => {
         </div>
       ))}
     </div>
+    </AlertRailSlot>
   );
 };
 
