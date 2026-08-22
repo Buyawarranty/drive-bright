@@ -51,6 +51,7 @@ import Step3PreviewPanel from '@/components/admin/pricing/Step3PreviewPanel';
 import CodebaseVsCurrentPanel from '@/components/admin/pricing/CodebaseVsCurrentPanel';
 import ClaimLimit5kAuthToggle from '@/components/admin/pricing/ClaimLimit5kAuthToggle';
 import PriceUpdateLogPanel from '@/components/admin/pricing/PriceUpdateLogPanel';
+import PriceVersionPerformancePanel from '@/components/admin/pricing/PriceVersionPerformancePanel';
 import ExcludedVehiclesPanel from '@/components/admin/pricing/ExcludedVehiclesPanel';
 import FullyExcludedListCard from '@/components/admin/pricing/FullyExcludedListCard';
 import PriceSurfaceBadge from '@/components/admin/pricing/PriceSurfaceBadge';
@@ -882,6 +883,10 @@ export default function PriceUpdatesTab() {
           onSaveNote={async (id, notes) => { await saveVersion(id, { notes }); }}
         />
 
+      </div>
+
+      <div id="price-version-performance" className="scroll-mt-4">
+        <PriceVersionPerformancePanel versions={versions} />
       </div>
 
 
