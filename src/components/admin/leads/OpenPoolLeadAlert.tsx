@@ -12,7 +12,7 @@ import {
 import type { Lead } from '@/hooks/useLeads';
 import { toast } from 'sonner';
 import { playNewLeadBeep } from '@/hooks/useNewLeadAlert';
-import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
+
 
 /**
  * Persistent "New lead in the Open Pool → Take lead" popup.
@@ -173,7 +173,7 @@ function OpenPoolLeadAlertInner() {
   if (!showing) return null;
 
   return (
-    <AlertRailSlot order={ALERT_RAIL_ORDER.openPool}>
+    <div className="fixed left-2 bottom-2 z-[120] w-[300px] max-w-[calc(100vw-1rem)] pointer-events-auto">
     <div className="w-full rounded-2xl bg-white shadow-2xl overflow-hidden animate-in slide-in-from-left-4 border border-emerald-100">
       {/* Header */}
       <div className="flex items-center gap-2 px-5 py-3 bg-emerald-700 text-white">
@@ -279,6 +279,6 @@ function OpenPoolLeadAlertInner() {
         </div>
       </div>
     </div>
-    </AlertRailSlot>
+    </div>
   );
 }
