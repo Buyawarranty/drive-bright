@@ -388,7 +388,7 @@ const VehicleRiskBandsPanel: React.FC = () => {
               <CardDescription>
                 <strong>These are global settings.</strong> The vehicle type factors, the makes and models in
                 each band and the minimum price floor apply to <strong>every</strong> pricing model — July
-                codebase, Aug hybrid, the age-based builder, Quotes &amp; Orders and Steps 3–4. They are applied
+                codebase, Aug hybrid, the vehicle risk pricing model, Quotes &amp; Orders and Steps 3–4. They are applied
                 last: age base × mileage × powertrain × vehicle type × band factor, then the floors.
               </CardDescription>
             </div>

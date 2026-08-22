@@ -155,7 +155,7 @@ const LiveVsAug26Panel: React.FC<{
                 Live builder vs Aug26 pricing
               </CardTitle>
               <CardDescription>
-                The same Step 2 quote screen twice — left priced with the live Age-based builder figures,
+                The same Step 2 quote screen twice — left priced with the live vehicle risk pricing model figures,
                 right priced with a saved pricing version. Both columns show the customer Step 3 price on
                 top and the agent Quotes & Orders price beneath it. Nothing here saves a quote or changes
                 live prices.
@@ -169,7 +169,7 @@ const LiveVsAug26Panel: React.FC<{
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription className="text-sm">
-              <strong>Left column = the live Age-based builder.</strong> Edit its figures in the
+              <strong>Left column = the live vehicle risk pricing model.</strong> Edit its figures in the
               builder below and the left column follows straight away; it only reaches customers once
               you press <strong>“Save &amp; push this model live”</strong> there.{' '}
               <strong>Right column = a saved pricing version (draft)</strong> — it is for comparison
@@ -211,7 +211,7 @@ const LiveVsAug26Panel: React.FC<{
 
       <PriceDiffBanner
         baseline={leftQuote}
-        baselineLabel="Live age-based builder"
+        baselineLabel="Live vehicle risk pricing model"
         candidate={rightQuote}
         candidateLabel="Saved Aug 2026 version"
       />
@@ -222,8 +222,8 @@ const LiveVsAug26Panel: React.FC<{
           liveModel={liveModel}
           vehicle={vehicle}
           showRegLookup={false}
-          title="Live age-based builder — Quotes &amp; Orders price"
-          subtitle="Priced with the figures currently in the Age-based builder below. The website Step 3 price is 10% below this figure."
+          title="Live vehicle risk pricing model — Quotes &amp; Orders price"
+          subtitle="Priced with the figures currently in the vehicle risk pricing model below. The website Step 3 price is 10% below this figure."
           badgeText="Live builder"
         />
         {aug26Model ? (

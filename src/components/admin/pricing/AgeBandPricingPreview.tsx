@@ -717,7 +717,7 @@ export default function AgeBandPricingPreview({
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <CardTitle>Proposed age-based pricing</CardTitle>
+            <CardTitle>Vehicle risk pricing model</CardTitle>
             <CardDescription>
               New model: an age band sets the base price, then a mileage factor is applied on top.
               This replaces the old under/over 120,000 mile split.

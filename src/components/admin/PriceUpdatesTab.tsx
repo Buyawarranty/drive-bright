@@ -98,7 +98,7 @@ const TOP_TABS = [
   { value: 'codebase-hybrid', label: 'Code base vs Test Hybrid Aug', icon: FlaskConical },
   { value: 'compare', label: 'Live vs Aug 2026', icon: GitCompare },
   { value: 'aug26', label: 'Aug 2026 pricing', icon: CalendarClock },
-  { value: 'builder', label: 'Age-based builder (calculator)', icon: CalendarClock },
+  { value: 'builder', label: 'Vehicle risk pricing model', icon: CalendarClock },
   { value: 'editor', label: 'Price grid (this one goes live)', icon: FlaskConical },
   { value: 'original', label: 'Original codebase pricing vs Live', icon: GitCompare },
   { value: 'previews', label: 'Previews', icon: Rocket },
@@ -490,7 +490,7 @@ export default function PriceUpdatesTab() {
       publish &&
       !opts?.skipConfirm &&
       !window.confirm(
-        'Push this age-based model live?\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ' +
+        'Push this vehicle risk pricing model live?\n\nQuotes & Orders will use these prices, and the customer journey (Step 3/4) will use them minus ' +
           websiteDiscountPct +
           '%, rounded to the nearest pound.'
       )
@@ -499,12 +499,12 @@ export default function PriceUpdatesTab() {
     }
     setBusy(true);
     try {
-      const draftLabel = opts?.draftLabel || `Age-based model ${new Date().toLocaleString('en-GB')}`;
+      const draftLabel = opts?.draftLabel || `Vehicle risk pricing model ${new Date().toLocaleString('en-GB')}`;
       const v = await createVersion(
         draftLabel,
         modelMatrix,
         websiteDiscountPct,
-        'Generated from the proposed age-based pricing model.',
+        'Generated from the vehicle risk pricing model.',
         claimLimitFactors ?? null,
         labourRateFactors ?? null,
         vehicleFactors
@@ -526,7 +526,7 @@ export default function PriceUpdatesTab() {
         }
         await saveVersion(v.id, {
           label: draftLabel,
-          notes: 'Generated from the proposed age-based pricing model.',
+          notes: 'Generated from the vehicle risk pricing model.',
           admin_matrix: safeMatrix,
           step3_discount_pct: websiteDiscountPct,
           claim_limit_factors: claimLimitFactors ?? null,
@@ -667,12 +667,12 @@ export default function PriceUpdatesTab() {
       try {
         const savedModel = localStorage.getItem(AGE_BAND_PRICING_STORAGE_KEY);
         if (!savedModel) {
-          toast.error('Save your age-based figures first, or create a test draft');
+          toast.error('Save your vehicle risk figures first, or create a test draft');
           return;
         }
         const model = JSON.parse(savedModel) as AgeBandModel;
         if (!Array.isArray(model.bands) || !model.bands.length) {
-          toast.error('The saved age-based figures are incomplete — save them again before publishing');
+        toast.error('The saved vehicle risk figures are incomplete — save them again before publishing');
           return;
         }
         await handleBuildDraftFromModel(
@@ -683,7 +683,7 @@ export default function PriceUpdatesTab() {
           (model.labourRates || []).map(l => ({ rate: Number(l.rate), factor: Number(l.factor), label: (l as any).uxPosition ?? null }))
         );
       } catch {
-        toast.error('Could not read the saved age-based figures — save them again before publishing');
+        toast.error('Could not read the saved vehicle risk figures — save them again before publishing');
       }
       return;
     }
@@ -835,7 +835,7 @@ export default function PriceUpdatesTab() {
             </span>
           ) : (
             <span>
-              “Push live” will publish your saved age-based figures, or select a test draft below
+              “Push live” will publish your saved vehicle risk figures, or select a test draft below
               to publish that draft instead.
             </span>
           )}
@@ -848,7 +848,7 @@ export default function PriceUpdatesTab() {
         <AlertDescription className="text-sm space-y-2">
           <p className="font-semibold text-base">Why there are two places to enter prices</p>
           <p>
-            <strong>1. Age-based builder</strong> (tab “Age-based builder (calculator)”) — a
+            <strong>1. Vehicle risk pricing model</strong> (tab “Vehicle risk pricing model”) — a
             calculator. You set base prices per age band, term multipliers, mileage, labour and
             claim-limit factors, then press <strong>Build test draft from this model</strong>. It
             does not go live on its own; it only writes those numbers into the price grid.
@@ -980,7 +980,7 @@ export default function PriceUpdatesTab() {
 
         <TabsContent value="builder" className="space-y-6 mt-4">
           <SectionPushLiveBar
-            sectionLabel="Age-based builder (calculator)"
+            sectionLabel="Vehicle risk pricing model"
             liveLabel={liveVersion?.label ?? null}
             liveWebDiscountPct={discountPct}
             busy={busy}
@@ -988,7 +988,7 @@ export default function PriceUpdatesTab() {
             candidates={[
               {
                 key: 'builder',
-                label: 'Age-based builder figures',
+                label: 'Vehicle risk model figures',
                 description: 'Publishes the bands and factors currently in the builder below.',
                 getModel: () => effectiveLiveModel,
               },
@@ -997,7 +997,7 @@ export default function PriceUpdatesTab() {
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription className="text-sm">
-              <strong>The original age-based builder on its own.</strong> Same figures as the builder
+              <strong>The vehicle risk pricing model on its own.</strong> Same figures as the builder
               under the comparison tab — edit the bands and factors here, then press{' '}
               <strong>“Save &amp; push this model live”</strong> to send it to customers.
             </AlertDescription>
