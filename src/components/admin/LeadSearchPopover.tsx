@@ -72,20 +72,25 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
     const fetchLeads = async () => {
       setLoading(true);
       try {
+        const hasSearch = !!searchTerm.trim();
 
+        // When an agent searches (usually by reg) they must be able to find the
+        // record even if that lead is already paid or the cart converted —
+        // filtering those out is what made reg searches look broken.
         let query = supabase
           .from('sales_leads')
           .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest, assigned_to')
-          .eq('is_paid', false)
           .order('created_at', { ascending: false })
           .limit(50);
+        if (!hasSearch) query = query.eq('is_paid', false);
 
         let cartQuery = supabase
           .from('abandoned_carts')
           .select('id, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_name, updated_at, is_converted')
-          .eq('is_converted', false)
           .order('updated_at', { ascending: false })
           .limit(50);
+        if (!hasSearch) cartQuery = cartQuery.eq('is_converted', false);
+
 
         if (searchTerm.trim()) {
           // PostgREST `or()` values must be quoted — a bare space or comma
