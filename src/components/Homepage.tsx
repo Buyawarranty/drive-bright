@@ -11,6 +11,7 @@ import { EmailCapturePopup } from './EmailCapturePopup';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import LazySection from './homepage/LazySection';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import heroPandaVehiclesMobile from '@/assets/hero-panda-vehicles-mobile.webp.asset.json';
@@ -24,14 +25,16 @@ import TrustpilotHeader from './TrustpilotHeader';
 import TrustpilotMicroComboWidget from './TrustpilotMicroComboWidget';
 import RequestCallbackModal from './modals/RequestCallbackModal';
 
-// Lazy load heavy components to reduce initial bundle size
-const HomepageFAQ = lazy(() => import('./HomepageFAQ'));
-const VideoSection = lazy(() => import('./homepage/VideoSection'));
-const AdditionalCoverSection = lazy(() => import('./homepage/AdditionalCoverSection'));
-const WarrantyBenefitsSection = lazy(() => import('./homepage/WarrantyBenefitsSection'));
-const CoverClaritySection = lazy(() => import('./homepage/CoverClaritySection'));
-const VehicleCoverageSection = lazy(() => import('./homepage/VehicleCoverageSection'));
-const LandingPageDirectory = lazy(() => import('./homepage/LandingPageDirectory'));
+// Lazy load heavy components to reduce initial bundle size.
+// lazyWithRetry re-attempts the dynamic import so a single failed/stale chunk
+// fetch doesn't permanently blank the homepage (React.lazy caches rejections).
+const HomepageFAQ = lazyWithRetry(() => import('./HomepageFAQ'));
+const VideoSection = lazyWithRetry(() => import('./homepage/VideoSection'));
+const AdditionalCoverSection = lazyWithRetry(() => import('./homepage/AdditionalCoverSection'));
+const WarrantyBenefitsSection = lazyWithRetry(() => import('./homepage/WarrantyBenefitsSection'));
+const CoverClaritySection = lazyWithRetry(() => import('./homepage/CoverClaritySection'));
+const VehicleCoverageSection = lazyWithRetry(() => import('./homepage/VehicleCoverageSection'));
+const LandingPageDirectory = lazyWithRetry(() => import('./homepage/LandingPageDirectory'));
 
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
