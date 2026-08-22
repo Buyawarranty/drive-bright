@@ -577,6 +577,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       !customerFirstName.trim() && 'first name',
       !customerLastName.trim() && 'last name',
       !customerEmail.trim() && 'email',
+      !customerPhone.trim() && 'phone number',
     ].filter(Boolean) as string[];
 
     if (missingCustomerFields.length > 0) {
