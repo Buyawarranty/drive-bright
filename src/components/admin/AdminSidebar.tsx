@@ -312,7 +312,7 @@ export const defaultTabs: Tab[] = [
   },
   {
     id: 'admin-logs',
-    label: 'Admin Logs',
+    label: 'Error Logs',
     icon: ScrollText,
     description: 'Dashboard activity & issue log: button presses, load times, crashes and errors'
   },

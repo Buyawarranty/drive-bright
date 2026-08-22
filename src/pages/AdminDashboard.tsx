@@ -920,7 +920,7 @@ const AdminDashboard = () => {
       // because it is about how the dashboard behaves, not about sales numbers.
       case 'admin-logs':
         if (!isTabAllowedForRole('admin-logs', effectiveUserRole, effectiveUserPermissions)) {
-          return <AccessDenied label="Admin logs" />;
+          return <AccessDenied label="Error logs" />;
         }
         return (
           <Suspense fallback={<TabFallback />}>
