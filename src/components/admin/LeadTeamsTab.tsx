@@ -301,7 +301,7 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           <div className="border-l-4 border-teal-500/60 pl-3">
             <h2 className="text-lg font-semibold text-foreground">Leads on / off</h2>
             <p className="text-xs text-muted-foreground">
-              Switch each agent's leads on or off, and see who the automatic no-sales freeze has paused.
+              Switch each agent's leads on or off manually. Nothing pauses leads automatically.
             </p>
           </div>
         </div>
