@@ -8,6 +8,7 @@ import { isAgentOnCall, clearAgentOnCall, subscribeAgentOnCall } from '@/lib/age
 import { supabase } from '@/integrations/supabase/client';
 import { useIsRepeatCustomer } from '@/hooks/useRepeatCustomers';
 import { toast } from 'sonner';
+import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 
 const formatUKPhoneShort = (p: string) => {
   const d = p.replace(/[^\d+]/g, '');
@@ -79,7 +80,8 @@ export const NewLeadAlerts: React.FC = () => {
   // expands the stack manually. Leads keep stacking safely in the background.
   if (onCall && collapsedStack === false && expandedId === null) {
     return (
-      <div className="fixed top-4 right-4 z-[100] w-auto max-w-[calc(100vw-2rem)]">
+      <AlertRailSlot order={ALERT_RAIL_ORDER.newLeadPopup}>
+      <div className="w-full">
         <div className="flex items-center gap-2 rounded-full bg-[#0F1B34] text-white pl-3 pr-1 py-1 shadow-lg border border-emerald-500">
           <PhoneCall className="w-4 h-4 text-emerald-300 animate-pulse" />
           <span className="text-xs font-semibold">
@@ -102,6 +104,7 @@ export const NewLeadAlerts: React.FC = () => {
           </button>
         </div>
       </div>
+      </AlertRailSlot>
     );
   }
 
@@ -118,7 +121,8 @@ export const NewLeadAlerts: React.FC = () => {
   const headerFlame = allOrr ? 'text-blue-300' : 'text-emerald-300';
 
   return (
-    <div className="fixed top-4 right-4 z-[100] w-[240px] max-w-[calc(100vw-2rem)] flex flex-col gap-1.5 max-h-[calc(100vh-2rem)]">
+    <AlertRailSlot order={ALERT_RAIL_ORDER.newLeadPopup}>
+    <div className="w-full flex flex-col gap-1.5">
       <div className={`flex items-center justify-between rounded-lg bg-[#0F1B34] text-white px-2.5 py-1.5 shadow-lg border ${headerBorder} shrink-0`}>
         <div className="flex items-center gap-1.5 text-xs font-semibold min-w-0">
           <Flame className={`w-3.5 h-3.5 ${headerFlame} animate-pulse shrink-0`} />
@@ -569,5 +573,6 @@ const LeadAlertCard: React.FC<CardProps> = ({
         </button>
       </div>
     </div>
+    </AlertRailSlot>
   );
 };

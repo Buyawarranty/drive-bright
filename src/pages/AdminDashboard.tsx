@@ -25,6 +25,7 @@ import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAle
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
+import { AlertRailHost } from '@/components/admin/AlertRail';
 import SandboxHandoverAlerts from '@/components/admin/SandboxHandoverAlerts';
 import { NewLeadTopBanner } from '@/components/admin/leads/NewLeadTopBanner';
 import { NewLeadDock } from '@/components/admin/leads/NewLeadDock';
@@ -1318,6 +1319,9 @@ const AdminDashboardInner: React.FC<{
           );
         }}
       />
+
+      {/* One sticky left-hand rail hosts every floating alert so they never overlap */}
+      <AlertRailHost />
 
       {/* Fresh-lead top banner + floating popup for the current agent */}
       <NewLeadAlerts />
