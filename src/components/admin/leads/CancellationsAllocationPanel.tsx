@@ -65,6 +65,11 @@ export const CancellationsAllocationPanel: React.FC = () => {
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  const [manualReg, setManualReg] = useState('');
+  const [manualName, setManualName] = useState('');
+  const [manualPhone, setManualPhone] = useState('');
+  const [manualEmail, setManualEmail] = useState('');
+
   useEffect(() => {
     (async () => {
       const [cust, staff] = await Promise.all([
