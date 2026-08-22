@@ -745,7 +745,7 @@ export function SandboxChatWindow({
             <ChatAvatar sender="ai" />
             <MessageContent>
               <SenderLabel sender="ai" />
-              <MessageResponse>{OPENING_LINE}</MessageResponse>
+              <MessageResponse className={CHAT_TEXT}>{OPENING_LINE}</MessageResponse>
             </MessageContent>
           </Message>
 
@@ -805,7 +805,7 @@ export function SandboxChatWindow({
 
                   {message.parts.map((part, i) => {
                     if (part.type === 'text') {
-                      return <MessageResponse key={i}>{stripPrefix(part.text)}</MessageResponse>;
+                      return <MessageResponse key={i} className={CHAT_TEXT}>{stripPrefix(part.text)}</MessageResponse>;
                     }
                     if (part.type === 'reasoning' && part.text) {
                       return (
