@@ -53,9 +53,11 @@ function encodeWav(chunks: Float32Array[], sampleRate: number): Blob {
 type Props = {
   disabled?: boolean;
   onTranscript: (text: string) => void;
+  /** Compact mic-only button that sits inside the message box. */
+  iconOnly?: boolean;
 };
 
-export function VoiceDictateButton({ disabled, onTranscript }: Props) {
+export function VoiceDictateButton({ disabled, onTranscript, iconOnly }: Props) {
   const [state, setState] = useState<'idle' | 'recording' | 'sending'>('idle');
   const streamRef = useRef<MediaStream | null>(null);
   const ctxRef = useRef<AudioContext | null>(null);
