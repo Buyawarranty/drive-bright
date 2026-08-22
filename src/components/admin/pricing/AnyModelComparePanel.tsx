@@ -20,6 +20,7 @@ import {
   upliftTermMult,
 } from './AugHybridVsLivePanel';
 import { Button } from '@/components/ui/button';
+import SaveModelAsVersionBar from './SaveModelAsVersionBar';
 
 /**
  * COMPARE ANY TWO MODELS
@@ -241,6 +242,14 @@ const AnyModelComparePanel: React.FC<{
           </div>
         </CardContent>
       </Card>
+
+      <SaveModelAsVersionBar
+        sources={[
+          { key: 'left', label: `${leftOpt?.label ?? 'Left'} (left)`, getModel: () => leftModel },
+          { key: 'right', label: `${rightOpt?.label ?? 'Right'} (right)`, getModel: () => rightModel },
+        ]}
+        onSaved={id => setRightKey(`version:${id}`)}
+      />
 
       <PriceDiffBanner
         baseline={leftQuote}
