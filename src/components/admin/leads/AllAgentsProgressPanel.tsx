@@ -21,6 +21,8 @@ interface AgentRow {
   weekDays: Record<string, string>;
   onBreak: boolean;
   breakStatus: string;
+  breakMinutesToday: number;
+  breakSessionsToday: number;
   paused: boolean;
   freezeReason: string | null;
   lastSaleAt: string | null;
@@ -59,6 +61,10 @@ export const AllAgentsProgressPanel: React.FC = () => {
           .gte('work_date', weekStartStr)
           .lte('work_date', weekEndStr),
         (supabase as any).from('agent_break_status').select('admin_user_id, status'),
+        (supabase as any)
+          .from('agent_break_log')
+          .select('admin_user_id, minutes, started_at')
+          .gte('started_at', new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()),
         (supabase as any).from('agent_review_claims').select('admin_user_id, kind, week_start, created_at').gte('created_at', monthStart.toISOString()),
         (supabase as any).from('agent_distribution_caps').select('admin_user_id, paused, freeze_reason'),
         supabase
@@ -71,7 +77,7 @@ export const AllAgentsProgressPanel: React.FC = () => {
       ]);
 
       const val = (i: number): any => (settled[i].status === 'fulfilled' ? (settled[i] as any).value : null);
-      const [scoreRes, daysRes, breakRes, reviewRes, capsRes, salesRes] = [0, 1, 2, 3, 4, 5].map(val);
+      const [scoreRes, daysRes, breakRes, breakLogRes, reviewRes, capsRes, salesRes] = [0, 1, 2, 3, 4, 5, 6].map(val);
 
       const score = ((scoreRes?.data || []) as any[]).filter((r) => r.admin_user_id);
 
@@ -84,6 +90,13 @@ export const AllAgentsProgressPanel: React.FC = () => {
 
       const breakByAgent = new Map<string, string>();
       ((breakRes?.data || []) as any[]).forEach((r) => breakByAgent.set(r.admin_user_id, r.status || 'available'));
+
+      const breakMinsByAgent = new Map<string, number>();
+      const breakSessionsByAgent = new Map<string, number>();
+      ((breakLogRes?.data || []) as any[]).forEach((r) => {
+        breakMinsByAgent.set(r.admin_user_id, (breakMinsByAgent.get(r.admin_user_id) || 0) + (Number(r.minutes) || 0));
+        breakSessionsByAgent.set(r.admin_user_id, (breakSessionsByAgent.get(r.admin_user_id) || 0) + 1);
+      });
 
       const capsByAgent = new Map<string, { paused: boolean; freeze_reason: string | null }>();
       ((capsRes?.data || []) as any[]).forEach((r) =>
@@ -136,6 +149,8 @@ export const AllAgentsProgressPanel: React.FC = () => {
           weekDays: week,
           onBreak: status !== 'available' && status !== 'off',
           breakStatus: status,
+          breakMinutesToday: breakMinsByAgent.get(id) || 0,
+          breakSessionsToday: breakSessionsByAgent.get(id) || 0,
           paused: caps?.paused === true,
           freezeReason: caps?.freeze_reason ?? null,
           lastSaleAt: sale?.at ?? null,
@@ -241,6 +256,11 @@ export const AllAgentsProgressPanel: React.FC = () => {
                   >
                     {r.onBreak ? `On break${r.breakStatus !== 'break' ? ` (${r.breakStatus})` : ''}` : 'On duty'}
                   </span>
+                  <div className="mt-0.5 text-[11px] text-muted-foreground">
+                    {r.breakSessionsToday > 0
+                      ? `${Math.round(r.breakMinutesToday)} min total · ${r.breakSessionsToday} today`
+                      : 'No breaks logged today'}
+                  </div>
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap">
                   <span
@@ -248,7 +268,7 @@ export const AllAgentsProgressPanel: React.FC = () => {
                       r.paused ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'
                     }`}
                   >
-                    {r.paused ? 'Leads paused' : 'Receiving leads'}
+                    {r.paused ? 'Leads paused by a manager' : 'Receiving leads'}
                   </span>
                   {r.paused && r.freezeReason && (
                     <div className="mt-0.5 max-w-[16rem] text-[11px] text-muted-foreground">{r.freezeReason}</div>
@@ -259,6 +279,12 @@ export const AllAgentsProgressPanel: React.FC = () => {
                     <>
                       <div className="text-xs">{format(new Date(r.lastSaleAt), 'EEE d MMM yyyy, HH:mm')}</div>
                       {r.lastSaleProof && <div className="text-[11px] text-muted-foreground">{r.lastSaleProof}</div>}
+                      <div className="text-[11px] text-muted-foreground">
+                        {(() => {
+                          const days = Math.floor((Date.now() - new Date(r.lastSaleAt).getTime()) / 86400000);
+                          return days <= 0 ? 'Sold today' : `${days} day${days === 1 ? '' : 's'} ago`;
+                        })()}
+                      </div>
                     </>
                   ) : (
                     <span className="text-[11px] text-muted-foreground">No sale in the last 120 days</span>
