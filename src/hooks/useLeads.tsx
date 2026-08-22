@@ -570,24 +570,28 @@ export const useLeads = (options?: UseLeadsOptions) => {
         const rawTerm = serverSearchTermRef.current?.trim();
         if (!rawTerm) return query;
 
-        const escapedTerm = rawTerm.replace(/[%_]/g, '\\$&').replace(/,/g, ' ');
+        const escapedTerm = rawTerm.replace(/[%_]/g, '').replace(/,/g, ' ').trim();
+        if (!escapedTerm) return query;
         const wildcardTerm = `%${escapedTerm}%`;
         const nameParts = escapedTerm.split(/\s+/).filter(Boolean);
         const digitsOnly = rawTerm.replace(/\D/g, '');
-        const compactTerm = rawTerm.replace(/\s+/g, '');
+        const compactTerm = escapedTerm.replace(/\s+/g, '');
         const phoneVariants = new Set<string>();
         const regVariants = new Set<string>();
+
+        // IMPORTANT: only search columns that have trigram/btree indexes
+        // (email, first_name, last_name, phone, vehicle_reg). Including
+        // unindexed columns such as notes / vehicle_make / vehicle_model /
+        // vehicle_year / plan_interest in the same OR forced Postgres into a
+        // full sequential scan of sales_leads, which blew past the fetch
+        // timeout and silently fell back to the agent's own leads — that is
+        // why searching in New Leads "did nothing" for sales agents.
         const searchClauses = [
           `email.ilike.${wildcardTerm}`,
           `first_name.ilike.${wildcardTerm}`,
           `last_name.ilike.${wildcardTerm}`,
           `phone.ilike.${wildcardTerm}`,
           `vehicle_reg.ilike.${wildcardTerm}`,
-          `vehicle_make.ilike.${wildcardTerm}`,
-          `vehicle_model.ilike.${wildcardTerm}`,
-          `vehicle_year.ilike.${wildcardTerm}`,
-          `plan_interest.ilike.${wildcardTerm}`,
-          `notes.ilike.${wildcardTerm}`,
         ];
 
         if (nameParts.length >= 2) {
@@ -621,6 +625,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
         return query.or(searchClauses.join(','));
       };
+
 
       const fetchPagedLeads = async (buildQuery: (from: number, to: number) => any, maxRows: number = MAX_PAGED_LEADS) => {
         const rows: any[] = [];
@@ -747,6 +752,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
             // back to Quotes & Orders to find their own customers. Every staff
             // member can already read leads (RLS), and the row is badged with
             // its owner, so a search now hits every lead in the system.
+            // One page only: a search never needs 5,000 rows, and paging kept
+            // the (already indexed) query on the wire long enough to stall.
             return await fetchPagedLeads((from, to) =>
 
               applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
@@ -756,8 +763,10 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              )))
+              ))),
+              LEADS_PAGE_SIZE
             );
+
           }
 
           const dateFilter = serverDateFilterRef.current;
