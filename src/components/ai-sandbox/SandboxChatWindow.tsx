@@ -673,7 +673,7 @@ export function SandboxChatWindow({
             Hand back to AI
           </Button>
         </div>
-      ) : (
+      ) : compact ? null : (
         <div className="border-b border-border bg-background px-4 py-2 text-sm">
           <p className="flex items-center gap-2 font-semibold text-foreground">
             <span className="relative flex h-2.5 w-2.5 shrink-0">
@@ -687,7 +687,7 @@ export function SandboxChatWindow({
 
       {/* Compact top action row — one line, two options, out of the chat's way. */}
       {!agentMode && (
-        <div className="border-b border-border bg-muted/40 px-3 py-2">
+        <div className="border-b border-border bg-background px-3 py-2.5">
           {holdState === 'on_hold' || waiting ? (
             <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
               <span className="relative flex h-2 w-2 shrink-0">
