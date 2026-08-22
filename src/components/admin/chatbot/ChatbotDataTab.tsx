@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { Bot, MessageSquare, Car, PoundSterling, PhoneCall, UserPlus, RefreshCw, Download } from 'lucide-react';
+import { Bot, MessageSquare, Car, PoundSterling, PhoneCall, UserPlus, RefreshCw, Download, ExternalLink, Eraser } from 'lucide-react';
 
 type ChatEvent = {
   id: string;
@@ -163,7 +163,24 @@ export default function ChatbotDataTab() {
     return [...map.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 12);
   }, [filtered]);
 
+  /** Clears the local chat session so the widget starts a brand new thread. */
+  const resetChatSession = () => {
+    try {
+      const keys = Object.keys(window.localStorage).filter(
+        (k) => k.startsWith('baw_chat') || k.startsWith('sandbox_chat') || k.includes('miles_chat'),
+      );
+      keys.forEach((k) => window.localStorage.removeItem(k));
+      Object.keys(window.sessionStorage)
+        .filter((k) => k.startsWith('baw_chat') || k.startsWith('sandbox_chat'))
+        .forEach((k) => window.sessionStorage.removeItem(k));
+      toast.success(keys.length ? `Cleared ${keys.length} chat session key(s)` : 'No chat session data found — already clean');
+    } catch {
+      toast.error('Could not clear chat session data in this browser');
+    }
+  };
+
   const exportCsv = () => {
+
     const header = ['created_at', 'event_type', 'topic', 'customer_wording', 'registration', 'vehicle', 'quoted_price', 'term_months', 'grounded'];
     const rows = filtered.map((e) => [
       e.created_at,
@@ -227,7 +244,21 @@ export default function ChatbotDataTab() {
           <Button size="sm" variant="outline" onClick={exportCsv} disabled={!filtered.length}>
             <Download className="h-4 w-4 mr-1" /> Export CSV
           </Button>
+          <Button size="sm" variant="outline" asChild>
+            <a href="/used-car-warranty-uk/" target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-4 w-4 mr-1" /> Open chatbot
+            </a>
+          </Button>
+          <Button size="sm" variant="outline" asChild>
+            <a href="/ai-sandbox" target="_blank" rel="noopener noreferrer">
+              <Bot className="h-4 w-4 mr-1" /> AI sandbox
+            </a>
+          </Button>
+          <Button size="sm" variant="outline" onClick={resetChatSession}>
+            <Eraser className="h-4 w-4 mr-1" /> Clear chat cookies
+          </Button>
         </div>
+
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
