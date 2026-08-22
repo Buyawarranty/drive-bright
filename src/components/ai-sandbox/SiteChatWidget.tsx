@@ -132,8 +132,12 @@ export default function SiteChatWidget({
               <span className="absolute -bottom-0.5 -left-0.5 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-base font-bold text-foreground">Miles</p>
-              <p className="truncate text-sm text-muted-foreground">AI agent · online</p>
+              <p className="truncate text-lg font-bold leading-tight text-foreground">Miles</p>
+              <p className="flex items-center gap-1.5 truncate text-sm text-muted-foreground">
+                AI agent
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                <span className="font-semibold text-emerald-600">Online</span>
+              </p>
             </div>
             <button
               onClick={() => setOpen(false)}
