@@ -17,7 +17,7 @@ import { format } from 'date-fns';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 
 interface CancellationRow {
-  id: string;
+  id: string | null;
   name: string | null;
   email: string | null;
   phone: string | null;
@@ -65,6 +65,11 @@ export const CancellationsAllocationPanel: React.FC = () => {
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  const [manualReg, setManualReg] = useState('');
+  const [manualName, setManualName] = useState('');
+  const [manualPhone, setManualPhone] = useState('');
+  const [manualEmail, setManualEmail] = useState('');
+
   useEffect(() => {
     (async () => {
       const [cust, staff] = await Promise.all([
@@ -103,6 +108,38 @@ export const CancellationsAllocationPanel: React.FC = () => {
     setAgentId('');
     setReward('15');
     setMessage('');
+  };
+
+  const openManual = () => {
+    const reg = manualReg.trim().toUpperCase();
+    const name = manualName.trim();
+    if (!reg && !name) {
+      toast.error('Enter a reg plate or a customer name.');
+      return;
+    }
+    if (!manualPhone.trim() && !manualEmail.trim()) {
+      toast.error('Add a phone number or email so the agent can call them.');
+      return;
+    }
+    // Prefer an existing customer record when the reg/name matches one we hold.
+    const match = rows.find((r) =>
+      (reg && r.registration_plate?.replace(/\s+/g, '').toUpperCase() === reg.replace(/\s+/g, '')) ||
+      (name && r.name?.toLowerCase() === name.toLowerCase())
+    );
+    openSend({
+      id: match?.id ?? null,
+      name: name || match?.name || null,
+      email: manualEmail.trim() || match?.email || null,
+      phone: manualPhone.trim() || match?.phone || null,
+      registration_plate: reg || match?.registration_plate || null,
+      vehicle_make: match?.vehicle_make ?? null,
+      vehicle_model: match?.vehicle_model ?? null,
+      plan_type: match?.plan_type ?? null,
+      final_amount: match?.final_amount ?? null,
+      status: match?.status ?? 'cancelled',
+      updated_at: null,
+      is_manual_entry: true,
+    });
   };
 
   const submit = async () => {
@@ -152,7 +189,7 @@ export const CancellationsAllocationPanel: React.FC = () => {
       save_reason: reason,
       save_requested_by: currentAdminId || null,
       save_requested_at: new Date().toISOString(),
-      save_source_customer_id: target.id,
+      save_source_customer_id: target.id || null,
     } as any);
     setSubmitting(false);
 
@@ -163,7 +200,8 @@ export const CancellationsAllocationPanel: React.FC = () => {
 
     const agent = agents.find((a) => a.id === agentId);
     toast.success(`Save cancellation sent to ${agent ? agentName(agent) : 'the agent'} — £${rewardValue} reward.`);
-    setSentIds((prev) => new Set(prev).add(target.id));
+    if (target.id) setSentIds((prev) => new Set(prev).add(target.id!));
+    setManualReg(''); setManualName(''); setManualPhone(''); setManualEmail('');
     setTarget(null);
   };
 
@@ -198,6 +236,66 @@ export const CancellationsAllocationPanel: React.FC = () => {
             onClick={() => setWebsiteOnly((v) => !v)}
           >
             {websiteOnly ? 'Website sales only' : 'All cancellations'}
+          </Button>
+        </div>
+      </div>
+
+      <div className="px-5 py-4 border-b border-border bg-muted/30">
+        <p className="text-sm font-semibold text-foreground">Not in the list? Create a save lead manually</p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Enter the reg plate or the customer name, plus a phone or email, and we'll raise the save lead.
+        </p>
+        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
+          <div className="space-y-1">
+            <Label htmlFor="cx-manual-reg" className="text-xs">Reg plate</Label>
+            <Input
+              id="cx-manual-reg"
+              value={manualReg}
+              onChange={(e) => setManualReg(e.target.value.toUpperCase())}
+              placeholder="AB12 CDE"
+              className="h-9 font-mono uppercase"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="cx-manual-name" className="text-xs">Customer name</Label>
+            <Input
+              id="cx-manual-name"
+              value={manualName}
+              onChange={(e) => setManualName(e.target.value)}
+              placeholder="Jane Smith"
+              className="h-9"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="cx-manual-phone" className="text-xs">Phone</Label>
+            <Input
+              id="cx-manual-phone"
+              value={manualPhone}
+              onChange={(e) => setManualPhone(e.target.value)}
+              placeholder="07…"
+              className="h-9"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="cx-manual-email" className="text-xs">Email</Label>
+            <Input
+              id="cx-manual-email"
+              type="email"
+              value={manualEmail}
+              onChange={(e) => setManualEmail(e.target.value)}
+              placeholder="name@email.com"
+              className="h-9"
+            />
+          </div>
+        </div>
+        <div className="mt-3 flex justify-end">
+          <Button
+            size="sm"
+            className="h-8 gap-1"
+            onClick={openManual}
+          >
+            <Send className="h-3.5 w-3.5" />
+            Create save cancellation lead
           </Button>
         </div>
       </div>
