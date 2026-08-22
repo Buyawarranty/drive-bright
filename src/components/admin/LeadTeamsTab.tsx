@@ -38,6 +38,7 @@ import { Button } from '@/components/ui/button';
 import { Percent } from 'lucide-react';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
 import { PausedAgentsOverrideBar } from './leads/PausedAgentsOverrideBar';
+import { CancellationsAllocationPanel } from './leads/CancellationsAllocationPanel';
 
 import { ScoreboardTargetsSection } from './leads/ScoreboardTargetsSection';
 import { useViewAs } from '@/contexts/ViewAsContext';
