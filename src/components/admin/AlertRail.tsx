@@ -14,7 +14,6 @@ const RAIL_ID = 'admin-alert-rail';
 
 export const ALERT_RAIL_ORDER = {
   newLeadPopup: 10,
-  newLeadDock: 20,
 } as const;
 
 export const AlertRailHost: React.FC = () => (
