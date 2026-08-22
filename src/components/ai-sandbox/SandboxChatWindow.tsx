@@ -924,10 +924,10 @@ export function SandboxChatWindow({
 
         <PromptInput
           onSubmit={(message) => send(message.text ?? '')}
-          className="rounded-xl border-2 border-primary/50 bg-card shadow-lg ring-2 ring-primary/10 transition-shadow focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20"
+          className="rounded-2xl border border-primary/40 bg-card shadow-md transition-all focus-within:border-primary focus-within:shadow-lg focus-within:ring-2 focus-within:ring-primary/20"
         >
           <PromptInputTextarea
-            className="min-h-[56px] text-base font-medium placeholder:font-normal placeholder:text-muted-foreground"
+            className="min-h-[52px] text-base placeholder:text-muted-foreground/80"
             placeholder={
               agentMode
                 ? 'Reply as the warranty specialist…'
