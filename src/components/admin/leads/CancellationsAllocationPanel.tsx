@@ -105,6 +105,38 @@ export const CancellationsAllocationPanel: React.FC = () => {
     setMessage('');
   };
 
+  const openManual = () => {
+    const reg = manualReg.trim().toUpperCase();
+    const name = manualName.trim();
+    if (!reg && !name) {
+      toast.error('Enter a reg plate or a customer name.');
+      return;
+    }
+    if (!manualPhone.trim() && !manualEmail.trim()) {
+      toast.error('Add a phone number or email so the agent can call them.');
+      return;
+    }
+    // Prefer an existing customer record when the reg/name matches one we hold.
+    const match = rows.find((r) =>
+      (reg && r.registration_plate?.replace(/\s+/g, '').toUpperCase() === reg.replace(/\s+/g, '')) ||
+      (name && r.name?.toLowerCase() === name.toLowerCase())
+    );
+    openSend({
+      id: match?.id ?? null,
+      name: name || match?.name || null,
+      email: manualEmail.trim() || match?.email || null,
+      phone: manualPhone.trim() || match?.phone || null,
+      registration_plate: reg || match?.registration_plate || null,
+      vehicle_make: match?.vehicle_make ?? null,
+      vehicle_model: match?.vehicle_model ?? null,
+      plan_type: match?.plan_type ?? null,
+      final_amount: match?.final_amount ?? null,
+      status: match?.status ?? 'cancelled',
+      updated_at: null,
+      is_manual_entry: true,
+    });
+  };
+
   const submit = async () => {
     if (!target) return;
     if (!agentId) {
