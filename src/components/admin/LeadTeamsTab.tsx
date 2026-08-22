@@ -290,6 +290,22 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         {isManagement && <AgentOffboardingPanel />}
       </div>
 
+      {/* ─────────────────────────────────────────────────────────────
+          CANCELLATIONS — send a cancelling website sale to a specific
+          agent as a SAVE CANCELLATION lead.
+         ───────────────────────────────────────────────────────────── */}
+      {isManagement && (
+        <div id="cancellations" className="space-y-4">
+          <div className="border-l-4 border-red-500/60 pl-3">
+            <h2 className="text-lg font-semibold text-foreground">Cancellations</h2>
+            <p className="text-xs text-muted-foreground">
+              Website sales asking to cancel. Pick an agent and send it to them as an urgent save lead.
+            </p>
+          </div>
+          <CancellationsAllocationPanel />
+        </div>
+      )}
+
 
       {/* ─────────────────────────────────────────────────────────────
           STAFF LEAD ACCESS — who can assign leads to other agents,
