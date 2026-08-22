@@ -38,6 +38,7 @@ import { Button } from '@/components/ui/button';
 import { Percent } from 'lucide-react';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
 import { PausedAgentsOverrideBar } from './leads/PausedAgentsOverrideBar';
+import { CancellationsAllocationPanel } from './leads/CancellationsAllocationPanel';
 
 import { ScoreboardTargetsSection } from './leads/ScoreboardTargetsSection';
 import { useViewAs } from '@/contexts/ViewAsContext';
@@ -53,7 +54,9 @@ const QUICK_LINKS = [
   { id: 'handover-requests', label: 'Handover requests', className: 'bg-purple-300/50 text-purple-900 border-purple-200/50 hover:bg-purple-400/50' },
   { id: 'offboard-agent', label: 'Offboard an agent', className: 'bg-amber-300/50 text-amber-900 border-amber-200/50 hover:bg-amber-400/50' },
 
+  { id: 'cancellations', label: 'Cancellations', className: 'bg-red-300/50 text-red-900 border-red-200/50 hover:bg-red-400/50' },
   { id: 'lead-freeze', label: 'Leads on / off', className: 'bg-teal-300/50 text-teal-900 border-teal-200/50 hover:bg-teal-400/50' },
+
   { id: 'staff-lead-access', label: 'Staff Lead Access', className: 'bg-indigo-300/50 text-indigo-900 border-indigo-200/50 hover:bg-indigo-400/50' },
   { id: 'scoreboard-targets', label: 'Scoreboard targets', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
   { id: 'open-round-robin', label: 'Open Round Robin →', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
@@ -286,6 +289,22 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         {(isManagement || (isSalesLead && salesLeadsCanReassign)) && <QuickReassignPanel />}
         {isManagement && <AgentOffboardingPanel />}
       </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          CANCELLATIONS — send a cancelling website sale to a specific
+          agent as a SAVE CANCELLATION lead.
+         ───────────────────────────────────────────────────────────── */}
+      {isManagement && (
+        <div id="cancellations" className="space-y-4">
+          <div className="border-l-4 border-red-500/60 pl-3">
+            <h2 className="text-lg font-semibold text-foreground">Cancellations</h2>
+            <p className="text-xs text-muted-foreground">
+              Website sales asking to cancel. Pick an agent and send it to them as an urgent save lead.
+            </p>
+          </div>
+          <CancellationsAllocationPanel />
+        </div>
+      )}
 
 
       {/* ─────────────────────────────────────────────────────────────
