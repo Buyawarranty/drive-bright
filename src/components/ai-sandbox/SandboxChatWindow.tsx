@@ -207,8 +207,8 @@ function RegQuickStart({
           if (valid && !disabled) onSubmit(clean.toUpperCase());
         }}
       >
-        <div className="flex min-w-0 flex-1 items-stretch overflow-hidden rounded-lg border-[3px] border-black bg-[#F0CF5C] focus-within:ring-2 focus-within:ring-primary/40">
-          <div className="flex min-w-[30px] flex-col items-center justify-center gap-0.5 bg-[#3B6FE0] px-1 py-1 text-[10px] font-extrabold leading-none tracking-wide text-white sm:min-w-[34px] sm:text-[11px]">
+        <div className="flex min-w-0 flex-1 items-stretch overflow-hidden rounded-lg border-2 border-black bg-[#F0CF5C] focus-within:ring-2 focus-within:ring-primary/40">
+          <div className="flex min-w-[28px] flex-col items-center justify-center gap-0.5 bg-[#3B6FE0] px-1 py-1 text-[9px] font-extrabold leading-none tracking-wide text-white sm:min-w-[32px] sm:text-[10px]">
             <span>GB</span>
             <span>UK</span>
           </div>
@@ -219,14 +219,14 @@ function RegQuickStart({
             aria-label="Vehicle registration"
             maxLength={9}
             disabled={disabled}
-            className="min-w-0 flex-1 bg-[#F0CF5C] px-2 py-2 text-base font-extrabold uppercase tracking-wide text-[#3A3323] outline-none placeholder:text-[#3A3323]/70 sm:text-lg"
+            className="min-w-0 flex-1 bg-[#F0CF5C] px-2 py-2 text-sm font-extrabold uppercase tracking-wide text-[#3A3323] outline-none placeholder:text-[#3A3323]/70 sm:text-base"
           />
-          {valid && <ArrowRight className="mr-2 h-5 w-5 shrink-0 self-center text-[#3A3323]" />}
+          {valid && <ArrowRight className="mr-1.5 h-4 w-4 shrink-0 self-center text-[#3A3323]" />}
         </div>
         <Button
           type="submit"
           disabled={!valid || disabled}
-          className="h-auto shrink-0 whitespace-nowrap rounded-lg bg-[#EF6C33] px-3.5 text-sm font-bold text-white shadow-sm transition-transform hover:bg-[#DC5F27] hover:scale-[1.02] disabled:hover:scale-100 sm:px-4 sm:text-base"
+          className="h-auto shrink-0 whitespace-nowrap rounded-lg bg-[#EF6C33] px-3 text-sm font-bold text-white shadow-sm transition-transform hover:bg-[#DC5F27] hover:scale-[1.02] disabled:hover:scale-100"
         >
           Get my price
         </Button>
