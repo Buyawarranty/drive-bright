@@ -11,6 +11,7 @@ import { EmailCapturePopup } from './EmailCapturePopup';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import LazySection from './homepage/LazySection';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import heroPandaVehiclesMobile from '@/assets/hero-panda-vehicles-mobile.webp.asset.json';
