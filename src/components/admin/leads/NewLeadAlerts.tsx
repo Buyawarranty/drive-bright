@@ -205,6 +205,7 @@ export const NewLeadAlerts: React.FC = () => {
         )}
       </div>
     </div>
+    </AlertRailSlot>
   );
 };
 
