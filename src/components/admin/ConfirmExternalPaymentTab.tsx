@@ -723,6 +723,18 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     // Prevent double-click race condition
     if (isConfirming) return;
 
+    // Minimum customer record: full name, email and phone.
+    if (!editableFirstName.trim() || !editableLastName.trim() || !editableCustomerEmail.trim() || !editableCustomerPhone.trim()) {
+      toast({
+        title: "Name, email and phone required",
+        description: "Add the customer's full name, email address and phone number before confirming the payment.",
+        variant: "destructive",
+      });
+      setExternalPaymentStep('details');
+      return;
+    }
+
+
     // Price match journey: answered, file uploaded and confirmed as received.
     const pmGate = priceMatchGate();
     if (pmGate) {
