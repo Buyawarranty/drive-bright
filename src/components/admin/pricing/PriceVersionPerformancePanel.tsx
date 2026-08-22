@@ -49,13 +49,13 @@ function averageGridPrice(v: PricingVersion): number | null {
 }
 
 async function pagedFetch<T>(
-  run: (from: number, to: number) => Promise<{ data: any[] | null; error: any }>,
+  run: (from: number, to: number) => PromiseLike<{ data: any[] | null; error: any }>,
   map: (row: any) => T | null,
 ): Promise<T[]> {
   const out: T[] = [];
   for (let page = 0; page < 20; page++) {
     const from = page * 1000;
-    const { data, error } = await run(from, from + 999);
+    const { data, error } = await Promise.resolve(run(from, from + 999));
     if (error) throw error;
     (data || []).forEach((row) => {
       const mapped = map(row);
