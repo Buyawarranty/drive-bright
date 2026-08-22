@@ -683,7 +683,7 @@ export default function PriceUpdatesTab() {
           (model.labourRates || []).map(l => ({ rate: Number(l.rate), factor: Number(l.factor), label: (l as any).uxPosition ?? null }))
         );
       } catch {
-        toast.error('Could not read the saved age-based figures — save them again before publishing');
+        toast.error('Could not read the saved vehicle risk figures — save them again before publishing');
       }
       return;
     }
@@ -835,7 +835,7 @@ export default function PriceUpdatesTab() {
             </span>
           ) : (
             <span>
-              “Push live” will publish your saved age-based figures, or select a test draft below
+              “Push live” will publish your saved vehicle risk figures, or select a test draft below
               to publish that draft instead.
             </span>
           )}
@@ -848,7 +848,7 @@ export default function PriceUpdatesTab() {
         <AlertDescription className="text-sm space-y-2">
           <p className="font-semibold text-base">Why there are two places to enter prices</p>
           <p>
-            <strong>1. Age-based builder</strong> (tab “Age-based builder (calculator)”) — a
+            <strong>1. Vehicle risk pricing model</strong> (tab “Vehicle risk pricing model”) — a
             calculator. You set base prices per age band, term multipliers, mileage, labour and
             claim-limit factors, then press <strong>Build test draft from this model</strong>. It
             does not go live on its own; it only writes those numbers into the price grid.
@@ -980,7 +980,7 @@ export default function PriceUpdatesTab() {
 
         <TabsContent value="builder" className="space-y-6 mt-4">
           <SectionPushLiveBar
-            sectionLabel="Age-based builder (calculator)"
+            sectionLabel="Vehicle risk pricing model"
             liveLabel={liveVersion?.label ?? null}
             liveWebDiscountPct={discountPct}
             busy={busy}
@@ -988,7 +988,7 @@ export default function PriceUpdatesTab() {
             candidates={[
               {
                 key: 'builder',
-                label: 'Age-based builder figures',
+                label: 'Vehicle risk model figures',
                 description: 'Publishes the bands and factors currently in the builder below.',
                 getModel: () => effectiveLiveModel,
               },
@@ -997,7 +997,7 @@ export default function PriceUpdatesTab() {
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription className="text-sm">
-              <strong>The original age-based builder on its own.</strong> Same figures as the builder
+              <strong>The vehicle risk pricing model on its own.</strong> Same figures as the builder
               under the comparison tab — edit the bands and factors here, then press{' '}
               <strong>“Save &amp; push this model live”</strong> to send it to customers.
             </AlertDescription>
