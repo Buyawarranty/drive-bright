@@ -31,7 +31,6 @@ import { NewLeadTopBanner } from '@/components/admin/leads/NewLeadTopBanner';
 import { NewLeadDock } from '@/components/admin/leads/NewLeadDock';
 import { ReassignRequestPopup } from '@/components/admin/leads/ReassignRequestPopup';
 
-import { OpenPoolLeadAlert } from '@/components/admin/leads/OpenPoolLeadAlert';
 import { MissedCallbackAlertBanner } from '@/components/admin/leads/MissedCallbackAlertBanner';
 import { NewLeadsWaitingBanner } from '@/components/admin/leads/NewLeadsWaitingBanner';
 import { FrequentTabsBar } from '@/components/admin/FrequentTabsBar';
@@ -1340,7 +1339,6 @@ const AdminDashboardInner: React.FC<{
 
 
       {/* Persistent "Take lead" popup for agents on Open Pool mode */}
-      <OpenPoolLeadAlert />
 
       {/* Missed callback banner — prominent red bar, dismissible with live overdue timer */}
       <MissedCallbackAlertBanner
