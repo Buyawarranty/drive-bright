@@ -205,6 +205,7 @@ export const NewLeadAlerts: React.FC = () => {
         )}
       </div>
     </div>
+    </AlertRailSlot>
   );
 };
 
@@ -573,6 +574,5 @@ const LeadAlertCard: React.FC<CardProps> = ({
         </button>
       </div>
     </div>
-    </AlertRailSlot>
   );
 };
