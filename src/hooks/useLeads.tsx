@@ -752,6 +752,8 @@ export const useLeads = (options?: UseLeadsOptions) => {
             // back to Quotes & Orders to find their own customers. Every staff
             // member can already read leads (RLS), and the row is badged with
             // its owner, so a search now hits every lead in the system.
+            // One page only: a search never needs 5,000 rows, and paging kept
+            // the (already indexed) query on the wire long enough to stall.
             return await fetchPagedLeads((from, to) =>
 
               applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
@@ -761,8 +763,10 @@ export const useLeads = (options?: UseLeadsOptions) => {
                   .order('created_at', { ascending: false })
                   .order('id', { ascending: false })
                   .range(from, to)
-              )))
+              ))),
+              LEADS_PAGE_SIZE
             );
+
           }
 
           const dateFilter = serverDateFilterRef.current;
