@@ -3,6 +3,7 @@ import { Flame, Phone, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useNewLeadAlert, formatElapsed } from '@/hooks/useNewLeadAlert';
 import { MuteAlertsMenu } from '@/components/admin/MuteAlertsMenu';
 import { dialWithZoiper } from '@/utils/zoiperDial';
+import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 
 interface Props {
   /** Jump to the New Leads tab focused on this lead. */
@@ -39,7 +40,8 @@ export const NewLeadDock: React.FC<Props> = ({ onGo }) => {
   if (queue.length === 0) return null;
 
   return (
-    <div className="fixed bottom-3 left-3 z-[120] w-[268px] max-w-[calc(100vw-1.5rem)]">
+    <AlertRailSlot order={ALERT_RAIL_ORDER.newLeadDock}>
+    <div className="w-full">
       <div className="rounded-lg border-2 border-emerald-500 bg-[#0F1B34] text-white shadow-2xl overflow-hidden">
         <div className="flex items-center gap-1.5 px-2.5 py-1.5">
           <Flame className="h-4 w-4 shrink-0 animate-pulse text-emerald-300" />
