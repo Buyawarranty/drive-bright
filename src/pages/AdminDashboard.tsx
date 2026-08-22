@@ -26,7 +26,7 @@ import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner'
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 import { AlertRailHost } from '@/components/admin/AlertRail';
-import SandboxHandoverAlerts from '@/components/admin/SandboxHandoverAlerts';
+
 import { NewLeadTopBanner } from '@/components/admin/leads/NewLeadTopBanner';
 import { NewLeadDock } from '@/components/admin/leads/NewLeadDock';
 import { ReassignRequestPopup } from '@/components/admin/leads/ReassignRequestPopup';
@@ -1335,7 +1335,7 @@ const AdminDashboardInner: React.FC<{
           );
         }}
       />
-      <SandboxHandoverAlerts />
+      
 
 
       {/* Persistent "Take lead" popup for agents on Open Pool mode */}
