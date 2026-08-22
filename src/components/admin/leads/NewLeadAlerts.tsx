@@ -574,6 +574,5 @@ const LeadAlertCard: React.FC<CardProps> = ({
         </button>
       </div>
     </div>
-    </AlertRailSlot>
   );
 };
