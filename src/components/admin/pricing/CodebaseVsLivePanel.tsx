@@ -62,7 +62,7 @@ const spread = (factor: number | null, amount: number) => {
  * The hard-coded July 2026 matrix in the shape PriceTestStep2 expects: one flat
  * grid, no age / mileage / powertrain / model-risk differentiation.
  */
-function buildCodeBaseModel(saved: ReturnType<typeof useSavedPricingModel>) {
+export function buildCodeBaseModel(saved: ReturnType<typeof useSavedPricingModel>) {
   const m: any = BASE_PRICING_MATRIX;
   const ref = Number(m['12months'][150][2000]);
   return {
