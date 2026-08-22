@@ -40,7 +40,21 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-c
 
 const AGENT_PREFIX = '(Warranty specialist)';
 
+// Keeps every markdown element (headings, list items, paragraphs, bold) at one
+// consistent chat body size so replies don't render at mixed font sizes.
+const CHAT_TEXT = [
+  'text-sm leading-relaxed',
+  '[&_p]:text-sm [&_p]:leading-relaxed [&_p]:my-2',
+  '[&_li]:text-sm [&_li]:leading-relaxed',
+  '[&_ul]:my-2 [&_ol]:my-2 [&_ul]:pl-5 [&_ol]:pl-5',
+  '[&_h1]:text-sm [&_h2]:text-sm [&_h3]:text-sm [&_h4]:text-sm [&_h5]:text-sm [&_h6]:text-sm',
+  '[&_h1]:font-semibold [&_h2]:font-semibold [&_h3]:font-semibold [&_h4]:font-semibold',
+  '[&_h1]:my-2 [&_h2]:my-2 [&_h3]:my-2 [&_h4]:my-2',
+  '[&_strong]:font-semibold [&_a]:underline',
+].join(' ');
+
 const OPENING_LINE = [
+
   "Hey, I'm Miles. I can help you get a quote, check what's covered, or start a claim.",
   '',
   'What would you like to do?',
