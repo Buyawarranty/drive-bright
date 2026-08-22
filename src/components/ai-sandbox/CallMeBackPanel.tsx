@@ -111,9 +111,9 @@ export function CallMeBackPanel({
           type="button"
           onClick={() => setStep('number')}
           title={open ? 'Request a call back' : `Request a call back — we ring you ${nextOpeningLabel()}`}
-          className="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+          className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
         >
-          <PhoneCall className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
+          <PhoneCall className="h-4 w-4 shrink-0 text-[#B4501F]" />
           <span className="truncate">Call me back</span>
         </button>
       );

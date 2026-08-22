@@ -9,6 +9,9 @@ import {
   CalendarDays,
   UserRound,
   FileText,
+  Lock,
+  ArrowRight,
+  ChevronRight,
   type LucideIcon,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -195,7 +198,7 @@ function RegQuickStart({
 
   return (
     <div className="w-full rounded-2xl border border-border bg-card p-3.5 text-left shadow-sm sm:p-4">
-      <p className="text-base font-bold text-foreground">Get your price in seconds</p>
+      <p className="text-base font-bold tracking-tight text-foreground">Get your price in seconds</p>
 
       <form
         className="mt-3 flex w-full items-stretch gap-2"
@@ -204,7 +207,7 @@ function RegQuickStart({
           if (valid && !disabled) onSubmit(clean.toUpperCase());
         }}
       >
-        <div className="flex min-w-0 flex-1 items-stretch overflow-hidden rounded-lg border-[3px] border-black bg-[#F0CF5C]">
+        <div className="flex min-w-0 flex-1 items-stretch overflow-hidden rounded-lg border-[3px] border-black bg-[#F0CF5C] focus-within:ring-2 focus-within:ring-primary/40">
           <div className="flex min-w-[30px] flex-col items-center justify-center gap-0.5 bg-[#3B6FE0] px-1 py-1 text-[10px] font-extrabold leading-none tracking-wide text-white sm:min-w-[34px] sm:text-[11px]">
             <span>GB</span>
             <span>UK</span>
@@ -216,22 +219,23 @@ function RegQuickStart({
             aria-label="Vehicle registration"
             maxLength={9}
             disabled={disabled}
-            className="min-w-0 flex-1 bg-[#F0CF5C] px-2 py-2 text-base font-extrabold uppercase tracking-wide text-[#3A3323] outline-none placeholder:text-[#3A3323]/80 sm:text-lg"
+            className="min-w-0 flex-1 bg-[#F0CF5C] px-2 py-2 text-base font-extrabold uppercase tracking-wide text-[#3A3323] outline-none placeholder:text-[#3A3323]/70 sm:text-lg"
           />
+          {valid && <ArrowRight className="mr-2 h-5 w-5 shrink-0 self-center text-[#3A3323]" />}
         </div>
         <Button
           type="submit"
           disabled={!valid || disabled}
-          className="h-auto shrink-0 whitespace-nowrap rounded-lg bg-[#EF6C33] px-3.5 text-sm font-bold text-white shadow-sm hover:bg-[#DC5F27] sm:px-4 sm:text-base"
+          className="h-auto shrink-0 whitespace-nowrap rounded-lg bg-[#EF6C33] px-3.5 text-sm font-bold text-white shadow-sm transition-transform hover:bg-[#DC5F27] hover:scale-[1.02] disabled:hover:scale-100 sm:px-4 sm:text-base"
         >
           Get my price
         </Button>
       </form>
 
-      <p className="mt-2 text-xs text-muted-foreground">
-        Free quote · No card details needed · Takes about 20 seconds
+      <p className="mt-2.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Lock className="h-3.5 w-3.5 shrink-0" />
+        Your details are secure and never shared.
       </p>
-
     </div>
   );
 }
@@ -669,7 +673,7 @@ export function SandboxChatWindow({
             Hand back to AI
           </Button>
         </div>
-      ) : (
+      ) : compact ? null : (
         <div className="border-b border-border bg-background px-4 py-2 text-sm">
           <p className="flex items-center gap-2 font-semibold text-foreground">
             <span className="relative flex h-2.5 w-2.5 shrink-0">
@@ -683,7 +687,7 @@ export function SandboxChatWindow({
 
       {/* Compact top action row — one line, two options, out of the chat's way. */}
       {!agentMode && (
-        <div className="border-b border-border bg-muted/40 px-3 py-2">
+        <div className="border-b border-border bg-background px-3 py-2.5">
           {holdState === 'on_hold' || waiting ? (
             <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
               <span className="relative flex h-2 w-2 shrink-0">
@@ -700,15 +704,15 @@ export function SandboxChatWindow({
               )}
             </p>
           ) : (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={requestLiveAgent}
                 disabled={holdState === 'connecting'}
                 title={open ? "We'll put you on hold and ring the team" : `A specialist picks this up ${nextOpeningLabel()}`}
-                className="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg border border-primary/40 bg-primary/5 px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-primary/10 disabled:opacity-60"
+                className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-primary/10 disabled:opacity-60"
               >
-                <Headset className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <Headset className="h-4 w-4 shrink-0 text-primary" />
                 <span className="truncate">{holdState === 'connecting' ? 'Connecting…' : 'Live agent'}</span>
               </button>
               <CallMeBackPanel
@@ -718,7 +722,7 @@ export function SandboxChatWindow({
                 source={source}
                 compact={compact}
               />
-              {holdError && <p className="w-full text-xs font-medium text-destructive">{holdError}</p>}
+              {holdError && <p className="col-span-2 text-xs font-medium text-destructive">{holdError}</p>}
             </div>
           )}
         </div>
@@ -781,10 +785,13 @@ export function SandboxChatWindow({
                   <button
                     key={text}
                     onClick={() => send(text)}
-                    className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-3 text-left text-sm font-medium text-foreground shadow-sm transition-colors hover:border-primary/40 hover:bg-muted"
+                    className="group flex w-full items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-3 text-left text-sm font-semibold text-foreground shadow-sm transition-all hover:border-primary/50 hover:bg-primary/5"
                   >
-                    <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    <span className="min-w-0">{text}</span>
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted transition-colors group-hover:bg-primary/10">
+                      <Icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
+                    </span>
+                    <span className="min-w-0 flex-1">{text}</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
                   </button>
                 ))}
               </div>
@@ -795,10 +802,7 @@ export function SandboxChatWindow({
           {messages.map((message, msgIndex) => {
             const sender = senderOf(message);
             return (
-              <div
-                key={message.id}
-                className={msgIndex > 0 ? 'mt-3 border-t border-border/70 pt-3' : undefined}
-              >
+              <div key={message.id} className={msgIndex > 0 ? 'mt-4' : undefined}>
               <Message
                 from={message.role}
                 className={
@@ -920,10 +924,10 @@ export function SandboxChatWindow({
 
         <PromptInput
           onSubmit={(message) => send(message.text ?? '')}
-          className="rounded-xl border-2 border-primary/50 bg-card shadow-lg ring-2 ring-primary/10 transition-shadow focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20"
+          className="rounded-2xl border border-primary/40 bg-card shadow-md transition-all focus-within:border-primary focus-within:shadow-lg focus-within:ring-2 focus-within:ring-primary/20"
         >
           <PromptInputTextarea
-            className="min-h-[56px] text-base font-medium placeholder:font-normal placeholder:text-muted-foreground"
+            className="min-h-[52px] text-base placeholder:text-muted-foreground/80"
             placeholder={
               agentMode
                 ? 'Reply as the warranty specialist…'
