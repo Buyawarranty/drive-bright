@@ -336,8 +336,12 @@ export const useScoreboardData = (): ScoreboardData => {
         //      converted to a % of the implied gross (final + fixed value)
         const discountPctRows: number[] = [];
         userCustomers.forEach((c: any) => {
-          const orig = Number(c.original_amount) || 0;
+          const origRaw = Number(c.original_amount) || 0;
           const final = Number(c.final_amount) || 0;
+          // Externally confirmed payments sometimes had the collected amount
+          // mirrored into original_amount — that is not a quoted price, so it
+          // must not count as a genuine 0% discount row.
+          const orig = origRaw > 0 && final > 0 && Math.abs(origRaw - final) <= 0.5 ? 0 : origRaw;
           if (orig > 0) {
             const disc = Number(c.discount_amount) || Math.max(orig - final, 0);
             discountPctRows.push((disc / orig) * 100);

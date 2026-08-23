@@ -2867,9 +2867,9 @@ export const CustomersTab = ({
         });
         return;
       }
-      // Never mirror the collected amount into original_amount — that would fake a
-      // "full price" sale. Only stamp it when we have a real quoted figure.
-      if (!originalAmt && policyAmount > 0) editingCustomer.original_amount = policyAmount;
+      // Never mirror the collected amount into original_amount — the policy
+      // payment_amount IS the money taken, not a quoted price, so copying it
+      // would fake a "sold at full price / no discount given" record.
       if (!finalAmt) editingCustomer.final_amount = resolvedAmount;
 
     }
