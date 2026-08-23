@@ -817,7 +817,11 @@ ${rows}
               <Tag className="h-4 w-4" />
               🏷️ Envelope Labels ({queue.length})
             </Button>
-            <Button onClick={handleBatchPrintBoth} className="gap-2">
+            <Button onClick={handleBatchPrintLetters} className="gap-2">
+              <Printer className="h-4 w-4" />
+              Print Letters only ({queue.length}) — {bwPrint ? 'black & white' : 'colour'}
+            </Button>
+            <Button onClick={handleBatchPrintBoth} variant="outline" className="gap-2">
               <Printer className="h-4 w-4" />
               Print Letters and Address Print Labels ({queue.length})
             </Button>
