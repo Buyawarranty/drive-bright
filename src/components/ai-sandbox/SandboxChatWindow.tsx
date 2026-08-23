@@ -861,13 +861,17 @@ export function SandboxChatWindow({
         resize="smooth"
       >
         <ConversationContent className={compact ? 'w-full px-3' : 'mx-auto w-full max-w-3xl'}>
-          <Message from="assistant" className="flex-row items-start gap-2">
-            <ChatAvatar sender="ai" />
-            <MessageContent>
-              <SenderLabel sender="ai" />
-              <MessageResponse className={CHAT_TEXT}>{OPENING_LINE}</MessageResponse>
-            </MessageContent>
-          </Message>
+          <div>
+            <Message from="assistant" className="flex-row items-start gap-2">
+              <ChatAvatar sender="ai" />
+              <MessageContent className="rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-foreground">
+                <SenderLabel sender="ai" />
+                <MessageResponse className={CHAT_TEXT}>{OPENING_LINE}</MessageResponse>
+              </MessageContent>
+            </Message>
+            <MessageStamp side="left" time={stampFor('opening')} />
+          </div>
+
 
           {messages.length === 0 && (
             <div className="flex flex-col gap-3 py-2">
