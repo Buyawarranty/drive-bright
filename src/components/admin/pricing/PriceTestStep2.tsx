@@ -500,12 +500,14 @@ export default function PriceTestStep2({
     [term.period, term.months],
   );
 
-  // Keep the excess valid the way Step 3 does when the term or claim limit changes.
+  // Keep the excess valid the way Step 3 does when the term or claim limit changes:
+  // only the price-bracket rule may force a change, never the floor-clamp filter.
   useEffect(() => {
-    if (!visibleExcesses.includes(excess)) {
-      setExcess(visibleExcesses.includes(150) ? 150 : visibleExcesses[0] ?? 100);
+    if (!journeyExcesses.includes(excess)) {
+      setExcess(journeyExcesses.includes(150) ? 150 : journeyExcesses[0] ?? 100);
     }
-  }, [visibleExcesses, excess]);
+  }, [journeyExcesses, excess]);
+
 
 
   function resetAll() {
