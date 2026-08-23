@@ -917,14 +917,15 @@ export function SandboxChatWindow({
                     : 'flex-row items-start gap-2'
                 }
               >
-                <ChatAvatar sender={sender} />
+                {message.role !== 'user' && <ChatAvatar sender={sender} />}
                 <MessageContent
                   className={
                     message.role === 'user'
-                      ? 'rounded-2xl rounded-tr-sm bg-primary px-4 py-3 text-primary-foreground shadow-sm [&_*]:text-primary-foreground'
+                      ? 'rounded-2xl rounded-br-sm border border-primary/30 bg-primary/10 px-4 py-3 text-foreground shadow-sm'
                       : 'rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-foreground'
                   }
                 >
+
                   <SenderLabel sender={sender} />
 
                   {message.parts.map((part, i) => {
