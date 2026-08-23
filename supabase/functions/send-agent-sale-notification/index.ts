@@ -185,20 +185,41 @@ serve(async (req: Request) => {
       ? (customer.name || [customer.first_name, customer.last_name].filter(Boolean).join(" ") || "").trim()
       : "";
 
-    const regPlate = lead.vehicle_reg || customer?.registration_plate || "Unknown";
-    const planName = lead.plan_interest || customer?.plan_type || policy?.plan_type || "Pending review";
-    const saleValue = customer?.final_amount || policy?.payment_amount || lead.cart_value || lead.quote_amount;
-    const isPaymentPending = !customer?.payment_verified;
+    const o = customerOverride ?? {};
+    const regPlate = lead.vehicle_reg || customer?.registration_plate || o.vehicleReg || "Unknown";
+    const planName = lead.plan_interest || customer?.plan_type || policy?.plan_type || o.planType || "Pending review";
+    const saleValue = customer?.final_amount || policy?.payment_amount || o.finalAmount || lead.cart_value || lead.quote_amount;
+    const isPaymentPending = paymentConfirmed ? false : !customer?.payment_verified;
     const saleValueDisplay = saleValue ? `£${Number(saleValue).toFixed(2)}` : "Amount TBC";
-    const paymentType = customer?.payment_type || policy?.payment_type || "Pending payment confirmation";
-    const warrantyNumber = policy?.warranty_number || "Pending";
-    const customerName = leadFullName || customerFullName || "Not provided";
-    const customerEmail = lead.email || customer?.email || "Not provided";
-    const customerPhone = lead.phone || customer?.phone || "Not provided";
-    const claimLimitDisplay = customer?.claim_limit ? `£${Number(customer.claim_limit).toLocaleString()}` : "Not set";
-    const excessDisplay = customer?.voluntary_excess != null ? `£${Number(customer.voluntary_excess).toFixed(2)}` : "Not set";
-    const labourRateDisplay = customer?.labour_rate ? `£${Number(customer.labour_rate).toFixed(2)}/hr` : "Not set";
-    const durationDisplay = durationLabel(customer?.duration_months, customer?.payment_type, policy?.payment_type, planName);
+    const paymentType = customer?.payment_type || policy?.payment_type || o.paymentType || "Pending payment confirmation";
+    const warrantyNumber = policy?.warranty_number || o.warrantyNumber || "Pending";
+    const customerName = leadFullName || customerFullName || [o.firstName, o.lastName].filter(Boolean).join(" ") || "Not provided";
+    const customerEmail = lead.email || customer?.email || o.email || "Not provided";
+    const customerPhone = lead.phone || customer?.phone || o.phone || "Not provided";
+    const claimLimitRaw = customer?.claim_limit ?? o.claimLimit;
+    const excessRaw = customer?.voluntary_excess ?? o.voluntaryExcess;
+    const labourRaw = customer?.labour_rate ?? o.labourRate;
+    const claimLimitDisplay = claimLimitRaw ? `£${Number(claimLimitRaw).toLocaleString()}` : "Not set";
+    const excessDisplay = excessRaw != null ? `£${Number(excessRaw).toFixed(2)}` : "Not set";
+    const labourRateDisplay = labourRaw ? `£${Number(labourRaw).toFixed(2)}/hr` : "Not set";
+    const durationDisplay = durationLabel(customer?.duration_months, o.durationMonths, customer?.payment_type, policy?.payment_type, planName);
+    const mileageDisplay = customer?.mileage || o.mileage || "Not provided";
+    const vehicleYearDisplay = lead.vehicle_year || customer?.vehicle_year || o.vehicleYear || "Unknown";
+    const paymentSourceDisplay = paymentSource || customer?.payment_source || "Not provided";
+    const addressDisplay = (() => {
+      const a = address || {};
+      const parts = [
+        a.flatNumber, a.buildingName, a.buildingNumber, a.street,
+        a.town, a.county, a.postcode,
+      ].filter(Boolean);
+      if (parts.length) return parts.join(", ");
+      const fallback = [
+        customer?.building_number, customer?.street, customer?.town,
+        customer?.county, customer?.postcode,
+      ].filter(Boolean);
+      return fallback.length ? fallback.join(", ") : "Not provided";
+    })();
+    const leadSourceDisplay = lead.lead_source || customer?.lead_source || o.leadSource || "Unknown";
 
     // Get timing info
     const leadCreatedAt = lead.created_at 
