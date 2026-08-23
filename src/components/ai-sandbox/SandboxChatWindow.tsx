@@ -73,18 +73,19 @@ const CHAT_TEXT = [
 
 const OPENING_LINE = [
 
-  "Hey, I'm Miles. I can help you get a quote, check what's covered, or start a claim.",
+  "Hi, I'm Miles. How can I help?",
   '',
-  'What would you like to do?',
+  'I can get you a quote, check what\'s covered, or help with a claim.',
 ].join('\n');
 
 
 const STARTERS: Array<{ text: string; Icon: LucideIcon }> = [
-  { text: "What's covered in my warranty?", Icon: ShieldCheck },
-  { text: 'Can I pay monthly?', Icon: CalendarDays },
-  { text: 'Feels a bit pricey — can I talk to someone?', Icon: UserRound },
-  { text: 'I need help with a claim', Icon: FileText },
+  { text: 'Get my price', Icon: CalendarDays },
+  { text: "Check what's covered", Icon: ShieldCheck },
+  { text: 'Make a claim', Icon: FileText },
+  { text: 'Speak to someone', Icon: UserRound },
 ];
+
 
 
 type Handover = {
