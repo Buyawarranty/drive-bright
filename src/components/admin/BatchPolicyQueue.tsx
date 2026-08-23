@@ -78,7 +78,7 @@ export const BatchPolicyQueue: React.FC = () => {
   const [savedAt, setSavedAt] = useState<string | null>(() => {
     try { return localStorage.getItem(SAVED_AT_KEY); } catch { return null; }
   });
-  const [printMode, setPrintMode] = useState<'bw' | 'colour'>('bw');
+  // Letters must always print in colour — no black & white option.
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<QueuedCustomer>>({});
   const [isSavingEdit, setIsSavingEdit] = useState(false);
@@ -473,7 +473,7 @@ ${rows}
     const printWindow = window.open('', '_blank');
     if (!printWindow) { alert('Allow pop-ups'); return; }
 
-    const isBW = printMode === 'bw';
+    const isBW = false;
     const letterPages = queue.map(c => buildLetterHTML(c, isBW)).join('');
 
     printWindow.document.write(`<!DOCTYPE html><html><head><title>Batch Letters</title><style>
@@ -526,20 +526,8 @@ ${rows}
             )}
           </CardTitle>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 border rounded-lg overflow-hidden">
-              <button
-                onClick={() => setPrintMode('bw')}
-                className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'bw' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
-              >
-                B&W
-              </button>
-              <button
-                onClick={() => setPrintMode('colour')}
-                className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'colour' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
-              >
-                Colour
-              </button>
-            </div>
+            <span className="text-xs text-muted-foreground border rounded-lg px-2 py-1">Colour print</span>
+
             {queue.length > 0 && (
               <>
                 <Button size="sm" onClick={confirmAllPosted} className="text-xs gap-1 bg-green-600 hover:bg-green-700 text-white">

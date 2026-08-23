@@ -61,9 +61,9 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
   policy,
 }) => {
   const printRef = useRef<HTMLDivElement>(null);
-  const [printMode, setPrintMode] = useState<'bw' | 'colour'>('colour');
+  // Letters must always print in colour — no black & white option.
 
-  const isBW = printMode === 'bw';
+  const isBW = false;
 
   const c = {
     accent: isBW ? '#333' : '#eb4b00',
@@ -228,20 +228,7 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
           <DialogTitle className="flex items-center justify-between pr-10">
             <span>Warranty Confirmation Letter</span>
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 border rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setPrintMode('bw')}
-                  className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'bw' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
-                >
-                  B&W
-                </button>
-                <button
-                  onClick={() => setPrintMode('colour')}
-                  className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'colour' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
-                >
-                  Colour
-                </button>
-              </div>
+              <span className="text-xs text-muted-foreground border rounded-lg px-2 py-1">Colour print</span>
               <Button onClick={handlePrintLabel} variant="outline" className="gap-2">
                 <Tag className="h-4 w-4" />
                 Print Address Label
