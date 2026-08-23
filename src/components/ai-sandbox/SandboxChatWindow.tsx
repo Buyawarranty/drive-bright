@@ -688,8 +688,10 @@ export function SandboxChatWindow({
       void sendAsAgent(trimmed);
       return;
     }
+    lastSentRef.current = trimmed;
     sendMessage({ text: trimmed });
   };
+
 
   /**
    * Quick link: connect to a live agent. Puts the visitor on hold in the chat
