@@ -342,71 +342,121 @@ function PriceOptionsPanel({
 
 
         {priceRequested && !pending && (
-          <>
-            <Button size="sm" variant="outline" disabled={disabled} onClick={() => setPending('full')}>
-              Pay in full — save 10%
-            </Button>
-            <Button size="sm" variant="outline" disabled={disabled} onClick={() => setPending('monthly')}>
-              Pay monthly — 0% APR
-            </Button>
-          </>
+          <div className="mt-3 space-y-3">
+            <p className="text-sm text-foreground">
+              <strong>Happy with the price?</strong> Pay in full and you save <strong>10%</strong>, or spread it over <strong>12 monthly instalments</strong> at <strong>0% APR</strong>.
+            </p>
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              {/* Option 1 — Pay monthly */}
+              <Button
+                size="sm"
+                disabled={disabled}
+                onClick={() => setPending('monthly')}
+                className="h-11 justify-between bg-[#FF6B00] px-4 font-bold text-white shadow-sm hover:bg-[#E85F00]"
+              >
+                <span className="text-left leading-tight">
+                  <span className="block text-sm">Pay monthly — 0% APR</span>
+                </span>
+                <ArrowRight className="h-5 w-5 shrink-0 text-white" strokeWidth={2.5} />
+              </Button>
+
+              {/* Option 2 — Continue to checkout */}
+              <Button
+                asChild
+                size="sm"
+                disabled={disabled || !checkoutHref}
+                className="h-11 justify-between bg-[#0BA360] px-4 font-bold text-white shadow-sm hover:bg-[#099455]"
+              >
+                <a href={checkoutHref || undefined}>
+                  <span className="text-left leading-tight">
+                    <span className="block text-sm">Continue to checkout →</span>
+                  </span>
+                  <ArrowRight className="h-5 w-5 shrink-0 text-white" strokeWidth={2.5} />
+                </a>
+              </Button>
+            </div>
+
+            <div className="rounded-xl border border-dashed border-border bg-muted/40 p-3">
+              <p className="text-xs font-semibold text-foreground">Prefer to finish it yourself?</p>
+              <p className="mt-1.5 text-[11px] text-muted-foreground">
+                I'll open your cart with <strong className="text-foreground">{reg || 'FOR3'}</strong> already filled in — pick your plan and pay securely on site. This chat stays open if you need me.
+              </p>
+            </div>
+
+            <ul className="space-y-1 text-xs text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 text-[#0BA360]">✓</span>
+                <span><strong className="text-foreground">Pay in full</strong> and save <strong className="text-foreground">10%</strong></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 text-[#FF6B00]">✓</span>
+                <span><strong className="text-foreground">Pay monthly</strong> over 12 instalments at <strong className="text-foreground">0% APR</strong></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 text-[#0BA360]">✓</span>
+                <span>Secure checkout with instant cover</span>
+              </li>
+            </ul>
+          </div>
         )}
 
-        {pending && (
-          <>
-            <Button
-              size="sm"
-              disabled={disabled}
-              className="bg-[#0BA360] font-bold text-white hover:bg-[#099455]"
-              onClick={() => {
-                onSend(
-                  pending === 'full'
-                    ? `Yes — I'll pay in full for ${combo}. Please confirm the discounted total with the 10% pay-in-full saving, then send me a secure card payment link.`
-                    : `Yes — I'll pay monthly for ${combo}. Please confirm the monthly amount and the 12-instalment total (0% APR), then send me a secure monthly payment link.`,
-                );
-                setPending(null);
-              }}
-            >
-              Yes, send my payment link
-            </Button>
-            <Button size="sm" variant="ghost" disabled={disabled} onClick={() => setPending(null)}>
-              No, go back
-            </Button>
-          </>
+        {pending === 'full' && (
+          <div className="mt-3 space-y-2">
+            <p className="text-sm text-foreground">
+              <strong>Pay in full</strong> — save 10% on your total.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                disabled={disabled}
+                className="bg-[#0BA360] font-bold text-white hover:bg-[#099455]"
+                onClick={() => {
+                  onSend(
+                    `Yes — I'll pay in full for ${combo}. Please confirm the discounted total with the 10% pay-in-full saving, then send me a secure card payment link.`,
+                  );
+                  setPending(null);
+                }}
+              >
+                Yes, send my payment link
+              </Button>
+              <Button size="sm" variant="ghost" disabled={disabled} onClick={() => setPending(null)}>
+                No, go back
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {pending === 'monthly' && (
+          <div className="mt-3 space-y-2">
+            <p className="text-sm text-foreground">
+              <strong>Pay monthly</strong> — 12 equal instalments at 0% APR.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                disabled={disabled}
+                className="bg-[#FF6B00] font-bold text-white hover:bg-[#E85F00]"
+                onClick={() => {
+                  onSend(
+                    `Yes — I'll pay monthly for ${combo}. Please confirm the monthly amount and the 12-instalment total (0% APR), then send me a secure monthly payment link.`,
+                  );
+                  setPending(null);
+                }}
+              >
+                Yes, send my payment link
+              </Button>
+              <Button size="sm" variant="ghost" disabled={disabled} onClick={() => setPending(null)}>
+                No, go back
+              </Button>
+            </div>
+          </div>
         )}
       </div>
-
-      {priceRequested && !pending && checkoutHref && (
-        <div className="mt-3 rounded-xl border border-dashed border-border bg-muted/40 p-3">
-          <p className="text-xs font-semibold text-foreground">Prefer to finish it yourself?</p>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            I'll open your cart with {reg} already filled in — pick your plan and pay securely on site. This chat stays
-            open if you need me.
-          </p>
-          <Button asChild size="sm" variant="outline" className="mt-2 font-semibold">
-            <a href={checkoutHref}>Continue to checkout →</a>
-          </Button>
-        </div>
-      )}
-
-      {priceRequested && !pending && (
-        <p className="mt-2 text-xs text-muted-foreground">
-          Happy with the price? Pay in full and you save 10%, or spread it over 12 monthly instalments at 0% APR.
-        </p>
-      )}
-
-
-      {pending && (
-        <p className="mt-2 text-xs text-muted-foreground">
-          {pending === 'full'
-            ? "Just to confirm — you'd like to pay in full with the 10% saving applied? I'll confirm the exact total before sending your secure payment link."
-            : "Just to confirm — you'd like to pay monthly over 12 instalments at 0% APR? I'll confirm the monthly amount before sending your secure payment link."}
-        </p>
-      )}
-
     </div>
   );
 }
+
 
 
 
