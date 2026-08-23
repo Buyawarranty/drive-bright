@@ -379,7 +379,9 @@ Deno.serve(async (req) => {
             .ilike("email", email)
             .limit(1);
           if (byEmail && byEmail.length > 0) {
-            return { created: false, reason: "duplicate_email", lead_id: byEmail[0].id };
+            // Same person came back — keep one lead and add this chat to its notes.
+            await attachTranscriptToLead(byEmail[0].id);
+            return { created: false, reason: "duplicate_email", lead_id: byEmail[0].id, transcript_added: true };
           }
         }
 
@@ -390,9 +392,11 @@ Deno.serve(async (req) => {
           });
           const existingId = Array.isArray(byPhone) ? byPhone[0]?.id ?? byPhone[0] : byPhone;
           if (existingId) {
-            return { created: false, reason: "duplicate_phone", lead_id: existingId };
+            await attachTranscriptToLead(existingId);
+            return { created: false, reason: "duplicate_phone", lead_id: existingId, transcript_added: true };
           }
         }
+
 
         const nameParts = (args.customer_name ?? "").trim().split(/\s+/).filter(Boolean);
         const noteLines = [
