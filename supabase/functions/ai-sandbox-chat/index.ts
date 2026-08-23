@@ -443,7 +443,11 @@ Deno.serve(async (req) => {
           console.error("[ai-sandbox-chat] live chat tag failed", tagErr);
         }
 
-        return { created: true, lead_id: inserted.id, tag: "Live chat" };
+        // Full conversation goes into the lead's notes timeline.
+        await attachTranscriptToLead(inserted.id);
+
+        return { created: true, lead_id: inserted.id, tag: "Live chat", transcript_added: true };
+
       } catch (e) {
         console.error("[ai-sandbox-chat] createRealLead threw", e);
         return { created: false, reason: "error" };
