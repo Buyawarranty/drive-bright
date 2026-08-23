@@ -84,6 +84,9 @@ export function CallMeBackPanel({
       }
       setWhenLabel(data.when_label ?? (open ? 'in the next few minutes' : `from 9am ${nextOpeningLabel()}`));
       setStep('done');
+      // A specialist is online during office hours — put the visitor straight
+      // through to them instead of leaving them waiting for the call.
+      if (liveAgentAvailable && onConnectLiveAgent) onConnectLiveAgent();
     } catch {
       setError('Network problem — please try again, or call 0330 229 5040.');
     } finally {
