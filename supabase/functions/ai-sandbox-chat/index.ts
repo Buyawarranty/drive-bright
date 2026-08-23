@@ -296,6 +296,53 @@ Deno.serve(async (req) => {
     };
 
     /**
+     * The whole chat, formatted for the lead's notes timeline so an agent can read
+     * exactly what the customer said before they ring them.
+     */
+    const buildTranscriptNote = (): string => {
+      const lines: string[] = [];
+      for (const m of messages) {
+        if (!m || typeof m !== "object" || !Array.isArray(m.parts)) continue;
+        const text = m.parts
+          .filter((p: any) => p?.type === "text" && typeof p.text === "string")
+          .map((p: any) => p.text.trim())
+          .filter(Boolean)
+          .join("\n");
+        if (!text) continue;
+        const who =
+          m.role === "user"
+            ? "Customer"
+            : (m as any)?.metadata?.sender === "agent"
+              ? "Specialist"
+              : "Miles (AI)";
+        lines.push(`${who}: ${text}`);
+      }
+      const body = lines.join("\n\n").slice(0, 12000);
+      return `💬 Live chat conversation with Miles (${lines.length} messages)\n\n${body || "No message text captured."}`;
+    };
+
+    /** Attach the full conversation to a lead's notes and link the thread to it. */
+    const attachTranscriptToLead = async (leadId: string) => {
+      try {
+        const { error } = await admin.from("lead_quick_notes").insert({
+          lead_id: leadId,
+          note_text: `[${new Date().toLocaleString("en-GB")} — 🤖 Miles (AI chat)] ${buildTranscriptNote()}`,
+          created_by: "00000000-0000-0000-0000-000000000000",
+          is_pinned: false,
+        });
+        if (error) console.error("[ai-sandbox-chat] transcript note failed", error);
+        await admin
+          .from("ai_sandbox_threads")
+          .update({ sales_lead_id: leadId })
+          .eq("id", threadId);
+      } catch (e) {
+        console.error("[ai-sandbox-chat] attachTranscriptToLead threw", e);
+      }
+    };
+
+
+
+    /**
      * Write a captured chat lead into the real New Leads pipeline.
      * Gated behind the `ai_chat_creates_real_leads` feature flag so the sandbox stays isolated
      * until the assistant goes live. Dedupes by normalised email or phone tail-9 and lets the
@@ -332,7 +379,9 @@ Deno.serve(async (req) => {
             .ilike("email", email)
             .limit(1);
           if (byEmail && byEmail.length > 0) {
-            return { created: false, reason: "duplicate_email", lead_id: byEmail[0].id };
+            // Same person came back — keep one lead and add this chat to its notes.
+            await attachTranscriptToLead(byEmail[0].id);
+            return { created: false, reason: "duplicate_email", lead_id: byEmail[0].id, transcript_added: true };
           }
         }
 
@@ -343,9 +392,11 @@ Deno.serve(async (req) => {
           });
           const existingId = Array.isArray(byPhone) ? byPhone[0]?.id ?? byPhone[0] : byPhone;
           if (existingId) {
-            return { created: false, reason: "duplicate_phone", lead_id: existingId };
+            await attachTranscriptToLead(existingId);
+            return { created: false, reason: "duplicate_phone", lead_id: existingId, transcript_added: true };
           }
         }
+
 
         const nameParts = (args.customer_name ?? "").trim().split(/\s+/).filter(Boolean);
         const noteLines = [
@@ -392,7 +443,11 @@ Deno.serve(async (req) => {
           console.error("[ai-sandbox-chat] live chat tag failed", tagErr);
         }
 
-        return { created: true, lead_id: inserted.id, tag: "Live chat" };
+        // Full conversation goes into the lead's notes timeline.
+        await attachTranscriptToLead(inserted.id);
+
+        return { created: true, lead_id: inserted.id, tag: "Live chat", transcript_added: true };
+
       } catch (e) {
         console.error("[ai-sandbox-chat] createRealLead threw", e);
         return { created: false, reason: "error" };

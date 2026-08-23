@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { Bot, MessageSquare, Car, PoundSterling, PhoneCall, UserPlus, RefreshCw, Download, ExternalLink, Eraser } from 'lucide-react';
+import ChatConversationsPanel from './ChatConversationsPanel';
 
 type ChatEvent = {
   id: string;
@@ -277,12 +278,18 @@ export default function ChatbotDataTab() {
         className="max-w-md"
       />
 
-      <Tabs defaultValue="wants">
+      <Tabs defaultValue="conversations">
         <TabsList>
+          <TabsTrigger value="conversations">Conversations &amp; leads</TabsTrigger>
           <TabsTrigger value="wants">What customers want</TabsTrigger>
           <TabsTrigger value="vehicles">Vehicles &amp; prices</TabsTrigger>
           <TabsTrigger value="raw">Raw activity</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="conversations" className="pt-4">
+          <ChatConversationsPanel rangeDays={range} />
+        </TabsContent>
+
 
         <TabsContent value="wants" className="space-y-4 pt-4">
           <div className="grid md:grid-cols-2 gap-4">

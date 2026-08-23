@@ -1641,6 +1641,7 @@ export type Database = {
           guest_token: string | null
           id: string
           is_sandbox: boolean
+          sales_lead_id: string | null
           source: string | null
           title: string
           updated_at: string
@@ -1651,6 +1652,7 @@ export type Database = {
           guest_token?: string | null
           id?: string
           is_sandbox?: boolean
+          sales_lead_id?: string | null
           source?: string | null
           title?: string
           updated_at?: string
@@ -1661,6 +1663,7 @@ export type Database = {
           guest_token?: string | null
           id?: string
           is_sandbox?: boolean
+          sales_lead_id?: string | null
           source?: string | null
           title?: string
           updated_at?: string
