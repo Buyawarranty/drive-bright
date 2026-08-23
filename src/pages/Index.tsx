@@ -66,7 +66,7 @@ const CompactProgressBar = lazyWithRetry(() => import('@/components/CompactProgr
 const CarJourneyProgress = lazyWithRetry(() => import('@/components/CarJourneyProgress'));
 const CustomerDetailsStep = lazyWithRetry(() => import('@/components/CustomerDetailsStep'));
 const MaintenanceBanner = lazyWithRetry(() => import('@/components/MaintenanceBanner'));
-const SiteChatWidget = lazyWithRetry(() => import('@/components/ai-sandbox/SiteChatWidget'));
+// Miles chat widget is intentionally NOT mounted here — testing on /used-car-warranty-uk/ only.
 
 
 
