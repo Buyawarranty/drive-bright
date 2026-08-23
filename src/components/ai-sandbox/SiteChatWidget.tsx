@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { MessageCircle, X, Minus, Expand, Shrink } from 'lucide-react';
 import SandboxChatWindow from '@/components/ai-sandbox/SandboxChatWindow';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
 import { loadGuestChatOpen, saveGuestChatOpen } from '@/components/ai-sandbox/guestChatStore';
+
 
 const TOKEN_KEY = 'baw_chat_guest_token';
 
