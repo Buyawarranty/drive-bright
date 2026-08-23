@@ -6,7 +6,8 @@ import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import { trackButtonClick, trackQuoteRequest } from '@/utils/analytics';
 import MileageQuickSelect from './MileageQuickSelect';
-import { getVehicleIdentificationGap } from '@/lib/vehicleIdentification';
+import { getVehicleIdentificationGap, type VehicleIdGap } from '@/lib/vehicleIdentification';
+import VehicleNotRecognisedCard from '@/components/quote/VehicleNotRecognisedCard';
 import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
 import { SALES_PHONE } from '@/constants/contact';
 
@@ -27,6 +28,9 @@ const QuoteFormInline: React.FC<QuoteFormInlineProps> = ({
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [mileageError, setMileageError] = useState('');
   const [vehicleAgeError, setVehicleAgeError] = useState('');
+  // When we can't confirm the make/model we show the call / callback card
+  // instead of a red error, so the visitor can leave a number and become a lead.
+  const [idGap, setIdGap] = useState<VehicleIdGap | null>(null);
 
   const formatRegNumber = (value: string) => {
     const formatted = value.replace(/\s/g, '').toUpperCase();
@@ -41,6 +45,7 @@ const QuoteFormInline: React.FC<QuoteFormInlineProps> = ({
     if (formatted.length <= 8) {
       setRegNumber(formatted);
       if (vehicleAgeError) setVehicleAgeError('');
+      if (idGap) setIdGap(null);
     }
   };
 
@@ -96,13 +101,14 @@ const QuoteFormInline: React.FC<QuoteFormInlineProps> = ({
       }
 
       // Make AND model must be confirmed before a price is shown.
-      const idGap = getVehicleIdentificationGap(data);
-      if (idGap) {
-        setVehicleAgeError(`${idGap.message}. ${idGap.detail} Call ${SALES_PHONE}.`);
-        toast({ title: idGap.message, description: `${idGap.detail} Call ${SALES_PHONE}.`, variant: 'destructive' });
+      const idGapResult = getVehicleIdentificationGap(data);
+      if (idGapResult) {
+        setVehicleAgeError('');
+        setIdGap(idGapResult);
         setIsLookingUp(false);
         return;
       }
+      setIdGap(null);
 
       // Age checks
       if (!data?.found && data?.error && data.error.includes('15 years')) {
@@ -183,12 +189,11 @@ const QuoteFormInline: React.FC<QuoteFormInlineProps> = ({
     } catch (err) {
       console.error('Vehicle lookup error:', err);
       // Never continue without a confirmed make and model — customer must call us.
-      setVehicleAgeError(`We couldn't confirm this vehicle from its registration. We can only price a vehicle once we know the exact make and model — please call ${SALES_PHONE}.`);
-      toast({
-        title: "We couldn't confirm this vehicle",
-        description: `We can only price a vehicle once we know the exact make and model. Please call ${SALES_PHONE}.`,
-        variant: 'destructive',
-      });
+      setVehicleAgeError('');
+      setIdGap({
+        message: "We can't confirm this vehicle yet",
+        detail: 'We just need a few details to give you an accurate price.',
+      } as VehicleIdGap);
     } finally {
       setIsLookingUp(false);
     }
@@ -224,15 +229,21 @@ const QuoteFormInline: React.FC<QuoteFormInlineProps> = ({
       </div>
 
 
+      {idGap && (
+        <div id="vehicle-not-recognised">
+          <VehicleNotRecognisedCard gap={idGap} regNumber={regNumber} />
+        </div>
+      )}
+
       {/* Reg-only quote CTA — mileage comes from the latest MOT */}
-      <MileageQuickSelect regNumber={regNumber}
+      {!idGap && <MileageQuickSelect regNumber={regNumber}
         value={mileageSelection}
         onChange={handleMileageSelection}
         onAutoSubmit={handleGetQuote}
         error={eligibilityError}
         isLoading={isLookingUp}
         isRegValid={regNumber.replace(/\s/g, '').length >= 5}
-      />
+      />}
     </div>
   );
 };
