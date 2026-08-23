@@ -1022,9 +1022,25 @@ export function SandboxChatWindow({
 
           {error && (
             <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
-              {error.message || 'Something went wrong. Please try again.'}
+              <p>
+                {/^(failed to fetch|network|load failed|typeerror)/i.test(error.message ?? '')
+                  ? "That didn't send — the connection dropped. Try again, or call us on 0330 229 5040."
+                  : error.message || 'Something went wrong. Please try again.'}
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-2 h-7"
+                onClick={() => {
+                  const last = lastSentRef.current;
+                  if (last) sendMessage({ text: last });
+                }}
+              >
+                Try again
+              </Button>
             </div>
           )}
+
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
