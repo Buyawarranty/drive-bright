@@ -129,7 +129,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
-      <div className="mx-2 mb-2 bg-white rounded-2xl border border-border shadow-[0_6px_20px_rgba(0,0,0,0.10)] overflow-hidden">
+      <div className="mx-2 mb-2 bg-white rounded-2xl border border-foreground/15 shadow-[0_6px_24px_rgba(0,0,0,0.13),0_2px_6px_rgba(0,0,0,0.06)] overflow-hidden">
         {/* Main price + CTA row */}
         <div className="px-3 py-2.5">
           <div className="flex items-center justify-between gap-3">
