@@ -765,27 +765,35 @@ export function SandboxChatWindow({
               )}
             </p>
           ) : (
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={requestLiveAgent}
-                disabled={holdState === 'connecting'}
-                title={open ? "We'll put you on hold and ring the team" : `A specialist picks this up ${nextOpeningLabel()}`}
-                className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-primary/10 disabled:opacity-60"
-              >
-                <Headset className="h-4 w-4 shrink-0 text-primary" />
-                <span className="truncate">{holdState === 'connecting' ? 'Connecting…' : 'Live agent'}</span>
-              </button>
+            /* Live agent only shows when the team is open AND someone is actually
+               online. Otherwise the call back panel gets the full width. */
+            <div className={liveAgentAvailable ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-1 gap-2'}>
+              {liveAgentAvailable && (
+                <button
+                  type="button"
+                  onClick={requestLiveAgent}
+                  disabled={holdState === 'connecting'}
+                  title="We'll put you on hold and ring the team"
+                  className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-primary/10 disabled:opacity-60"
+                >
+                  <Headset className="h-4 w-4 shrink-0 text-primary" />
+                  <span className="truncate">{holdState === 'connecting' ? 'Connecting…' : 'Live agent'}</span>
+                </button>
+              )}
               <CallMeBackPanel
                 asChip
                 guestToken={guestToken}
                 threadId={threadId}
                 source={source}
                 compact={compact}
+                registration={detectedReg}
+                liveAgentAvailable={liveAgentAvailable}
+                onConnectLiveAgent={requestLiveAgent}
               />
-              {holdError && <p className="col-span-2 text-xs font-medium text-destructive">{holdError}</p>}
+              {holdError && <p className="col-span-full text-xs font-medium text-destructive">{holdError}</p>}
             </div>
           )}
+
         </div>
       )}
 
