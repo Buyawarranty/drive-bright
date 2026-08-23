@@ -343,8 +343,8 @@ function PriceOptionsPanel({
 
         {priceRequested && !pending && (
           <div className="mt-3 space-y-3">
-            <p className="text-sm font-medium text-foreground">
-              Happy with the price? Here's what you can do:
+            <p className="text-sm text-foreground">
+              <strong>Happy with the price?</strong> Pay in full and you save <strong>10%</strong>, or spread it over <strong>12 monthly instalments</strong> at <strong>0% APR</strong>.
             </p>
 
             <div className="grid gap-2 sm:grid-cols-2">
@@ -356,8 +356,7 @@ function PriceOptionsPanel({
                 className="h-11 justify-between bg-[#FF6B00] px-4 font-bold text-white shadow-sm hover:bg-[#E85F00]"
               >
                 <span className="text-left leading-tight">
-                  <span className="block text-sm">Pay monthly</span>
-                  <span className="block text-xs font-medium opacity-95">0% APR · 12 instalments</span>
+                  <span className="block text-sm">Pay monthly — 0% APR</span>
                 </span>
                 <ArrowRight className="h-5 w-5 shrink-0 text-white" strokeWidth={2.5} />
               </Button>
@@ -371,10 +370,7 @@ function PriceOptionsPanel({
               >
                 <a href={checkoutHref || undefined}>
                   <span className="text-left leading-tight">
-                    <span className="block text-sm">Continue to checkout</span>
-                    <span className="block text-xs font-medium opacity-95">
-                      {reg ? `${reg} already filled in` : 'Pick your plan on site'}
-                    </span>
+                    <span className="block text-sm">Continue to checkout →</span>
                   </span>
                   <ArrowRight className="h-5 w-5 shrink-0 text-white" strokeWidth={2.5} />
                 </a>
