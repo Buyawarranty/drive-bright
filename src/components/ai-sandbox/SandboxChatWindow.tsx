@@ -488,6 +488,9 @@ export function SandboxChatWindow({
   const composerRef = useRef<HTMLDivElement | null>(null);
   const open = isTeamOpenNow();
   const { liveCount, liveNames } = useSandboxSpecialistPresence();
+  // A live agent is only offered when the team is open and a specialist is
+  // actually signed in — otherwise the option is hidden entirely.
+  const liveAgentAvailable = open && liveCount > 0;
 
   // "Speak to a live agent" — puts the visitor on hold and rings the CRM.
   const [holdState, setHoldState] = useState<'idle' | 'connecting' | 'on_hold' | 'failed'>('idle');
