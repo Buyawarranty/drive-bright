@@ -103,7 +103,13 @@ serve(async (req: Request) => {
     const customerSelect = "*, name, first_name, last_name, plan_type, final_amount, payment_type, registration_plate, vehicle_make, vehicle_model, phone, email, claim_limit, voluntary_excess, labour_rate";
 
     let customer: any = null;
-    if (lead.email) {
+    if (customerId) {
+      const { data } = await supabase
+        .from("customers").select(customerSelect)
+        .eq("id", customerId).maybeSingle();
+      customer = data;
+    }
+    if (!customer && lead.email) {
       const { data } = await supabase
         .from("customers").select(customerSelect)
         .ilike("email", lead.email)
