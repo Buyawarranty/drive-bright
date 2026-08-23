@@ -278,24 +278,26 @@ export function CallMeBackPanel({
         </form>
       ) : (
 
-        <div className="space-y-2">
-          <p className="text-sm text-foreground">
-            Is <span className="font-semibold">{prettyPhone(phone)}</span> the right number
+        <div className="space-y-3">
+          <p className="text-base text-foreground">
+            Is <span className="font-bold">{prettyPhone(phone)}</span> the right number
             {name ? `, ${name}` : ''}?
           </p>
-          <p className="text-xs text-muted-foreground">
-            {open
-              ? 'We’ll ring you straight away — a UK specialist, no premium numbers.'
-              : `We'll be closed until ${nextOpeningLabel()} — you'll be first in the queue when we open.`}
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {liveAgentAvailable
+              ? 'A specialist is online now — we will connect you in the chat and ring you straight away.'
+              : open
+                ? 'We will ring you straight away — a UK specialist, no premium numbers.'
+                : `A warranty specialist will be back ${nextOpeningLabel()} — you will be first in the queue.`}
           </p>
           {error && <p className="text-xs font-medium text-destructive">{error}</p>}
           <div className="flex gap-2">
-            <Button onClick={submit} disabled={submitting} className="h-10 flex-1 font-semibold">
+            <Button onClick={submit} disabled={submitting} className="h-12 flex-1 rounded-xl text-base font-bold">
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : open ? 'Yes, call me now' : 'Yes, book my call'}
             </Button>
             <Button
               variant="outline"
-              className="h-10"
+              className="h-12 rounded-xl font-semibold"
               disabled={submitting}
               onClick={() => setStep('number')}
             >
@@ -303,6 +305,7 @@ export function CallMeBackPanel({
             </Button>
           </div>
         </div>
+
       )}
     </div>
   );
