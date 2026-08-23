@@ -427,12 +427,12 @@ Deno.serve(async (req) => {
           return { created: false, reason: "insert_failed" };
         }
 
-        // Tag it as a live chat lead so agents can see where it came from.
+        // Tag it as a chatbot lead so agents can see where it came from.
         try {
           const { data: tag } = await admin
             .from("lead_tags")
             .select("id")
-            .eq("name", "Live chat")
+            .eq("name", "Chatbot lead")
             .maybeSingle();
           if (tag?.id) {
             await admin
@@ -440,13 +440,14 @@ Deno.serve(async (req) => {
               .insert({ lead_id: inserted.id, tag_id: tag.id });
           }
         } catch (tagErr) {
-          console.error("[ai-sandbox-chat] live chat tag failed", tagErr);
+          console.error("[ai-sandbox-chat] chatbot lead tag failed", tagErr);
         }
 
         // Full conversation goes into the lead's notes timeline.
         await attachTranscriptToLead(inserted.id);
 
-        return { created: true, lead_id: inserted.id, tag: "Live chat", transcript_added: true };
+        return { created: true, lead_id: inserted.id, tag: "Chatbot lead", transcript_added: true };
+
 
       } catch (e) {
         console.error("[ai-sandbox-chat] createRealLead threw", e);
