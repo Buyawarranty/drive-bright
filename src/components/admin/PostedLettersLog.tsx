@@ -270,6 +270,11 @@ const viewPolicyDocument = async (entry: PostedLetterEntry) => {
 
 export const PostedLettersLog: React.FC = () => {
   const [logEntries, setLogEntries] = useState<PostedLetterEntry[]>([]);
+  const [totals, setTotals] = useState<{ total: number | null; sent: number | null; pending: number | null }>({
+    total: null,
+    sent: null,
+    pending: null,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [matchedCustomers, setMatchedCustomers] = useState<CustomerMatch[]>([]);
@@ -285,20 +290,38 @@ export const PostedLettersLog: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
 
-  // Load log entries
+  // Load log entries. The table view is capped at the latest 500 rows, so the
+  // headline totals are counted server-side — never derived from the capped page.
   const fetchLog = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from('posted_letters_log')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(500);
+    const [{ data, error }, totalRes, sentRes] = await Promise.all([
+      supabase
+        .from('posted_letters_log')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(500),
+      supabase
+        .from('posted_letters_log')
+        .select('id', { count: 'exact', head: true }),
+      supabase
+        .from('posted_letters_log')
+        .select('id', { count: 'exact', head: true })
+        .not('marked_sent_by', 'is', null),
+    ]);
 
     if (!error && data) {
       setLogEntries(data as PostedLetterEntry[]);
     } else if (error) {
       console.error('Error fetching posted letters log:', error);
     }
+
+    const total = totalRes.count ?? null;
+    const sent = sentRes.count ?? null;
+    setTotals({
+      total,
+      sent,
+      pending: total != null && sent != null ? total - sent : null,
+    });
     setIsLoading(false);
   };
 
@@ -615,8 +638,12 @@ export const PostedLettersLog: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const sentCount = logEntries.filter(e => e.marked_sent_by).length;
-  const pendingCount = logEntries.filter(e => !e.marked_sent_by).length;
+  // Real register-wide counts (server-side). Fall back to the loaded page only
+  // while the counts are still in flight.
+  const totalCount = totals.total ?? logEntries.length;
+  const sentCount = totals.sent ?? logEntries.filter(e => e.marked_sent_by).length;
+  const pendingCount = totals.pending ?? logEntries.filter(e => !e.marked_sent_by).length;
+  const isCapped = totals.total != null && totals.total > logEntries.length;
 
   return (
     <div className="space-y-6 mt-8">
@@ -634,8 +661,13 @@ export const PostedLettersLog: React.FC = () => {
       <div className="grid grid-cols-3 gap-3">
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-foreground">{logEntries.length}</p>
+            <p className="text-2xl font-bold text-foreground">{totalCount.toLocaleString()}</p>
             <p className="text-xs text-muted-foreground">Total Letters</p>
+            {isCapped && (
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Showing latest {logEntries.length} below
+              </p>
+            )}
           </CardContent>
         </Card>
         <Card>
