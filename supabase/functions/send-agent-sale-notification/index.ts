@@ -271,7 +271,7 @@ serve(async (req: Request) => {
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #16a34a; border-bottom: 2px solid #16a34a; padding-bottom: 10px;">🎯 New Agent Sale - Lead Converted</h2>
+        <h2 style="color: #16a34a; border-bottom: 2px solid #16a34a; padding-bottom: 10px;">${paymentConfirmed ? '✅ Confirmed payment — new sale' : '🎯 New Agent Sale - Lead Converted'}</h2>
         
         <!-- Agent Banner -->
         <div style="margin-top: 16px; padding: 12px 20px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;">
