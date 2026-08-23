@@ -187,10 +187,12 @@ export function CallMeBackPanel({
 
 
   return (
-    <div className={`${asChip ? 'w-full' : 'mx-3'} mb-2 rounded-lg border border-primary/40 bg-primary/5 ${compact ? 'p-3' : 'p-4'}`}>
-      <div className="mb-2 flex items-start justify-between gap-2">
-        <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-          <PhoneCall className="h-4 w-4 text-primary" />
+    <div
+      className={`${asChip ? 'col-span-full w-full' : 'mx-3'} mb-2 rounded-2xl border border-primary/40 bg-card p-4 shadow-sm`}
+    >
+      <div className="mb-1 flex items-start justify-between gap-2">
+        <p className="flex items-center gap-2 text-base font-bold text-foreground">
+          <PhoneCall className="h-4 w-4 shrink-0 text-primary" />
           {step === 'number' ? 'Request a call back' : 'Confirm your number'}
         </p>
         <button
@@ -199,7 +201,7 @@ export function CallMeBackPanel({
             setError(null);
           }}
           aria-label="Close call back request"
-          className="rounded p-0.5 text-muted-foreground hover:text-foreground"
+          className="-mr-1 -mt-1 shrink-0 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <X className="h-4 w-4" />
         </button>
@@ -212,40 +214,70 @@ export function CallMeBackPanel({
             if (isValid) setStep('confirm');
             else setError('Enter a valid UK mobile or landline number');
           }}
-          className="space-y-2"
+          className="space-y-3"
         >
-          <input
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            autoFocus
-            value={phone}
-            onChange={(e) => {
-              setPhone(e.target.value.replace(/[^\d +]/g, '').slice(0, 16));
-              setError(null);
-            }}
-            placeholder="e.g. 07960 123 456"
-            aria-label="Your phone number"
-            className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-          />
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value.slice(0, 60))}
-            placeholder="Your first name (optional)"
-            aria-label="Your first name"
-            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-          />
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {liveAgentAvailable
+              ? 'A warranty specialist is online now — leave your number and we will put you straight through.'
+              : open
+                ? 'Leave your number and a UK warranty specialist will ring you shortly.'
+                : `A warranty specialist will be back ${nextOpeningLabel()} — leave your number and you are first in the queue.`}
+          </p>
+
+          <div className="space-y-1.5">
+            <label htmlFor="cb-phone" className="block text-xs font-semibold text-foreground">
+              Phone number
+            </label>
+            <input
+              id="cb-phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              autoFocus
+              value={phone}
+              onChange={(e) => {
+                setPhone(e.target.value.replace(/[^\d +]/g, '').slice(0, 16));
+                setError(null);
+              }}
+              placeholder="07960 123456"
+              aria-label="Your phone number"
+              className="h-12 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="cb-name" className="block text-xs font-semibold text-foreground">
+              First name <span className="font-normal text-muted-foreground">(optional)</span>
+            </label>
+            <input
+              id="cb-name"
+              type="text"
+              autoComplete="given-name"
+              value={name}
+              onChange={(e) => setName(e.target.value.slice(0, 60))}
+              placeholder="Alex"
+              aria-label="Your first name"
+              className="h-12 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+
           {error && <p className="text-xs font-medium text-destructive">{error}</p>}
-          <Button type="submit" disabled={!isValid} className="h-10 w-full font-semibold">
+
+          <Button type="submit" disabled={!isValid} className="h-12 w-full rounded-xl text-base font-bold">
             Continue
           </Button>
-          <p className="flex items-center justify-center gap-1 text-[11px] text-muted-foreground">
-            <Clock className="h-3 w-3" />
-            {open ? 'Team is open now' : `Team's closed — calls start ${nextOpeningLabel()}`}
+
+          <p className="flex items-start gap-1.5 text-xs leading-relaxed text-muted-foreground">
+            <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span>
+              {open
+                ? `A warranty specialist is available now (${openingHoursLabel}).`
+                : `A warranty specialist will be back ${nextOpeningLabel()} (${openingHoursLabel}).`}
+            </span>
           </p>
         </form>
       ) : (
+
         <div className="space-y-2">
           <p className="text-sm text-foreground">
             Is <span className="font-semibold">{prettyPhone(phone)}</span> the right number
