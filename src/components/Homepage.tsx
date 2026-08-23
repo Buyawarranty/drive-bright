@@ -173,13 +173,17 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     };
   }, []);
 
+  // Plates are letters and digits only — quietly drop anything else the
+  // customer types or pastes (punctuation, symbols, emoji) instead of
+  // showing them a plate like "LK13 .::".
   const formatRegNumber = (value: string) => {
-    const formatted = value.replace(/\s/g, '').toUpperCase();
+    const formatted = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
     if (formatted.length > 3) {
       return formatted.slice(0, -3) + ' ' + formatted.slice(-3);
     }
     return formatted;
   };
+
 
   const handleRegChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatRegNumber(e.target.value);
