@@ -131,33 +131,32 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
-      <div className="mx-3 mb-3 bg-white rounded-2xl border border-border shadow-[0_8px_30px_rgba(0,0,0,0.12)] overflow-hidden">
+      <div className="mx-2 mb-2 bg-white rounded-2xl border border-border shadow-[0_6px_20px_rgba(0,0,0,0.10)] overflow-hidden">
         {/* Main price + CTA row */}
-        <div className="p-4">
-          <div className="flex items-center justify-between gap-4">
+        <div className="px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground leading-tight">{planLabel}</p>
-              <div className={cn('flex items-baseline gap-1 mt-0.5', isPulsing && 'animate-pulse')}>
-                <span className="text-3xl font-extrabold text-foreground tracking-tight">£{activePrice}</span>
-                <span className="text-sm text-muted-foreground">{activePriceLabel}</span>
+              <p className="text-[13px] font-semibold text-foreground leading-tight truncate">{planLabel}</p>
+              <div className={cn('flex items-baseline gap-1', isPulsing && 'animate-pulse')}>
+                <span className="text-2xl font-extrabold text-foreground tracking-tight leading-tight">£{activePrice}</span>
+                <span className="text-[12px] text-muted-foreground">{activePriceLabel}</span>
+                {displaySavings > 0 && (
+                  <span className="text-[11px] font-semibold text-success ml-1 whitespace-nowrap">
+                    Save £{displaySavings}/yr
+                  </span>
+                )}
               </div>
-              {displaySavings > 0 && (
-                <p className="text-[13px] font-semibold text-success mt-0.5">
-                  Save £{displaySavings} annually
-                </p>
-              )}
             </div>
 
             <Button
               onClick={onPayClick}
               disabled={isLoading || !selectedPayment}
               aria-label={selectedPayment ? 'Continue to checkout' : 'Select payment option'}
-              className="flex-shrink-0 bg-primary hover:bg-primary/90 disabled:bg-muted text-primary-foreground font-bold h-12 px-5 rounded-xl text-sm gap-1.5 animate-breathing disabled:animate-none whitespace-nowrap"
+              className="flex-shrink-0 bg-primary hover:bg-primary/90 disabled:bg-muted text-primary-foreground font-bold h-10 px-4 rounded-xl text-sm gap-1.5 animate-breathing disabled:animate-none whitespace-nowrap"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span className="hidden xs:inline">Processing...</span>
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-1.5">
@@ -171,7 +170,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
           {validationError && (
             <div
               role="alert"
-              className="mt-3 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-[12px] font-medium text-destructive"
+              className="mt-2 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-2.5 py-1.5 text-[11px] font-medium text-destructive"
             >
               <span aria-hidden className="mt-px">⚠</span>
               <span>{validationError}</span>
@@ -184,26 +183,20 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
           <CollapsibleTrigger asChild>
             <button
               type="button"
-              className="w-full border-t border-border bg-primary/[0.04] hover:bg-primary/[0.08] px-4 py-3 flex items-center justify-between gap-3 transition-colors"
+              className="w-full border-t border-border hover:bg-primary/[0.05] px-3 py-2 flex items-center gap-2 transition-colors"
               aria-label={expanded ? 'Hide payment options' : 'Show payment options'}
             >
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-                  <CreditCard className="h-5 w-5 text-primary" />
-                </span>
-                <div className="text-left">
-                  <p className="text-sm font-semibold text-foreground">Other payment options</p>
-                  <p className="text-xs text-muted-foreground">Monthly & annual</p>
-                </div>
-              </div>
+              <CreditCard className="h-4 w-4 text-primary flex-shrink-0" />
+              <span className="text-[13px] font-semibold text-foreground">View payment options</span>
               <ChevronDown
                 className={cn(
-                  'h-5 w-5 text-muted-foreground transition-transform duration-200',
+                  'h-4 w-4 text-primary transition-transform duration-200',
                   expanded && 'rotate-180'
                 )}
               />
             </button>
           </CollapsibleTrigger>
+
 
           <CollapsibleContent>
             <div className="px-4 pt-3 pb-4 border-t border-border space-y-3">
