@@ -577,22 +577,23 @@ export function SandboxChatWindow({
     loadHandover();
   }, [loadHandover]);
 
+  // Remembers the last thing the visitor sent so a dropped connection can be retried.
+  const lastSentRef = useRef<string | null>(null);
+
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: CHAT_URL,
         headers: async () => {
-          if (isGuest) return { 'Content-Type': 'application/json' };
+          if (isGuest) return {};
           const { data } = await supabase.auth.getSession();
-          return {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${data.session?.access_token ?? ''}`,
-          };
+          return { Authorization: `Bearer ${data.session?.access_token ?? ''}` };
         },
         body: isGuest ? { guestToken, source: source ?? null } : { threadId },
       }),
     [threadId, guestToken, source, isGuest],
   );
+
 
   const { messages, setMessages, sendMessage, status, error, stop } = useChat({
     id: chatId,
