@@ -12,6 +12,8 @@ import {
   Lock,
   ArrowRight,
   ChevronRight,
+  CheckCheck,
+
   type LucideIcon,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -132,7 +134,24 @@ function rowsToUIMessages(
   });
 }
 
+// Chat-app style time stamp under each bubble. Read messages get a double tick
+// on the customer's own side, exactly like a messaging app.
+function MessageStamp({ side, time, read }: { side: 'left' | 'right'; time: Date; read?: boolean }) {
+  const label = time.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  return (
+    <div
+      className={`mt-1 flex items-center gap-1 text-[11px] text-muted-foreground ${
+        side === 'right' ? 'justify-end pr-1' : 'pl-11'
+      }`}
+    >
+      <span>{label}</span>
+      {read && <CheckCheck className="h-3.5 w-3.5 text-primary" />}
+    </div>
+  );
+}
+
 function SenderLabel({ sender }: { sender: Sender }) {
+
   if (sender === 'customer') return null;
   if (sender === 'agent') {
     return (
@@ -487,6 +506,16 @@ export function SandboxChatWindow({
   const [handover, setHandover] = useState<Handover | null>(null);
   const [agentMode, setAgentMode] = useState(false);
   const composerRef = useRef<HTMLDivElement | null>(null);
+  // Keeps a stable "sent at" time per message so stamps don't jump on re-render.
+  const stampsRef = useRef<Map<string, Date>>(new Map());
+  const stampFor = (id: string) => {
+    const existing = stampsRef.current.get(id);
+    if (existing) return existing;
+    const now = new Date();
+    stampsRef.current.set(id, now);
+    return now;
+  };
+
   const open = isTeamOpenNow();
   const { liveCount, liveNames } = useSandboxSpecialistPresence();
   // A live agent is only offered when the team is open and a specialist is
@@ -832,13 +861,17 @@ export function SandboxChatWindow({
         resize="smooth"
       >
         <ConversationContent className={compact ? 'w-full px-3' : 'mx-auto w-full max-w-3xl'}>
-          <Message from="assistant" className="flex-row items-start gap-2">
-            <ChatAvatar sender="ai" />
-            <MessageContent>
-              <SenderLabel sender="ai" />
-              <MessageResponse className={CHAT_TEXT}>{OPENING_LINE}</MessageResponse>
-            </MessageContent>
-          </Message>
+          <div>
+            <Message from="assistant" className="flex-row items-start gap-2">
+              <ChatAvatar sender="ai" />
+              <MessageContent className="rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-foreground">
+                <SenderLabel sender="ai" />
+                <MessageResponse className={CHAT_TEXT}>{OPENING_LINE}</MessageResponse>
+              </MessageContent>
+            </Message>
+            <MessageStamp side="left" time={stampFor('opening')} />
+          </div>
+
 
           {messages.length === 0 && (
             <div className="flex flex-col gap-3 py-2">
@@ -884,14 +917,15 @@ export function SandboxChatWindow({
                     : 'flex-row items-start gap-2'
                 }
               >
-                <ChatAvatar sender={sender} />
+                {message.role !== 'user' && <ChatAvatar sender={sender} />}
                 <MessageContent
                   className={
                     message.role === 'user'
-                      ? 'rounded-2xl rounded-tr-sm bg-primary px-4 py-3 text-primary-foreground shadow-sm [&_*]:text-primary-foreground'
+                      ? 'rounded-2xl rounded-br-sm border border-primary/30 bg-primary/10 px-4 py-3 text-foreground shadow-sm'
                       : 'rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-foreground'
                   }
                 >
+
                   <SenderLabel sender={sender} />
 
                   {message.parts.map((part, i) => {
@@ -961,7 +995,13 @@ export function SandboxChatWindow({
                   })}
                 </MessageContent>
               </Message>
+              <MessageStamp
+                side={message.role === 'user' ? 'right' : 'left'}
+                time={stampFor(message.id)}
+                read={message.role === 'user'}
+              />
               </div>
+
             );
 
           })}
