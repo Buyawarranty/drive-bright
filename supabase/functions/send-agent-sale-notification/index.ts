@@ -25,22 +25,56 @@ serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { leadId, agentId } = await req.json();
+    const body = await req.json();
+    const {
+      leadId,
+      agentId,
+      // Set by Confirm External Payment: the money is already verified, so the
+      // email must be the full sale email with "Confirmed payment" in the subject.
+      paymentConfirmed = false,
+      customerId = null,
+      paymentSource = null,
+      address = null,
+      // Used when no lead exists for the sale (walk-in / phone sale confirmed
+      // straight through Confirm External Payment).
+      customerOverride = null,
+    } = body ?? {};
 
-    if (!leadId) {
-      throw new Error("leadId is required");
+    if (!leadId && !customerId && !customerOverride) {
+      throw new Error("leadId, customerId or customerOverride is required");
     }
 
-    // Fetch lead details
-    const { data: lead, error: leadError } = await supabase
-      .from("sales_leads")
-      .select("*")
-      .eq("id", leadId)
-      .maybeSingle();
+    // Fetch lead details (optional — confirmed payments may have no lead row)
+    let lead: any = null;
+    if (leadId) {
+      const { data, error: leadError } = await supabase
+        .from("sales_leads")
+        .select("*")
+        .eq("id", leadId)
+        .maybeSingle();
+      if (leadError) console.error("Lead lookup failed:", leadError);
+      lead = data;
+    }
 
-    if (leadError || !lead) {
-      console.error("Lead not found:", leadError);
-      throw new Error("Lead not found");
+    if (!lead) {
+      // Synthesise the minimum lead shape from the confirmation payload so the
+      // whole template below keeps working.
+      const o = customerOverride ?? {};
+      lead = {
+        id: null,
+        first_name: o.firstName ?? null,
+        last_name: o.lastName ?? null,
+        email: o.email ?? null,
+        phone: o.phone ?? null,
+        vehicle_reg: o.vehicleReg ?? null,
+        vehicle_make: o.vehicleMake ?? null,
+        vehicle_model: o.vehicleModel ?? null,
+        vehicle_year: o.vehicleYear ?? null,
+        plan_interest: o.planType ?? null,
+        lead_source: o.leadSource ?? "phone",
+        created_at: null,
+        assigned_to: agentId ?? null,
+      };
     }
 
     // Fetch agent details
