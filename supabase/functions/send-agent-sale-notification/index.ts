@@ -134,7 +134,7 @@ serve(async (req: Request) => {
     // If no customer record exists yet, auto-create a pending stub so the sale
     // shows up in the Customers tab with the ⏳ Confirm Payment button for a
     // manager to verify once payment lands.
-    if (!customer) {
+    if (!customer && !paymentConfirmed) {
       const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(" ").trim()
         || lead.email
         || "Pending customer";
