@@ -253,30 +253,6 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                 </OptionCard>
               </div>
 
-              {/* Trust badges */}
-              <div className="grid grid-cols-3 gap-2 rounded-xl border border-border p-3">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-success flex-shrink-0" />
-                  <div className="leading-tight">
-                    <p className="text-[13px] font-bold text-foreground">Easy</p>
-                    <p className="text-[11px] text-muted-foreground">claims</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <InfinityIcon className="w-5 h-5 text-success flex-shrink-0" />
-                  <div className="leading-tight">
-                    <p className="text-[13px] font-bold text-foreground">Unlimited</p>
-                    <p className="text-[11px] text-muted-foreground">claims</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-success flex-shrink-0" />
-                  <div className="leading-tight">
-                    <p className="text-[13px] font-bold text-foreground">Nationwide</p>
-                    <p className="text-[11px] text-muted-foreground">approved repairs</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>
