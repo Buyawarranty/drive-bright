@@ -78,7 +78,8 @@ export const BatchPolicyQueue: React.FC = () => {
   const [savedAt, setSavedAt] = useState<string | null>(() => {
     try { return localStorage.getItem(SAVED_AT_KEY); } catch { return null; }
   });
-  const [printMode, setPrintMode] = useState<'bw' | 'colour'>('bw');
+  // Letters must always print in colour — no black & white option.
+  const printMode: 'colour' = 'colour';
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<QueuedCustomer>>({});
   const [isSavingEdit, setIsSavingEdit] = useState(false);
@@ -473,7 +474,7 @@ ${rows}
     const printWindow = window.open('', '_blank');
     if (!printWindow) { alert('Allow pop-ups'); return; }
 
-    const isBW = printMode === 'bw';
+    const isBW = false;
     const letterPages = queue.map(c => buildLetterHTML(c, isBW)).join('');
 
     printWindow.document.write(`<!DOCTYPE html><html><head><title>Batch Letters</title><style>
