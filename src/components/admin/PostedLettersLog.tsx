@@ -761,7 +761,22 @@ export const PostedLettersLog: React.FC = () => {
             Letter Log
           </CardTitle>
           <div className="flex items-center gap-2">
-            {/* Bulk selection removed — use the single "Posted" tick per row */}
+            {selectedIds.size > 0 && (
+              <>
+                <span className="text-xs font-semibold text-foreground">{selectedIds.size} selected</span>
+                <Button
+                  size="sm"
+                  onClick={bulkMarkAsPosted}
+                  className="bg-green-600 hover:bg-green-700 text-white gap-1"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Confirm posted ({selectedEntries.filter(e => !e.marked_sent_by).length})
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())} className="gap-1">
+                  Clear
+                </Button>
+              </>
+            )}
             <div className="relative w-56">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
@@ -776,6 +791,7 @@ export const PostedLettersLog: React.FC = () => {
               CSV
             </Button>
           </div>
+
         </CardHeader>
         <CardContent>
           {isLoading ? (
