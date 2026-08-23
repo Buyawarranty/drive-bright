@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Lock, Shield, ArrowRight, Tag, Infinity as InfinityIcon, MapPin, ShieldCheck, CreditCard, ChevronDown } from 'lucide-react';
+import { Lock, ArrowRight, Tag, CreditCard, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
@@ -68,11 +68,9 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border lg:hidden">
         <div className="px-4 py-2.5 pb-[env(safe-area-inset-bottom,8px)]">
           <div className="flex items-center justify-center gap-3 text-[11px] text-muted-foreground">
-            <span className="flex items-center gap-1"><Shield className="w-3 h-3 text-success" />Instant cover</span>
-            <span>·</span>
             <span className="flex items-center gap-1"><Lock className="w-3 h-3 text-success" />Secure</span>
             <span>·</span>
-            <span className="flex items-center gap-1"><Shield className="w-3 h-3 text-success" />14-day refund</span>
+            <span className="flex items-center gap-1"><Lock className="w-3 h-3 text-success" />14-day refund</span>
           </div>
         </div>
       </div>
@@ -255,30 +253,6 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
                 </OptionCard>
               </div>
 
-              {/* Trust badges */}
-              <div className="grid grid-cols-3 gap-2 rounded-xl border border-border p-3">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-success flex-shrink-0" />
-                  <div className="leading-tight">
-                    <p className="text-[13px] font-bold text-foreground">Easy</p>
-                    <p className="text-[11px] text-muted-foreground">claims</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <InfinityIcon className="w-5 h-5 text-success flex-shrink-0" />
-                  <div className="leading-tight">
-                    <p className="text-[13px] font-bold text-foreground">Unlimited</p>
-                    <p className="text-[11px] text-muted-foreground">claims</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-success flex-shrink-0" />
-                  <div className="leading-tight">
-                    <p className="text-[13px] font-bold text-foreground">Nationwide</p>
-                    <p className="text-[11px] text-muted-foreground">approved repairs</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>
