@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { MessageCircle, X, Minus, Expand, Shrink } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { X, Minus, Expand, Shrink } from 'lucide-react';
 import SandboxChatWindow from '@/components/ai-sandbox/SandboxChatWindow';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
 import { loadGuestChatOpen, saveGuestChatOpen } from '@/components/ai-sandbox/guestChatStore';
+
 
 const TOKEN_KEY = 'baw_chat_guest_token';
 
@@ -46,6 +48,17 @@ export default function SiteChatWidget({
   const tokenRef = useRef<string | null>(null);
   if (tokenRef.current === null) tokenRef.current = getGuestToken();
 
+  // Never show the chat once the visitor is inside the quote journey (steps 2-4)
+  // or on checkout/cart pages — it sits over the call-to-action buttons there.
+  const location = useLocation();
+  const stepParam = new URLSearchParams(location.search).get('step') || '';
+  const stepNumber = parseInt(stepParam.replace(/[^0-9]/g, ''), 10);
+  const onQuoteStep = Number.isFinite(stepNumber) && stepNumber > 1;
+  const onCheckoutRoute = /\/(cart|checkout|warranty-plan|payment)/i.test(location.pathname);
+  const hidden = onQuoteStep || onCheckoutRoute;
+
+
+
   useEffect(() => {
     if (everOpened) return;
     const t = window.setTimeout(() => setShowNudge(true), 6000);
@@ -76,15 +89,17 @@ export default function SiteChatWidget({
     saveGuestChatOpen(false);
   };
 
+  if (hidden) return null;
+
   return (
     <>
-      {/* Launcher — closed state */}
+      {/* Launcher — closed state: small, discreet avatar bubble only */}
       {!open && (
-        <div className="fixed bottom-4 right-4 z-[60] flex items-end gap-2 sm:bottom-6 sm:right-6">
+        <div className="fixed bottom-4 right-4 z-40 flex items-end gap-2 sm:bottom-5 sm:right-5">
           {showNudge && (
             <button
               onClick={openChat}
-              className="mb-2 hidden max-w-[220px] rounded-2xl rounded-br-sm border border-border bg-background px-3 py-2 text-left text-sm shadow-lg sm:block"
+              className="mb-1 hidden max-w-[190px] rounded-2xl rounded-br-sm border border-border bg-background/95 px-3 py-1.5 text-left text-xs text-muted-foreground shadow-md sm:block"
             >
               {greeting}
             </button>
@@ -92,27 +107,21 @@ export default function SiteChatWidget({
           <button
             onClick={openChat}
             aria-label="Chat with Miles, our AI warranty assistant"
-            className="group flex items-center gap-3 rounded-full border-2 border-[#1F2A5B] bg-background py-2 pl-2 pr-5 shadow-xl transition-transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            className="group relative flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/90 opacity-80 shadow-md backdrop-blur transition-all hover:opacity-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <span className="relative shrink-0">
-              <span className="block h-12 w-12 overflow-hidden rounded-full ring-1 ring-border">
-                <img
-                  src={milesAvatar.url}
-                  alt="Miles the panda"
-                  width={48}
-                  height={48}
-                  className="h-full w-full scale-[1.35] object-cover object-center"
-                />
-              </span>
-              <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-background bg-green-500" />
+            <span className="block h-9 w-9 overflow-hidden rounded-full">
+              <img
+                src={milesAvatar.url}
+                alt="Miles the panda"
+                width={36}
+                height={36}
+                className="h-full w-full scale-[1.35] object-cover object-center"
+              />
             </span>
-            <span className="hidden text-left leading-tight sm:block">
-              <span className="block text-base font-bold text-foreground">Ask Miles</span>
-              <span className="block text-sm text-muted-foreground">AI assistant + live team</span>
-            </span>
-            <MessageCircle className="h-5 w-5 text-muted-foreground sm:hidden" />
+            <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-green-500" />
           </button>
         </div>
+
       )}
 
       {/* Chat panel — kept mounted after first open so minimising keeps history */}
