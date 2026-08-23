@@ -62,9 +62,8 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
 }) => {
   const printRef = useRef<HTMLDivElement>(null);
   // Letters must always print in colour — no black & white option.
-  const printMode: 'colour' = 'colour';
 
-  const isBW = printMode === 'bw';
+  const isBW = false;
 
   const c = {
     accent: isBW ? '#333' : '#eb4b00',
