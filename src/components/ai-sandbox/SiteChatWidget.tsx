@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MessageCircle, X, Minus, Expand, Shrink } from 'lucide-react';
 import SandboxChatWindow from '@/components/ai-sandbox/SandboxChatWindow';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
+import { loadGuestChatOpen, saveGuestChatOpen } from '@/components/ai-sandbox/guestChatStore';
 
 const TOKEN_KEY = 'baw_chat_guest_token';
 
@@ -36,8 +37,10 @@ export default function SiteChatWidget({
   source?: string;
   greeting?: string;
 }) {
-  const [open, setOpen] = useState(false);
-  const [everOpened, setEverOpened] = useState(false);
+  // If the visitor was mid-conversation and we sent them to another page
+  // (e.g. checkout step 3), re-open the panel with their transcript intact.
+  const [open, setOpen] = useState(() => loadGuestChatOpen());
+  const [everOpened, setEverOpened] = useState(() => loadGuestChatOpen());
   const [expanded, setExpanded] = useState(false);
   const [showNudge, setShowNudge] = useState(false);
   const tokenRef = useRef<string | null>(null);
@@ -65,6 +68,12 @@ export default function SiteChatWidget({
     setOpen(true);
     setEverOpened(true);
     setShowNudge(false);
+    saveGuestChatOpen(true);
+  };
+
+  const closeChat = () => {
+    setOpen(false);
+    saveGuestChatOpen(false);
   };
 
   return (
@@ -140,7 +149,7 @@ export default function SiteChatWidget({
               </p>
             </div>
             <button
-              onClick={() => setOpen(false)}
+              onClick={closeChat}
               aria-label="Minimise chat"
               className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
@@ -154,7 +163,7 @@ export default function SiteChatWidget({
               {expanded ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
             </button>
             <button
-              onClick={() => setOpen(false)}
+              onClick={closeChat}
               aria-label="Close chat"
               className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >

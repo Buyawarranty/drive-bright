@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { loadGuestMessages, saveGuestMessages } from '@/components/ai-sandbox/guestChatStore';
 import {
   Conversation,
   ConversationContent,
@@ -479,7 +480,9 @@ export function SandboxChatWindow({
   const isGuest = Boolean(guestToken);
   const chatId = threadId || `guest-${guestToken}`;
 
-  const [initialMessages, setInitialMessages] = useState<UIMessage[] | null>(isGuest ? [] : null);
+  const [initialMessages, setInitialMessages] = useState<UIMessage[] | null>(() =>
+    isGuest && guestToken ? loadGuestMessages(guestToken) : null,
+  );
   const [handover, setHandover] = useState<Handover | null>(null);
   const [agentMode, setAgentMode] = useState(false);
   const composerRef = useRef<HTMLDivElement | null>(null);
@@ -566,6 +569,14 @@ export function SandboxChatWindow({
       loadHandover();
     },
   });
+
+  // Website visitors keep their transcript across page navigations (e.g. the
+  // "Continue to checkout" hand-off to step 3).
+  useEffect(() => {
+    if (!isGuest || !guestToken) return;
+    if (status === 'streaming') return;
+    saveGuestMessages(guestToken, messages);
+  }, [isGuest, guestToken, messages, status]);
 
   useEffect(() => {
     if (!autoFocus) return;

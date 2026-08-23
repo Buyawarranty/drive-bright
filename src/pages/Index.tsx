@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback, useMemo, lazy, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense, useRef } from 'react';
 import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -66,6 +66,7 @@ const CompactProgressBar = lazyWithRetry(() => import('@/components/CompactProgr
 const CarJourneyProgress = lazyWithRetry(() => import('@/components/CarJourneyProgress'));
 const CustomerDetailsStep = lazyWithRetry(() => import('@/components/CustomerDetailsStep'));
 const MaintenanceBanner = lazyWithRetry(() => import('@/components/MaintenanceBanner'));
+const SiteChatWidget = lazyWithRetry(() => import('@/components/ai-sandbox/SiteChatWidget'));
 
 
 
@@ -1725,6 +1726,11 @@ const Index = () => {
         journeyName="warranty journey"
       />
       
+      {/* Miles chat — stays available so a chat hand-off to this cart keeps the conversation */}
+      <Suspense fallback={null}>
+        <SiteChatWidget source="cart" greeting="Hi — any questions about your price?" />
+      </Suspense>
+
       {/* ScrollToTopButton removed */}
       
       
