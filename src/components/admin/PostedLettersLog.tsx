@@ -285,20 +285,38 @@ export const PostedLettersLog: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
 
-  // Load log entries
+  // Load log entries. The table view is capped at the latest 500 rows, so the
+  // headline totals are counted server-side — never derived from the capped page.
   const fetchLog = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from('posted_letters_log')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(500);
+    const [{ data, error }, totalRes, sentRes] = await Promise.all([
+      supabase
+        .from('posted_letters_log')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(500),
+      supabase
+        .from('posted_letters_log')
+        .select('id', { count: 'exact', head: true }),
+      supabase
+        .from('posted_letters_log')
+        .select('id', { count: 'exact', head: true })
+        .not('marked_sent_by', 'is', null),
+    ]);
 
     if (!error && data) {
       setLogEntries(data as PostedLetterEntry[]);
     } else if (error) {
       console.error('Error fetching posted letters log:', error);
     }
+
+    const total = totalRes.count ?? null;
+    const sent = sentRes.count ?? null;
+    setTotals({
+      total,
+      sent,
+      pending: total != null && sent != null ? total - sent : null,
+    });
     setIsLoading(false);
   };
 
