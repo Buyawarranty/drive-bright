@@ -132,7 +132,24 @@ function rowsToUIMessages(
   });
 }
 
+// Chat-app style time stamp under each bubble. Read messages get a double tick
+// on the customer's own side, exactly like a messaging app.
+function MessageStamp({ side, time, read }: { side: 'left' | 'right'; time: Date; read?: boolean }) {
+  const label = time.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  return (
+    <div
+      className={`mt-1 flex items-center gap-1 text-[11px] text-muted-foreground ${
+        side === 'right' ? 'justify-end pr-1' : 'pl-11'
+      }`}
+    >
+      <span>{label}</span>
+      {read && <CheckCheck className="h-3.5 w-3.5 text-primary" />}
+    </div>
+  );
+}
+
 function SenderLabel({ sender }: { sender: Sender }) {
+
   if (sender === 'customer') return null;
   if (sender === 'agent') {
     return (
