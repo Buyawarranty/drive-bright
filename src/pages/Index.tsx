@@ -1728,7 +1728,7 @@ const Index = () => {
       
       {/* Miles chat — stays available so a chat hand-off to this cart keeps the conversation */}
       <Suspense fallback={null}>
-        <SiteChatWidget source="cart" greeting="Hi — any questions about your price?" />
+        <SiteChatWidget source="cart" greeting="Hi - need any help?" />
       </Suspense>
 
       {/* ScrollToTopButton removed */}
