@@ -761,6 +761,17 @@ export const PostedLettersLog: React.FC = () => {
             Letter Log
           </CardTitle>
           <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={toggleSelectAll}
+              disabled={filteredEntries.length === 0}
+              className="gap-1"
+              title={selectedIds.size === filteredEntries.length && filteredEntries.length > 0 ? 'Deselect all' : 'Select all visible entries'}
+            >
+              <ListChecks className="h-3.5 w-3.5" />
+              {selectedIds.size === filteredEntries.length && filteredEntries.length > 0 ? 'Deselect all' : 'Select all'}
+            </Button>
             {selectedIds.size > 0 && (
               <>
                 <span className="text-xs font-semibold text-foreground">{selectedIds.size} selected</span>
