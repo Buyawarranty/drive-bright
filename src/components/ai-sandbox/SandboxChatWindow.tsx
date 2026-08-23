@@ -479,7 +479,9 @@ export function SandboxChatWindow({
   const isGuest = Boolean(guestToken);
   const chatId = threadId || `guest-${guestToken}`;
 
-  const [initialMessages, setInitialMessages] = useState<UIMessage[] | null>(isGuest ? [] : null);
+  const [initialMessages, setInitialMessages] = useState<UIMessage[] | null>(() =>
+    isGuest && guestToken ? loadGuestMessages(guestToken) : null,
+  );
   const [handover, setHandover] = useState<Handover | null>(null);
   const [agentMode, setAgentMode] = useState(false);
   const composerRef = useRef<HTMLDivElement | null>(null);
