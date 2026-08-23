@@ -106,8 +106,8 @@ export function CallMeBackPanel({
         </p>
         <p className="mt-1 leading-relaxed">
           {open
-            ? `A UK specialist will ring you ${whenLabel}. Have any competitor quote handy — we'll beat it.`
-            : `We're closed right now, so you're first in the queue ${whenLabel} (${openingHoursLabel}).`}
+            ? `A UK warranty specialist will ring you ${whenLabel}. Have any competitor quote handy — we'll beat it.`
+            : `A warranty specialist will be back ${nextOpeningLabel()} and you're first in the queue (${openingHoursLabel}).`}
         </p>
       </div>
     );
