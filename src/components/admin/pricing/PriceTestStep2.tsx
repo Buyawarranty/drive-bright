@@ -500,12 +500,14 @@ export default function PriceTestStep2({
     [term.period, term.months],
   );
 
-  // Keep the excess valid the way Step 3 does when the term or claim limit changes.
+  // Keep the excess valid the way Step 3 does when the term or claim limit changes:
+  // only the price-bracket rule may force a change, never the floor-clamp filter.
   useEffect(() => {
-    if (!visibleExcesses.includes(excess)) {
-      setExcess(visibleExcesses.includes(150) ? 150 : visibleExcesses[0] ?? 100);
+    if (!journeyExcesses.includes(excess)) {
+      setExcess(journeyExcesses.includes(150) ? 150 : journeyExcesses[0] ?? 100);
     }
-  }, [visibleExcesses, excess]);
+  }, [journeyExcesses, excess]);
+
 
 
   function resetAll() {
@@ -766,7 +768,11 @@ export default function PriceTestStep2({
               <Label className="mb-2 block">Excess Amount</Label>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {JOURNEY_EXCESS_OPTIONS.map(e => {
-                  const allowed = visibleExcesses.includes(e.value);
+                  // Selectable = exactly the live journey rule (price bracket only).
+                  // Tiers that clamp on the floor stay selectable, flagged instead of
+                  // hidden, so the test replica matches Step 3/4 option by option.
+                  const allowed = journeyExcesses.includes(e.value);
+                  const clamped = allowed && !visibleExcesses.includes(e.value);
                   const delta = getExcessMonthlyDelta(term.period as PaymentPeriod, e.value);
                   return (
                     <OptionTile
@@ -775,18 +781,27 @@ export default function PriceTestStep2({
                       onClick={() => allowed && setExcess(e.value)}
                       disabled={!allowed}
                       title={e.label}
-                      subtitle={allowed ? e.description : 'Only on warranties over £500'}
+                      subtitle={
+                        allowed
+                          ? clamped
+                            ? 'At the minimum price'
+                            : e.description
+                          : 'Unlocks on warranties over £500'
+                      }
                       note={
                         allowed
-                          ? delta === 0
-                            ? 'baseline'
-                            : `${delta > 0 ? '+' : '−'}£${Math.abs(delta)}/mo`
+                          ? clamped
+                            ? 'no saving'
+                            : delta === 0
+                              ? 'baseline'
+                              : `${delta > 0 ? '+' : '−'}£${Math.abs(delta)}/mo`
                           : undefined
                       }
                     />
                   );
                 })}
               </div>
+
               <p className="mt-1 text-xs text-muted-foreground">
                 Lower excess = higher monthly cost. Each tier is a flat £/mo difference vs the £100
                 “Balanced” baseline, and £250/£500 only unlock on warranties of £500+ — exactly as on
