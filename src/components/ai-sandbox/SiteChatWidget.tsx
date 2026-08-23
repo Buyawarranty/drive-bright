@@ -68,6 +68,12 @@ export default function SiteChatWidget({
     setOpen(true);
     setEverOpened(true);
     setShowNudge(false);
+    saveGuestChatOpen(true);
+  };
+
+  const closeChat = () => {
+    setOpen(false);
+    saveGuestChatOpen(false);
   };
 
   return (
