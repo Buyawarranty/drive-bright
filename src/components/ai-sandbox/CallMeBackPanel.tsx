@@ -28,6 +28,8 @@ export function CallMeBackPanel({
   quotedPrice,
   compact = false,
   asChip = false,
+  liveAgentAvailable = false,
+  onConnectLiveAgent,
 }: {
   guestToken?: string;
   threadId?: string;
@@ -37,6 +39,10 @@ export function CallMeBackPanel({
   compact?: boolean;
   /** Render the idle state as a small one-line chip (for the top action row). */
   asChip?: boolean;
+  /** True when the team is open and a specialist is signed in right now. */
+  liveAgentAvailable?: boolean;
+  /** Called after a booking when a specialist is online, so the visitor is put through. */
+  onConnectLiveAgent?: () => void;
 }) {
   const [step, setStep] = useState<Step>('closed');
   const [collapsed, setCollapsed] = useState(true);
