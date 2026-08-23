@@ -9,7 +9,6 @@ import MileageQuickSelect from './MileageQuickSelect';
 import { getVehicleIdentificationGap, type VehicleIdGap } from '@/lib/vehicleIdentification';
 import VehicleNotRecognisedCard from '@/components/quote/VehicleNotRecognisedCard';
 import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
-import { SALES_PHONE } from '@/constants/contact';
 
 interface QuoteFormInlineProps {
   vehicleType?: string; // 'car' | 'van' | 'motorcycle'
