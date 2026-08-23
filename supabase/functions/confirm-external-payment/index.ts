@@ -488,14 +488,39 @@ serve(async (req) => {
         matchedLead = data as any;
       }
 
-      if (matchedLead?.id) {
-        await supabase.functions.invoke('send-agent-sale-notification', {
-          body: { leadId: matchedLead.id, agentId: assigneeId || matchedLead.assigned_to || null },
-        });
-        logStep('Agent sale notification sent after payment confirmation', { leadId: matchedLead.id });
-      } else {
-        logStep('No matching lead found for agent sale notification');
-      }
+      // Managers get the full sale email on EVERY confirmed payment, with or
+      // without a matching lead — subject reads "Confirmed payment".
+      await supabase.functions.invoke('send-agent-sale-notification', {
+        body: {
+          leadId: matchedLead?.id ?? null,
+          agentId: assigneeId || matchedLead?.assigned_to || null,
+          paymentConfirmed: true,
+          customerId,
+          paymentSource,
+          address: skipAddressDetails ? null : address,
+          customerOverride: {
+            firstName: customerFirstName,
+            lastName: customerLastName,
+            email: customerEmail,
+            phone: customerPhone,
+            vehicleReg,
+            vehicleMake,
+            vehicleModel,
+            vehicleYear,
+            mileage,
+            planType: 'Platinum',
+            paymentType,
+            claimLimit,
+            voluntaryExcess: excessAmount,
+            labourRate,
+            durationMonths,
+            finalAmount,
+            warrantyNumber: typeof warrantyNumber !== 'undefined' ? warrantyNumber : undefined,
+            leadSource: matchedLead ? undefined : 'phone',
+          },
+        },
+      });
+      logStep('Confirmed-payment sale notification sent', { leadId: matchedLead?.id ?? null });
     } catch (notifyErr) {
       logStep('Warning: agent sale notification failed', notifyErr);
     }
