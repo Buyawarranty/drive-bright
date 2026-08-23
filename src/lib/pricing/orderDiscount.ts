@@ -41,10 +41,19 @@ export const getRecordedOrderDiscount = (
 
   const paid = Number(order.final_amount) || 0;
   const storedDiscount = Number(order.discount_amount) || 0;
-  const storedOriginal = Number(order.original_amount) || 0;
+  const storedOriginalRaw = Number(order.original_amount) || 0;
   const saleQuoted = Number(order.sale_quoted_total) || 0;
 
-  // Prefer the quote recorded at the point of sale, then the legacy original amount,
+  // Externally confirmed payments (bank transfer, Stripe dashboard, Bumper,
+  // Payment Assist…) often had the amount COLLECTED copied into original_amount.
+  // That is the agent's own figure, not the price the pricing logic quoted on the
+  // day, so treating it as the quote invents a "No discount given" record. Only
+  // trust original_amount when it is a genuinely higher quoted price.
+  const originalIsMirroredPaid =
+    storedOriginalRaw > 0 && paid > 0 && Math.abs(storedOriginalRaw - paid) <= 0.5;
+  const storedOriginal = originalIsMirroredPaid ? 0 : storedOriginalRaw;
+
+  // Prefer the quote recorded at the point of sale, then a real original amount,
   // otherwise rebuild it from paid + discount.
   const quoted =
     saleQuoted > 0
