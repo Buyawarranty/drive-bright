@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback, useMemo, lazy, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense, useRef } from 'react';
 import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
