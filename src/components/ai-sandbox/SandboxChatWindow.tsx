@@ -995,7 +995,13 @@ export function SandboxChatWindow({
                   })}
                 </MessageContent>
               </Message>
+              <MessageStamp
+                side={message.role === 'user' ? 'right' : 'left'}
+                time={stampFor(message.id)}
+                read={message.role === 'user'}
+              />
               </div>
+
             );
 
           })}
