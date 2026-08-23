@@ -302,7 +302,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
     // Empty or clearly malformed registration → format guidance
     // Accepts current-style (AB12CDE), prefix/suffix and dateless plates.
-    const UK_REG_PATTERN = /^(?:[A-Z]{2}[0-9]{2}[A-Z]{3}|[A-Z][0-9]{1,3}[A-Z]{3}|[A-Z]{3}[0-9]{1,3}[A-Z]?|[0-9]{1,4}[A-Z]{1,3}|[A-Z]{1,3}[0-9]{1,4})$/;
+
     if (!cleanedReg || !UK_REG_PATTERN.test(cleanedReg)) {
       showRegError('format');
       return;
