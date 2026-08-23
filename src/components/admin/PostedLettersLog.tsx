@@ -761,7 +761,22 @@ export const PostedLettersLog: React.FC = () => {
             Letter Log
           </CardTitle>
           <div className="flex items-center gap-2">
-            {/* Bulk selection removed — use the single "Posted" tick per row */}
+            {selectedIds.size > 0 && (
+              <>
+                <span className="text-xs font-semibold text-foreground">{selectedIds.size} selected</span>
+                <Button
+                  size="sm"
+                  onClick={bulkMarkAsPosted}
+                  className="bg-green-600 hover:bg-green-700 text-white gap-1"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Confirm posted ({selectedEntries.filter(e => !e.marked_sent_by).length})
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())} className="gap-1">
+                  Clear
+                </Button>
+              </>
+            )}
             <div className="relative w-56">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
@@ -776,6 +791,7 @@ export const PostedLettersLog: React.FC = () => {
               CSV
             </Button>
           </div>
+
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -787,7 +803,15 @@ export const PostedLettersLog: React.FC = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-left">
+                    <th className="py-2 px-2 font-medium text-muted-foreground w-8">
+                      <Checkbox
+                        checked={filteredEntries.length > 0 && selectedIds.size === filteredEntries.length}
+                        onCheckedChange={toggleSelectAll}
+                        title="Select all / none"
+                      />
+                    </th>
                     <th className="py-2 px-2 font-medium text-muted-foreground w-40">Posted?</th>
+
                     <th className="py-2 px-2 font-medium text-muted-foreground">Date</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Type</th>
                     <th className="py-2 px-2 font-medium text-muted-foreground">Reg Plate</th>
@@ -803,12 +827,20 @@ export const PostedLettersLog: React.FC = () => {
                     <React.Fragment key={entry.id}>
                       {idx === firstPostedIndex && idx > 0 && (
                         <tr className="bg-gradient-to-r from-green-100 via-green-50 to-green-100">
-                          <td colSpan={9} className="py-2 px-3 text-xs font-bold text-green-800 uppercase tracking-wider text-center border-y-2 border-green-500">
+                          <td colSpan={10} className="py-2 px-3 text-xs font-bold text-green-800 uppercase tracking-wider text-center border-y-2 border-green-500">
                             ── Already posted below this line ({filteredEntries.length - firstPostedIndex}) ──
                           </td>
                         </tr>
                       )}
                       <tr className={`border-b hover:bg-muted/30 transition-colors ${entry.marked_sent_by ? 'bg-green-50/50' : 'bg-amber-50/60'}`}>
+                      <td className="py-2 px-2">
+                        <Checkbox
+                          checked={selectedIds.has(entry.id)}
+                          onCheckedChange={() => toggleSelect(entry.id)}
+                          title="Select for bulk confirm"
+                        />
+                      </td>
+
                       <td className="py-2 px-2">
                         <label className="flex items-center gap-2 cursor-pointer select-none">
                           <Checkbox
