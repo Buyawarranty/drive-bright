@@ -638,8 +638,12 @@ export const PostedLettersLog: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const sentCount = logEntries.filter(e => e.marked_sent_by).length;
-  const pendingCount = logEntries.filter(e => !e.marked_sent_by).length;
+  // Real register-wide counts (server-side). Fall back to the loaded page only
+  // while the counts are still in flight.
+  const totalCount = totals.total ?? logEntries.length;
+  const sentCount = totals.sent ?? logEntries.filter(e => e.marked_sent_by).length;
+  const pendingCount = totals.pending ?? logEntries.filter(e => !e.marked_sent_by).length;
+  const isCapped = totals.total != null && totals.total > logEntries.length;
 
   return (
     <div className="space-y-6 mt-8">
