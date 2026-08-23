@@ -232,11 +232,10 @@ export default function AiSandbox() {
         <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2.5">
           <h1 className="text-sm font-semibold">Miles — customer assistant (sandbox)</h1>
           <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant={meOnline ? 'default' : 'outline'}
-              className="h-7 px-2 text-xs"
-              onClick={() => setOnDuty(!meOnline, displayName)}
+            <div
+              className={`flex items-center gap-2 rounded-full border px-2.5 py-1 ${
+                meOnline ? 'border-primary/40 bg-primary/10' : 'border-border bg-muted'
+              }`}
               title={
                 withinHours
                   ? "Customers see 'a specialist is online now' while you are on duty"
@@ -245,15 +244,21 @@ export default function AiSandbox() {
                     : 'Live chat is only available Mon–Sat, 9am–6pm (UK time)'
               }
             >
-              <Headset className="mr-1.5 h-3.5 w-3.5" />
-              {meOnline
-                ? withinHours
-                  ? 'On duty for live chats'
-                  : 'On duty (manager override)'
-                : !withinHours && canOverrideHours
-                  ? 'Go on duty (override hours)'
-                  : 'Go on duty'}
-            </Button>
+              <Headset className={`h-3.5 w-3.5 ${meOnline ? 'text-primary' : 'text-muted-foreground'}`} />
+              <Label htmlFor="on-duty-switch" className="cursor-pointer text-xs font-medium">
+                {meOnline ? 'On duty' : 'Off duty'}
+              </Label>
+              <Switch
+                id="on-duty-switch"
+                checked={meOnline}
+                onCheckedChange={(next) => setOnDuty(next, displayName)}
+                aria-label="On duty for live chats"
+              />
+              {!withinHours && canOverrideHours && (
+                <span className="text-[10px] text-muted-foreground">override</span>
+              )}
+            </div>
+
             {liveCount > 0 && (
               <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-700">
                 <span className="relative flex h-2 w-2">
