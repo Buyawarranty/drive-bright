@@ -67,6 +67,9 @@ interface HomepageProps {
   onRegistrationSubmit: (vehicleData: VehicleData) => void;
 }
 
+// Accepts current-style (AB12CDE), prefix/suffix and dateless plates.
+const UK_REG_PATTERN = /^(?:[A-Z]{2}[0-9]{2}[A-Z]{3}|[A-Z][0-9]{1,3}[A-Z]{3}|[A-Z]{3}[0-9]{1,3}[A-Z]?|[0-9]{1,4}[A-Z]{1,3}|[A-Z]{1,3}[0-9]{1,4})$/;
+
 const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -173,13 +176,17 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     };
   }, []);
 
+  // Plates are letters and digits only — quietly drop anything else the
+  // customer types or pastes (punctuation, symbols, emoji) instead of
+  // showing them a plate like "LK13 .::".
   const formatRegNumber = (value: string) => {
-    const formatted = value.replace(/\s/g, '').toUpperCase();
+    const formatted = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
     if (formatted.length > 3) {
       return formatted.slice(0, -3) + ' ' + formatted.slice(-3);
     }
     return formatted;
   };
+
 
   const handleRegChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatRegNumber(e.target.value);
@@ -298,7 +305,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
     // Empty or clearly malformed registration → format guidance
     // Accepts current-style (AB12CDE), prefix/suffix and dateless plates.
-    const UK_REG_PATTERN = /^(?:[A-Z]{2}[0-9]{2}[A-Z]{3}|[A-Z][0-9]{1,3}[A-Z]{3}|[A-Z]{3}[0-9]{1,3}[A-Z]?|[0-9]{1,4}[A-Z]{1,3}|[A-Z]{1,3}[0-9]{1,4})$/;
+
     if (!cleanedReg || !UK_REG_PATTERN.test(cleanedReg)) {
       showRegError('format');
       return;
@@ -679,11 +686,12 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                       maxLength={8}
                     />
                   </div>
-                  {regNumber.replace(/\s/g, '').length >= 5 && !regError && (
-                    <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1 shadow-md" aria-label="Registration entered">
+                  {UK_REG_PATTERN.test(regNumber.replace(/\s/g, '').toUpperCase()) && !regError && (
+                    <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1 shadow-md" aria-label="Registration looks valid">
                       <Check className="w-4 h-4 text-white" strokeWidth={4} />
                     </div>
                   )}
+
                 </div>
 
                 <p className="text-sm text-gray-500 text-center">
