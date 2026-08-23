@@ -527,7 +527,17 @@ ${rows}
             )}
           </CardTitle>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground border rounded-lg px-2 py-1">Colour print</span>
+            <label className="flex items-center gap-2 text-xs border rounded-lg px-2 py-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                className="h-3.5 w-3.5"
+                checked={bwPrint}
+                onChange={(e) => setBwPrint(e.target.checked)}
+              />
+              <span className={bwPrint ? 'font-semibold' : 'text-muted-foreground'}>
+                {bwPrint ? 'Black & white' : 'Colour print (default)'}
+              </span>
+            </label>
 
             {queue.length > 0 && (
               <>
