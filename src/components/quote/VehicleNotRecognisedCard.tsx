@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, PhoneCall, ShieldAlert, Clock, CheckCircle2, Loader2 } from 'lucide-react';
+import { Phone, PhoneCall, ShieldAlert, ShieldCheck, Clock, CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SALES_PHONE, SALES_PHONE_TEL } from '@/constants/contact';
@@ -30,7 +30,8 @@ const validateUKPhone = (phoneNumber: string) => {
  *
  * Opening hours (Mon–Sat, 9am–6pm UK) drive the call to action: in hours we
  * lead with the phone number, out of hours we lead with a callback request and
- * let the customer leave their number there and then.
+ * let the customer leave their number there and then. Either way the number
+ * creates a new lead for the sales team.
  */
 const VehicleNotRecognisedCard: React.FC<VehicleNotRecognisedCardProps> = ({
   gap,
@@ -99,26 +100,27 @@ const VehicleNotRecognisedCard: React.FC<VehicleNotRecognisedCardProps> = ({
   };
 
   return (
-    <div className="space-y-3 rounded-2xl border-2 border-[#F0A500] bg-[#FFF8E5] p-4 text-left animate-fade-in">
+    <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 text-left shadow-sm animate-fade-in">
       <div className="flex items-start gap-3">
-        <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-white ring-1 ring-[#F0D6A0]">
-          <ShieldAlert className="h-4 w-4 text-[#B07A00]" strokeWidth={2.5} />
+        <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-orange-50">
+          <ShieldAlert className="h-5 w-5 text-brand-orange" strokeWidth={2.5} />
         </span>
         <div>
-          <p className="text-base font-bold text-[#7A5A00]">{headline}</p>
-          <p className="mt-1 text-sm text-[#8A6A1F] leading-relaxed">{detail}</p>
+          <p className="text-base sm:text-lg font-bold text-brand-blue">{headline}</p>
+          <p className="mt-1 text-sm text-gray-500 leading-relaxed">{detail}</p>
           {regNumber && (
-            <p className="mt-1 text-xs font-semibold text-[#8A6A1F]">
-              Registration entered: {regNumber.toUpperCase()}
+            <p className="mt-1 text-sm text-gray-500">
+              Registration entered:{' '}
+              <span className="font-bold text-brand-blue">{regNumber.toUpperCase()}</span>
             </p>
           )}
         </div>
       </div>
 
       {submitted ? (
-        <div className="flex items-start gap-2 rounded-xl border border-[#B07A00]/40 bg-white p-3">
+        <div className="flex items-start gap-2 rounded-xl border border-green-200 bg-green-50 p-3">
           <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" strokeWidth={2.5} />
-          <p className="text-sm font-semibold text-[#7A5A00]">
+          <p className="text-sm font-semibold text-green-800">
             Got it — a warranty specialist will call you {isOpenNow ? 'shortly' : nextOpeningLabel()} to confirm your
             vehicle and give you the price.
           </p>
@@ -126,25 +128,17 @@ const VehicleNotRecognisedCard: React.FC<VehicleNotRecognisedCardProps> = ({
       ) : (
         <>
           {isOpenNow ? (
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button asChild className="flex-1 bg-brand-orange hover:bg-orange-700 text-white font-bold">
-                <a href={SALES_PHONE_TEL} className="flex items-center justify-center gap-2">
-                  <Phone className="h-4 w-4" strokeWidth={2.5} />
-                  Call {SALES_PHONE}
-                </a>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onRequestCallback}
-                className="flex-1 border-[#B07A00] text-[#7A5A00] hover:bg-[#FFF1CC] font-bold"
-              >
-                <PhoneCall className="h-4 w-4 mr-2" strokeWidth={2.5} />
-                Request a callback
-              </Button>
-            </div>
+            <Button
+              asChild
+              className="h-12 w-full rounded-xl bg-brand-orange text-base font-bold text-white hover:bg-orange-700"
+            >
+              <a href={SALES_PHONE_TEL} className="flex items-center justify-center gap-2">
+                <Phone className="h-5 w-5" strokeWidth={2.5} />
+                Call {SALES_PHONE}
+              </a>
+            </Button>
           ) : (
-            <p className="flex items-center gap-2 text-sm font-semibold text-[#7A5A00]">
+            <p className="flex items-center gap-2 text-sm font-semibold text-brand-blue">
               <Clock className="h-4 w-4 flex-shrink-0" strokeWidth={2.5} />
               We're closed right now — leave your number and we'll call you {nextOpeningLabel()}.
             </p>
@@ -162,15 +156,15 @@ const VehicleNotRecognisedCard: React.FC<VehicleNotRecognisedCardProps> = ({
                 setPhone(e.target.value.replace(/\D/g, '').slice(0, 11));
                 if (error) setError('');
               }}
-              className="flex-1 h-11 bg-white border-[#B07A00]/50 text-[#5A4200] placeholder:text-[#A08850]"
+              className="h-12 flex-1 rounded-xl border-gray-300 bg-white text-brand-blue placeholder:text-gray-400"
             />
             <Button
               type="submit"
               disabled={submitting}
               className={
                 isOpenNow
-                  ? 'h-11 border border-[#B07A00] bg-white text-[#7A5A00] hover:bg-[#FFF1CC] font-bold'
-                  : 'h-11 bg-brand-orange hover:bg-orange-700 text-white font-bold'
+                  ? 'h-12 rounded-xl border-2 border-gray-200 bg-white font-bold text-brand-blue hover:bg-gray-50'
+                  : 'h-12 rounded-xl bg-brand-orange font-bold text-white hover:bg-orange-700'
               }
             >
               {submitting ? (
@@ -184,19 +178,28 @@ const VehicleNotRecognisedCard: React.FC<VehicleNotRecognisedCardProps> = ({
             </Button>
           </form>
           {error && <p className="text-xs font-semibold text-red-600">{error}</p>}
+          {onRequestCallback && (
+            <button
+              type="button"
+              onClick={onRequestCallback}
+              className="text-xs font-semibold text-brand-blue underline"
+            >
+              Prefer to give us more details? Request a callback
+            </button>
+          )}
         </>
       )}
 
-      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#8A6A1F]">
-        <span className="inline-flex items-center gap-1">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-gray-100 pt-3 text-xs text-gray-500">
+        <span className="inline-flex items-center gap-1.5">
           <Clock className="h-3.5 w-3.5" strokeWidth={2.5} />
           {openingHoursLabel}
         </span>
-        <span aria-hidden="true">•</span>
-        <span>
-          Northern Ireland plates and brand-new or imported vehicles sometimes need a quick manual check.
+        <span className="inline-flex items-center gap-1.5">
+          <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.5} />
+          Quick and secure
         </span>
-      </p>
+      </div>
     </div>
   );
 };
