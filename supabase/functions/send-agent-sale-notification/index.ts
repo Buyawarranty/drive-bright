@@ -25,22 +25,56 @@ serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { leadId, agentId } = await req.json();
+    const body = await req.json();
+    const {
+      leadId,
+      agentId,
+      // Set by Confirm External Payment: the money is already verified, so the
+      // email must be the full sale email with "Confirmed payment" in the subject.
+      paymentConfirmed = false,
+      customerId = null,
+      paymentSource = null,
+      address = null,
+      // Used when no lead exists for the sale (walk-in / phone sale confirmed
+      // straight through Confirm External Payment).
+      customerOverride = null,
+    } = body ?? {};
 
-    if (!leadId) {
-      throw new Error("leadId is required");
+    if (!leadId && !customerId && !customerOverride) {
+      throw new Error("leadId, customerId or customerOverride is required");
     }
 
-    // Fetch lead details
-    const { data: lead, error: leadError } = await supabase
-      .from("sales_leads")
-      .select("*")
-      .eq("id", leadId)
-      .maybeSingle();
+    // Fetch lead details (optional — confirmed payments may have no lead row)
+    let lead: any = null;
+    if (leadId) {
+      const { data, error: leadError } = await supabase
+        .from("sales_leads")
+        .select("*")
+        .eq("id", leadId)
+        .maybeSingle();
+      if (leadError) console.error("Lead lookup failed:", leadError);
+      lead = data;
+    }
 
-    if (leadError || !lead) {
-      console.error("Lead not found:", leadError);
-      throw new Error("Lead not found");
+    if (!lead) {
+      // Synthesise the minimum lead shape from the confirmation payload so the
+      // whole template below keeps working.
+      const o = customerOverride ?? {};
+      lead = {
+        id: null,
+        first_name: o.firstName ?? null,
+        last_name: o.lastName ?? null,
+        email: o.email ?? null,
+        phone: o.phone ?? null,
+        vehicle_reg: o.vehicleReg ?? null,
+        vehicle_make: o.vehicleMake ?? null,
+        vehicle_model: o.vehicleModel ?? null,
+        vehicle_year: o.vehicleYear ?? null,
+        plan_interest: o.planType ?? null,
+        lead_source: o.leadSource ?? "phone",
+        created_at: null,
+        assigned_to: agentId ?? null,
+      };
     }
 
     // Fetch agent details
@@ -69,7 +103,13 @@ serve(async (req: Request) => {
     const customerSelect = "*, name, first_name, last_name, plan_type, final_amount, payment_type, registration_plate, vehicle_make, vehicle_model, phone, email, claim_limit, voluntary_excess, labour_rate";
 
     let customer: any = null;
-    if (lead.email) {
+    if (customerId) {
+      const { data } = await supabase
+        .from("customers").select(customerSelect)
+        .eq("id", customerId).maybeSingle();
+      customer = data;
+    }
+    if (!customer && lead.email) {
       const { data } = await supabase
         .from("customers").select(customerSelect)
         .ilike("email", lead.email)
@@ -94,7 +134,7 @@ serve(async (req: Request) => {
     // If no customer record exists yet, auto-create a pending stub so the sale
     // shows up in the Customers tab with the ⏳ Confirm Payment button for a
     // manager to verify once payment lands.
-    if (!customer) {
+    if (!customer && !paymentConfirmed) {
       const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(" ").trim()
         || lead.email
         || "Pending customer";
@@ -145,20 +185,41 @@ serve(async (req: Request) => {
       ? (customer.name || [customer.first_name, customer.last_name].filter(Boolean).join(" ") || "").trim()
       : "";
 
-    const regPlate = lead.vehicle_reg || customer?.registration_plate || "Unknown";
-    const planName = lead.plan_interest || customer?.plan_type || policy?.plan_type || "Pending review";
-    const saleValue = customer?.final_amount || policy?.payment_amount || lead.cart_value || lead.quote_amount;
-    const isPaymentPending = !customer?.payment_verified;
+    const o = customerOverride ?? {};
+    const regPlate = lead.vehicle_reg || customer?.registration_plate || o.vehicleReg || "Unknown";
+    const planName = lead.plan_interest || customer?.plan_type || policy?.plan_type || o.planType || "Pending review";
+    const saleValue = customer?.final_amount || policy?.payment_amount || o.finalAmount || lead.cart_value || lead.quote_amount;
+    const isPaymentPending = paymentConfirmed ? false : !customer?.payment_verified;
     const saleValueDisplay = saleValue ? `£${Number(saleValue).toFixed(2)}` : "Amount TBC";
-    const paymentType = customer?.payment_type || policy?.payment_type || "Pending payment confirmation";
-    const warrantyNumber = policy?.warranty_number || "Pending";
-    const customerName = leadFullName || customerFullName || "Not provided";
-    const customerEmail = lead.email || customer?.email || "Not provided";
-    const customerPhone = lead.phone || customer?.phone || "Not provided";
-    const claimLimitDisplay = customer?.claim_limit ? `£${Number(customer.claim_limit).toLocaleString()}` : "Not set";
-    const excessDisplay = customer?.voluntary_excess != null ? `£${Number(customer.voluntary_excess).toFixed(2)}` : "Not set";
-    const labourRateDisplay = customer?.labour_rate ? `£${Number(customer.labour_rate).toFixed(2)}/hr` : "Not set";
-    const durationDisplay = durationLabel(customer?.duration_months, customer?.payment_type, policy?.payment_type, planName);
+    const paymentType = customer?.payment_type || policy?.payment_type || o.paymentType || "Pending payment confirmation";
+    const warrantyNumber = policy?.warranty_number || o.warrantyNumber || "Pending";
+    const customerName = leadFullName || customerFullName || [o.firstName, o.lastName].filter(Boolean).join(" ") || "Not provided";
+    const customerEmail = lead.email || customer?.email || o.email || "Not provided";
+    const customerPhone = lead.phone || customer?.phone || o.phone || "Not provided";
+    const claimLimitRaw = customer?.claim_limit ?? o.claimLimit;
+    const excessRaw = customer?.voluntary_excess ?? o.voluntaryExcess;
+    const labourRaw = customer?.labour_rate ?? o.labourRate;
+    const claimLimitDisplay = claimLimitRaw ? `£${Number(claimLimitRaw).toLocaleString()}` : "Not set";
+    const excessDisplay = excessRaw != null ? `£${Number(excessRaw).toFixed(2)}` : "Not set";
+    const labourRateDisplay = labourRaw ? `£${Number(labourRaw).toFixed(2)}/hr` : "Not set";
+    const durationDisplay = durationLabel(customer?.duration_months, o.durationMonths, customer?.payment_type, policy?.payment_type, planName);
+    const mileageDisplay = customer?.mileage || o.mileage || "Not provided";
+    const vehicleYearDisplay = lead.vehicle_year || customer?.vehicle_year || o.vehicleYear || "Unknown";
+    const paymentSourceDisplay = paymentSource || customer?.payment_source || "Not provided";
+    const addressDisplay = (() => {
+      const a = address || {};
+      const parts = [
+        a.flatNumber, a.buildingName, a.buildingNumber, a.street,
+        a.town, a.county, a.postcode,
+      ].filter(Boolean);
+      if (parts.length) return parts.join(", ");
+      const fallback = [
+        customer?.building_number, customer?.street, customer?.town,
+        customer?.county, customer?.postcode,
+      ].filter(Boolean);
+      return fallback.length ? fallback.join(", ") : "Not provided";
+    })();
+    const leadSourceDisplay = lead.lead_source || customer?.lead_source || o.leadSource || "Unknown";
 
     // Get timing info
     const leadCreatedAt = lead.created_at 
@@ -210,7 +271,7 @@ serve(async (req: Request) => {
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #16a34a; border-bottom: 2px solid #16a34a; padding-bottom: 10px;">🎯 New Agent Sale - Lead Converted</h2>
+        <h2 style="color: #16a34a; border-bottom: 2px solid #16a34a; padding-bottom: 10px;">${paymentConfirmed ? '✅ Confirmed payment — new sale' : '🎯 New Agent Sale - Lead Converted'}</h2>
         
         <!-- Agent Banner -->
         <div style="margin-top: 16px; padding: 12px 20px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;">
@@ -234,7 +295,9 @@ serve(async (req: Request) => {
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${customerName}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${customerEmail}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customerPhone}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Address:</strong></td><td style="padding: 8px;">${addressDisplay}</td></tr>
         </table>
+
 
         <h3 style="color: #333; margin-top: 20px;">Sale Details</h3>
         <table style="width: 100%; border-collapse: collapse;">
@@ -246,6 +309,8 @@ serve(async (req: Request) => {
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">${claimLimitDisplay}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Voluntary Excess:</strong></td><td style="padding: 8px;">${excessDisplay}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Labour Rate:</strong></td><td style="padding: 8px;">${labourRateDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Source:</strong></td><td style="padding: 8px;">${paymentSourceDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Lead Source:</strong></td><td style="padding: 8px;">${leadSourceDisplay}</td></tr>
         </table>
 
         <h3 style="color: #333; margin-top: 20px;">Vehicle Details</h3>
@@ -253,6 +318,8 @@ serve(async (req: Request) => {
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Registration:</strong></td><td style="padding: 8px;">${regPlate}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Make:</strong></td><td style="padding: 8px;">${lead.vehicle_make || customer?.vehicle_make || 'Unknown'}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Model:</strong></td><td style="padding: 8px;">${lead.vehicle_model || customer?.vehicle_model || 'Unknown'}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Year:</strong></td><td style="padding: 8px;">${vehicleYearDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Mileage:</strong></td><td style="padding: 8px;">${mileageDisplay}</td></tr>
         </table>
 
         <h3 style="color: #333; margin-top: 20px;">⏱️ Timing</h3>
@@ -282,7 +349,9 @@ serve(async (req: Request) => {
     const paymentPart = paymentType ? ` via ${paymentType}` : '';
     const subject = isPaymentPending
       ? `Lead converted — awaiting payment ${sourcePrefix}: ${regPlate} (${agentName})`
-      : `New Sale ${sourcePrefix}: ${regPlate}${amountPart}${paymentPart}`;
+      : paymentConfirmed
+        ? `Confirmed payment ${sourcePrefix}: ${regPlate}${amountPart}${paymentPart} (${agentName})`
+        : `New Sale ${sourcePrefix}: ${regPlate}${amountPart}${paymentPart}`;
     // The sales agent who converted the lead is always copied in, alongside
     // the internal ops mailboxes.
     const recipients = ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"];
