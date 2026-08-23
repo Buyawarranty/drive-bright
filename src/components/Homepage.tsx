@@ -67,6 +67,9 @@ interface HomepageProps {
   onRegistrationSubmit: (vehicleData: VehicleData) => void;
 }
 
+// Accepts current-style (AB12CDE), prefix/suffix and dateless plates.
+const UK_REG_PATTERN = /^(?:[A-Z]{2}[0-9]{2}[A-Z]{3}|[A-Z][0-9]{1,3}[A-Z]{3}|[A-Z]{3}[0-9]{1,3}[A-Z]?|[0-9]{1,4}[A-Z]{1,3}|[A-Z]{1,3}[0-9]{1,4})$/;
+
 const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
