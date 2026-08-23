@@ -526,20 +526,8 @@ ${rows}
             )}
           </CardTitle>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 border rounded-lg overflow-hidden">
-              <button
-                onClick={() => setPrintMode('bw')}
-                className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'bw' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
-              >
-                B&W
-              </button>
-              <button
-                onClick={() => setPrintMode('colour')}
-                className={`px-2 py-1 text-xs font-medium transition-colors ${printMode === 'colour' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
-              >
-                Colour
-              </button>
-            </div>
+            <span className="text-xs text-muted-foreground border rounded-lg px-2 py-1">Colour print</span>
+
             {queue.length > 0 && (
               <>
                 <Button size="sm" onClick={confirmAllPosted} className="text-xs gap-1 bg-green-600 hover:bg-green-700 text-white">
