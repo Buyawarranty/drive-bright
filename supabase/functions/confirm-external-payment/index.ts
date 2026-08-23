@@ -515,7 +515,7 @@ serve(async (req) => {
             labourRate,
             durationMonths,
             finalAmount,
-            warrantyNumber: typeof warrantyNumber !== 'undefined' ? warrantyNumber : undefined,
+            warrantyNumber: policyNumber,
             leadSource: matchedLead ? undefined : 'phone',
           },
         },
