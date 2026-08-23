@@ -683,11 +683,12 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                       maxLength={8}
                     />
                   </div>
-                  {regNumber.replace(/\s/g, '').length >= 5 && !regError && (
-                    <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1 shadow-md" aria-label="Registration entered">
+                  {UK_REG_PATTERN.test(regNumber.replace(/\s/g, '').toUpperCase()) && !regError && (
+                    <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1 shadow-md" aria-label="Registration looks valid">
                       <Check className="w-4 h-4 text-white" strokeWidth={4} />
                     </div>
                   )}
+
                 </div>
 
                 <p className="text-sm text-gray-500 text-center">
