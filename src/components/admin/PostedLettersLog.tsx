@@ -661,8 +661,13 @@ export const PostedLettersLog: React.FC = () => {
       <div className="grid grid-cols-3 gap-3">
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-foreground">{logEntries.length}</p>
+            <p className="text-2xl font-bold text-foreground">{totalCount.toLocaleString()}</p>
             <p className="text-xs text-muted-foreground">Total Letters</p>
+            {isCapped && (
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Showing latest {logEntries.length} below
+              </p>
+            )}
           </CardContent>
         </Card>
         <Card>
