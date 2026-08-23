@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Mail, Phone, Car, CheckCircle2, Clock, Send, Download, Tag, Printer, FileText, RotateCcw, Pencil, Eye, ChevronDown } from 'lucide-react';
+import { Search, Mail, Phone, Car, CheckCircle2, Clock, Send, Download, Tag, Printer, FileText, RotateCcw, Pencil, Eye, ChevronDown, ListChecks } from 'lucide-react';
 import { format } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -761,6 +761,17 @@ export const PostedLettersLog: React.FC = () => {
             Letter Log
           </CardTitle>
           <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={toggleSelectAll}
+              disabled={filteredEntries.length === 0}
+              className="gap-1"
+              title={selectedIds.size === filteredEntries.length && filteredEntries.length > 0 ? 'Deselect all' : 'Select all visible entries'}
+            >
+              <ListChecks className="h-3.5 w-3.5" />
+              {selectedIds.size === filteredEntries.length && filteredEntries.length > 0 ? 'Deselect all' : 'Select all'}
+            </Button>
             {selectedIds.size > 0 && (
               <>
                 <span className="text-xs font-semibold text-foreground">{selectedIds.size} selected</span>
