@@ -32,7 +32,7 @@ function getGuestToken(): string {
  */
 export default function SiteChatWidget({
   source = 'website',
-  greeting = 'Hi — any questions about your price?',
+  greeting = 'Hi - need any help?',
 }: {
   source?: string;
   greeting?: string;
