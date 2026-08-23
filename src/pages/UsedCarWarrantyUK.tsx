@@ -29,7 +29,7 @@ const UsedCarWarrantyUK = () => {
     <div>
       <HomepageAlt onRegistrationSubmit={handleRegistrationSubmit} />
       <Suspense fallback={null}>
-        <SiteChatWidget source="used-car-warranty-uk" greeting="Hi — want an instant warranty price?" />
+        <SiteChatWidget source="used-car-warranty-uk" greeting="Hi — any questions about your price?" />
       </Suspense>
     </div>
   );
