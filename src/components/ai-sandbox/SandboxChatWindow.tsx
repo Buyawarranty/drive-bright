@@ -506,6 +506,16 @@ export function SandboxChatWindow({
   const [handover, setHandover] = useState<Handover | null>(null);
   const [agentMode, setAgentMode] = useState(false);
   const composerRef = useRef<HTMLDivElement | null>(null);
+  // Keeps a stable "sent at" time per message so stamps don't jump on re-render.
+  const stampsRef = useRef<Map<string, Date>>(new Map());
+  const stampFor = (id: string) => {
+    const existing = stampsRef.current.get(id);
+    if (existing) return existing;
+    const now = new Date();
+    stampsRef.current.set(id, now);
+    return now;
+  };
+
   const open = isTeamOpenNow();
   const { liveCount, liveNames } = useSandboxSpecialistPresence();
   // A live agent is only offered when the team is open and a specialist is
