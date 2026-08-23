@@ -270,6 +270,11 @@ const viewPolicyDocument = async (entry: PostedLetterEntry) => {
 
 export const PostedLettersLog: React.FC = () => {
   const [logEntries, setLogEntries] = useState<PostedLetterEntry[]>([]);
+  const [totals, setTotals] = useState<{ total: number | null; sent: number | null; pending: number | null }>({
+    total: null,
+    sent: null,
+    pending: null,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [matchedCustomers, setMatchedCustomers] = useState<CustomerMatch[]>([]);
