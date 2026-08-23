@@ -272,7 +272,7 @@ export function CallMeBackPanel({
             <span>
               {open
                 ? `A warranty specialist is available now (${openingHoursLabel}).`
-                : `A warranty specialist will be back ${nextOpeningLabel()} (${openingHoursLabel}).`}
+                : `Opening hours ${openingHoursLabel}.`}
             </span>
           </p>
         </form>
