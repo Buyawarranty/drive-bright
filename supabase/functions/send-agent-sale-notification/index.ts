@@ -295,7 +295,9 @@ serve(async (req: Request) => {
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Name:</strong></td><td style="padding: 8px;">${customerName}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Email:</strong></td><td style="padding: 8px;">${customerEmail}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Phone:</strong></td><td style="padding: 8px;">${customerPhone}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Address:</strong></td><td style="padding: 8px;">${addressDisplay}</td></tr>
         </table>
+
 
         <h3 style="color: #333; margin-top: 20px;">Sale Details</h3>
         <table style="width: 100%; border-collapse: collapse;">
