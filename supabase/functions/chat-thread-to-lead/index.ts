@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
       const { data: tag } = await admin
         .from("lead_tags")
         .select("id")
-        .eq("name", "Live chat")
+        .eq("name", "Chatbot lead")
         .maybeSingle();
       if (tag?.id) {
         await admin.from("lead_tag_assignments").insert({ lead_id: inserted.id, tag_id: tag.id });
@@ -179,6 +179,7 @@ Deno.serve(async (req) => {
     } catch (e) {
       console.error("[chat-thread-to-lead] tag failed", e);
     }
+
 
     await attach(inserted.id);
 
