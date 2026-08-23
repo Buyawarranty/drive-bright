@@ -827,12 +827,20 @@ export const PostedLettersLog: React.FC = () => {
                     <React.Fragment key={entry.id}>
                       {idx === firstPostedIndex && idx > 0 && (
                         <tr className="bg-gradient-to-r from-green-100 via-green-50 to-green-100">
-                          <td colSpan={9} className="py-2 px-3 text-xs font-bold text-green-800 uppercase tracking-wider text-center border-y-2 border-green-500">
+                          <td colSpan={10} className="py-2 px-3 text-xs font-bold text-green-800 uppercase tracking-wider text-center border-y-2 border-green-500">
                             ── Already posted below this line ({filteredEntries.length - firstPostedIndex}) ──
                           </td>
                         </tr>
                       )}
                       <tr className={`border-b hover:bg-muted/30 transition-colors ${entry.marked_sent_by ? 'bg-green-50/50' : 'bg-amber-50/60'}`}>
+                      <td className="py-2 px-2">
+                        <Checkbox
+                          checked={selectedIds.has(entry.id)}
+                          onCheckedChange={() => toggleSelect(entry.id)}
+                          title="Select for bulk confirm"
+                        />
+                      </td>
+
                       <td className="py-2 px-2">
                         <label className="flex items-center gap-2 cursor-pointer select-none">
                           <Checkbox
