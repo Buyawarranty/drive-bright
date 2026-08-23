@@ -78,7 +78,8 @@ export const BatchPolicyQueue: React.FC = () => {
   const [savedAt, setSavedAt] = useState<string | null>(() => {
     try { return localStorage.getItem(SAVED_AT_KEY); } catch { return null; }
   });
-  // Letters must always print in colour — no black & white option.
+  // Colour is always the default. Black & white must be deliberately selected.
+  const [bwPrint, setBwPrint] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<QueuedCustomer>>({});
   const [isSavingEdit, setIsSavingEdit] = useState(false);
@@ -473,7 +474,7 @@ ${rows}
     const printWindow = window.open('', '_blank');
     if (!printWindow) { alert('Allow pop-ups'); return; }
 
-    const isBW = false;
+    const isBW = bwPrint;
     const letterPages = queue.map(c => buildLetterHTML(c, isBW)).join('');
 
     printWindow.document.write(`<!DOCTYPE html><html><head><title>Batch Letters</title><style>
@@ -526,7 +527,17 @@ ${rows}
             )}
           </CardTitle>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground border rounded-lg px-2 py-1">Colour print</span>
+            <label className="flex items-center gap-2 text-xs border rounded-lg px-2 py-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                className="h-3.5 w-3.5"
+                checked={bwPrint}
+                onChange={(e) => setBwPrint(e.target.checked)}
+              />
+              <span className={bwPrint ? 'font-semibold' : 'text-muted-foreground'}>
+                {bwPrint ? 'Black & white' : 'Colour print (default)'}
+              </span>
+            </label>
 
             {queue.length > 0 && (
               <>
@@ -806,7 +817,11 @@ ${rows}
               <Tag className="h-4 w-4" />
               🏷️ Envelope Labels ({queue.length})
             </Button>
-            <Button onClick={handleBatchPrintBoth} className="gap-2">
+            <Button onClick={handleBatchPrintLetters} className="gap-2">
+              <Printer className="h-4 w-4" />
+              Print Letters only ({queue.length}) — {bwPrint ? 'black & white' : 'colour'}
+            </Button>
+            <Button onClick={handleBatchPrintBoth} variant="outline" className="gap-2">
               <Printer className="h-4 w-4" />
               Print Letters and Address Print Labels ({queue.length})
             </Button>

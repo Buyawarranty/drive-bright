@@ -61,9 +61,8 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
   policy,
 }) => {
   const printRef = useRef<HTMLDivElement>(null);
-  // Letters must always print in colour — no black & white option.
-
-  const isBW = false;
+  // Colour is always the default. Black & white must be deliberately selected.
+  const [isBW, setIsBW] = useState(false);
 
   const c = {
     accent: isBW ? '#333' : '#eb4b00',
@@ -228,7 +227,17 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
           <DialogTitle className="flex items-center justify-between pr-10">
             <span>Warranty Confirmation Letter</span>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground border rounded-lg px-2 py-1">Colour print</span>
+              <label className="flex items-center gap-2 text-xs border rounded-lg px-2 py-1.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="h-3.5 w-3.5 accent-current"
+                  checked={isBW}
+                  onChange={(e) => setIsBW(e.target.checked)}
+                />
+                <span className={isBW ? 'font-semibold' : 'text-muted-foreground'}>
+                  {isBW ? 'Black & white' : 'Colour print (default)'}
+                </span>
+              </label>
               <Button onClick={handlePrintLabel} variant="outline" className="gap-2">
                 <Tag className="h-4 w-4" />
                 Print Address Label
