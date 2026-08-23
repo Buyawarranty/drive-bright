@@ -349,7 +349,9 @@ serve(async (req: Request) => {
     const paymentPart = paymentType ? ` via ${paymentType}` : '';
     const subject = isPaymentPending
       ? `Lead converted — awaiting payment ${sourcePrefix}: ${regPlate} (${agentName})`
-      : `New Sale ${sourcePrefix}: ${regPlate}${amountPart}${paymentPart}`;
+      : paymentConfirmed
+        ? `Confirmed payment ${sourcePrefix}: ${regPlate}${amountPart}${paymentPart} (${agentName})`
+        : `New Sale ${sourcePrefix}: ${regPlate}${amountPart}${paymentPart}`;
     // The sales agent who converted the lead is always copied in, alongside
     // the internal ops mailboxes.
     const recipients = ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"];
