@@ -229,13 +229,27 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (threadError) throw threadError;
-      if (!found || found.user_id !== userId) {
+      if (found && found.user_id !== userId) {
         return new Response(JSON.stringify({ error: "Thread not found" }), {
           status: 404,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      thread = found as typeof thread;
+      if (found) {
+        thread = found as typeof thread;
+      } else {
+        // The conversation was cleared/reset in another tab (or the row was
+        // pruned) while the page still holds its id — recreate it for this user
+        // instead of dead-ending the chat with "Thread not found".
+        const { data: recreated, error: recreateError } = await admin
+          .from("ai_sandbox_threads")
+          .insert({ id: threadId, user_id: userId, source: pageSource, title: "New chat" })
+          .select("id, user_id, title")
+          .single();
+        if (recreateError) throw recreateError;
+        thread = recreated as typeof thread;
+      }
+
     }
 
     // Persist the newest user message
