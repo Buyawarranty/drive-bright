@@ -570,6 +570,14 @@ export function SandboxChatWindow({
     },
   });
 
+  // Website visitors keep their transcript across page navigations (e.g. the
+  // "Continue to checkout" hand-off to step 3).
+  useEffect(() => {
+    if (!isGuest || !guestToken) return;
+    if (status === 'streaming') return;
+    saveGuestMessages(guestToken, messages);
+  }, [isGuest, guestToken, messages, status]);
+
   useEffect(() => {
     if (!autoFocus) return;
     composerRef.current?.querySelector('textarea')?.focus();
