@@ -78,6 +78,20 @@ export function buildCodeAdminMatrix(): PricingMatrixShape {
   return out;
 }
 
+/**
+ * Fired after any pricing version is created, edited, published or deleted.
+ * Every mounted usePricingVersions() re-reads the list, so a draft saved in one
+ * panel (e.g. "Compare any two models") immediately appears in the other
+ * dropdowns and in the Price grid tab instead of looking like it never saved.
+ */
+export const PRICING_VERSIONS_CHANGED_EVENT = 'bw:pricing-versions-changed';
+
+function notifyPricingVersionsChanged() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(PRICING_VERSIONS_CHANGED_EVENT));
+  }
+}
+
 export function usePricingVersions() {
   const [versions, setVersions] = useState<PricingVersion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,6 +118,14 @@ export function usePricingVersions() {
 
   useEffect(() => {
     load();
+  }, [load]);
+
+  // Keep every mounted instance in step with the database.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onChanged = () => { void load(); };
+    window.addEventListener(PRICING_VERSIONS_CHANGED_EVENT, onChanged);
+    return () => window.removeEventListener(PRICING_VERSIONS_CHANGED_EVENT, onChanged);
   }, [load]);
 
   const createVersion = useCallback(
@@ -153,6 +175,7 @@ export function usePricingVersions() {
         .single();
       if (error) throw error;
       await load();
+      notifyPricingVersionsChanged();
       return data as unknown as PricingVersion;
     },
     [load]
@@ -183,6 +206,7 @@ export function usePricingVersions() {
         .eq('id', id);
       if (error) throw error;
       await load();
+      notifyPricingVersionsChanged();
     },
     [load]
   );
@@ -259,6 +283,7 @@ export function usePricingVersions() {
         ((publishedRow as any)?.label as string) || 'pricing push'
       );
       await load();
+      notifyPricingVersionsChanged();
       // Apply the newly published prices to the running app immediately so open
       // screens (Quotes & Orders / import lead) quote the new price without a reload.
       await refreshLivePricing();
@@ -273,6 +298,7 @@ export function usePricingVersions() {
     const { error } = await supabase.rpc('revert_pricing_to_code_defaults');
     if (error) throw error;
     await load();
+    notifyPricingVersionsChanged();
   }, [load]);
 
   const deleteVersion = useCallback(
@@ -280,6 +306,7 @@ export function usePricingVersions() {
       const { error } = await supabase.from('pricing_matrix_versions').delete().eq('id', id);
       if (error) throw error;
       await load();
+      notifyPricingVersionsChanged();
     },
     [load]
   );
