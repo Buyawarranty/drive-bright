@@ -474,7 +474,7 @@ ${rows}
     const printWindow = window.open('', '_blank');
     if (!printWindow) { alert('Allow pop-ups'); return; }
 
-    const isBW = false;
+    const isBW = bwPrint;
     const letterPages = queue.map(c => buildLetterHTML(c, isBW)).join('');
 
     printWindow.document.write(`<!DOCTYPE html><html><head><title>Batch Letters</title><style>
