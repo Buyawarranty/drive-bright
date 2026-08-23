@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Lock, Shield, ArrowRight, Tag, Infinity as InfinityIcon, MapPin, ShieldCheck } from 'lucide-react';
+import { Lock, Shield, ArrowRight, Tag, Infinity as InfinityIcon, MapPin, ShieldCheck, CreditCard, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 
 interface MobileStickyFooterProps {
@@ -64,14 +65,14 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
 
   if (trustStripOnly) {
     return (
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E5E5E5] lg:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border lg:hidden">
         <div className="px-4 py-2.5 pb-[env(safe-area-inset-bottom,8px)]">
-          <div className="flex items-center justify-center gap-3 text-[11px] text-gray-600">
-            <span className="flex items-center gap-1"><Shield className="w-3 h-3 text-[#0BA360]" />Instant cover</span>
+          <div className="flex items-center justify-center gap-3 text-[11px] text-muted-foreground">
+            <span className="flex items-center gap-1"><Shield className="w-3 h-3 text-success" />Instant cover</span>
             <span>·</span>
-            <span className="flex items-center gap-1"><Lock className="w-3 h-3 text-[#0BA360]" />Secure</span>
+            <span className="flex items-center gap-1"><Lock className="w-3 h-3 text-success" />Secure</span>
             <span>·</span>
-            <span className="flex items-center gap-1"><Shield className="w-3 h-3 text-[#0BA360]" />14-day refund</span>
+            <span className="flex items-center gap-1"><Shield className="w-3 h-3 text-success" />14-day refund</span>
           </div>
         </div>
       </div>
@@ -90,7 +91,10 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
 
   const selected: 'monthly' | 'full' = selectedPayment ?? 'monthly';
 
-  const Card = ({
+  const activePrice = selected === 'full' ? discountedFull : monthlyPrice;
+  const activePriceLabel = selected === 'full' ? 'total' : '/mo';
+
+  const OptionCard = ({
     type,
     title,
     children,
@@ -100,28 +104,24 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
     children: React.ReactNode;
   }) => {
     const isSelected = selected === type;
-    const accent = type === 'monthly' ? '#FF6B00' : '#0BA360';
-    const selectedBg = type === 'monthly' ? '#FFF1E6' : '#E6F7EF';
     return (
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onPaymentChange?.(type); }}
         className={cn(
-          'relative text-left rounded-2xl border-2 flex-1 px-3 py-3',
-          isSelected ? '' : 'bg-white border-gray-200'
+          'relative text-left rounded-2xl border-2 flex-1 px-3 py-3 w-full',
+          isSelected ? 'border-primary bg-primary/5' : 'bg-white border-border'
         )}
-        style={isSelected ? { backgroundColor: selectedBg, borderColor: accent } : undefined}
       >
         <div className="flex items-start justify-between gap-2">
-          <span className="text-[13px] font-semibold text-gray-900">{title}</span>
+          <span className="text-[13px] font-semibold text-foreground">{title}</span>
           <span
             className={cn(
               'mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0',
-              isSelected ? '' : 'border-gray-400 bg-white'
+              isSelected ? 'border-primary' : 'border-gray-400 bg-white'
             )}
-            style={isSelected ? { borderColor: accent } : undefined}
           >
-            {isSelected && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: accent }} />}
+            {isSelected && <span className="w-2 h-2 rounded-full bg-primary" />}
           </span>
         </div>
         {children}
@@ -130,197 +130,165 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
   };
 
   return (
-    <div
-      className={cn(
-        'fixed bottom-0 left-0 right-0 z-50 lg:hidden'
-      )}
-    >
-      {/* Floating card container with margin for clear separation */}
-      <div
-        className={cn(
-          'mx-3 mb-3 bg-white rounded-2xl border border-gray-200',
-          'shadow-[0_8px_30px_rgba(0,0,0,0.12)]'
-        )}
-      >
-        {/* Drag handle / expand toggle */}
-        <button
-          type="button"
-          onClick={() => setExpanded(v => !v)}
-          aria-label={expanded ? 'Collapse payment details' : 'Expand payment details'}
-          className="w-full flex flex-col items-center gap-1 pt-2 pb-1.5"
-        >
-          <span className="w-10 h-1 rounded-full bg-gray-300" />
-          <span className="text-[11px] font-medium text-gray-500">
-            {expanded ? 'Hide payment options ⌄' : 'View payment options ⌃'}
-          </span>
-        </button>
-
-
-
-        {/* Expanded section */}
-        {expanded && (
-          <div className="px-4 pt-0 pb-3">
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-sm font-semibold text-black">{planLabel}</span>
-              <a
-                href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1 hover:opacity-80 flex-shrink-0"
-              >
-                <span className="text-[11px] font-bold text-gray-900">Excellent</span>
-                <div className="flex gap-0.5">
-                  {[0, 1, 2, 3, 4].map(i => (
-                    <span key={i} className="inline-flex w-3 h-3 bg-[#00B67A] items-center justify-center">
-                      <svg viewBox="0 0 24 24" className="w-2 h-2 fill-white">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                      </svg>
-                    </span>
-                  ))}
-                </div>
-                <span className="text-[9px] text-gray-700 font-medium ml-0.5">Trustpilot</span>
-              </a>
+    <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
+      <div className="mx-3 mb-3 bg-white rounded-2xl border border-border shadow-[0_8px_30px_rgba(0,0,0,0.12)] overflow-hidden">
+        {/* Main price + CTA row */}
+        <div className="p-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground leading-tight">{planLabel}</p>
+              <div className={cn('flex items-baseline gap-1 mt-0.5', isPulsing && 'animate-pulse')}>
+                <span className="text-3xl font-extrabold text-foreground tracking-tight">£{activePrice}</span>
+                <span className="text-sm text-muted-foreground">{activePriceLabel}</span>
+              </div>
+              {displaySavings > 0 && (
+                <p className="text-[13px] font-semibold text-success mt-0.5">
+                  Save £{displaySavings} annually
+                </p>
+              )}
             </div>
 
-            <div className="flex gap-2 mb-3">
-              <Card type="full" title="Pay In Full">
-                <div className="mt-1.5">
-                  <span className="text-2xl font-extrabold text-[#0BA360]">£{discountedFull}</span>
-                </div>
-                <p className="text-[11px] font-semibold text-gray-900 mt-1.5">One simple payment</p>
-                {displaySavings > 0 && (
-                  <p className="text-[10px] text-[#0BA360] font-bold flex items-center gap-1 mt-0.5">
-                    <Tag className="w-3 h-3" />
-                    Save £{displaySavings}
-                  </p>
-                )}
-              </Card>
-
-              <Card type="monthly" title="Pay Monthly">
-                <div className="flex items-baseline gap-1 mt-1.5">
-                  <span className="text-2xl font-extrabold text-gray-900">£{monthlyPrice}</span>
-                  <span className="text-xs text-gray-700">/month</span>
-                </div>
-                {paymentType !== '12months' ? (
-                  <>
-                    <p className="text-[11px] font-semibold text-gray-900 mt-1.5">12 monthly payments</p>
-                    <p className="text-[10px] text-gray-600 mt-0.5">Payments end after 12 months · Cover lasts {paymentType === '36months' ? 3 : 2} years</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-[11px] font-semibold text-gray-900 mt-1.5">Paid over 12 months</p>
-                    <p className="text-[10px] text-gray-600 mt-0.5">Equal to {dayLabel}/day</p>
-                  </>
-                )}
-              </Card>
-            </div>
-
-
-            {/* Trust badges */}
-            <div className="grid grid-cols-3 gap-2 mb-3 rounded-xl border border-gray-200 p-3">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-[#0BA360] flex-shrink-0" />
-                <div className="leading-tight">
-                  <p className="text-[13px] font-bold text-gray-900">Easy</p>
-                  <p className="text-[11px] text-gray-600">claims</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <InfinityIcon className="w-5 h-5 text-[#0BA360] flex-shrink-0" />
-                <div className="leading-tight">
-                  <p className="text-[13px] font-bold text-gray-900">Unlimited</p>
-                  <p className="text-[11px] text-gray-600">claims</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-[#0BA360] flex-shrink-0" />
-                <div className="leading-tight">
-                  <p className="text-[13px] font-bold text-gray-900">Nationwide</p>
-                  <p className="text-[11px] text-gray-600">approved repairs</p>
-                </div>
-              </div>
-            </div>
-
-
-            {validationError && (
-              <div
-                role="alert"
-                className="mb-2 flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-[12px] font-medium text-red-700"
-              >
-                <span aria-hidden className="mt-px">⚠</span>
-                <span>{validationError}</span>
-              </div>
-            )}
             <Button
               onClick={onPayClick}
               disabled={isLoading || !selectedPayment}
-              className="w-full bg-[#FF6B00] hover:bg-[#e55f00] disabled:bg-[#CCCCCC] text-white font-bold h-12 px-6 rounded-xl text-sm gap-1.5 animate-breathing disabled:animate-none"
+              aria-label={selectedPayment ? 'Continue to checkout' : 'Select payment option'}
+              className="flex-shrink-0 bg-primary hover:bg-primary/90 disabled:bg-muted text-primary-foreground font-bold h-12 px-5 rounded-xl text-sm gap-1.5 animate-breathing disabled:animate-none whitespace-nowrap"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Processing...
+                  <span className="hidden xs:inline">Processing...</span>
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-1.5">
                   {ctaLabel}
                   <ArrowRight className="w-4 h-4" strokeWidth={3} />
                 </span>
-
               )}
             </Button>
           </div>
-        )}
 
-        {/* Compact action bar (collapsed) */}
-        {!expanded && (
-          <div className="px-4 pb-3 pt-0">
-            {validationError && (
-              <div
-                role="alert"
-                className="mb-2 flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-[12px] font-medium text-red-700"
-              >
-                <span aria-hidden className="mt-px">⚠</span>
-                <span>{validationError}</span>
-              </div>
-            )}
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="flex flex-col leading-tight min-w-0 flex-1">
-                <span className="text-[12px] font-medium text-black truncate">{planLabel}</span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-xl xs:text-2xl font-extrabold text-gray-900">£{selected === 'full' ? discountedFull : monthlyPrice}</span>
-                  <span className="text-[11px] text-gray-600">{selected === 'full' ? 'total' : '/mo'}</span>
-                </div>
-                {selected === 'monthly' && paymentType !== '12months' ? (
-                  <span className="hidden xs:inline text-[10px] font-semibold text-gray-700 truncate">Spread over 12 · {paymentType === '36months' ? 3 : 2}-year cover</span>
-                ) : displaySavings > 0 ? (
-                  <span className="text-[11px] font-semibold text-[#0BA360] truncate">Save £{displaySavings} annually</span>
-                ) : null}
-              </div>
-
-              <Button
-                onClick={onPayClick}
-                disabled={isLoading || !selectedPayment}
-                aria-label={selectedPayment ? 'Continue to checkout' : 'Select payment option'}
-                className="flex-shrink-0 bg-[#FF6B00] hover:bg-[#e55f00] disabled:bg-[#CCCCCC] text-white font-bold h-12 px-4 sm:px-6 rounded-xl text-sm gap-1.5 animate-breathing disabled:animate-none whitespace-nowrap"
-              >
-                {isLoading ? (
-                  <span className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span className="hidden xs:inline">Processing...</span>
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-1.5">
-                    {ctaLabel}
-                    <ArrowRight className="w-4 h-4" strokeWidth={3} />
-                  </span>
-
-                )}
-              </Button>
+          {validationError && (
+            <div
+              role="alert"
+              className="mt-3 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-[12px] font-medium text-destructive"
+            >
+              <span aria-hidden className="mt-px">⚠</span>
+              <span>{validationError}</span>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* Expandable payment options */}
+        <Collapsible open={expanded} onOpenChange={setExpanded}>
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="w-full border-t border-border bg-primary/[0.04] hover:bg-primary/[0.08] px-4 py-3 flex items-center justify-between gap-3 transition-colors"
+              aria-label={expanded ? 'Hide payment options' : 'Show payment options'}
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                </span>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-foreground">Other payment options</p>
+                  <p className="text-xs text-muted-foreground">Monthly & annual</p>
+                </div>
+              </div>
+              <ChevronDown
+                className={cn(
+                  'h-5 w-5 text-muted-foreground transition-transform duration-200',
+                  expanded && 'rotate-180'
+                )}
+              />
+            </button>
+          </CollapsibleTrigger>
+
+          <CollapsibleContent>
+            <div className="px-4 pt-3 pb-4 border-t border-border space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <a
+                  href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center gap-1 hover:opacity-80 flex-shrink-0"
+                >
+                  <span className="text-[11px] font-bold text-foreground">Excellent</span>
+                  <div className="flex gap-0.5">
+                    {[0, 1, 2, 3, 4].map(i => (
+                      <span key={i} className="inline-flex w-3 h-3 bg-[#00B67A] items-center justify-center">
+                        <svg viewBox="0 0 24 24" className="w-2 h-2 fill-white">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                      </span>
+                    ))}
+                  </div>
+                  <span className="text-[9px] text-muted-foreground font-medium ml-0.5">Trustpilot</span>
+                </a>
+              </div>
+
+              <div className="flex gap-2">
+                <OptionCard type="full" title="Pay In Full">
+                  <div className="mt-1.5">
+                    <span className="text-2xl font-extrabold text-success">£{discountedFull}</span>
+                  </div>
+                  <p className="text-[11px] font-semibold text-foreground mt-1.5">One simple payment</p>
+                  {displaySavings > 0 && (
+                    <p className="text-[10px] text-success font-bold flex items-center gap-1 mt-0.5">
+                      <Tag className="w-3 h-3" />
+                      Save £{displaySavings}
+                    </p>
+                  )}
+                </OptionCard>
+
+                <OptionCard type="monthly" title="Pay Monthly">
+                  <div className="flex items-baseline gap-1 mt-1.5">
+                    <span className="text-2xl font-extrabold text-foreground">£{monthlyPrice}</span>
+                    <span className="text-xs text-muted-foreground">/month</span>
+                  </div>
+                  {paymentType !== '12months' ? (
+                    <>
+                      <p className="text-[11px] font-semibold text-foreground mt-1.5">12 monthly payments</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Payments end after 12 months · Cover lasts {paymentType === '36months' ? 3 : 2} years</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-[11px] font-semibold text-foreground mt-1.5">Paid over 12 months</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Equal to {dayLabel}/day</p>
+                    </>
+                  )}
+                </OptionCard>
+              </div>
+
+              {/* Trust badges */}
+              <div className="grid grid-cols-3 gap-2 rounded-xl border border-border p-3">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-success flex-shrink-0" />
+                  <div className="leading-tight">
+                    <p className="text-[13px] font-bold text-foreground">Easy</p>
+                    <p className="text-[11px] text-muted-foreground">claims</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <InfinityIcon className="w-5 h-5 text-success flex-shrink-0" />
+                  <div className="leading-tight">
+                    <p className="text-[13px] font-bold text-foreground">Unlimited</p>
+                    <p className="text-[11px] text-muted-foreground">claims</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-success flex-shrink-0" />
+                  <div className="leading-tight">
+                    <p className="text-[13px] font-bold text-foreground">Nationwide</p>
+                    <p className="text-[11px] text-muted-foreground">approved repairs</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </div>
   );
