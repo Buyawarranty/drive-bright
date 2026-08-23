@@ -78,7 +78,8 @@ export const BatchPolicyQueue: React.FC = () => {
   const [savedAt, setSavedAt] = useState<string | null>(() => {
     try { return localStorage.getItem(SAVED_AT_KEY); } catch { return null; }
   });
-  // Letters must always print in colour — no black & white option.
+  // Colour is always the default. Black & white must be deliberately selected.
+  const [bwPrint, setBwPrint] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<QueuedCustomer>>({});
   const [isSavingEdit, setIsSavingEdit] = useState(false);
