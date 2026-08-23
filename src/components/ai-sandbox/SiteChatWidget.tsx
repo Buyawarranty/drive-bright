@@ -48,6 +48,17 @@ export default function SiteChatWidget({
   const tokenRef = useRef<string | null>(null);
   if (tokenRef.current === null) tokenRef.current = getGuestToken();
 
+  // Never show the chat once the visitor is inside the quote journey (steps 2-4)
+  // or on checkout/cart pages — it sits over the call-to-action buttons there.
+  const location = useLocation();
+  const stepParam = new URLSearchParams(location.search).get('step') || '';
+  const stepNumber = parseInt(stepParam.replace(/[^0-9]/g, ''), 10);
+  const onQuoteStep = Number.isFinite(stepNumber) && stepNumber > 1;
+  const onCheckoutRoute = /\/(cart|checkout|warranty-plan|payment)/i.test(location.pathname);
+  const hidden = onQuoteStep || onCheckoutRoute;
+
+
+
   useEffect(() => {
     if (everOpened) return;
     const t = window.setTimeout(() => setShowNudge(true), 6000);
