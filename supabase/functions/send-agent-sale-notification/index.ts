@@ -309,6 +309,8 @@ serve(async (req: Request) => {
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">${claimLimitDisplay}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Voluntary Excess:</strong></td><td style="padding: 8px;">${excessDisplay}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Labour Rate:</strong></td><td style="padding: 8px;">${labourRateDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Source:</strong></td><td style="padding: 8px;">${paymentSourceDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Lead Source:</strong></td><td style="padding: 8px;">${leadSourceDisplay}</td></tr>
         </table>
 
         <h3 style="color: #333; margin-top: 20px;">Vehicle Details</h3>
@@ -316,6 +318,8 @@ serve(async (req: Request) => {
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Registration:</strong></td><td style="padding: 8px;">${regPlate}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Make:</strong></td><td style="padding: 8px;">${lead.vehicle_make || customer?.vehicle_make || 'Unknown'}</td></tr>
           <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Model:</strong></td><td style="padding: 8px;">${lead.vehicle_model || customer?.vehicle_model || 'Unknown'}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Year:</strong></td><td style="padding: 8px;">${vehicleYearDisplay}</td></tr>
+          <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Mileage:</strong></td><td style="padding: 8px;">${mileageDisplay}</td></tr>
         </table>
 
         <h3 style="color: #333; margin-top: 20px;">⏱️ Timing</h3>
