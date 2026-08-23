@@ -854,8 +854,8 @@ Deno.serve(async (req) => {
 
     const now = availability();
     const onlineNow = await specialistsOnline();
-    const liveContext = `\n\nRight now: ${now.local_time}. The warranty specialists are ${
-      now.is_open ? "OPEN and available for a live handover" : `CLOSED (they reopen ${now.next_open})`
+    const liveContext = `\n\nRight now: ${now.local_time}. Live chat is ${
+      now.is_open ? "OPEN and available for a live handover" : `CLOSED (the team reopens ${now.next_open})`
     }. Opening hours are ${now.opening_hours}. Specialists ONLINE RIGHT NOW in live chat: ${onlineNow}${
       onlineNow > 0
         ? " — a real person can pick this chat up within seconds, so offer that whenever the customer hesitates or wants to buy."
