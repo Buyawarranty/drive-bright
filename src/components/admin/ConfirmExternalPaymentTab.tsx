@@ -1521,13 +1521,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           Required — we must record where the payment was taken.
                         </p>
                       )}
-                      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
-                        Where you can, send the customer your own payment link from
-                        Quotes &amp; Orders instead — the sale then lands in your name
-                        automatically and the card details never pass through you.
-                        Use this screen for payments taken outside that link.
-                      </p>
                     </div>
+
 
 
 
