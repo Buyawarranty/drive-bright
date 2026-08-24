@@ -10,6 +10,8 @@ import { format } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { DateRangeFilter } from '@/components/admin/DateRangeFilter';
+import { QuickMonthFilter } from '@/components/admin/QuickMonthFilter';
+import { QuickWeekFilter } from '@/components/admin/QuickWeekFilter';
 import { POSTCODE_AREA_MAP, NATIONS } from '@/lib/ukPostcodeAreas';
 import { POSTCODE_AREA_COORDS } from '@/lib/ukPostcodeAreaCoords';
 import { UK_MAP_PATHS, UK_MAP_WIDTH, UK_MAP_HEIGHT, projectLatLng } from '@/lib/ukMapPaths';
@@ -215,6 +217,15 @@ export const CustomerDemographicsPanel: React.FC<Props> = ({ dateRange }) => {
               setLocalRange(r);
             }}
           />
+          <QuickMonthFilter
+            dateRange={effectiveRange}
+            onDateRangeChange={(r) => { setUseOwnRange(true); setLocalRange(r); }}
+          />
+          <QuickWeekFilter
+            dateRange={effectiveRange}
+            onDateRangeChange={(r) => { setUseOwnRange(true); setLocalRange(r); }}
+          />
+
           <Badge variant={useOwnRange ? 'default' : 'outline'}>
             {useOwnRange ? 'Using this section’s own dates' : 'Following the page filter'}
           </Badge>
