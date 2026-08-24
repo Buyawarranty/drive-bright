@@ -14094,6 +14094,15 @@ export type Database = {
       }
       reset_agent_caps_daily: { Args: never; Returns: undefined }
       reset_daily_caps: { Args: never; Returns: undefined }
+      resolve_sale_credit: {
+        Args: {
+          _assigned_to: string
+          _payment_confirmed_by: string
+          _quote_sent_by: string
+          _sale_credit: string
+        }
+        Returns: string
+      }
       restore_agent_offboarding_backup: {
         Args: { _event_id: string; _restore_to_admin_user_id?: string }
         Returns: Json
