@@ -1285,12 +1285,21 @@ export const CustomersTab = ({
   const applyFiltersAndSort = useCallback(() => {
     let filtered = [...customers];
 
+    // Fold in server-side search hits that aren't in the currently loaded page.
+    if (debouncedSearchTerm && serverSearchResults.length) {
+      const known = new Set(filtered.map((c: any) => c.id));
+      for (const c of serverSearchResults) {
+        if (!known.has(c.id)) filtered.push(c);
+      }
+    }
+
     // Apply search filter — sales/sales_lead restricted to name, email, phone, reg plate only
     if (debouncedSearchTerm) {
       const searchLower = debouncedSearchTerm.toLowerCase();
-      // Normalized form (whitespace removed) for reg-plate / warranty-number style fields
-      const searchCompact = searchLower.replace(/\s+/g, '');
-      const compact = (v?: string | null) => (v ?? '').toLowerCase().replace(/\s+/g, '');
+      // Normalized form for reg-plate / warranty-number style fields: strip spaces
+      // AND punctuation so "LF21-ABC" / "LF21.ABC" still match "LF21 ABC".
+      const searchCompact = searchLower.replace(/[^a-z0-9@.]/g, '');
+      const compact = (v?: string | null) => (v ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
       const isSalesRole = isSalesScopedRole;
 
       // Detect a UK-reg style query (letters + digits, no @, 4-8 chars compact).
