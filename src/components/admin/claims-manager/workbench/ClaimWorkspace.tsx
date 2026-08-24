@@ -393,9 +393,69 @@ const AppealPanel: React.FC<{ claimId: string }> = ({ claimId }) => {
   React.useEffect(() => { if (appeal) setForm(appeal); }, [appeal]);
 
   if (loading) return <div className="text-xs text-muted-foreground">Loading…</div>;
+  const a: any = appeal || null;
   return (
     <div className="bg-card border border-border rounded-lg p-4 space-y-4">
       <h3 className="text-sm font-semibold">Appeal</h3>
+
+      {!a ? (
+        <div className="text-xs text-muted-foreground border border-dashed border-border rounded-md p-3">
+          No appeal has been sent for this claim yet.
+        </div>
+      ) : (
+        <div className="rounded-md border border-border bg-muted/30 p-3 space-y-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-semibold text-foreground">Final appeal sent</span>
+            {a.sent_at && (
+              <span className="text-muted-foreground">
+                {new Date(a.sent_at).toLocaleString('en-GB')}
+              </span>
+            )}
+            <span
+              className={`px-1.5 py-0.5 rounded border ${
+                a.customer_notified
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-amber-50 text-amber-700 border-amber-200'
+              }`}
+            >
+              {a.customer_notified ? 'Customer notified in profile' : 'Customer not notified'}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <span className="text-muted-foreground">Independent reviewer</span>
+              <div className="font-medium">{a.independent_reviewer || 'Not recorded'}</div>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Appeal fee</span>
+              <div className="font-medium">
+                {a.appeal_fee != null ? `£${Number(a.appeal_fee).toFixed(2)}` : 'Not recorded'}
+              </div>
+            </div>
+            {a.reviewer_url && (
+              <div className="sm:col-span-2">
+                <span className="text-muted-foreground">Reviewer website</span>
+                <div>
+                  <a href={a.reviewer_url} target="_blank" rel="noopener noreferrer" className="text-primary underline break-all">
+                    {a.reviewer_url}
+                  </a>
+                </div>
+              </div>
+            )}
+            {a.payment_link && (
+              <div className="sm:col-span-2">
+                <span className="text-muted-foreground">Appeal payment link</span>
+                <div>
+                  <a href={a.payment_link} target="_blank" rel="noopener noreferrer" className="text-primary underline break-all">
+                    {a.payment_link}
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <Fld label="Appeal status">
         <Select value={form.status ?? 'submitted'} onValueChange={(v) => setForm((f: any) => ({ ...f, status: v }))}>
           <SelectTrigger><SelectValue /></SelectTrigger>
