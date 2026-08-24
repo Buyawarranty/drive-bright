@@ -713,6 +713,18 @@ export const CustomersTab = ({
       statusLabel = 'Google Leads sales';
     } else if (filterBySource === 'website_facebook') {
       statusLabel = 'Facebook Ads sales';
+    } else if (filterBySource === 'website_bing') {
+      statusLabel = 'Bing web sales';
+    } else if (filterBySource === 'bing_all') {
+      statusLabel = 'Bing Ads + Bing Leads sales';
+    } else if (filterBySource === 'bing_leads_sales') {
+      statusLabel = 'Bing Leads sales';
+    } else if (filterBySource === 'website_tiktok') {
+      statusLabel = 'TikTok web sales';
+    } else if (filterBySource === 'tiktok_all') {
+      statusLabel = 'TikTok Ads + TikTok Leads sales';
+    } else if (filterBySource === 'tiktok_leads_sales') {
+      statusLabel = 'TikTok Leads sales';
     } else if (filterBySource === 'website_organic') {
       statusLabel = 'organic sales';
     } else if (filterBySource === 'staff_purchase') {
@@ -722,6 +734,7 @@ export const CustomersTab = ({
     } else if (filterBySource === 'agent_sales') {
       statusLabel = 'agent sales';
     } else if (filterByStatus !== 'all') {
+
       statusLabel = filterByStatus === 'cancelled_and_refunded' ? 'cancellations/refunds' : filterByStatus;
     }
     const sourceFilterActive = filterBySource !== 'all_view';
