@@ -1041,16 +1041,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   </a>
                 </div>
               </div>
-              <p className="mt-2 text-center text-sm text-gray-700">
-                Can't call now?{' '}
-                <button
-                  onClick={() => setShowCallbackModal(true)}
-                  className="text-brand-orange font-semibold hover:underline inline-flex items-center gap-0.5"
-                >
-                  Request a callback
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </p>
             </div>
 
 
