@@ -67,6 +67,30 @@ export const PurchaseSourceBadge: React.FC<PurchaseSourceBadgeProps> = ({
           className: 'bg-green-100 text-green-800 hover:bg-green-100 border-green-200',
           tooltip: 'Bumper finance payment'
         };
+      case 'klarna':
+        return {
+          label: 'Klarna',
+          icon: Banknote,
+          variant: 'default' as const,
+          className: 'bg-pink-100 text-pink-800 hover:bg-pink-100 border-pink-200',
+          tooltip: 'Klarna finance payment'
+        };
+      case 'ivendi':
+        return {
+          label: 'iVendi',
+          icon: Banknote,
+          variant: 'default' as const,
+          className: 'bg-sky-100 text-sky-800 hover:bg-sky-100 border-sky-200',
+          tooltip: 'iVendi finance payment'
+        };
+      case 'zopa':
+        return {
+          label: 'Zopa',
+          icon: Banknote,
+          variant: 'default' as const,
+          className: 'bg-teal-100 text-teal-800 hover:bg-teal-100 border-teal-200',
+          tooltip: 'Zopa finance payment'
+        };
       case 'google_ads':
         return {
           label: 'Google Ads',
