@@ -2302,11 +2302,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     const reg = (vehicleData?.regNumber || regNumber || '').toString().trim().toUpperCase();
     // Plain, conversational subject — no promo phrases like "choose how to pay",
     // "save", "offer", exclamation marks, or commercial "quote" wording.
-    const firstName = (customerName || '').trim().split(/\s+/)[0];
-    const prefix = firstName ? `${firstName}, your` : 'Your';
     return reg
-      ? `${prefix} ${vehicleLabel} warranty details (${reg})`
-      : `${prefix} ${vehicleLabel} warranty details`;
+      ? `Your warranty quote for your ${vehicleLabel} — ${reg}`
+      : `Your warranty quote for your ${vehicleLabel}`;
   };
 
   const handlePreviewEmail = () => {
