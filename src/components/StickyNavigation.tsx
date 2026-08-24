@@ -42,8 +42,8 @@ const StickyNavigation: React.FC = () => {
 
   return (
     <>
-      <header className="bg-white shadow-sm py-1 sm:py-2 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="bg-white shadow-sm py-2.5 sm:py-2 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center">
@@ -139,25 +139,25 @@ const StickyNavigation: React.FC = () => {
             </nav>
 
             {/* Mobile: tap-to-call (above the fold) + menu */}
-            <div className="lg:hidden flex items-center gap-1.5">
+            <div className="lg:hidden flex items-center gap-2">
               {isTeamOpenNow() ? (
                 <a
                   href="tel:03302295040"
                   aria-label="Call us on 0330 229 5040"
-                  className="inline-flex items-center gap-1.5 min-h-[34px] px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 shadow-sm hover:bg-gray-50 active:scale-[0.97] transition-all"
+                  className="inline-flex items-center gap-2 min-h-[40px] px-4 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 shadow-sm hover:bg-gray-50 active:scale-[0.97] transition-all"
                 >
-                  <Phone className="h-3.5 w-3.5 text-gray-600" strokeWidth={2} />
-                  <span className="text-[13px] font-semibold leading-none whitespace-nowrap">0330 229 5040</span>
+                  <Phone className="h-4 w-4 text-gray-600" strokeWidth={2} />
+                  <span className="text-sm font-semibold leading-none whitespace-nowrap">0330 229 5040</span>
                 </a>
               ) : (
                 <button
                   type="button"
                   onClick={() => setIsCallbackModalOpen(true)}
                   aria-label={`Request a callback — we ring you ${nextOpeningLabel()}`}
-                  className="inline-flex items-center gap-1.5 min-h-[34px] px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 shadow-sm hover:bg-gray-50 active:scale-[0.97] transition-all"
+                  className="inline-flex items-center gap-2 min-h-[40px] px-4 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 shadow-sm hover:bg-gray-50 active:scale-[0.97] transition-all"
                 >
-                  <PhoneCall className="h-3.5 w-3.5 text-[#B4501F]" strokeWidth={2} />
-                  <span className="text-[13px] font-semibold leading-none whitespace-nowrap">Callback</span>
+                  <PhoneCall className="h-4 w-4 text-[#B4501F]" strokeWidth={2} />
+                  <span className="text-sm font-semibold leading-none whitespace-nowrap">Callback</span>
                 </button>
               )}
               <MobileNavigation />
