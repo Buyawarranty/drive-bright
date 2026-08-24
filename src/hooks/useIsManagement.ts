@@ -1,35 +1,32 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Server-verified management check (admin / super_admin / sales_manager on an
  * active admin_users row). Use this for management-only UI so it never depends
  * on client-side role state, props or impersonation.
- * Returns null while loading (treat as "not management").
+ *
+ * PERF: this hook is mounted by dozens of admin components at once. It goes
+ * through React Query with an infinite staleTime so the `is_management` RPC is
+ * fired ONCE per session and shared, instead of once per component (which used
+ * to flood the network stack with ERR_INSUFFICIENT_RESOURCES).
  */
 export function useIsManagement() {
-  const [isManagement, setIsManagement] = useState<boolean | null>(null);
+  const { data, isLoading } = useQuery({
+    queryKey: ['is-management'],
+    queryFn: async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      const uid = authData?.user?.id;
+      if (!uid) return false;
+      const { data, error } = await supabase.rpc('is_management', { _user_id: uid });
+      return error ? false : data === true;
+    },
+    staleTime: Infinity,
+    gcTime: Infinity,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const { data: authData } = await supabase.auth.getUser();
-        const uid = authData?.user?.id;
-        if (!uid) {
-          if (mounted) setIsManagement(false);
-          return;
-        }
-        const { data, error } = await supabase.rpc('is_management', { _user_id: uid });
-        if (mounted) setIsManagement(error ? false : data === true);
-      } catch {
-        if (mounted) setIsManagement(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  return { isManagement: isManagement === true, loading: isManagement === null };
+  return { isManagement: data === true, loading: isLoading };
 }
