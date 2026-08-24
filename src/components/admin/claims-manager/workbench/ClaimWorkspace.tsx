@@ -387,8 +387,8 @@ const Fld: React.FC<{ label: string; children: React.ReactNode }> = ({ label, ch
 );
 
 // ============= Appeal panel =============
-const AppealPanel: React.FC<{ claimId: string }> = ({ claimId }) => {
-  const { appeal, loading, upsert } = useClaimAppeal(claimId);
+const AppealPanel: React.FC<{ claimId: string; claim?: Claim }> = ({ claimId, claim }) => {
+  const { appeal, loading, upsert, refetch } = useClaimAppeal(claimId);
   const [form, setForm] = useState<any>({ status: 'submitted' });
   React.useEffect(() => { if (appeal) setForm(appeal); }, [appeal]);
 
