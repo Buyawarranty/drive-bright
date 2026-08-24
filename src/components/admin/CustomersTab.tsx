@@ -2799,15 +2799,23 @@ export const CustomersTab = ({
     setAssignmentLoading(prev => ({ ...prev, [customerId]: true }));
 
     try {
+      // Changing the owner here is also a sales-credit decision, so write the
+      // explicit override too. That override beats every other rule, so the
+      // scoreboard and the new-leads agent totals show exactly what is set here.
+      const isRealAgent = !!agentId && agentId !== WEBSITE_SALES_ACCOUNT_ID && !markAsWebsite;
       const { error } = await supabase
         .from('customers')
-        .update({ assigned_to: agentId })
+        .update({
+          assigned_to: agentId,
+          sale_credit_admin_user_id: isRealAgent ? agentId : null,
+        })
         .eq('id', customerId);
 
       if (error) {
         console.error('Assignment error:', error);
         throw error;
       }
+
 
       // Reverse sync: update matching sales_leads record by email
       const customer = customers.find(c => c.id === customerId);
