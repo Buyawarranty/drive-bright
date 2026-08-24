@@ -5030,7 +5030,9 @@ Buyawarranty.co.uk`,
 
                 {/* Revenue stats badge — shown for any active date selection so admins always see the total for what they've filtered */}
                 {isSuperAdmin && filteredRevenueStats && (() => {
-                  const activeRange = revenueDateRange ?? dateRange;
+                  // Label the window the total actually used, so it can never claim a
+                  // single day while the table is listing a wider set of sales.
+                  const activeRange = unifiedScope === 'revenue' ? revenueDateRange : dateRange;
                   let rangeLabel = 'all time';
                   if (activeRange?.from) {
                     const fromD = new Date(activeRange.from);
