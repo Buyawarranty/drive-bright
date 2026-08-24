@@ -665,6 +665,8 @@ export const CustomersTab = ({
   const adminEmail = (currentAdminUser?.email || '').trim().toLowerCase();
   const isAccountsManager = normalizedRole === 'accounts_manager' || normalizedRole === 'accounts';
   const isSalesManager = normalizedRole === 'sales_manager';
+  // Moving a sale between agents is a management decision only.
+  const canReassignSaleCredit = isSuperAdmin || isAdmin || isSalesManager;
   const isDigitalOrAccountsMailbox =
     adminEmail.startsWith('digital@') || adminEmail.startsWith('accounts@');
   const canToggleHColumns =
