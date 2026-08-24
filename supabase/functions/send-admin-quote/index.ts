@@ -239,6 +239,7 @@ const handler = async (req: Request): Promise<Response> => {
       monthlyPrice,
       payInFullPrice,
       savings,
+      totalPrice,
       claimLimit: claimLimitDisplay,
       excessAmount: excessAmountDisplay,
       labourRate: labourRateDisplay,
