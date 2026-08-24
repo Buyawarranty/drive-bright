@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { addDays, endOfMonth, format, startOfMonth, startOfWeek } from 'date-fns';
 import { Loader2, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { buildSaleCreditResolver, fetchSalesCreditAgentIds } from '@/lib/saleCredit';
 
 /**
  * Manager view of the same figures each agent sees on their own "My progress"
