@@ -92,18 +92,18 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
   const priceLines: string[] = [];
   if (monthlyNum) {
     priceLines.push(
-      `<strong>Pay monthly &mdash; £${monthlyNum.toFixed(2)} per month</strong><br>` +
-      `12 monthly payments, interest-free${monthlyTotalNum ? ` &middot; Total £${monthlyTotalNum.toLocaleString()}` : ''}`
+      `<p style="margin:0 0 4px 0;font-size:16px;color:#111827;"><strong>Pay monthly &mdash; £${monthlyNum.toFixed(2)} / month</strong></p>` +
+      `<p style="margin:0;color:#4b5563;font-size:14px;">12 interest-free payments${monthlyTotalNum ? ` &middot; Total £${monthlyTotalNum.toLocaleString()}` : ''}</p>`
     );
   }
   if (payInFullNum) {
     priceLines.push(
-      `<strong>Pay in full &mdash; £${payInFullNum.toLocaleString()}</strong><br>` +
-      `One payment, nothing else to pay${savingsNum && savingsNum > 0 ? ` &middot; £${savingsNum.toLocaleString()} less than monthly${savingsPct ? ` (${savingsPct}%)` : ''}` : ''}`
+      `<p style="margin:0 0 4px 0;font-size:16px;color:#111827;"><strong>Pay in full &mdash; £${payInFullNum.toLocaleString()}</strong></p>` +
+      `<p style="margin:0;color:#4b5563;font-size:14px;">One payment, nothing else to pay${savingsNum && savingsNum > 0 ? ` &middot; Save £${savingsNum.toLocaleString()} vs monthly${savingsPct ? ` (${savingsPct}%)` : ''}` : ''}</p>`
     );
   }
   const priceHtml = priceLines
-    .map((line) => `<p style="margin:0 0 12px 0;">${line}</p>`)
+    .map((line) => `<div style="margin:0 0 14px 0;padding:12px 14px;background:#f9fafb;border-left:3px solid #0b57d0;border-radius:4px;">${line}</div>`)
     .join('');
 
   const summaryLines: Array<[string, string]> = [
@@ -117,8 +117,8 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
 
   const summaryHtml = summaryLines.map(([label, value]) => `
     <tr>
-      <td style="padding:4px 16px 4px 0;color:#4b5563;font-size:15px;line-height:1.55;vertical-align:top;white-space:nowrap;">${escapeHtml(label)}:</td>
-      <td style="padding:4px 0;color:#111827;font-size:15px;line-height:1.55;">${escapeHtml(value)}</td>
+      <td style="padding:5px 16px 5px 0;color:#4b5563;font-size:15px;line-height:1.55;vertical-align:top;white-space:nowrap;">${escapeHtml(label)}:</td>
+      <td style="padding:5px 0;color:#111827;font-size:15px;line-height:1.55;">${escapeHtml(value)}</td>
     </tr>
   `).join('');
 
@@ -133,7 +133,7 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
     'Transferable if you sell your car',
   ];
   const includedHtml = included
-    .map((item) => `<p style="margin:0 0 6px 0;">&#10003; ${item}</p>`)
+    .map((item) => `<p style="margin:0 0 7px 0;font-size:15px;line-height:1.5;"><span style="color:#0b57d0;font-weight:600;margin-right:6px;">✓</span>${item}</p>`)
     .join('');
 
   const supabaseUrl = (typeof Deno !== 'undefined' ? Deno.env.get('SUPABASE_URL') : '') || 'https://mzlpuxzwyrcyrgrongeb.supabase.co';
