@@ -26,7 +26,7 @@ import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner'
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 import { AlertRailHost } from '@/components/admin/AlertRail';
-import { Worldpay140LinkButton } from '@/components/admin/Worldpay140LinkButton';
+
 
 import { NewLeadTopBanner } from '@/components/admin/leads/NewLeadTopBanner';
 
@@ -1227,7 +1227,6 @@ const AdminDashboardInner: React.FC<{
             </nav>
 
             <div className="hidden lg:flex items-center space-x-3">
-              <Worldpay140LinkButton />
               <GlobalQuickReminderButton />
               {/* View As dropdown - super_admin only */}
               {isSuperAdmin && <ViewAsDropdown />}
@@ -1277,7 +1276,6 @@ const AdminDashboardInner: React.FC<{
                       <span className="text-orange-500 font-semibold text-sm py-2 border-b border-gray-200">Admin Dashboard</span>
                     </nav>
                     <div className="space-y-4 pt-6 mt-auto">
-                      <Worldpay140LinkButton className="w-full justify-center" />
                       <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer nofollow">
                         <Button variant="outline" className="w-full bg-green-500 text-white border-green-500 hover:bg-green-600 hover:border-green-600 text-lg py-3" onClick={() => setIsMobileMenuOpen(false)}>WhatsApp Us</Button>
                       </a>

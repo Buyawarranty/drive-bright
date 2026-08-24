@@ -39,6 +39,7 @@ import {
   buildAppealEmailHtml,
   buildAppealEmailSubject,
 } from '@/lib/appealEmailTemplate';
+import { Worldpay140LinkButton } from '@/components/admin/Worldpay140LinkButton';
 
 export const INDEPENDENT_REVIEWERS = [
   {
@@ -557,6 +558,17 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
                         and pays £{feeNumber} to the independent inspection company.
                       </p>
                     </div>
+                  </div>
+
+                  <div className="rounded-md border border-dashed border-border bg-muted/20 p-3">
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Alternatively, generate a standalone Worldpay £140 pay-by-link that you can copy
+                      and send to the customer by email, SMS or WhatsApp.
+                    </p>
+                    <Worldpay140LinkButton
+                      label="Generate Worldpay £140 link"
+                      className="bg-background hover:bg-muted"
+                    />
                   </div>
                 </>
               )}
