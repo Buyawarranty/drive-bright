@@ -18,6 +18,8 @@ import { AgentSalesVsLeadsPanel } from './analytics/AgentSalesVsLeadsPanel';
 import { CustomerDemographicsPanel } from './analytics/CustomerDemographicsPanel';
 import { PriceConversionAovPanel } from './analytics/PriceConversionAovPanel';
 import { LeadsToSalesRatioPanel } from './analytics/LeadsToSalesRatioPanel';
+import { TimeToConvertPanel } from './analytics/TimeToConvertPanel';
+
 
 
 import { QuickMonthFilter } from './QuickMonthFilter';
@@ -103,6 +105,8 @@ const ANALYTICS_QUICK_LINKS = [
   { id: 'demographics', label: 'Age & UK demographics', className: 'bg-fuchsia-300/50 text-fuchsia-900 border-fuchsia-200/50 hover:bg-fuchsia-400/50' },
   { id: 'price-conversion-aov', label: 'Price, conversion & AOV', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
   { id: 'leads-to-sales', label: 'Leads to sales ratio', className: 'bg-amber-300/50 text-amber-900 border-amber-200/50 hover:bg-amber-400/50' },
+  { id: 'time-to-convert', label: 'Time to convert', className: 'bg-sky-300/50 text-sky-900 border-sky-200/50 hover:bg-sky-400/50' },
+
 
 
   { id: 'filters', label: 'Price analysis per day', className: 'bg-slate-300/50 text-slate-900 border-slate-200/50 hover:bg-slate-400/50' },
@@ -1691,6 +1695,11 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         <AnalyticsSectionHeading id="leads-to-sales" title="Leads to sales ratio" description="Leads in versus sales made per day, with ad spend against the value of those sales." accent="border-amber-500/60" />
 
         <LeadsToSalesRatioPanel />
+
+        <AnalyticsSectionHeading id="time-to-convert" title="Time to convert" description="How long a lead takes to pay after it lands — average, typical and longest, split by lead source." accent="border-sky-500/60" />
+
+        <TimeToConvertPanel dateRange={effectiveDateRange} />
+
 
 
 
