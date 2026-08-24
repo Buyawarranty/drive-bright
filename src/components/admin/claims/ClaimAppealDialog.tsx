@@ -361,7 +361,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             {/* Payment */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Appeal fee (£)</Label>
+                <Label>Inspection fee (£) — payable to the inspection company</Label>
                 <Input
                   type="number"
                   min="0"
@@ -371,12 +371,38 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Appeal payment link *</Label>
-                <Input
-                  value={paymentLink}
-                  onChange={(e) => setPaymentLink(e.target.value)}
-                  placeholder="Paste the appeal payment link (Stripe / Bumper)"
-                />
+                <Label>Inspection payment link *</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={paymentLink}
+                    readOnly
+                    placeholder="Generate the customer's secure payment page"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={generatePaymentLink}
+                    disabled={!selected || generatingLink}
+                  >
+                    {generatingLink ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Generate'}
+                  </Button>
+                  {paymentLink && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(paymentLink);
+                        toast({ title: 'Payment link copied' });
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Creates a real, working page where the customer completes the inspection form and
+                  pays £{feeNumber} to the independent inspection company.
+                </p>
               </div>
             </div>
 
