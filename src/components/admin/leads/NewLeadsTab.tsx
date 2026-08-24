@@ -1137,13 +1137,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       result = deduped;
     }
 
-    if (teamFilter && !debouncedSearchTerm.trim()) {
-      result = result.filter(lead => agentBelongsToTeam(lead.assigned_to, teamFilter));
+    if (effectiveTeamFilter && !debouncedSearchTerm.trim()) {
+      result = result.filter(lead => passesTeamFilter(lead.assigned_to));
     }
 
 
     return result;
-  }, [statusFilteredLeads, assignmentFilter, agentFilter, filter, debouncedSearchTerm, dateRange, getLeadSubmissionDate, visibleLeads, canSeeUnworked, isRecoveredLead, teamFilter, agentBelongsToTeam, wasContactedInRange]);
+  }, [statusFilteredLeads, assignmentFilter, agentFilter, filter, debouncedSearchTerm, dateRange, getLeadSubmissionDate, visibleLeads, canSeeUnworked, isRecoveredLead, effectiveTeamFilter, passesTeamFilter, wasContactedInRange]);
 
   const dateFilteredVisibleLeadsForFilters = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return visibleLeads;
