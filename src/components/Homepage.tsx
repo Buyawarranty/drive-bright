@@ -194,6 +194,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     if (formatted.length <= 8) {
       setRegNumber(formatted);
       if (regError) { setRegError(''); setRegErrorDetail(''); }
+      if (regNudge) setRegNudge('');
       if (showManualVehicle) setShowManualVehicle(false);
       if (idGap) setIdGap(null);
 
