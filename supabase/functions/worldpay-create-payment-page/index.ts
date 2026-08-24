@@ -57,11 +57,15 @@ serve(async (req) => {
       return json({ error: "Worldpay credentials not configured" }, 500);
     }
 
-    const base = env === "live"
+    const primary = env === "live"
       ? "https://access.worldpay.com"
       : "https://try.access.worldpay.com";
+    const secondary = env === "live"
+      ? "https://try.access.worldpay.com"
+      : "https://access.worldpay.com";
 
     const transactionReference = `BAW-${crypto.randomUUID()}`;
+    const site = "https://buyawarranty.co.uk";
 
     const wpBody = {
       transactionReference,
@@ -72,28 +76,88 @@ serve(async (req) => {
         paymentInstrument: { type: "card/front" },
       },
       channel: body.flow === "moto" ? "moto" : "ecom",
+      resultURLs: {
+        successURL: `${site}/payment-received`,
+        pendingURL: `${site}/payment-received`,
+        failureURL: `${site}/payment-received?status=failed`,
+        errorURL: `${site}/payment-received?status=error`,
+        cancelURL: `${site}/payment-received?status=cancelled`,
+        expiryURL: `${site}/payment-received?status=expired`,
+      },
     };
 
-    log("Calling Worldpay", { base, transactionReference, flow: body.flow });
+    const authValue = `Basic ${btoa(`${username}:${password}`)}`;
+    const hppContentType = "application/vnd.worldpay.payment_pages-v1.hal+json";
 
-    const wpRes = await fetch(`${base}/paymentPages`, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${btoa(`${username}:${password}`)}`,
-        "Content-Type": "application/vnd.worldpay.payment_pages-v1.hal+json",
-        Accept: "application/vnd.worldpay.payment_pages-v1.hal+json",
-      },
-      body: JSON.stringify(wpBody),
-    });
+    // Worldpay Access is a HAL API: the correct hosted-payment-page endpoint must be
+    // discovered from the service root. Hardcoding /paymentPages returns
+    // 404 endpointNotFound on some merchant setups, so discover first and keep
+    // sensible fallbacks (including the other environment host).
+    const discover = async (base: string): Promise<string | null> => {
+      try {
+        const res = await fetch(`${base}/`, {
+          headers: { Authorization: authValue, Accept: "application/json" },
+        });
+        if (!res.ok) {
+          log("Discovery failed", { base, status: res.status });
+          return null;
+        }
+        const root = await res.json();
+        const links = root?._links ?? {};
+        const key = Object.keys(links).find((k) => /paymentpages/i.test(k));
+        const href = key ? links[key]?.href : null;
+        log("Discovery", { base, key, href });
+        return typeof href === "string" ? href : null;
+      } catch (e) {
+        log("Discovery error", { base, message: (e as Error)?.message });
+        return null;
+      }
+    };
 
-    const wpText = await wpRes.text();
+    const candidates: string[] = [];
+    const discovered = await discover(primary);
+    if (discovered) candidates.push(discovered);
+    candidates.push(`${primary}/paymentPages`);
+    const discoveredSecondary = discovered ? null : await discover(secondary);
+    if (discoveredSecondary) candidates.push(discoveredSecondary);
+    candidates.push(`${secondary}/paymentPages`);
+
+    log("Calling Worldpay", { candidates, transactionReference, flow: body.flow });
+
+    let wpRes: Response | null = null;
+    let wpText = "";
     let wpJson: any = {};
-    try { wpJson = JSON.parse(wpText); } catch { /* ignore */ }
+    let lastError = "";
 
-    if (!wpRes.ok) {
-      log("Worldpay error", { status: wpRes.status, body: wpText });
-      return json({ error: "Worldpay request failed", status: wpRes.status, details: wpText }, wpRes.status);
+    for (const url of Array.from(new Set(candidates))) {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: authValue,
+          "Content-Type": hppContentType,
+          Accept: hppContentType,
+        },
+        body: JSON.stringify(wpBody),
+      });
+      const text = await res.text();
+      if (res.ok) {
+        wpRes = res;
+        wpText = text;
+        try { wpJson = JSON.parse(text); } catch { /* ignore */ }
+        break;
+      }
+      log("Worldpay attempt failed", { url, status: res.status, body: text.slice(0, 500) });
+      lastError = `${res.status} ${text.slice(0, 300)}`;
+      // Only keep trying while the endpoint itself is wrong; real rejections stop here.
+      if (res.status !== 404) {
+        return json({ error: "Worldpay request failed", status: res.status, details: text }, 502);
+      }
     }
+
+    if (!wpRes) {
+      return json({ error: `Worldpay request failed: ${lastError || "no endpoint reachable"}` }, 502);
+    }
+
 
     const paymentUrl: string | undefined = wpJson?.url
       || wpJson?._links?.["payment_pages:url"]?.href
