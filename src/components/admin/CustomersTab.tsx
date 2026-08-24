@@ -6865,6 +6865,7 @@ Please log in and change your password after first login.`;
                   </TableCell>
                     <TableCell>
                       <div className="flex flex-col space-y-1">
+                        {canReassignSaleCredit ? (
                         <Select
                           value={customer.assigned_to ? customer.assigned_to : (
                             (customer.customer_policies?.[0]?.warranty_number || '').startsWith('BAW-') && !(customer.customer_policies?.[0]?.warranty_number || '').startsWith('BAW-S-')
@@ -6898,8 +6899,24 @@ Please log in and change your password after first login.`;
 
                           </SelectContent>
                         </Select>
+                        ) : (
+                          // Only managers can move a sale between agents — everyone
+                          // else sees who owns it, read-only.
+                          <span className="text-xs text-muted-foreground">
+                            {(() => {
+                              if (!customer.assigned_to) {
+                                const wn = customer.customer_policies?.[0]?.warranty_number || '';
+                                return wn.startsWith('BAW-') && !wn.startsWith('BAW-S-') ? 'Website' : 'Unassigned';
+                              }
+                              if (customer.assigned_to === WEBSITE_SALES_ACCOUNT_ID) return 'Website';
+                              const u = adminUsers.find(a => a.id === customer.assigned_to);
+                              return u ? (`${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email) : 'Assigned';
+                            })()}
+                          </span>
+                        )}
                       </div>
                     </TableCell>
+
                   {canSeeSourceColumn && showPurchaseSource && (
                     <TableCell className="bg-purple-50/30">
                       {(() => {
