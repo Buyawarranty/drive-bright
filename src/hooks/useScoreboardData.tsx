@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCredit';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
@@ -134,8 +135,13 @@ export const useScoreboardData = (): ScoreboardData => {
       // then quote_sent_by, and only fall back to assigned_to for older rows with
       // no other sales marker. Filter by signup_date so historical months don't
       // shift when leads are later reassigned.
-      const agentIdList = agentIds.join(',');
-      const attributionFilter = `sale_credit_admin_user_id.in.(${agentIdList}),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.in.(${agentIdList})),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.is.null,quote_sent_by.in.(${agentIdList})),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.is.null,quote_sent_by.is.null,assigned_to.in.(${agentIdList}))`;
+      // Credit only ever lands on a sales agent — back-office staff who confirm a
+      // payment on an agent's behalf never take the sale. Fetch a superset of rows
+      // touched by any sales agent, then resolve the single owner in code.
+      const salesAgentIds = await fetchSalesCreditAgentIds();
+      const resolveCredit = buildSaleCreditResolver(salesAgentIds);
+      const salesIdList = Array.from(new Set([...salesAgentIds, ...agentIds])).join(',');
+      const attributionFilter = `sale_credit_admin_user_id.in.(${salesIdList}),payment_confirmed_by.in.(${salesIdList}),quote_sent_by.in.(${salesIdList}),assigned_to.in.(${salesIdList})`;
       let customerQuery = supabase
         .from('customers')
         .select('id, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id, final_amount, original_amount, discount_amount, discount_code, signup_date, created_at, status')
@@ -150,7 +156,7 @@ export const useScoreboardData = (): ScoreboardData => {
       }
 
       const { data: customers } = await customerQuery;
-      const attributionOf = (c: any) => c.sale_credit_admin_user_id || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to;
+      const attributionOf = (c: any) => resolveCredit(c);
 
 
 
