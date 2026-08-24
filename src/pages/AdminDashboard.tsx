@@ -501,7 +501,7 @@ const AdminDashboard = () => {
     setActiveTab(previousTab);
     setTabHistory(updatedHistory);
     setTabParam(previousTab);
-  }, [setSearchParams]);
+  }, [setTabParam]);
 
   // Ensure the current tab is always in the history stack
   useEffect(() => {
