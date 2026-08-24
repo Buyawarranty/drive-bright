@@ -396,6 +396,18 @@ const AdminDashboard = () => {
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
   // Public slug used in the URL bar (reverse map for tab ids that were renamed)
   const publicSlugFor = (id: string) => (id === 'overview' ? 'live-calls-data' : id);
+  // Write the tab into the URL WITHOUT nuking the rest of the query string.
+  // Deep links carry panel state (ltPeriod / ltFrom / ltTo / leadId), and the
+  // old `setSearchParams({ tab })` calls replaced the whole query, so a shared
+  // link like ?tab=new-leads&ltPeriod=today lost its filter on mount.
+  const setTabParam = useCallback((id: string, extra?: Record<string, string>) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('tab', publicSlugFor(id));
+      if (extra) Object.entries(extra).forEach(([k, v]) => next.set(k, v));
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
   // Rewrite legacy tab in URL once on mount
   useEffect(() => {
     if (rawUrlTab && (TAB_ALIASES[rawUrlTab] || rawUrlTab === 'overview')) {
