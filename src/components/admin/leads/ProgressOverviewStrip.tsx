@@ -300,6 +300,39 @@ export const ProgressOverviewStrip: React.FC = () => {
     load();
   }, [load]);
 
+  useEffect(() => {
+    if (!adminId) return;
+    let cancelled = false;
+    (async () => {
+      const [permRes, leadRes] = await Promise.all([
+        (supabase as any)
+          .from('save_online_sale_agents')
+          .select('enabled, commission_pct, authorised_at')
+          .eq('admin_user_id', adminId)
+          .maybeSingle(),
+        (supabase as any)
+          .from('sales_leads')
+          .select('id', { count: 'exact', head: true })
+          .eq('assigned_to', adminId)
+          .eq('save_online_sale', true)
+          .not('status', 'in', '(converted,lost,archived)'),
+      ]);
+      if (cancelled) return;
+      const perm = permRes?.data;
+      setSaveOnline(
+        perm?.enabled
+          ? {
+              pct: Number(perm.commission_pct ?? 4),
+              authorisedAt: perm.authorised_at ?? null,
+              open: leadRes?.count ?? 0,
+            }
+          : null,
+      );
+    })();
+    return () => { cancelled = true; };
+  }, [adminId]);
+
+
   const toggleBreak = async () => {
     if (!adminId) return;
     setSaving(true);
