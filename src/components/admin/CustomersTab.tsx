@@ -818,6 +818,9 @@ export const CustomersTab = ({
       const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
       const isStaff = warrantyNum.startsWith('BAW-S-');
       const isAdm = warrantyNum.startsWith('ADM');
+      const isAgent = isStaff || isAdm;
+
+
 
       // Channel attribution falls back to acquisition_source/gclid/msclkid/ttclid so that customers
       // without a warranty number yet still count toward Google/Facebook/Bing/TikTok totals.
