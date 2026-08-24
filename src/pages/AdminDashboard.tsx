@@ -407,7 +407,7 @@ const AdminDashboard = () => {
       if (extra) Object.entries(extra).forEach(([k, v]) => next.set(k, v));
       return next;
     }, { replace: true });
-  }, [setTabParam]);
+  }, [setSearchParams]);
   // Rewrite legacy tab in URL once on mount
   useEffect(() => {
     if (rawUrlTab && (TAB_ALIASES[rawUrlTab] || rawUrlTab === 'overview')) {
