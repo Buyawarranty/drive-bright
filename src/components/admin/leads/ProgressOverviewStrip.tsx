@@ -221,8 +221,11 @@ export const ProgressOverviewStrip: React.FC = () => {
       const monthNegatives = monthReviews.filter((r) => r.kind === 'negative_removed').length;
 
       // My own sales per day, plus the date of my most recent sale. Cancelled and
-      // refunded rows never count as a sale; anything else does.
+      // refunded rows never count as a sale; anything else does. A sale belongs to
+      // exactly ONE agent, so the same single-credit rule the scoreboard uses is
+      // applied here — otherwise a deal a colleague confirmed would be counted twice.
       const DEAD_STATUSES = ['cancelled', 'canceled', 'refunded'];
+      const resolveCredit = buildSaleCreditResolver(await fetchSalesCreditAgentIds());
       const perDay = new Map<string, number>();
       let lastSaleAt: string | null = null;
       let lastSaleProof: string | null = null;
@@ -230,6 +233,7 @@ export const ProgressOverviewStrip: React.FC = () => {
         if (!s.signup_date) return;
         const st = String(s.status || '').toLowerCase();
         if (DEAD_STATUSES.some((d) => st.includes(d))) return;
+        if (resolveCredit(s) !== adminId) return;
         const key = format(new Date(s.signup_date), 'yyyy-MM-dd');
         perDay.set(key, (perDay.get(key) || 0) + 1);
         if (!lastSaleAt || new Date(s.signup_date) > new Date(lastSaleAt)) {
@@ -239,6 +243,7 @@ export const ProgressOverviewStrip: React.FC = () => {
             .join(' · ') || null;
         }
       });
+
 
 
       // Completed service days since my last sale. Today is still in progress so it
