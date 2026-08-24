@@ -515,14 +515,14 @@ const AppealWorldpayPayment: React.FC<{
   onLinkSaved: (url: string) => Promise<void>;
 }> = ({ claim, appeal, defaultAmount, onLinkSaved }) => {
   const { toast } = useToast();
-  const [amount, setAmount] = useState<string>(defaultAmount != null ? String(defaultAmount) : '');
+  const [amount, setAmount] = useState<string>(defaultAmount != null ? String(defaultAmount) : String(DEFAULT_APPEAL_FEE));
   const [desc, setDesc] = useState<string>(`Appeal fee${claim?.reg ? ` — ${claim.reg}` : ''}`);
   const [loading, setLoading] = useState<null | 'moto' | 'link'>(null);
   const [url, setUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
 
   React.useEffect(() => {
-    if (defaultAmount != null) setAmount(String(defaultAmount));
+    setAmount(defaultAmount != null ? String(defaultAmount) : String(DEFAULT_APPEAL_FEE));
   }, [defaultAmount]);
 
   const create = async (flow: 'moto' | 'link') => {
