@@ -39,7 +39,10 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get('TRUSTPILOT_API_KEY');
     if (!apiKey) {
       console.error('TRUSTPILOT_API_KEY is not configured');
-      return json({ error: 'TRUSTPILOT_API_KEY is not configured' }, 500);
+      // Never surface an error status to the browser: the page has genuine
+      // fallback figures baked into its JSON-LD, so a missing/expired key must
+      // degrade quietly instead of logging a 403/500 on every page view.
+      return json({ unavailable: true, reason: 'not_configured' });
     }
 
     const url =
@@ -50,10 +53,9 @@ Deno.serve(async (req) => {
     if (!res.ok) {
       const details = await res.text();
       console.error(`Trustpilot request failed [${res.status}]: ${details}`);
-      return json(
-        { error: 'Trustpilot request failed', status: res.status, details },
-        res.status,
-      );
+      // Upstream 401/403 (rotated or unauthorised API key) must NOT be
+      // forwarded — it turned into a console 403 on every visitor's page.
+      return json({ unavailable: true, reason: 'upstream', status: res.status });
     }
 
     const data = await res.json();
@@ -62,7 +64,7 @@ Deno.serve(async (req) => {
 
     if (typeof score !== 'number' || typeof total !== 'number') {
       console.error('Unexpected Trustpilot payload', JSON.stringify(data));
-      return json({ error: 'Unexpected Trustpilot payload' }, 502);
+      return json({ unavailable: true, reason: 'payload' });
     }
 
     cache = {
