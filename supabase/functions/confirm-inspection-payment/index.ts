@@ -69,7 +69,7 @@ serve(async (req: Request) => {
     await supabase.from("claim_notes").insert({
       claim_id: reqRow.claim_id,
       note: `Independent inspection paid (£${((session.amount_total || 0) / 100).toFixed(2)}) — assigned to ${reqRow.inspection_company}. Customer accepted the decision as full and final. Average turnaround 7–14 working days.`,
-      author_name: "System",
+      created_by_name: "System",
     });
 
     return new Response(JSON.stringify({ success: true }), {
