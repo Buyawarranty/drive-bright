@@ -690,9 +690,13 @@ export const CustomersTab = ({
       });
     }
     let filtered = base;
-    let dateFilterActive = false;
-    if (revenueDateRange?.from) {
-      dateFilterActive = true;
+    // The table rows in `filteredCustomers` already honour the active signup/payment/deals
+    // date window. Re-applying a second window here made the total read £0 while the table
+    // clearly listed sales (e.g. agent filter + a stale "today" revenue window).
+    // Only apply the revenue window when the user is explicitly on the "revenue" scope.
+    const applyRevenueWindow = unifiedScope === 'revenue' && !!revenueDateRange?.from;
+    let dateFilterActive = !!dateRange?.from || applyRevenueWindow;
+    if (applyRevenueWindow && revenueDateRange?.from) {
       const from = new Date(revenueDateRange.from);
       from.setHours(0, 0, 0, 0);
       const to = revenueDateRange.to ? new Date(revenueDateRange.to) : new Date(from);
@@ -749,7 +753,7 @@ export const CustomersTab = ({
       sourceFilterActive,
       hiddenByDate: dateFilterActive ? Math.max(0, base.length - filtered.length) : 0,
     };
-  }, [filteredCustomers, revenueDateRange, isSuperAdmin, filterByStatus, filterBySource]);
+  }, [filteredCustomers, revenueDateRange, dateRange, unifiedScope, isSuperAdmin, filterByStatus, filterBySource]);
 
   // Super-admin-only: per-source totals shown inside the Purchase Source dropdown.
   // Honors the active date filter (Quick month / custom range) so April vs May
@@ -5026,7 +5030,9 @@ Buyawarranty.co.uk`,
 
                 {/* Revenue stats badge — shown for any active date selection so admins always see the total for what they've filtered */}
                 {isSuperAdmin && filteredRevenueStats && (() => {
-                  const activeRange = revenueDateRange ?? dateRange;
+                  // Label the window the total actually used, so it can never claim a
+                  // single day while the table is listing a wider set of sales.
+                  const activeRange = unifiedScope === 'revenue' ? revenueDateRange : dateRange;
                   let rangeLabel = 'all time';
                   if (activeRange?.from) {
                     const fromD = new Date(activeRange.from);
