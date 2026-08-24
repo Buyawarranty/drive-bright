@@ -199,11 +199,16 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
 
     const term = search.trim().toLowerCase();
     if (term) {
+      // Reg plates and phone numbers are matched ignoring spaces, dashes and punctuation
+      const squashed = term.replace(/[^a-z0-9]/g, '');
+      const squash = (v?: string | null) => (v || '').toLowerCase().replace(/[^a-z0-9]/g, '');
       list = list.filter(
         (c) =>
           c.customerName.toLowerCase().includes(term) ||
           c.reg.toLowerCase().includes(term) ||
+          (squashed.length > 1 && squash(c.reg).includes(squashed)) ||
           c.email.toLowerCase().includes(term) ||
+          (squashed.length > 4 && squash(c.phone).includes(squashed)) ||
           c.issue.toLowerCase().includes(term) ||
           c.id.toLowerCase().includes(term),
       );
