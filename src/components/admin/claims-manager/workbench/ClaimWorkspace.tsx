@@ -17,6 +17,7 @@ import { ClaimCommunicationsPanel } from '@/components/admin/claims/ClaimCommuni
 import { ClaimAttachmentsPanel } from './ClaimAttachmentsPanel';
 import { ClaimStatusDropdown } from '@/components/admin/claims/ClaimStatusDropdown';
 import { RequestUpdateDialog } from '@/components/admin/claims/RequestUpdateDialog';
+import { InspectionRequestDialog } from '@/components/admin/claims/InspectionRequestDialog';
 import {
   useSettlement, useClaimCallLogs, useClaimDocuments, useClaimAppeal, useClaimAudit,
   updateClaimField, logClaimAudit,
@@ -45,6 +46,7 @@ export const ClaimWorkspace: React.FC<Props> = ({ claim, onClose, onUpdated }) =
   const [mileageEdit, setMileageEdit] = useState(false);
   const [garageEdit, setGarageEdit] = useState(false);
   const [evidenceDialog, setEvidenceDialog] = useState(false);
+  const [inspectionDialog, setInspectionDialog] = useState(false);
   const [notesKey, setNotesKey] = useState(0);
 
   const refetch = async () => { if (onUpdated) await onUpdated(); };
@@ -107,6 +109,7 @@ export const ClaimWorkspace: React.FC<Props> = ({ claim, onClose, onUpdated }) =
             <Button size="sm" variant="outline" onClick={() => setUploadDialog(true)}><Upload className="h-3.5 w-3.5 mr-1.5" /> Upload document</Button>
             <Button size="sm" variant="outline" onClick={() => setTab('notes')}><MessageSquare className="h-3.5 w-3.5 mr-1.5" /> Add note</Button>
             <Button size="sm" variant="outline" onClick={() => setTab('settlement')}><DollarSign className="h-3.5 w-3.5 mr-1.5" /> Settlement</Button>
+            <Button size="sm" variant="outline" onClick={() => setInspectionDialog(true)}><Scale className="h-3.5 w-3.5 mr-1.5" /> Request independent inspection</Button>
           </div>
         </div>
       </div>
@@ -194,6 +197,15 @@ export const ClaimWorkspace: React.FC<Props> = ({ claim, onClose, onUpdated }) =
         claims={[{ id: claim.id, name: claim.customerName, vehicle_registration: claim.reg, claim_reason: claim.issue }]}
         open={evidenceDialog}
         onOpenChange={setEvidenceDialog}
+        onSent={refetch}
+      />
+      <InspectionRequestDialog
+        claimId={claim.id}
+        defaultEmail={claim.email}
+        customerName={claim.customerName}
+        registration={claim.reg}
+        open={inspectionDialog}
+        onOpenChange={setInspectionDialog}
         onSent={refetch}
       />
     </div>

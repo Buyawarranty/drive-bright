@@ -145,6 +145,7 @@ const VolvoWarrantyLanding = lazy(() => import("./pages/warranty-types/VolvoWarr
 const CitroenWarrantyLanding = lazy(() => import("./pages/warranty-types/CitroenWarrantyLanding"));
 const EVWarrantyLanding = lazy(() => import("./pages/warranty-types/EVWarrantyLanding"));
 const ClaimUpdateForm = lazy(() => import("./pages/ClaimUpdateForm"));
+const IndependentInspection = lazy(() => import("./pages/IndependentInspection"));
 const HybridWarrantyLanding = lazy(() => import("./pages/warranty-types/HybridWarrantyLanding"));
 const PHEVWarrantyLanding = lazy(() => import("./pages/warranty-types/PHEVWarrantyLanding"));
 const VolkswagenWarrantyLanding = lazy(() => import("./pages/warranty-types/VolkswagenWarrantyLanding"));
@@ -447,6 +448,7 @@ const App = () => {
                     <Route path="/warranty-types/:brand" element={<DynamicLandingPage />} />
                     <Route path="/warranty-types/:brand/" element={<DynamicLandingPage />} />
                     <Route path="/claim-update/:token" element={<ClaimUpdateForm />} />
+                    <Route path="/independent-inspection/:token" element={<IndependentInspection />} />
                     <Route path="/steptest" element={<StepTest />} />
                     
                     {/* Dealer Portal */}

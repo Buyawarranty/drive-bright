@@ -199,11 +199,16 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
 
     const term = search.trim().toLowerCase();
     if (term) {
+      // Reg plates and phone numbers are matched ignoring spaces, dashes and punctuation
+      const squashed = term.replace(/[^a-z0-9]/g, '');
+      const squash = (v?: string | null) => (v || '').toLowerCase().replace(/[^a-z0-9]/g, '');
       list = list.filter(
         (c) =>
           c.customerName.toLowerCase().includes(term) ||
           c.reg.toLowerCase().includes(term) ||
+          (squashed.length > 1 && squash(c.reg).includes(squashed)) ||
           c.email.toLowerCase().includes(term) ||
+          (squashed.length > 4 && squash(c.phone).includes(squashed)) ||
           c.issue.toLowerCase().includes(term) ||
           c.id.toLowerCase().includes(term),
       );
@@ -343,14 +348,14 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
 
       {/* Unified filter bar: search + date + sort + clear */}
       <div className="rounded-lg border border-border bg-card px-3 py-2 flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[220px] max-w-md">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-yellow-600" />
+        <div className="relative flex-1 min-w-[260px] max-w-xl">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-yellow-600" />
           <input
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search customer, reg, email, claim ref…"
-            className="w-full h-9 pl-8 pr-3 rounded-md border border-yellow-200 bg-yellow-50 text-sm placeholder:text-yellow-700/50 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:border-yellow-400"
+            placeholder="Search by name, reg plate, email, phone or claim ref…"
+            className="w-full h-11 pl-9 pr-3 rounded-md border-2 border-yellow-300 bg-yellow-50 text-sm placeholder:text-yellow-700/60 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:border-yellow-400"
           />
         </div>
 
