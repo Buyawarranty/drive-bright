@@ -407,12 +407,12 @@ const AdminDashboard = () => {
       if (extra) Object.entries(extra).forEach(([k, v]) => next.set(k, v));
       return next;
     }, { replace: true });
-  }, [setSearchParams]);
+  }, [setTabParam]);
   // Rewrite legacy tab in URL once on mount
   useEffect(() => {
     if (rawUrlTab && (TAB_ALIASES[rawUrlTab] || rawUrlTab === 'overview')) {
       const canonical = TAB_ALIASES[rawUrlTab] ?? rawUrlTab;
-      setSearchParams({ tab: publicSlugFor(canonical) }, { replace: true });
+      setTabParam(canonical);
     }
     // Attach global phone-click tracker (a[href^="tel:"] + [data-phone-click])
     initPhoneClickTracker();
@@ -490,17 +490,17 @@ const AdminDashboard = () => {
     }
     setActiveTab(newTab);
     // Persist tab to URL so refresh maintains state
-    setSearchParams({ tab: publicSlugFor(newTab) }, { replace: true });
+    setTabParam(newTab);
     // Track per-user tab visits so the shortcuts bar can surface favourites
     recordTabVisit(session?.user?.id ?? null, newTab);
     logAdminUiEvent({ event_type: 'tab_view', tab: newTab, label: `Opened ${newTab}` });
-  }, [setSearchParams, session?.user?.id]);
+  }, [setTabParam, session?.user?.id]);
 
   // Back navigation within the dashboard
   const handleBackToTab = useCallback((previousTab: string, updatedHistory: string[]) => {
     setActiveTab(previousTab);
     setTabHistory(updatedHistory);
-    setSearchParams({ tab: publicSlugFor(previousTab) }, { replace: true });
+    setTabParam(previousTab);
   }, [setSearchParams]);
 
   // Ensure the current tab is always in the history stack
@@ -557,7 +557,7 @@ const AdminDashboard = () => {
       const defaultTab = getFirstPermittedTab(cached.role, cached.permissions ?? null);
       setActiveTab(defaultTab);
       setTabHistory([defaultTab]);
-      setSearchParams({ tab: publicSlugFor(defaultTab) }, { replace: true });
+      setTabParam(defaultTab);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, session?.user?.id]);
@@ -759,7 +759,7 @@ const AdminDashboard = () => {
 
         setActiveTab(defaultTab);
         setTabHistory([defaultTab]);
-        setSearchParams({ tab: publicSlugFor(defaultTab) }, { replace: true });
+        setTabParam(defaultTab);
       }
 
     } catch (error) {
