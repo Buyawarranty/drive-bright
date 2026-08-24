@@ -14,6 +14,7 @@ import {
 } from 'recharts';
 import { endOfMonth, format, startOfMonth } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCredit';
 
 interface AgentRef {
   id: string;
@@ -36,9 +37,6 @@ interface SaleRow {
   amount: number;
   cancelled: boolean;
 }
-
-const attributionOf = (c: any) =>
-  c.sale_credit_admin_user_id || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to;
 
 const money = (n: number) => `£${Math.round(n).toLocaleString()}`;
 
@@ -79,8 +77,14 @@ export const DailySalesChartPanel: React.FC<Props> = ({
       }
       setLoading(true);
       try {
-        const idList = agentIds.join(',');
-        const attributionFilter = `sale_credit_admin_user_id.in.(${idList}),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.in.(${idList})),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.is.null,quote_sent_by.in.(${idList})),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.is.null,quote_sent_by.is.null,assigned_to.in.(${idList}))`;
+        // Only sales agents can hold credit — back-office staff who merely
+        // confirmed an external payment are skipped, so the deal falls through
+        // to the agent who actually worked it (same rule as the scoreboard).
+        const salesAgentIds = await fetchSalesCreditAgentIds();
+        const resolveCredit = buildSaleCreditResolver(salesAgentIds);
+        const attributionOf = (c: any) => resolveCredit(c);
+        const idList = Array.from(new Set([...agentIds, ...salesAgentIds])).join(',');
+        const attributionFilter = `sale_credit_admin_user_id.in.(${idList}),payment_confirmed_by.in.(${idList}),quote_sent_by.in.(${idList}),assigned_to.in.(${idList})`;
 
         const baseSelect =
           'id, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id, final_amount, signup_date, status';

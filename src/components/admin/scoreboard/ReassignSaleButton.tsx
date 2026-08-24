@@ -6,6 +6,7 @@ import { UserCog, Search, Loader2, ShieldAlert } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { SaleCreditOverrideDialog } from './SaleCreditOverrideDialog';
+import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCredit';
 
 interface CustomerRow {
   id: string;
@@ -38,6 +39,12 @@ export const ReassignSaleButton: React.FC<Props> = ({ label = 'Reassign a sale',
   const [backupOnly, setBackupOnly] = useState(defaultBackupOnly);
   const [loading, setLoading] = useState(false);
   const [override, setOverride] = useState<CustomerRow | null>(null);
+  const [salesCreditIds, setSalesCreditIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!open) return;
+    fetchSalesCreditAgentIds().then(setSalesCreditIds).catch(() => {});
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -96,8 +103,8 @@ export const ReassignSaleButton: React.FC<Props> = ({ label = 'Reassign a sale',
     return () => { cancelled = true; clearTimeout(t); };
   }, [open, search, backupOnly, sharedIds]);
 
-  const creditedTo = (c: CustomerRow) =>
-    c.sale_credit_admin_user_id || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to;
+  // Same single-credit rule as the scoreboard: non-sales confirmers are skipped.
+  const creditedTo = (c: CustomerRow) => buildSaleCreditResolver(salesCreditIds)(c);
 
   const refreshRow = (id: string) => {
     setRows(prev => prev.filter(r => r.id !== id));
