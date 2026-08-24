@@ -26,7 +26,7 @@ export const fetchSalesCreditAgentIds = async (): Promise<Set<string>> => {
   const { data } = await supabase
     .from('admin_users')
     .select('id, role')
-    .in('role', SALES_CREDIT_ROLES as unknown as string[]);
+    .in('role', ['sales', 'sales_lead']);
   return new Set((data || []).map((u: any) => u.id as string));
 };
 
