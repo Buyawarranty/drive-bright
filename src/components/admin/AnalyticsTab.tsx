@@ -18,6 +18,8 @@ import { AgentSalesVsLeadsPanel } from './analytics/AgentSalesVsLeadsPanel';
 import { CustomerDemographicsPanel } from './analytics/CustomerDemographicsPanel';
 import { PriceConversionAovPanel } from './analytics/PriceConversionAovPanel';
 import { LeadsToSalesRatioPanel } from './analytics/LeadsToSalesRatioPanel';
+import { TimeToConvertPanel } from './analytics/TimeToConvertPanel';
+
 
 
 import { QuickMonthFilter } from './QuickMonthFilter';
