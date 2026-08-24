@@ -1692,6 +1692,11 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
         <LeadsToSalesRatioPanel />
 
+        <AnalyticsSectionHeading id="time-to-convert" title="Time to convert" description="How long a lead takes to pay after it lands — average, typical and longest, split by lead source." accent="border-sky-500/60" />
+
+        <TimeToConvertPanel dateRange={effectiveDateRange} />
+
+
 
 
 
