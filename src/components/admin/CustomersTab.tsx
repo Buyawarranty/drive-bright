@@ -483,6 +483,9 @@ export const CustomersTab = ({
   // Initialize search term from URL parameter if present
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [deletedSearchTerm, setDeletedSearchTerm] = useState('');
+  // Server-side search hits (any date, any agent) kept separate from the loaded page
+  // so a refetch of `customers` can never wipe them mid-search.
+  const [serverSearchResults, setServerSearchResults] = useState<any[]>([]);
   const [sortBy, setSortBy] = useState('newest'); // Default to newest first
   // 'desc' = slowest (longest) first, 'asc' = fastest (shortest) first, null = inactive
   const [timeToLeadSort, setTimeToLeadSort] = useState<'desc' | 'asc' | null>(null);
