@@ -42,8 +42,8 @@ const StickyNavigation: React.FC = () => {
 
   return (
     <>
-      <header className="bg-white shadow-sm py-1 sm:py-2 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="bg-white shadow-sm py-2.5 sm:py-2 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center">
