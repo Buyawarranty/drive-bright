@@ -753,7 +753,7 @@ export const CustomersTab = ({
       sourceFilterActive,
       hiddenByDate: dateFilterActive ? Math.max(0, base.length - filtered.length) : 0,
     };
-  }, [filteredCustomers, revenueDateRange, isSuperAdmin, filterByStatus, filterBySource]);
+  }, [filteredCustomers, revenueDateRange, dateRange, unifiedScope, isSuperAdmin, filterByStatus, filterBySource]);
 
   // Super-admin-only: per-source totals shown inside the Purchase Source dropdown.
   // Honors the active date filter (Quick month / custom range) so April vs May
