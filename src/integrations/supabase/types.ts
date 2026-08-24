@@ -2827,6 +2827,110 @@ export type Database = {
           },
         ]
       }
+      claim_inspection_requests: {
+        Row: {
+          accepted_at: string | null
+          accepted_terms: boolean
+          additional_notes: string | null
+          amount_paid: number | null
+          availability_notes: string | null
+          claim_id: string
+          claim_reason: string | null
+          created_at: string
+          created_by: string | null
+          current_mileage: number | null
+          customer_email: string
+          customer_name: string | null
+          customer_phone: string | null
+          expires_at: string
+          fee_amount: number
+          garage_address: string | null
+          garage_contact: string | null
+          garage_name: string | null
+          garage_phone: string | null
+          id: string
+          inspection_company: string
+          paid_at: string | null
+          status: string
+          stripe_session_id: string | null
+          submitted_at: string | null
+          token: string
+          updated_at: string
+          vehicle_location: string | null
+          vehicle_registration: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_terms?: boolean
+          additional_notes?: string | null
+          amount_paid?: number | null
+          availability_notes?: string | null
+          claim_id: string
+          claim_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_mileage?: number | null
+          customer_email: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          expires_at?: string
+          fee_amount?: number
+          garage_address?: string | null
+          garage_contact?: string | null
+          garage_name?: string | null
+          garage_phone?: string | null
+          id?: string
+          inspection_company?: string
+          paid_at?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          submitted_at?: string | null
+          token?: string
+          updated_at?: string
+          vehicle_location?: string | null
+          vehicle_registration?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_terms?: boolean
+          additional_notes?: string | null
+          amount_paid?: number | null
+          availability_notes?: string | null
+          claim_id?: string
+          claim_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_mileage?: number | null
+          customer_email?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          expires_at?: string
+          fee_amount?: number
+          garage_address?: string | null
+          garage_contact?: string | null
+          garage_name?: string | null
+          garage_phone?: string | null
+          id?: string
+          inspection_company?: string
+          paid_at?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          submitted_at?: string | null
+          token?: string
+          updated_at?: string
+          vehicle_location?: string | null
+          vehicle_registration?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_inspection_requests_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claims_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claim_invoices: {
         Row: {
           amount: number | null
