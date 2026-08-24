@@ -257,6 +257,34 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
           });
         }
 
+        // Existing customers matching the search (usually a reg) so the agent can
+        // pull up and re-quote a known customer, not just an open lead.
+        if (customerResPromise) {
+          const custRes: any = await customerResPromise;
+          if (cancelled) return;
+          if (custRes.error) console.error('Error fetching customers:', custRes.error);
+          for (const c of (custRes.data as any[]) || []) {
+            const key = `${(c.email || '').toLowerCase()}|${(c.registration_plate || '').replace(/\s/g, '').toUpperCase()}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            const parts = (c.name || '').trim().split(/\s+/);
+            merged.push({
+              id: `customer:${c.id}`,
+              first_name: c.first_name || parts[0] || null,
+              last_name: c.last_name || parts.slice(1).join(' ') || null,
+              email: c.email || null,
+              phone: c.phone || null,
+              vehicle_reg: c.registration_plate || null,
+              vehicle_make: c.vehicle_make || null,
+              vehicle_model: c.vehicle_model || null,
+              vehicle_year: c.vehicle_year || null,
+              mileage: c.mileage != null ? String(c.mileage) : null,
+              plan_interest: c.plan_type || null,
+              assigned_to: c.assigned_to || null,
+            });
+          }
+        }
+
         setLeads(merged);
       } catch (err) {
         console.error('Error fetching leads:', err);
