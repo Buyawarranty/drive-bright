@@ -11,6 +11,7 @@ import { subDays, format, startOfMonth, endOfMonth } from 'date-fns';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { SaleCreditOverrideDialog } from './SaleCreditOverrideDialog';
+import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCredit';
 
 interface Props {
   agent: AgentScore | null;
@@ -33,6 +34,8 @@ interface CustomerDeal {
   created_at: string;
   status: string;
   assigned_to: string | null;
+  payment_confirmed_by: string | null;
+  quote_sent_by: string | null;
   sale_credit_admin_user_id: string | null;
 }
 
@@ -87,20 +90,24 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
     };
 
     // Fetch customer deals for this month (reg plates + details).
-    // Honor the manager sale-credit override: show a deal to this agent when
-    // (override = agent) OR (override is null AND assigned_to = agent).
+    // Uses the one-owner credit rule: manager override wins, then
+    // payment_confirmed_by / quote_sent_by / assigned_to, skipping any
+    // back-office (non-sales) id so credit lands on the real agent.
     const fetchCustomerDeals = async () => {
+      const salesAgentIds = await fetchSalesCreditAgentIds();
+      const resolveCredit = buildSaleCreditResolver(salesAgentIds);
+      const idList = Array.from(new Set([...salesAgentIds, agent.id])).join(',');
       const { data } = await supabase
         .from('customers')
-        .select('id, name, registration_plate, final_amount, created_at, status, assigned_to, sale_credit_admin_user_id')
+        .select('id, name, registration_plate, final_amount, created_at, status, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id')
         .eq('is_deleted', false)
         .ilike('status', 'active')
-        .or(`sale_credit_admin_user_id.eq.${agent.id},and(sale_credit_admin_user_id.is.null,assigned_to.eq.${agent.id})`)
+        .or(`sale_credit_admin_user_id.in.(${idList}),payment_confirmed_by.in.(${idList}),quote_sent_by.in.(${idList}),assigned_to.in.(${idList})`)
         .gte('created_at', monthStart.toISOString())
         .lte('created_at', monthEnd.toISOString())
         .order('created_at', { ascending: false });
 
-      setCustomerDeals((data || []) as CustomerDeal[]);
+      setCustomerDeals(((data || []) as CustomerDeal[]).filter(d => resolveCredit(d) === agent.id));
     };
 
 
