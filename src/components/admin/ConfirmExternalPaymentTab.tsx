@@ -1521,13 +1521,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           Required — we must record where the payment was taken.
                         </p>
                       )}
-                      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
-                        Where you can, send the customer your own payment link from
-                        Quotes &amp; Orders instead — the sale then lands in your name
-                        automatically and the card details never pass through you.
-                        Use this screen for payments taken outside that link.
-                      </p>
                     </div>
+
 
 
 
@@ -2098,7 +2093,19 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           Sales agent is required for commission tracking
                         </p>
                       )}
+                      {assigneeId && (
+                        <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-2.5 py-1.5">
+                          This sale will be credited to{' '}
+                          <strong>
+                            {adminUsers.find(a => a.id === assigneeId)
+                              ? getAdminDisplayName(adminUsers.find(a => a.id === assigneeId)!)
+                              : 'the selected agent'}
+                          </strong>{' '}
+                          — not to whoever is confirming the payment.
+                        </p>
+                      )}
                     </div>
+
 
                     <div className="flex items-center gap-2 pt-2">
                       <Checkbox id="welcome" checked={sendWelcomeEmail} onCheckedChange={(c) => setSendWelcomeEmail(c === true)} />
