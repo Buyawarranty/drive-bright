@@ -76,6 +76,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const [regNumber, setRegNumber] = useState('');
   const [regError, setRegError] = useState('');
   const [regErrorDetail, setRegErrorDetail] = useState('');
+  const [regNudge, setRegNudge] = useState('');
   const [mileage, setMileage] = useState('');
   const [mileageSelection, setMileageSelection] = useState<string>('');
   const [showMileageField, setShowMileageField] = useState(false);
