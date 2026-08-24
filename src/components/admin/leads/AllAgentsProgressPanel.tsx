@@ -82,10 +82,15 @@ export const AllAgentsProgressPanel: React.FC = () => {
           .gte('signup_date', addDays(now, -120).toISOString())
           .order('signup_date', { ascending: false })
           .limit(2000),
+        (supabase as any).rpc('get_scoreboard_reconciliation', {
+          p_start: monthStart.toISOString(),
+          p_end: endOfMonth(now).toISOString(),
+        }),
       ]);
 
       const val = (i: number): any => (settled[i].status === 'fulfilled' ? (settled[i] as any).value : null);
-      const [scoreRes, daysRes, breakRes, breakLogRes, reviewRes, capsRes, salesRes] = [0, 1, 2, 3, 4, 5, 6].map(val);
+      const [scoreRes, daysRes, breakRes, breakLogRes, reviewRes, capsRes, salesRes, reconRes] = [0, 1, 2, 3, 4, 5, 6, 7].map(val);
+      setRecon(((reconRes?.data || []) as ReconRow[]).map((r) => ({ ...r, revenue: Number(r.revenue) || 0 })));
 
       const score = ((scoreRes?.data || []) as any[]).filter((r) => r.admin_user_id);
 
