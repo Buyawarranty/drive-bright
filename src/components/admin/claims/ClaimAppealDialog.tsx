@@ -28,7 +28,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Search, Gavel, ExternalLink, Send, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Loader2, Search, Gavel, ExternalLink, Send, ArrowLeft, CheckCircle2, Copy } from 'lucide-react';
 
 export const INDEPENDENT_REVIEWERS = [
   {
@@ -93,6 +93,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
   const [notifyCustomer, setNotifyCustomer] = useState(true);
   const [reviewing, setReviewing] = useState(false);
   const [sending, setSending] = useState(false);
+  const [generatingLink, setGeneratingLink] = useState(false);
 
   useEffect(() => {
     if (open) setSelected(claim);
@@ -109,6 +110,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
       setPaymentLink(DEFAULT_PAYMENT_LINK);
       setNotifyCustomer(true);
       setReviewing(false);
+      setGeneratingLink(false);
     }
   }, [open]);
 
@@ -221,9 +223,10 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             created_by: userRes?.user?.id ?? null,
             message:
               `Your claim appeal has been opened${selected.vehicle_registration ? ` for ${selected.vehicle_registration}` : ''}. ` +
-              `Appeal fee: £${fee}. Pay here: ${paymentLink.trim()} — ` +
-              `An independent review is available from Scotia Vehicle Inspection (http://scotiavehicleinspection.com/) ` +
-              `or ACE (https://ace-uk.org) — whichever is available will be booked. Pay £${fee} now: ${paymentLink.trim()}. ` +
+              `An independent inspection is available from Scotia Vehicle Inspection (http://scotiavehicleinspection.com/) ` +
+              `or ACE (https://ace-uk.org) — whichever is available will be booked. ` +
+              `The inspection fee of £${fee} is paid to the independent inspection company, not to Buy a Warranty. ` +
+              `Complete the form and pay here: ${paymentLink.trim()}. ` +
               `We will post every update on this appeal here in your profile.`,
           });
           notified = !notifyError;
@@ -476,9 +479,9 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
               </p>
             </div>
             <div>
-              <p className="font-semibold">Appeal payment</p>
-              <p className="text-muted-foreground">
-                £{Number(String(appealFee).replace(/[^0-9.]/g, '')) || 0} · {paymentLink}
+              <p className="font-semibold">Inspection payment (paid to the inspection company)</p>
+              <p className="text-muted-foreground break-all">
+                £{feeNumber} · {paymentLink}
               </p>
             </div>
             <p className="text-muted-foreground">
