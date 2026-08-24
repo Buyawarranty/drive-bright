@@ -1279,64 +1279,78 @@ const AdminDashboardInner: React.FC<{
 
 
 
-      {/* Global auto-distribute control + backlog warning — visible on every admin page */}
-      <GlobalAutoDistributeBar
-        userRole={displayRole}
-        onGoToPool={() => handleTabChange('new-leads')}
-      />
+      {/*
+        Alert policy (Aug 2026): sales staff see ONE stacked new-lead banner only.
+        Every other pop-up/banner is management-only so the sales team isn't
+        buried in notifications.
+      */}
+      {(() => {
+        const isManagementAlerts = ['admin', 'super_admin', 'sales_manager'].includes(displayRole || '');
+        return (
+          <>
+            {isManagementAlerts && (
+              <>
+                {/* Global auto-distribute control + backlog warning */}
+                <GlobalAutoDistributeBar
+                  userRole={displayRole}
+                  onGoToPool={() => handleTabChange('new-leads')}
+                />
 
-      {/* Quick-grant access bar for admins — hand out newly-added sections without opening User Permissions */}
-      <QuickGrantAccessBar userRole={displayRole} />
+                {/* Quick-grant access bar for admins */}
+                <QuickGrantAccessBar userRole={displayRole} />
 
-      {/* Checkout struggle alert bar — admin & super_admin only */}
-      <CheckoutStruggleAlertBar userRole={userRole} />
+                {/* Checkout struggle alert bar — admin & super_admin only */}
+                <CheckoutStruggleAlertBar userRole={userRole} />
 
-      {/* Payments to collect — management only */}
-      <CollectPaymentsBanner userRole={userRole} onNavigate={handleTabChange} />
+                {/* Payments to collect — management only */}
+                <CollectPaymentsBanner userRole={userRole} onNavigate={handleTabChange} />
 
+                {/* Real-time incoming CallRail call banner */}
+                <IncomingCallBanner />
 
-      {/* Real-time incoming CallRail call banner */}
-      <IncomingCallBanner />
+                {/* Global missed inbound call bar */}
+                <MissedCallAlertBar
+                  userRole={userRole}
+                  onOpenLead={(leadId) => {
+                    handleTabChange('new-leads');
+                    setSearchParams({ tab: 'new-leads', leadId }, { replace: true });
+                  }}
+                />
 
-      {/* Global missed inbound call bar — visible on every admin tab */}
-      <MissedCallAlertBar
-        userRole={userRole}
-        onOpenLead={(leadId) => {
-          handleTabChange('new-leads');
-          setSearchParams({ tab: 'new-leads', leadId }, { replace: true });
-        }}
-      />
+                {/* Missed callback banner */}
+                <MissedCallbackAlertBanner
+                  onNavigate={(leadId, type) => {
+                    if (type === 'customer') handleTabChange('customers');
+                    else handleTabChange('new-leads');
+                  }}
+                />
 
+                <ReminderDuePopup activeTab={activeTab} onNavigate={(leadId, type) => {
+                  if (type === 'customer') {
+                    handleTabChange('customers');
+                  } else {
+                    handleTabChange('new-leads');
+                  }
+                }} />
+              </>
+            )}
 
-      {/* Full-width top banner (beep + mute lives here) so agents can't miss a lead */}
-      <NewLeadTopBanner
-        onGo={(leadId, focus) => {
-          handleTabChange('new-leads');
-          setSearchParams(
-            { tab: 'new-leads', leadId, ...(focus ? { q: focus } : {}) },
-            { replace: true }
-          );
-        }}
-      />
+            {/* The only alert everyone sees: stacked new-lead banner (beep + mute + close) */}
+            <NewLeadTopBanner
+              onGo={(leadId, focus) => {
+                handleTabChange('new-leads');
+                setSearchParams(
+                  { tab: 'new-leads', leadId, ...(focus ? { q: focus } : {}) },
+                  { replace: true }
+                );
+              }}
+            />
 
-      {/* One sticky left-hand rail hosts every floating alert so they never overlap */}
-      <AlertRailHost />
-
-      {/* Fresh-lead top banner + floating popup for the current agent */}
-      <NewLeadAlerts />
-
-      
-
-
-      {/* Persistent "Take lead" popup for agents on Open Pool mode */}
-
-      {/* Missed callback banner — prominent red bar, dismissible with live overdue timer */}
-      <MissedCallbackAlertBanner
-        onNavigate={(leadId, type) => {
-          if (type === 'customer') handleTabChange('customers');
-          else handleTabChange('new-leads');
-        }}
-      />
+            {/* Sticky left-hand rail host (kept mounted so portalled alerts have a home) */}
+            <AlertRailHost />
+          </>
+        );
+      })()}
 
       {/* Impersonation banner */}
       {isImpersonating && (
@@ -1344,19 +1358,6 @@ const AdminDashboardInner: React.FC<{
           👁️ Viewing dashboard as <strong>{viewAsAgent?.firstName} {viewAsAgent?.lastName}</strong> ({effectiveRole?.replace('_', ' ')}) — This is read-only simulation mode
         </div>
       )}
-      
-      <ReminderDuePopup activeTab={activeTab} onNavigate={(leadId, type) => {
-        if (type === 'customer') {
-          handleTabChange('customers');
-        } else {
-          handleTabChange('new-leads');
-        }
-      }} />
-
-      <NewLeadsWaitingBanner
-        activeTab={activeTab}
-        onGo={() => handleTabChange('new-leads')}
-      />
 
 
       <div className="flex-1 flex flex-col lg:flex-row">
