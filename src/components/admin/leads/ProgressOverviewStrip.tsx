@@ -114,6 +114,10 @@ export const ProgressOverviewStrip: React.FC = () => {
   const [results, setResults] = useState<CustomerHit[]>([]);
   const [searching, setSearching] = useState(false);
   const [picked, setPicked] = useState<CustomerHit | null>(null);
+  // "Save online sale" authorisation — shown only when management have switched
+  // it on for this agent (save_online_sale_agents.enabled).
+  const [saveOnline, setSaveOnline] = useState<{ pct: number; authorisedAt: string | null; open: number } | null>(null);
+
 
   const now = new Date();
   const weekStart = useMemo(() => startOfWeek(now, { weekStartsOn: 1 }), [now.toDateString()]);
