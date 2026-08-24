@@ -182,7 +182,7 @@ export const ClaimWorkspace: React.FC<Props> = ({ claim, onClose, onUpdated }) =
           <TabsContent value="comms" className="mt-4"><ClaimCommunicationsPanel claimId={claim.id} /></TabsContent>
           <TabsContent value="calls" className="mt-4"><CallsPanel claimId={claim.id} onLog={() => setCallDialog(true)} /></TabsContent>
           <TabsContent value="settlement" className="mt-4"><SettlementPanel claim={claim} onSaved={refetch} /></TabsContent>
-          <TabsContent value="appeal" className="mt-4"><AppealPanel claimId={claim.id} /></TabsContent>
+          <TabsContent value="appeal" className="mt-4"><AppealPanel claimId={claim.id} claim={claim} /></TabsContent>
           <TabsContent value="audit" className="mt-4"><AuditPanel claimId={claim.id} /></TabsContent>
         </Tabs>
       </div>
