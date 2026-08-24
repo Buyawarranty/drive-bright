@@ -6458,48 +6458,72 @@ export type Database = {
       }
       dealers: {
         Row: {
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
           commission_tier: string | null
           company_name: string
+          country_code: string | null
+          county: string | null
           created_at: string
           discount_pct: number
           email: string
           fca_number: string | null
           finance_limit: number | null
+          first_name: string | null
           id: string
+          last_name: string | null
           name: string
           phone: string | null
+          postcode: string | null
           status: string | null
           trading_name: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
           commission_tier?: string | null
           company_name: string
+          country_code?: string | null
+          county?: string | null
           created_at?: string
           discount_pct?: number
           email: string
           fca_number?: string | null
           finance_limit?: number | null
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           name: string
           phone?: string | null
+          postcode?: string | null
           status?: string | null
           trading_name?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
           commission_tier?: string | null
           company_name?: string
+          country_code?: string | null
+          county?: string | null
           created_at?: string
           discount_pct?: number
           email?: string
           fca_number?: string | null
           finance_limit?: number | null
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           name?: string
           phone?: string | null
+          postcode?: string | null
           status?: string | null
           trading_name?: string | null
           updated_at?: string
