@@ -1532,16 +1532,19 @@ export const CustomersTab = ({
       if (effectiveAgentFilter === 'unassigned') {
         filtered = filtered.filter(customer => !customer.assigned_to && !(customer as any).payment_confirmed_by);
       } else {
-        // Attribute a sale to the agent when they own the record (assigned_to),
-        // confirmed the payment (payment_confirmed_by), sent the quote (quote_sent_by),
-        // OR were given the sale credit via manager override (sale_credit_admin_user_id).
-        // This mirrors the Sales Scoreboard so both views agree on totals.
-        filtered = filtered.filter(customer =>
-          customer.assigned_to === effectiveAgentFilter ||
-          (customer as any).payment_confirmed_by === effectiveAgentFilter ||
-          (customer as any).quote_sent_by === effectiveAgentFilter ||
-          (customer as any).sale_credit_admin_user_id === effectiveAgentFilter
-        );
+        // A sale belongs to exactly ONE agent. Resolve credit with the same
+        // priority order the Sales Scoreboard uses so both views agree:
+        // sale_credit_admin_user_id → payment_confirmed_by → quote_sent_by → assigned_to.
+        // (An OR-match across all four fields credits the same sale to several
+        // agents and inflates every agent's total.)
+        filtered = filtered.filter(customer => {
+          const creditedTo =
+            (customer as any).sale_credit_admin_user_id ||
+            (customer as any).payment_confirmed_by ||
+            (customer as any).quote_sent_by ||
+            customer.assigned_to;
+          return creditedTo === effectiveAgentFilter;
+        });
       }
 
     }
