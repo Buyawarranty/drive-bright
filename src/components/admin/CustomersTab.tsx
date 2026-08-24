@@ -263,12 +263,15 @@ interface Customer {
   // Free-text customer contact notes (shown in Customer Management Notes column)
   contact_notes?: string | null;
   gclid?: string | null;
+  msclkid?: string | null;
+  ttclid?: string | null;
   utm_source?: string | null;
   utm_medium?: string | null;
   utm_campaign?: string | null;
   utm_term?: string | null;
   utm_content?: string | null;
   customer_dob?: string | null;
+
   admin_users?: {
     id: string;
     email: string;
@@ -368,12 +371,14 @@ const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
 };
 
 const getCustomerAcquisitionChannel = (
-  customer: Pick<Customer, 'acquisition_source' | 'gclid' | 'utm_source' | 'purchase_source'> & { is_manual_entry?: boolean | null }
+  customer: Pick<Customer, 'acquisition_source' | 'gclid' | 'msclkid' | 'ttclid' | 'utm_source' | 'purchase_source'> & { is_manual_entry?: boolean | null }
 ) => {
   const source = (customer.acquisition_source || '').trim().toLowerCase();
   const utm = (customer.utm_source || '').trim().toLowerCase();
   const purchaseSrc = (customer.purchase_source || '').trim().toLowerCase();
   const hasGclid = !!customer.gclid?.trim();
+  const hasMsclkid = !!customer.msclkid?.trim();
+  const hasTtclid = !!customer.ttclid?.trim();
 
   // Google: ANY Google signal counts as Google — gclid, normalised source, utm_source,
   // or purchase_source. This ensures phone sales from Google ads are included
@@ -394,6 +399,24 @@ const getCustomerAcquisitionChannel = (
     purchaseSrc === 'facebook_ads'
   ) return 'facebook_ads';
 
+  // Bing: msclkid, normalised source, utm_source, or purchase_source
+  if (
+    hasMsclkid ||
+    source.includes('bing') ||
+    ['bing_ad', 'bing'].includes(source) ||
+    utm.includes('bing') || utm.includes('microsoft') || utm.includes('msn') ||
+    purchaseSrc === 'bing_ads'
+  ) return 'bing_ads';
+
+  // TikTok: ttclid, normalised source, utm_source, or purchase_source
+  if (
+    hasTtclid ||
+    source.includes('tiktok') ||
+    ['tiktok_ad', 'tiktok'].includes(source) ||
+    utm.includes('tiktok') ||
+    purchaseSrc === 'tiktok_ads'
+  ) return 'tiktok_ads';
+
   if (['website', 'organic', 'direct', 'website_organic'].includes(source)) return 'website';
 
   // Website purchase with no recoverable marketing attribution -> Direct/Website
@@ -407,6 +430,7 @@ const getCustomerAcquisitionChannel = (
 
   return source || 'unknown';
 };
+
 
 // Was the sale completed by the customer themselves on the website (direct sale)
 // or closed by an agent from a lead (phone / manual back-office sale)?
