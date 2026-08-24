@@ -497,6 +497,26 @@ export const ProgressOverviewStrip: React.FC = () => {
             </div>
           </Cell>
 
+          {saveOnline && (
+            <Cell
+              icon={<BadgePercent className="h-4 w-4 text-emerald-600" />}
+              iconClass="bg-emerald-100"
+              label="Save online sale"
+              help="Your manager has authorised you to receive imported online sales. Each one you close pays you a percentage of the full value of the sale. Phone these customers first."
+            >
+              <div className="flex items-baseline gap-2 whitespace-nowrap">
+                <span className="text-lg font-bold">{saveOnline.pct}%</span>
+                <span className="text-xs text-muted-foreground">of the full sale value</span>
+              </div>
+              <div className="mt-0.5 text-[11px] text-muted-foreground whitespace-nowrap">
+                Turned on{saveOnline.authorisedAt ? ` ${format(new Date(saveOnline.authorisedAt), 'd MMM')}` : ''} ·{' '}
+                {saveOnline.open} open {saveOnline.open === 1 ? 'lead' : 'leads'}
+              </div>
+            </Cell>
+          )}
+
+
+
           <Cell
             icon={<CalendarDays className="h-4 w-4 text-emerald-600" />}
             iconClass="bg-emerald-100"
