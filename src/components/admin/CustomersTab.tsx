@@ -745,13 +745,22 @@ export const CustomersTab = ({
       all_view: empty(),
       website: empty(),
       website_google: empty(),
+      google_all: empty(),
+      google_leads_sales: empty(),
       website_facebook: empty(),
+      website_bing: empty(),
+      bing_all: empty(),
+      bing_leads_sales: empty(),
+      website_tiktok: empty(),
+      tiktok_all: empty(),
+      tiktok_leads_sales: empty(),
       website_organic: empty(),
       staff_purchase: empty(),
       quote_order: empty(),
       agent_sales: empty(),
       cancelled_refunded: empty(),
     };
+
 
     // Honour the same date window the main table uses (dateRange/revenueDateRange
     // are kept in sync), and align date-field selection (signup_date only) so
