@@ -144,7 +144,7 @@ const StickyNavigation: React.FC = () => {
                 <a
                   href="tel:03302295040"
                   aria-label="Call us on 0330 229 5040"
-                  className="inline-flex items-center gap-1.5 min-h-[34px] px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-700 shadow-sm hover:bg-gray-50 active:scale-[0.97] transition-all"
+                  className="inline-flex items-center gap-1.5 min-h-[34px] px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 shadow-sm hover:bg-gray-50 active:scale-[0.97] transition-all"
                 >
                   <Phone className="h-3.5 w-3.5 text-gray-600" strokeWidth={2} />
                   <span className="text-[13px] font-semibold leading-none whitespace-nowrap">0330 229 5040</span>
@@ -154,7 +154,7 @@ const StickyNavigation: React.FC = () => {
                   type="button"
                   onClick={() => setIsCallbackModalOpen(true)}
                   aria-label={`Request a callback — we ring you ${nextOpeningLabel()}`}
-                  className="inline-flex items-center gap-1.5 min-h-[34px] px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-700 shadow-sm hover:bg-gray-50 active:scale-[0.97] transition-all"
+                  className="inline-flex items-center gap-1.5 min-h-[34px] px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 shadow-sm hover:bg-gray-50 active:scale-[0.97] transition-all"
                 >
                   <PhoneCall className="h-3.5 w-3.5 text-[#B4501F]" strokeWidth={2} />
                   <span className="text-[13px] font-semibold leading-none whitespace-nowrap">Callback</span>
