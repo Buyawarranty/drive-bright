@@ -37,28 +37,45 @@ const loadGTM = () => {
   })(window, document, 'script', 'dataLayer', 'GTM-PJNTC6DX');
 };
 
+const FB_PIXEL_ID = '4105451209698810';
+
 const loadFacebookPixel = () => {
   if (typeof window === 'undefined' || fbLoaded) return;
   fbLoaded = true;
 
-  if (!window.fbq) {
-    const fbqStub: any = function () {
-      if (fbqStub.callMethod) fbqStub.callMethod.apply(fbqStub, arguments);
-      else fbqStub.queue.push(arguments);
-    };
-    fbqStub.push = fbqStub;
-    fbqStub.loaded = true;
-    fbqStub.version = '2.0';
-    fbqStub.queue = [];
-    window.fbq = fbqStub;
+  // If fbevents.js is already on the page (GTM tag, preview harness, embedded
+  // widget…) reuse that instance. Injecting a second loader is what produced
+  // "[Meta Pixel] Multiple pixels with conflicting versions were detected".
+  const alreadyLoaded =
+    !!window.fbq ||
+    !!document.querySelector('script[src*="connect.facebook.net/en_US/fbevents.js"]');
+
+  if (alreadyLoaded) {
+    try {
+      window.fbq?.('init', FB_PIXEL_ID);
+      window.fbq?.('track', 'PageView');
+    } catch {
+      // Foreign pixel implementation — leave it alone.
+    }
+    return;
   }
+
+  const fbqStub: any = function () {
+    if (fbqStub.callMethod) fbqStub.callMethod.apply(fbqStub, arguments);
+    else fbqStub.queue.push(arguments);
+  };
+  fbqStub.push = fbqStub;
+  fbqStub.loaded = true;
+  fbqStub.version = '2.0';
+  fbqStub.queue = [];
+  window.fbq = fbqStub;
 
   const script = document.createElement('script');
   script.async = true;
   script.src = 'https://connect.facebook.net/en_US/fbevents.js';
   script.onload = () => {
     if (window.fbq) {
-      window.fbq('init', '4105451209698810');
+      window.fbq('init', FB_PIXEL_ID);
       window.fbq('track', 'PageView');
     }
   };
