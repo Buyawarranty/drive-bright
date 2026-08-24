@@ -263,12 +263,15 @@ interface Customer {
   // Free-text customer contact notes (shown in Customer Management Notes column)
   contact_notes?: string | null;
   gclid?: string | null;
+  msclkid?: string | null;
+  ttclid?: string | null;
   utm_source?: string | null;
   utm_medium?: string | null;
   utm_campaign?: string | null;
   utm_term?: string | null;
   utm_content?: string | null;
   customer_dob?: string | null;
+
   admin_users?: {
     id: string;
     email: string;
@@ -368,12 +371,14 @@ const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
 };
 
 const getCustomerAcquisitionChannel = (
-  customer: Pick<Customer, 'acquisition_source' | 'gclid' | 'utm_source' | 'purchase_source'> & { is_manual_entry?: boolean | null }
+  customer: Pick<Customer, 'acquisition_source' | 'gclid' | 'msclkid' | 'ttclid' | 'utm_source' | 'purchase_source'> & { is_manual_entry?: boolean | null }
 ) => {
   const source = (customer.acquisition_source || '').trim().toLowerCase();
   const utm = (customer.utm_source || '').trim().toLowerCase();
   const purchaseSrc = (customer.purchase_source || '').trim().toLowerCase();
   const hasGclid = !!customer.gclid?.trim();
+  const hasMsclkid = !!customer.msclkid?.trim();
+  const hasTtclid = !!customer.ttclid?.trim();
 
   // Google: ANY Google signal counts as Google — gclid, normalised source, utm_source,
   // or purchase_source. This ensures phone sales from Google ads are included
@@ -394,6 +399,24 @@ const getCustomerAcquisitionChannel = (
     purchaseSrc === 'facebook_ads'
   ) return 'facebook_ads';
 
+  // Bing: msclkid, normalised source, utm_source, or purchase_source
+  if (
+    hasMsclkid ||
+    source.includes('bing') ||
+    ['bing_ad', 'bing'].includes(source) ||
+    utm.includes('bing') || utm.includes('microsoft') || utm.includes('msn') ||
+    purchaseSrc === 'bing_ads'
+  ) return 'bing_ads';
+
+  // TikTok: ttclid, normalised source, utm_source, or purchase_source
+  if (
+    hasTtclid ||
+    source.includes('tiktok') ||
+    ['tiktok_ad', 'tiktok'].includes(source) ||
+    utm.includes('tiktok') ||
+    purchaseSrc === 'tiktok_ads'
+  ) return 'tiktok_ads';
+
   if (['website', 'organic', 'direct', 'website_organic'].includes(source)) return 'website';
 
   // Website purchase with no recoverable marketing attribution -> Direct/Website
@@ -407,6 +430,7 @@ const getCustomerAcquisitionChannel = (
 
   return source || 'unknown';
 };
+
 
 // Was the sale completed by the customer themselves on the website (direct sale)
 // or closed by an agent from a lead (phone / manual back-office sale)?
@@ -689,6 +713,18 @@ export const CustomersTab = ({
       statusLabel = 'Google Leads sales';
     } else if (filterBySource === 'website_facebook') {
       statusLabel = 'Facebook Ads sales';
+    } else if (filterBySource === 'website_bing') {
+      statusLabel = 'Bing web sales';
+    } else if (filterBySource === 'bing_all') {
+      statusLabel = 'Bing Ads + Bing Leads sales';
+    } else if (filterBySource === 'bing_leads_sales') {
+      statusLabel = 'Bing Leads sales';
+    } else if (filterBySource === 'website_tiktok') {
+      statusLabel = 'TikTok web sales';
+    } else if (filterBySource === 'tiktok_all') {
+      statusLabel = 'TikTok Ads + TikTok Leads sales';
+    } else if (filterBySource === 'tiktok_leads_sales') {
+      statusLabel = 'TikTok Leads sales';
     } else if (filterBySource === 'website_organic') {
       statusLabel = 'organic sales';
     } else if (filterBySource === 'staff_purchase') {
@@ -698,6 +734,7 @@ export const CustomersTab = ({
     } else if (filterBySource === 'agent_sales') {
       statusLabel = 'agent sales';
     } else if (filterByStatus !== 'all') {
+
       statusLabel = filterByStatus === 'cancelled_and_refunded' ? 'cancellations/refunds' : filterByStatus;
     }
     const sourceFilterActive = filterBySource !== 'all_view';
@@ -721,13 +758,22 @@ export const CustomersTab = ({
       all_view: empty(),
       website: empty(),
       website_google: empty(),
+      google_all: empty(),
+      google_leads_sales: empty(),
       website_facebook: empty(),
+      website_bing: empty(),
+      bing_all: empty(),
+      bing_leads_sales: empty(),
+      website_tiktok: empty(),
+      tiktok_all: empty(),
+      tiktok_leads_sales: empty(),
       website_organic: empty(),
       staff_purchase: empty(),
       quote_order: empty(),
       agent_sales: empty(),
       cancelled_refunded: empty(),
     };
+
 
     // Honour the same date window the main table uses (dateRange/revenueDateRange
     // are kept in sync), and align date-field selection (signup_date only) so
@@ -785,12 +831,15 @@ export const CustomersTab = ({
       const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
       const isStaff = warrantyNum.startsWith('BAW-S-');
       const isAdm = warrantyNum.startsWith('ADM');
+      const isAgent = isStaff || isAdm;
 
-      // Channel attribution falls back to acquisition_source/gclid so that customers
-      // without a warranty number yet still count toward Google/Facebook totals.
+
+
+      // Channel attribution falls back to acquisition_source/gclid/msclkid/ttclid so that customers
+      // without a warranty number yet still count toward Google/Facebook/Bing/TikTok totals.
       const channel = getCustomerAcquisitionChannel(c);
       const channelOnly = !isWebsite && !isStaff && !isAdm &&
-        (channel === 'google_ads' || channel === 'facebook_ads' || channel === 'website');
+        (channel === 'google_ads' || channel === 'facebook_ads' || channel === 'bing_ads' || channel === 'tiktok_ads' || channel === 'website');
 
       if (isWebsite || channelOnly) {
         if (isWebsite) {
@@ -803,6 +852,12 @@ export const CustomersTab = ({
         } else if (channel === 'facebook_ads') {
           buckets.website_facebook.count += 1;
           buckets.website_facebook.revenue += amount;
+        } else if (channel === 'bing_ads') {
+          buckets.website_bing.count += 1;
+          buckets.website_bing.revenue += amount;
+        } else if (channel === 'tiktok_ads') {
+          buckets.website_tiktok.count += 1;
+          buckets.website_tiktok.revenue += amount;
         } else {
           buckets.website_organic.count += 1;
           buckets.website_organic.revenue += amount;
@@ -820,6 +875,32 @@ export const CustomersTab = ({
         buckets.agent_sales.count += 1;
         buckets.agent_sales.revenue += amount;
       }
+      // Cross-cut all Google / Bing / TikTok channels including agent-closed sales
+      if (channel === 'google_ads') {
+        buckets.google_all.count += 1;
+        buckets.google_all.revenue += amount;
+        if (isAgent) {
+          buckets.google_leads_sales.count += 1;
+          buckets.google_leads_sales.revenue += amount;
+        }
+      }
+      if (channel === 'bing_ads') {
+        buckets.bing_all.count += 1;
+        buckets.bing_all.revenue += amount;
+        if (isAgent) {
+          buckets.bing_leads_sales.count += 1;
+          buckets.bing_leads_sales.revenue += amount;
+        }
+      }
+      if (channel === 'tiktok_ads') {
+        buckets.tiktok_all.count += 1;
+        buckets.tiktok_all.revenue += amount;
+        if (isAgent) {
+          buckets.tiktok_leads_sales.count += 1;
+          buckets.tiktok_leads_sales.revenue += amount;
+        }
+      }
+
     });
     return buckets;
   }, [customers, isSuperAdmin, revenueDateRange, dateRange, filterByStatus]);
@@ -1344,12 +1425,12 @@ export const CustomersTab = ({
         
         if (filterBySource === 'website') {
           // "Website (BAW)" = pure direct/organic website sales only.
-          // Google-ads and Facebook-ads attributed website sales are shown under
+          // Google-ads, Facebook-ads, Bing-ads and TikTok-ads attributed website sales are shown under
           // their own dedicated filters, so exclude them here to avoid double-counting.
           const isWebsitePrefix = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
           if (!isWebsitePrefix) return false;
           const channel = getCustomerAcquisitionChannel(customer);
-          return channel !== 'google_ads' && channel !== 'facebook_ads';
+          return channel !== 'google_ads' && channel !== 'facebook_ads' && channel !== 'bing_ads' && channel !== 'tiktok_ads';
         } else if (filterBySource === 'website_google') {
           // Website sale with Google Ads attribution (normalised acquisition source, fall back to gclid)
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
@@ -1365,6 +1446,28 @@ export const CustomersTab = ({
           // Website sale with Facebook Ads attribution
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
           return isWebsite && getCustomerAcquisitionChannel(customer) === 'facebook_ads';
+        } else if (filterBySource === 'website_bing') {
+          // Website sale with Bing Ads attribution
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
+          return isWebsite && getCustomerAcquisitionChannel(customer) === 'bing_ads';
+        } else if (filterBySource === 'bing_leads_sales') {
+          // Agent-closed sales (BAW-S- staff or ADM- quote/order) where lead originated from Bing Ads
+          const isAgent = warrantyNum.startsWith('BAW-S-') || warrantyNum.startsWith('ADM');
+          return isAgent && getCustomerAcquisitionChannel(customer) === 'bing_ads';
+        } else if (filterBySource === 'bing_all') {
+          // Bing Ads pure (website) + Bing Leads sales (agent-closed) combined
+          return getCustomerAcquisitionChannel(customer) === 'bing_ads';
+        } else if (filterBySource === 'website_tiktok') {
+          // Website sale with TikTok Ads attribution
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
+          return isWebsite && getCustomerAcquisitionChannel(customer) === 'tiktok_ads';
+        } else if (filterBySource === 'tiktok_leads_sales') {
+          // Agent-closed sales (BAW-S- staff or ADM- quote/order) where lead originated from TikTok Ads
+          const isAgent = warrantyNum.startsWith('BAW-S-') || warrantyNum.startsWith('ADM');
+          return isAgent && getCustomerAcquisitionChannel(customer) === 'tiktok_ads';
+        } else if (filterBySource === 'tiktok_all') {
+          // TikTok Ads pure (website) + TikTok Leads sales (agent-closed) combined
+          return getCustomerAcquisitionChannel(customer) === 'tiktok_ads';
         } else if (filterBySource === 'website_organic') {
           // Website sale with no paid attribution (organic / direct website)
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
@@ -1385,6 +1488,7 @@ export const CustomersTab = ({
           // Deposit taken on Stripe, balance still outstanding
           return !!(customer as any).deposit_taken && !(customer as any).payment_collected_at;
         }
+
         return true;
       });
     }
@@ -4576,12 +4680,17 @@ Buyawarranty.co.uk`,
                 website: 'Website (BAW)', website_google: 'Google web',
                 google_all: 'Google all', google_leads_sales: 'Google leads',
                 website_facebook: 'Website F',
+                website_bing: 'Website B (Bing)',
+                bing_all: 'Bing all', bing_leads_sales: 'Bing leads',
+                website_tiktok: 'Website T (TikTok)',
+                tiktok_all: 'TikTok all', tiktok_leads_sales: 'TikTok leads',
                 website_organic: 'Website O', staff_purchase: 'Staff', quote_order: 'Quote & Orders',
                 agent_sales: 'Agent Sales', cancelled_refunded: 'Cancelled / Refunded',
                 payment_due: 'Payment due (deposit)',
               };
 
               chips.push({ key: 'source', label: 'Source', value: srcLabels[filterBySource] || filterBySource, onRemove: () => setFilterBySource('all_view') });
+
             }
             if (filterByPaymentSource !== 'all') {
               const payLabels: Record<string, string> = { bumper: 'Bumper', stripe: 'Stripe', payment_assist: 'Payment Assist', paypal: 'PayPal', other: 'Other / Manual' };
@@ -4713,12 +4822,19 @@ Buyawarranty.co.uk`,
                         <SelectItem value="google_all"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-600" /><span>Google all (web + leads)</span></div></SelectItem>
                         <SelectItem value="google_leads_sales"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-700" /><span>Google leads (agent)</span></div></SelectItem>
                         <SelectItem value="website_facebook"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-sky-500" /><span>Website F (Facebook)</span></div></SelectItem>
+                        <SelectItem value="website_bing"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-teal-500" /><span>Website B (Bing)</span></div></SelectItem>
+                        <SelectItem value="bing_all"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-teal-600" /><span>Bing all (web + leads)</span></div></SelectItem>
+                        <SelectItem value="bing_leads_sales"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-teal-700" /><span>Bing leads (agent)</span></div></SelectItem>
+                        <SelectItem value="website_tiktok"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-zinc-500" /><span>Website T (TikTok)</span></div></SelectItem>
+                        <SelectItem value="tiktok_all"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-zinc-700" /><span>TikTok all (web + leads)</span></div></SelectItem>
+                        <SelectItem value="tiktok_leads_sales"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-zinc-900" /><span>TikTok leads (agent)</span></div></SelectItem>
                         <SelectItem value="website_organic"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500" /><span>Website O (Organic)</span></div></SelectItem>
                         <SelectItem value="staff_purchase"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-500" /><span>Staff (BAW-S)</span></div></SelectItem>
                         <SelectItem value="quote_order"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-purple-500" /><span>Quote & Orders (ADM)</span></div></SelectItem>
                         <SelectItem value="agent_sales"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-orange-500" /><span>Agent Sales</span></div></SelectItem>
                         <SelectItem value="cancelled_refunded"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500" /><span>Cancelled / Refunded</span></div></SelectItem>
                         <SelectItem value="payment_due"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500" /><span>Payment due (deposit)</span></div></SelectItem>
+
                       </SelectContent>
                     </Select>
                   )}
