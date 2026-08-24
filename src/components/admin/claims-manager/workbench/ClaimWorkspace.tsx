@@ -107,6 +107,7 @@ export const ClaimWorkspace: React.FC<Props> = ({ claim, onClose, onUpdated }) =
             <Button size="sm" variant="outline" onClick={() => setUploadDialog(true)}><Upload className="h-3.5 w-3.5 mr-1.5" /> Upload document</Button>
             <Button size="sm" variant="outline" onClick={() => setTab('notes')}><MessageSquare className="h-3.5 w-3.5 mr-1.5" /> Add note</Button>
             <Button size="sm" variant="outline" onClick={() => setTab('settlement')}><DollarSign className="h-3.5 w-3.5 mr-1.5" /> Settlement</Button>
+            <Button size="sm" variant="outline" onClick={() => setInspectionDialog(true)}><Scale className="h-3.5 w-3.5 mr-1.5" /> Request independent inspection</Button>
           </div>
         </div>
       </div>
