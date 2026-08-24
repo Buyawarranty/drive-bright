@@ -92,6 +92,10 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         if (!hasSearch) cartQuery = cartQuery.eq('is_converted', false);
 
 
+        // Existing customers must also be findable by reg — agents search a plate
+        // expecting the customer/order to come up, not just an open lead.
+        let customerQuery: any = null;
+
         if (searchTerm.trim()) {
           // PostgREST `or()` values must be quoted — a bare space or comma
           // (e.g. "AP69 YUX") breaks the filter parser and the whole request
@@ -99,12 +103,14 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
           const q = (v: string) => `"%${v.replace(/["\\,()]/g, ' ').trim()}%"`;
           const raw = searchTerm.trim();
           const words = raw.split(/\s+/).map(word => word.trim()).filter(Boolean).slice(0, 4);
-          const compact = raw.replace(/\s+/g, '').toUpperCase();
+          const compact = raw.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
           const digits = raw.replace(/\D/g, '');
           const regVariants = new Set<string>([raw]);
           if (compact.length >= 5) {
             regVariants.add(compact);
             regVariants.add(`${compact.slice(0, -3)} ${compact.slice(-3)}`);
+          } else if (compact) {
+            regVariants.add(compact);
           }
           const regClauses = Array.from(regVariants).map(v => `vehicle_reg.ilike.${q(v)}`);
           const leadClauses = [
@@ -120,14 +126,29 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
             `phone.ilike.${q(raw)}`,
             ...regClauses,
           ];
+          const customerClauses = [
+            `email.ilike.${q(raw)}`,
+            `name.ilike.${q(raw)}`,
+            `phone.ilike.${q(raw)}`,
+            ...words.flatMap(word => [`first_name.ilike.${q(word)}`, `last_name.ilike.${q(word)}`]),
+            ...Array.from(regVariants).map(v => `registration_plate.ilike.${q(v)}`),
+          ];
           // Also match a pasted phone number after punctuation/spaces are removed.
           // UK numbers are commonly stored in several different visual formats.
           if (digits.length >= 7 && digits !== raw) {
             leadClauses.push(`phone.ilike.${q(digits)}`);
             cartClauses.push(`phone.ilike.${q(digits)}`);
+            customerClauses.push(`phone.ilike.${q(digits)}`);
           }
           query = query.or(leadClauses.join(','));
           cartQuery = cartQuery.or(cartClauses.join(','));
+          customerQuery = supabase
+            .from('customers')
+            .select('id, name, first_name, last_name, email, phone, registration_plate, vehicle_make, vehicle_model, vehicle_year, mileage, plan_type, assigned_to')
+            .or(customerClauses.join(','))
+            .eq('is_deleted', false)
+            .order('signup_date', { ascending: false })
+            .limit(25);
         }
 
 
@@ -135,6 +156,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         // lands — agents were left staring at a spinner while the optional
         // abandoned-cart enrichment finished (or timed out).
         const cartResPromise = bounded(cartQuery, 3500);
+        const customerResPromise = customerQuery ? bounded(customerQuery, 4000) : null;
         let slRes: any = await bounded(query, 6000);
         if (cancelled) return;
 
@@ -233,6 +255,34 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
               ownerByPhone.get(tail9(c.phone)) ||
               null,
           });
+        }
+
+        // Existing customers matching the search (usually a reg) so the agent can
+        // pull up and re-quote a known customer, not just an open lead.
+        if (customerResPromise) {
+          const custRes: any = await customerResPromise;
+          if (cancelled) return;
+          if (custRes.error) console.error('Error fetching customers:', custRes.error);
+          for (const c of (custRes.data as any[]) || []) {
+            const key = `${(c.email || '').toLowerCase()}|${(c.registration_plate || '').replace(/\s/g, '').toUpperCase()}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            const parts = (c.name || '').trim().split(/\s+/);
+            merged.push({
+              id: `customer:${c.id}`,
+              first_name: c.first_name || parts[0] || null,
+              last_name: c.last_name || parts.slice(1).join(' ') || null,
+              email: c.email || null,
+              phone: c.phone || null,
+              vehicle_reg: c.registration_plate || null,
+              vehicle_make: c.vehicle_make || null,
+              vehicle_model: c.vehicle_model || null,
+              vehicle_year: c.vehicle_year || null,
+              mileage: c.mileage != null ? String(c.mileage) : null,
+              plan_interest: c.plan_type || null,
+              assigned_to: c.assigned_to || null,
+            });
+          }
         }
 
         setLeads(merged);
