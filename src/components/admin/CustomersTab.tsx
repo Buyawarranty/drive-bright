@@ -1192,17 +1192,24 @@ export const CustomersTab = ({
   // that finds nothing locally queries the database directly (any date, any agent).
   useEffect(() => {
     const term = debouncedSearchTerm.trim();
-    if (term.length < 2) return;
+    if (term.length < 2) {
+      setServerSearchResults([]);
+      return;
+    }
 
     let cancelled = false;
     const run = async () => {
-      const clean = term.replace(/[%,]/g, '');
+      // Strip PostgREST-hostile characters and any punctuation an agent may have
+      // typed inside a plate ("LF21-ABC", "LF21.ABC") so reg searches still hit.
+      const clean = term.replace(/[%,()"\\]/g, ' ').replace(/\s+/g, ' ').trim();
       const like = `%${clean}%`;
-      const compact = clean.replace(/\s+/g, '');
+      const compact = clean.replace(/[^A-Za-z0-9@.+_-]/g, '');
+      const alnum = clean.replace(/[^A-Za-z0-9]/g, '');
       const compactLike = `%${compact}%`;
+      const alnumLike = `%${alnum}%`;
       // Reg plates are stored both compact ("SE14HNB") and spaced ("SE14 HNB"),
       // so search every sensible variant of what was typed.
-      const spaced = compact.length >= 5 ? `%${compact.slice(0, -3)} ${compact.slice(-3)}%` : compactLike;
+      const spaced = alnum.length >= 5 ? `%${alnum.slice(0, -3)} ${alnum.slice(-3)}%` : alnumLike;
       try {
         const { data, error } = await supabase
           .from('customers')
@@ -1215,32 +1222,35 @@ export const CustomersTab = ({
             `phone.ilike.${like}`,
             `registration_plate.ilike.${like}`,
             `registration_plate.ilike.${compactLike}`,
+            `registration_plate.ilike.${alnumLike}`,
             `registration_plate.ilike.${spaced}`,
-            `warranty_reference_number.ilike.${compactLike}`,
-            `warranty_number.ilike.${compactLike}`,
-            `postcode.ilike.${compactLike}`,
+            `warranty_reference_number.ilike.${alnumLike}`,
+            `warranty_number.ilike.${alnumLike}`,
+            `postcode.ilike.${alnumLike}`,
           ].join(','))
-          .eq('is_deleted', false)
           .order('signup_date', { ascending: false })
           .limit(200);
 
+        if (cancelled) return;
+        if (error) {
+          console.warn('Customer search fallback error:', error);
+          return;
+        }
 
-        if (cancelled || error || !data?.length) return;
-
-        setCustomers((prev) => {
-          const known = new Set(prev.map((c: any) => c.id));
-          const extras = data
-            .filter((c: any) => !known.has(c.id))
-            .map((c: any) => ({
-              ...c,
-              warranty_expiry: c.customer_policies?.[0]?.policy_end_date || null,
-              policy_number: c.customer_policies?.[0]?.policy_number || null,
-              policy_status: c.customer_policies?.[0]?.status || null,
-              policy_start_date: c.customer_policies?.[0]?.policy_start_date || null,
-              lead_date: null,
-            }));
-          return extras.length ? [...prev, ...extras] : prev;
-        });
+        // Keep search hits in their own state: the main customer fetch replaces
+        // `customers` wholesale, which used to wipe appended search results and
+        // leave a reg search looking broken (empty list for a real customer).
+        const mapped = (data || [])
+          .filter((c: any) => !c.is_deleted)
+          .map((c: any) => ({
+            ...c,
+            warranty_expiry: c.customer_policies?.[0]?.policy_end_date || null,
+            policy_number: c.customer_policies?.[0]?.policy_number || null,
+            policy_status: c.customer_policies?.[0]?.status || null,
+            policy_start_date: c.customer_policies?.[0]?.policy_start_date || null,
+            lead_date: null,
+          }));
+        setServerSearchResults(mapped);
       } catch (e) {
         console.warn('Customer search fallback failed:', e);
       }
@@ -1251,7 +1261,7 @@ export const CustomersTab = ({
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
+  }, [debouncedSearchTerm, customers, serverSearchResults, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
 
 
   const fetchAvailableTags = async () => {
