@@ -324,7 +324,9 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             <div className="space-y-2">
               <Label>Independent review *</Label>
               <p className="text-xs text-muted-foreground">
-                Whichever inspector is available will be booked — pay £{Number(String(appealFee).replace(/[^0-9.]/g, '')) || 0} now.
+                Whichever inspector is available will be booked. The £{feeNumber} inspection fee is
+                paid to the independent inspection company — it is not a Buy a Warranty charge and
+                we keep none of it.
               </p>
               <div className="grid gap-3 sm:grid-cols-3">
                 {INDEPENDENT_REVIEWERS.map((r) => (
