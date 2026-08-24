@@ -1226,6 +1226,7 @@ const AdminDashboardInner: React.FC<{
             </nav>
 
             <div className="hidden lg:flex items-center space-x-3">
+              <Worldpay140LinkButton />
               <GlobalQuickReminderButton />
               {/* View As dropdown - super_admin only */}
               {isSuperAdmin && <ViewAsDropdown />}
