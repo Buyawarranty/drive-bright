@@ -1200,12 +1200,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       result = deduped;
     }
 
-    if (teamFilter) {
-      result = result.filter(lead => agentBelongsToTeam(lead.assigned_to, teamFilter));
+    if (effectiveTeamFilter) {
+      result = result.filter(lead => passesTeamFilter(lead.assigned_to));
     }
 
     return result;
-  }, [dateFilteredVisibleLeadsForFilters, assignmentFilter, agentFilter, canSeeUnworked, filter, isRecoveredLead, teamFilter, agentBelongsToTeam]);
+  }, [dateFilteredVisibleLeadsForFilters, assignmentFilter, agentFilter, canSeeUnworked, filter, isRecoveredLead, effectiveTeamFilter, passesTeamFilter]);
 
   const dateAndStatusFilteredLeads = useMemo(
     () => applyStatusFilter(dateFilteredVisibleLeadsForFilters),
