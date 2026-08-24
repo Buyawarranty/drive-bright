@@ -1692,9 +1692,14 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
         <PriceConversionAovPanel dateRange={effectiveDateRange} />
 
+        <AnalyticsSectionHeading id="lead-volume" title="Lead volume by day, week, month or year" description="Every lead that came in versus the live leads left once fake and other dead statuses are removed." accent="border-emerald-500/60" />
+
+        <DailyLeadVolumePanel />
+
         <AnalyticsSectionHeading id="leads-to-sales" title="Leads to sales ratio" description="Leads in versus sales made per day, with ad spend against the value of those sales." accent="border-amber-500/60" />
 
         <LeadsToSalesRatioPanel />
+
 
         <AnalyticsSectionHeading id="time-to-convert" title="Time to convert" description="How long a lead takes to pay after it lands — average, typical and longest, split by lead source." accent="border-sky-500/60" />
 
