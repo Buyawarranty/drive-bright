@@ -311,3 +311,15 @@ verify_jwt = false
 
 [functions.sandbox-transcribe]
 verify_jwt = false
+
+[functions.send-inspection-request]
+verify_jwt = true
+
+[functions.get-inspection-request]
+verify_jwt = false
+
+[functions.submit-inspection-request]
+verify_jwt = false
+
+[functions.confirm-inspection-payment]
+verify_jwt = false
