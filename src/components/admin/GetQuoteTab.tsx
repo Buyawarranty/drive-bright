@@ -1664,6 +1664,21 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     return () => { cancelled = true; clearTimeout(t); };
   }, [regNumber, step]);
 
+  // Prefill the mileage box from the latest MOT reading once the reg preview lands.
+  // Agents (and imported leads with no mileage) were otherwise blocked on Step 1.
+  const [mileagePrefilledPreviewReg, setMileagePrefilledPreviewReg] = useState('');
+  useEffect(() => {
+    if (step !== 1) return;
+    const clean = regNumber.replace(/\s/g, '').toUpperCase();
+    const previewMileage = Number(autoPreview.data?.motMileage ?? 0);
+    if (!clean || previewMileage <= 0) return;
+    if (mileage.trim() || mileagePrefilledPreviewReg === clean) return;
+    setMileage(previewMileage.toLocaleString());
+    setSliderMileage(Math.min(previewMileage, 150000));
+    setMileagePrefilledPreviewReg(clean);
+  }, [autoPreview.data, regNumber, step, mileage, mileagePrefilledPreviewReg]);
+
+
   // Handle custom price field changes — editing one side auto-updates the other
   // (monthly ↔ total uses ×12 / ÷12). Agents can still type any amount; the 20%
   // floor warning below is informational, not blocking.
@@ -1837,12 +1852,20 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
 
   const handleVehicleLookup = async () => {
-    // MOT mileage lookup is OFF in Quotes & Orders, and mileage dictates the price —
-    // so the agent must type it in before Step 2.
-    const effectiveMileage = mileage.trim() || (sliderMileage > 0 ? sliderMileage.toLocaleString() : '');
-    if (!mileage.trim() && sliderMileage > 0) {
-      setMileage(sliderMileage.toLocaleString());
+    // Mileage dictates the price, so it must be known before Step 2 — but agents were
+    // getting stuck on "Mileage required" when a lead arrived without it, so the latest
+    // MOT reading from the reg preview is used as a fallback (still editable on Step 2).
+    const previewMotMileage = Number(autoPreview.data?.motMileage ?? 0);
+    const effectiveMileage =
+      mileage.trim() ||
+      (sliderMileage > 0 ? sliderMileage.toLocaleString() : '') ||
+      (previewMotMileage > 0 ? previewMotMileage.toLocaleString() : '');
+    if (!mileage.trim() && effectiveMileage) {
+      setMileage(effectiveMileage);
+      const numeric = parseInt(effectiveMileage.replace(/[^0-9]/g, ''), 10);
+      if (!isNaN(numeric)) setSliderMileage(Math.min(numeric, 150000));
     }
+
     if (!regNumber.trim()) {
       toast({
         title: "Missing Information",
