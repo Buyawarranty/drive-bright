@@ -51,6 +51,12 @@ export interface Appeal {
   outcome: string | null;
   created_at: string;
   closed_at: string | null;
+  appeal_fee: number | null;
+  payment_link: string | null;
+  independent_reviewer: string | null;
+  reviewer_url: string | null;
+  customer_notified: boolean | null;
+  sent_at: string | null;
 }
 
 export interface AuditEntry {
