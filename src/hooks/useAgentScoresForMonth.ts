@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCredit';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import type { AgentScore } from './useScoreboardData';
 
@@ -33,10 +34,11 @@ export const useAgentScoresForMonth = (month: Date) => {
         }
         const agentIds = adminUsers.map(u => u.id);
 
-        const agentIdList = agentIds.join(',');
-        // Manager override (sale_credit_admin_user_id) wins; otherwise payment_confirmed_by,
-        // then quote_sent_by, then assigned_to.
-        const attributionFilter = `sale_credit_admin_user_id.in.(${agentIdList}),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.in.(${agentIdList})),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.is.null,quote_sent_by.in.(${agentIdList})),and(sale_credit_admin_user_id.is.null,payment_confirmed_by.is.null,quote_sent_by.is.null,assigned_to.in.(${agentIdList}))`;
+        // Only sales agents can hold credit; back-office payment confirmers are skipped.
+        const salesAgentIds = await fetchSalesCreditAgentIds();
+        const resolveCredit = buildSaleCreditResolver(salesAgentIds);
+        const salesIdList = Array.from(new Set([...salesAgentIds, ...agentIds])).join(',');
+        const attributionFilter = `sale_credit_admin_user_id.in.(${salesIdList}),payment_confirmed_by.in.(${salesIdList}),quote_sent_by.in.(${salesIdList}),assigned_to.in.(${salesIdList})`;
 
         const [{ data: customers }, { data: cancelledCustomers }, { data: leads }, { data: approvedClaims }, { data: dialEvents }, { data: cleanRows }] = await Promise.all([
           supabase.from('customers')
@@ -72,7 +74,7 @@ export const useAgentScoresForMonth = (month: Date) => {
             _end: end.toISOString(),
           }),
         ]);
-        const attributionOf = (c: any) => c.sale_credit_admin_user_id || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to;
+        const attributionOf = (c: any) => resolveCredit(c);
 
         const extToAgent = new Map<string, string>();
         (adminUsers as any[]).forEach(u => {

@@ -3,6 +3,7 @@ import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell'
 import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCredit';
 
 import { ReferencePriceCell } from '@/components/admin/customers/ReferencePriceCell';
 import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
@@ -468,6 +469,12 @@ export const CustomersTab = ({
   
   const [searchParams, setSearchParams] = useSearchParams();
   const [customers, setCustomers] = useState<Customer[]>([]);
+  // Ids of everyone who can hold sales credit (sales + sales_lead, incl. archived agents)
+  const [salesCreditAgentIds, setSalesCreditAgentIds] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    fetchSalesCreditAgentIds().then(setSalesCreditAgentIds).catch(() => {});
+  }, []);
+  const resolveSaleCredit = useMemo(() => buildSaleCreditResolver(salesCreditAgentIds), [salesCreditAgentIds]);
   const [claimEmails, setClaimEmails] = useState<Set<string>>(new Set());
   const [claimRegs, setClaimRegs] = useState<Set<string>>(new Set());
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
@@ -1537,14 +1544,9 @@ export const CustomersTab = ({
         // sale_credit_admin_user_id → payment_confirmed_by → quote_sent_by → assigned_to.
         // (An OR-match across all four fields credits the same sale to several
         // agents and inflates every agent's total.)
-        filtered = filtered.filter(customer => {
-          const creditedTo =
-            (customer as any).sale_credit_admin_user_id ||
-            (customer as any).payment_confirmed_by ||
-            (customer as any).quote_sent_by ||
-            customer.assigned_to;
-          return creditedTo === effectiveAgentFilter;
-        });
+        // Non-sales staff (accounts@, support@, info@) often confirm the payment on
+        // an agent's behalf — they never take the sale, so they are skipped here.
+        filtered = filtered.filter(customer => resolveSaleCredit(customer as any) === effectiveAgentFilter);
       }
 
     }
@@ -1777,7 +1779,6 @@ export const CustomersTab = ({
         return null;
     }
   };
-
   const fetchAgentDealCounts = async () => {
     try {
       // Prefer the explicit dateRange (from DateRangeFilter) over the dropdown period
@@ -1824,8 +1825,7 @@ export const CustomersTab = ({
       const { data: cancelledCustomers } = await cancelledQuery;
       const { data: approvedClaims } = await claimsQuery;
 
-      const attributionOf = (c: any) =>
-        c.sale_credit_admin_user_id || c.payment_confirmed_by || c.quote_sent_by || c.assigned_to;
+      const attributionOf = (c: any) => resolveSaleCredit(c);
 
       const counts: Record<string, { sales: number; cancelled: number }> = {};
       const ensure = (id: string) => { if (!counts[id]) counts[id] = { sales: 0, cancelled: 0 }; };
