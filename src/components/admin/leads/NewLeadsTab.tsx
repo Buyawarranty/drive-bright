@@ -1001,15 +1001,33 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return explicit?.id === teamId;
   }, [agentTeamMap]);
 
+  // The team chip must never be applied to a sales / sales_lead who is already
+  // locked to their own team — their feed is server-scoped to "assigned to me +
+  // unassigned", so filtering by team owner strips every unassigned lead and
+  // leaves a completely blank New Leads screen. It's also a no-op while the
+  // team map is still loading (an empty map would drop every row).
+  const effectiveTeamFilter =
+    isLockedToOwnTeam || agentTeamMap.size === 0 ? null : teamFilter;
+
+  // Unassigned leads belong to nobody, so a team chip must never hide them.
+  const passesTeamFilter = useCallback(
+    (assignedTo: string | null | undefined) => {
+      if (!effectiveTeamFilter) return true;
+      if (!assignedTo) return true;
+      return agentBelongsToTeam(assignedTo, effectiveTeamFilter);
+    },
+    [effectiveTeamFilter, agentBelongsToTeam],
+  );
+
   // Apply optional team filter on top of freshLeads (no-op when teamFilter is null).
   const teamFilteredFreshLeads = useMemo(() => {
     // While searching, never apply the team chip — an agent typing a customer's
     // name/phone/reg must find them even if the lead belongs to another team
     // (the row shows who owns it). This is why searches used to come back empty
     // and agents had to hunt for their own customers in Quotes & Orders.
-    if (!teamFilter || debouncedSearchTerm.trim()) return freshLeads;
-    return freshLeads.filter(l => agentBelongsToTeam(l.assigned_to, teamFilter));
-  }, [freshLeads, teamFilter, agentBelongsToTeam, debouncedSearchTerm]);
+    if (!effectiveTeamFilter || debouncedSearchTerm.trim()) return freshLeads;
+    return freshLeads.filter(l => passesTeamFilter(l.assigned_to));
+  }, [freshLeads, effectiveTeamFilter, passesTeamFilter, debouncedSearchTerm]);
 
 
   // Scope sales agents to the selected team so Reassign, agent filter, and the Agents view
@@ -1119,13 +1137,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       result = deduped;
     }
 
-    if (teamFilter && !debouncedSearchTerm.trim()) {
-      result = result.filter(lead => agentBelongsToTeam(lead.assigned_to, teamFilter));
+    if (effectiveTeamFilter && !debouncedSearchTerm.trim()) {
+      result = result.filter(lead => passesTeamFilter(lead.assigned_to));
     }
 
 
     return result;
-  }, [statusFilteredLeads, assignmentFilter, agentFilter, filter, debouncedSearchTerm, dateRange, getLeadSubmissionDate, visibleLeads, canSeeUnworked, isRecoveredLead, teamFilter, agentBelongsToTeam, wasContactedInRange]);
+  }, [statusFilteredLeads, assignmentFilter, agentFilter, filter, debouncedSearchTerm, dateRange, getLeadSubmissionDate, visibleLeads, canSeeUnworked, isRecoveredLead, effectiveTeamFilter, passesTeamFilter, wasContactedInRange]);
 
   const dateFilteredVisibleLeadsForFilters = useMemo(() => {
     if (!dateRange.from && !dateRange.to) return visibleLeads;
@@ -1182,12 +1200,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       result = deduped;
     }
 
-    if (teamFilter) {
-      result = result.filter(lead => agentBelongsToTeam(lead.assigned_to, teamFilter));
+    if (effectiveTeamFilter) {
+      result = result.filter(lead => passesTeamFilter(lead.assigned_to));
     }
 
     return result;
-  }, [dateFilteredVisibleLeadsForFilters, assignmentFilter, agentFilter, canSeeUnworked, filter, isRecoveredLead, teamFilter, agentBelongsToTeam]);
+  }, [dateFilteredVisibleLeadsForFilters, assignmentFilter, agentFilter, canSeeUnworked, filter, isRecoveredLead, effectiveTeamFilter, passesTeamFilter]);
 
   const dateAndStatusFilteredLeads = useMemo(
     () => applyStatusFilter(dateFilteredVisibleLeadsForFilters),
