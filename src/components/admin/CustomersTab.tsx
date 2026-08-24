@@ -690,9 +690,13 @@ export const CustomersTab = ({
       });
     }
     let filtered = base;
-    let dateFilterActive = false;
-    if (revenueDateRange?.from) {
-      dateFilterActive = true;
+    // The table rows in `filteredCustomers` already honour the active signup/payment/deals
+    // date window. Re-applying a second window here made the total read £0 while the table
+    // clearly listed sales (e.g. agent filter + a stale "today" revenue window).
+    // Only apply the revenue window when the user is explicitly on the "revenue" scope.
+    const applyRevenueWindow = unifiedScope === 'revenue' && !!revenueDateRange?.from;
+    let dateFilterActive = !!dateRange?.from || applyRevenueWindow;
+    if (applyRevenueWindow && revenueDateRange?.from) {
       const from = new Date(revenueDateRange.from);
       from.setHours(0, 0, 0, 0);
       const to = revenueDateRange.to ? new Date(revenueDateRange.to) : new Date(from);
