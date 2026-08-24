@@ -8,6 +8,7 @@ import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import MobileNavigation from '@/components/MobileNavigation';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { isTeamOpenNow, nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
 
 const StickyNavigation: React.FC = () => {
   const navigate = useNavigate();
