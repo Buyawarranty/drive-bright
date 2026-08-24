@@ -1837,12 +1837,20 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   };
 
   const handleVehicleLookup = async () => {
-    // MOT mileage lookup is OFF in Quotes & Orders, and mileage dictates the price —
-    // so the agent must type it in before Step 2.
-    const effectiveMileage = mileage.trim() || (sliderMileage > 0 ? sliderMileage.toLocaleString() : '');
-    if (!mileage.trim() && sliderMileage > 0) {
-      setMileage(sliderMileage.toLocaleString());
+    // Mileage dictates the price, so it must be known before Step 2 — but agents were
+    // getting stuck on "Mileage required" when a lead arrived without it, so the latest
+    // MOT reading from the reg preview is used as a fallback (still editable on Step 2).
+    const previewMotMileage = Number(autoPreview.data?.motMileage ?? 0);
+    const effectiveMileage =
+      mileage.trim() ||
+      (sliderMileage > 0 ? sliderMileage.toLocaleString() : '') ||
+      (previewMotMileage > 0 ? previewMotMileage.toLocaleString() : '');
+    if (!mileage.trim() && effectiveMileage) {
+      setMileage(effectiveMileage);
+      const numeric = parseInt(effectiveMileage.replace(/[^0-9]/g, ''), 10);
+      if (!isNaN(numeric)) setSliderMileage(Math.min(numeric, 150000));
     }
+
     if (!regNumber.trim()) {
       toast({
         title: "Missing Information",
