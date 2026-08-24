@@ -67,11 +67,16 @@ export const TrustpilotRatingSync = () => {
   useEffect(() => {
     let cancelled = false;
 
+    // Admin/dealer surfaces have no marketing JSON-LD to patch — skip the call
+    // entirely so the CRM never spends a request on it.
+    const path = window.location.pathname;
+    if (/^\/(admin|dealer-portal|customer-dashboard)/.test(path)) return;
+
     const cached = (() => {
       try {
         const raw = localStorage.getItem(LOCAL_CACHE_KEY);
         if (!raw) return null;
-        const parsed = JSON.parse(raw) as Rating & { fetchedAt: number };
+        const parsed = JSON.parse(raw) as Rating & { fetchedAt: number; unavailable?: boolean };
         if (Date.now() - parsed.fetchedAt > LOCAL_CACHE_TTL_MS) return null;
         return parsed;
       } catch {
@@ -80,13 +85,27 @@ export const TrustpilotRatingSync = () => {
     })();
 
     if (cached) {
-      patchJsonLd(cached);
+      // A cached "unavailable" result means don't retry for the TTL window.
+      if (!cached.unavailable) patchJsonLd(cached);
       return;
     }
 
     const load = async () => {
       const { data, error } = await supabase.functions.invoke('trustpilot-rating');
-      if (cancelled || error || !data?.ratingValue || !data?.reviewCount) return;
+      if (cancelled) return;
+
+      if (error || data?.unavailable || !data?.ratingValue || !data?.reviewCount) {
+        // Remember the miss so we don't hammer the function on every route change.
+        try {
+          localStorage.setItem(
+            LOCAL_CACHE_KEY,
+            JSON.stringify({ unavailable: true, fetchedAt: Date.now() }),
+          );
+        } catch {
+          // Storage unavailable — nothing else to do.
+        }
+        return;
+      }
 
       const rating: Rating = {
         ratingValue: String(data.ratingValue),
