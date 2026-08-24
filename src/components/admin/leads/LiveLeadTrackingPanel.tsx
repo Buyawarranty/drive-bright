@@ -106,18 +106,18 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
 
   // Sync selection back to URL
   useEffect(() => {
-    const next = new URLSearchParams(searchParams);
-    next.set('ltPeriod', period);
-    if (period === 'custom' && customRange?.from) {
-      next.set('ltFrom', format(customRange.from, 'yyyy-MM-dd'));
-      next.set('ltTo', format(customRange.to ?? customRange.from, 'yyyy-MM-dd'));
-    } else {
-      next.delete('ltFrom');
-      next.delete('ltTo');
-    }
-    if (next.toString() !== searchParams.toString()) {
-      setSearchParams(next, { replace: true });
-    }
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('ltPeriod', period);
+      if (period === 'custom' && customRange?.from) {
+        next.set('ltFrom', format(customRange.from, 'yyyy-MM-dd'));
+        next.set('ltTo', format(customRange.to ?? customRange.from, 'yyyy-MM-dd'));
+      } else {
+        next.delete('ltFrom');
+        next.delete('ltTo');
+      }
+      return next.toString() === prev.toString() ? prev : next;
+    }, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, customRange]);
 
