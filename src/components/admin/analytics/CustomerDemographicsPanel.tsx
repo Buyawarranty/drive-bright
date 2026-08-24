@@ -215,6 +215,15 @@ export const CustomerDemographicsPanel: React.FC<Props> = ({ dateRange }) => {
               setLocalRange(r);
             }}
           />
+          <QuickMonthFilter
+            dateRange={effectiveRange}
+            onDateRangeChange={(r) => { setUseOwnRange(true); setLocalRange(r); }}
+          />
+          <QuickWeekFilter
+            dateRange={effectiveRange}
+            onDateRangeChange={(r) => { setUseOwnRange(true); setLocalRange(r); }}
+          />
+
           <Badge variant={useOwnRange ? 'default' : 'outline'}>
             {useOwnRange ? 'Using this section’s own dates' : 'Following the page filter'}
           </Badge>
