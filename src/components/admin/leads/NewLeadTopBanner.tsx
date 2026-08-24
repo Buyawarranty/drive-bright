@@ -57,62 +57,75 @@ export const NewLeadTopBanner: React.FC<Props> = ({ onGo }) => {
 
   if (queue.length === 0) return null;
 
-  const lead = queue[0];
-  const name = [lead.first_name, lead.last_name].filter(Boolean).join(' ') || 'New lead';
-  const elapsed = formatElapsed(Date.now() - new Date(lead.created_at).getTime());
+  const visible = queue.slice(0, 5);
 
   return (
     <div
       className={`sticky top-0 z-[95] ${
         sidebarCollapsed ? 'lg:ml-14' : 'lg:ml-64'
-      } bg-emerald-600 text-white shadow-md rounded-md transition-[margin] duration-300`}
+      } flex flex-col gap-1 transition-[margin] duration-300`}
     >
-      <div className="flex items-center gap-3 px-4 py-2 flex-wrap">
-
-        <Flame className="w-4 h-4 shrink-0 animate-pulse" />
-        <span className="text-sm font-semibold">
-          {queue.length === 1 ? 'New lead waiting' : `${queue.length} new leads waiting`}
-        </span>
-        <span className="text-sm font-medium truncate max-w-[220px]">{name}</span>
-        {lead.vehicle_reg && (
-          <span className="text-xs font-mono bg-white/15 rounded px-1.5 py-0.5">{lead.vehicle_reg}</span>
-        )}
-        <span className="text-xs bg-white/15 rounded px-1.5 py-0.5" title="How long this lead has been waiting. It is not a countdown — the lead stays with you until you action it.">
-          waiting {elapsed}
-        </span>
-
-        <div className="flex items-center gap-2 ml-auto">
-          {lead.phone && (
-            <button
-              type="button"
-              onClick={() => dialWithZoiper(lead.phone!, { leadId: lead.id })}
-              className="inline-flex items-center gap-1 text-xs font-semibold bg-white text-emerald-700 hover:bg-emerald-50 rounded-full px-3 py-1"
-            >
-              <Phone className="w-3.5 h-3.5" />
-              Call {formatUKPhoneShort(lead.phone)}
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() =>
-              onGo(lead.id, lead.vehicle_reg || lead.phone || name)
-            }
-            className="inline-flex items-center gap-1 text-xs font-semibold bg-white/15 hover:bg-white/25 rounded-full px-3 py-1"
+      {visible.map((lead, idx) => {
+        const name = [lead.first_name, lead.last_name].filter(Boolean).join(' ') || 'New lead';
+        const elapsed = formatElapsed(Date.now() - new Date(lead.created_at).getTime());
+        return (
+          <div
+            key={lead.id}
+            className="bg-emerald-600 text-white shadow-md rounded-md"
           >
-            Open lead
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-          <MuteAlertsMenu className="text-white hover:bg-white/20 rounded-full p-1.5" size={16} />
-          <button
-            type="button"
-            onClick={() => dismissLead(lead.id)}
-            title="Dismiss this lead alert"
-            className="hover:bg-white/20 rounded-full p-1.5"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+            <div className="flex items-center gap-3 px-4 py-2 flex-wrap">
+              <Flame className="w-4 h-4 shrink-0 animate-pulse" />
+              {idx === 0 && (
+                <span className="text-sm font-semibold">
+                  {queue.length === 1 ? 'New lead waiting' : `${queue.length} new leads waiting`}
+                </span>
+              )}
+              <span className="text-sm font-medium truncate max-w-[220px]">{name}</span>
+              {lead.vehicle_reg && (
+                <span className="text-xs font-mono bg-white/15 rounded px-1.5 py-0.5">{lead.vehicle_reg}</span>
+              )}
+              <span
+                className="text-xs bg-white/15 rounded px-1.5 py-0.5"
+                title="How long this lead has been waiting. It is not a countdown — the lead stays with you until you action it."
+              >
+                waiting {elapsed}
+              </span>
+
+              <div className="flex items-center gap-2 ml-auto">
+                {lead.phone && (
+                  <button
+                    type="button"
+                    onClick={() => dialWithZoiper(lead.phone!, { leadId: lead.id })}
+                    className="inline-flex items-center gap-1 text-xs font-semibold bg-white text-emerald-700 hover:bg-emerald-50 rounded-full px-3 py-1"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    Call {formatUKPhoneShort(lead.phone)}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onGo(lead.id, lead.vehicle_reg || lead.phone || name)}
+                  className="inline-flex items-center gap-1 text-xs font-semibold bg-white/15 hover:bg-white/25 rounded-full px-3 py-1"
+                >
+                  Open lead
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+                {idx === 0 && (
+                  <MuteAlertsMenu className="text-white hover:bg-white/20 rounded-full p-1.5" size={16} />
+                )}
+                <button
+                  type="button"
+                  onClick={() => dismissLead(lead.id)}
+                  title="Dismiss this lead alert"
+                  className="hover:bg-white/20 rounded-full p-1.5"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };
