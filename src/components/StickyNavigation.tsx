@@ -137,10 +137,19 @@ const StickyNavigation: React.FC = () => {
               </Link>
             </nav>
 
-            {/* Mobile Menu Button */}
-            <div className="lg:hidden flex items-center gap-2">
+            {/* Mobile: tap-to-call (above the fold) + menu */}
+            <div className="lg:hidden flex items-center gap-1.5">
+              <a
+                href="tel:03302295040"
+                aria-label="Call us on 0330 229 5040"
+                className="inline-flex items-center gap-1.5 min-h-[34px] px-2.5 py-1 rounded-xl bg-[#eb4b00] text-white active:scale-[0.97] transition-all"
+              >
+                <Phone className="h-4 w-4" strokeWidth={2.5} />
+                <span className="text-[13px] font-bold leading-none whitespace-nowrap">0330 229 5040</span>
+              </a>
               <MobileNavigation />
             </div>
+
           </div>
         </div>
       </header>
