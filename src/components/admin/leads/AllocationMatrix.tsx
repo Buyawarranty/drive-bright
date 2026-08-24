@@ -3,7 +3,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { RefreshCw, Check, Save, Split, Info, MoreVertical, Lock, Infinity as InfinityIcon, LifeBuoy, X, ChevronUp, ChevronDown, SkipForward, RotateCcw, Sunrise, Settings, Radio } from 'lucide-react';
+import { RefreshCw, Check, Save, Split, Info, MoreVertical, Lock, Infinity as InfinityIcon, LifeBuoy, X, ChevronUp, ChevronDown, SkipForward, RotateCcw, Sunrise, Settings, Radio, UserMinus } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from '@/hooks/use-toast';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { PushOpenPoolControl } from './PushOpenPoolControl';
@@ -167,6 +177,10 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  /** Agent queued for removal from lead allocation (leaver). */
+  const [removeAgent, setRemoveAgent] = useState<{ id: string; name: string; email: string } | null>(null);
+  const [removing, setRemoving] = useState(false);
+
   const loadAll = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
@@ -214,6 +228,33 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   }, []);
 
   useEffect(() => { loadAll(); fetchTodayLeadCounts(); fetchSince6pmCounts(); }, [loadAll, fetchTodayLeadCounts, fetchSince6pmCounts]);
+
+  /**
+   * Remove a leaver from lead allocation. Archives the account (keeps every
+   * sales record, commission and attribution intact) and clears their
+   * distribution cap, team membership and any live lead ownership.
+   */
+  const confirmRemoveAgent = useCallback(async () => {
+    if (!removeAgent) return;
+    setRemoving(true);
+    try {
+      const { error } = await (supabase as any).rpc('archive_admin_user_preserve_sales', {
+        p_admin_user_id: removeAgent.id,
+      });
+      if (error) throw error;
+      await supabase.from('lead_team_members').delete().eq('admin_user_id', removeAgent.id);
+      toast({
+        title: `${removeAgent.name} removed from lead allocation`,
+        description: 'Their past sales, commission and notes stay in Customer Management. Any leads they still owned are now unassigned — reassign them from New Leads.',
+      });
+      setRemoveAgent(null);
+      await loadAll();
+    } catch (e: any) {
+      toast({ title: 'Could not remove agent', description: e?.message ?? 'Please try again.', variant: 'destructive' });
+    } finally {
+      setRemoving(false);
+    }
+  }, [removeAgent, loadAll]);
 
   // Keep the "Leads today" and "Since 6pm" columns live: refresh every 30s AND on realtime inserts/updates.
   useEffect(() => {
@@ -1620,6 +1661,17 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                           RR
                         </span>
                       )}
+                      {canEdit && !isTeamScoped && (
+                        <button
+                          type="button"
+                          onClick={() => setRemoveAgent({ id: a.id, name: displayName, email: a.email })}
+                          className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                          title={`Remove ${displayName} from lead allocation — for staff who no longer work here. Their past sales stay in Customer Management.`}
+                          aria-label={`Remove ${displayName} from lead allocation`}
+                        >
+                          <UserMinus className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">{a.email}</div>
                   </div>
@@ -2067,6 +2119,33 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         )}
 
       </section>
+
+      <AlertDialog open={!!removeAgent} onOpenChange={(open) => { if (!open && !removing) setRemoveAgent(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove {removeAgent?.name} from lead allocation?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm">
+                <p>Use this for staff who no longer work here ({removeAgent?.email}).</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>They stop receiving leads and disappear from this allocation list and the scoreboard.</li>
+                  <li>Their sales, commission records and notes stay exactly as they are in Customer Management.</li>
+                  <li>Leads they still own become unassigned — hand those over first with Offboard an agent if you want them kept with a named agent.</li>
+                </ul>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={removing}>Keep agent</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={removing}
+              onClick={(e) => { e.preventDefault(); confirmRemoveAgent(); }}
+            >
+              {removing ? 'Removing…' : 'Remove from allocation'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -13622,6 +13622,15 @@ export type Database = {
         | { Args: { p_exclude_agent_id?: string }; Returns: string }
       get_next_sales_user: { Args: never; Returns: string }
       get_next_warranty_serial: { Args: never; Returns: number }
+      get_scoreboard_reconciliation: {
+        Args: { p_end: string; p_start: string }
+        Returns: {
+          bucket: string
+          label: string
+          revenue: number
+          sales_count: number
+        }[]
+      }
       get_team_scoreboard: {
         Args: { p_end: string; p_start: string }
         Returns: {
