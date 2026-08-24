@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Target, ShieldAlert, Star, Coffee, CalendarDays, Info, Loader2, Plus, Play, Minus } from 'lucide-react';
+import { Target, ShieldAlert, Star, Coffee, CalendarDays, Info, Loader2, Plus, Play, Minus, BadgePercent } from 'lucide-react';
 import { endOfMonth, startOfMonth, startOfWeek, addDays, format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
@@ -114,6 +114,10 @@ export const ProgressOverviewStrip: React.FC = () => {
   const [results, setResults] = useState<CustomerHit[]>([]);
   const [searching, setSearching] = useState(false);
   const [picked, setPicked] = useState<CustomerHit | null>(null);
+  // "Save online sale" authorisation — shown only when management have switched
+  // it on for this agent (save_online_sale_agents.enabled).
+  const [saveOnline, setSaveOnline] = useState<{ pct: number; authorisedAt: string | null; open: number } | null>(null);
+
 
   const now = new Date();
   const weekStart = useMemo(() => startOfWeek(now, { weekStartsOn: 1 }), [now.toDateString()]);
@@ -296,6 +300,39 @@ export const ProgressOverviewStrip: React.FC = () => {
     load();
   }, [load]);
 
+  useEffect(() => {
+    if (!adminId) return;
+    let cancelled = false;
+    (async () => {
+      const [permRes, leadRes] = await Promise.all([
+        (supabase as any)
+          .from('save_online_sale_agents')
+          .select('enabled, commission_pct, authorised_at')
+          .eq('admin_user_id', adminId)
+          .maybeSingle(),
+        (supabase as any)
+          .from('sales_leads')
+          .select('id', { count: 'exact', head: true })
+          .eq('assigned_to', adminId)
+          .eq('save_online_sale', true)
+          .not('status', 'in', '(converted,lost,archived)'),
+      ]);
+      if (cancelled) return;
+      const perm = permRes?.data;
+      setSaveOnline(
+        perm?.enabled
+          ? {
+              pct: Number(perm.commission_pct ?? 4),
+              authorisedAt: perm.authorised_at ?? null,
+              open: leadRes?.count ?? 0,
+            }
+          : null,
+      );
+    })();
+    return () => { cancelled = true; };
+  }, [adminId]);
+
+
   const toggleBreak = async () => {
     if (!adminId) return;
     setSaving(true);
@@ -459,6 +496,26 @@ export const ProgressOverviewStrip: React.FC = () => {
               {data.target ? `${gbp(Math.max(0, data.target - data.revenue))} to go` : 'Ask your manager to set a target'}
             </div>
           </Cell>
+
+          {saveOnline && (
+            <Cell
+              icon={<BadgePercent className="h-4 w-4 text-emerald-600" />}
+              iconClass="bg-emerald-100"
+              label="Save online sale"
+              help="Your manager has authorised you to receive imported online sales. Each one you close pays you a percentage of the full value of the sale. Phone these customers first."
+            >
+              <div className="flex items-baseline gap-2 whitespace-nowrap">
+                <span className="text-lg font-bold">{saveOnline.pct}%</span>
+                <span className="text-xs text-muted-foreground">of the full sale value</span>
+              </div>
+              <div className="mt-0.5 text-[11px] text-muted-foreground whitespace-nowrap">
+                Turned on{saveOnline.authorisedAt ? ` ${format(new Date(saveOnline.authorisedAt), 'd MMM')}` : ''} ·{' '}
+                {saveOnline.open} open {saveOnline.open === 1 ? 'lead' : 'leads'}
+              </div>
+            </Cell>
+          )}
+
+
 
           <Cell
             icon={<CalendarDays className="h-4 w-4 text-emerald-600" />}
