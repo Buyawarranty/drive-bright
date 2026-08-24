@@ -665,6 +665,8 @@ export const CustomersTab = ({
   const adminEmail = (currentAdminUser?.email || '').trim().toLowerCase();
   const isAccountsManager = normalizedRole === 'accounts_manager' || normalizedRole === 'accounts';
   const isSalesManager = normalizedRole === 'sales_manager';
+  // Moving a sale between agents is a management decision only.
+  const canReassignSaleCredit = isSuperAdmin || isAdmin || isSalesManager;
   const isDigitalOrAccountsMailbox =
     adminEmail.startsWith('digital@') || adminEmail.startsWith('accounts@');
   const canToggleHColumns =
@@ -2799,15 +2801,23 @@ export const CustomersTab = ({
     setAssignmentLoading(prev => ({ ...prev, [customerId]: true }));
 
     try {
+      // Changing the owner here is also a sales-credit decision, so write the
+      // explicit override too. That override beats every other rule, so the
+      // scoreboard and the new-leads agent totals show exactly what is set here.
+      const isRealAgent = !!agentId && agentId !== WEBSITE_SALES_ACCOUNT_ID && !markAsWebsite;
       const { error } = await supabase
         .from('customers')
-        .update({ assigned_to: agentId })
+        .update({
+          assigned_to: agentId,
+          sale_credit_admin_user_id: isRealAgent ? agentId : null,
+        })
         .eq('id', customerId);
 
       if (error) {
         console.error('Assignment error:', error);
         throw error;
       }
+
 
       // Reverse sync: update matching sales_leads record by email
       const customer = customers.find(c => c.id === customerId);
@@ -6857,6 +6867,7 @@ Please log in and change your password after first login.`;
                   </TableCell>
                     <TableCell>
                       <div className="flex flex-col space-y-1">
+                        {canReassignSaleCredit ? (
                         <Select
                           value={customer.assigned_to ? customer.assigned_to : (
                             (customer.customer_policies?.[0]?.warranty_number || '').startsWith('BAW-') && !(customer.customer_policies?.[0]?.warranty_number || '').startsWith('BAW-S-')
@@ -6890,8 +6901,24 @@ Please log in and change your password after first login.`;
 
                           </SelectContent>
                         </Select>
+                        ) : (
+                          // Only managers can move a sale between agents — everyone
+                          // else sees who owns it, read-only.
+                          <span className="text-xs text-muted-foreground">
+                            {(() => {
+                              if (!customer.assigned_to) {
+                                const wn = customer.customer_policies?.[0]?.warranty_number || '';
+                                return wn.startsWith('BAW-') && !wn.startsWith('BAW-S-') ? 'Website' : 'Unassigned';
+                              }
+                              if (customer.assigned_to === WEBSITE_SALES_ACCOUNT_ID) return 'Website';
+                              const u = adminUsers.find(a => a.id === customer.assigned_to);
+                              return u ? (`${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email) : 'Assigned';
+                            })()}
+                          </span>
+                        )}
                       </div>
                     </TableCell>
+
                   {canSeeSourceColumn && showPurchaseSource && (
                     <TableCell className="bg-purple-50/30">
                       {(() => {

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { addDays, endOfMonth, format, startOfMonth, startOfWeek } from 'date-fns';
 import { Loader2, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { buildSaleCreditResolver, fetchSalesCreditAgentIds } from '@/lib/saleCredit';
 
 /**
  * Manager view of the same figures each agent sees on their own "My progress"
@@ -126,8 +127,9 @@ export const AllAgentsProgressPanel: React.FC = () => {
         if (r.kind === 'negative_removed') weekRem.set(r.admin_user_id, (weekRem.get(r.admin_user_id) || 0) + 1);
       });
 
-      // Last sale per agent, using the same four credit columns Customer
-      // Management uses so the figures always agree.
+      // Last sale per agent. A sale belongs to exactly ONE agent, so the same
+      // single-credit rule the scoreboard uses decides whose sale it is.
+      const resolveCredit = buildSaleCreditResolver(await fetchSalesCreditAgentIds());
       const lastSale = new Map<string, { at: string; proof: string | null }>();
       ((salesRes?.data || []) as any[]).forEach((s) => {
         if (!s.signup_date) return;
@@ -137,12 +139,12 @@ export const AllAgentsProgressPanel: React.FC = () => {
           [s.name, s.registration_plate, s.final_amount != null ? gbp(Number(s.final_amount)) : null]
             .filter(Boolean)
             .join(' · ') || null;
-        const ids = [s.sale_credit_admin_user_id, s.payment_confirmed_by, s.quote_sent_by, s.assigned_to].filter(Boolean);
-        new Set(ids as string[]).forEach((id) => {
-          const cur = lastSale.get(id);
-          if (!cur || new Date(s.signup_date) > new Date(cur.at)) lastSale.set(id, { at: s.signup_date, proof });
-        });
+        const id = resolveCredit(s);
+        if (!id) return;
+        const cur = lastSale.get(id);
+        if (!cur || new Date(s.signup_date) > new Date(cur.at)) lastSale.set(id, { at: s.signup_date, proof });
       });
+
 
       const built: AgentRow[] = score.map((r: any) => {
         const id = r.admin_user_id as string;
