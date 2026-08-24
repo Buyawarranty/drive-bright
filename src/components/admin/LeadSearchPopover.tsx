@@ -156,6 +156,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         // lands — agents were left staring at a spinner while the optional
         // abandoned-cart enrichment finished (or timed out).
         const cartResPromise = bounded(cartQuery, 3500);
+        const customerResPromise = customerQuery ? bounded(customerQuery, 4000) : null;
         let slRes: any = await bounded(query, 6000);
         if (cancelled) return;
 
