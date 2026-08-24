@@ -1010,16 +1010,37 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             {/* Mobile: speak-to-us card — UK office hours only (09:00–18:00 Europe/London) */}
             {isUkOfficeHours ? (
               <div className="sm:hidden w-full mt-3 lg:col-span-2">
-                <p className="text-center text-sm text-gray-600">Prefer to speak to us?</p>
-                <div className="mt-2 rounded-xl border border-gray-200 bg-white shadow-sm px-3 py-2.5">
-                  <a href="tel:03309122402" className="flex items-center justify-center gap-2">
-                    <Phone className="w-4 h-4 text-brand-blue fill-brand-blue" strokeWidth={0} />
-                    <span className="text-lg font-extrabold text-brand-blue underline underline-offset-4 tracking-tight">
-
-                      0330 912 2402
-                    </span>
-                  </a>
-                  <p className="mt-1 text-center text-xs text-gray-600">Speak to our UK team</p>
+                <div className="rounded-2xl border border-gray-200 bg-white shadow-sm px-3 py-2.5">
+                  <div className="grid grid-cols-2 gap-3 items-center">
+                    <a href="tel:03309122402" className="flex items-center gap-2">
+                      <span className="flex-shrink-0 grid place-items-center w-9 h-9 rounded-xl bg-orange-50">
+                        <Phone className="w-4 h-4 text-brand-orange fill-brand-orange" strokeWidth={0} />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[11px] font-semibold text-brand-blue leading-tight">Speak to our UK team</span>
+                        <span className="block text-[15px] font-extrabold text-brand-orange leading-tight tracking-tight">0330 912 2402</span>
+                        <span className="block text-[10px] text-gray-600 leading-tight">Open 9am – 6pm, Mon – Sat</span>
+                      </span>
+                    </a>
+                    <a
+                      href="https://wa.me/443302295040"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2"
+                    >
+                      <span className="flex-shrink-0 grid place-items-center w-9 h-9 rounded-xl bg-green-50">
+                        <MessageCircle className="w-4 h-4 text-green-600 fill-green-600" strokeWidth={0} />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[11px] font-semibold text-brand-blue leading-tight">Prefer to message?</span>
+                        <span className="flex items-center gap-0.5 text-[15px] font-extrabold text-green-600 leading-tight tracking-tight">
+                          Chat on WhatsApp
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </span>
+                        <span className="block text-[10px] text-gray-600 leading-tight">We'll reply when we're back</span>
+                      </span>
+                    </a>
+                  </div>
                 </div>
                 <p className="mt-2 text-center text-sm text-gray-700">
                   Can't call now?{' '}
@@ -1046,6 +1067,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 </p>
               </div>
             )}
+
 
 
 
