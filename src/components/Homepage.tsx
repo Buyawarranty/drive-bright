@@ -1007,41 +1007,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               </div>
             </div>
 
-            {/* Mobile: speak-to-us card — cleaner two-tile layout */}
-            <div className="sm:hidden w-full mt-3 lg:col-span-2">
-              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm px-2 py-3">
-                <div className="grid grid-cols-2 divide-x divide-gray-100">
-                  <a href="tel:03309122402" className="flex items-center gap-2.5 px-2">
-                    <span className="flex-shrink-0 grid place-items-center w-10 h-10 rounded-full bg-orange-50">
-                      <Phone className="w-4 h-4 text-brand-orange fill-brand-orange" strokeWidth={0} />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-[12px] font-medium text-gray-800 leading-tight">Speak to our UK team</span>
-                      <span className="block text-[14px] font-semibold text-brand-orange leading-tight">0330 912 2402</span>
-                      <span className="block text-[10px] text-gray-500 leading-tight">Open 9am – 6pm, Mon – Sat</span>
-                    </span>
-                  </a>
-                  <a
-                    href="https://wa.me/443302295040"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2.5 px-2 pl-3"
-                  >
-                    <span className="flex-shrink-0 grid place-items-center w-10 h-10 rounded-full bg-green-50">
-                      <MessageCircle className="w-4 h-4 text-green-600 fill-green-600" strokeWidth={0} />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-[12px] font-medium text-gray-800 leading-tight">Prefer to message?</span>
-                      <span className="flex items-center gap-0.5 text-[14px] font-semibold text-green-600 leading-tight">
-                        Chat on WhatsApp
-                        <ArrowRight className="w-3 h-3" />
-                      </span>
-                      <span className="block text-[10px] text-gray-500 leading-tight">We'll reply when we're back</span>
-                    </span>
-                  </a>
-                </div>
-              </div>
-            </div>
 
 
 
