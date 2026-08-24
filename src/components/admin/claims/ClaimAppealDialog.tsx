@@ -117,6 +117,37 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
     [reviewerId]
   );
 
+  const feeNumber = Number(String(appealFee).replace(/[^0-9.]/g, '')) || 0;
+
+  /**
+   * Creates a REAL payable page for the customer (inspection form + card
+   * payment) instead of relying on a pasted link. The fee is collected for the
+   * independent inspection company, not for us.
+   */
+  const generatePaymentLink = async () => {
+    if (!selected) return;
+    setGeneratingLink(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-inspection-request', {
+        body: {
+          claimId: selected.id,
+          recipientEmail: selected.email,
+          inspectionCompany: reviewerId === 'scotia' ? 'Scotia' : 'ACE',
+          feeAmount: feeNumber || DEFAULT_APPEAL_FEE,
+          sendEmail: false,
+        },
+      });
+      if (error) throw error;
+      if (!data?.link) throw new Error(data?.error || 'No link returned');
+      setPaymentLink(data.link);
+      toast({ title: 'Payment link created', description: 'The customer can pay on this page.' });
+    } catch (e: any) {
+      toast({ title: 'Could not create payment link', description: e.message, variant: 'destructive' });
+    } finally {
+      setGeneratingLink(false);
+    }
+  };
+
   const runSearch = async () => {
     const term = search.trim();
     if (term.length < 2) return;
