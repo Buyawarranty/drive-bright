@@ -1664,6 +1664,21 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     return () => { cancelled = true; clearTimeout(t); };
   }, [regNumber, step]);
 
+  // Prefill the mileage box from the latest MOT reading once the reg preview lands.
+  // Agents (and imported leads with no mileage) were otherwise blocked on Step 1.
+  const [mileagePrefilledPreviewReg, setMileagePrefilledPreviewReg] = useState('');
+  useEffect(() => {
+    if (step !== 1) return;
+    const clean = regNumber.replace(/\s/g, '').toUpperCase();
+    const previewMileage = Number(autoPreview.data?.motMileage ?? 0);
+    if (!clean || previewMileage <= 0) return;
+    if (mileage.trim() || mileagePrefilledPreviewReg === clean) return;
+    setMileage(previewMileage.toLocaleString());
+    setSliderMileage(Math.min(previewMileage, 150000));
+    setMileagePrefilledPreviewReg(clean);
+  }, [autoPreview.data, regNumber, step, mileage, mileagePrefilledPreviewReg]);
+
+
   // Handle custom price field changes — editing one side auto-updates the other
   // (monthly ↔ total uses ×12 / ÷12). Agents can still type any amount; the 20%
   // floor warning below is informational, not blocking.
