@@ -4680,12 +4680,17 @@ Buyawarranty.co.uk`,
                 website: 'Website (BAW)', website_google: 'Google web',
                 google_all: 'Google all', google_leads_sales: 'Google leads',
                 website_facebook: 'Website F',
+                website_bing: 'Website B (Bing)',
+                bing_all: 'Bing all', bing_leads_sales: 'Bing leads',
+                website_tiktok: 'Website T (TikTok)',
+                tiktok_all: 'TikTok all', tiktok_leads_sales: 'TikTok leads',
                 website_organic: 'Website O', staff_purchase: 'Staff', quote_order: 'Quote & Orders',
                 agent_sales: 'Agent Sales', cancelled_refunded: 'Cancelled / Refunded',
                 payment_due: 'Payment due (deposit)',
               };
 
               chips.push({ key: 'source', label: 'Source', value: srcLabels[filterBySource] || filterBySource, onRemove: () => setFilterBySource('all_view') });
+
             }
             if (filterByPaymentSource !== 'all') {
               const payLabels: Record<string, string> = { bumper: 'Bumper', stripe: 'Stripe', payment_assist: 'Payment Assist', paypal: 'PayPal', other: 'Other / Manual' };
