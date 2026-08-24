@@ -57,13 +57,20 @@ export const ScoreboardAgentProfile: React.FC<Props> = ({ agent, period, current
 
     const fetchDailyTrend = async () => {
       const startDate = subDays(new Date(), 29);
-      const { data: customers } = await supabase
+      // Same one-owner credit rule as the leaderboard, so this 30-day trend
+      // matches the agent's headline sales instead of only assigned_to deals.
+      const salesAgentIds = await fetchSalesCreditAgentIds();
+      const resolveCredit = buildSaleCreditResolver(salesAgentIds);
+      const idList = Array.from(new Set([...salesAgentIds, agent.id])).join(',');
+      const { data: allCustomers } = await supabase
         .from('customers')
-        .select('created_at, final_amount')
+        .select('created_at, final_amount, assigned_to, payment_confirmed_by, quote_sent_by, sale_credit_admin_user_id')
         .eq('is_deleted', false)
         .ilike('status', 'active')
-        .eq('assigned_to', agent.id)
+        .or(`sale_credit_admin_user_id.in.(${idList}),payment_confirmed_by.in.(${idList}),quote_sent_by.in.(${idList}),assigned_to.in.(${idList})`)
         .gte('created_at', startDate.toISOString());
+      const customers = (allCustomers || []).filter(c => resolveCredit(c as any) === agent.id);
+
 
       const dayMap = new Map<string, { count: number; revenue: number }>();
       for (let i = 0; i < 30; i++) {
