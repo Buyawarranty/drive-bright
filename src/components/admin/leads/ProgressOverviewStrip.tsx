@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Target, ShieldAlert, Star, Coffee, CalendarDays, Info, Loader2, Plus, Play, Minus } from 'lucide-react';
+import { Target, ShieldAlert, Star, Coffee, CalendarDays, Info, Loader2, Plus, Play, Minus, BadgePercent } from 'lucide-react';
 import { endOfMonth, startOfMonth, startOfWeek, addDays, format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
