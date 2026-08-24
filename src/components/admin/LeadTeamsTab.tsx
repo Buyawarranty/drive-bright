@@ -306,6 +306,24 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         </div>
       )}
 
+      {/* ─────────────────────────────────────────────────────────────
+          SAVE ONLINE SALE — authorise agents, then import an online
+          sale as a lead paying them a % of the full sale value.
+         ───────────────────────────────────────────────────────────── */}
+      {isManagement && (
+        <div id="save-online-sale" className="space-y-4">
+          <div className="border-l-4 border-emerald-500/60 pl-3">
+            <h2 className="text-lg font-semibold text-foreground">Save online sale</h2>
+            <p className="text-xs text-muted-foreground">
+              Give chosen agents permission to receive imported online sales, then import the lead — it goes to
+              them stating they earn 4% of the full value of the sale.
+            </p>
+          </div>
+          <SaveOnlineSaleAllocationPanel />
+        </div>
+      )}
+
+
 
       {/* ─────────────────────────────────────────────────────────────
           STAFF LEAD ACCESS — who can assign leads to other agents,
