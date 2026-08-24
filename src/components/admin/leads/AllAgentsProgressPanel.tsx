@@ -36,9 +36,17 @@ const DEAD_STATUSES = ['cancelled', 'canceled', 'refunded'];
 const REVIEW_MONTH_TARGET = 10;
 const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
+interface ReconRow {
+  bucket: string;
+  label: string;
+  revenue: number;
+  sales_count: number;
+}
+
 export const AllAgentsProgressPanel: React.FC = () => {
   const [rows, setRows] = useState<AgentRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [recon, setRecon] = useState<ReconRow[]>([]);
 
   const now = new Date();
   const weekStart = useMemo(() => startOfWeek(now, { weekStartsOn: 1 }), [now.toDateString()]);
