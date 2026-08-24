@@ -66,12 +66,14 @@ export const MyTargetStrip: React.FC = () => {
         .gte('signup_date', start.toISOString())
         .lte('signup_date', end.toISOString())
         .limit(5000);
+      const resolveCredit = buildSaleCreditResolver(await fetchSalesCreditAgentIds());
       const map: Record<string, number> = {};
       (sales || []).forEach((s: any) => {
-        const aid = s.sale_credit_admin_user_id || s.payment_confirmed_by || s.quote_sent_by || s.assigned_to;
+        const aid = resolveCredit(s);
         if (!aid || !ids.includes(aid)) return;
         map[aid] = (map[aid] || 0) + (Number(s.final_amount) || 0);
       });
+
       setFallbackRevenue(map);
     } else {
       setFallbackRevenue(null);
