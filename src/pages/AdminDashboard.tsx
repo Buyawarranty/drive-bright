@@ -26,6 +26,7 @@ import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner'
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 import { AlertRailHost } from '@/components/admin/AlertRail';
+import { Worldpay140LinkButton } from '@/components/admin/Worldpay140LinkButton';
 
 import { NewLeadTopBanner } from '@/components/admin/leads/NewLeadTopBanner';
 
