@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Target, ChevronDown, ChevronUp } from 'lucide-react';
 import { differenceInCalendarDays, endOfMonth, format, startOfMonth } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+import { buildSaleCreditResolver, fetchSalesCreditAgentIds } from '@/lib/saleCredit';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useSeesAllAgents } from '@/hooks/useSeesAllAgents';
 import { getAgentColor } from '@/lib/agentColors';
