@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Target, ShieldAlert, Star, Coffee, CalendarDays, Info, Loader2, Plus, Play, Minus, BadgePercent } from 'lucide-react';
 import { endOfMonth, startOfMonth, startOfWeek, addDays, format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+import { buildSaleCreditResolver, fetchSalesCreditAgentIds } from '@/lib/saleCredit';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
