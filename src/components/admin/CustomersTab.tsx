@@ -469,6 +469,12 @@ export const CustomersTab = ({
   
   const [searchParams, setSearchParams] = useSearchParams();
   const [customers, setCustomers] = useState<Customer[]>([]);
+  // Ids of everyone who can hold sales credit (sales + sales_lead, incl. archived agents)
+  const [salesCreditAgentIds, setSalesCreditAgentIds] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    fetchSalesCreditAgentIds().then(setSalesCreditAgentIds).catch(() => {});
+  }, []);
+  const resolveSaleCredit = useMemo(() => buildSaleCreditResolver(salesCreditAgentIds), [salesCreditAgentIds]);
   const [claimEmails, setClaimEmails] = useState<Set<string>>(new Set());
   const [claimRegs, setClaimRegs] = useState<Set<string>>(new Set());
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
@@ -1773,14 +1779,6 @@ export const CustomersTab = ({
         return null;
     }
   };
-
-  // Ids of everyone who can hold sales credit (sales + sales_lead, incl. archived agents)
-  const [salesCreditAgentIds, setSalesCreditAgentIds] = useState<Set<string>>(new Set());
-  useEffect(() => {
-    fetchSalesCreditAgentIds().then(setSalesCreditAgentIds).catch(() => {});
-  }, []);
-  const resolveSaleCredit = useMemo(() => buildSaleCreditResolver(salesCreditAgentIds), [salesCreditAgentIds]);
-
   const fetchAgentDealCounts = async () => {
     try {
       // Prefer the explicit dateRange (from DateRangeFilter) over the dropdown period
