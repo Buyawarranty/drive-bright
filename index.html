@@ -45,8 +45,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
     <link rel="shortcut icon" href="/favicon.png" type="image/png">
     
-    <!-- Preload LCP image for faster rendering (WebP for modern browsers) -->
-    <link rel="preload" as="image" href="/extended_warranty_uk-car-trustworthy-reviews.webp" fetchpriority="high" type="image/webp" imagesizes="(max-width: 768px) 100vw, 651px">
+    <!-- LCP hero image is fetched by the hero component itself with
+         fetchpriority="high". A blanket preload here fired on every route
+         (admin dashboard included) and warned "preloaded but not used". -->
+
 
     <meta property="og:site_name" content="Buy A Warranty" />
     <meta property="og:locale" content="en_GB" />
