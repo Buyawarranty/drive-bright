@@ -472,6 +472,114 @@ const AppealPanel: React.FC<{ claimId: string; claim?: Claim }> = ({ claimId, cl
       <Fld label="New evidence"><Textarea rows={3} value={form.new_evidence ?? ''} onChange={e => setForm((f: any) => ({ ...f, new_evidence: e.target.value }))} /></Fld>
       <Fld label="Outcome"><Textarea rows={2} value={form.outcome ?? ''} onChange={e => setForm((f: any) => ({ ...f, outcome: e.target.value }))} /></Fld>
       <Button size="sm" onClick={() => upsert(form)}><Save className="h-3.5 w-3.5 mr-1.5" /> Save appeal</Button>
+
+      <AppealWorldpayPayment
+        claim={claim}
+        appeal={appeal as any}
+        defaultAmount={(appeal as any)?.appeal_fee ?? null}
+        onLinkSaved={async (url) => { await upsert({ payment_link: url } as any); await refetch(); }}
+      />
+    </div>
+  );
+};
+
+// ============= Appeal fee payment (Worldpay) =============
+const AppealWorldpayPayment: React.FC<{
+  claim?: Claim;
+  appeal: any;
+  defaultAmount: number | null;
+  onLinkSaved: (url: string) => Promise<void>;
+}> = ({ claim, appeal, defaultAmount, onLinkSaved }) => {
+  const { toast } = useToast();
+  const [amount, setAmount] = useState<string>(defaultAmount != null ? String(defaultAmount) : '');
+  const [desc, setDesc] = useState<string>(`Appeal fee${claim?.reg ? ` — ${claim.reg}` : ''}`);
+  const [loading, setLoading] = useState<null | 'moto' | 'link'>(null);
+  const [url, setUrl] = useState<string>('');
+  const [copied, setCopied] = useState(false);
+
+  React.useEffect(() => {
+    if (defaultAmount != null) setAmount(String(defaultAmount));
+  }, [defaultAmount]);
+
+  const create = async (flow: 'moto' | 'link') => {
+    const pounds = Number(amount);
+    if (!pounds || pounds <= 0) {
+      toast({ title: 'Enter an appeal fee amount', variant: 'destructive' });
+      return;
+    }
+    setLoading(flow);
+    try {
+      const { data, error } = await invokeWithFreshSession('worldpay-create-payment-page', {
+        flow,
+        amount_pence: Math.round(pounds * 100),
+        description: (desc || 'Appeal fee').slice(0, 200),
+        customer_email: claim?.email || null,
+        customer_phone: claim?.phone || null,
+      });
+      if (error) throw error;
+      const paymentUrl = (data as any)?.payment_url as string;
+      if (!paymentUrl) throw new Error('No payment URL returned');
+      setUrl(paymentUrl);
+      if (flow === 'link') {
+        await onLinkSaved(paymentUrl);
+        toast({ title: 'Appeal payment link created and saved' });
+      } else {
+        window.open(paymentUrl, '_blank', 'noopener,noreferrer');
+        toast({ title: 'Virtual terminal opened' });
+      }
+    } catch (err: any) {
+      console.error('Worldpay appeal payment error', err);
+      toast({ title: 'Worldpay error', description: err?.message || 'Failed to create payment', variant: 'destructive' });
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  const copy = async () => {
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  return (
+    <div className="rounded-md border border-border bg-muted/30 p-3 space-y-3">
+      <div className="flex items-center gap-2">
+        <CreditCard className="h-4 w-4 text-primary" />
+        <h4 className="text-sm font-semibold">Take appeal fee — Worldpay</h4>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Fld label="Amount (£)">
+          <Input type="number" min="0" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="140.00" />
+        </Fld>
+        <Fld label="Description">
+          <Input value={desc} onChange={(e) => setDesc(e.target.value)} />
+        </Fld>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" onClick={() => create('link')} disabled={loading !== null}>
+          {loading === 'link' ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5 mr-1.5" />}
+          Create payment link
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => create('moto')} disabled={loading !== null}>
+          {loading === 'moto' ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5 mr-1.5" />}
+          Take card payment (phone)
+        </Button>
+      </div>
+      {(url || appeal?.payment_link) && (
+        <div className="flex items-center gap-2 text-xs">
+          <a href={url || appeal.payment_link} target="_blank" rel="noopener noreferrer" className="text-primary underline break-all">
+            {url || appeal.payment_link}
+          </a>
+          {url && (
+            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={copy}>
+              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+            </Button>
+          )}
+        </div>
+      )}
+      <p className="text-[11px] text-muted-foreground">
+        Payment links are saved against this appeal so the customer can pay the appeal fee before an independent review is booked.
+      </p>
     </div>
   );
 };
