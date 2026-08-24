@@ -4822,12 +4822,19 @@ Buyawarranty.co.uk`,
                         <SelectItem value="google_all"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-600" /><span>Google all (web + leads)</span></div></SelectItem>
                         <SelectItem value="google_leads_sales"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-700" /><span>Google leads (agent)</span></div></SelectItem>
                         <SelectItem value="website_facebook"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-sky-500" /><span>Website F (Facebook)</span></div></SelectItem>
+                        <SelectItem value="website_bing"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-teal-500" /><span>Website B (Bing)</span></div></SelectItem>
+                        <SelectItem value="bing_all"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-teal-600" /><span>Bing all (web + leads)</span></div></SelectItem>
+                        <SelectItem value="bing_leads_sales"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-teal-700" /><span>Bing leads (agent)</span></div></SelectItem>
+                        <SelectItem value="website_tiktok"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-zinc-500" /><span>Website T (TikTok)</span></div></SelectItem>
+                        <SelectItem value="tiktok_all"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-zinc-700" /><span>TikTok all (web + leads)</span></div></SelectItem>
+                        <SelectItem value="tiktok_leads_sales"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-zinc-900" /><span>TikTok leads (agent)</span></div></SelectItem>
                         <SelectItem value="website_organic"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500" /><span>Website O (Organic)</span></div></SelectItem>
                         <SelectItem value="staff_purchase"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-500" /><span>Staff (BAW-S)</span></div></SelectItem>
                         <SelectItem value="quote_order"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-purple-500" /><span>Quote & Orders (ADM)</span></div></SelectItem>
                         <SelectItem value="agent_sales"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-orange-500" /><span>Agent Sales</span></div></SelectItem>
                         <SelectItem value="cancelled_refunded"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500" /><span>Cancelled / Refunded</span></div></SelectItem>
                         <SelectItem value="payment_due"><div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500" /><span>Payment due (deposit)</span></div></SelectItem>
+
                       </SelectContent>
                     </Select>
                   )}
