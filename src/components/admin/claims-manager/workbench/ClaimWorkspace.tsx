@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, AlertOctagon, AlertCircle, FileText, MessageSquare, Phone, DollarSign, Scale, History, Paperclip, Save, Upload, PhoneCall, Edit3, ArrowLeft } from 'lucide-react';
+import { X, AlertOctagon, AlertCircle, FileText, MessageSquare, Phone, DollarSign, Scale, History, Paperclip, Save, Upload, PhoneCall, Edit3, ArrowLeft, CreditCard, Link2, Loader2, Copy, Check } from 'lucide-react';
+import { invokeWithFreshSession } from '@/lib/invokeWithFreshSession';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
