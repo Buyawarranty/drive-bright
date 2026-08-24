@@ -10740,10 +10740,13 @@ export type Database = {
           recovery_worked_at: string | null
           resubmission_count: number | null
           save_cancellation: boolean
+          save_commission_pct: number | null
+          save_online_sale: boolean
           save_reason: string | null
           save_requested_at: string | null
           save_requested_by: string | null
           save_reward_amount: number | null
+          save_sale_value: number | null
           save_source_customer_id: string | null
           status: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at: string | null
@@ -10857,10 +10860,13 @@ export type Database = {
           recovery_worked_at?: string | null
           resubmission_count?: number | null
           save_cancellation?: boolean
+          save_commission_pct?: number | null
+          save_online_sale?: boolean
           save_reason?: string | null
           save_requested_at?: string | null
           save_requested_by?: string | null
           save_reward_amount?: number | null
+          save_sale_value?: number | null
           save_source_customer_id?: string | null
           status?: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at?: string | null
@@ -10974,10 +10980,13 @@ export type Database = {
           recovery_worked_at?: string | null
           resubmission_count?: number | null
           save_cancellation?: boolean
+          save_commission_pct?: number | null
+          save_online_sale?: boolean
           save_reason?: string | null
           save_requested_at?: string | null
           save_requested_by?: string | null
           save_reward_amount?: number | null
+          save_sale_value?: number | null
           save_source_customer_id?: string | null
           status?: Database["public"]["Enums"]["lead_status"] | null
           step_two_completed_at?: string | null
@@ -11223,6 +11232,47 @@ export type Database = {
             foreignKeyName: "salesperson_stats_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      save_online_sale_agents: {
+        Row: {
+          admin_user_id: string
+          authorised_at: string
+          authorised_by: string | null
+          commission_pct: number
+          created_at: string
+          enabled: boolean
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          admin_user_id: string
+          authorised_at?: string
+          authorised_by?: string | null
+          commission_pct?: number
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_user_id?: string
+          authorised_at?: string
+          authorised_by?: string | null
+          commission_pct?: number
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "save_online_sale_agents_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: true
             referencedRelation: "admin_users"
             referencedColumns: ["id"]
           },
