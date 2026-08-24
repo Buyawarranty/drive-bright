@@ -23,6 +23,9 @@ serve(async (req: Request) => {
     const company: string = COMPANIES.includes(body.inspectionCompany) ? body.inspectionCompany : "ACE";
     const fee = Number(body.feeAmount) > 0 ? Number(body.feeAmount) : 140;
     const note: string = body.note || "";
+    // Appeals only need the payable link (the claims team posts it in the
+    // customer's profile), so allow skipping the email.
+    const sendEmail: boolean = body.sendEmail !== false;
 
     if (!claimId || !recipientEmail) {
       return new Response(JSON.stringify({ error: "Missing claimId or recipientEmail" }), {
@@ -102,6 +105,12 @@ serve(async (req: Request) => {
         </div>
       </div>`;
 
+    if (!sendEmail) {
+      return new Response(JSON.stringify({ success: true, id: inserted.id, link, emailed: false }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) throw new Error("RESEND_API_KEY not configured");
 
@@ -123,7 +132,7 @@ serve(async (req: Request) => {
       throw new Error(`Email failed: ${emailResult.message}`);
     }
 
-    return new Response(JSON.stringify({ success: true, id: inserted.id, link }), {
+    return new Response(JSON.stringify({ success: true, id: inserted.id, link, emailed: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error: any) {

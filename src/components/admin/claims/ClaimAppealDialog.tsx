@@ -28,7 +28,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Search, Gavel, ExternalLink, Send, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Loader2, Search, Gavel, ExternalLink, Send, ArrowLeft, CheckCircle2, Copy } from 'lucide-react';
 
 export const INDEPENDENT_REVIEWERS = [
   {
@@ -93,6 +93,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
   const [notifyCustomer, setNotifyCustomer] = useState(true);
   const [reviewing, setReviewing] = useState(false);
   const [sending, setSending] = useState(false);
+  const [generatingLink, setGeneratingLink] = useState(false);
 
   useEffect(() => {
     if (open) setSelected(claim);
@@ -109,6 +110,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
       setPaymentLink(DEFAULT_PAYMENT_LINK);
       setNotifyCustomer(true);
       setReviewing(false);
+      setGeneratingLink(false);
     }
   }, [open]);
 
@@ -116,6 +118,37 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
     () => INDEPENDENT_REVIEWERS.find((r) => r.id === reviewerId) || null,
     [reviewerId]
   );
+
+  const feeNumber = Number(String(appealFee).replace(/[^0-9.]/g, '')) || 0;
+
+  /**
+   * Creates a REAL payable page for the customer (inspection form + card
+   * payment) instead of relying on a pasted link. The fee is collected for the
+   * independent inspection company, not for us.
+   */
+  const generatePaymentLink = async () => {
+    if (!selected) return;
+    setGeneratingLink(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-inspection-request', {
+        body: {
+          claimId: selected.id,
+          recipientEmail: selected.email,
+          inspectionCompany: reviewerId === 'scotia' ? 'Scotia' : 'ACE',
+          feeAmount: feeNumber || DEFAULT_APPEAL_FEE,
+          sendEmail: false,
+        },
+      });
+      if (error) throw error;
+      if (!data?.link) throw new Error(data?.error || 'No link returned');
+      setPaymentLink(data.link);
+      toast({ title: 'Payment link created', description: 'The customer can pay on this page.' });
+    } catch (e: any) {
+      toast({ title: 'Could not create payment link', description: e.message, variant: 'destructive' });
+    } finally {
+      setGeneratingLink(false);
+    }
+  };
 
   const runSearch = async () => {
     const term = search.trim();
@@ -190,9 +223,10 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             created_by: userRes?.user?.id ?? null,
             message:
               `Your claim appeal has been opened${selected.vehicle_registration ? ` for ${selected.vehicle_registration}` : ''}. ` +
-              `Appeal fee: £${fee}. Pay here: ${paymentLink.trim()} — ` +
-              `An independent review is available from Scotia Vehicle Inspection (http://scotiavehicleinspection.com/) ` +
-              `or ACE (https://ace-uk.org) — whichever is available will be booked. Pay £${fee} now: ${paymentLink.trim()}. ` +
+              `An independent inspection is available from Scotia Vehicle Inspection (http://scotiavehicleinspection.com/) ` +
+              `or ACE (https://ace-uk.org) — whichever is available will be booked. ` +
+              `The inspection fee of £${fee} is paid to the independent inspection company, not to Buy a Warranty. ` +
+              `Complete the form and pay here: ${paymentLink.trim()}. ` +
               `We will post every update on this appeal here in your profile.`,
           });
           notified = !notifyError;
@@ -324,7 +358,9 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             <div className="space-y-2">
               <Label>Independent review *</Label>
               <p className="text-xs text-muted-foreground">
-                Whichever inspector is available will be booked — pay £{Number(String(appealFee).replace(/[^0-9.]/g, '')) || 0} now.
+                Whichever inspector is available will be booked. The £{feeNumber} inspection fee is
+                paid to the independent inspection company — it is not a Buy a Warranty charge and
+                we keep none of it.
               </p>
               <div className="grid gap-3 sm:grid-cols-3">
                 {INDEPENDENT_REVIEWERS.map((r) => (
@@ -359,7 +395,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             {/* Payment */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Appeal fee (£)</Label>
+                <Label>Inspection fee (£) — payable to the inspection company</Label>
                 <Input
                   type="number"
                   min="0"
@@ -369,12 +405,38 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Appeal payment link *</Label>
-                <Input
-                  value={paymentLink}
-                  onChange={(e) => setPaymentLink(e.target.value)}
-                  placeholder="Paste the appeal payment link (Stripe / Bumper)"
-                />
+                <Label>Inspection payment link *</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={paymentLink}
+                    readOnly
+                    placeholder="Generate the customer's secure payment page"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={generatePaymentLink}
+                    disabled={!selected || generatingLink}
+                  >
+                    {generatingLink ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Generate'}
+                  </Button>
+                  {paymentLink && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(paymentLink);
+                        toast({ title: 'Payment link copied' });
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Creates a real, working page where the customer completes the inspection form and
+                  pays £{feeNumber} to the independent inspection company.
+                </p>
               </div>
             </div>
 
@@ -417,9 +479,9 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
               </p>
             </div>
             <div>
-              <p className="font-semibold">Appeal payment</p>
-              <p className="text-muted-foreground">
-                £{Number(String(appealFee).replace(/[^0-9.]/g, '')) || 0} · {paymentLink}
+              <p className="font-semibold">Inspection payment (paid to the inspection company)</p>
+              <p className="text-muted-foreground break-all">
+                £{feeNumber} · {paymentLink}
               </p>
             </div>
             <p className="text-muted-foreground">
