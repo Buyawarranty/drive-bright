@@ -295,6 +295,24 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     } as VehicleData);
   };
 
+  const isRegEntered = regNumber.replace(/\s+/g, '').length >= 5;
+  const isRegValid = UK_REG_PATTERN.test(regNumber.replace(/\s/g, '').toUpperCase());
+
+  const handleMainCtaClick = () => {
+    trackButtonClick('get_quote_main', { has_reg_number: !!regNumber.trim() });
+
+    if (!isRegEntered || !isRegValid) {
+      setRegNudge('Pop your registration in above and we\'ll fetch your price in seconds.');
+      const el = document.getElementById('reg-input-field');
+      el?.focus();
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    setRegNudge('');
+    handleGetQuote();
+  };
+
   const handleGetQuote = async (mileageOverride?: string) => {
     console.log('🔘 GET QUOTE BUTTON CLICKED');
 
