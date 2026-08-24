@@ -717,8 +717,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 {/* Main CTA - always visible, disabled until a valid registration is entered */}
                 <Button
                   onClick={handleMainCtaClick}
-                  disabled={isLookingUp || !isRegValid}
-                  className={`w-full font-bold rounded-xl px-6 py-6 sm:py-7 text-lg sm:text-xl bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg ${isLookingUp || !isRegValid ? '' : 'animate-breathing'}`}
+                  aria-disabled={isLookingUp || !isRegValid}
+                  className={`w-full font-bold rounded-xl px-6 py-6 sm:py-7 text-lg sm:text-xl bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg ${isLookingUp || !isRegValid ? 'opacity-60 cursor-not-allowed' : 'animate-breathing'}`}
                 >
                   {isLookingUp ? 'Preparing your instant price…' : 'Get my quote'}
                 </Button>
