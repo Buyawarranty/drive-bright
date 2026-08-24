@@ -819,11 +819,11 @@ export const CustomersTab = ({
       const isStaff = warrantyNum.startsWith('BAW-S-');
       const isAdm = warrantyNum.startsWith('ADM');
 
-      // Channel attribution falls back to acquisition_source/gclid so that customers
-      // without a warranty number yet still count toward Google/Facebook totals.
+      // Channel attribution falls back to acquisition_source/gclid/msclkid/ttclid so that customers
+      // without a warranty number yet still count toward Google/Facebook/Bing/TikTok totals.
       const channel = getCustomerAcquisitionChannel(c);
       const channelOnly = !isWebsite && !isStaff && !isAdm &&
-        (channel === 'google_ads' || channel === 'facebook_ads' || channel === 'website');
+        (channel === 'google_ads' || channel === 'facebook_ads' || channel === 'bing_ads' || channel === 'tiktok_ads' || channel === 'website');
 
       if (isWebsite || channelOnly) {
         if (isWebsite) {
@@ -836,6 +836,12 @@ export const CustomersTab = ({
         } else if (channel === 'facebook_ads') {
           buckets.website_facebook.count += 1;
           buckets.website_facebook.revenue += amount;
+        } else if (channel === 'bing_ads') {
+          buckets.website_bing.count += 1;
+          buckets.website_bing.revenue += amount;
+        } else if (channel === 'tiktok_ads') {
+          buckets.website_tiktok.count += 1;
+          buckets.website_tiktok.revenue += amount;
         } else {
           buckets.website_organic.count += 1;
           buckets.website_organic.revenue += amount;
@@ -853,6 +859,32 @@ export const CustomersTab = ({
         buckets.agent_sales.count += 1;
         buckets.agent_sales.revenue += amount;
       }
+      // Cross-cut all Google / Bing / TikTok channels including agent-closed sales
+      if (channel === 'google_ads') {
+        buckets.google_all.count += 1;
+        buckets.google_all.revenue += amount;
+        if (isAgent) {
+          buckets.google_leads_sales.count += 1;
+          buckets.google_leads_sales.revenue += amount;
+        }
+      }
+      if (channel === 'bing_ads') {
+        buckets.bing_all.count += 1;
+        buckets.bing_all.revenue += amount;
+        if (isAgent) {
+          buckets.bing_leads_sales.count += 1;
+          buckets.bing_leads_sales.revenue += amount;
+        }
+      }
+      if (channel === 'tiktok_ads') {
+        buckets.tiktok_all.count += 1;
+        buckets.tiktok_all.revenue += amount;
+        if (isAgent) {
+          buckets.tiktok_leads_sales.count += 1;
+          buckets.tiktok_leads_sales.revenue += amount;
+        }
+      }
+
     });
     return buckets;
   }, [customers, isSuperAdmin, revenueDateRange, dateRange, filterByStatus]);
