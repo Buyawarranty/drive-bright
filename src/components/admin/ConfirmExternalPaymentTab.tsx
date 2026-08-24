@@ -2093,7 +2093,19 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           Sales agent is required for commission tracking
                         </p>
                       )}
+                      {assigneeId && (
+                        <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-2.5 py-1.5">
+                          This sale will be credited to{' '}
+                          <strong>
+                            {adminUsers.find(a => a.id === assigneeId)
+                              ? getAdminDisplayName(adminUsers.find(a => a.id === assigneeId)!)
+                              : 'the selected agent'}
+                          </strong>{' '}
+                          — not to whoever is confirming the payment.
+                        </p>
+                      )}
                     </div>
+
 
                     <div className="flex items-center gap-2 pt-2">
                       <Checkbox id="welcome" checked={sendWelcomeEmail} onCheckedChange={(c) => setSendWelcomeEmail(c === true)} />
