@@ -4570,6 +4570,7 @@ export type Database = {
           mileage: string | null
           mot_fee: boolean | null
           mot_repair: boolean | null
+          msclkid: string | null
           name: string
           ni_verified: boolean
           ni_verified_at: string | null
@@ -4621,6 +4622,7 @@ export type Database = {
           trustpilot_review_completed_at: string | null
           trustpilot_review_requested: boolean | null
           trustpilot_review_requested_at: string | null
+          ttclid: string | null
           tyre_cover: boolean | null
           updated_at: string
           utm_campaign: string | null
@@ -4695,6 +4697,7 @@ export type Database = {
           mileage?: string | null
           mot_fee?: boolean | null
           mot_repair?: boolean | null
+          msclkid?: string | null
           name: string
           ni_verified?: boolean
           ni_verified_at?: string | null
@@ -4746,6 +4749,7 @@ export type Database = {
           trustpilot_review_completed_at?: string | null
           trustpilot_review_requested?: boolean | null
           trustpilot_review_requested_at?: string | null
+          ttclid?: string | null
           tyre_cover?: boolean | null
           updated_at?: string
           utm_campaign?: string | null
@@ -4820,6 +4824,7 @@ export type Database = {
           mileage?: string | null
           mot_fee?: boolean | null
           mot_repair?: boolean | null
+          msclkid?: string | null
           name?: string
           ni_verified?: boolean
           ni_verified_at?: string | null
@@ -4871,6 +4876,7 @@ export type Database = {
           trustpilot_review_completed_at?: string | null
           trustpilot_review_requested?: boolean | null
           trustpilot_review_requested_at?: string | null
+          ttclid?: string | null
           tyre_cover?: boolean | null
           updated_at?: string
           utm_campaign?: string | null
