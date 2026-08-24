@@ -13697,6 +13697,7 @@ export type Database = {
         Returns: string
       }
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
+      marketing_customer_state: { Args: { _email: string }; Returns: string }
       migrate_orphan_carts_to_leads: { Args: never; Returns: Json }
       missed_call_pass: { Args: { p_call_id: string }; Returns: boolean }
       missed_call_rotate_offers: { Args: never; Returns: number }
