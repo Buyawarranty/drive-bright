@@ -76,6 +76,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const [regNumber, setRegNumber] = useState('');
   const [regError, setRegError] = useState('');
   const [regErrorDetail, setRegErrorDetail] = useState('');
+  const [regNudge, setRegNudge] = useState('');
   const [mileage, setMileage] = useState('');
   const [mileageSelection, setMileageSelection] = useState<string>('');
   const [showMileageField, setShowMileageField] = useState(false);
@@ -193,6 +194,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     if (formatted.length <= 8) {
       setRegNumber(formatted);
       if (regError) { setRegError(''); setRegErrorDetail(''); }
+      if (regNudge) setRegNudge('');
       if (showManualVehicle) setShowManualVehicle(false);
       if (idGap) setIdGap(null);
 
@@ -291,6 +293,24 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       year: manualVehicle.year || undefined,
       vehicleType: 'car',
     } as VehicleData);
+  };
+
+  const isRegEntered = regNumber.replace(/\s+/g, '').length >= 5;
+  const isRegValid = UK_REG_PATTERN.test(regNumber.replace(/\s/g, '').toUpperCase());
+
+  const handleMainCtaClick = () => {
+    trackButtonClick('get_quote_main', { has_reg_number: !!regNumber.trim() });
+
+    if (!isRegEntered || !isRegValid) {
+      setRegNudge('Pop your registration in above and we\'ll fetch your price in seconds.');
+      const el = document.getElementById('reg-input-field');
+      el?.focus();
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    setRegNudge('');
+    handleGetQuote();
   };
 
   const handleGetQuote = async (mileageOverride?: string) => {
@@ -694,13 +714,26 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
                 </div>
 
+                {/* Main CTA - always visible, disabled until a valid registration is entered */}
+                <Button
+                  onClick={handleMainCtaClick}
+                  aria-disabled={isLookingUp || !isRegValid}
+                  className={`w-full font-bold rounded-xl px-6 py-6 sm:py-7 text-lg sm:text-xl bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg ${isLookingUp || !isRegValid ? 'opacity-60 cursor-not-allowed' : 'animate-breathing'}`}
+                >
+                  {isLookingUp ? 'Preparing your instant price…' : 'Get my quote'}
+                </Button>
+
+                {/* Positive nudge when the user clicks before entering a registration */}
+                {regNudge && (
+                  <p className="text-sm text-center text-brand-orange font-medium animate-fade-in">
+                    {regNudge}
+                  </p>
+                )}
+
                 <p className="text-sm text-gray-500 text-center">
                   Protection for vehicles up to <span className="font-bold text-gray-700">150,000 miles</span> and <span className="font-bold text-gray-700">15 years old</span>.
                 </p>
 
-
-
-                
                 {/* Inline registration error (friendly amber border + message) */}
                 {regError && (
                   <>
@@ -725,75 +758,50 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
                 {/* Reg-only: age comes from the plate and mileage from the last MOT.
                     We never ask the customer for mileage here. */}
-                {(
-                  (() => {
-                    const isRegValid = regNumber.replace(/\s/g, '').length >= 5;
-                    if (!isRegValid) {
-                      return null;
-                    }
+                {isRegEntered && idGap && (
+                  <div id="vehicle-not-recognised">
+                    <VehicleNotRecognisedCard
+                      gap={idGap}
+                      regNumber={regNumber}
+                      onRequestCallback={() => setShowCallbackModal(true)}
+                    />
+                  </div>
+                )}
 
-                    if (idGap) {
-                      return (
-                        <div id="vehicle-not-recognised">
-                          <VehicleNotRecognisedCard
-                            gap={idGap}
-                            regNumber={regNumber}
-                            onRequestCallback={() => setShowCallbackModal(true)}
-                          />
-                        </div>
-                      );
-                    }
-
-                    if (needsMileage) {
-                      return (
-                        <div className="space-y-3 rounded-xl border-2 border-[#F0A500] bg-[#FFF8E5] p-4 text-left animate-fade-in">
-                          <div>
-                            <p className="text-base font-semibold text-[#7A5A00]">
-                              We just need your current mileage
-                            </p>
-                            <p className="text-sm text-[#8A6A1F] mt-1">
-                              We couldn't find an MOT reading for this vehicle, so pop your mileage in and we'll price it straight away.
-                            </p>
-                          </div>
-                          <MileageField
-                            id="manual-mileage-field"
-                            value={mileage}
-                            onChange={(digits) => {
-                              setMileage(digits);
-                              if (mileageError) setMileageError('');
-                            }}
-                            onEnter={() => handleGetQuote(mileage)}
-                          />
-                          <Button
-                            onClick={() => handleGetQuote(mileage)}
-                            disabled={
-                              isLookingUp ||
-                              Number(digitsOnly(mileage) || '0') < 100 ||
-                              Number(digitsOnly(mileage) || '0') > MAX_COVERED_MILEAGE
-                            }
-                            className={`w-full font-bold rounded-xl px-6 py-6 text-lg bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg ${isLookingUp ? '' : 'animate-breathing'}`}
-                          >
-                            {isLookingUp ? 'Preparing your instant price…' : 'Get my quote'}
-                          </Button>
-                          <p className="text-xs text-[#8A6A1F]">
-                            We'll prefill this for you at checkout so you don't have to type it again.
-                          </p>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div className="space-y-2">
-                        <Button
-                          onClick={() => handleGetQuote()}
-                          disabled={isLookingUp}
-                          className={`w-full font-bold rounded-xl px-6 py-6 sm:py-7 text-lg sm:text-xl bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg ${isLookingUp ? '' : 'animate-breathing'}`}
-                        >
-                          {isLookingUp ? 'Preparing your instant price…' : 'Get my quote'}
-                        </Button>
-                      </div>
-                    );
-                  })()
+                {isRegEntered && needsMileage && (
+                  <div className="space-y-3 rounded-xl border-2 border-[#F0A500] bg-[#FFF8E5] p-4 text-left animate-fade-in">
+                    <div>
+                      <p className="text-base font-semibold text-[#7A5A00]">
+                        We just need your current mileage
+                      </p>
+                      <p className="text-sm text-[#8A6A1F] mt-1">
+                        We couldn't find an MOT reading for this vehicle, so pop your mileage in and we'll price it straight away.
+                      </p>
+                    </div>
+                    <MileageField
+                      id="manual-mileage-field"
+                      value={mileage}
+                      onChange={(digits) => {
+                        setMileage(digits);
+                        if (mileageError) setMileageError('');
+                      }}
+                      onEnter={() => handleGetQuote(mileage)}
+                    />
+                    <Button
+                      onClick={() => handleGetQuote(mileage)}
+                      disabled={
+                        isLookingUp ||
+                        Number(digitsOnly(mileage) || '0') < 100 ||
+                        Number(digitsOnly(mileage) || '0') > MAX_COVERED_MILEAGE
+                      }
+                      className={`w-full font-bold rounded-xl px-6 py-6 text-lg bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg ${isLookingUp ? '' : 'animate-breathing'}`}
+                    >
+                      {isLookingUp ? 'Preparing your instant price…' : 'Get my quote'}
+                    </Button>
+                    <p className="text-xs text-[#8A6A1F]">
+                      We'll prefill this for you at checkout so you don't have to type it again.
+                    </p>
+                  </div>
                 )}
 
 
