@@ -1368,12 +1368,12 @@ export const CustomersTab = ({
         
         if (filterBySource === 'website') {
           // "Website (BAW)" = pure direct/organic website sales only.
-          // Google-ads and Facebook-ads attributed website sales are shown under
+          // Google-ads, Facebook-ads, Bing-ads and TikTok-ads attributed website sales are shown under
           // their own dedicated filters, so exclude them here to avoid double-counting.
           const isWebsitePrefix = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
           if (!isWebsitePrefix) return false;
           const channel = getCustomerAcquisitionChannel(customer);
-          return channel !== 'google_ads' && channel !== 'facebook_ads';
+          return channel !== 'google_ads' && channel !== 'facebook_ads' && channel !== 'bing_ads' && channel !== 'tiktok_ads';
         } else if (filterBySource === 'website_google') {
           // Website sale with Google Ads attribution (normalised acquisition source, fall back to gclid)
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
@@ -1389,6 +1389,28 @@ export const CustomersTab = ({
           // Website sale with Facebook Ads attribution
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
           return isWebsite && getCustomerAcquisitionChannel(customer) === 'facebook_ads';
+        } else if (filterBySource === 'website_bing') {
+          // Website sale with Bing Ads attribution
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
+          return isWebsite && getCustomerAcquisitionChannel(customer) === 'bing_ads';
+        } else if (filterBySource === 'bing_leads_sales') {
+          // Agent-closed sales (BAW-S- staff or ADM- quote/order) where lead originated from Bing Ads
+          const isAgent = warrantyNum.startsWith('BAW-S-') || warrantyNum.startsWith('ADM');
+          return isAgent && getCustomerAcquisitionChannel(customer) === 'bing_ads';
+        } else if (filterBySource === 'bing_all') {
+          // Bing Ads pure (website) + Bing Leads sales (agent-closed) combined
+          return getCustomerAcquisitionChannel(customer) === 'bing_ads';
+        } else if (filterBySource === 'website_tiktok') {
+          // Website sale with TikTok Ads attribution
+          const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
+          return isWebsite && getCustomerAcquisitionChannel(customer) === 'tiktok_ads';
+        } else if (filterBySource === 'tiktok_leads_sales') {
+          // Agent-closed sales (BAW-S- staff or ADM- quote/order) where lead originated from TikTok Ads
+          const isAgent = warrantyNum.startsWith('BAW-S-') || warrantyNum.startsWith('ADM');
+          return isAgent && getCustomerAcquisitionChannel(customer) === 'tiktok_ads';
+        } else if (filterBySource === 'tiktok_all') {
+          // TikTok Ads pure (website) + TikTok Leads sales (agent-closed) combined
+          return getCustomerAcquisitionChannel(customer) === 'tiktok_ads';
         } else if (filterBySource === 'website_organic') {
           // Website sale with no paid attribution (organic / direct website)
           const isWebsite = warrantyNum.startsWith('BAW-') && !warrantyNum.startsWith('BAW-S-');
@@ -1409,6 +1431,7 @@ export const CustomersTab = ({
           // Deposit taken on Stripe, balance still outstanding
           return !!(customer as any).deposit_taken && !(customer as any).payment_collected_at;
         }
+
         return true;
       });
     }
