@@ -132,8 +132,29 @@ const loadAll = () => {
  * whichever comes first. This lets main content render and become interactive
  * before ~2.8MB of tracker JS parses.
  */
+const isInternalRoute = () => {
+  if (typeof window === 'undefined') return false;
+  const path = window.location.pathname;
+  return (
+    path.startsWith('/admin') ||
+    path.startsWith('/sales-login') ||
+    path.startsWith('/dealer-portal/dashboard') ||
+    path.startsWith('/dealer-portal/quotes') ||
+    path.startsWith('/dealer-portal/warranties') ||
+    path.startsWith('/make-a-claim') ||
+    path.startsWith('/add-evidence') ||
+    path.startsWith('/claim-evidence') ||
+    path.startsWith('/claim-update') ||
+    path.startsWith('/widget')
+  );
+};
+
 export const initThirdPartyScripts = () => {
   if (typeof window === 'undefined') return;
+
+  // Marketing pixels are not needed on staff/admin portals and were causing
+  // "Multiple pixels with conflicting versions" warnings on the admin dashboard.
+  if (isInternalRoute()) return;
 
   let fired = false;
   const events = ['mousedown', 'keydown', 'touchstart', 'scroll', 'pointermove'];
