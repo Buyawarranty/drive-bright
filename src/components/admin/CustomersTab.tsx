@@ -1298,7 +1298,7 @@ export const CustomersTab = ({
       const searchLower = debouncedSearchTerm.toLowerCase();
       // Normalized form for reg-plate / warranty-number style fields: strip spaces
       // AND punctuation so "LF21-ABC" / "LF21.ABC" still match "LF21 ABC".
-      const searchCompact = searchLower.replace(/[^a-z0-9@.]/g, '');
+      const searchCompact = searchLower.replace(/[^a-z0-9]/g, '');
       const compact = (v?: string | null) => (v ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
       const isSalesRole = isSalesScopedRole;
 
@@ -1306,10 +1306,9 @@ export const CustomersTab = ({
       // When matched, restrict search to plate/warranty fields so an email like
       // "lee.knap69@gmail.com" doesn't get returned for a reg like "AP69 YUX".
       const isRegLikeQuery =
-        !searchCompact.includes('@') &&
+        !searchLower.includes('@') &&
         searchCompact.length >= 4 &&
         searchCompact.length <= 8 &&
-        /^[a-z0-9]+$/.test(searchCompact) &&
         /[a-z]/.test(searchCompact) &&
         /[0-9]/.test(searchCompact);
 
