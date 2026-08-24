@@ -388,10 +388,19 @@ const Fld: React.FC<{ label: string; children: React.ReactNode }> = ({ label, ch
 );
 
 // ============= Appeal panel =============
+const DEFAULT_APPEAL_FEE = 140;
+
 const AppealPanel: React.FC<{ claimId: string; claim?: Claim }> = ({ claimId, claim }) => {
   const { appeal, loading, upsert, refetch } = useClaimAppeal(claimId);
-  const [form, setForm] = useState<any>({ status: 'submitted' });
-  React.useEffect(() => { if (appeal) setForm(appeal); }, [appeal]);
+  const [form, setForm] = useState<any>({ status: 'submitted', appeal_fee: DEFAULT_APPEAL_FEE });
+  React.useEffect(() => {
+    if (appeal) {
+      setForm({
+        ...appeal,
+        appeal_fee: appeal.appeal_fee ?? DEFAULT_APPEAL_FEE,
+      });
+    }
+  }, [appeal]);
 
   if (loading) return <div className="text-xs text-muted-foreground">Loading…</div>;
   const a: any = appeal || null;
@@ -430,7 +439,7 @@ const AppealPanel: React.FC<{ claimId: string; claim?: Claim }> = ({ claimId, cl
             <div>
               <span className="text-muted-foreground">Appeal fee</span>
               <div className="font-medium">
-                {a.appeal_fee != null ? `£${Number(a.appeal_fee).toFixed(2)}` : 'Not recorded'}
+                {a.appeal_fee != null ? `£${Number(a.appeal_fee).toFixed(2)}` : `£${DEFAULT_APPEAL_FEE.toFixed(2)}`}
               </div>
             </div>
             {a.reviewer_url && (
@@ -457,18 +466,32 @@ const AppealPanel: React.FC<{ claimId: string; claim?: Claim }> = ({ claimId, cl
         </div>
       )}
 
-      <Fld label="Appeal status">
-        <Select value={form.status ?? 'submitted'} onValueChange={(v) => setForm((f: any) => ({ ...f, status: v }))}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="submitted">Submitted</SelectItem>
-            <SelectItem value="in_review">In review</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-            <SelectItem value="closed">Closed</SelectItem>
-          </SelectContent>
-        </Select>
-      </Fld>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Fld label="Appeal status">
+          <Select value={form.status ?? 'submitted'} onValueChange={(v) => setForm((f: any) => ({ ...f, status: v }))}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="submitted">Submitted</SelectItem>
+              <SelectItem value="in_review">In review</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
+        </Fld>
+        <Fld label={`Appeal fee (£) — default £${DEFAULT_APPEAL_FEE}`}>
+          <Input
+            type="number"
+            min="0"
+            step="0.01"
+            value={form.appeal_fee ?? ''}
+            onChange={(e) => setForm((f: any) => ({ ...f, appeal_fee: e.target.value === '' ? null : Number(e.target.value) }))}
+            placeholder={`${DEFAULT_APPEAL_FEE}.00`}
+          />
+        </Fld>
+      </div>
+      <Fld label="Independent reviewer"><Input value={form.independent_reviewer ?? ''} onChange={e => setForm((f: any) => ({ ...f, independent_reviewer: e.target.value }))} placeholder="e.g. Scotia / ACE" /></Fld>
+      <Fld label="Reviewer website"><Input value={form.reviewer_url ?? ''} onChange={e => setForm((f: any) => ({ ...f, reviewer_url: e.target.value }))} placeholder="https://…" /></Fld>
       <Fld label="Appeal reason"><Textarea rows={3} value={form.reason ?? ''} onChange={e => setForm((f: any) => ({ ...f, reason: e.target.value }))} /></Fld>
       <Fld label="New evidence"><Textarea rows={3} value={form.new_evidence ?? ''} onChange={e => setForm((f: any) => ({ ...f, new_evidence: e.target.value }))} /></Fld>
       <Fld label="Outcome"><Textarea rows={2} value={form.outcome ?? ''} onChange={e => setForm((f: any) => ({ ...f, outcome: e.target.value }))} /></Fld>
@@ -477,7 +500,7 @@ const AppealPanel: React.FC<{ claimId: string; claim?: Claim }> = ({ claimId, cl
       <AppealWorldpayPayment
         claim={claim}
         appeal={appeal as any}
-        defaultAmount={(appeal as any)?.appeal_fee ?? null}
+        defaultAmount={(appeal as any)?.appeal_fee ?? DEFAULT_APPEAL_FEE}
         onLinkSaved={async (url) => { await upsert({ payment_link: url } as any); await refetch(); }}
       />
     </div>
@@ -492,14 +515,14 @@ const AppealWorldpayPayment: React.FC<{
   onLinkSaved: (url: string) => Promise<void>;
 }> = ({ claim, appeal, defaultAmount, onLinkSaved }) => {
   const { toast } = useToast();
-  const [amount, setAmount] = useState<string>(defaultAmount != null ? String(defaultAmount) : '');
+  const [amount, setAmount] = useState<string>(defaultAmount != null ? String(defaultAmount) : String(DEFAULT_APPEAL_FEE));
   const [desc, setDesc] = useState<string>(`Appeal fee${claim?.reg ? ` — ${claim.reg}` : ''}`);
   const [loading, setLoading] = useState<null | 'moto' | 'link'>(null);
   const [url, setUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
 
   React.useEffect(() => {
-    if (defaultAmount != null) setAmount(String(defaultAmount));
+    setAmount(defaultAmount != null ? String(defaultAmount) : String(DEFAULT_APPEAL_FEE));
   }, [defaultAmount]);
 
   const create = async (flow: 'moto' | 'link') => {
