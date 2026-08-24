@@ -320,6 +320,61 @@ export const AllAgentsProgressPanel: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {recon.length > 0 && (() => {
+        const sum = (b: string) => recon.filter((r) => r.bucket === b).reduce((t, r) => t + r.revenue, 0);
+        const total = recon.reduce((t, r) => t + r.revenue, 0);
+        const agentTotal = sum('agent');
+        const buckets: Array<{ key: string; title: string; note: string }> = [
+          { key: 'management', title: 'Credited to management / support accounts', note: 'Confirmed by a manager or support account, so it never lands on an agent row.' },
+          { key: 'no_team', title: 'Agent not on a lead team', note: 'The scoreboard only lists agents who sit on a team — add them in Lead Teams to see them here.' },
+          { key: 'unattributed', title: 'No agent on the record', note: 'Website sales with no owner. Set the sale credit on the customer to move it to an agent.' },
+        ];
+        return (
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Why this differs from Customer Management · {format(now, 'MMMM')}
+            </div>
+            <div className="mt-2 text-sm">
+              Customer Management shows <span className="font-semibold">{gbp(total)}</span> of active sales this month.
+              The agent rows above add up to <span className="font-semibold">{gbp(agentTotal)}</span>. The rest is
+              accounted for below, so both views are reading the same records.
+            </div>
+            <ul className="mt-3 space-y-2">
+              {buckets.map((b) => {
+                const amount = sum(b.key);
+                const count = recon.filter((r) => r.bucket === b.key).reduce((t, r) => t + (r.sales_count || 0), 0);
+                if (amount === 0 && count === 0) return null;
+                const names = recon
+                  .filter((r) => r.bucket === b.key)
+                  .sort((x, y) => y.revenue - x.revenue)
+                  .slice(0, 4)
+                  .map((r) => `${r.label} ${gbp(r.revenue)}`)
+                  .join(' · ');
+                return (
+                  <li key={b.key} className="rounded-lg border border-border/70 bg-muted/30 px-3 py-2">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <span className="text-sm font-medium">{b.title}</span>
+                      <span className="text-sm font-semibold">
+                        {gbp(amount)}
+                        <span className="ml-1 text-[11px] font-normal text-muted-foreground">
+                          {count} sale{count === 1 ? '' : 's'}
+                        </span>
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">{b.note}</div>
+                    {names && <div className="mt-0.5 text-[11px] text-muted-foreground">{names}</div>}
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="mt-3 text-[11px] text-muted-foreground">
+              Both views use the same credit order (sale credit → payment confirmed by → quote sent by → assigned to),
+              count on signup date, exclude cancelled and refunded orders, and now both include approved commission claims.
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };
