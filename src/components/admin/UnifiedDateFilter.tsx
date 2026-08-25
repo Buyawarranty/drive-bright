@@ -50,11 +50,11 @@ export function periodToRange(key: PeriodKey): DateRange | undefined {
       return undefined;
     case 'today': return { from: today, to: today };
     case 'yesterday': { const d = subDays(today, 1); return { from: d, to: d }; }
-    case 'this_week': return { from: startOfWeek(today, { weekStartsOn: 0 }), to: today };
+    case 'this_week': return { from: startOfWeek(today, { weekStartsOn: 1 }), to: endOfWeek(today, { weekStartsOn: 1 }) };
     case '7days': return { from: subDays(today, 6), to: today };
     case 'last_week': {
       const lastWeekDay = subDays(today, 7);
-      return { from: startOfWeek(lastWeekDay, { weekStartsOn: 0 }), to: endOfWeek(lastWeekDay, { weekStartsOn: 0 }) };
+      return { from: startOfWeek(lastWeekDay, { weekStartsOn: 1 }), to: endOfWeek(lastWeekDay, { weekStartsOn: 1 }) };
     }
     case '14days': return { from: subDays(today, 13), to: today };
     case 'this_month': return { from: startOfMonth(today), to: today };
