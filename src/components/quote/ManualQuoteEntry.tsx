@@ -1,6 +1,10 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, ArrowRight, Check, Search } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ArrowRight, Check, Search } from 'lucide-react';
+
+/** Single source of truth for the "reg not recognised" copy, used everywhere. */
+export const REG_NOT_FOUND_MESSAGE = "We couldn't find that reg. Please check it and try again.";
+export const REG_NOT_FOUND_DETAIL = 'A typical UK plate looks like AB12 CDE.';
 
 export const MAX_COVERED_MILEAGE = 150000;
 export const MIN_VALID_YEAR = 1950;
@@ -218,35 +222,61 @@ export const ManualVehicleEntryCard: React.FC<ManualVehicleEntryCardProps> = ({
 };
 
 interface RegLookupErrorProps {
-  message: string;
+  message?: string;
   detail?: string;
   onManualEntry?: () => void;
   showManualLink?: boolean;
 }
 
-/** Registration not found notice — circled search icon, orange headline. */
+/**
+ * Registration not recognised notice. Same card on every breakpoint and every
+ * surface (homepage hero, landing hero, step 1): soft amber card, warning
+ * glyph, polite one-line message.
+ */
 export const RegLookupError: React.FC<RegLookupErrorProps> = ({
   message,
   detail,
   onManualEntry,
   showManualLink,
 }) => (
-  <div className="flex items-start gap-3 text-left animate-fade-in">
-    <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-orange-50">
-      <Search className="h-4 w-4 text-brand-orange" strokeWidth={2.5} />
-    </span>
-    <div className="pt-0.5">
-      <p className="text-sm font-bold text-brand-orange">{message}</p>
-      {detail && <p className="text-sm text-gray-600 mt-0.5">{detail}</p>}
+  <div
+    role="alert"
+    aria-live="polite"
+    className="flex items-start gap-2.5 text-left rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 sm:px-4 sm:py-3 animate-fade-in"
+  >
+    <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 mt-0.5 flex-shrink-0 text-amber-600" strokeWidth={2.5} />
+    <div>
+      <p className="text-sm sm:text-[15px] font-semibold text-amber-900">
+        {message || REG_NOT_FOUND_MESSAGE}
+      </p>
+      {detail && <p className="text-xs sm:text-sm text-amber-800/80 mt-0.5">{detail}</p>}
       {showManualLink && onManualEntry && (
         <button
           type="button"
           onClick={onManualEntry}
-          className="mt-2 text-sm font-semibold text-brand-orange underline hover:text-orange-700"
+          className="mt-2 text-sm font-semibold text-amber-900 underline hover:text-amber-950"
         >
           Enter my vehicle details manually
         </button>
       )}
     </div>
   </div>
+);
+
+/**
+ * Airbnb-style pink outline around the reg plate input while the entered
+ * registration isn't recognised. Rendered next to the error card; scoped to the
+ * given input id so desktop and mobile share one implementation.
+ */
+export const RegInputErrorOutline: React.FC<{ inputId: string }> = ({ inputId }) => (
+  <style>{`
+    #${inputId} {
+      box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.75) !important;
+      animation: reg-error-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes reg-error-pulse {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.75); }
+      50% { box-shadow: 0 0 0 6px rgba(255, 56, 92, 0.35); }
+    }
+  `}</style>
 );
