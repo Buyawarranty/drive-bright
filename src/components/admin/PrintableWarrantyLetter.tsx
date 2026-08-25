@@ -199,21 +199,23 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
   const getDuration = () => {
     if (!policy.policyStartDate || !policy.policyEndDate) return 'N/A';
     const start = new Date(policy.policyStartDate);
+    // The stored end date ALREADY includes any seasonal bonus months —
+    // never add them again here or the letter overstates the cover.
     const end = new Date(policy.policyEndDate);
+
+    const months =
+      (end.getFullYear() - start.getFullYear()) * 12 +
+      (end.getMonth() - start.getMonth()) +
+      (end.getDate() < start.getDate() ? -1 : 0);
+
     const bonusMonths = Number(policy.seasonalBonusMonths) || 0;
-
-    if (bonusMonths > 0) {
-      end.setMonth(end.getMonth() + bonusMonths);
-    }
-
-    const months = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30));
-
     if (bonusMonths > 0) return `${months} Months`;
-    if (months >= 36) return '3 Years';
-    if (months >= 24) return '2 Years';
-    if (months >= 12) return '1 Year';
+    if (months === 36) return '3 Years';
+    if (months === 24) return '2 Years';
+    if (months === 12) return '1 Year';
     return `${months} Months`;
   };
+
 
   const address = formatAddress();
   const addons = getAddonsList();
@@ -301,13 +303,10 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
                   ['Duration', getDuration()],
                   ['Mileage', policy.mileage ? `${parseInt(policy.mileage).toLocaleString()} miles` : 'N/A'],
                   ['Start Date', policy.policyStartDate ? format(new Date(policy.policyStartDate), 'd MMM yyyy') : 'N/A'],
-                  ['End Date', policy.policyEndDate ? (() => {
-                    const endDate = new Date(policy.policyEndDate);
-                    if (policy.seasonalBonusMonths && policy.seasonalBonusMonths > 0) {
-                      endDate.setMonth(endDate.getMonth() + policy.seasonalBonusMonths);
-                    }
-                    return format(endDate, 'd MMM yyyy');
-                  })() : 'N/A'],
+                  ['End Date', policy.policyEndDate
+                    ? format(new Date(policy.policyEndDate), 'd MMM yyyy')
+                    : 'N/A'],
+
                   ['Warranty Ref', warrantyRef],
                   ['Policy No.', policy.policyNumber || 'N/A'],
                 ].map(([label, value], i) => (
