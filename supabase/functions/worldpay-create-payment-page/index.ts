@@ -104,9 +104,10 @@ serve(async (req) => {
         }
         const root = await res.json();
         const links = root?._links ?? {};
-        const key = Object.keys(links).find((k) => /paymentpages/i.test(k));
+        const keys = Object.keys(links);
+        const key = keys.find((k) => /payment[_]?pages/i.test(k));
         const href = key ? links[key]?.href : null;
-        log("Discovery", { base, key, href });
+        log("Discovery", { base, keys, key, href });
         return typeof href === "string" ? href : null;
       } catch (e) {
         log("Discovery error", { base, message: (e as Error)?.message });
@@ -118,9 +119,11 @@ serve(async (req) => {
     const discovered = await discover(primary);
     if (discovered) candidates.push(discovered);
     candidates.push(`${primary}/paymentPages`);
+    candidates.push(`${primary}/payment_pages`);
     const discoveredSecondary = discovered ? null : await discover(secondary);
     if (discoveredSecondary) candidates.push(discoveredSecondary);
     candidates.push(`${secondary}/paymentPages`);
+    candidates.push(`${secondary}/payment_pages`);
 
     log("Calling Worldpay", { candidates, transactionReference, flow: body.flow });
 
