@@ -32,9 +32,9 @@ const PRESETS: { key: PeriodKey; label: string }[] = [
   { key: 'custom', label: 'Custom' },
   { key: 'today', label: 'Today' },
   { key: 'yesterday', label: 'Yesterday' },
-  { key: 'this_week', label: 'This week (Sun – Today)' },
+  { key: 'this_week', label: 'This week (Mon – Sun)' },
   { key: '7days', label: 'Last 7 days' },
-  { key: 'last_week', label: 'Last week (Sun – Sat)' },
+  { key: 'last_week', label: 'Last week (Mon – Sun)' },
   { key: '14days', label: 'Last 14 days' },
   { key: 'this_month', label: 'This month' },
   { key: '30days', label: 'Last 30 days' },
@@ -50,11 +50,11 @@ export function periodToRange(key: PeriodKey): DateRange | undefined {
       return undefined;
     case 'today': return { from: today, to: today };
     case 'yesterday': { const d = subDays(today, 1); return { from: d, to: d }; }
-    case 'this_week': return { from: startOfWeek(today, { weekStartsOn: 0 }), to: today };
+    case 'this_week': return { from: startOfWeek(today, { weekStartsOn: 1 }), to: endOfWeek(today, { weekStartsOn: 1 }) };
     case '7days': return { from: subDays(today, 6), to: today };
     case 'last_week': {
       const lastWeekDay = subDays(today, 7);
-      return { from: startOfWeek(lastWeekDay, { weekStartsOn: 0 }), to: endOfWeek(lastWeekDay, { weekStartsOn: 0 }) };
+      return { from: startOfWeek(lastWeekDay, { weekStartsOn: 1 }), to: endOfWeek(lastWeekDay, { weekStartsOn: 1 }) };
     }
     case '14days': return { from: subDays(today, 13), to: today };
     case 'this_month': return { from: startOfMonth(today), to: today };
@@ -208,6 +208,8 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
   const showLast30 = period !== '30days';
   const showToday = period !== 'today';
   const showYesterday = period !== 'yesterday';
+  const showThisWeek = period !== 'this_week';
+  const showLastWeek = period !== 'last_week';
   const showThisMonth = period !== 'this_month';
   const showLastMonth = period !== 'last_month';
 
@@ -270,6 +272,24 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
             className="text-sm font-semibold text-orange-600 hover:underline"
           >
             Yesterday
+          </button>
+        )}
+        {!hideQuickLinks && showThisWeek && (
+          <button
+            type="button"
+            onClick={() => onChange({ scope, period: 'this_week', customRange: undefined })}
+            className="text-sm font-semibold text-orange-600 hover:underline"
+          >
+            This week
+          </button>
+        )}
+        {!hideQuickLinks && showLastWeek && (
+          <button
+            type="button"
+            onClick={() => onChange({ scope, period: 'last_week', customRange: undefined })}
+            className="text-sm font-semibold text-orange-600 hover:underline"
+          >
+            Last week
           </button>
         )}
         {!hideQuickLinks && showThisMonth && (
