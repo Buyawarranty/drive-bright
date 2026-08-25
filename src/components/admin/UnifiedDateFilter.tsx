@@ -267,7 +267,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
           <button
             type="button"
             onClick={() => onChange({ scope, period: 'yesterday', customRange: undefined })}
-            className="text-sm text-primary hover:underline"
+            className="text-sm font-semibold text-orange-600 hover:underline"
           >
             Yesterday
           </button>
@@ -276,7 +276,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
           <button
             type="button"
             onClick={() => onChange({ scope, period: 'this_month', customRange: undefined })}
-            className="text-sm text-primary hover:underline"
+            className="text-sm font-semibold text-orange-600 hover:underline"
           >
             This month
           </button>
@@ -285,7 +285,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
           <button
             type="button"
             onClick={() => onChange({ scope, period: 'last_month', customRange: undefined })}
-            className="text-sm text-primary hover:underline"
+            className="text-sm font-semibold text-orange-600 hover:underline"
           >
             Last month
           </button>
@@ -294,7 +294,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
           <button
             type="button"
             onClick={() => onChange({ scope, period: '30days', customRange: undefined })}
-            className="text-sm text-primary hover:underline"
+            className="text-sm font-semibold text-orange-600 hover:underline"
           >
             Show last 30 days
           </button>
