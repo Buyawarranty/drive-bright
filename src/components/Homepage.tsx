@@ -726,14 +726,15 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
                 </div>
 
-                {/* Main CTA - always visible, disabled until a valid registration is entered */}
+                {/* Main CTA - always clickable so an invalid reg gets a clear error */}
                 <Button
                   onClick={handleMainCtaClick}
-                  aria-disabled={isLookingUp || !isRegValid}
-                  className={`w-full font-bold rounded-xl px-6 py-6 sm:py-7 text-lg sm:text-xl bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg ${isLookingUp || !isRegValid ? 'opacity-60 cursor-not-allowed' : 'animate-breathing'}`}
+                  aria-disabled={isLookingUp}
+                  className={`w-full font-bold rounded-xl px-6 py-6 sm:py-7 text-lg sm:text-xl bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg ${isLookingUp ? 'opacity-60 cursor-wait' : isRegValid ? 'animate-breathing' : ''}`}
                 >
                   {isLookingUp ? 'Preparing your instant price…' : 'Get my quote'}
                 </Button>
+
 
                 {/* Positive nudge when the user clicks before entering a registration */}
                 {regNudge && (
