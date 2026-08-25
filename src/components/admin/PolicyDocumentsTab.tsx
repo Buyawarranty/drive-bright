@@ -694,64 +694,70 @@ export const PolicyDocumentsTab: React.FC = () => {
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   {!isEditing ? (
-                    <Button size="sm" variant="ghost" onClick={() => {
-                      setIsEditing(true);
-                      const parts = (selectedCustomer.name || '').trim().split(/\s+/);
-                      const fnFallback = parts[0] || '';
-                      const lnFallback = parts.slice(1).join(' ') || '';
-                      setEditData({
-                        name: selectedCustomer.name,
-                        first_name: selectedCustomer.first_name || fnFallback,
-                        last_name: selectedCustomer.last_name || lnFallback,
-                        email: selectedCustomer.email,
-                        phone: selectedCustomer.phone || '',
-                        flat_number: selectedCustomer.flat_number || '',
-                        building_name: selectedCustomer.building_name || '',
-                        building_number: selectedCustomer.building_number || '',
-                        street: selectedCustomer.street || '',
-                        town: selectedCustomer.town || '',
-                        county: selectedCustomer.county || '',
-                        postcode: selectedCustomer.postcode || '',
-                        registration_plate: selectedCustomer.registration_plate || '',
-                        vehicle_make: selectedCustomer.vehicle_make || '',
-                        vehicle_model: selectedCustomer.vehicle_model || '',
-                        vehicle_year: selectedCustomer.vehicle_year || '',
-                        mileage: selectedCustomer.mileage || '',
-                        plan_type: selectedCustomer.plan_type || '',
-                        payment_type: selectedCustomer.payment_type || '',
-                        claim_limit: selectedCustomer.claim_limit,
-                        voluntary_excess: selectedCustomer.voluntary_excess,
-                        labour_rate: selectedCustomer.labour_rate,
-                        seasonal_bonus_months: selectedCustomer.seasonal_bonus_months,
-                        breakdown_recovery: selectedCustomer.breakdown_recovery,
-                        wear_tear: selectedCustomer.wear_tear,
-                        europe_cover: selectedCustomer.europe_cover,
-                        mot_fee: selectedCustomer.mot_fee,
-                        mot_repair: selectedCustomer.mot_repair,
-                        tyre_cover: selectedCustomer.tyre_cover,
-                        lost_key: selectedCustomer.lost_key,
-                        vehicle_rental: selectedCustomer.vehicle_rental,
-                        transfer_cover: selectedCustomer.transfer_cover,
-                        consequential: selectedCustomer.consequential,
-                        policy_plan_type: selectedPolicy?.plan_type || selectedCustomer.plan_type || '',
-                        policy_payment_type: selectedPolicy?.payment_type || selectedCustomer.payment_type || '',
-                        policy_claim_limit: selectedPolicy?.claim_limit ?? selectedCustomer.claim_limit,
-                        policy_voluntary_excess: selectedPolicy?.voluntary_excess ?? selectedCustomer.voluntary_excess,
-                        policy_seasonal_bonus_months: selectedPolicy?.seasonal_bonus_months ?? selectedCustomer.seasonal_bonus_months,
-                        policy_start_date: selectedPolicy?.policy_start_date || '',
-                        policy_end_date: selectedPolicy?.policy_end_date || '',
-                        policy_additional_notes: (selectedPolicy as any)?.additional_notes || '',
-                      });
-                      const hasReg = !!selectedCustomer.registration_plate;
-                      const missingVehicle = !selectedCustomer.vehicle_make && !selectedCustomer.vehicle_model && !selectedCustomer.vehicle_year;
-                      if (hasReg && missingVehicle) {
-                        lookupDvla(selectedCustomer.registration_plate!, { overwrite: false });
-                      }
-                    }} className="gap-1 text-xs h-7">
+                    <div className="flex items-center gap-1">
+                      <Button size="sm" variant="ghost" onClick={() => {
+                        setIsEditing(true);
+                        const parts = (selectedCustomer.name || '').trim().split(/\s+/);
+                        const fnFallback = parts[0] || '';
+                        const lnFallback = parts.slice(1).join(' ') || '';
+                        setEditData({
+                          name: selectedCustomer.name,
+                          first_name: selectedCustomer.first_name || fnFallback,
+                          last_name: selectedCustomer.last_name || lnFallback,
+                          email: selectedCustomer.email,
+                          phone: selectedCustomer.phone || '',
+                          flat_number: selectedCustomer.flat_number || '',
+                          building_name: selectedCustomer.building_name || '',
+                          building_number: selectedCustomer.building_number || '',
+                          street: selectedCustomer.street || '',
+                          town: selectedCustomer.town || '',
+                          county: selectedCustomer.county || '',
+                          postcode: selectedCustomer.postcode || '',
+                          registration_plate: selectedCustomer.registration_plate || '',
+                          vehicle_make: selectedCustomer.vehicle_make || '',
+                          vehicle_model: selectedCustomer.vehicle_model || '',
+                          vehicle_year: selectedCustomer.vehicle_year || '',
+                          mileage: selectedCustomer.mileage || '',
+                          plan_type: selectedCustomer.plan_type || '',
+                          payment_type: selectedCustomer.payment_type || '',
+                          claim_limit: selectedCustomer.claim_limit,
+                          voluntary_excess: selectedCustomer.voluntary_excess,
+                          labour_rate: selectedCustomer.labour_rate,
+                          seasonal_bonus_months: selectedCustomer.seasonal_bonus_months,
+                          breakdown_recovery: selectedCustomer.breakdown_recovery,
+                          wear_tear: selectedCustomer.wear_tear,
+                          europe_cover: selectedCustomer.europe_cover,
+                          mot_fee: selectedCustomer.mot_fee,
+                          mot_repair: selectedCustomer.mot_repair,
+                          tyre_cover: selectedCustomer.tyre_cover,
+                          lost_key: selectedCustomer.lost_key,
+                          vehicle_rental: selectedCustomer.vehicle_rental,
+                          transfer_cover: selectedCustomer.transfer_cover,
+                          consequential: selectedCustomer.consequential,
+                          policy_plan_type: selectedPolicy?.plan_type || selectedCustomer.plan_type || '',
+                          policy_payment_type: selectedPolicy?.payment_type || selectedCustomer.payment_type || '',
+                          policy_claim_limit: selectedPolicy?.claim_limit ?? selectedCustomer.claim_limit,
+                          policy_voluntary_excess: selectedPolicy?.voluntary_excess ?? selectedCustomer.voluntary_excess,
+                          policy_seasonal_bonus_months: selectedPolicy?.seasonal_bonus_months ?? selectedCustomer.seasonal_bonus_months,
+                          policy_start_date: selectedPolicy?.policy_start_date || '',
+                          policy_end_date: selectedPolicy?.policy_end_date || '',
+                          policy_additional_notes: (selectedPolicy as any)?.additional_notes || '',
+                        });
+                        const hasReg = !!selectedCustomer.registration_plate;
+                        const missingVehicle = !selectedCustomer.vehicle_make && !selectedCustomer.vehicle_model && !selectedCustomer.vehicle_year;
+                        if (hasReg && missingVehicle) {
+                          lookupDvla(selectedCustomer.registration_plate!, { overwrite: false });
+                        }
+                      }} className="gap-1 text-xs h-7">
 
-                      <Pencil className="h-3 w-3" />
-                      Edit
-                    </Button>
+                        <Pencil className="h-3 w-3" />
+                        Edit
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setShowPreview(true)} className="gap-1 text-xs h-7">
+                        <Eye className="h-3 w-3" />
+                        View Letter
+                      </Button>
+                    </div>
                   ) : (
                     <div className="flex gap-1">
                       <Button size="sm" variant="default" disabled={isSaving} onClick={async () => {
