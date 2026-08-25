@@ -760,7 +760,8 @@ export const PolicyDocumentsTab: React.FC = () => {
                           const firstName = (editData.first_name || '').trim();
                           const lastName = (editData.last_name || '').trim();
                           const fullName = `${firstName} ${lastName}`.trim();
-                          const { error } = await supabase.from('customers').update({
+
+                          const customerUpdate = {
                             name: fullName,
                             first_name: firstName,
                             last_name: lastName,
@@ -777,14 +778,52 @@ export const PolicyDocumentsTab: React.FC = () => {
                             vehicle_make: editData.vehicle_make || null,
                             vehicle_model: editData.vehicle_model || null,
                             vehicle_year: editData.vehicle_year || null,
-                          }).eq('id', selectedCustomer.id);
-                          if (error) throw error;
-                          const updated = { ...selectedCustomer, ...editData, name: fullName, first_name: firstName, last_name: lastName };
+                            mileage: editData.mileage || null,
+                            plan_type: editData.policy_plan_type || editData.plan_type || selectedCustomer.plan_type,
+                            payment_type: editData.policy_payment_type || editData.payment_type || selectedCustomer.payment_type,
+                            claim_limit: editData.policy_claim_limit ?? editData.claim_limit ?? selectedCustomer.claim_limit,
+                            voluntary_excess: editData.policy_voluntary_excess ?? editData.voluntary_excess ?? selectedCustomer.voluntary_excess,
+                            labour_rate: editData.labour_rate ?? selectedCustomer.labour_rate,
+                            seasonal_bonus_months: editData.policy_seasonal_bonus_months ?? editData.seasonal_bonus_months ?? selectedCustomer.seasonal_bonus_months,
+                            breakdown_recovery: editData.breakdown_recovery ?? selectedCustomer.breakdown_recovery,
+                            wear_tear: editData.wear_tear ?? selectedCustomer.wear_tear,
+                            europe_cover: editData.europe_cover ?? selectedCustomer.europe_cover,
+                            mot_fee: editData.mot_fee ?? selectedCustomer.mot_fee,
+                            mot_repair: editData.mot_repair ?? selectedCustomer.mot_repair,
+                            tyre_cover: editData.tyre_cover ?? selectedCustomer.tyre_cover,
+                            lost_key: editData.lost_key ?? selectedCustomer.lost_key,
+                            vehicle_rental: editData.vehicle_rental ?? selectedCustomer.vehicle_rental,
+                            transfer_cover: editData.transfer_cover ?? selectedCustomer.transfer_cover,
+                            consequential: editData.consequential ?? selectedCustomer.consequential,
+                          };
 
-                          setSelectedCustomer(updated as CustomerData);
-                          setAllCustomers(prev => prev.map(c => c.id === selectedCustomer.id ? updated as CustomerData : c));
+                          const { error: customerError } = await supabase.from('customers').update(customerUpdate).eq('id', selectedCustomer.id);
+                          if (customerError) throw customerError;
+
+                          if (selectedPolicy?.id) {
+                            const policyUpdate = {
+                              plan_type: editData.policy_plan_type || selectedPolicy.plan_type,
+                              payment_type: editData.policy_payment_type || selectedPolicy.payment_type,
+                              claim_limit: editData.policy_claim_limit ?? selectedPolicy.claim_limit,
+                              voluntary_excess: editData.policy_voluntary_excess ?? selectedPolicy.voluntary_excess,
+                              seasonal_bonus_months: editData.policy_seasonal_bonus_months ?? selectedPolicy.seasonal_bonus_months,
+                              policy_start_date: editData.policy_start_date || selectedPolicy.policy_start_date,
+                              policy_end_date: editData.policy_end_date || selectedPolicy.policy_end_date,
+                              additional_notes: editData.policy_additional_notes ?? (selectedPolicy as any).additional_notes,
+                            };
+                            const { error: policyError } = await supabase.from('customer_policies').update(policyUpdate).eq('id', selectedPolicy.id);
+                            if (policyError) throw policyError;
+
+                            const updatedPolicy = { ...selectedPolicy, ...policyUpdate };
+                            setSelectedPolicy(updatedPolicy as PolicyData);
+                            setCustomerPolicies(prev => prev.map(p => p.id === selectedPolicy.id ? updatedPolicy as PolicyData : p));
+                          }
+
+                          const updatedCustomer = { ...selectedCustomer, ...customerUpdate, name: fullName, first_name: firstName, last_name: lastName };
+                          setSelectedCustomer(updatedCustomer as CustomerData);
+                          setAllCustomers(prev => prev.map(c => c.id === selectedCustomer.id ? updatedCustomer as CustomerData : c));
                           setIsEditing(false);
-                          toast({ title: 'Customer updated', description: 'Details saved successfully.' });
+                          toast({ title: 'Saved', description: 'Customer and policy details updated.' });
                         } catch (err: any) {
                           toast({ title: 'Error', description: err.message || 'Failed to save', variant: 'destructive' });
                         } finally {
