@@ -126,7 +126,15 @@ serve(async (req) => {
     }
 
     if (!wpRes) {
-      return json({ error: "Worldpay request failed", details: lastError || "no endpoint reachable" }, 502);
+      const denied = /accessDenied|Access to the requested resource has been denied|Invalid authentication/i.test(lastError);
+      return json({
+        error: denied
+          ? "Worldpay Hosted Payment Pages access is denied for the saved merchant credentials"
+          : "Worldpay request failed",
+        details: denied
+          ? "Worldpay accepted the request format but denied access to /payment_pages. Enable Hosted Payment Pages / Pay by Link for this merchant entity, or update WORLDPAY_USERNAME, WORLDPAY_PASSWORD and WORLDPAY_ENTITY_REF to credentials with HPP access."
+          : lastError || "no endpoint reachable",
+      }, 502);
     }
 
 
