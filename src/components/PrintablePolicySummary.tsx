@@ -7,8 +7,8 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
-import { getWarrantyDurationDisplay } from '@/lib/warrantyUtils';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
+import { formatStoredPolicyCoverDuration } from '@/lib/policyCoverDuration';
 
 interface PrintablePolicySummaryProps {
   open: boolean;
@@ -219,7 +219,7 @@ export const PrintablePolicySummary: React.FC<PrintablePolicySummaryProps> = ({
                 {[
                   ['Vehicle', `${customer.registration_plate || 'N/A'} — ${vehicleDesc}`],
                   ['Plan Type', getPlanDisplayName()],
-                  ['Duration', `${getWarrantyDurationDisplay(policy.payment_type)}${policy.seasonal_bonus_months ? ` + ${policy.seasonal_bonus_months} months FREE` : ''}`],
+                  ['Duration', formatStoredPolicyCoverDuration(policy.policy_start_date, policy.policy_end_date)],
                   ['Mileage', mileageDisplay],
                   ['Warranty Reference', policy.warranty_number || policy.policy_number],
                   ['Policy Start', formatDate(policy.policy_start_date)],

@@ -10,6 +10,7 @@ import { toast } from '@/components/ui/use-toast';
 import { Search, Printer, FileText, User, Car, Mail, Phone, Tag, Pencil, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
+import { formatStoredPolicyCoverDuration } from '@/lib/policyCoverDuration';
 
 interface CustomerData {
   id: string;
@@ -199,13 +200,25 @@ export const PolicyDocumentsTab: React.FC = () => {
       console.error('Failed to log search to posted letters log:', err);
     }
 
-    // Fetch policies for this customer
-    const { data: policies } = await supabase
+    // Fetch policies for this customer first; email is only a fallback for older orphaned records.
+    let { data: policies } = await supabase
       .from('customer_policies')
       .select('*')
-      .ilike('email', customer.email)
+      .eq('customer_id', customer.id)
       .or('is_deleted.is.null,is_deleted.eq.false')
+      .order('updated_at', { ascending: false })
       .order('created_at', { ascending: false });
+
+    if (!policies || policies.length === 0) {
+      const { data: emailPolicies } = await supabase
+        .from('customer_policies')
+        .select('*')
+        .ilike('email', customer.email)
+        .or('is_deleted.is.null,is_deleted.eq.false')
+        .order('updated_at', { ascending: false })
+        .order('created_at', { ascending: false });
+      policies = emailPolicies || [];
+    }
 
     setCustomerPolicies(policies || []);
     if (policies && policies.length > 0) {
@@ -219,20 +232,7 @@ export const PolicyDocumentsTab: React.FC = () => {
 
   const getDuration = () => {
     if (!selectedPolicy) return 'N/A';
-    const start = new Date(selectedPolicy.policy_start_date);
-    const end = new Date(selectedPolicy.policy_end_date);
-    const bonusMonths = getBonusMonths();
-
-    if (bonusMonths > 0) {
-      end.setMonth(end.getMonth() + bonusMonths);
-    }
-
-    const months = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30));
-    if (bonusMonths > 0) return `${months} Months`;
-    if (months >= 36) return '3 Years';
-    if (months >= 24) return '2 Years';
-    if (months >= 12) return '1 Year';
-    return `${months} Months`;
+    return formatStoredPolicyCoverDuration(selectedPolicy.policy_start_date, selectedPolicy.policy_end_date);
   };
 
   const formatAddress = () => {
@@ -929,14 +929,7 @@ export const PolicyDocumentsTab: React.FC = () => {
                     ['Duration', getDuration()],
                     ['Mileage', selectedCustomer.mileage ? `${parseInt(selectedCustomer.mileage).toLocaleString()} miles` : 'N/A'],
                     ['Start Date', format(new Date(selectedPolicy.policy_start_date), 'd MMM yyyy')],
-                    ['End Date', (() => {
-                      const endDate = new Date(selectedPolicy.policy_end_date);
-                      const bonusMonths = getBonusMonths();
-                      if (bonusMonths > 0) {
-                        endDate.setMonth(endDate.getMonth() + bonusMonths);
-                      }
-                      return format(endDate, 'd MMM yyyy');
-                    })()],
+                    ['End Date', format(new Date(selectedPolicy.policy_end_date), 'd MMM yyyy')],
                     ['Email', selectedCustomer.email],
                     ['Policy No.', selectedPolicy.policy_number],
                   ].map(([label, value], i) => (
