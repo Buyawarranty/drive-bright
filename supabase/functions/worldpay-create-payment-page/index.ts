@@ -67,15 +67,12 @@ serve(async (req) => {
     const transactionReference = `BAW-${crypto.randomUUID()}`;
     const site = "https://buyawarranty.co.uk";
 
-    const wpBody = {
+    const wpBody: Record<string, unknown> = {
       transactionReference,
       merchant: { entity: entityRef },
-      instruction: {
-        narrative: { line1: (body.description || "Buy A Warranty").slice(0, 24) },
-        value: { currency: "GBP", amount: body.amount_pence },
-        paymentInstrument: { type: "card/front" },
-      },
-      channel: body.flow === "moto" ? "moto" : "ecom",
+      narrative: { line1: "Buy A Warranty".slice(0, 24) },
+      value: { currency: "GBP", amount: body.amount_pence },
+      description: (body.description || "Vehicle warranty payment").slice(0, 128),
       resultURLs: {
         successURL: `${site}/payment-received`,
         pendingURL: `${site}/payment-received`,
@@ -89,38 +86,9 @@ serve(async (req) => {
     const authValue = `Basic ${btoa(`${username}:${password}`)}`;
     const hppContentType = "application/vnd.worldpay.payment_pages-v1.hal+json";
 
-    // Worldpay Access is a HAL API: the correct hosted-payment-page endpoint must be
-    // discovered from the service root. Hardcoding /paymentPages returns
-    // 404 endpointNotFound on some merchant setups, so discover first and keep
-    // sensible fallbacks (including the other environment host).
-    const discover = async (base: string): Promise<string | null> => {
-      try {
-        const res = await fetch(`${base}/`, {
-          headers: { Authorization: authValue, Accept: "application/json" },
-        });
-        if (!res.ok) {
-          log("Discovery failed", { base, status: res.status });
-          return null;
-        }
-        const root = await res.json();
-        const links = root?._links ?? {};
-        const key = Object.keys(links).find((k) => /paymentpages/i.test(k));
-        const href = key ? links[key]?.href : null;
-        log("Discovery", { base, key, href });
-        return typeof href === "string" ? href : null;
-      } catch (e) {
-        log("Discovery error", { base, message: (e as Error)?.message });
-        return null;
-      }
-    };
-
-    const candidates: string[] = [];
-    const discovered = await discover(primary);
-    if (discovered) candidates.push(discovered);
-    candidates.push(`${primary}/paymentPages`);
-    const discoveredSecondary = discovered ? null : await discover(secondary);
-    if (discoveredSecondary) candidates.push(discoveredSecondary);
-    candidates.push(`${secondary}/paymentPages`);
+    // Hosted Payment Pages API: POST /payment_pages (snake_case). Try the configured
+    // environment first, then the other host in case credentials belong there.
+    const candidates = [`${primary}/payment_pages`, `${secondary}/payment_pages`];
 
     log("Calling Worldpay", { candidates, transactionReference, flow: body.flow });
 
@@ -136,6 +104,8 @@ serve(async (req) => {
           Authorization: authValue,
           "Content-Type": hppContentType,
           Accept: hppContentType,
+          "WP-CorrelationId": transactionReference,
+          "User-Agent": "BuyAWarranty-Admin/1.0",
         },
         body: JSON.stringify(wpBody),
       });
@@ -160,8 +130,7 @@ serve(async (req) => {
 
 
     const paymentUrl: string | undefined = wpJson?.url
-      || wpJson?._links?.["payment_pages:url"]?.href
-      || wpJson?._links?.["paymentPages:url"]?.href;
+      || wpJson?._links?.["payment_pages:url"]?.href;
 
     if (!paymentUrl) {
       log("No payment URL in response", wpJson);
