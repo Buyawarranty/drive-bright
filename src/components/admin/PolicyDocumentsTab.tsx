@@ -123,7 +123,7 @@ export const PolicyDocumentsTab: React.FC = () => {
   const [printMode, setPrintMode] = useState<'bw' | 'colour'>('colour');
   const [showDropdown, setShowDropdown] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState<Partial<CustomerData>>({});
+  const [editData, setEditData] = useState<Partial<EditData>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [isDvlaLoading, setIsDvlaLoading] = useState(false);
 
