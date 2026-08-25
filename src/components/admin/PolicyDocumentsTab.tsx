@@ -1104,11 +1104,11 @@ export const PolicyDocumentsTab: React.FC = () => {
                   <span>UK</span>
                 </span>
                 <span style={{ background: '#f0c040', color: '#111', padding: '6px 16px', fontSize: '16px', fontWeight: 700, letterSpacing: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {selectedCustomer.registration_plate || 'N/A'}
+                  {displayCustomer?.registration_plate || 'N/A'}
                 </span>
               </div>
 
-              <p style={{ marginBottom: '8px', fontSize: '11px' }}>Dear {selectedCustomer.name.split(' ')[0]},</p>
+              <p style={{ marginBottom: '8px', fontSize: '11px' }}>Dear {displayCustomer?.name?.split(' ')[0] || 'Customer'},</p>
               <p style={{ marginBottom: '12px', color: '#333', fontSize: '11px' }}>
                 Thank you for choosing Buyawarranty to protect your vehicle. Please find below a summary of your warranty cover. Your policy provides protection against the cost of unexpected mechanical or electrical breakdowns, helping you stay on the road with peace of mind.
               </p>
