@@ -564,11 +564,11 @@ export const PolicyDocumentsTab: React.FC = () => {
     }
   };
 
-  const warrantyRef = selectedPolicy?.warranty_number || selectedCustomer?.warranty_number || selectedCustomer?.warranty_reference_number || 'N/A';
-  const claimLimit = selectedPolicy?.claim_limit || selectedCustomer?.claim_limit;
-  const excess = selectedPolicy?.voluntary_excess ?? selectedCustomer?.voluntary_excess;
-  const labourRate = selectedCustomer?.labour_rate;
-  const planType = selectedPolicy?.plan_type || selectedCustomer?.plan_type || 'N/A';
+  const warrantyRef = displayPolicy?.warranty_number || displayCustomer?.warranty_number || displayCustomer?.warranty_reference_number || 'N/A';
+  const claimLimit = displayPolicy?.claim_limit || displayCustomer?.claim_limit;
+  const excess = displayPolicy?.voluntary_excess ?? displayCustomer?.voluntary_excess;
+  const labourRate = displayCustomer?.labour_rate;
+  const planType = displayPolicy?.plan_type || displayCustomer?.plan_type || 'N/A';
   const todayDate = format(new Date(), 'd MMMM yyyy');
   const addons = getAddonsList();
   const address = formatAddress();
