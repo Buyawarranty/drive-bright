@@ -32,7 +32,8 @@ serve(async (req) => {
 
     if (adminErr) throw new Error(`Could not check admin user: ${adminErr.message}`);
     if (!targetAdmin) throw new Error(`Admin user not found for ${normalizedEmail}`);
-    if (!targetAdmin.is_active) throw new Error("This admin user is inactive");
+    // An inactive account is not an error here: setting a password IS the
+    // activation step (the update below flips is_active back to true).
 
     let targetAuthId: string | null = targetAdmin.user_id || null;
 

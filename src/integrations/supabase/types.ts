@@ -696,6 +696,7 @@ export type Database = {
       }
       admin_users: {
         Row: {
+          access_expires_at: string | null
           archived_at: string | null
           blocked_promos: string[]
           callrail_banner_enabled: boolean
@@ -708,6 +709,7 @@ export type Database = {
           invited_at: string | null
           invited_by: string | null
           is_active: boolean
+          is_temp_access: boolean
           last_login: string | null
           last_name: string | null
           max_discount_pct: number | null
@@ -720,6 +722,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          access_expires_at?: string | null
           archived_at?: string | null
           blocked_promos?: string[]
           callrail_banner_enabled?: boolean
@@ -732,6 +735,7 @@ export type Database = {
           invited_at?: string | null
           invited_by?: string | null
           is_active?: boolean
+          is_temp_access?: boolean
           last_login?: string | null
           last_name?: string | null
           max_discount_pct?: number | null
@@ -744,6 +748,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          access_expires_at?: string | null
           archived_at?: string | null
           blocked_promos?: string[]
           callrail_banner_enabled?: boolean
@@ -756,6 +761,7 @@ export type Database = {
           invited_at?: string | null
           invited_by?: string | null
           is_active?: boolean
+          is_temp_access?: boolean
           last_login?: string | null
           last_name?: string | null
           max_discount_pct?: number | null
@@ -13475,6 +13481,7 @@ export type Database = {
           sales_in_window: number
         }[]
       }
+      expire_temp_admin_logins: { Args: never; Returns: number }
       find_lead_owner_by_contact: {
         Args: { _email?: string; _phone9?: string }
         Returns: {

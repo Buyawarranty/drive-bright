@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { BackupLoginPanel } from '@/components/admin/BackupLoginPanel';
+import { TempDevLoginPanel } from '@/components/admin/TempDevLoginPanel';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -2077,6 +2078,11 @@ export const UserPermissionsTab = () => {
       {/* Backup emergency login for sales */}
       <BackupLoginPanel allTabIds={ADMIN_TABS.map(t => t.id)} />
 
+      {/* Short-lived logins for temp developers/contractors */}
+      {currentAdminUser?.role === 'super_admin' && (
+        <TempDevLoginPanel allTabIds={ADMIN_TABS.map(t => t.id)} />
+      )}
+
       {/* Bulk Access Management */}
 
       <Card className="border-primary/20">
@@ -2569,9 +2575,20 @@ export const UserPermissionsTab = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={u.is_active ? 'default' : 'secondary'} className="text-xs">
-                        {u.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <div className="flex flex-col items-start gap-1">
+                        <Badge variant={u.is_active ? 'default' : 'secondary'} className="text-xs">
+                          {u.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                        <Button
+                          size="sm"
+                          variant={u.is_active ? 'outline' : 'default'}
+                          onClick={() => toggleUserStatus(u.id, u.is_active)}
+                          title={u.is_active ? 'Deactivate (temporary block)' : 'Activate this login'}
+                          className={u.is_active ? 'text-xs h-6 px-2' : 'text-xs h-6 px-2 bg-green-600 hover:bg-green-700 text-white'}
+                        >
+                          {u.is_active ? 'Deactivate' : 'Activate'}
+                        </Button>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-2">
