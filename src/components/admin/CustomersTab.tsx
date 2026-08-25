@@ -475,8 +475,14 @@ const URL_PERIOD_KEYS: PeriodKey[] = [
   '14days', 'this_month', '30days', 'last_month', 'custom',
 ];
 
+const URL_DATE_SCOPES: DateScope[] = ['signup', 'payment', 'deals', 'revenue'];
+
 const coerceUrlPeriod = (value: string | null): PeriodKey => (
   URL_PERIOD_KEYS.includes(value as PeriodKey) ? value as PeriodKey : 'today'
+);
+
+const coerceUrlScope = (value: string | null): DateScope => (
+  URL_DATE_SCOPES.includes(value as DateScope) ? value as DateScope : 'signup'
 );
 
 const parseUrlDate = (value: string | null) => {
@@ -511,6 +517,7 @@ export const CustomersTab = ({
   const canDelete = hasGranularPermission('customers', 'delete');
   
   const [searchParams, setSearchParams] = useSearchParams();
+  const initialUrlScope = coerceUrlScope(searchParams.get('ltScope'));
   const initialUrlPeriod = coerceUrlPeriod(searchParams.get('ltPeriod'));
   const initialUrlCustomRange = getUrlCustomRange(searchParams.get('ltFrom'), searchParams.get('ltTo'));
   const initialPeriod = initialUrlPeriod === 'custom' && !initialUrlCustomRange ? 'today' : initialUrlPeriod;
@@ -657,7 +664,7 @@ export const CustomersTab = ({
   const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
   const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('all');
   // Unified date filter UI state
-  const [unifiedScope, setUnifiedScope] = useState<DateScope>('signup');
+  const [unifiedScope, setUnifiedScope] = useState<DateScope>(initialUrlScope);
   const [unifiedPeriod, setUnifiedPeriod] = useState<PeriodKey>(initialPeriod);
   const [unifiedCustomRange, setUnifiedCustomRange] = useState<DateRange | undefined>(initialPeriod === 'custom' ? initialUrlCustomRange : undefined);
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
@@ -1231,6 +1238,7 @@ export const CustomersTab = ({
   useEffect(() => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
+      next.set('ltScope', unifiedScope);
       next.set('ltPeriod', unifiedPeriod);
       if (unifiedPeriod === 'custom' && unifiedCustomRange?.from) {
         next.set('ltFrom', format(unifiedCustomRange.from, 'yyyy-MM-dd'));
@@ -1241,7 +1249,7 @@ export const CustomersTab = ({
       }
       return next.toString() === prev.toString() ? prev : next;
     }, { replace: true });
-  }, [setSearchParams, unifiedPeriod, unifiedCustomRange]);
+  }, [setSearchParams, unifiedScope, unifiedPeriod, unifiedCustomRange]);
 
 
   // Listen for URL search parameter changes
@@ -1261,8 +1269,9 @@ export const CustomersTab = ({
       const nextPeriod = urlPeriod === 'custom' && !urlCustomRange ? 'today' : urlPeriod;
       const nextCustomRange = nextPeriod === 'custom' ? urlCustomRange : undefined;
       const nextRange = getRangeForPeriod(nextPeriod, nextCustomRange);
+      const nextScope = coerceUrlScope(searchParams.get('ltScope'));
 
-      setUnifiedScope('signup');
+      setUnifiedScope(nextScope);
       setUnifiedPeriod(nextPeriod);
       setUnifiedCustomRange(nextCustomRange);
       setDateRange(nextRange);
