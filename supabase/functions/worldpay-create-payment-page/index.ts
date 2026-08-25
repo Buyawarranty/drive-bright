@@ -83,11 +83,13 @@ serve(async (req) => {
       },
     };
 
-    const authValue = `Basic ${btoa(`${username}:${password}`)}`;
+    const encodedCredentials = btoa(`${username}:${password}`);
+    const authValues = [`Basic ${encodedCredentials}`, encodedCredentials];
     const hppContentType = "application/vnd.worldpay.payment_pages-v1.hal+json";
 
     // Hosted Payment Pages API: POST /payment_pages (snake_case). Try the configured
-    // environment first, then the other host in case credentials belong there.
+    // environment first, then the other host. A 401 on TRY often means live
+    // credentials were stored while WORLDPAY_ENV is still set to sandbox.
     const candidates = [`${primary}/payment_pages`, `${secondary}/payment_pages`];
 
     log("Calling Worldpay", { candidates, transactionReference, flow: body.flow });
@@ -98,6 +100,7 @@ serve(async (req) => {
     let lastError = "";
 
     for (const url of Array.from(new Set(candidates))) {
+      for (const authValue of authValues) {
       const res = await fetch(url, {
         method: "POST",
         headers: {
@@ -116,16 +119,22 @@ serve(async (req) => {
         try { wpJson = JSON.parse(text); } catch { /* ignore */ }
         break;
       }
-      log("Worldpay attempt failed", { url, status: res.status, body: text.slice(0, 500) });
+      log("Worldpay attempt failed", { url, status: res.status, authStyle: authValue.startsWith("Basic ") ? "basic-prefix" : "encoded-only", body: text.slice(0, 500) });
       lastError = `${res.status} ${text.slice(0, 300)}`;
-      // Only keep trying while the endpoint itself is wrong; real rejections stop here.
-      if (res.status !== 404) {
-        return json({ error: "Worldpay request failed", status: res.status, details: text }, 502);
       }
+      if (wpRes) break;
     }
 
     if (!wpRes) {
-      return json({ error: `Worldpay request failed: ${lastError || "no endpoint reachable"}` }, 502);
+      const denied = /accessDenied|Access to the requested resource has been denied|Invalid authentication/i.test(lastError);
+      return json({
+        error: denied
+          ? "Worldpay Hosted Payment Pages access is denied for the saved merchant credentials"
+          : "Worldpay request failed",
+        details: denied
+          ? "Worldpay accepted the request format but denied access to /payment_pages. Enable Hosted Payment Pages / Pay by Link for this merchant entity, or update WORLDPAY_USERNAME, WORLDPAY_PASSWORD and WORLDPAY_ENTITY_REF to credentials with HPP access."
+          : lastError || "no endpoint reachable",
+      }, 502);
     }
 
 
