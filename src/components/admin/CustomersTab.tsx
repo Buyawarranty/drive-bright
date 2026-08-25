@@ -470,6 +470,39 @@ interface CustomersTabProps {
   userRole?: string | null;
 }
 
+const URL_PERIOD_KEYS: PeriodKey[] = [
+  'all', 'today', 'yesterday', 'this_week', '7days', 'last_week',
+  '14days', 'this_month', '30days', 'last_month', 'custom',
+];
+
+const URL_DATE_SCOPES: DateScope[] = ['signup', 'payment', 'deals', 'revenue'];
+
+const coerceUrlPeriod = (value: string | null): PeriodKey => (
+  URL_PERIOD_KEYS.includes(value as PeriodKey) ? value as PeriodKey : 'today'
+);
+
+const coerceUrlScope = (value: string | null): DateScope => (
+  URL_DATE_SCOPES.includes(value as DateScope) ? value as DateScope : 'signup'
+);
+
+const parseUrlDate = (value: string | null) => {
+  if (!value) return undefined;
+  const [year, month, day] = value.split('-').map(Number);
+  if (!year || !month || !day) return undefined;
+  const parsed = new Date(year, month - 1, day);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+};
+
+const getUrlCustomRange = (fromParam: string | null, toParam: string | null): DateRange | undefined => {
+  const from = parseUrlDate(fromParam);
+  if (!from) return undefined;
+  return { from, to: parseUrlDate(toParam) ?? from };
+};
+
+const getRangeForPeriod = (period: PeriodKey, customRange?: DateRange) => (
+  period === 'custom' ? customRange : periodToRange(period)
+);
+
 export const CustomersTab = ({
   notifications = [],
   unreadCount = 0,
@@ -484,6 +517,11 @@ export const CustomersTab = ({
   const canDelete = hasGranularPermission('customers', 'delete');
   
   const [searchParams, setSearchParams] = useSearchParams();
+  const initialUrlScope = coerceUrlScope(searchParams.get('ltScope'));
+  const initialUrlPeriod = coerceUrlPeriod(searchParams.get('ltPeriod'));
+  const initialUrlCustomRange = getUrlCustomRange(searchParams.get('ltFrom'), searchParams.get('ltTo'));
+  const initialPeriod = initialUrlPeriod === 'custom' && !initialUrlCustomRange ? 'today' : initialUrlPeriod;
+  const initialActiveRange = getRangeForPeriod(initialPeriod, initialUrlCustomRange);
   const [customers, setCustomers] = useState<Customer[]>([]);
   // Ids of everyone who can hold sales credit (sales + sales_lead, incl. archived agents)
   const [salesCreditAgentIds, setSalesCreditAgentIds] = useState<Set<string>>(new Set());
@@ -519,12 +557,9 @@ export const CustomersTab = ({
   const [filterBySource, setFilterBySource] = useState('all_view'); // Default to All View
   const [filterByWarrantyPeriod, setFilterByWarrantyPeriod] = useState('all');
   const [filterByPaymentSource, setFilterByPaymentSource] = useState('all'); // all | bumper | stripe | payment_assist
-  const [paymentSourceDateFilter, setPaymentSourceDateFilter] = useState('all');
+  const [paymentSourceDateFilter, setPaymentSourceDateFilter] = useState(initialUrlScope === 'payment' && initialPeriod !== 'custom' ? initialPeriod : 'all');
   const [filterByAgent, setFilterByAgent] = useState('all');
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
-    const today = new Date();
-    return { from: today, to: today };
-  });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => initialUrlScope === 'signup' ? initialActiveRange : undefined);
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -627,11 +662,11 @@ export const CustomersTab = ({
   }>>([]);
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
   const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
-  const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('30days');
+  const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>(initialUrlScope === 'deals' && initialPeriod !== 'custom' ? initialPeriod : 'all');
   // Unified date filter UI state
-  const [unifiedScope, setUnifiedScope] = useState<DateScope>('signup');
-  const [unifiedPeriod, setUnifiedPeriod] = useState<PeriodKey>('today');
-  const [unifiedCustomRange, setUnifiedCustomRange] = useState<DateRange | undefined>(undefined);
+  const [unifiedScope, setUnifiedScope] = useState<DateScope>(initialUrlScope);
+  const [unifiedPeriod, setUnifiedPeriod] = useState<PeriodKey>(initialPeriod);
+  const [unifiedCustomRange, setUnifiedCustomRange] = useState<DateRange | undefined>(initialPeriod === 'custom' ? initialUrlCustomRange : undefined);
   const [agentDealCounts, setAgentDealCounts] = useState<Record<string, { sales: number; cancelled: number }>>({});
   const [showPurchaseSource, setShowPurchaseSource] = useState(false);
   const [showPaymentColumn, setShowPaymentColumn] = useState(false);
@@ -643,10 +678,7 @@ export const CustomersTab = ({
     return Number.isFinite(n) ? n : 0;
   });
 
-  const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(() => {
-    const today = new Date();
-    return { from: today, to: today };
-  });
+  const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(() => (initialUrlScope === 'signup' || initialUrlScope === 'revenue') ? initialActiveRange : undefined);
 
   // ViewAs impersonation support — override role and admin ID when impersonating
   const { isImpersonating, viewAsAgent, effectiveRole: viewAsEffectiveRole, effectiveAdminUserId } = useViewAs();
@@ -711,7 +743,7 @@ export const CustomersTab = ({
     if (filterByStatus === 'all' && filterBySource !== 'cancelled_refunded') {
       base = base.filter(c => {
         const status = (c.status || '').toLowerCase();
-        return status !== 'cancelled' && status !== 'refunded';
+        return !status.includes('cancelled') && !status.includes('refunded');
       });
     }
     let filtered = base;
@@ -1203,6 +1235,22 @@ export const CustomersTab = ({
     setDateRange(range ? { from: range.start, to: range.end } : undefined);
   }, [isSalesAgent, isSalesScopedRole, salesAllTimeApplied, totalSalesDateFilter]);
 
+  useEffect(() => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('ltScope', unifiedScope);
+      next.set('ltPeriod', unifiedPeriod);
+      if (unifiedPeriod === 'custom' && unifiedCustomRange?.from) {
+        next.set('ltFrom', format(unifiedCustomRange.from, 'yyyy-MM-dd'));
+        next.set('ltTo', format(unifiedCustomRange.to ?? unifiedCustomRange.from, 'yyyy-MM-dd'));
+      } else {
+        next.delete('ltFrom');
+        next.delete('ltTo');
+      }
+      return next.toString() === prev.toString() ? prev : next;
+    }, { replace: true });
+  }, [setSearchParams, unifiedScope, unifiedPeriod, unifiedCustomRange]);
+
 
   // Listen for URL search parameter changes
   useEffect(() => {
@@ -1214,7 +1262,24 @@ export const CustomersTab = ({
     if (pp === 'outstanding' || pp === 'has' || pp === 'completed') {
       setFilterByPartPayment(pp);
     }
-  }, [searchParams]);
+    const urlPeriodParam = searchParams.get('ltPeriod');
+    if (urlPeriodParam) {
+      const urlPeriod = coerceUrlPeriod(urlPeriodParam);
+      const urlCustomRange = getUrlCustomRange(searchParams.get('ltFrom'), searchParams.get('ltTo'));
+      const nextPeriod = urlPeriod === 'custom' && !urlCustomRange ? 'today' : urlPeriod;
+      const nextCustomRange = nextPeriod === 'custom' ? urlCustomRange : undefined;
+      const nextRange = getRangeForPeriod(nextPeriod, nextCustomRange);
+      const nextScope = coerceUrlScope(searchParams.get('ltScope'));
+
+      setUnifiedScope(nextScope);
+      setUnifiedPeriod(nextPeriod);
+      setUnifiedCustomRange(nextCustomRange);
+      setDateRange(nextScope === 'signup' ? nextRange : undefined);
+      setRevenueDateRange(nextScope === 'signup' || nextScope === 'revenue' ? nextRange : undefined);
+      setPaymentSourceDateFilter(nextScope === 'payment' && nextPeriod !== 'custom' ? nextPeriod : 'all');
+      setTotalSalesDateFilter(nextScope === 'deals' && nextPeriod !== 'custom' ? nextPeriod : 'all');
+    }
+  }, [searchParams, searchTerm]);
 
 
   // Debounce search term to avoid filtering on every keystroke
@@ -5267,7 +5332,7 @@ Buyawarranty.co.uk`,
                     setFilterByWarrantyPeriod('all');
                     setFilterBySource('all_view');
                     setFilterByAgent(isSalesScopedRole && effectiveAdminId ? effectiveAdminId : 'all');
-                    setTotalSalesDateFilter(isSalesScopedRole ? 'all' : '30days');
+                    setTotalSalesDateFilter('all');
                     setUnifiedScope('signup');
                     setUnifiedPeriod('all');
                     setUnifiedCustomRange(undefined);
