@@ -1,6 +1,10 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, ArrowRight, Check, Search } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ArrowRight, Check, Search } from 'lucide-react';
+
+/** Single source of truth for the "reg not recognised" copy, used everywhere. */
+export const REG_NOT_FOUND_MESSAGE = "We couldn't find that reg. Please check it and try again.";
+export const REG_NOT_FOUND_DETAIL = 'A typical UK plate looks like AB12 CDE.';
 
 export const MAX_COVERED_MILEAGE = 150000;
 export const MIN_VALID_YEAR = 1950;
