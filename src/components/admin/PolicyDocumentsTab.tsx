@@ -900,12 +900,134 @@ export const PolicyDocumentsTab: React.FC = () => {
                     <Label className="text-xs text-muted-foreground">Year</Label>
                     <Input value={editData.vehicle_year || ''} onChange={e => setEditData(d => ({ ...d, vehicle_year: e.target.value }))} className="h-8 text-sm" />
                   </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Mileage</Label>
+                    <Input value={editData.mileage || ''} onChange={e => setEditData(d => ({ ...d, mileage: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+
+                  <div className="col-span-2 pt-2 border-t">
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">Cover Settings</p>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Plan Type</Label>
+                    <Input value={editData.policy_plan_type ?? editData.plan_type ?? selectedPolicy?.plan_type ?? selectedCustomer.plan_type ?? ''} onChange={e => setEditData(d => ({ ...d, policy_plan_type: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Payment Term</Label>
+                    <Select value={String(editData.policy_payment_type ?? selectedPolicy?.payment_type ?? selectedCustomer.payment_type ?? '')} onValueChange={v => setEditData(d => ({ ...d, policy_payment_type: v }))}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Select term" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {paymentTypeOptions.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Claim Limit</Label>
+                    <Select value={String(editData.policy_claim_limit ?? editData.claim_limit ?? selectedPolicy?.claim_limit ?? selectedCustomer.claim_limit ?? '')} onValueChange={v => setEditData(d => ({ ...d, policy_claim_limit: Number(v), claim_limit: Number(v) }))}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Select limit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {claimLimitOptions.map(opt => (
+                          <SelectItem key={opt.value} value={String(opt.value)}>{opt.label} — {opt.description}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Labour Rate</Label>
+                    <Select value={String(editData.labour_rate ?? selectedCustomer?.labour_rate ?? '')} onValueChange={v => setEditData(d => ({ ...d, labour_rate: Number(v) }))}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Select rate" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {labourRateOptions.map(opt => (
+                          <SelectItem key={opt.rate} value={String(opt.rate)}>{opt.label} — {opt.description}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Voluntary Excess</Label>
+                    <Select value={String(editData.policy_voluntary_excess ?? editData.voluntary_excess ?? selectedPolicy?.voluntary_excess ?? selectedCustomer.voluntary_excess ?? '')} onValueChange={v => setEditData(d => ({ ...d, policy_voluntary_excess: Number(v), voluntary_excess: Number(v) }))}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Select excess" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {excessOptions.map(opt => (
+                          <SelectItem key={opt} value={String(opt)}>£{opt}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Bonus Months</Label>
+                    <Select value={String(editData.policy_seasonal_bonus_months ?? selectedPolicy?.seasonal_bonus_months ?? selectedCustomer.seasonal_bonus_months ?? 0)} onValueChange={v => setEditData(d => ({ ...d, policy_seasonal_bonus_months: Number(v), seasonal_bonus_months: Number(v) }))}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Select bonus" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {bonusMonthOptions.map(opt => (
+                          <SelectItem key={opt} value={String(opt)}>{opt} month{opt !== 1 ? 's' : ''}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Policy Start</Label>
+                    <Input type="date" value={(editData.policy_start_date ?? selectedPolicy?.policy_start_date ?? '').split('T')[0]} onChange={e => setEditData(d => ({ ...d, policy_start_date: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Policy End</Label>
+                    <Input type="date" value={(editData.policy_end_date ?? selectedPolicy?.policy_end_date ?? '').split('T')[0]} onChange={e => setEditData(d => ({ ...d, policy_end_date: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+
+                  <div className="col-span-2 pt-2 border-t">
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">Add-ons</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { key: 'breakdown_recovery', label: 'Breakdown Recovery' },
+                        { key: 'wear_tear', label: 'Wear & Tear' },
+                        { key: 'europe_cover', label: 'European Cover' },
+                        { key: 'mot_fee', label: 'MOT Fee' },
+                        { key: 'mot_repair', label: 'MOT Repair' },
+                        { key: 'tyre_cover', label: 'Tyre Cover' },
+                        { key: 'lost_key', label: 'Lost Key' },
+                        { key: 'vehicle_rental', label: 'Vehicle Rental' },
+                        { key: 'transfer_cover', label: 'Transfer Cover' },
+                        { key: 'consequential', label: 'Consequential Loss' },
+                      ].map(({ key, label }) => (
+                        <label key={key} className="flex items-center gap-2 text-xs">
+                          <Checkbox checked={!!(editData as any)[key]} onCheckedChange={checked => setEditData(d => ({ ...d, [key]: checked === true }))} />
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="col-span-2">
+                    <Label className="text-xs text-muted-foreground">Additional Notes</Label>
+                    <Textarea value={editData.policy_additional_notes ?? selectedPolicy?.additional_notes ?? ''} onChange={e => setEditData(d => ({ ...d, policy_additional_notes: e.target.value }))} className="text-sm min-h-[80px]" />
+                  </div>
                 </div>
               ) : (
                 <>
-                  <p><span className="text-muted-foreground">Reg:</span> <strong>{selectedCustomer.registration_plate || '—'}</strong></p>
-                  <p><span className="text-muted-foreground">Vehicle:</span> {selectedCustomer.vehicle_make} {selectedCustomer.vehicle_model} {selectedCustomer.vehicle_year}</p>
+                  <p><span className="text-muted-foreground">Reg:</span> <strong>{displayCustomer?.registration_plate || '—'}</strong></p>
+                  <p><span className="text-muted-foreground">Vehicle:</span> {displayCustomer?.vehicle_make} {displayCustomer?.vehicle_model} {displayCustomer?.vehicle_year}</p>
+                  <p><span className="text-muted-foreground">Mileage:</span> {displayCustomer?.mileage ? `${parseInt(displayCustomer.mileage).toLocaleString()} miles` : '—'}</p>
                   <p><span className="text-muted-foreground">Plan:</span> {planType}</p>
+                  <p><span className="text-muted-foreground">Term:</span> {displayPolicy?.payment_type || displayCustomer?.payment_type || '—'}</p>
+                  <p><span className="text-muted-foreground">Claim Limit:</span> {claimLimit ? `£${getDisplayClaimLimitValue(claimLimit).toLocaleString()}` : '—'}</p>
+                  <p><span className="text-muted-foreground">Labour Rate:</span> {labourRate ? `£${labourRate}/hour` : '—'}</p>
+                  <p><span className="text-muted-foreground">Excess:</span> {excess !== undefined && excess !== null ? `£${excess}` : '—'}</p>
                   <p><span className="text-muted-foreground">Warranty Ref:</span> {warrantyRef}</p>
                 </>
               )}
