@@ -282,21 +282,22 @@ export const PolicyDocumentsTab: React.FC = () => {
   };
 
   const formatAddress = () => {
-    if (!selectedCustomer) return [];
+    const customer = displayCustomer || selectedCustomer;
+    if (!customer) return [];
     const parts = [
-      selectedCustomer.flat_number && `Flat ${selectedCustomer.flat_number}`,
-      selectedCustomer.building_name,
-      selectedCustomer.building_number && selectedCustomer.street
-        ? `${selectedCustomer.building_number} ${selectedCustomer.street}`
-        : selectedCustomer.street,
-      selectedCustomer.town,
-      selectedCustomer.county,
-      selectedCustomer.postcode,
+      customer.flat_number && `Flat ${customer.flat_number}`,
+      customer.building_name,
+      customer.building_number && customer.street
+        ? `${customer.building_number} ${customer.street}`
+        : customer.street,
+      customer.town,
+      customer.county,
+      customer.postcode,
     ].filter(Boolean);
     if (parts.length > 0) return parts;
 
     // Fallback: address stored on the policy record (jsonb or plain string)
-    const raw: any = (selectedPolicy as any)?.address;
+    const raw: any = (displayPolicy || selectedPolicy as any)?.address;
     if (!raw) return [];
     if (typeof raw === 'string') {
       return raw.split(',').map((s) => s.trim()).filter(Boolean);
