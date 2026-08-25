@@ -35,8 +35,30 @@ interface Props {
 export const NewLeadTopBanner: React.FC<Props> = ({ onGo }) => {
   const { queue, dismissLead } = useNewLeadAlert();
   const [onCall, setOnCall] = useState(() => isAgentOnCall());
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const lastCountRef = useRef(0);
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
+
+  const copyNumber = async (leadId: string, phone: string) => {
+    const num = formatUKPhoneShort(phone);
+    try {
+      await navigator.clipboard.writeText(num);
+    } catch {
+      // Fallback for browsers/contexts without clipboard permission
+      const ta = document.createElement('textarea');
+      ta.value = num;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setCopiedId(leadId);
+    toast.success(`Copied ${num}`);
+    setTimeout(() => setCopiedId((c) => (c === leadId ? null : c)), 1500);
+  };
+
 
   useEffect(() => subscribeAgentOnCall(() => setOnCall(isAgentOnCall())), []);
 
