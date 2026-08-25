@@ -208,6 +208,8 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
   const showLast30 = period !== '30days';
   const showToday = period !== 'today';
   const showYesterday = period !== 'yesterday';
+  const showThisWeek = period !== 'this_week';
+  const showLastWeek = period !== 'last_week';
   const showThisMonth = period !== 'this_month';
   const showLastMonth = period !== 'last_month';
 
