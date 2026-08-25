@@ -6,7 +6,7 @@ import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
-import { MileageField, ManualVehicleEntryCard, RegLookupError, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
+import { MileageField, ManualVehicleEntryCard, RegLookupError, RegInputErrorOutline, REG_NOT_FOUND_MESSAGE, REG_NOT_FOUND_DETAIL, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
 import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
 import { getVehicleIdentificationGap, type VehicleIdGap } from '@/lib/vehicleIdentification';
 import VehicleNotRecognisedCard from '@/components/quote/VehicleNotRecognisedCard';
@@ -47,12 +47,12 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
   // Inline registration error copy, by failure type
   const REG_ERRORS = {
     notFound: {
-      title: "We couldn't find a match for that registration",
-      detail: 'A typical format is AB12 CDE.',
+      title: REG_NOT_FOUND_MESSAGE,
+      detail: REG_NOT_FOUND_DETAIL,
     },
     format: {
-      title: "We couldn't find a match for that registration",
-      detail: 'A typical format is AB12 CDE.',
+      title: REG_NOT_FOUND_MESSAGE,
+      detail: REG_NOT_FOUND_DETAIL,
     },
     system: {
       title: "We're having trouble checking your registration",
@@ -346,11 +346,14 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
 
               {/* Inline registration error */}
               {regError && (
-                <RegLookupError
-                  message={regError}
-                  detail={regErrorDetail}
-                  showManualLink={false}
-                />
+                <>
+                  <RegLookupError
+                    message={regError}
+                    detail={regErrorDetail}
+                    showManualLink={false}
+                  />
+                  <RegInputErrorOutline inputId="hero-reg-input-field" />
+                </>
               )}
 
               {/* Reg-only journey: age comes from the plate and mileage from the

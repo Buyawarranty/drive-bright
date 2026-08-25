@@ -40,7 +40,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
-import { MileageField, ManualVehicleEntryCard, RegLookupError, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
+import { MileageField, ManualVehicleEntryCard, RegLookupError, RegInputErrorOutline, REG_NOT_FOUND_MESSAGE, REG_NOT_FOUND_DETAIL, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
 import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
 import { getVehicleIdentificationGap, type VehicleIdGap } from '@/lib/vehicleIdentification';
 import VehicleNotRecognisedCard from '@/components/quote/VehicleNotRecognisedCard';
@@ -256,12 +256,12 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   // Inline registration error copy, by failure type
   const REG_ERRORS = {
     notFound: {
-      title: "We couldn't find a match for that registration",
-      detail: 'A typical format is AB12 CDE.',
+      title: REG_NOT_FOUND_MESSAGE,
+      detail: REG_NOT_FOUND_DETAIL,
     },
     format: {
-      title: "We couldn't find a match for that registration",
-      detail: 'A typical format is AB12 CDE.',
+      title: REG_NOT_FOUND_MESSAGE,
+      detail: REG_NOT_FOUND_DETAIL,
     },
     system: {
       title: "We're having trouble checking your registration",
@@ -743,16 +743,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                       showManualLink={false}
                     />
 
-                    <style>{`
-                      #reg-input-field {
-                        box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.6) !important;
-                        animation: pulse-amber 1.5s ease-in-out infinite;
-                      }
-                      @keyframes pulse-amber {
-                        0%, 100% { box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.6); }
-                        50% { box-shadow: 0 0 0 6px rgba(217, 119, 6, 0.35); }
-                      }
-                    `}</style>
+                    <RegInputErrorOutline inputId="reg-input-field" />
                   </>
                 )}
 
