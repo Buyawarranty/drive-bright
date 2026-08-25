@@ -301,7 +301,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const handleMainCtaClick = () => {
     trackButtonClick('get_quote_main', { has_reg_number: !!regNumber.trim() });
 
-    if (!isRegEntered || !isRegValid) {
+    const cleaned = regNumber.replace(/\s+/g, '').toUpperCase();
+
+    // Nothing typed yet → gentle nudge, no error card.
+    if (!cleaned) {
       setRegNudge('Pop your registration in above and we\'ll fetch your price in seconds.');
       const el = document.getElementById('reg-input-field');
       el?.focus();
@@ -309,9 +312,18 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       return;
     }
 
+    // Something typed but it isn't a UK plate → show the amber error card
+    // and the pink outline around the reg input.
+    if (!isRegEntered || !isRegValid) {
+      setRegNudge('');
+      showRegError('format');
+      return;
+    }
+
     setRegNudge('');
     handleGetQuote();
   };
+
 
   const handleGetQuote = async (mileageOverride?: string) => {
     console.log('🔘 GET QUOTE BUTTON CLICKED');
@@ -714,14 +726,15 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
                 </div>
 
-                {/* Main CTA - always visible, disabled until a valid registration is entered */}
+                {/* Main CTA - always clickable so an invalid reg gets a clear error */}
                 <Button
                   onClick={handleMainCtaClick}
-                  aria-disabled={isLookingUp || !isRegValid}
-                  className={`w-full font-bold rounded-xl px-6 py-6 sm:py-7 text-lg sm:text-xl bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg ${isLookingUp || !isRegValid ? 'opacity-60 cursor-not-allowed' : 'animate-breathing'}`}
+                  aria-disabled={isLookingUp}
+                  className={`w-full font-bold rounded-xl px-6 py-6 sm:py-7 text-lg sm:text-xl bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-lg ${isLookingUp ? 'opacity-60 cursor-wait' : isRegValid ? 'animate-breathing' : ''}`}
                 >
                   {isLookingUp ? 'Preparing your instant price…' : 'Get my quote'}
                 </Button>
+
 
                 {/* Positive nudge when the user clicks before entering a registration */}
                 {regNudge && (
