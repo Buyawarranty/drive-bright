@@ -813,11 +813,11 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 {eligibilityError && (
                   <div className="flex items-start gap-2 text-white font-medium text-left bg-[#FF5A5F] border border-[#FF5A5F] rounded-lg px-3 py-2 shadow-sm">
                     <span aria-hidden>🔍</span>
-                    <div className="text-sm space-y-1">
-                      <p>{eligibilityError}</p>
-                      <p>
+                    <div className="text-sm space-y-1 text-white">
+                      <p className="text-white">{eligibilityError}</p>
+                      <p className="text-white">
                         Please call our friendly sales team on{' '}
-                        <a href="tel:03302295040" className="underline font-bold whitespace-nowrap">0330 229 5040</a>
+                        <a href="tel:03302295040" className="underline font-bold whitespace-nowrap text-white">0330 229 5040</a>
                         {' '}and we'll do our best to help.
                       </p>
                     </div>
