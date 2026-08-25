@@ -82,7 +82,7 @@ export function DiscountCodesTab() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [validityPeriod, setValidityPeriod] = useState<'6months' | '1month' | 'noend' | 'custom'>('noend');
   const [dateScope, setDateScope] = useState<DateScope>('signup');
-  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('today');
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
   const [customerUsage, setCustomerUsage] = useState<{ code: string; signup_date: string; final_amount: number; discount_amount: number; status: string; payment_status: string; payment_verified: boolean }[]>([]);
   const [usageLoading, setUsageLoading] = useState(false);

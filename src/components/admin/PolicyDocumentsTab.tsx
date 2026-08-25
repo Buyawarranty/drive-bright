@@ -5,11 +5,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Printer, FileText, User, Car, Mail, Phone, Tag, Pencil, Save, X } from 'lucide-react';
+import { Search, Printer, FileText, User, Car, Mail, Phone, Tag, Pencil, Save, X, Eye } from 'lucide-react';
 import { format } from 'date-fns';
-import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
+import { getDisplayClaimLimitValue, CLAIM_LIMIT_TIERS } from '@/lib/claimLimitTiers';
 import { formatStoredPolicyCoverDuration } from '@/lib/policyCoverDuration';
 
 interface CustomerData {
@@ -64,7 +74,43 @@ interface PolicyData {
   payment_type: string;
   additional_notes?: string;
   seasonal_bonus_months?: number | null;
+  updated_at?: string;
+  created_at?: string;
 }
+
+interface EditData extends CustomerData {
+  policy_claim_limit?: number;
+  policy_voluntary_excess?: number;
+  policy_plan_type?: string;
+  policy_payment_type?: string;
+  policy_seasonal_bonus_months?: number;
+  policy_start_date?: string;
+  policy_end_date?: string;
+  policy_additional_notes?: string;
+}
+
+const claimLimitOptions = [
+  { value: 2000, label: '£2,000', description: 'AutoCare Essential' },
+  { value: 3000, label: '£3,000', description: 'AutoCare Elite' },
+  { value: 5000, label: '£5,000', description: 'AutoCare Premium' },
+];
+
+const excessOptions = [0, 50, 100, 150, 250, 500];
+
+const labourRateOptions = [
+  { rate: 50, label: '£50/hr', description: 'Local Garages' },
+  { rate: 70, label: '£70/hr', description: 'Independent Garages' },
+  { rate: 100, label: '£100/hr', description: 'Approved Garages' },
+  { rate: 150, label: '£150/hr', description: 'Specialist garages' },
+];
+
+const paymentTypeOptions = [
+  { value: '12months', label: '1-Year Cover' },
+  { value: '24months', label: '2-Year Cover' },
+  { value: '36months', label: '3-Year Cover' },
+];
+
+const bonusMonthOptions = [0, 1, 2, 3, 4, 5, 6];
 
 export const PolicyDocumentsTab: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -77,7 +123,7 @@ export const PolicyDocumentsTab: React.FC = () => {
   const [printMode, setPrintMode] = useState<'bw' | 'colour'>('colour');
   const [showDropdown, setShowDropdown] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState<Partial<CustomerData>>({});
+  const [editData, setEditData] = useState<Partial<EditData>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [isDvlaLoading, setIsDvlaLoading] = useState(false);
 
@@ -228,29 +274,54 @@ export const PolicyDocumentsTab: React.FC = () => {
     }
   };
 
-  const getBonusMonths = () => Number(selectedPolicy?.seasonal_bonus_months ?? selectedCustomer?.seasonal_bonus_months ?? 0);
+  const getBonusMonths = () => Number(displayPolicy?.seasonal_bonus_months ?? selectedPolicy?.seasonal_bonus_months ?? selectedCustomer?.seasonal_bonus_months ?? 0);
 
   const getDuration = () => {
-    if (!selectedPolicy) return 'N/A';
-    return formatStoredPolicyCoverDuration(selectedPolicy.policy_start_date, selectedPolicy.policy_end_date);
+    const policy = displayPolicy || selectedPolicy;
+    if (!policy) return 'N/A';
+    return formatStoredPolicyCoverDuration(policy.policy_start_date, policy.policy_end_date);
   };
 
+  // Live preview data merges unsaved edits with the selected records
+  const displayCustomer = useMemo(() => {
+    if (!selectedCustomer) return null;
+    if (!isEditing) return selectedCustomer;
+    return { ...selectedCustomer, ...editData } as CustomerData;
+  }, [selectedCustomer, isEditing, editData]);
+
+  const displayPolicy = useMemo(() => {
+    if (!selectedPolicy) return null;
+    if (!isEditing) return selectedPolicy;
+    return {
+      ...selectedPolicy,
+      claim_limit: editData.policy_claim_limit ?? selectedPolicy.claim_limit,
+      voluntary_excess: editData.policy_voluntary_excess ?? selectedPolicy.voluntary_excess,
+      plan_type: editData.policy_plan_type ?? selectedPolicy.plan_type,
+      payment_type: editData.policy_payment_type ?? selectedPolicy.payment_type,
+      seasonal_bonus_months: editData.policy_seasonal_bonus_months ?? selectedPolicy.seasonal_bonus_months,
+      policy_start_date: editData.policy_start_date ?? selectedPolicy.policy_start_date,
+      policy_end_date: editData.policy_end_date ?? selectedPolicy.policy_end_date,
+      additional_notes: editData.policy_additional_notes ?? selectedPolicy.additional_notes,
+    } as PolicyData;
+  }, [selectedPolicy, isEditing, editData]);
+
   const formatAddress = () => {
-    if (!selectedCustomer) return [];
+    const customer = displayCustomer || selectedCustomer;
+    if (!customer) return [];
     const parts = [
-      selectedCustomer.flat_number && `Flat ${selectedCustomer.flat_number}`,
-      selectedCustomer.building_name,
-      selectedCustomer.building_number && selectedCustomer.street
-        ? `${selectedCustomer.building_number} ${selectedCustomer.street}`
-        : selectedCustomer.street,
-      selectedCustomer.town,
-      selectedCustomer.county,
-      selectedCustomer.postcode,
+      customer.flat_number && `Flat ${customer.flat_number}`,
+      customer.building_name,
+      customer.building_number && customer.street
+        ? `${customer.building_number} ${customer.street}`
+        : customer.street,
+      customer.town,
+      customer.county,
+      customer.postcode,
     ].filter(Boolean);
     if (parts.length > 0) return parts;
 
     // Fallback: address stored on the policy record (jsonb or plain string)
-    const raw: any = (selectedPolicy as any)?.address;
+    const raw: any = (displayPolicy || selectedPolicy as any)?.address;
     if (!raw) return [];
     if (typeof raw === 'string') {
       return raw.split(',').map((s) => s.trim()).filter(Boolean);
@@ -273,17 +344,18 @@ export const PolicyDocumentsTab: React.FC = () => {
 
 
   const getAddonsList = () => {
-    if (!selectedCustomer) return [];
+    const customer = displayCustomer || selectedCustomer;
+    if (!customer) return [];
     const addons: string[] = [];
     // Breakdown recovery is shown in key benefits, not as a separate add-on
-    if (selectedCustomer.wear_tear) addons.push('Wear & Tear Cover');
-    if (selectedCustomer.europe_cover) addons.push('European Cover');
-    if (selectedCustomer.mot_repair) addons.push('MOT Repair Cover');
-    if (selectedCustomer.tyre_cover) addons.push('Tyre Cover');
-    if (selectedCustomer.lost_key) addons.push('Lost Key Cover');
-    if (selectedCustomer.vehicle_rental) addons.push('Vehicle Rental Cover');
-    if (selectedCustomer.transfer_cover) addons.push('Transfer Cover');
-    if (selectedCustomer.consequential) addons.push('Consequential Loss Cover');
+    if (customer.wear_tear) addons.push('Wear & Tear Cover');
+    if (customer.europe_cover) addons.push('European Cover');
+    if (customer.mot_repair) addons.push('MOT Repair Cover');
+    if (customer.tyre_cover) addons.push('Tyre Cover');
+    if (customer.lost_key) addons.push('Lost Key Cover');
+    if (customer.vehicle_rental) addons.push('Vehicle Rental Cover');
+    if (customer.transfer_cover) addons.push('Transfer Cover');
+    if (customer.consequential) addons.push('Consequential Loss Cover');
     return addons;
   };
 
@@ -492,11 +564,11 @@ export const PolicyDocumentsTab: React.FC = () => {
     }
   };
 
-  const warrantyRef = selectedPolicy?.warranty_number || selectedCustomer?.warranty_number || selectedCustomer?.warranty_reference_number || 'N/A';
-  const claimLimit = selectedPolicy?.claim_limit || selectedCustomer?.claim_limit;
-  const excess = selectedPolicy?.voluntary_excess ?? selectedCustomer?.voluntary_excess;
-  const labourRate = selectedCustomer?.labour_rate;
-  const planType = selectedPolicy?.plan_type || selectedCustomer?.plan_type || 'N/A';
+  const warrantyRef = displayPolicy?.warranty_number || displayCustomer?.warranty_number || displayCustomer?.warranty_reference_number || 'N/A';
+  const claimLimit = displayPolicy?.claim_limit || displayCustomer?.claim_limit;
+  const excess = displayPolicy?.voluntary_excess ?? displayCustomer?.voluntary_excess;
+  const labourRate = displayCustomer?.labour_rate;
+  const planType = displayPolicy?.plan_type || displayCustomer?.plan_type || 'N/A';
   const todayDate = format(new Date(), 'd MMMM yyyy');
   const addons = getAddonsList();
   const address = formatAddress();
@@ -622,39 +694,70 @@ export const PolicyDocumentsTab: React.FC = () => {
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   {!isEditing ? (
-                    <Button size="sm" variant="ghost" onClick={() => {
-                      setIsEditing(true);
-                      const parts = (selectedCustomer.name || '').trim().split(/\s+/);
-                      const fnFallback = parts[0] || '';
-                      const lnFallback = parts.slice(1).join(' ') || '';
-                      setEditData({
-                        name: selectedCustomer.name,
-                        first_name: selectedCustomer.first_name || fnFallback,
-                        last_name: selectedCustomer.last_name || lnFallback,
-                        email: selectedCustomer.email,
-                        phone: selectedCustomer.phone || '',
-                        flat_number: selectedCustomer.flat_number || '',
-                        building_name: selectedCustomer.building_name || '',
-                        building_number: selectedCustomer.building_number || '',
-                        street: selectedCustomer.street || '',
-                        town: selectedCustomer.town || '',
-                        county: selectedCustomer.county || '',
-                        postcode: selectedCustomer.postcode || '',
-                        registration_plate: selectedCustomer.registration_plate || '',
-                        vehicle_make: selectedCustomer.vehicle_make || '',
-                        vehicle_model: selectedCustomer.vehicle_model || '',
-                        vehicle_year: selectedCustomer.vehicle_year || '',
-                      });
-                      const hasReg = !!selectedCustomer.registration_plate;
-                      const missingVehicle = !selectedCustomer.vehicle_make && !selectedCustomer.vehicle_model && !selectedCustomer.vehicle_year;
-                      if (hasReg && missingVehicle) {
-                        lookupDvla(selectedCustomer.registration_plate!, { overwrite: false });
-                      }
-                    }} className="gap-1 text-xs h-7">
+                    <div className="flex items-center gap-1">
+                      <Button size="sm" variant="ghost" onClick={() => {
+                        setIsEditing(true);
+                        const parts = (selectedCustomer.name || '').trim().split(/\s+/);
+                        const fnFallback = parts[0] || '';
+                        const lnFallback = parts.slice(1).join(' ') || '';
+                        setEditData({
+                          name: selectedCustomer.name,
+                          first_name: selectedCustomer.first_name || fnFallback,
+                          last_name: selectedCustomer.last_name || lnFallback,
+                          email: selectedCustomer.email,
+                          phone: selectedCustomer.phone || '',
+                          flat_number: selectedCustomer.flat_number || '',
+                          building_name: selectedCustomer.building_name || '',
+                          building_number: selectedCustomer.building_number || '',
+                          street: selectedCustomer.street || '',
+                          town: selectedCustomer.town || '',
+                          county: selectedCustomer.county || '',
+                          postcode: selectedCustomer.postcode || '',
+                          registration_plate: selectedCustomer.registration_plate || '',
+                          vehicle_make: selectedCustomer.vehicle_make || '',
+                          vehicle_model: selectedCustomer.vehicle_model || '',
+                          vehicle_year: selectedCustomer.vehicle_year || '',
+                          mileage: selectedCustomer.mileage || '',
+                          plan_type: selectedCustomer.plan_type || '',
+                          payment_type: selectedCustomer.payment_type || '',
+                          claim_limit: selectedCustomer.claim_limit,
+                          voluntary_excess: selectedCustomer.voluntary_excess,
+                          labour_rate: selectedCustomer.labour_rate,
+                          seasonal_bonus_months: selectedCustomer.seasonal_bonus_months,
+                          breakdown_recovery: selectedCustomer.breakdown_recovery,
+                          wear_tear: selectedCustomer.wear_tear,
+                          europe_cover: selectedCustomer.europe_cover,
+                          mot_fee: selectedCustomer.mot_fee,
+                          mot_repair: selectedCustomer.mot_repair,
+                          tyre_cover: selectedCustomer.tyre_cover,
+                          lost_key: selectedCustomer.lost_key,
+                          vehicle_rental: selectedCustomer.vehicle_rental,
+                          transfer_cover: selectedCustomer.transfer_cover,
+                          consequential: selectedCustomer.consequential,
+                          policy_plan_type: selectedPolicy?.plan_type || selectedCustomer.plan_type || '',
+                          policy_payment_type: selectedPolicy?.payment_type || selectedCustomer.payment_type || '',
+                          policy_claim_limit: selectedPolicy?.claim_limit ?? selectedCustomer.claim_limit,
+                          policy_voluntary_excess: selectedPolicy?.voluntary_excess ?? selectedCustomer.voluntary_excess,
+                          policy_seasonal_bonus_months: selectedPolicy?.seasonal_bonus_months ?? selectedCustomer.seasonal_bonus_months,
+                          policy_start_date: selectedPolicy?.policy_start_date || '',
+                          policy_end_date: selectedPolicy?.policy_end_date || '',
+                          policy_additional_notes: (selectedPolicy as any)?.additional_notes || '',
+                        });
+                        const hasReg = !!selectedCustomer.registration_plate;
+                        const missingVehicle = !selectedCustomer.vehicle_make && !selectedCustomer.vehicle_model && !selectedCustomer.vehicle_year;
+                        if (hasReg && missingVehicle) {
+                          lookupDvla(selectedCustomer.registration_plate!, { overwrite: false });
+                        }
+                      }} className="gap-1 text-xs h-7">
 
-                      <Pencil className="h-3 w-3" />
-                      Edit
-                    </Button>
+                        <Pencil className="h-3 w-3" />
+                        Edit
+                      </Button>
+                      <Button size="sm" variant="outline" disabled={!selectedPolicy} onClick={() => setShowPreview(true)} className="gap-1 text-xs h-7">
+                        <Eye className="h-3 w-3" />
+                        View Letter
+                      </Button>
+                    </div>
                   ) : (
                     <div className="flex gap-1">
                       <Button size="sm" variant="default" disabled={isSaving} onClick={async () => {
@@ -663,7 +766,8 @@ export const PolicyDocumentsTab: React.FC = () => {
                           const firstName = (editData.first_name || '').trim();
                           const lastName = (editData.last_name || '').trim();
                           const fullName = `${firstName} ${lastName}`.trim();
-                          const { error } = await supabase.from('customers').update({
+
+                          const customerUpdate = {
                             name: fullName,
                             first_name: firstName,
                             last_name: lastName,
@@ -680,14 +784,52 @@ export const PolicyDocumentsTab: React.FC = () => {
                             vehicle_make: editData.vehicle_make || null,
                             vehicle_model: editData.vehicle_model || null,
                             vehicle_year: editData.vehicle_year || null,
-                          }).eq('id', selectedCustomer.id);
-                          if (error) throw error;
-                          const updated = { ...selectedCustomer, ...editData, name: fullName, first_name: firstName, last_name: lastName };
+                            mileage: editData.mileage || null,
+                            plan_type: editData.policy_plan_type || editData.plan_type || selectedCustomer.plan_type,
+                            payment_type: editData.policy_payment_type || editData.payment_type || selectedCustomer.payment_type,
+                            claim_limit: editData.policy_claim_limit ?? editData.claim_limit ?? selectedCustomer.claim_limit,
+                            voluntary_excess: editData.policy_voluntary_excess ?? editData.voluntary_excess ?? selectedCustomer.voluntary_excess,
+                            labour_rate: editData.labour_rate ?? selectedCustomer.labour_rate,
+                            seasonal_bonus_months: editData.policy_seasonal_bonus_months ?? editData.seasonal_bonus_months ?? selectedCustomer.seasonal_bonus_months,
+                            breakdown_recovery: editData.breakdown_recovery ?? selectedCustomer.breakdown_recovery,
+                            wear_tear: editData.wear_tear ?? selectedCustomer.wear_tear,
+                            europe_cover: editData.europe_cover ?? selectedCustomer.europe_cover,
+                            mot_fee: editData.mot_fee ?? selectedCustomer.mot_fee,
+                            mot_repair: editData.mot_repair ?? selectedCustomer.mot_repair,
+                            tyre_cover: editData.tyre_cover ?? selectedCustomer.tyre_cover,
+                            lost_key: editData.lost_key ?? selectedCustomer.lost_key,
+                            vehicle_rental: editData.vehicle_rental ?? selectedCustomer.vehicle_rental,
+                            transfer_cover: editData.transfer_cover ?? selectedCustomer.transfer_cover,
+                            consequential: editData.consequential ?? selectedCustomer.consequential,
+                          };
 
-                          setSelectedCustomer(updated as CustomerData);
-                          setAllCustomers(prev => prev.map(c => c.id === selectedCustomer.id ? updated as CustomerData : c));
+                          const { error: customerError } = await supabase.from('customers').update(customerUpdate).eq('id', selectedCustomer.id);
+                          if (customerError) throw customerError;
+
+                          if (selectedPolicy?.id) {
+                            const policyUpdate = {
+                              plan_type: editData.policy_plan_type || selectedPolicy.plan_type,
+                              payment_type: editData.policy_payment_type || selectedPolicy.payment_type,
+                              claim_limit: editData.policy_claim_limit ?? selectedPolicy.claim_limit,
+                              voluntary_excess: editData.policy_voluntary_excess ?? selectedPolicy.voluntary_excess,
+                              seasonal_bonus_months: editData.policy_seasonal_bonus_months ?? selectedPolicy.seasonal_bonus_months,
+                              policy_start_date: editData.policy_start_date || selectedPolicy.policy_start_date,
+                              policy_end_date: editData.policy_end_date || selectedPolicy.policy_end_date,
+                              additional_notes: editData.policy_additional_notes ?? (selectedPolicy as any).additional_notes,
+                            };
+                            const { error: policyError } = await supabase.from('customer_policies').update(policyUpdate).eq('id', selectedPolicy.id);
+                            if (policyError) throw policyError;
+
+                            const updatedPolicy = { ...selectedPolicy, ...policyUpdate };
+                            setSelectedPolicy(updatedPolicy as PolicyData);
+                            setCustomerPolicies(prev => prev.map(p => p.id === selectedPolicy.id ? updatedPolicy as PolicyData : p));
+                          }
+
+                          const updatedCustomer = { ...selectedCustomer, ...customerUpdate, name: fullName, first_name: firstName, last_name: lastName };
+                          setSelectedCustomer(updatedCustomer as CustomerData);
+                          setAllCustomers(prev => prev.map(c => c.id === selectedCustomer.id ? updatedCustomer as CustomerData : c));
                           setIsEditing(false);
-                          toast({ title: 'Customer updated', description: 'Details saved successfully.' });
+                          toast({ title: 'Saved', description: 'Customer and policy details updated.' });
                         } catch (err: any) {
                           toast({ title: 'Error', description: err.message || 'Failed to save', variant: 'destructive' });
                         } finally {
@@ -788,9 +930,9 @@ export const PolicyDocumentsTab: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  <p><span className="text-muted-foreground">Name:</span> <strong>{selectedCustomer.name}</strong></p>
-                  <p><span className="text-muted-foreground">Email:</span> {selectedCustomer.email}</p>
-                  {selectedCustomer.phone && <p><span className="text-muted-foreground">Phone:</span> {selectedCustomer.phone}</p>}
+                  <p><span className="text-muted-foreground">Name:</span> <strong>{displayCustomer?.name}</strong></p>
+                  <p><span className="text-muted-foreground">Email:</span> {displayCustomer?.email}</p>
+                  {displayCustomer?.phone && <p><span className="text-muted-foreground">Phone:</span> {displayCustomer.phone}</p>}
                   {address.length > 0 && <p><span className="text-muted-foreground">Address:</span> {address.join(', ')}</p>}
                 </>
               )}
@@ -828,12 +970,134 @@ export const PolicyDocumentsTab: React.FC = () => {
                     <Label className="text-xs text-muted-foreground">Year</Label>
                     <Input value={editData.vehicle_year || ''} onChange={e => setEditData(d => ({ ...d, vehicle_year: e.target.value }))} className="h-8 text-sm" />
                   </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Mileage</Label>
+                    <Input value={editData.mileage || ''} onChange={e => setEditData(d => ({ ...d, mileage: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+
+                  <div className="col-span-2 pt-2 border-t">
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">Cover Settings</p>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Plan Type</Label>
+                    <Input value={editData.policy_plan_type ?? editData.plan_type ?? selectedPolicy?.plan_type ?? selectedCustomer.plan_type ?? ''} onChange={e => setEditData(d => ({ ...d, policy_plan_type: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Payment Term</Label>
+                    <Select value={String(editData.policy_payment_type ?? selectedPolicy?.payment_type ?? selectedCustomer.payment_type ?? '')} onValueChange={v => setEditData(d => ({ ...d, policy_payment_type: v }))}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Select term" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {paymentTypeOptions.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Claim Limit</Label>
+                    <Select value={String(editData.policy_claim_limit ?? editData.claim_limit ?? selectedPolicy?.claim_limit ?? selectedCustomer.claim_limit ?? '')} onValueChange={v => setEditData(d => ({ ...d, policy_claim_limit: Number(v), claim_limit: Number(v) }))}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Select limit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {claimLimitOptions.map(opt => (
+                          <SelectItem key={opt.value} value={String(opt.value)}>{opt.label} — {opt.description}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Labour Rate</Label>
+                    <Select value={String(editData.labour_rate ?? selectedCustomer?.labour_rate ?? '')} onValueChange={v => setEditData(d => ({ ...d, labour_rate: Number(v) }))}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Select rate" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {labourRateOptions.map(opt => (
+                          <SelectItem key={opt.rate} value={String(opt.rate)}>{opt.label} — {opt.description}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Voluntary Excess</Label>
+                    <Select value={String(editData.policy_voluntary_excess ?? editData.voluntary_excess ?? selectedPolicy?.voluntary_excess ?? selectedCustomer.voluntary_excess ?? '')} onValueChange={v => setEditData(d => ({ ...d, policy_voluntary_excess: Number(v), voluntary_excess: Number(v) }))}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Select excess" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {excessOptions.map(opt => (
+                          <SelectItem key={opt} value={String(opt)}>£{opt}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Bonus Months</Label>
+                    <Select value={String(editData.policy_seasonal_bonus_months ?? selectedPolicy?.seasonal_bonus_months ?? selectedCustomer.seasonal_bonus_months ?? 0)} onValueChange={v => setEditData(d => ({ ...d, policy_seasonal_bonus_months: Number(v), seasonal_bonus_months: Number(v) }))}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Select bonus" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {bonusMonthOptions.map(opt => (
+                          <SelectItem key={opt} value={String(opt)}>{opt} month{opt !== 1 ? 's' : ''}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Policy Start</Label>
+                    <Input type="date" value={(editData.policy_start_date ?? selectedPolicy?.policy_start_date ?? '').split('T')[0]} onChange={e => setEditData(d => ({ ...d, policy_start_date: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Policy End</Label>
+                    <Input type="date" value={(editData.policy_end_date ?? selectedPolicy?.policy_end_date ?? '').split('T')[0]} onChange={e => setEditData(d => ({ ...d, policy_end_date: e.target.value }))} className="h-8 text-sm" />
+                  </div>
+
+                  <div className="col-span-2 pt-2 border-t">
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">Add-ons</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { key: 'breakdown_recovery', label: 'Breakdown Recovery' },
+                        { key: 'wear_tear', label: 'Wear & Tear' },
+                        { key: 'europe_cover', label: 'European Cover' },
+                        { key: 'mot_fee', label: 'MOT Fee' },
+                        { key: 'mot_repair', label: 'MOT Repair' },
+                        { key: 'tyre_cover', label: 'Tyre Cover' },
+                        { key: 'lost_key', label: 'Lost Key' },
+                        { key: 'vehicle_rental', label: 'Vehicle Rental' },
+                        { key: 'transfer_cover', label: 'Transfer Cover' },
+                        { key: 'consequential', label: 'Consequential Loss' },
+                      ].map(({ key, label }) => (
+                        <label key={key} className="flex items-center gap-2 text-xs">
+                          <Checkbox checked={!!(editData as any)[key]} onCheckedChange={checked => setEditData(d => ({ ...d, [key]: checked === true }))} />
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="col-span-2">
+                    <Label className="text-xs text-muted-foreground">Additional Notes</Label>
+                    <Textarea value={editData.policy_additional_notes ?? selectedPolicy?.additional_notes ?? ''} onChange={e => setEditData(d => ({ ...d, policy_additional_notes: e.target.value }))} className="text-sm min-h-[80px]" />
+                  </div>
                 </div>
               ) : (
                 <>
-                  <p><span className="text-muted-foreground">Reg:</span> <strong>{selectedCustomer.registration_plate || '—'}</strong></p>
-                  <p><span className="text-muted-foreground">Vehicle:</span> {selectedCustomer.vehicle_make} {selectedCustomer.vehicle_model} {selectedCustomer.vehicle_year}</p>
+                  <p><span className="text-muted-foreground">Reg:</span> <strong>{displayCustomer?.registration_plate || '—'}</strong></p>
+                  <p><span className="text-muted-foreground">Vehicle:</span> {displayCustomer?.vehicle_make} {displayCustomer?.vehicle_model} {displayCustomer?.vehicle_year}</p>
+                  <p><span className="text-muted-foreground">Mileage:</span> {displayCustomer?.mileage ? `${parseInt(displayCustomer.mileage).toLocaleString()} miles` : '—'}</p>
                   <p><span className="text-muted-foreground">Plan:</span> {planType}</p>
+                  <p><span className="text-muted-foreground">Term:</span> {displayPolicy?.payment_type || displayCustomer?.payment_type || '—'}</p>
+                  <p><span className="text-muted-foreground">Claim Limit:</span> {claimLimit ? `£${getDisplayClaimLimitValue(claimLimit).toLocaleString()}` : '—'}</p>
+                  <p><span className="text-muted-foreground">Labour Rate:</span> {labourRate ? `£${labourRate}/hour` : '—'}</p>
+                  <p><span className="text-muted-foreground">Excess:</span> {excess !== undefined && excess !== null ? `£${excess}` : '—'}</p>
                   <p><span className="text-muted-foreground">Warranty Ref:</span> {warrantyRef}</p>
                 </>
               )}
@@ -893,7 +1157,7 @@ export const PolicyDocumentsTab: React.FC = () => {
               <div style={{ textAlign: 'right', fontSize: '10px', color: '#666', marginBottom: '12px' }}>{todayDate}</div>
 
               <div style={{ marginBottom: '14px', fontSize: '11px' }}>
-                <p style={{ fontWeight: '700', fontSize: '11px', margin: '1px 0' }}>{selectedCustomer.name}</p>
+                <p style={{ fontWeight: '700', fontSize: '11px', margin: '1px 0' }}>{displayCustomer?.name}</p>
                 {address.map((line, i) => (
                   <p key={i} style={{ margin: '1px 0' }}>{line}</p>
                 ))}
@@ -910,11 +1174,11 @@ export const PolicyDocumentsTab: React.FC = () => {
                   <span>UK</span>
                 </span>
                 <span style={{ background: '#f0c040', color: '#111', padding: '6px 16px', fontSize: '16px', fontWeight: 700, letterSpacing: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {selectedCustomer.registration_plate || 'N/A'}
+                  {displayCustomer?.registration_plate || 'N/A'}
                 </span>
               </div>
 
-              <p style={{ marginBottom: '8px', fontSize: '11px' }}>Dear {selectedCustomer.name.split(' ')[0]},</p>
+              <p style={{ marginBottom: '8px', fontSize: '11px' }}>Dear {displayCustomer?.name?.split(' ')[0] || 'Customer'},</p>
               <p style={{ marginBottom: '12px', color: '#333', fontSize: '11px' }}>
                 Thank you for choosing Buyawarranty to protect your vehicle. Please find below a summary of your warranty cover. Your policy provides protection against the cost of unexpected mechanical or electrical breakdowns, helping you stay on the road with peace of mind.
               </p>
@@ -924,14 +1188,14 @@ export const PolicyDocumentsTab: React.FC = () => {
                 <div style={{ fontSize: '13px', fontWeight: '700', color: c.heading, marginBottom: '8px', borderBottom: `2px solid ${c.border}`, paddingBottom: '4px' }}>Your Cover at a Glance</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 20px', background: c.glanceBg, border: `1px solid ${c.glanceBorder}`, borderRadius: '6px', padding: '12px 14px' }}>
                   {[
-                    ['Vehicle', <span style={{ display: 'inline-flex', alignItems: 'stretch', border: '2px solid #111', borderRadius: '6px', overflow: 'hidden', fontFamily: "'Segoe UI', Arial, sans-serif", verticalAlign: 'middle' }}><span style={{ background: '#2563eb', color: '#fff', padding: '2px 5px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '7px', fontWeight: 700, lineHeight: 1.1, letterSpacing: '0.5px' }}><span>GB</span><span>UK</span></span><span style={{ background: '#f0c040', color: '#111', padding: '2px 8px', fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', display: 'flex', alignItems: 'center' }}>{selectedCustomer.registration_plate || 'N/A'}</span></span>],
+                    ['Vehicle', <span style={{ display: 'inline-flex', alignItems: 'stretch', border: '2px solid #111', borderRadius: '6px', overflow: 'hidden', fontFamily: "'Segoe UI', Arial, sans-serif", verticalAlign: 'middle' }}><span style={{ background: '#2563eb', color: '#fff', padding: '2px 5px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '7px', fontWeight: 700, lineHeight: 1.1, letterSpacing: '0.5px' }}><span>GB</span><span>UK</span></span><span style={{ background: '#f0c040', color: '#111', padding: '2px 8px', fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', display: 'flex', alignItems: 'center' }}>{displayCustomer?.registration_plate || 'N/A'}</span></span>],
                     ['Plan Type', planType],
                     ['Duration', getDuration()],
-                    ['Mileage', selectedCustomer.mileage ? `${parseInt(selectedCustomer.mileage).toLocaleString()} miles` : 'N/A'],
-                    ['Start Date', format(new Date(selectedPolicy.policy_start_date), 'd MMM yyyy')],
-                    ['End Date', format(new Date(selectedPolicy.policy_end_date), 'd MMM yyyy')],
-                    ['Email', selectedCustomer.email],
-                    ['Policy No.', selectedPolicy.policy_number],
+                    ['Mileage', displayCustomer?.mileage ? `${parseInt(displayCustomer.mileage).toLocaleString()} miles` : 'N/A'],
+                    ['Start Date', displayPolicy?.policy_start_date ? format(new Date(displayPolicy.policy_start_date), 'd MMM yyyy') : 'N/A'],
+                    ['End Date', displayPolicy?.policy_end_date ? format(new Date(displayPolicy.policy_end_date), 'd MMM yyyy') : 'N/A'],
+                    ['Email', displayCustomer?.email || 'N/A'],
+                    ['Policy No.', displayPolicy?.policy_number || 'N/A'],
                   ].map(([label, value], i) => (
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: `1px solid ${c.divider}` }}>
                       <span style={{ color: c.muted, fontWeight: '500' }}>{label}</span>
@@ -959,7 +1223,7 @@ export const PolicyDocumentsTab: React.FC = () => {
                     <li style={{ marginBottom: '3px' }}>Access to trusted UK-wide VAT registered repair garages</li>
                     <li style={{ marginBottom: '3px' }}>Choose your own VAT registered garage option</li>
                     <li style={{ marginBottom: '3px' }}>Fast, simple claims process via our dedicated claims team</li>
-                    {selectedCustomer.breakdown_recovery && <li style={{ marginBottom: '3px' }}>Breakdown recovery claimback</li>}
+                    {displayCustomer?.breakdown_recovery && <li style={{ marginBottom: '3px' }}>Breakdown recovery claimback</li>}
                   </ul>
                 </div>
 
@@ -983,10 +1247,10 @@ export const PolicyDocumentsTab: React.FC = () => {
               </div>
 
               {/* Additional Notes */}
-              {(selectedPolicy as any)?.additional_notes && (selectedPolicy as any).additional_notes.trim() && (
+              {(displayPolicy as any)?.additional_notes && (displayPolicy as any).additional_notes.trim() && (
                 <div style={{ background: isBW ? '#f5f5f5' : '#fef9ee', border: `2px solid ${isBW ? '#666' : '#f59e0b'}`, borderRadius: '6px', padding: '12px 14px', marginBottom: '14px' }}>
                   <h4 style={{ color: isBW ? '#000' : '#92400e', fontSize: '13px', marginBottom: '6px', fontWeight: '700' }}>⭐ Important Notes About Your Cover</h4>
-                  <p style={{ color: isBW ? '#333' : '#78350f', fontSize: '11px', margin: '0', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{(selectedPolicy as any).additional_notes}</p>
+                  <p style={{ color: isBW ? '#333' : '#78350f', fontSize: '11px', margin: '0', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{(displayPolicy as any).additional_notes}</p>
                 </div>
               )}
 

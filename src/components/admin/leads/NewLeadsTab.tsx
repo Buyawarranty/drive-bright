@@ -307,7 +307,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
     return { from: undefined, to: undefined };
   });
-  const [datePeriod, setDatePeriod] = useState<PeriodKey>(isManagerRole ? 'today' : 'all');
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('today');
   // Manager-only: "Since 6pm yesterday" filter — pins from 18:00 London yesterday to now.
   const [since6pmActive, setSince6pmActive] = useState(false);
   // "Worked in this period" — matches the date window against last_contacted_at as
