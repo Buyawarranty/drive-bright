@@ -89,6 +89,26 @@ const SalesLogin = () => {
         throw new Error('Access denied. This login is for sales team members only.');
       }
 
+      // Block deactivated accounts and expired temporary logins.
+      const { data: adminRow } = await supabase
+        .from('admin_users')
+        .select('is_active, access_expires_at')
+        .eq('user_id', authData.user.id)
+        .maybeSingle();
+
+      const expired = !!(adminRow as any)?.access_expires_at
+        && new Date((adminRow as any).access_expires_at).getTime() < Date.now();
+
+      if (adminRow && ((adminRow as any).is_active === false || expired)) {
+        if (expired) {
+          await supabase.from('admin_users').update({ is_active: false }).eq('user_id', authData.user.id);
+        }
+        await supabase.auth.signOut();
+        throw new Error(expired
+          ? 'This temporary login has expired. Ask a manager to extend it.'
+          : 'This login has been deactivated. Please contact a manager.');
+      }
+
       // Update last_login in admin_users
       await supabase
         .from('admin_users')
