@@ -74,7 +74,43 @@ interface PolicyData {
   payment_type: string;
   additional_notes?: string;
   seasonal_bonus_months?: number | null;
+  updated_at?: string;
+  created_at?: string;
 }
+
+interface EditData extends CustomerData {
+  policy_claim_limit?: number;
+  policy_voluntary_excess?: number;
+  policy_plan_type?: string;
+  policy_payment_type?: string;
+  policy_seasonal_bonus_months?: number;
+  policy_start_date?: string;
+  policy_end_date?: string;
+  policy_additional_notes?: string;
+}
+
+const claimLimitOptions = [
+  { value: 2000, label: '£2,000', description: 'AutoCare Essential' },
+  { value: 3000, label: '£3,000', description: 'AutoCare Elite' },
+  { value: 5000, label: '£5,000', description: 'AutoCare Premium' },
+];
+
+const excessOptions = [0, 50, 100, 150, 250, 500];
+
+const labourRateOptions = [
+  { rate: 50, label: '£50/hr', description: 'Local Garages' },
+  { rate: 70, label: '£70/hr', description: 'Independent Garages' },
+  { rate: 100, label: '£100/hr', description: 'Approved Garages' },
+  { rate: 150, label: '£150/hr', description: 'Specialist garages' },
+];
+
+const paymentTypeOptions = [
+  { value: '12months', label: '1-Year Cover' },
+  { value: '24months', label: '2-Year Cover' },
+  { value: '36months', label: '3-Year Cover' },
+];
+
+const bonusMonthOptions = [0, 1, 2, 3, 4, 5, 6];
 
 export const PolicyDocumentsTab: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
