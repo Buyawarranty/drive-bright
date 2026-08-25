@@ -199,21 +199,23 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
   const getDuration = () => {
     if (!policy.policyStartDate || !policy.policyEndDate) return 'N/A';
     const start = new Date(policy.policyStartDate);
+    // The stored end date ALREADY includes any seasonal bonus months —
+    // never add them again here or the letter overstates the cover.
     const end = new Date(policy.policyEndDate);
+
+    const months =
+      (end.getFullYear() - start.getFullYear()) * 12 +
+      (end.getMonth() - start.getMonth()) +
+      (end.getDate() < start.getDate() ? -1 : 0);
+
     const bonusMonths = Number(policy.seasonalBonusMonths) || 0;
-
-    if (bonusMonths > 0) {
-      end.setMonth(end.getMonth() + bonusMonths);
-    }
-
-    const months = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30));
-
     if (bonusMonths > 0) return `${months} Months`;
-    if (months >= 36) return '3 Years';
-    if (months >= 24) return '2 Years';
-    if (months >= 12) return '1 Year';
+    if (months === 36) return '3 Years';
+    if (months === 24) return '2 Years';
+    if (months === 12) return '1 Year';
     return `${months} Months`;
   };
+
 
   const address = formatAddress();
   const addons = getAddonsList();
