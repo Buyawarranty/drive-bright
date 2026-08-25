@@ -73,12 +73,11 @@ export const PrintablePolicySummary: React.FC<PrintablePolicySummaryProps> = ({
   };
 
   const getEndDate = () => {
+    // policy_end_date already includes any seasonal bonus months.
     const endDate = new Date(policy.policy_end_date);
-    if (policy.seasonal_bonus_months && policy.seasonal_bonus_months > 0) {
-      endDate.setMonth(endDate.getMonth() + policy.seasonal_bonus_months);
-    }
     return endDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   };
+
 
   const vehicleDesc = [customer.vehicle_year, customer.vehicle_make, customer.vehicle_model]
     .filter(Boolean).join(' ').toUpperCase() || 'Not provided';
