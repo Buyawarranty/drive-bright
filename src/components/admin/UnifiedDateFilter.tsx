@@ -258,7 +258,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
           <button
             type="button"
             onClick={() => onChange({ scope, period: 'today', customRange: undefined })}
-            className="text-sm text-primary hover:underline"
+            className="text-sm font-semibold text-orange-600 hover:underline"
           >
             Today
           </button>

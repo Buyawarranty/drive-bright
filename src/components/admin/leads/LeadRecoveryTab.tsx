@@ -126,7 +126,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   // Map of lead_id -> assigned tag IDs so we can filter by tags in the pill strip.
   const [leadTagMap, setLeadTagMap] = useState<Record<string, string[]>>({});
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
-  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('today');
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
   const [claimedToday, setClaimedToday] = useState(0);
   const [claiming, setClaiming] = useState(false);

@@ -182,7 +182,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   type SortKey = 'due_next' | 'due_latest' | 'newest' | 'oldest' | 'name_az' | 'name_za';
   const [sortKey, setSortKey] = useState<SortKey>('due_next');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('today');
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
   const [leaderboard, setLeaderboard] = useState<Record<string, { worked: number; renewed: number }>>({});
   const [bulkAssignTo, setBulkAssignTo] = useState<string>('');
