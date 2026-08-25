@@ -93,6 +93,29 @@ import { useViewAs } from '@/contexts/ViewAsContext';
 import { CustomersMobileCards } from './customers/CustomersMobileCards';
 import { isNorthernIrelandPlate } from '@/lib/niPlate';
 
+type CustomerPolicySummary = {
+  id?: string;
+  policy_end_date: string;
+  policy_start_date?: string;
+  policy_number: string;
+  status: string;
+  warranty_number?: string;
+  email_sent_status?: string;
+  warranties_2000_status?: string;
+  warranties_2000_sent_at?: string;
+  created_at?: string;
+  updated_at?: string;
+  user_id?: string;
+  customer_id?: string;
+  email?: string;
+  plan_type?: string;
+  payment_type?: string;
+  claim_limit?: number | null;
+  voluntary_excess?: number | null;
+  additional_notes?: string;
+  seasonal_bonus_months?: number | null;
+};
+
 // Helper function to map plan types to Warranties 2000 warranty types
 function getWarrantyType(planType: string): string {
   // WarType must be one of: B-BASIC, B-GOLD, B-PLATINUM, B-EV, B-PHEV or B-MOTORCYCLE
@@ -138,6 +161,15 @@ function calculateExpiryDate(startDate: string, paymentType: string): Date {
   const expiry = new Date(start);
   expiry.setMonth(expiry.getMonth() + months);
   return expiry;
+}
+
+function getLatestCustomerPolicy(policies?: CustomerPolicySummary[]): CustomerPolicySummary | null {
+  if (!policies || policies.length === 0) return null;
+  return [...policies].sort((a, b) => {
+    const aTime = new Date(a.updated_at || a.created_at || a.policy_start_date || 0).getTime();
+    const bTime = new Date(b.updated_at || b.created_at || b.policy_start_date || 0).getTime();
+    return bTime - aTime;
+  })[0] || null;
 }
 
 // Time from the lead arriving (sales_leads.created_at) to the sale completing
@@ -279,23 +311,7 @@ interface Customer {
     first_name?: string;
     last_name?: string;
   } | null;
-  customer_policies?: Array<{
-    id?: string;
-    policy_end_date: string;
-    policy_start_date?: string;
-    policy_number: string;
-    status: string;
-    warranty_number?: string;
-    email_sent_status?: string;
-    warranties_2000_status?: string;
-    warranties_2000_sent_at?: string;
-    created_at?: string;
-    user_id?: string;
-    customer_id?: string;
-    email?: string;
-    additional_notes?: string;
-    seasonal_bonus_months?: number | null;
-  }>;
+  customer_policies?: CustomerPolicySummary[];
 }
 
 interface IncompleteCustomer {
@@ -2017,6 +2033,10 @@ export const CustomersTab = ({
               policy_number,
               policy_end_date,
               policy_start_date,
+              created_at,
+              updated_at,
+              plan_type,
+              payment_type,
               status,
               warranty_number,
               email_sent_status,
@@ -2031,6 +2051,7 @@ export const CustomersTab = ({
               breakdown_recovery,
               vehicle_rental,
               claim_limit,
+              voluntary_excess,
               payment_amount,
               mot_repair,
               lost_key,
@@ -3168,9 +3189,10 @@ export const CustomersTab = ({
         }
       }
 
-        // Update customer_policies table to sync warranty details
+        // Update the latest customer_policies record to sync warranty details.
         if (editingCustomer.customer_policies && editingCustomer.customer_policies.length > 0) {
-          const policyId = editingCustomer.customer_policies[0].id;
+          const policyToUpdate = getLatestCustomerPolicy(editingCustomer.customer_policies);
+          const policyId = policyToUpdate?.id;
           
           const policyUpdateData: any = {
             plan_type: editingCustomer.plan_type,
@@ -3191,22 +3213,24 @@ export const CustomersTab = ({
             mot_repair: editingCustomer.mot_repair,
             lost_key: editingCustomer.lost_key,
             consequential: editingCustomer.consequential,
-            additional_notes: editingCustomer.customer_policies[0].additional_notes || null,
+            additional_notes: policyToUpdate?.additional_notes || null,
             updated_at: new Date().toISOString()
           };
 
           // Add policy dates if they exist
-          if (editingCustomer.customer_policies[0].policy_start_date) {
-            policyUpdateData.policy_start_date = new Date(editingCustomer.customer_policies[0].policy_start_date).toISOString();
+          if (policyToUpdate?.policy_start_date) {
+            policyUpdateData.policy_start_date = new Date(policyToUpdate.policy_start_date).toISOString();
           }
-          if (editingCustomer.customer_policies[0].policy_end_date) {
-            policyUpdateData.policy_end_date = new Date(editingCustomer.customer_policies[0].policy_end_date).toISOString();
+          if (policyToUpdate?.policy_end_date) {
+            policyUpdateData.policy_end_date = new Date(policyToUpdate.policy_end_date).toISOString();
           }
-          
-          const { error: policyError } = await supabase
-            .from('customer_policies')
-            .update(policyUpdateData)
-            .eq('id', policyId);
+
+          const { error: policyError } = policyId
+            ? await supabase
+                .from('customer_policies')
+                .update(policyUpdateData)
+                .eq('id', policyId)
+            : { error: new Error('No policy record found to update') };
 
           if (policyError) {
             console.error('Error updating policy:', policyError);
@@ -4393,6 +4417,10 @@ Buyawarranty.co.uk`,
 
   const showPendingBanner =
     canConfirmPayments && pendingConfirmationCount > pendingDismissedCount;
+
+  const latestEditingCustomerPolicy = editingCustomer
+    ? getLatestCustomerPolicy(editingCustomer.customer_policies)
+    : null;
 
 
   return (
@@ -7814,13 +7842,13 @@ Please log in and change your password after first login.`;
             vehicleModel: editingCustomer.vehicle_model || undefined,
             vehicleYear: editingCustomer.vehicle_year || undefined,
             mileage: editingCustomer.mileage || undefined,
-            warrantyNumber: editingCustomer.customer_policies?.[0]?.warranty_number || editingCustomer.warranty_number || '',
-            policyNumber: editingCustomer.customer_policies?.[0]?.policy_number || '',
+            warrantyNumber: latestEditingCustomerPolicy?.warranty_number || editingCustomer.warranty_number || '',
+            policyNumber: latestEditingCustomerPolicy?.policy_number || '',
             planType: editingCustomer.plan_type || '',
-            policyStartDate: editingCustomer.customer_policies?.[0]?.policy_start_date || editingCustomer.signup_date || '',
-            policyEndDate: editingCustomer.customer_policies?.[0]?.policy_end_date || '',
-            claimLimit: editingCustomer.claim_limit || undefined,
-            voluntaryExcess: editingCustomer.voluntary_excess ?? undefined,
+            policyStartDate: latestEditingCustomerPolicy?.policy_start_date || editingCustomer.signup_date || '',
+            policyEndDate: latestEditingCustomerPolicy?.policy_end_date || '',
+            claimLimit: latestEditingCustomerPolicy?.claim_limit || editingCustomer.claim_limit || undefined,
+            voluntaryExcess: latestEditingCustomerPolicy?.voluntary_excess ?? editingCustomer.voluntary_excess ?? undefined,
             labourRate: editingCustomer.labour_rate || undefined,
             breakdownRecovery: editingCustomer.breakdown_recovery || false,
             wearTear: editingCustomer.wear_tear || false,
@@ -7832,8 +7860,8 @@ Please log in and change your password after first login.`;
             vehicleRental: editingCustomer.vehicle_rental || false,
             transferCover: editingCustomer.transfer_cover || false,
             consequential: editingCustomer.consequential || false,
-            seasonalBonusMonths: editingCustomer.customer_policies?.[0]?.seasonal_bonus_months ?? (editingCustomer as any).seasonal_bonus_months ?? undefined,
-            additionalNotes: editingCustomer.customer_policies?.[0]?.additional_notes || undefined,
+            seasonalBonusMonths: latestEditingCustomerPolicy?.seasonal_bonus_months ?? (editingCustomer as any).seasonal_bonus_months ?? undefined,
+            additionalNotes: latestEditingCustomerPolicy?.additional_notes || undefined,
           }}
         />
       )}

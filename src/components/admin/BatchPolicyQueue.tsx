@@ -9,6 +9,7 @@ import { toast } from '@/components/ui/use-toast';
 import { Search, Printer, Tag, X, Users, Plus, Mail, Car, Trash2, AlertTriangle, FileDown, CheckCircle2, Save, Pencil, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
+import { formatStoredPolicyCoverDuration } from '@/lib/policyCoverDuration';
 
 interface QueuedCustomer {
   id: string;
@@ -958,22 +959,12 @@ function buildLetterHTML(c: QueuedCustomer, isBW: boolean): string {
 
   const getDuration = () => {
     if (!policy) return 'N/A';
-    const start = new Date(policy.policy_start_date);
-    const end = new Date(policy.policy_end_date);
-    if (bonusMonths > 0) end.setMonth(end.getMonth() + bonusMonths);
-    const months = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30));
-    if (bonusMonths > 0) return `${months} Months`;
-    if (months >= 36) return '3 Years';
-    if (months >= 24) return '2 Years';
-    if (months >= 12) return '1 Year';
-    return `${months} Months`;
+    return formatStoredPolicyCoverDuration(policy.policy_start_date, policy.policy_end_date);
   };
 
   const endDate = (() => {
     if (!policy) return 'N/A';
-    const d = new Date(policy.policy_end_date);
-    if (bonusMonths > 0) d.setMonth(d.getMonth() + bonusMonths);
-    return format(d, 'd MMM yyyy');
+    return format(new Date(policy.policy_end_date), 'd MMM yyyy');
   })();
 
   const claimLimitDisplay = claimLimit ? `£${getDisplayClaimLimitValue(claimLimit).toLocaleString()}` : '';
