@@ -736,7 +736,7 @@ export const CustomersTab = ({
     if (filterByStatus === 'all' && filterBySource !== 'cancelled_refunded') {
       base = base.filter(c => {
         const status = (c.status || '').toLowerCase();
-        return status !== 'cancelled' && status !== 'refunded';
+        return !status.includes('cancelled') && !status.includes('refunded');
       });
     }
     let filtered = base;
