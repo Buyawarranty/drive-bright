@@ -40,7 +40,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
-import { MileageField, ManualVehicleEntryCard, RegLookupError, RegInputErrorOutline, REG_NOT_FOUND_MESSAGE, REG_NOT_FOUND_DETAIL, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
+import { MileageField, ManualVehicleEntryCard, RegLookupError, RegInputErrorOutline, REG_NOT_FOUND_MESSAGE, REG_NOT_FOUND_DETAIL, buildMileageBlockMessage, buildTypedMileageBlockMessage, buildAgeBlockMessage, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
 import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
 import { getVehicleIdentificationGap, type VehicleIdGap } from '@/lib/vehicleIdentification';
 import VehicleNotRecognisedCard from '@/components/quote/VehicleNotRecognisedCard';
@@ -445,7 +445,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             
             // Block if over 15 years (15 years and 1 day or older)
             if (vehicleAgePrecise > 15) {
-              setVehicleAgeError('Sorry, we can only cover vehicles under 15 years old.');
+              setVehicleAgeError(buildAgeBlockMessage(vehicleAgePrecise));
               setIsLookingUp(false);
               return;
             }
@@ -459,7 +459,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
           const vehicleAge = currentYear - vehicleYear;
           
           if (vehicleAge > 15) {
-            setVehicleAgeError('Sorry, we can only cover vehicles under 15 years old.');
+            setVehicleAgeError(buildAgeBlockMessage(vehicleAge));
             setIsLookingUp(false);
             return;
           }
@@ -480,7 +480,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
       // Block over-150k vehicles flagged via MOT history
       if (motResult.motMileage && motResult.motMileage > 150000) {
-        setMileageError('Sorry, we can only cover vehicles under 150,000 miles.');
+        setMileageError(buildMileageBlockMessage(motResult.motMileage, motResult.motDate ?? null));
         setIsLookingUp(false);
         return;
       }
@@ -524,7 +524,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         }
         if (typed > 150000) {
           setNeedsMileage(true);
-          setMileageError('Sorry, we can only cover vehicles under 150,000 miles.');
+          setMileageError(buildTypedMileageBlockMessage(typed));
           setIsLookingUp(false);
           return;
         }
