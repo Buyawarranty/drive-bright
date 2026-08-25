@@ -411,7 +411,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       // Check for age-related blocking when vehicle is not found
       if (!data?.found && data?.error && data.error.includes('15 years')) {
         console.log('Vehicle blocked: Over 15 years old');
-        setVehicleAgeError('Sorry, we can only cover vehicles under 15 years old.');
+        setVehicleAgeError(buildAgeBlockMessage(null));
         setIsLookingUp(false);
         return;
       }
