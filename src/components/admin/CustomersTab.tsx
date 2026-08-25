@@ -1254,7 +1254,23 @@ export const CustomersTab = ({
     if (pp === 'outstanding' || pp === 'has' || pp === 'completed') {
       setFilterByPartPayment(pp);
     }
-  }, [searchParams]);
+    const urlPeriodParam = searchParams.get('ltPeriod');
+    if (urlPeriodParam) {
+      const urlPeriod = coerceUrlPeriod(urlPeriodParam);
+      const urlCustomRange = getUrlCustomRange(searchParams.get('ltFrom'), searchParams.get('ltTo'));
+      const nextPeriod = urlPeriod === 'custom' && !urlCustomRange ? 'today' : urlPeriod;
+      const nextCustomRange = nextPeriod === 'custom' ? urlCustomRange : undefined;
+      const nextRange = getRangeForPeriod(nextPeriod, nextCustomRange);
+
+      setUnifiedScope('signup');
+      setUnifiedPeriod(nextPeriod);
+      setUnifiedCustomRange(nextCustomRange);
+      setDateRange(nextRange);
+      setRevenueDateRange(nextRange);
+      setPaymentSourceDateFilter('all');
+      setTotalSalesDateFilter('all');
+    }
+  }, [searchParams, searchTerm]);
 
 
   // Debounce search term to avoid filtering on every keystroke
