@@ -11,6 +11,28 @@ export const MIN_VALID_YEAR = 1950;
 /** Allow up to one year ahead — next year's model year is valid. */
 export const MAX_VALID_YEAR = new Date().getFullYear() + 1;
 
+/**
+ * Eligibility copy that quotes the actual figures we picked up, so the customer
+ * can see why the vehicle falls outside cover instead of a generic limit line.
+ * Explanatory tone only — never "we won't cover".
+ */
+export const buildMileageBlockMessage = (miles: number, motDate?: string | null): string => {
+  const reading = miles.toLocaleString('en-GB');
+  const when = motDate
+    ? ` at its last MOT (${new Date(motDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })})`
+    : '';
+  return `This reg shows ${reading} miles${when}. Our cover is designed for vehicles up to ${MAX_COVERED_MILEAGE.toLocaleString('en-GB')} miles.`;
+};
+
+/** Mileage the customer typed themselves. */
+export const buildTypedMileageBlockMessage = (miles: number): string =>
+  `${miles.toLocaleString('en-GB')} miles is above the ${MAX_COVERED_MILEAGE.toLocaleString('en-GB')}-mile limit our cover is designed for.`;
+
+export const buildAgeBlockMessage = (years?: number | null): string =>
+  years && Number.isFinite(years)
+    ? `This vehicle is around ${Math.floor(years)} years old. Our cover is designed for vehicles up to 15 years old.`
+    : 'Our cover is designed for vehicles up to 15 years old.';
+
 export const digitsOnly = (value: string) => value.replace(/[^0-9]/g, '').slice(0, 7);
 export const formatMileage = (value: string) => {
   const digits = digitsOnly(value);

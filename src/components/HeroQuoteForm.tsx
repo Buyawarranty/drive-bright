@@ -6,7 +6,7 @@ import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
-import { MileageField, ManualVehicleEntryCard, RegLookupError, RegInputErrorOutline, REG_NOT_FOUND_MESSAGE, REG_NOT_FOUND_DETAIL, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
+import { MileageField, ManualVehicleEntryCard, RegLookupError, RegInputErrorOutline, REG_NOT_FOUND_MESSAGE, REG_NOT_FOUND_DETAIL, buildMileageBlockMessage, buildTypedMileageBlockMessage, buildAgeBlockMessage, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
 import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
 import { getVehicleIdentificationGap, type VehicleIdGap } from '@/lib/vehicleIdentification';
 import VehicleNotRecognisedCard from '@/components/quote/VehicleNotRecognisedCard';
@@ -194,7 +194,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
           vehicleAgePrecise = ageInMs / msPerYear;
           
           if (vehicleAgePrecise > 15) {
-            setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+            setVehicleAgeError(buildAgeBlockMessage(vehicleAgePrecise));
             setIsLookingUp(false);
             return;
           }
@@ -212,7 +212,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
         const vehicleAge = currentYear - vehicleYear;
 
         if (hasPlausibleYear && vehicleAge > 15) {
-          setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+          setVehicleAgeError(buildAgeBlockMessage(vehicleAge));
           setIsLookingUp(false);
           return;
         }
@@ -226,7 +226,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
 
       if (motMileage > 0) {
         if (motMileage > 150000) {
-          setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+          setVehicleAgeError(buildMileageBlockMessage(motMileage, data.motMileageDate ?? null));
           setIsLookingUp(false);
           return;
         }
@@ -248,7 +248,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
         }
         if (typed > 150000) {
           setNeedsMileage(true);
-          setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+          setVehicleAgeError(buildTypedMileageBlockMessage(typed));
           setIsLookingUp(false);
           return;
         }
