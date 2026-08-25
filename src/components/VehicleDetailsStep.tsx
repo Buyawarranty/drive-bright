@@ -241,7 +241,7 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
         
         // For other "not found" cases, show generic error and offer manual entry
         toast({
-          title: "Oops! We couldn't find that registration. 🚗💨",
+          title: "We couldn't find that reg. Please check it and try again.",
           description: "Double-check the number and try again, or enter your vehicle details manually.",
           variant: "destructive",
         });
@@ -259,7 +259,7 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
         });
       } else {
         toast({
-          title: "Oops! We couldn't find that registration. 🚗💨",
+          title: "We couldn't find that reg. Please check it and try again.",
           description: "Double-check the number and try again. If it's still not working, the vehicle might be over 15 years old or not supported in our cover.",
           variant: "destructive",
         });
@@ -438,7 +438,7 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
           
           // For other "not found" cases, show generic error and offer manual entry
           toast({
-            title: "Oops! We couldn't find that registration. 🚗💨",
+            title: "We couldn't find that reg. Please check it and try again.",
             description: "Double-check the number and try again, or enter your vehicle details manually.",
             variant: "destructive",
           });
@@ -457,7 +457,7 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
           });
         } else {
           toast({
-            title: "Oops! We couldn't find that registration. 🚗💨",
+            title: "We couldn't find that reg. Please check it and try again.",
             description: "Double-check the number and try again. If it's still not working, the vehicle might be over 15 years old or not supported in our cover.",
             variant: "destructive",
           });
@@ -756,16 +756,16 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
            )}
 
             {vehicleData && !vehicleData.found && (!vehicleData.error || (!vehicleData.error.includes('15 years') && !vehicleData.error.includes('Warranty Coverage Not Available'))) && (
-             <div className="bg-orange-50 border border-orange-200 rounded-[4px] p-4 mb-4">
-               <p className="text-lg font-bold text-orange-800 mb-2">
-                 Oops! We couldn't find that registration. 🚗💨
-               </p>
-               <p className="text-sm text-orange-700 mb-2">
-                 Double-check the number and try again. If it's still not working, the vehicle might be over 15 years old or not supported in our cover.
-               </p>
-               <p className="text-sm text-orange-700">
-                 You can enter your vehicle details manually below to get a quote.
-               </p>
+             <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 sm:px-4 sm:py-3 mb-4" role="alert">
+               <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 mt-0.5 flex-shrink-0 text-amber-600" strokeWidth={2.5} />
+               <div>
+                 <p className="text-sm sm:text-[15px] font-semibold text-amber-900">
+                   We couldn't find that reg. Please check it and try again.
+                 </p>
+                 <p className="text-xs sm:text-sm text-amber-800/80 mt-0.5">
+                   A typical UK plate looks like AB12 CDE. You can also enter your vehicle details manually below.
+                 </p>
+               </div>
              </div>
            )}
 
