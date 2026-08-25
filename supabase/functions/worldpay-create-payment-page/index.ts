@@ -83,7 +83,8 @@ serve(async (req) => {
       },
     };
 
-    const authValue = `Basic ${btoa(`${username}:${password}`)}`;
+    const encodedCredentials = btoa(`${username}:${password}`);
+    const authValues = [`Basic ${encodedCredentials}`, encodedCredentials];
     const hppContentType = "application/vnd.worldpay.payment_pages-v1.hal+json";
 
     // Hosted Payment Pages API: POST /payment_pages (snake_case). Try the configured
@@ -99,6 +100,7 @@ serve(async (req) => {
     let lastError = "";
 
     for (const url of Array.from(new Set(candidates))) {
+      for (const authValue of authValues) {
       const res = await fetch(url, {
         method: "POST",
         headers: {
@@ -117,8 +119,10 @@ serve(async (req) => {
         try { wpJson = JSON.parse(text); } catch { /* ignore */ }
         break;
       }
-      log("Worldpay attempt failed", { url, status: res.status, body: text.slice(0, 500) });
+      log("Worldpay attempt failed", { url, status: res.status, authStyle: authValue.startsWith("Basic ") ? "basic-prefix" : "encoded-only", body: text.slice(0, 500) });
       lastError = `${res.status} ${text.slice(0, 300)}`;
+      }
+      if (wpRes) break;
     }
 
     if (!wpRes) {
