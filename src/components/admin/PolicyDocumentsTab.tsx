@@ -753,7 +753,7 @@ export const PolicyDocumentsTab: React.FC = () => {
                         <Pencil className="h-3 w-3" />
                         Edit
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setShowPreview(true)} className="gap-1 text-xs h-7">
+                      <Button size="sm" variant="outline" disabled={!selectedPolicy} onClick={() => setShowPreview(true)} className="gap-1 text-xs h-7">
                         <Eye className="h-3 w-3" />
                         View Letter
                       </Button>
