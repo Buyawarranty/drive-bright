@@ -274,12 +274,36 @@ export const PolicyDocumentsTab: React.FC = () => {
     }
   };
 
-  const getBonusMonths = () => Number(selectedPolicy?.seasonal_bonus_months ?? selectedCustomer?.seasonal_bonus_months ?? 0);
+  const getBonusMonths = () => Number(displayPolicy?.seasonal_bonus_months ?? selectedPolicy?.seasonal_bonus_months ?? selectedCustomer?.seasonal_bonus_months ?? 0);
 
   const getDuration = () => {
-    if (!selectedPolicy) return 'N/A';
-    return formatStoredPolicyCoverDuration(selectedPolicy.policy_start_date, selectedPolicy.policy_end_date);
+    const policy = displayPolicy || selectedPolicy;
+    if (!policy) return 'N/A';
+    return formatStoredPolicyCoverDuration(policy.policy_start_date, policy.policy_end_date);
   };
+
+  // Live preview data merges unsaved edits with the selected records
+  const displayCustomer = useMemo(() => {
+    if (!selectedCustomer) return null;
+    if (!isEditing) return selectedCustomer;
+    return { ...selectedCustomer, ...editData } as CustomerData;
+  }, [selectedCustomer, isEditing, editData]);
+
+  const displayPolicy = useMemo(() => {
+    if (!selectedPolicy) return null;
+    if (!isEditing) return selectedPolicy;
+    return {
+      ...selectedPolicy,
+      claim_limit: editData.policy_claim_limit ?? selectedPolicy.claim_limit,
+      voluntary_excess: editData.policy_voluntary_excess ?? selectedPolicy.voluntary_excess,
+      plan_type: editData.policy_plan_type ?? selectedPolicy.plan_type,
+      payment_type: editData.policy_payment_type ?? selectedPolicy.payment_type,
+      seasonal_bonus_months: editData.policy_seasonal_bonus_months ?? selectedPolicy.seasonal_bonus_months,
+      policy_start_date: editData.policy_start_date ?? selectedPolicy.policy_start_date,
+      policy_end_date: editData.policy_end_date ?? selectedPolicy.policy_end_date,
+      additional_notes: editData.policy_additional_notes ?? selectedPolicy.additional_notes,
+    } as PolicyData;
+  }, [selectedPolicy, isEditing, editData]);
 
   const formatAddress = () => {
     const customer = displayCustomer || selectedCustomer;
