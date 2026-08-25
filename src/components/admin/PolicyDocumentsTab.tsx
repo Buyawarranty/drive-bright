@@ -695,7 +695,7 @@ export const PolicyDocumentsTab: React.FC = () => {
       </div>
 
       {/* To Post — batch queue at top */}
-      <BatchPolicyQueue />
+      <BatchPolicyQueue onEditCustomer={editCustomerById} />
 
 
 
