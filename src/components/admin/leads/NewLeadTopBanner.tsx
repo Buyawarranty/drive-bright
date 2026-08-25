@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Flame, Phone, X, ChevronRight } from 'lucide-react';
+import { Flame, Phone, X, ChevronRight, Copy, Check } from 'lucide-react';
 import { useNewLeadAlert, formatElapsed, playNewLeadBeep } from '@/hooks/useNewLeadAlert';
 import { MuteAlertsMenu } from '@/components/admin/MuteAlertsMenu';
 import { dialWithZoiper } from '@/utils/zoiperDial';
 import { isAgentOnCall, subscribeAgentOnCall } from '@/lib/agentCallState';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
+import { toast } from 'sonner';
+
 
 const formatUKPhoneShort = (p: string) => {
   const d = p.replace(/[^\d+]/g, '');
@@ -33,8 +35,30 @@ interface Props {
 export const NewLeadTopBanner: React.FC<Props> = ({ onGo }) => {
   const { queue, dismissLead } = useNewLeadAlert();
   const [onCall, setOnCall] = useState(() => isAgentOnCall());
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const lastCountRef = useRef(0);
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
+
+  const copyNumber = async (leadId: string, phone: string) => {
+    const num = formatUKPhoneShort(phone);
+    try {
+      await navigator.clipboard.writeText(num);
+    } catch {
+      // Fallback for browsers/contexts without clipboard permission
+      const ta = document.createElement('textarea');
+      ta.value = num;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setCopiedId(leadId);
+    toast.success(`Copied ${num}`);
+    setTimeout(() => setCopiedId((c) => (c === leadId ? null : c)), 1500);
+  };
+
 
   useEffect(() => subscribeAgentOnCall(() => setOnCall(isAgentOnCall())), []);
 
@@ -80,28 +104,58 @@ export const NewLeadTopBanner: React.FC<Props> = ({ onGo }) => {
                   {queue.length === 1 ? 'New lead waiting' : `${queue.length} new leads waiting`}
                 </span>
               )}
-              <span className="text-sm font-medium truncate max-w-[220px]">{name}</span>
-              {lead.vehicle_reg && (
-                <span className="text-xs font-mono bg-white/15 rounded px-1.5 py-0.5">{lead.vehicle_reg}</span>
-              )}
-              <span
-                className="text-xs bg-white/15 rounded px-1.5 py-0.5"
-                title="How long this lead has been waiting. It is not a countdown — the lead stays with you until you action it."
+
+              {/* Clicking the lead itself (name / reg / waiting time) opens it */}
+              <button
+                type="button"
+                onClick={() => onGo(lead.id, lead.vehicle_reg || lead.phone || name)}
+                title="Open this lead"
+                className="flex items-center gap-3 flex-wrap text-left rounded px-1 -mx-1 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/60"
               >
-                waiting {elapsed}
-              </span>
+                <span className="text-sm font-medium truncate max-w-[220px] underline decoration-white/40 underline-offset-2">
+                  {name}
+                </span>
+                {lead.vehicle_reg && (
+                  <span className="text-xs font-mono bg-white/15 rounded px-1.5 py-0.5">{lead.vehicle_reg}</span>
+                )}
+                <span
+                  className="text-xs bg-white/15 rounded px-1.5 py-0.5"
+                  title="How long this lead has been waiting. It is not a countdown — the lead stays with you until you action it."
+                >
+                  waiting {elapsed}
+                </span>
+              </button>
 
               <div className="flex items-center gap-2 ml-auto">
                 {lead.phone && (
-                  <button
-                    type="button"
-                    onClick={() => dialWithZoiper(lead.phone!, { leadId: lead.id })}
-                    className="inline-flex items-center gap-1 text-xs font-semibold bg-white text-emerald-700 hover:bg-emerald-50 rounded-full px-3 py-1"
-                  >
-                    <Phone className="w-3.5 h-3.5" />
-                    Call {formatUKPhoneShort(lead.phone)}
-                  </button>
+                  <div className="inline-flex items-center rounded-full bg-white text-emerald-700 overflow-hidden">
+                    {/* Click to dial */}
+                    <button
+                      type="button"
+                      onClick={() => dialWithZoiper(lead.phone!, { leadId: lead.id })}
+                      title="Click to dial this number"
+                      className="inline-flex items-center gap-1 text-xs font-semibold hover:bg-emerald-50 pl-3 pr-2 py-1"
+                    >
+                      <Phone className="w-3.5 h-3.5" />
+                      {/* Selectable so it can also be highlighted and copied by hand */}
+                      <span className="select-all">{formatUKPhoneShort(lead.phone)}</span>
+                    </button>
+                    {/* One-click copy to clipboard */}
+                    <button
+                      type="button"
+                      onClick={() => copyNumber(lead.id, lead.phone!)}
+                      title="Copy number"
+                      className="border-l border-emerald-200 hover:bg-emerald-50 px-2 py-1.5"
+                    >
+                      {copiedId === lead.id ? (
+                        <Check className="w-3.5 h-3.5" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
                 )}
+
                 <button
                   type="button"
                   onClick={() => onGo(lead.id, lead.vehicle_reg || lead.phone || name)}
