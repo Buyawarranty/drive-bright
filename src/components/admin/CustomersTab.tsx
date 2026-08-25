@@ -93,6 +93,29 @@ import { useViewAs } from '@/contexts/ViewAsContext';
 import { CustomersMobileCards } from './customers/CustomersMobileCards';
 import { isNorthernIrelandPlate } from '@/lib/niPlate';
 
+type CustomerPolicySummary = {
+  id?: string;
+  policy_end_date: string;
+  policy_start_date?: string;
+  policy_number: string;
+  status: string;
+  warranty_number?: string;
+  email_sent_status?: string;
+  warranties_2000_status?: string;
+  warranties_2000_sent_at?: string;
+  created_at?: string;
+  updated_at?: string;
+  user_id?: string;
+  customer_id?: string;
+  email?: string;
+  plan_type?: string;
+  payment_type?: string;
+  claim_limit?: number | null;
+  voluntary_excess?: number | null;
+  additional_notes?: string;
+  seasonal_bonus_months?: number | null;
+};
+
 // Helper function to map plan types to Warranties 2000 warranty types
 function getWarrantyType(planType: string): string {
   // WarType must be one of: B-BASIC, B-GOLD, B-PLATINUM, B-EV, B-PHEV or B-MOTORCYCLE
@@ -138,6 +161,15 @@ function calculateExpiryDate(startDate: string, paymentType: string): Date {
   const expiry = new Date(start);
   expiry.setMonth(expiry.getMonth() + months);
   return expiry;
+}
+
+function getLatestCustomerPolicy(policies?: CustomerPolicySummary[]): CustomerPolicySummary | null {
+  if (!policies || policies.length === 0) return null;
+  return [...policies].sort((a, b) => {
+    const aTime = new Date(a.updated_at || a.created_at || a.policy_start_date || 0).getTime();
+    const bTime = new Date(b.updated_at || b.created_at || b.policy_start_date || 0).getTime();
+    return bTime - aTime;
+  })[0] || null;
 }
 
 // Time from the lead arriving (sales_leads.created_at) to the sale completing
@@ -279,23 +311,7 @@ interface Customer {
     first_name?: string;
     last_name?: string;
   } | null;
-  customer_policies?: Array<{
-    id?: string;
-    policy_end_date: string;
-    policy_start_date?: string;
-    policy_number: string;
-    status: string;
-    warranty_number?: string;
-    email_sent_status?: string;
-    warranties_2000_status?: string;
-    warranties_2000_sent_at?: string;
-    created_at?: string;
-    user_id?: string;
-    customer_id?: string;
-    email?: string;
-    additional_notes?: string;
-    seasonal_bonus_months?: number | null;
-  }>;
+  customer_policies?: CustomerPolicySummary[];
 }
 
 interface IncompleteCustomer {
@@ -2017,6 +2033,10 @@ export const CustomersTab = ({
               policy_number,
               policy_end_date,
               policy_start_date,
+              created_at,
+              updated_at,
+              plan_type,
+              payment_type,
               status,
               warranty_number,
               email_sent_status,
@@ -2031,6 +2051,7 @@ export const CustomersTab = ({
               breakdown_recovery,
               vehicle_rental,
               claim_limit,
+              voluntary_excess,
               payment_amount,
               mot_repair,
               lost_key,
