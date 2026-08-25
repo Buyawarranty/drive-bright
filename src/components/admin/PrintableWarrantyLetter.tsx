@@ -303,13 +303,10 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
                   ['Duration', getDuration()],
                   ['Mileage', policy.mileage ? `${parseInt(policy.mileage).toLocaleString()} miles` : 'N/A'],
                   ['Start Date', policy.policyStartDate ? format(new Date(policy.policyStartDate), 'd MMM yyyy') : 'N/A'],
-                  ['End Date', policy.policyEndDate ? (() => {
-                    const endDate = new Date(policy.policyEndDate);
-                    if (policy.seasonalBonusMonths && policy.seasonalBonusMonths > 0) {
-                      endDate.setMonth(endDate.getMonth() + policy.seasonalBonusMonths);
-                    }
-                    return format(endDate, 'd MMM yyyy');
-                  })() : 'N/A'],
+                  ['End Date', policy.policyEndDate
+                    ? format(new Date(policy.policyEndDate), 'd MMM yyyy')
+                    : 'N/A'],
+
                   ['Warranty Ref', warrantyRef],
                   ['Policy No.', policy.policyNumber || 'N/A'],
                 ].map(([label, value], i) => (
