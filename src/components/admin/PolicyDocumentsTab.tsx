@@ -1153,7 +1153,7 @@ export const PolicyDocumentsTab: React.FC = () => {
                     <li style={{ marginBottom: '3px' }}>Access to trusted UK-wide VAT registered repair garages</li>
                     <li style={{ marginBottom: '3px' }}>Choose your own VAT registered garage option</li>
                     <li style={{ marginBottom: '3px' }}>Fast, simple claims process via our dedicated claims team</li>
-                    {selectedCustomer.breakdown_recovery && <li style={{ marginBottom: '3px' }}>Breakdown recovery claimback</li>}
+                    {displayCustomer?.breakdown_recovery && <li style={{ marginBottom: '3px' }}>Breakdown recovery claimback</li>}
                   </ul>
                 </div>
 
@@ -1177,10 +1177,10 @@ export const PolicyDocumentsTab: React.FC = () => {
               </div>
 
               {/* Additional Notes */}
-              {(selectedPolicy as any)?.additional_notes && (selectedPolicy as any).additional_notes.trim() && (
+              {(displayPolicy as any)?.additional_notes && (displayPolicy as any).additional_notes.trim() && (
                 <div style={{ background: isBW ? '#f5f5f5' : '#fef9ee', border: `2px solid ${isBW ? '#666' : '#f59e0b'}`, borderRadius: '6px', padding: '12px 14px', marginBottom: '14px' }}>
                   <h4 style={{ color: isBW ? '#000' : '#92400e', fontSize: '13px', marginBottom: '6px', fontWeight: '700' }}>⭐ Important Notes About Your Cover</h4>
-                  <p style={{ color: isBW ? '#333' : '#78350f', fontSize: '11px', margin: '0', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{(selectedPolicy as any).additional_notes}</p>
+                  <p style={{ color: isBW ? '#333' : '#78350f', fontSize: '11px', margin: '0', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{(displayPolicy as any).additional_notes}</p>
                 </div>
               )}
 
