@@ -267,12 +267,88 @@ export const PolicyDocumentsTab: React.FC = () => {
     }
 
     setCustomerPolicies(policies || []);
-    if (policies && policies.length > 0) {
-      setSelectedPolicy(policies[0]);
-    } else {
-      setSelectedPolicy(null);
+    const firstPolicy = policies && policies.length > 0 ? policies[0] : null;
+    setSelectedPolicy(firstPolicy);
+    return { customer: (freshCustomer || customer) as CustomerData, policy: firstPolicy as PolicyData | null };
+  };
+
+  // Shared "open the full editor" logic so the queue row Edit button and the
+  // Customer Details Edit button behave identically.
+  const beginEdit = (customer: CustomerData, policy: PolicyData | null) => {
+    setIsEditing(true);
+    const parts = (customer.name || '').trim().split(/\s+/);
+    const fnFallback = parts[0] || '';
+    const lnFallback = parts.slice(1).join(' ') || '';
+    setEditData({
+      name: customer.name,
+      first_name: customer.first_name || fnFallback,
+      last_name: customer.last_name || lnFallback,
+      email: customer.email,
+      phone: customer.phone || '',
+      flat_number: customer.flat_number || '',
+      building_name: customer.building_name || '',
+      building_number: customer.building_number || '',
+      street: customer.street || '',
+      town: customer.town || '',
+      county: customer.county || '',
+      postcode: customer.postcode || '',
+      registration_plate: customer.registration_plate || '',
+      vehicle_make: customer.vehicle_make || '',
+      vehicle_model: customer.vehicle_model || '',
+      vehicle_year: customer.vehicle_year || '',
+      mileage: customer.mileage || '',
+      plan_type: customer.plan_type || '',
+      payment_type: customer.payment_type || '',
+      claim_limit: customer.claim_limit,
+      voluntary_excess: customer.voluntary_excess,
+      labour_rate: customer.labour_rate,
+      seasonal_bonus_months: customer.seasonal_bonus_months,
+      breakdown_recovery: customer.breakdown_recovery,
+      wear_tear: customer.wear_tear,
+      europe_cover: customer.europe_cover,
+      mot_fee: customer.mot_fee,
+      mot_repair: customer.mot_repair,
+      tyre_cover: customer.tyre_cover,
+      lost_key: customer.lost_key,
+      vehicle_rental: customer.vehicle_rental,
+      transfer_cover: customer.transfer_cover,
+      consequential: customer.consequential,
+      policy_plan_type: policy?.plan_type || customer.plan_type || '',
+      policy_payment_type: policy?.payment_type || customer.payment_type || '',
+      policy_claim_limit: policy?.claim_limit ?? customer.claim_limit,
+      policy_voluntary_excess: policy?.voluntary_excess ?? customer.voluntary_excess,
+      policy_seasonal_bonus_months: policy?.seasonal_bonus_months ?? customer.seasonal_bonus_months,
+      policy_start_date: policy?.policy_start_date || '',
+      policy_end_date: policy?.policy_end_date || '',
+      policy_additional_notes: (policy as any)?.additional_notes || '',
+    });
+    const hasReg = !!customer.registration_plate;
+    const missingVehicle = !customer.vehicle_make && !customer.vehicle_model && !customer.vehicle_year;
+    if (hasReg && missingVehicle) {
+      lookupDvla(customer.registration_plate!, { overwrite: false });
     }
   };
+
+  // Entry point used by the To Post queue rows: select the customer in the
+  // Customer Details card below and open the same full editor.
+  const editCustomerById = async (customerId: string) => {
+    const cached = allCustomers.find(c => c.id === customerId);
+    let customer = cached as CustomerData | undefined;
+    if (!customer) {
+      const { data } = await supabase.from('customers').select('*').eq('id', customerId).maybeSingle();
+      if (!data) {
+        toast({ title: 'Customer not found', description: 'Could not load this record.', variant: 'destructive' });
+        return;
+      }
+      customer = data as CustomerData;
+    }
+    const result = await selectCustomer(customer);
+    beginEdit(result.customer, result.policy);
+    setTimeout(() => {
+      detailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
 
   const getBonusMonths = () => Number(displayPolicy?.seasonal_bonus_months ?? selectedPolicy?.seasonal_bonus_months ?? selectedCustomer?.seasonal_bonus_months ?? 0);
 
