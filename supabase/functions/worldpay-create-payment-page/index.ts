@@ -87,7 +87,8 @@ serve(async (req) => {
     const hppContentType = "application/vnd.worldpay.payment_pages-v1.hal+json";
 
     // Hosted Payment Pages API: POST /payment_pages (snake_case). Try the configured
-    // environment first, then the other host in case credentials belong there.
+    // environment first, then the other host. A 401 on TRY often means live
+    // credentials were stored while WORLDPAY_ENV is still set to sandbox.
     const candidates = [`${primary}/payment_pages`, `${secondary}/payment_pages`];
 
     log("Calling Worldpay", { candidates, transactionReference, flow: body.flow });
@@ -118,14 +119,10 @@ serve(async (req) => {
       }
       log("Worldpay attempt failed", { url, status: res.status, body: text.slice(0, 500) });
       lastError = `${res.status} ${text.slice(0, 300)}`;
-      // Only keep trying while the endpoint itself is wrong; real rejections stop here.
-      if (res.status !== 404) {
-        return json({ error: "Worldpay request failed", status: res.status, details: text }, 502);
-      }
     }
 
     if (!wpRes) {
-      return json({ error: `Worldpay request failed: ${lastError || "no endpoint reachable"}` }, 502);
+      return json({ error: "Worldpay request failed", details: lastError || "no endpoint reachable" }, 502);
     }
 
 
