@@ -860,9 +860,9 @@ export const PolicyDocumentsTab: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  <p><span className="text-muted-foreground">Name:</span> <strong>{selectedCustomer.name}</strong></p>
-                  <p><span className="text-muted-foreground">Email:</span> {selectedCustomer.email}</p>
-                  {selectedCustomer.phone && <p><span className="text-muted-foreground">Phone:</span> {selectedCustomer.phone}</p>}
+                  <p><span className="text-muted-foreground">Name:</span> <strong>{displayCustomer?.name}</strong></p>
+                  <p><span className="text-muted-foreground">Email:</span> {displayCustomer?.email}</p>
+                  {displayCustomer?.phone && <p><span className="text-muted-foreground">Phone:</span> {displayCustomer.phone}</p>}
                   {address.length > 0 && <p><span className="text-muted-foreground">Address:</span> {address.join(', ')}</p>}
                 </>
               )}
