@@ -159,6 +159,7 @@ export const PolicyDocumentsTab: React.FC = () => {
   };
 
   const printRef = useRef<HTMLDivElement>(null);
+  const detailsRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Load all customers on mount, newest first
@@ -208,6 +209,7 @@ export const PolicyDocumentsTab: React.FC = () => {
   }, [searchQuery, allCustomers]);
 
   const selectCustomer = async (customer: CustomerData) => {
+    let freshCustomer: CustomerData | null = null;
     setSelectedCustomer(customer);
     setShowDropdown(false);
     setSearchQuery('');
@@ -222,6 +224,7 @@ export const PolicyDocumentsTab: React.FC = () => {
         .eq('id', customer.id)
         .maybeSingle();
       if (fresh) {
+        freshCustomer = fresh as CustomerData;
         setSelectedCustomer(fresh as CustomerData);
         setAllCustomers((prev) => prev.map((c) => (c.id === fresh.id ? (fresh as CustomerData) : c)));
       }
