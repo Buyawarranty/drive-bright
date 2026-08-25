@@ -274,6 +274,24 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
             Yesterday
           </button>
         )}
+        {!hideQuickLinks && showThisWeek && (
+          <button
+            type="button"
+            onClick={() => onChange({ scope, period: 'this_week', customRange: undefined })}
+            className="text-sm font-semibold text-orange-600 hover:underline"
+          >
+            This week
+          </button>
+        )}
+        {!hideQuickLinks && showLastWeek && (
+          <button
+            type="button"
+            onClick={() => onChange({ scope, period: 'last_week', customRange: undefined })}
+            className="text-sm font-semibold text-orange-600 hover:underline"
+          >
+            Last week
+          </button>
+        )}
         {!hideQuickLinks && showThisMonth && (
           <button
             type="button"
