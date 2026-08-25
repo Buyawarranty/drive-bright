@@ -5307,7 +5307,7 @@ Buyawarranty.co.uk`,
                     setFilterByWarrantyPeriod('all');
                     setFilterBySource('all_view');
                     setFilterByAgent(isSalesScopedRole && effectiveAdminId ? effectiveAdminId : 'all');
-                    setTotalSalesDateFilter(isSalesScopedRole ? 'all' : '30days');
+                    setTotalSalesDateFilter('all');
                     setUnifiedScope('signup');
                     setUnifiedPeriod('all');
                     setUnifiedCustomRange(undefined);
