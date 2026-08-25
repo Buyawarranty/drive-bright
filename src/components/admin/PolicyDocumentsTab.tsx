@@ -344,17 +344,18 @@ export const PolicyDocumentsTab: React.FC = () => {
 
 
   const getAddonsList = () => {
-    if (!selectedCustomer) return [];
+    const customer = displayCustomer || selectedCustomer;
+    if (!customer) return [];
     const addons: string[] = [];
     // Breakdown recovery is shown in key benefits, not as a separate add-on
-    if (selectedCustomer.wear_tear) addons.push('Wear & Tear Cover');
-    if (selectedCustomer.europe_cover) addons.push('European Cover');
-    if (selectedCustomer.mot_repair) addons.push('MOT Repair Cover');
-    if (selectedCustomer.tyre_cover) addons.push('Tyre Cover');
-    if (selectedCustomer.lost_key) addons.push('Lost Key Cover');
-    if (selectedCustomer.vehicle_rental) addons.push('Vehicle Rental Cover');
-    if (selectedCustomer.transfer_cover) addons.push('Transfer Cover');
-    if (selectedCustomer.consequential) addons.push('Consequential Loss Cover');
+    if (customer.wear_tear) addons.push('Wear & Tear Cover');
+    if (customer.europe_cover) addons.push('European Cover');
+    if (customer.mot_repair) addons.push('MOT Repair Cover');
+    if (customer.tyre_cover) addons.push('Tyre Cover');
+    if (customer.lost_key) addons.push('Lost Key Cover');
+    if (customer.vehicle_rental) addons.push('Vehicle Rental Cover');
+    if (customer.transfer_cover) addons.push('Transfer Cover');
+    if (customer.consequential) addons.push('Consequential Loss Cover');
     return addons;
   };
 
