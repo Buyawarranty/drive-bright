@@ -26,9 +26,18 @@ export const Worldpay140LinkButton: React.FC<{ className?: string; label?: strin
   const [reference, setReference] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const getFriendlyError = (message: string) => {
+    if (/accessDenied|Access to the requested resource has been denied|Invalid authentication/i.test(message)) {
+      return 'Worldpay is denying Hosted Payment Pages for the saved merchant credentials. Ask Worldpay to enable Hosted Payment Pages / Pay by Link for this merchant entity, or update the Worldpay credentials for an entity that has that access.';
+    }
+    return message || 'Worldpay could not create the payment link.';
+  };
 
   const generate = async () => {
     setLoading(true);
+    setErrorMessage(null);
     try {
       const { data, error } = await invokeWithFreshSession('worldpay-create-payment-page', {
         flow: 'link',
@@ -46,7 +55,9 @@ export const Worldpay140LinkButton: React.FC<{ className?: string; label?: strin
       toast({ title: 'Payment link created', description: 'Copy the link and send it to the customer.' });
     } catch (err: any) {
       console.error('Worldpay £140 link error', err);
-      toast({ title: 'Could not create link', description: err?.message || 'Failed', variant: 'destructive' });
+      const friendly = getFriendlyError(err?.message || 'Failed');
+      setErrorMessage(friendly);
+      toast({ title: 'Could not create link', description: friendly, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -64,6 +75,7 @@ export const Worldpay140LinkButton: React.FC<{ className?: string; label?: strin
     setReference('');
     setPhone('');
     setEmail('');
+    setErrorMessage(null);
   };
 
   const shareText = `Hi, please pay the £${FEE} independent inspection fee securely here: ${url}`;
@@ -111,6 +123,11 @@ export const Worldpay140LinkButton: React.FC<{ className?: string; label?: strin
             <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
               Amount is fixed at £{FEE}.00. The fee is paid to the independent inspection company.
             </div>
+            {errorMessage && (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                {errorMessage}
+              </div>
+            )}
             <Button onClick={generate} disabled={loading} className="w-full">
               {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Link2 className="h-4 w-4 mr-2" />}
               Generate £{FEE} payment link
