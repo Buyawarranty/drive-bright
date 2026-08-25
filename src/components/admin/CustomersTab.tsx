@@ -521,7 +521,7 @@ export const CustomersTab = ({
   const initialUrlPeriod = coerceUrlPeriod(searchParams.get('ltPeriod'));
   const initialUrlCustomRange = getUrlCustomRange(searchParams.get('ltFrom'), searchParams.get('ltTo'));
   const initialPeriod = initialUrlPeriod === 'custom' && !initialUrlCustomRange ? 'today' : initialUrlPeriod;
-  const initialDateRange = getRangeForPeriod(initialPeriod, initialUrlCustomRange);
+  const initialActiveRange = getRangeForPeriod(initialPeriod, initialUrlCustomRange);
   const [customers, setCustomers] = useState<Customer[]>([]);
   // Ids of everyone who can hold sales credit (sales + sales_lead, incl. archived agents)
   const [salesCreditAgentIds, setSalesCreditAgentIds] = useState<Set<string>>(new Set());
@@ -557,9 +557,9 @@ export const CustomersTab = ({
   const [filterBySource, setFilterBySource] = useState('all_view'); // Default to All View
   const [filterByWarrantyPeriod, setFilterByWarrantyPeriod] = useState('all');
   const [filterByPaymentSource, setFilterByPaymentSource] = useState('all'); // all | bumper | stripe | payment_assist
-  const [paymentSourceDateFilter, setPaymentSourceDateFilter] = useState('all');
+  const [paymentSourceDateFilter, setPaymentSourceDateFilter] = useState(initialUrlScope === 'payment' && initialPeriod !== 'custom' ? initialPeriod : 'all');
   const [filterByAgent, setFilterByAgent] = useState('all');
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => initialDateRange);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => initialUrlScope === 'signup' ? initialActiveRange : undefined);
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -662,7 +662,7 @@ export const CustomersTab = ({
   }>>([]);
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
   const [mergeDuplicates, setMergeDuplicates] = useState<any[]>([]);
-  const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>('all');
+  const [totalSalesDateFilter, setTotalSalesDateFilter] = useState<string>(initialUrlScope === 'deals' && initialPeriod !== 'custom' ? initialPeriod : 'all');
   // Unified date filter UI state
   const [unifiedScope, setUnifiedScope] = useState<DateScope>(initialUrlScope);
   const [unifiedPeriod, setUnifiedPeriod] = useState<PeriodKey>(initialPeriod);
@@ -678,7 +678,7 @@ export const CustomersTab = ({
     return Number.isFinite(n) ? n : 0;
   });
 
-  const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(() => initialDateRange);
+  const [revenueDateRange, setRevenueDateRange] = useState<DateRange | undefined>(() => (initialUrlScope === 'signup' || initialUrlScope === 'revenue') ? initialActiveRange : undefined);
 
   // ViewAs impersonation support — override role and admin ID when impersonating
   const { isImpersonating, viewAsAgent, effectiveRole: viewAsEffectiveRole, effectiveAdminUserId } = useViewAs();
@@ -1274,10 +1274,10 @@ export const CustomersTab = ({
       setUnifiedScope(nextScope);
       setUnifiedPeriod(nextPeriod);
       setUnifiedCustomRange(nextCustomRange);
-      setDateRange(nextRange);
-      setRevenueDateRange(nextRange);
-      setPaymentSourceDateFilter('all');
-      setTotalSalesDateFilter('all');
+      setDateRange(nextScope === 'signup' ? nextRange : undefined);
+      setRevenueDateRange(nextScope === 'signup' || nextScope === 'revenue' ? nextRange : undefined);
+      setPaymentSourceDateFilter(nextScope === 'payment' && nextPeriod !== 'custom' ? nextPeriod : 'all');
+      setTotalSalesDateFilter(nextScope === 'deals' && nextPeriod !== 'custom' ? nextPeriod : 'all');
     }
   }, [searchParams, searchTerm]);
 
