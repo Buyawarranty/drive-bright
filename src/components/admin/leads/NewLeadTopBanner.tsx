@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Flame, Phone, X, ChevronRight } from 'lucide-react';
+import { Flame, Phone, X, ChevronRight, Copy, Check } from 'lucide-react';
 import { useNewLeadAlert, formatElapsed, playNewLeadBeep } from '@/hooks/useNewLeadAlert';
 import { MuteAlertsMenu } from '@/components/admin/MuteAlertsMenu';
 import { dialWithZoiper } from '@/utils/zoiperDial';
 import { isAgentOnCall, subscribeAgentOnCall } from '@/lib/agentCallState';
 import { useAdminSidebarCollapsed } from '@/hooks/useAdminSidebarCollapsed';
+import { toast } from 'sonner';
+
 
 const formatUKPhoneShort = (p: string) => {
   const d = p.replace(/[^\d+]/g, '');
