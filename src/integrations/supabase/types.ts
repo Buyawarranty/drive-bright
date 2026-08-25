@@ -13681,6 +13681,7 @@ export type Database = {
       }
       is_blog_writer: { Args: { user_id: string }; Returns: boolean }
       is_ip_blocked: { Args: { check_ip: unknown }; Returns: boolean }
+      is_known_fake_phone: { Args: { _phone: string }; Returns: boolean }
       is_management: { Args: { _user_id: string }; Returns: boolean }
       is_phone_logs_manager: { Args: { _user_id: string }; Returns: boolean }
       is_sales_lead: { Args: { _user_id: string }; Returns: boolean }
