@@ -1087,7 +1087,7 @@ export const PolicyDocumentsTab: React.FC = () => {
               <div style={{ textAlign: 'right', fontSize: '10px', color: '#666', marginBottom: '12px' }}>{todayDate}</div>
 
               <div style={{ marginBottom: '14px', fontSize: '11px' }}>
-                <p style={{ fontWeight: '700', fontSize: '11px', margin: '1px 0' }}>{selectedCustomer.name}</p>
+                <p style={{ fontWeight: '700', fontSize: '11px', margin: '1px 0' }}>{displayCustomer?.name}</p>
                 {address.map((line, i) => (
                   <p key={i} style={{ margin: '1px 0' }}>{line}</p>
                 ))}
