@@ -301,7 +301,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const handleMainCtaClick = () => {
     trackButtonClick('get_quote_main', { has_reg_number: !!regNumber.trim() });
 
-    if (!isRegEntered || !isRegValid) {
+    const cleaned = regNumber.replace(/\s+/g, '').toUpperCase();
+
+    // Nothing typed yet → gentle nudge, no error card.
+    if (!cleaned) {
       setRegNudge('Pop your registration in above and we\'ll fetch your price in seconds.');
       const el = document.getElementById('reg-input-field');
       el?.focus();
@@ -309,9 +312,18 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       return;
     }
 
+    // Something typed but it isn't a UK plate → show the amber error card
+    // and the pink outline around the reg input.
+    if (!isRegEntered || !isRegValid) {
+      setRegNudge('');
+      showRegError('format');
+      return;
+    }
+
     setRegNudge('');
     handleGetQuote();
   };
+
 
   const handleGetQuote = async (mileageOverride?: string) => {
     console.log('🔘 GET QUOTE BUTTON CLICKED');
