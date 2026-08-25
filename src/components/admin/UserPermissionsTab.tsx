@@ -2077,6 +2077,11 @@ export const UserPermissionsTab = () => {
       {/* Backup emergency login for sales */}
       <BackupLoginPanel allTabIds={ADMIN_TABS.map(t => t.id)} />
 
+      {/* Short-lived logins for temp developers/contractors */}
+      {currentAdminUser?.role === 'super_admin' && (
+        <TempDevLoginPanel allTabIds={ADMIN_TABS.map(t => t.id)} />
+      )}
+
       {/* Bulk Access Management */}
 
       <Card className="border-primary/20">
