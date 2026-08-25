@@ -1228,6 +1228,21 @@ export const CustomersTab = ({
     setDateRange(range ? { from: range.start, to: range.end } : undefined);
   }, [isSalesAgent, isSalesScopedRole, salesAllTimeApplied, totalSalesDateFilter]);
 
+  useEffect(() => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('ltPeriod', unifiedPeriod);
+      if (unifiedPeriod === 'custom' && unifiedCustomRange?.from) {
+        next.set('ltFrom', format(unifiedCustomRange.from, 'yyyy-MM-dd'));
+        next.set('ltTo', format(unifiedCustomRange.to ?? unifiedCustomRange.from, 'yyyy-MM-dd'));
+      } else {
+        next.delete('ltFrom');
+        next.delete('ltTo');
+      }
+      return next.toString() === prev.toString() ? prev : next;
+    }, { replace: true });
+  }, [setSearchParams, unifiedPeriod, unifiedCustomRange]);
+
 
   // Listen for URL search parameter changes
   useEffect(() => {
