@@ -65,7 +65,13 @@ interface QueuedCustomer {
 const STORAGE_KEY = 'batchPolicyQueue.v1';
 const SAVED_AT_KEY = 'batchPolicyQueue.savedAt.v1';
 
-export const BatchPolicyQueue: React.FC = () => {
+interface BatchPolicyQueueProps {
+  /** When provided, the row Edit button opens the full Customer Details editor below
+   *  instead of the limited name & address dialog, so both Edit buttons behave the same. */
+  onEditCustomer?: (customerId: string) => void;
+}
+
+export const BatchPolicyQueue: React.FC<BatchPolicyQueueProps> = ({ onEditCustomer }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -700,7 +706,7 @@ ${rows}
                           >
                             {expandedId === c.id ? 'Hide' : 'Details'}
                           </Button>
-                          <Button size="sm" variant="outline" className="h-7 px-2 gap-1" onClick={() => openEdit(c)} title="Edit name & address">
+                          <Button size="sm" variant="outline" className="h-7 px-2 gap-1" onClick={() => (onEditCustomer ? onEditCustomer(c.id) : openEdit(c))} title="Edit all customer, plan and cover details">
                             <Pencil className="h-3.5 w-3.5" />
                             Edit
                           </Button>

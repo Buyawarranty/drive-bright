@@ -159,6 +159,7 @@ export const PolicyDocumentsTab: React.FC = () => {
   };
 
   const printRef = useRef<HTMLDivElement>(null);
+  const detailsRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Load all customers on mount, newest first
@@ -208,6 +209,7 @@ export const PolicyDocumentsTab: React.FC = () => {
   }, [searchQuery, allCustomers]);
 
   const selectCustomer = async (customer: CustomerData) => {
+    let freshCustomer: CustomerData | null = null;
     setSelectedCustomer(customer);
     setShowDropdown(false);
     setSearchQuery('');
@@ -222,6 +224,7 @@ export const PolicyDocumentsTab: React.FC = () => {
         .eq('id', customer.id)
         .maybeSingle();
       if (fresh) {
+        freshCustomer = fresh as CustomerData;
         setSelectedCustomer(fresh as CustomerData);
         setAllCustomers((prev) => prev.map((c) => (c.id === fresh.id ? (fresh as CustomerData) : c)));
       }
@@ -267,12 +270,88 @@ export const PolicyDocumentsTab: React.FC = () => {
     }
 
     setCustomerPolicies(policies || []);
-    if (policies && policies.length > 0) {
-      setSelectedPolicy(policies[0]);
-    } else {
-      setSelectedPolicy(null);
+    const firstPolicy = policies && policies.length > 0 ? policies[0] : null;
+    setSelectedPolicy(firstPolicy);
+    return { customer: (freshCustomer || customer) as CustomerData, policy: firstPolicy as PolicyData | null };
+  };
+
+  // Shared "open the full editor" logic so the queue row Edit button and the
+  // Customer Details Edit button behave identically.
+  const beginEdit = (customer: CustomerData, policy: PolicyData | null) => {
+    setIsEditing(true);
+    const parts = (customer.name || '').trim().split(/\s+/);
+    const fnFallback = parts[0] || '';
+    const lnFallback = parts.slice(1).join(' ') || '';
+    setEditData({
+      name: customer.name,
+      first_name: customer.first_name || fnFallback,
+      last_name: customer.last_name || lnFallback,
+      email: customer.email,
+      phone: customer.phone || '',
+      flat_number: customer.flat_number || '',
+      building_name: customer.building_name || '',
+      building_number: customer.building_number || '',
+      street: customer.street || '',
+      town: customer.town || '',
+      county: customer.county || '',
+      postcode: customer.postcode || '',
+      registration_plate: customer.registration_plate || '',
+      vehicle_make: customer.vehicle_make || '',
+      vehicle_model: customer.vehicle_model || '',
+      vehicle_year: customer.vehicle_year || '',
+      mileage: customer.mileage || '',
+      plan_type: customer.plan_type || '',
+      payment_type: customer.payment_type || '',
+      claim_limit: customer.claim_limit,
+      voluntary_excess: customer.voluntary_excess,
+      labour_rate: customer.labour_rate,
+      seasonal_bonus_months: customer.seasonal_bonus_months,
+      breakdown_recovery: customer.breakdown_recovery,
+      wear_tear: customer.wear_tear,
+      europe_cover: customer.europe_cover,
+      mot_fee: customer.mot_fee,
+      mot_repair: customer.mot_repair,
+      tyre_cover: customer.tyre_cover,
+      lost_key: customer.lost_key,
+      vehicle_rental: customer.vehicle_rental,
+      transfer_cover: customer.transfer_cover,
+      consequential: customer.consequential,
+      policy_plan_type: policy?.plan_type || customer.plan_type || '',
+      policy_payment_type: policy?.payment_type || customer.payment_type || '',
+      policy_claim_limit: policy?.claim_limit ?? customer.claim_limit,
+      policy_voluntary_excess: policy?.voluntary_excess ?? customer.voluntary_excess,
+      policy_seasonal_bonus_months: policy?.seasonal_bonus_months ?? customer.seasonal_bonus_months,
+      policy_start_date: policy?.policy_start_date || '',
+      policy_end_date: policy?.policy_end_date || '',
+      policy_additional_notes: (policy as any)?.additional_notes || '',
+    });
+    const hasReg = !!customer.registration_plate;
+    const missingVehicle = !customer.vehicle_make && !customer.vehicle_model && !customer.vehicle_year;
+    if (hasReg && missingVehicle) {
+      lookupDvla(customer.registration_plate!, { overwrite: false });
     }
   };
+
+  // Entry point used by the To Post queue rows: select the customer in the
+  // Customer Details card below and open the same full editor.
+  const editCustomerById = async (customerId: string) => {
+    const cached = allCustomers.find(c => c.id === customerId);
+    let customer = cached as CustomerData | undefined;
+    if (!customer) {
+      const { data } = await supabase.from('customers').select('*').eq('id', customerId).maybeSingle();
+      if (!data) {
+        toast({ title: 'Customer not found', description: 'Could not load this record.', variant: 'destructive' });
+        return;
+      }
+      customer = data as CustomerData;
+    }
+    const result = await selectCustomer(customer);
+    beginEdit(result.customer, result.policy);
+    setTimeout(() => {
+      detailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
 
   const getBonusMonths = () => Number(displayPolicy?.seasonal_bonus_months ?? selectedPolicy?.seasonal_bonus_months ?? selectedCustomer?.seasonal_bonus_months ?? 0);
 
@@ -616,7 +695,7 @@ export const PolicyDocumentsTab: React.FC = () => {
       </div>
 
       {/* To Post — batch queue at top */}
-      <BatchPolicyQueue />
+      <BatchPolicyQueue onEditCustomer={editCustomerById} />
 
 
 
@@ -684,7 +763,7 @@ export const PolicyDocumentsTab: React.FC = () => {
 
       {/* Selected Customer Info */}
       {selectedCustomer && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div ref={detailsRef} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card>
             <CardHeader className="space-y-3">
               <div className="flex items-center justify-between">
@@ -695,64 +774,11 @@ export const PolicyDocumentsTab: React.FC = () => {
                 <div className="flex items-center gap-2">
                   {!isEditing ? (
                     <div className="flex items-center gap-1">
-                      <Button size="sm" variant="ghost" onClick={() => {
-                        setIsEditing(true);
-                        const parts = (selectedCustomer.name || '').trim().split(/\s+/);
-                        const fnFallback = parts[0] || '';
-                        const lnFallback = parts.slice(1).join(' ') || '';
-                        setEditData({
-                          name: selectedCustomer.name,
-                          first_name: selectedCustomer.first_name || fnFallback,
-                          last_name: selectedCustomer.last_name || lnFallback,
-                          email: selectedCustomer.email,
-                          phone: selectedCustomer.phone || '',
-                          flat_number: selectedCustomer.flat_number || '',
-                          building_name: selectedCustomer.building_name || '',
-                          building_number: selectedCustomer.building_number || '',
-                          street: selectedCustomer.street || '',
-                          town: selectedCustomer.town || '',
-                          county: selectedCustomer.county || '',
-                          postcode: selectedCustomer.postcode || '',
-                          registration_plate: selectedCustomer.registration_plate || '',
-                          vehicle_make: selectedCustomer.vehicle_make || '',
-                          vehicle_model: selectedCustomer.vehicle_model || '',
-                          vehicle_year: selectedCustomer.vehicle_year || '',
-                          mileage: selectedCustomer.mileage || '',
-                          plan_type: selectedCustomer.plan_type || '',
-                          payment_type: selectedCustomer.payment_type || '',
-                          claim_limit: selectedCustomer.claim_limit,
-                          voluntary_excess: selectedCustomer.voluntary_excess,
-                          labour_rate: selectedCustomer.labour_rate,
-                          seasonal_bonus_months: selectedCustomer.seasonal_bonus_months,
-                          breakdown_recovery: selectedCustomer.breakdown_recovery,
-                          wear_tear: selectedCustomer.wear_tear,
-                          europe_cover: selectedCustomer.europe_cover,
-                          mot_fee: selectedCustomer.mot_fee,
-                          mot_repair: selectedCustomer.mot_repair,
-                          tyre_cover: selectedCustomer.tyre_cover,
-                          lost_key: selectedCustomer.lost_key,
-                          vehicle_rental: selectedCustomer.vehicle_rental,
-                          transfer_cover: selectedCustomer.transfer_cover,
-                          consequential: selectedCustomer.consequential,
-                          policy_plan_type: selectedPolicy?.plan_type || selectedCustomer.plan_type || '',
-                          policy_payment_type: selectedPolicy?.payment_type || selectedCustomer.payment_type || '',
-                          policy_claim_limit: selectedPolicy?.claim_limit ?? selectedCustomer.claim_limit,
-                          policy_voluntary_excess: selectedPolicy?.voluntary_excess ?? selectedCustomer.voluntary_excess,
-                          policy_seasonal_bonus_months: selectedPolicy?.seasonal_bonus_months ?? selectedCustomer.seasonal_bonus_months,
-                          policy_start_date: selectedPolicy?.policy_start_date || '',
-                          policy_end_date: selectedPolicy?.policy_end_date || '',
-                          policy_additional_notes: (selectedPolicy as any)?.additional_notes || '',
-                        });
-                        const hasReg = !!selectedCustomer.registration_plate;
-                        const missingVehicle = !selectedCustomer.vehicle_make && !selectedCustomer.vehicle_model && !selectedCustomer.vehicle_year;
-                        if (hasReg && missingVehicle) {
-                          lookupDvla(selectedCustomer.registration_plate!, { overwrite: false });
-                        }
-                      }} className="gap-1 text-xs h-7">
-
+                      <Button size="sm" variant="ghost" onClick={() => beginEdit(selectedCustomer, selectedPolicy)} className="gap-1 text-xs h-7">
                         <Pencil className="h-3 w-3" />
                         Edit
                       </Button>
+
                       <Button size="sm" variant="outline" disabled={!selectedPolicy} onClick={() => setShowPreview(true)} className="gap-1 text-xs h-7">
                         <Eye className="h-3 w-3" />
                         View Letter
