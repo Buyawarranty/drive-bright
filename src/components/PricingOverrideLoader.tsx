@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { setVehiclePricingRules } from '@/lib/pricing/vehicleRules';
 import { setLiveClaim5kBlocklist, type Claim5kBlockRule } from '@/lib/claimLimitTiers';
 import { refreshLivePricing } from '@/lib/pricing/refreshLivePricing';
+import { primeLiveExclusions } from '@/lib/pricing/liveVehicleExclusions';
 
 /**
  * Loads the published (live) pricing version once at app start and applies it as
