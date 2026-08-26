@@ -25,8 +25,27 @@
  *     waiting for New Leads or Quotes & Orders to paint.
  */
 
+import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
+
 const MAX_CONCURRENT = 8;
 const MAX_BACKGROUND_CONCURRENT = 2;
+
+/**
+ * Agents keep the CRM open in several tabs. Each tab has its own limiter, so
+ * N tabs meant N × the traffic to one origin — which is what leaves the active
+ * tab on a spinner. Duplicate (non-primary) tabs and hidden tabs therefore get
+ * a much smaller share: interactive work is untouched, only background pollers
+ * and counters are squeezed.
+ */
+function backgroundCap(): number {
+  if (typeof document !== 'undefined' && document.hidden) return 1;
+  if (isSecondaryCrmTab()) return 1;
+  return MAX_BACKGROUND_CONCURRENT;
+}
+
+function concurrencyCap(): number {
+  return isSecondaryCrmTab() ? 4 : MAX_CONCURRENT;
+}
 
 let active = 0;
 let activeBackground = 0;
