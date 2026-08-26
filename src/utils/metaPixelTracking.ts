@@ -1,6 +1,9 @@
 /**
- * Meta Pixel funnel event tracking
- * Fires fbq events at key steps: homepage view, Step 2 lead, Step 3 pricing, checkout
+ * Meta Pixel tracking — LEAD GENERATION ONLY.
+ *
+ * We deliberately do NOT track sales/purchase, pricing views or checkout.
+ * The only event fired is `Lead`, on Step 2 of the website (quote delivery
+ * form submission). Do not add Purchase/AddToCart/InitiateCheckout here.
  */
 
 declare global {
@@ -9,19 +12,12 @@ declare global {
   }
 }
 
-const CURRENCY = 'GBP';
-
-/** Coerce to a valid positive number, else undefined */
-const num = (v: unknown): number | undefined => {
-  const n = typeof v === 'string' ? parseFloat(v.replace(/[^0-9.-]/g, '')) : Number(v);
-  return Number.isFinite(n) && (n as number) >= 0 ? Math.round((n as number) * 100) / 100 : undefined;
-};
+/** Only the lead event is allowed */
+const ALLOWED_EVENTS = ['Lead'];
 
 /**
- * Meta rejects events where `value` is present without a valid `currency`,
- * or where value/currency are empty/undefined. This normalises both:
- * - drops null/undefined/empty params
- * - only sends `value` when it is a real number, always paired with GBP
+ * Strip empty params, and never send monetary value/currency —
+ * we are not tracking revenue in Meta.
  */
 const sanitize = (params?: Record<string, any>) => {
   const out: Record<string, any> = {};
@@ -30,21 +26,19 @@ const sanitize = (params?: Record<string, any>) => {
     if (v === undefined || v === null || v === '') continue;
     out[k] = v;
   }
-  const value = num(params?.value);
-  if (value !== undefined) {
-    out.value = value;
-    out.currency = CURRENCY;
-  }
   return out;
 };
 
 /**
- * Fire Meta Pixel event for funnel tracking
+ * Fire a Meta Pixel lead event. Any non-lead event is ignored by design.
  */
 export const trackMetaPixelFunnelEvent = (
   eventName: string,
   params?: Record<string, any>
 ) => {
+  if (!ALLOWED_EVENTS.includes(eventName)) {
+    return; // sales / pricing / checkout tracking intentionally disabled
+  }
   if (typeof window !== 'undefined' && window.fbq) {
     try {
       const clean = sanitize(params);
@@ -57,51 +51,13 @@ export const trackMetaPixelFunnelEvent = (
 };
 
 /**
- * Homepage view - fires ViewContent
- */
-export const trackFBHomepageView = () => {
-  trackMetaPixelFunnelEvent('ViewContent', {
-    content_name: 'Homepage',
-    content_category: 'Landing Page',
-  });
-};
-
-/**
- * Step 2 completion - fires Lead event
+ * Step 2 completion - fires the Lead event
  * This is when the user submits their vehicle + contact details
  */
-export const trackFBLeadCapture = (vehicleReg?: string, email?: string) => {
+export const trackFBLeadCapture = (vehicleReg?: string) => {
   trackMetaPixelFunnelEvent('Lead', {
     content_name: 'Step 2 - Vehicle Details',
     content_category: 'Lead Capture',
     vehicle_reg: vehicleReg,
-  });
-};
-
-/**
- * Step 3 pricing view - fires AddToCart
- */
-export const trackFBPricingView = (planName?: string, value?: number) => {
-  trackMetaPixelFunnelEvent('AddToCart', {
-    content_name: planName || 'Warranty Plan',
-    content_category: 'Pricing',
-    value,
-  });
-};
-
-/**
- * Step 4 checkout - fires InitiateCheckout
- */
-export const trackFBCheckout = (value?: number) => {
-  trackMetaPixelFunnelEvent('InitiateCheckout', { value });
-};
-
-/**
- * Purchase complete - fires Purchase
- */
-export const trackFBPurchase = (value: number, transactionId: string) => {
-  trackMetaPixelFunnelEvent('Purchase', {
-    value,
-    transaction_id: transactionId,
   });
 };
