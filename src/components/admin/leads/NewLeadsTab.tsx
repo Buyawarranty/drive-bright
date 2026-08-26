@@ -1464,7 +1464,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       'Vehicle': `${lead.vehicle_make || ''} ${lead.vehicle_model || ''} ${lead.vehicle_year || ''}`.trim(),
       'Plan Interest': lead.plan_interest || '',
       'Quote Amount': lead.quote_amount || '',
-      'Assigned To (email)': lead.assigned_user?.email || 'Awaiting Contact',
+      'Assigned To (email)': lead.assigned_user?.email
+        || (lead.assigned_to ? adminUsersMapForExport.get(lead.assigned_to)?.email : '')
+        || 'Awaiting Contact',
       'Last Contacted': lead.last_contacted_at || '',
       'Created At': lead.created_at,
       'Notes': lead.notes || '',
