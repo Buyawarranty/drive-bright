@@ -62,8 +62,8 @@ const agentLabel = (lead: ExportLead) =>
   lead.assigned_user?.email ||
   '';
 
-/** Manager export: every lead with its call attempts and full note history, over a chosen date range. */
-export const LeadNotesExportDialog: React.FC<Props> = ({ open, onOpenChange, leads, sourceHidden }) => {
+/** Manager export: every lead with its call attempts and full note history, over a chosen date range. Source column is never included. */
+export const LeadNotesExportDialog: React.FC<Props> = ({ open, onOpenChange, leads }) => {
   const { exportToCSV } = useDataExport();
   const [fromDate, setFromDate] = useState(() => {
     const d = new Date();
