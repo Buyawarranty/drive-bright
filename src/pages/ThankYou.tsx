@@ -603,6 +603,56 @@ const ThankYou = () => {
     return () => clearInterval(interval);
   }, [sessionId, plan, duration, source, isGtagReady]);
 
+  // Fallback: if we have a policy number but missing cover details, fetch from the DB
+  useEffect(() => {
+    const fetchPolicyDetails = async () => {
+      const warrantyNumber = policyNumber || searchParams.get('policy_number') || searchParams.get('warranty_number');
+      if (!warrantyNumber) return;
+      
+      const needsEnrichment = !enrichedDuration || !enrichedClaimLimit || !enrichedLabourRate || !enrichedExcess || !enrichedVehicle || !enrichedVehicleReg;
+      if (!needsEnrichment) return;
+      
+      try {
+        const { data: policyData, error: policyError } = await supabase
+          .from('customer_policies')
+          .select(`
+            payment_type,
+            payment_amount,
+            claim_limit,
+            voluntary_excess,
+            customer_id,
+            customers!inner(registration_plate, vehicle_make, vehicle_model, vehicle_year, mileage, labour_rate)
+          `)
+          .eq('warranty_number', warrantyNumber)
+          .maybeSingle();
+        
+        if (policyError || !policyData) {
+          console.warn('[THANK-YOU] Could not fetch policy details for thank-you enrichment', policyError);
+          return;
+        }
+        
+        const customer = policyData.customers as any;
+        if (!enrichedDuration && policyData.payment_type) setEnrichedDuration(policyData.payment_type);
+        if (!enrichedClaimLimit && policyData.claim_limit) setEnrichedClaimLimit(policyData.claim_limit);
+        if (!enrichedExcess && policyData.voluntary_excess !== undefined && policyData.voluntary_excess !== null) setEnrichedExcess(Number(policyData.voluntary_excess));
+        if (!enrichedTotalPrice && policyData.payment_amount) setEnrichedTotalPrice(Number(policyData.payment_amount));
+        if (!enrichedVehicleReg && customer?.registration_plate) setEnrichedVehicleReg(customer.registration_plate);
+        if (!enrichedVehicle && (customer?.vehicle_make || customer?.vehicle_model)) {
+          setEnrichedVehicle(`${customer.vehicle_make || ''} ${customer.vehicle_model || ''}`.trim());
+        }
+        if (!enrichedMileage && customer?.mileage) setEnrichedMileage(String(customer.mileage));
+        if (!enrichedLabourRate && customer?.labour_rate) setEnrichedLabourRate(Number(customer.labour_rate));
+      } catch (err) {
+        console.error('[THANK-YOU] Error fetching policy details', err);
+      }
+    };
+    
+    if (!isProcessing && policyNumber) {
+      fetchPolicyDetails();
+    }
+  }, [isProcessing, policyNumber, searchParams, enrichedDuration, enrichedClaimLimit, enrichedLabourRate, enrichedExcess, enrichedVehicle, enrichedVehicleReg, enrichedMileage, enrichedTotalPrice]);
+
+
   const handleGetSecondWarranty = () => {
     // Track CTA click
     trackButtonClick('second_warranty_cta', {
