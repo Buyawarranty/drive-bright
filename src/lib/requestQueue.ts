@@ -19,38 +19,73 @@
  *     look "broken". They are few in number, so they go straight out.
  *  2. High lane: interactive reads/writes explicitly marked by the UI
  *     (see `withPriority`). Served before any background work.
- *  3. Normal lane: everything else — background panel reads, counters, stats.
+ *  3. Normal lane: active screen reads.
+ *  4. Background lane: pollers, counters, badge/alert refreshes. These are
+ *     capped separately so they can never occupy every socket while an agent is
+ *     waiting for New Leads or Quotes & Orders to paint.
  */
 
 const MAX_CONCURRENT = 8;
+const MAX_BACKGROUND_CONCURRENT = 2;
 
 let active = 0;
-const highQueue: Array<() => void> = [];
-const normalQueue: Array<() => void> = [];
+let activeBackground = 0;
+
+type RequestLane = 'high' | 'normal' | 'background';
+type QueuedRequest = { lane: RequestLane; resolve: () => void };
+
+const highQueue: QueuedRequest[] = [];
+const normalQueue: QueuedRequest[] = [];
+const backgroundQueue: QueuedRequest[] = [];
 
 /** Set while an interactive user action is running (see withPriority). */
 let priorityDepth = 0;
+/** Set while non-blocking CRM work is running (pollers, counters, badges). */
+let backgroundDepth = 0;
+
+function canStart(lane: RequestLane) {
+  if (active >= MAX_CONCURRENT) return false;
+  if (lane === 'high') return true;
+  if (lane === 'normal') return highQueue.length === 0;
+  return highQueue.length === 0 && normalQueue.length === 0 && activeBackground < MAX_BACKGROUND_CONCURRENT;
+}
+
+function startRequest(lane: RequestLane, resolve: () => void) {
+  active += 1;
+  if (lane === 'background') activeBackground += 1;
+  resolve();
+}
 
 function pump() {
-  while (active < MAX_CONCURRENT && (highQueue.length > 0 || normalQueue.length > 0)) {
-    const next = (highQueue.length > 0 ? highQueue.shift() : normalQueue.shift())!;
-    active += 1;
-    next();
+  while (active < MAX_CONCURRENT) {
+    const next = highQueue[0] || normalQueue[0] || backgroundQueue[0];
+    if (!next || !canStart(next.lane)) return;
+
+    if (next.lane === 'high') highQueue.shift();
+    else if (next.lane === 'normal') normalQueue.shift();
+    else backgroundQueue.shift();
+
+    startRequest(next.lane, next.resolve);
   }
 }
 
-function acquire(high: boolean): Promise<void> {
-  if (active < MAX_CONCURRENT) {
-    active += 1;
+function acquire(lane: RequestLane): Promise<void> {
+  if (canStart(lane)) {
+    startRequest(lane, () => undefined);
     return Promise.resolve();
   }
+
   return new Promise<void>((resolve) => {
-    (high ? highQueue : normalQueue).push(resolve);
+    const queued = { lane, resolve };
+    if (lane === 'high') highQueue.push(queued);
+    else if (lane === 'normal') normalQueue.push(queued);
+    else backgroundQueue.push(queued);
   });
 }
 
-function release() {
+function release(lane: RequestLane) {
   active = Math.max(0, active - 1);
+  if (lane === 'background') activeBackground = Math.max(0, activeBackground - 1);
   pump();
 }
 
@@ -79,12 +114,19 @@ export const queuedFetch: typeof fetch = async (input, init) => {
 
   if (shouldBypass(url)) return fetch(input as any, init);
 
-  const high = priorityDepth > 0;
-  await acquire(high);
+  const method = init?.method || (input instanceof Request ? input.method : 'GET');
+  const isWrite = !['GET', 'HEAD'].includes(method.toUpperCase());
+  const lane: RequestLane = priorityDepth > 0 || isWrite
+    ? 'high'
+    : backgroundDepth > 0
+      ? 'background'
+      : 'normal';
+
+  await acquire(lane);
   try {
     return await fetch(input as any, init);
   } finally {
-    release();
+    release(lane);
   }
 };
 
@@ -104,10 +146,23 @@ export async function withPriority<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
+/** Run non-blocking background CRM work without letting it starve the active page. */
+export async function withBackgroundPriority<T>(fn: () => Promise<T>): Promise<T> {
+  backgroundDepth += 1;
+  try {
+    return await fn();
+  } finally {
+    backgroundDepth = Math.max(0, backgroundDepth - 1);
+    pump();
+  }
+}
+
 /** For debugging / perf panels. */
 export const getRequestQueueStats = () => ({
   active,
+  activeBackground,
   queued: highQueue.length + normalQueue.length,
+  queuedBackground: backgroundQueue.length,
   queuedHigh: highQueue.length,
   queuedNormal: normalQueue.length,
 });
