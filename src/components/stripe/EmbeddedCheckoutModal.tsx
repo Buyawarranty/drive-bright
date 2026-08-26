@@ -21,7 +21,13 @@ interface OrderSummary {
   amount: number;
   originalAmount?: number;
   savings?: number;
+  claimLimit?: number;
+  labourRate?: number;
+  excess?: number;
+  monthlyPrice?: number;
+  isMonthly?: boolean;
 }
+
 
 interface EmbeddedCheckoutModalProps {
   isOpen: boolean;
@@ -89,10 +95,26 @@ export const EmbeddedCheckoutModal: React.FC<EmbeddedCheckoutModalProps> = ({
       onPaymentSuccess();
     }
     
-    // Redirect to thank you page after animation
+    // Redirect to thank you page after animation - enriched with cover details
     setTimeout(() => {
-      navigate('/thank-you?source=stripe');
+      const thankYouParams = new URLSearchParams({ source: 'stripe' });
+      thankYouParams.set('plan', orderSummary.planName || 'Platinum');
+      thankYouParams.set('payment', orderSummary.duration || '');
+      thankYouParams.set('duration', orderSummary.duration || '');
+      thankYouParams.set('vehicle_reg', orderSummary.vehicleReg || '');
+      thankYouParams.set('vehicle', `${orderSummary.vehicleMake || ''} ${orderSummary.vehicleModel || ''}`.trim());
+      thankYouParams.set('claim_limit', String(orderSummary.claimLimit || ''));
+      thankYouParams.set('labour_rate', String(orderSummary.labourRate || ''));
+      thankYouParams.set('excess', String(orderSummary.excess ?? ''));
+      thankYouParams.set('final_amount', String(orderSummary.amount || 0));
+      thankYouParams.set('total_price', String(orderSummary.amount || 0));
+      thankYouParams.set('original_price', String(orderSummary.originalAmount || orderSummary.amount || 0));
+      if (orderSummary.isMonthly && orderSummary.monthlyPrice) {
+        thankYouParams.set('monthly_price', String(orderSummary.monthlyPrice));
+      }
+      navigate(`/thank-you?${thankYouParams.toString()}`);
     }, 2000);
+
   };
 
   const handlePaymentError = (error: string) => {

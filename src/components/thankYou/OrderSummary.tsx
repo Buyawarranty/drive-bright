@@ -201,6 +201,10 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
               <p className="text-xs text-muted-foreground uppercase tracking-wide">Plan</p>
               <p className="font-semibold text-foreground">{isUUID(plan) ? 'Platinum' : (plan || 'Platinum')}</p>
             </div>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Cover Duration</p>
+              <p className="font-semibold text-foreground">{getDurationDisplay()}</p>
+            </div>
             {vehicle && (
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wide">Vehicle</p>
@@ -213,24 +217,18 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
                 <p className="font-semibold text-foreground">{mileage} miles</p>
               </div>
             )}
-            {claimLimit && (
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Claim Limit</p>
-                <p className="font-semibold text-foreground">£{claimLimit.toLocaleString()}</p>
-              </div>
-            )}
-            {labourRate && (
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Labour Rate</p>
-                <p className="font-semibold text-foreground">£{labourRate}/hour</p>
-              </div>
-            )}
-            {excess !== undefined && (
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Excess</p>
-                <p className="font-semibold text-foreground">£{excess}</p>
-              </div>
-            )}
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Claim Limit</p>
+              <p className="font-semibold text-foreground">{claimLimit ? `£${claimLimit.toLocaleString()}` : '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Labour Rate</p>
+              <p className="font-semibold text-foreground">{labourRate ? `£${labourRate}/hour` : '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Excess</p>
+              <p className="font-semibold text-foreground">{excess !== undefined && excess !== null ? `£${excess}` : '—'}</p>
+            </div>
             {vehicleReg && (
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wide">Registration</p>
@@ -238,6 +236,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
               </div>
             )}
           </div>
+
 
           {/* Payment Section */}
           {totalPrice && (

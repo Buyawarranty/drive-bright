@@ -74,6 +74,18 @@ const ThankYou = () => {
   const [timeRemaining, setTimeRemaining] = useState<string>('');
   const [isGtagReady, setIsGtagReady] = useState(false);
   
+  // Enriched order details from process-stripe-success or DB fallback
+  const [enrichedDuration, setEnrichedDuration] = useState<string | undefined>(duration || undefined);
+  const [enrichedClaimLimit, setEnrichedClaimLimit] = useState<number | undefined>(claimLimit ? parseInt(claimLimit) : undefined);
+  const [enrichedLabourRate, setEnrichedLabourRate] = useState<number | undefined>(labourRate ? parseInt(labourRate) : undefined);
+  const [enrichedExcess, setEnrichedExcess] = useState<number | undefined>(excess ? parseInt(excess) : undefined);
+  const [enrichedVehicle, setEnrichedVehicle] = useState<string | undefined>(vehicle || undefined);
+  const [enrichedVehicleReg, setEnrichedVehicleReg] = useState<string | undefined>(vehicleReg || undefined);
+  const [enrichedMileage, setEnrichedMileage] = useState<string | undefined>(mileage || undefined);
+  const [enrichedTotalPrice, setEnrichedTotalPrice] = useState<number | undefined>(finalAmount ? parseFloat(finalAmount) : undefined);
+  const [enrichedMonthlyPrice, setEnrichedMonthlyPrice] = useState<number | undefined>(monthlyPrice ? parseFloat(monthlyPrice) : undefined);
+
+  
   // CRITICAL: Handle failed/cancelled redirect payments IMMEDIATELY
   // This prevents showing the thank-you page for incomplete payments
   useEffect(() => {
@@ -460,6 +472,20 @@ const ThankYou = () => {
           }
           toast.success('Your warranty policy has been created successfully!');
           
+          // Enrich order summary from Stripe session metadata when URL params are missing
+          const coverData = data?.data || data;
+          if (coverData) {
+            if (!enrichedDuration && coverData.duration) setEnrichedDuration(coverData.duration);
+            if (!enrichedClaimLimit && coverData.claimLimit) setEnrichedClaimLimit(coverData.claimLimit);
+            if (!enrichedLabourRate && coverData.labourRate) setEnrichedLabourRate(coverData.labourRate);
+            if (!enrichedExcess && coverData.voluntaryExcess !== undefined) setEnrichedExcess(coverData.voluntaryExcess);
+            if (!enrichedVehicle && coverData.vehicle) setEnrichedVehicle(coverData.vehicle);
+            if (!enrichedVehicleReg && coverData.vehicleReg) setEnrichedVehicleReg(coverData.vehicleReg);
+            if (!enrichedMileage && coverData.mileage) setEnrichedMileage(coverData.mileage);
+            if (!enrichedTotalPrice && coverData.amount) setEnrichedTotalPrice(coverData.amount);
+            if (!enrichedMonthlyPrice && coverData.monthlyPrice) setEnrichedMonthlyPrice(coverData.monthlyPrice);
+          }
+          
           // Get data from response or URL params
           const conversionEmail = urlEmail || data?.customerEmail;
           const conversionPhone = urlMobile || data?.customerPhone;
@@ -493,6 +519,7 @@ const ThankYou = () => {
               productName: `${plan} Warranty - ${duration}`,
             });
           }
+
           
           // Check if user enabled "Add Another Warranty" during checkout
           const addAnotherWarranty = searchParams.get('addAnotherWarranty');
@@ -576,6 +603,56 @@ const ThankYou = () => {
     return () => clearInterval(interval);
   }, [sessionId, plan, duration, source, isGtagReady]);
 
+  // Fallback: if we have a policy number but missing cover details, fetch from the DB
+  useEffect(() => {
+    const fetchPolicyDetails = async () => {
+      const warrantyNumber = policyNumber || searchParams.get('policy_number') || searchParams.get('warranty_number');
+      if (!warrantyNumber) return;
+      
+      const needsEnrichment = !enrichedDuration || !enrichedClaimLimit || !enrichedLabourRate || !enrichedExcess || !enrichedVehicle || !enrichedVehicleReg;
+      if (!needsEnrichment) return;
+      
+      try {
+        const { data: policyData, error: policyError } = await supabase
+          .from('customer_policies')
+          .select(`
+            payment_type,
+            payment_amount,
+            claim_limit,
+            voluntary_excess,
+            customer_id,
+            customers!inner(registration_plate, vehicle_make, vehicle_model, vehicle_year, mileage, labour_rate)
+          `)
+          .eq('warranty_number', warrantyNumber)
+          .maybeSingle();
+        
+        if (policyError || !policyData) {
+          console.warn('[THANK-YOU] Could not fetch policy details for thank-you enrichment', policyError);
+          return;
+        }
+        
+        const customer = policyData.customers as any;
+        if (!enrichedDuration && policyData.payment_type) setEnrichedDuration(policyData.payment_type);
+        if (!enrichedClaimLimit && policyData.claim_limit) setEnrichedClaimLimit(policyData.claim_limit);
+        if (!enrichedExcess && policyData.voluntary_excess !== undefined && policyData.voluntary_excess !== null) setEnrichedExcess(Number(policyData.voluntary_excess));
+        if (!enrichedTotalPrice && policyData.payment_amount) setEnrichedTotalPrice(Number(policyData.payment_amount));
+        if (!enrichedVehicleReg && customer?.registration_plate) setEnrichedVehicleReg(customer.registration_plate);
+        if (!enrichedVehicle && (customer?.vehicle_make || customer?.vehicle_model)) {
+          setEnrichedVehicle(`${customer.vehicle_make || ''} ${customer.vehicle_model || ''}`.trim());
+        }
+        if (!enrichedMileage && customer?.mileage) setEnrichedMileage(String(customer.mileage));
+        if (!enrichedLabourRate && customer?.labour_rate) setEnrichedLabourRate(Number(customer.labour_rate));
+      } catch (err) {
+        console.error('[THANK-YOU] Error fetching policy details', err);
+      }
+    };
+    
+    if (!isProcessing && policyNumber) {
+      fetchPolicyDetails();
+    }
+  }, [isProcessing, policyNumber, searchParams, enrichedDuration, enrichedClaimLimit, enrichedLabourRate, enrichedExcess, enrichedVehicle, enrichedVehicleReg, enrichedMileage, enrichedTotalPrice]);
+
+
   const handleGetSecondWarranty = () => {
     // Track CTA click
     trackButtonClick('second_warranty_cta', {
@@ -658,23 +735,24 @@ const ThankYou = () => {
                 {/* Order Summary */}
                 <OrderSummary 
                   plan={plan}
-                  paymentType={duration || undefined}
+                  paymentType={enrichedDuration || duration || undefined}
                   warrantyStartDate={undefined}
-                  duration={duration || undefined}
+                  duration={enrichedDuration || duration || undefined}
                   warrantyNumber={policyNumber || searchParams.get('warranty_number') || searchParams.get('policy_number') || undefined}
-                  monthlyPrice={monthlyPrice ? parseFloat(monthlyPrice) : undefined}
-                  totalPrice={finalAmount ? parseFloat(finalAmount) : undefined}
+                  monthlyPrice={enrichedMonthlyPrice || (monthlyPrice ? parseFloat(monthlyPrice) : undefined)}
+                  totalPrice={enrichedTotalPrice || (finalAmount ? parseFloat(finalAmount) : undefined)}
                   originalPrice={searchParams.get('original_price') ? parseFloat(searchParams.get('original_price')!) : undefined}
-                  vehicle={vehicle || undefined}
-                  vehicleReg={vehicleReg || undefined}
-                  mileage={mileage || undefined}
-                  claimLimit={claimLimit ? parseInt(claimLimit) : undefined}
-                  labourRate={labourRate ? parseInt(labourRate) : undefined}
-                  excess={excess ? parseInt(excess) : undefined}
+                  vehicle={enrichedVehicle || vehicle || undefined}
+                  vehicleReg={enrichedVehicleReg || vehicleReg || undefined}
+                  mileage={enrichedMileage || mileage || undefined}
+                  claimLimit={enrichedClaimLimit || (claimLimit ? parseInt(claimLimit) : undefined)}
+                  labourRate={enrichedLabourRate || (labourRate ? parseInt(labourRate) : undefined)}
+                  excess={enrichedExcess !== undefined ? enrichedExcess : (excess ? parseInt(excess) : undefined)}
                   addons={addons || undefined}
                   paidInFull={source === 'stripe'}
                   source={source || undefined}
                 />
+
 
                 {/* What Happens Next */}
                 <WhatHappensNext />
