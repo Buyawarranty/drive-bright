@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { setVehiclePricingRules } from '@/lib/pricing/vehicleRules';
 import { setLiveClaim5kBlocklist, type Claim5kBlockRule } from '@/lib/claimLimitTiers';
 import { refreshLivePricing } from '@/lib/pricing/refreshLivePricing';
+import { primeLiveExclusions } from '@/lib/pricing/liveVehicleExclusions';
 
 /**
  * Loads the published (live) pricing version once at app start and applies it as
@@ -18,8 +19,14 @@ export default function PricingOverrideLoader() {
     let cancelled = false;
     void refreshLivePricing();
 
+    void primeLiveExclusions().catch(() => undefined);
+
     const onFocus = () => {
-      if (!cancelled) void refreshLivePricing();
+      if (cancelled) return;
+      void refreshLivePricing();
+      // Excluded vehicles are independent of pricing versions — re-read them too
+      // so an exclusion added elsewhere applies in this already-open tab.
+      void primeLiveExclusions().catch(() => undefined);
     };
     window.addEventListener('focus', onFocus);
 
