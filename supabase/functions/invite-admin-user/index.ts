@@ -68,6 +68,18 @@ serve(async (req: Request) => {
     // Try to create user in auth.users
     let userId: string;
     let isExistingUser = false;
+    const { data: existingAdmin } = await supabase
+      .from('admin_users')
+      .select('id, is_active, archived_at')
+      .ilike('email', email)
+      .maybeSingle();
+
+    if (existingAdmin?.archived_at) {
+      return new Response(JSON.stringify({ error: 'This staff account is archived. Reactivate it first instead of inviting it again.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
     
     const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
       email,
@@ -164,7 +176,7 @@ serve(async (req: Request) => {
         role,
         permissions,
         invited_by: user.id,
-        is_active: true
+        is_active: existingAdmin?.is_active === false ? false : true
       }, { onConflict: 'user_id' });
 
     if (adminUserError) {

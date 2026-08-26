@@ -158,6 +158,30 @@ const Auth = () => {
           const isStaff = !error && userRoles.some(r => staffRoles.includes(r));
 
           if (hasDebugAccess || isStaff) {
+            const { data: adminRow } = await supabase
+              .from('admin_users')
+              .select('is_active, access_expires_at')
+              .eq('user_id', session.user.id)
+              .maybeSingle();
+
+            const expired = !!(adminRow as any)?.access_expires_at
+              && new Date((adminRow as any).access_expires_at).getTime() < Date.now();
+
+            if (adminRow && ((adminRow as any).is_active === false || expired)) {
+              if (expired) {
+                await supabase.from('admin_users').update({ is_active: false }).eq('user_id', session.user.id);
+              }
+              await supabase.auth.signOut();
+              toast({
+                title: 'Access blocked',
+                description: expired
+                  ? 'This temporary login has expired. Ask a manager to extend it.'
+                  : 'This login has been deactivated. Please contact a manager.',
+                variant: 'destructive',
+              });
+              return;
+            }
+
             console.log("Auth page: staff user detected, redirecting to admin dashboard");
             navigate('/admin-dashboard', { replace: true });
           } else {

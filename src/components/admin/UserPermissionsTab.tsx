@@ -36,6 +36,7 @@ interface AdminUser {
   invited_at: string;
   last_login: string | null;
   sip_extension?: string | null;
+  archived_at?: string | null;
 }
 
 interface Permission {
@@ -913,6 +914,11 @@ export const UserPermissionsTab = () => {
   const toggleUserStatus = async (userId: string, isActive: boolean) => {
     const targetUser = users.find(u => u.id === userId);
     const displayName = targetUser ? `${targetUser.first_name || ''} ${targetUser.last_name || ''}`.trim() || targetUser.email : 'this user';
+
+    if (!isActive && targetUser?.archived_at) {
+      toast.error('This user is archived. Use the reactivation flow first so team access and permissions are restored deliberately.');
+      return;
+    }
 
     if (isActive) {
       // Deactivating — temporary block
