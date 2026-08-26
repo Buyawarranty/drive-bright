@@ -77,19 +77,62 @@ const withTimeout = async (
   }
 };
 
-/** Ask the auth server for a new token, bounded so it can never hang either. */
-const refreshStaffToken = async (): Promise<string | null> => {
+/**
+ * Ask the auth server for a new token, bounded so it can never hang either.
+ *
+ * Multi-tab safety: every stalled read used to call refreshSession() directly,
+ * so a laptop waking up with 4 CRM tabs open could fire dozens of refreshes at
+ * once. Refresh tokens rotate, so the losers of that race got "Invalid Refresh
+ * Token" and the agent was silently signed out mid-shift (blank screen).
+ * Now: one in-flight refresh per tab, a short cooldown, and a cross-tab Web
+ * Lock so only one tab in the browser refreshes at a time — the others simply
+ * read the session the winner wrote.
+ */
+const REFRESH_COOLDOWN_MS = 15_000;
+let refreshInFlight: Promise<string | null> | null = null;
+let lastRefreshAt = 0;
+
+const doRefresh = async (): Promise<string | null> => {
   try {
     const { supabase } = await import('@/integrations/supabase/client');
-    const bounded = await Promise.race([
-      supabase.auth.refreshSession(),
+
+    const run = async () => {
+      // Another tab may already have rotated the token while we waited for the
+      // lock — in that case just use what's in storage, don't rotate again.
+      const { data } = await supabase.auth.getSession();
+      const expiresAt = (data?.session?.expires_at ?? 0) * 1000;
+      if (data?.session?.access_token && expiresAt - Date.now() > 60_000) {
+        return data.session.access_token;
+      }
+      const result = await supabase.auth.refreshSession();
+      return result?.data?.session?.access_token ?? null;
+    };
+
+    const locks = (navigator as any)?.locks;
+    const guarded = locks?.request
+      ? locks.request('baw-staff-token-refresh', run)
+      : run();
+
+    const token = await Promise.race([
+      guarded,
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
     ]);
-    const session = (bounded as any)?.data?.session;
-    return session?.access_token ?? null;
+    return (token as string | null) ?? null;
   } catch {
     return null;
   }
+};
+
+const refreshStaffToken = async (): Promise<string | null> => {
+  if (refreshInFlight) return refreshInFlight;
+  if (Date.now() - lastRefreshAt < REFRESH_COOLDOWN_MS) return null;
+
+  refreshInFlight = doRefresh().finally(() => {
+    lastRefreshAt = Date.now();
+    refreshInFlight = null;
+  }) as Promise<string | null>;
+
+  return refreshInFlight;
 };
 
 /**
