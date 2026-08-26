@@ -219,11 +219,24 @@ export const installAdminStallGuard = (): (() => void) => {
     })();
 
     dedupe.set(key, task);
-    return task.then((r) => r.clone());
+    return task.then((r) => {
+      // A response whose body an extension already consumed can't be cloned.
+      try {
+        return r.clone();
+      } catch {
+        return r;
+      }
+    });
   };
 
 
-  window.fetch = guarded;
+  try {
+    window.fetch = guarded;
+  } catch {
+    // A locked-down/extension-frozen global: run unguarded rather than crash.
+    installed = false;
+    return () => {};
+  }
 
   // Coming back from sleep / a dropped connection: get a valid token in place
   // before the screens start reading, so the first read doesn't have to fail.
