@@ -4,6 +4,8 @@ import { Loader2, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { buildSaleCreditResolver, fetchSalesCreditAgentIds } from '@/lib/saleCredit';
 import { withBackgroundPriority } from '@/lib/requestQueue';
+import { UnattributedSalesAssigner } from './UnattributedSalesAssigner';
+
 
 /**
  * Manager view of the same figures each agent sees on their own "My progress"
