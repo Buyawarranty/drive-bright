@@ -256,7 +256,13 @@ export const installAdminStallGuard = (): (() => void) => {
   window.addEventListener('online', onWake);
 
   return () => {
-    window.fetch = originalFetch;
+    // Only un-patch if we're still the outermost patch — otherwise we'd wipe
+    // an extension's own wrapper installed after ours.
+    try {
+      if (window.fetch === guarded) window.fetch = originalFetch;
+    } catch {
+      /* ignore */
+    }
     document.removeEventListener('visibilitychange', onWake);
     window.removeEventListener('online', onWake);
     installed = false;
