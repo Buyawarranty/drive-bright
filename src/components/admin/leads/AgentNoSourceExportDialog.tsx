@@ -113,7 +113,7 @@ export const AgentNoSourceExportDialog: React.FC<Props> = ({ open, onOpenChange,
         hasUnassigned = true;
         return;
       }
-      const label = agentLabel(lead) || 'Unknown agent';
+      const label = agentLabel(lead, adminUsersMap) || 'Unknown agent';
       if (!map.has(lead.assigned_to)) map.set(lead.assigned_to, label);
     });
     const list = Array.from(map.entries())
@@ -121,7 +121,7 @@ export const AgentNoSourceExportDialog: React.FC<Props> = ({ open, onOpenChange,
       .sort((a, b) => a.label.localeCompare(b.label));
     if (hasUnassigned) list.push({ value: UNASSIGNED, label: 'Awaiting Contact (unassigned)' });
     return list;
-  }, [leads]);
+  }, [leads, adminUsersMap]);
 
   const inRange = useMemo(() => {
     const start = new Date(`${fromDate}T00:00:00`);
@@ -150,7 +150,7 @@ export const AgentNoSourceExportDialog: React.FC<Props> = ({ open, onOpenChange,
     }
 
     const rows = inRange.map(lead => {
-      const assigned = agentLabel(lead) || 'Awaiting Contact';
+      const assigned = agentLabel(lead, adminUsersMap) || 'Awaiting Contact';
       const status = statusLabels[lead.status || ''] || lead.status || '';
       const calls = lead.call_count ?? 0;
       const name = displayName(lead);
