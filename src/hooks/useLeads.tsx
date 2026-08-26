@@ -817,7 +817,30 @@ export const useLeads = (options?: UseLeadsOptions) => {
         if (allSalesLeadsResult?.error) throw allSalesLeadsResult.error;
       }
 
-      const { data: allSalesLeadsData } = allSalesLeadsResult;
+      let { data: allSalesLeadsData } = allSalesLeadsResult;
+
+      // BLANK-SCREEN GUARD: a global/date-bounded wide fetch can legitimately
+      // come back empty (heavy query trimmed by PostgREST, stale date window,
+      // RLS scope). Sales / sales_lead users with the `all-leads` permission
+      // used to be left staring at an empty New Leads table even though they
+      // had leads assigned to them. If the wide fetch yielded nothing, top it
+      // up with the agent's own recent leads.
+      if ((!allSalesLeadsData || allSalesLeadsData.length === 0) && currentAdmin?.id) {
+        try {
+          const ownLeads = await withTimeout(
+            fetchAgentFallbackLeads(),
+            LEADS_FETCH_TIMEOUT_MS,
+            'Own leads fetch timed out'
+          );
+          if (!ownLeads?.error && ownLeads?.data?.length) {
+            console.warn('[Leads] Wide fetch returned 0 rows — showing own assigned leads instead');
+            allSalesLeadsData = ownLeads.data;
+          }
+        } catch (ownErr) {
+          console.warn('[Leads] Own-leads top-up failed:', ownErr);
+        }
+      }
+
 
       const explicitLeadIds = serverLeadIdsRef.current || [];
       const explicitLeadsResult = explicitLeadIds.length > 0
