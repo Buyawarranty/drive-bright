@@ -326,3 +326,6 @@ verify_jwt = false
 
 [functions.appeal-inspection-option]
 verify_jwt = false
+
+[functions.provision-temp-login]
+verify_jwt = true
