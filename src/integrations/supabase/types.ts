@@ -13713,6 +13713,19 @@ export type Database = {
           still_on_new_count: number
         }[]
       }
+      list_scoreboard_unattributed_sales: {
+        Args: { p_end: string; p_start: string }
+        Returns: {
+          amount: number
+          bucket: string
+          current_admin_user_id: string
+          current_label: string
+          customer_id: string
+          customer_name: string
+          registration_plate: string
+          signup_date: string
+        }[]
+      }
       log_agent_interaction: {
         Args: { p_event_type?: string }
         Returns: undefined
@@ -14156,6 +14169,10 @@ export type Database = {
       }
       set_agent_lead_allocation: {
         Args: { _admin_user_id: string; _enabled: boolean }
+        Returns: undefined
+      }
+      set_sale_credit_agent: {
+        Args: { p_admin_user_id: string; p_customer_id: string }
         Returns: undefined
       }
       set_user_offline: { Args: never; Returns: undefined }
