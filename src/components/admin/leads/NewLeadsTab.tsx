@@ -131,6 +131,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 }) => {
   const { canExportTab, hasGranularPermission } = usePermissions();
   const { exportToCSV, exportToExcel } = useDataExport();
+  // Resolves agent names for exports (assigned_user is only populated optimistically).
+  const adminUsersMapForExport = useAllAdminUsersMap();
   
   // Role-based restrictions
   const isAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_lead' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager';
