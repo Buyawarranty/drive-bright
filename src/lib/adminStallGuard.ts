@@ -185,10 +185,21 @@ export const installAdminStallGuard = (): (() => void) => {
   };
 
   const guarded: typeof fetch = async (input, init) => {
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request).url;
-    const method = init?.method || (input instanceof Request ? input.method : 'GET');
+    // Extension-safety: ad blockers, password managers and dialler extensions
+    // patch fetch/Request/Headers. If anything in our own bookkeeping throws
+    // because of a mangled global, fall straight through to the real fetch
+    // instead of taking the page down with us.
+    let url: string;
+    let method: string;
+    try {
+      url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request).url;
+      method = init?.method || (input instanceof Request ? input.method : 'GET');
+    } catch {
+      return originalFetch(input as any, init);
+    }
 
     if (!isGuardedRead(url || '', method)) return originalFetch(input as any, init);
+
 
     // Identical reads fired in the same instant (one screen, many rows/widgets
     // asking for the same thing) share one network request instead of opening
