@@ -103,6 +103,7 @@ export const AgentNoSourceExportDialog: React.FC<Props> = ({ open, onOpenChange,
   });
   const [toDate, setToDate] = useState(() => isoDay(new Date()));
   const [agent, setAgent] = useState<string>('all');
+  const adminUsersMap = useAllAdminUsersMap(useMemo(() => leads.map(l => l.assigned_to), [leads]));
 
   const agents = useMemo(() => {
     const map = new Map<string, string>();
