@@ -94,6 +94,7 @@ const useDashboardStats = () => {
 
     const fetchStats = async () => {
       try {
+        await withBackgroundPriority(async () => {
         const now = new Date();
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
@@ -146,6 +147,7 @@ const useDashboardStats = () => {
             };
           })
         );
+        });
       } catch (err) {
         console.error('[SalesLeadDashboard] stats load failed', err);
       }
