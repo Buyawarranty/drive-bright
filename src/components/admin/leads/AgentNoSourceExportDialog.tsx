@@ -39,10 +39,16 @@ const isoDay = (d: Date) => d.toISOString().slice(0, 10);
 
 const UNASSIGNED = '__unassigned__';
 
-const agentLabel = (lead: Lead) =>
-  [lead.assigned_user?.first_name, lead.assigned_user?.last_name].filter(Boolean).join(' ') ||
-  lead.assigned_user?.email ||
-  '';
+/** Agent name from the lead row, falling back to the admin_users map (rows rarely embed assigned_user). */
+const agentLabel = (lead: Lead, map?: Map<string, AdminUserLite>) => {
+  const fromRow =
+    [lead.assigned_user?.first_name, lead.assigned_user?.last_name].filter(Boolean).join(' ') ||
+    lead.assigned_user?.email ||
+    '';
+  if (fromRow) return fromRow;
+  const u = lead.assigned_to ? map?.get(lead.assigned_to) : undefined;
+  return [u?.first_name, u?.last_name].filter(Boolean).join(' ') || u?.email || '';
+};
 
 const statusLabels: Record<string, string> = {
   new: 'Not spoken to',
