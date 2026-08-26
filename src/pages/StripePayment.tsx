@@ -55,12 +55,30 @@ const StripePayment: React.FC = () => {
     // If user is returning from a redirect-based payment
     if (redirectStatus) {
       if (redirectStatus === 'succeeded') {
-        // Payment successful! Redirect to thank-you
+        // Payment successful! Redirect to thank-you - enriched with cover details
         console.log('✅ Redirect payment succeeded, navigating to thank-you');
         localStorage.removeItem('stripe_payment_data');
-        navigate('/thank-you?source=stripe', { replace: true });
+        const thankYouParams = new URLSearchParams({ source: 'stripe', redirect_status: 'succeeded' });
+        if (paymentData) {
+          thankYouParams.set('plan', paymentData.planName || 'Platinum');
+          thankYouParams.set('payment', paymentData.duration || '');
+          thankYouParams.set('duration', paymentData.duration || '');
+          thankYouParams.set('vehicle_reg', paymentData.vehicleReg || '');
+          thankYouParams.set('vehicle', `${paymentData.vehicleMake || ''} ${paymentData.vehicleModel || ''}`.trim());
+          thankYouParams.set('claim_limit', String(paymentData.claimLimit || ''));
+          thankYouParams.set('labour_rate', String(paymentData.labourRate || ''));
+          thankYouParams.set('excess', String(paymentData.excess ?? ''));
+          thankYouParams.set('final_amount', String(paymentData.amount || 0));
+          thankYouParams.set('total_price', String(paymentData.amount || 0));
+          thankYouParams.set('original_price', String(paymentData.originalAmount || paymentData.amount || 0));
+          if (paymentData.isMonthly && paymentData.monthlyPrice) {
+            thankYouParams.set('monthly_price', String(paymentData.monthlyPrice));
+          }
+        }
+        navigate(`/thank-you?${thankYouParams.toString()}`, { replace: true });
         return;
       } else if (redirectStatus === 'failed') {
+
         // Payment failed
         console.log('❌ Redirect payment failed');
         toast.error('Payment failed. Please try again or use a different payment method.');
