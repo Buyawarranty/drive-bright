@@ -39,6 +39,7 @@ const peers = new Map<string, TabRecord>();
 const listeners = new Set<(state: CrmTabState) => void>();
 
 let channel: BroadcastChannel | null = null;
+let heartbeatTimer: number | null = null;
 let started = false;
 let state: CrmTabState = { tabCount: 1, isPrimary: true };
 
@@ -114,8 +115,13 @@ export function startCrmTabCoordinator() {
   if (started || typeof window === 'undefined') return;
   started = true;
 
-  if ('BroadcastChannel' in window) {
-    channel = new BroadcastChannel(CHANNEL_NAME);
+  try {
+    if ('BroadcastChannel' in window) channel = new BroadcastChannel(CHANNEL_NAME);
+  } catch {
+    channel = null; // blocked by privacy settings / an extension — storage fallback covers us
+  }
+
+  if (channel) {
     channel.onmessage = (event) => {
       const msg = event.data as { type: string; id: string; bornAt: number };
       if (!msg?.id || msg.id === TAB_ID) return;
@@ -139,13 +145,31 @@ export function startCrmTabCoordinator() {
   announce('hello');
   recompute();
 
-  window.setInterval(() => {
+  // Heartbeats stop when the tab goes away, so a backgrounded/unloading tab
+  // can never keep writing to shared localStorage (that write storm is what
+  // made 4 open tabs contend on storage and stall each other).
+  heartbeatTimer = window.setInterval(() => {
     announce('beat');
     recompute();
   }, HEARTBEAT_MS);
 
-  window.addEventListener('pagehide', () => announce('bye'));
-  window.addEventListener('beforeunload', () => announce('bye'));
+  const teardown = () => {
+    if (heartbeatTimer !== null) {
+      window.clearInterval(heartbeatTimer);
+      heartbeatTimer = null;
+    }
+    try {
+      channel?.close();
+    } catch {
+      /* already closed */
+    }
+    channel = null;
+    announce('bye');
+    started = false;
+  };
+
+  window.addEventListener('pagehide', teardown);
+  window.addEventListener('beforeunload', teardown);
 }
 
 export function getCrmTabState(): CrmTabState {
