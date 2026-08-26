@@ -159,7 +159,11 @@ export const UnattributedSalesAssigner: React.FC<Props> = ({ bucket, start, end,
         className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] font-medium hover:bg-muted"
       >
         {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-        {open ? 'Hide these sales' : 'Show these sales and assign an agent'}
+        {open
+          ? 'Hide these sales'
+          : bucket === 'direct_website'
+            ? 'Show direct website sales'
+            : 'Show these sales and assign an agent'}
       </button>
 
       {open && (
