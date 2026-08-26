@@ -26,6 +26,11 @@ const randomPassword = () => {
   return `${out}!7`;
 };
 
+const tempLoginUrlForRole = (role: string) =>
+  ['admin', 'super_admin', 'dev_tester'].includes(role)
+    ? 'https://buyawarranty.co.uk/auth'
+    : 'https://buyawarranty.co.uk/sales-login';
+
 interface Props {
   /** All dashboard section ids (blocked ones are filtered server-side). */
   allTabIds: string[];
@@ -84,7 +89,8 @@ export const TempDevLoginPanel: React.FC<Props> = ({ allTabIds }) => {
   };
 
   const copyBlock = async () => {
-    const block = `Temporary dashboard login\nURL: https://buyawarranty.co.uk/sales-login\nUsername: ${email.trim().toLowerCase()}\nPassword: ${password.trim()}\nExpires in: ${days} day(s)`;
+    const loginUrl = tempLoginUrlForRole(role);
+    const block = `Temporary dashboard login\n\nStep 1 — Gateway / firewall\nURL: ${loginUrl}\nPassword: SmashSales2026!!\n\nStep 2 — Supabase Auth login\nUsername: ${email.trim().toLowerCase()}\nPassword: ${password.trim()}\n\nExpires in: ${days} day(s)`;
     await navigator.clipboard.writeText(block).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -136,7 +142,8 @@ export const TempDevLoginPanel: React.FC<Props> = ({ allTabIds }) => {
         <p className="text-sm text-muted-foreground">
           Creates a working dashboard login straight away — no real mailbox needed, so a made-up address
           such as <code className="font-mono">tempdev1@baw.dev</code> is fine. Access switches itself off
-          on the expiry date, and you can revoke or extend at any time.
+          on the expiry date, and you can revoke or extend at any time. Admin temporary logins use the
+          two-step <code className="font-mono">/auth</code> firewall first, then the Supabase Auth login.
         </p>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

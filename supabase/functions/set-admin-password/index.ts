@@ -26,14 +26,15 @@ serve(async (req) => {
 
     const { data: targetAdmin, error: adminErr } = await admin
       .from("admin_users")
-      .select("id, user_id, email, first_name, last_name, role, is_active")
+      .select("id, user_id, email, first_name, last_name, role, is_active, archived_at")
       .or(`email.ilike.${normalizedEmail},user_id.eq.${userId || "00000000-0000-0000-0000-000000000000"}`)
       .maybeSingle();
 
     if (adminErr) throw new Error(`Could not check admin user: ${adminErr.message}`);
     if (!targetAdmin) throw new Error(`Admin user not found for ${normalizedEmail}`);
-    // An inactive account is not an error here: setting a password IS the
-    // activation step (the update below flips is_active back to true).
+    if (targetAdmin.archived_at) {
+      throw new Error("This staff account is archived. Reactivate it first before setting a password.");
+    }
 
     let targetAuthId: string | null = targetAdmin.user_id || null;
 
@@ -75,7 +76,7 @@ serve(async (req) => {
 
     await admin
       .from("admin_users")
-      .update({ user_id: targetAuthId, email: normalizedEmail, is_active: true })
+      .update({ user_id: targetAuthId, email: normalizedEmail })
       .eq("id", targetAdmin.id);
 
     await admin.from("user_roles").upsert(
