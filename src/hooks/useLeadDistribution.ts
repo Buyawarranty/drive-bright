@@ -455,8 +455,9 @@ export const useLeadDistribution = () => {
             admin_user_id: u.id,
             daily_cap: 20, // Default cap - admins can set to NULL for unlimited
             assigned_today: 0,
-            paused: false,
+            paused: true, // new agents start switched OFF until a manager enables them
             assignment_mode: getDefaultAssignmentMode(u)
+
           })));
 
         if (insertError) throw insertError;
@@ -483,6 +484,8 @@ export const useLeadDistribution = () => {
         const { data: adminUsers, error } = await supabase
           .from('admin_users')
           .select('id, email')
+          .eq('is_active', true)
+          .is('archived_at', null)
           .in('role', DISTRIBUTION_ROLES);
 
         if (error || !adminUsers) return;
@@ -502,9 +505,10 @@ export const useLeadDistribution = () => {
               admin_user_id: u.id,
               daily_cap: 20,
               assigned_today: 0,
-              paused: false,
+              paused: true, // start OFF; manager switches them on
               assignment_mode: getDefaultAssignmentMode(u)
             })));
+
           // Re-fetch after auto-init
           fetchAgentCaps();
         }
