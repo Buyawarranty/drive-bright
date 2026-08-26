@@ -17,10 +17,10 @@ export const useUserPresence = (options: UseUserPresenceOptions = {}) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      await withBackgroundPriority(() => supabase.rpc('update_user_presence', {
+      await withBackgroundPriority(() => Promise.resolve(supabase.rpc('update_user_presence', {
         p_status: status,
         p_current_tab: currentTab || null
-      }));
+      })));
     } catch (error) {
       console.error('Error updating presence:', error);
     }
