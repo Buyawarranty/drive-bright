@@ -124,11 +124,29 @@ const StripePayment: React.FC = () => {
     }
     // Clear cached payment data
     localStorage.removeItem('stripe_payment_data');
-    // Redirect to thank you page after animation
+    // Redirect to thank you page after animation - enriched with cover details
     setTimeout(() => {
-      navigate('/thank-you?source=stripe');
+      const thankYouParams = new URLSearchParams({ source: 'stripe' });
+      if (paymentData) {
+        thankYouParams.set('plan', paymentData.planName || 'Platinum');
+        thankYouParams.set('payment', paymentData.duration || '');
+        thankYouParams.set('duration', paymentData.duration || '');
+        thankYouParams.set('vehicle_reg', paymentData.vehicleReg || '');
+        thankYouParams.set('vehicle', `${paymentData.vehicleMake || ''} ${paymentData.vehicleModel || ''}`.trim());
+        thankYouParams.set('claim_limit', String(paymentData.claimLimit || ''));
+        thankYouParams.set('labour_rate', String(paymentData.labourRate || ''));
+        thankYouParams.set('excess', String(paymentData.excess ?? ''));
+        thankYouParams.set('final_amount', String(paymentData.amount || 0));
+        thankYouParams.set('total_price', String(paymentData.amount || 0));
+        thankYouParams.set('original_price', String(paymentData.originalAmount || paymentData.amount || 0));
+        if (paymentData.isMonthly && paymentData.monthlyPrice) {
+          thankYouParams.set('monthly_price', String(paymentData.monthlyPrice));
+        }
+      }
+      navigate(`/thank-you?${thankYouParams.toString()}`);
     }, 2500);
   };
+
 
   const handlePaymentError = (error: string) => {
     setPaymentStatus('error');
