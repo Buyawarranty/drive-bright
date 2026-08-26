@@ -1441,6 +1441,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     const leadsToExport = baseLeads;
 
     const exportData = leadsToExport.map(lead => ({
+      // Every export must name the agent the lead is assigned to.
+      'Agent': [lead.assigned_user?.first_name, lead.assigned_user?.last_name]
+        .filter(Boolean)
+        .join(' ') || lead.assigned_user?.email || 'Awaiting Contact',
       'First Name': lead.first_name || '',
       'Last Name': lead.last_name || '',
       'Email': lead.email,
@@ -1452,7 +1456,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       'Vehicle': `${lead.vehicle_make || ''} ${lead.vehicle_model || ''} ${lead.vehicle_year || ''}`.trim(),
       'Plan Interest': lead.plan_interest || '',
       'Quote Amount': lead.quote_amount || '',
-      'Assigned To': lead.assigned_user?.email || 'Awaiting Contact',
+      'Assigned To (email)': lead.assigned_user?.email || 'Awaiting Contact',
       'Last Contacted': lead.last_contacted_at || '',
       'Created At': lead.created_at,
       'Notes': lead.notes || '',

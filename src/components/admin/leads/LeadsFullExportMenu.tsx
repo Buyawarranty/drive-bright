@@ -40,12 +40,18 @@ const MANAGER_EXPORT_ROLES = [
   'lead_gen',
 ];
 
-const buildFullRows = (list: any[]) => {
+const buildFullRows = (list: any[], agentNames: Record<string, string> = {}) => {
   const keySet = new Set<string>();
   list.forEach(row => Object.keys(row || {}).forEach(k => keySet.add(k)));
   const keys = Array.from(keySet);
   const rows = list.map(row => {
-    const out: Record<string, any> = {};
+    // Agent name always leads the export — assigned_to on its own is only a UUID.
+    const out: Record<string, any> = {
+      'Agent': (row?.assigned_to && agentNames[row.assigned_to]) ||
+        [row?.assigned_user?.first_name, row?.assigned_user?.last_name].filter(Boolean).join(' ') ||
+        row?.assigned_user?.email ||
+        'Awaiting Contact',
+    };
     keys.forEach(k => {
       const v = (row as any)[k];
       if (v === null || v === undefined) out[k] = '';
@@ -55,7 +61,7 @@ const buildFullRows = (list: any[]) => {
     });
     return out;
   });
-  return { rows, keys };
+  return { rows, keys: ['Agent', ...keys] };
 };
 
 /**
@@ -68,11 +74,27 @@ export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRo
   const [rangeOpen, setRangeOpen] = useState(false);
   const [rangeFrom, setRangeFrom] = useState('');
   const [rangeTo, setRangeTo] = useState('');
+  const [agentNames, setAgentNames] = useState<Record<string, string>>({});
   const [agentExportOpen, setAgentExportOpen] = useState(false);
   const [agentExportFormat, setAgentExportFormat] = useState<'csv' | 'xlsx'>('csv');
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail((data.user?.email || '').toLowerCase()));
+  }, []);
+
+  // Lookup so every exported row can show the assigned agent by name, not UUID.
+  useEffect(() => {
+    supabase
+      .from('admin_users')
+      .select('id, first_name, last_name, email')
+      .then(({ data }) => {
+        const map: Record<string, string> = {};
+        (data || []).forEach((u: any) => {
+          map[u.id] =
+            [u.first_name, u.last_name].filter(Boolean).join(' ') || u.email || 'Unknown agent';
+        });
+        setAgentNames(map);
+      });
   }, []);
 
   const canExportFull =
@@ -138,7 +160,7 @@ export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRo
       toast.error('No leads to export');
       return;
     }
-    const { rows, keys } = buildFullRows(visibleLeads);
+    const { rows, keys } = buildFullRows(visibleLeads, agentNames);
     const filename = `leads-full-${new Date().toISOString().slice(0, 10)}`;
     if (format === 'csv') exportToCSV(rows, { filename, format: 'csv' });
     else exportToExcel(rows, { filename, format: 'xlsx' });
@@ -176,7 +198,7 @@ export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRo
         return;
       }
 
-      const { rows, keys } = buildFullRows(collected);
+      const { rows, keys } = buildFullRows(collected, agentNames);
       exportToCSV(rows, { filename: `leads-${label}`, format: 'csv' });
       toast.success(`Exported ${rows.length} lead(s) for ${label} (${keys.length} columns)`, { id: toastId });
     } catch (err: any) {
