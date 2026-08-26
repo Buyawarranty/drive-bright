@@ -4,6 +4,8 @@ import { Loader2, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { buildSaleCreditResolver, fetchSalesCreditAgentIds } from '@/lib/saleCredit';
 import { withBackgroundPriority } from '@/lib/requestQueue';
+import { UnattributedSalesAssigner } from './UnattributedSalesAssigner';
+
 
 /**
  * Manager view of the same figures each agent sees on their own "My progress"
@@ -367,7 +369,14 @@ export const AllAgentsProgressPanel: React.FC = () => {
                     </div>
                     <div className="text-[11px] text-muted-foreground">{b.note}</div>
                     {names && <div className="mt-0.5 text-[11px] text-muted-foreground">{names}</div>}
+                    <UnattributedSalesAssigner
+                      bucket={b.key}
+                      start={monthStart}
+                      end={endOfMonth(now)}
+                      onSaved={load}
+                    />
                   </li>
+
                 );
               })}
             </ul>
