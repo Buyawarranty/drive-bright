@@ -142,7 +142,18 @@ serve(async (req) => {
 
     let paymentData: any = {
       message: 'Payment verified successfully',
-      customerEmail: vehicleData.email
+      customerEmail: vehicleData.email,
+      // Enrich response with cover details so Thank You page can display the order summary
+      plan: planId,
+      duration: paymentType,
+      claimLimit: parseInt(session.metadata?.claim_limit || '0') || undefined,
+      labourRate: parseInt(session.metadata?.labour_rate || '0') || undefined,
+      voluntaryExcess: parseInt(session.metadata?.voluntary_excess || '0') || undefined,
+      vehicleReg: session.metadata?.vehicle_reg || '',
+      vehicle: `${session.metadata?.vehicle_make || ''} ${session.metadata?.vehicle_model || ''}`.trim(),
+      mileage: session.metadata?.vehicle_mileage || '',
+      amount: parseFloat(session.metadata?.final_amount || session.amount_total ? String(session.amount_total / 100) : '0') || 0,
+      originalAmount: parseFloat(session.metadata?.original_price || '0') || undefined
     };
 
     if (existingCustomer && existingCustomer.customer_policies && existingCustomer.customer_policies.length > 0) {
@@ -185,6 +196,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
+
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
