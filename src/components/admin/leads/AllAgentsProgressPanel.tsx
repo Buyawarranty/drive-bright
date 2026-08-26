@@ -333,7 +333,8 @@ export const AllAgentsProgressPanel: React.FC = () => {
         const buckets: Array<{ key: string; title: string; note: string }> = [
           { key: 'management', title: 'Sale credit set to a non-sales account', note: 'A manager has manually set the sale credit to a non-sales account, so it never lands on an agent row.' },
           { key: 'no_team', title: 'Agent not on a lead team', note: 'The scoreboard only lists agents who sit on a team — add them in Lead Teams to see them here.' },
-          { key: 'unattributed', title: 'No agent on the record', note: 'Website sales with no owner. Set the sale credit on the customer to move it to an agent.' },
+          { key: 'unattributed', title: 'No agent on the record', note: 'Sales with no sales agent linked. Assign to an agent or mark as a direct website sale.' },
+          { key: 'direct_website', title: 'Direct website sale', note: 'Deals that came straight through the website with no sales agent involvement.' },
         ];
         return (
           <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
