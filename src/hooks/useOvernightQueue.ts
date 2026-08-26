@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { withBackgroundPriority } from '@/lib/requestQueue';
 
 /**
  * Overnight ORR queue: leads created outside working hours (or on a weekend
@@ -60,7 +61,7 @@ async function fetchOvernightQueue(): Promise<OvernightQueue> {
 export function useOvernightQueue() {
   return useQuery({
     queryKey: ['overnight-queue'],
-    queryFn: fetchOvernightQueue,
+    queryFn: () => withBackgroundPriority(fetchOvernightQueue),
     refetchInterval: 60_000,
     staleTime: 30_000,
     placeholderData: EMPTY,

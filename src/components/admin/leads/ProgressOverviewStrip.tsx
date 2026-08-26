@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { withBackgroundPriority } from '@/lib/requestQueue';
 
 /**
  * Per-agent progress strip — every sales agent sees ONLY their own figures.
@@ -138,7 +139,7 @@ export const ProgressOverviewStrip: React.FC = () => {
       // left the whole strip on EMPTY — which showed "Receiving leads / no working
       // days without a sale / no sale in the last 180 days" for agents who plainly
       // had sales in Customer Management.
-      const settled = await Promise.allSettled([
+      const settled = await withBackgroundPriority(() => Promise.allSettled([
         supabase.rpc('get_team_scoreboard', {
           p_start: monthStart.toISOString(),
           p_end: endOfMonth(now).toISOString(),
@@ -190,7 +191,7 @@ export const ProgressOverviewStrip: React.FC = () => {
           .select('paused, freeze_source, freeze_reason, frozen_until')
           .eq('admin_user_id', adminId)
           .maybeSingle(),
-      ]);
+      ]));
 
       const val = (i: number): any => (settled[i].status === 'fulfilled' ? (settled[i] as any).value : null);
       settled.forEach((s, i) => {
