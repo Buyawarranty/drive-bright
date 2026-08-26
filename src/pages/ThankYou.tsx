@@ -472,6 +472,20 @@ const ThankYou = () => {
           }
           toast.success('Your warranty policy has been created successfully!');
           
+          // Enrich order summary from Stripe session metadata when URL params are missing
+          const coverData = data?.data || data;
+          if (coverData) {
+            if (!enrichedDuration && coverData.duration) setEnrichedDuration(coverData.duration);
+            if (!enrichedClaimLimit && coverData.claimLimit) setEnrichedClaimLimit(coverData.claimLimit);
+            if (!enrichedLabourRate && coverData.labourRate) setEnrichedLabourRate(coverData.labourRate);
+            if (!enrichedExcess && coverData.voluntaryExcess !== undefined) setEnrichedExcess(coverData.voluntaryExcess);
+            if (!enrichedVehicle && coverData.vehicle) setEnrichedVehicle(coverData.vehicle);
+            if (!enrichedVehicleReg && coverData.vehicleReg) setEnrichedVehicleReg(coverData.vehicleReg);
+            if (!enrichedMileage && coverData.mileage) setEnrichedMileage(coverData.mileage);
+            if (!enrichedTotalPrice && coverData.amount) setEnrichedTotalPrice(coverData.amount);
+            if (!enrichedMonthlyPrice && coverData.monthlyPrice) setEnrichedMonthlyPrice(coverData.monthlyPrice);
+          }
+          
           // Get data from response or URL params
           const conversionEmail = urlEmail || data?.customerEmail;
           const conversionPhone = urlMobile || data?.customerPhone;
@@ -505,6 +519,7 @@ const ThankYou = () => {
               productName: `${plan} Warranty - ${duration}`,
             });
           }
+
           
           // Check if user enabled "Add Another Warranty" during checkout
           const addAnotherWarranty = searchParams.get('addAnotherWarranty');
