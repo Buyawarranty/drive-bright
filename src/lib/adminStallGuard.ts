@@ -77,19 +77,62 @@ const withTimeout = async (
   }
 };
 
-/** Ask the auth server for a new token, bounded so it can never hang either. */
-const refreshStaffToken = async (): Promise<string | null> => {
+/**
+ * Ask the auth server for a new token, bounded so it can never hang either.
+ *
+ * Multi-tab safety: every stalled read used to call refreshSession() directly,
+ * so a laptop waking up with 4 CRM tabs open could fire dozens of refreshes at
+ * once. Refresh tokens rotate, so the losers of that race got "Invalid Refresh
+ * Token" and the agent was silently signed out mid-shift (blank screen).
+ * Now: one in-flight refresh per tab, a short cooldown, and a cross-tab Web
+ * Lock so only one tab in the browser refreshes at a time — the others simply
+ * read the session the winner wrote.
+ */
+const REFRESH_COOLDOWN_MS = 15_000;
+let refreshInFlight: Promise<string | null> | null = null;
+let lastRefreshAt = 0;
+
+const doRefresh = async (): Promise<string | null> => {
   try {
     const { supabase } = await import('@/integrations/supabase/client');
-    const bounded = await Promise.race([
-      supabase.auth.refreshSession(),
+
+    const run = async () => {
+      // Another tab may already have rotated the token while we waited for the
+      // lock — in that case just use what's in storage, don't rotate again.
+      const { data } = await supabase.auth.getSession();
+      const expiresAt = (data?.session?.expires_at ?? 0) * 1000;
+      if (data?.session?.access_token && expiresAt - Date.now() > 60_000) {
+        return data.session.access_token;
+      }
+      const result = await supabase.auth.refreshSession();
+      return result?.data?.session?.access_token ?? null;
+    };
+
+    const locks = (navigator as any)?.locks;
+    const guarded = locks?.request
+      ? locks.request('baw-staff-token-refresh', run)
+      : run();
+
+    const token = await Promise.race([
+      guarded,
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
     ]);
-    const session = (bounded as any)?.data?.session;
-    return session?.access_token ?? null;
+    return (token as string | null) ?? null;
   } catch {
     return null;
   }
+};
+
+const refreshStaffToken = async (): Promise<string | null> => {
+  if (refreshInFlight) return refreshInFlight;
+  if (Date.now() - lastRefreshAt < REFRESH_COOLDOWN_MS) return null;
+
+  refreshInFlight = doRefresh().finally(() => {
+    lastRefreshAt = Date.now();
+    refreshInFlight = null;
+  }) as Promise<string | null>;
+
+  return refreshInFlight;
 };
 
 /**
@@ -142,10 +185,21 @@ export const installAdminStallGuard = (): (() => void) => {
   };
 
   const guarded: typeof fetch = async (input, init) => {
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request).url;
-    const method = init?.method || (input instanceof Request ? input.method : 'GET');
+    // Extension-safety: ad blockers, password managers and dialler extensions
+    // patch fetch/Request/Headers. If anything in our own bookkeeping throws
+    // because of a mangled global, fall straight through to the real fetch
+    // instead of taking the page down with us.
+    let url: string;
+    let method: string;
+    try {
+      url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request).url;
+      method = init?.method || (input instanceof Request ? input.method : 'GET');
+    } catch {
+      return originalFetch(input as any, init);
+    }
 
     if (!isGuardedRead(url || '', method)) return originalFetch(input as any, init);
+
 
     // Identical reads fired in the same instant (one screen, many rows/widgets
     // asking for the same thing) share one network request instead of opening
@@ -165,11 +219,24 @@ export const installAdminStallGuard = (): (() => void) => {
     })();
 
     dedupe.set(key, task);
-    return task.then((r) => r.clone());
+    return task.then((r) => {
+      // A response whose body an extension already consumed can't be cloned.
+      try {
+        return r.clone();
+      } catch {
+        return r;
+      }
+    });
   };
 
 
-  window.fetch = guarded;
+  try {
+    window.fetch = guarded;
+  } catch {
+    // A locked-down/extension-frozen global: run unguarded rather than crash.
+    installed = false;
+    return () => {};
+  }
 
   // Coming back from sleep / a dropped connection: get a valid token in place
   // before the screens start reading, so the first read doesn't have to fail.
@@ -189,7 +256,13 @@ export const installAdminStallGuard = (): (() => void) => {
   window.addEventListener('online', onWake);
 
   return () => {
-    window.fetch = originalFetch;
+    // Only un-patch if we're still the outermost patch — otherwise we'd wipe
+    // an extension's own wrapper installed after ours.
+    try {
+      if (window.fetch === guarded) window.fetch = originalFetch;
+    } catch {
+      /* ignore */
+    }
     document.removeEventListener('visibilitychange', onWake);
     window.removeEventListener('online', onWake);
     installed = false;

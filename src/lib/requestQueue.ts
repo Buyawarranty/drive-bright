@@ -133,6 +133,9 @@ export const queuedFetch: typeof fetch = async (input, init) => {
 
   if (shouldBypass(url)) return fetch(input as any, init);
 
+  // Extension-safety: never let our own lane bookkeeping be the thing that
+  // throws. If anything below fails we still complete the request.
+
   const method = init?.method || (input instanceof Request ? input.method : 'GET');
   const isWrite = !['GET', 'HEAD'].includes(method.toUpperCase());
   const lane: RequestLane = priorityDepth > 0 || isWrite
@@ -141,11 +144,19 @@ export const queuedFetch: typeof fetch = async (input, init) => {
       ? 'background'
       : 'normal';
 
-  await acquire(lane);
+  try {
+    await acquire(lane);
+  } catch {
+    return fetch(input as any, init);
+  }
   try {
     return await fetch(input as any, init);
   } finally {
-    release(lane);
+    try {
+      release(lane);
+    } catch {
+      /* keep the queue alive even if a listener misbehaves */
+    }
   }
 };
 
