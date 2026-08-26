@@ -21,7 +21,13 @@ interface OrderSummary {
   amount: number;
   originalAmount?: number;
   savings?: number;
+  claimLimit?: number;
+  labourRate?: number;
+  excess?: number;
+  monthlyPrice?: number;
+  isMonthly?: boolean;
 }
+
 
 interface EmbeddedCheckoutModalProps {
   isOpen: boolean;
