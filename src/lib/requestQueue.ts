@@ -63,10 +63,10 @@ let priorityDepth = 0;
 let backgroundDepth = 0;
 
 function canStart(lane: RequestLane) {
-  if (active >= MAX_CONCURRENT) return false;
+  if (active >= concurrencyCap()) return false;
   if (lane === 'high') return true;
   if (lane === 'normal') return highQueue.length === 0;
-  return highQueue.length === 0 && normalQueue.length === 0 && activeBackground < MAX_BACKGROUND_CONCURRENT;
+  return highQueue.length === 0 && normalQueue.length === 0 && activeBackground < backgroundCap();
 }
 
 function startRequest(lane: RequestLane, resolve: () => void) {
@@ -76,7 +76,7 @@ function startRequest(lane: RequestLane, resolve: () => void) {
 }
 
 function pump() {
-  while (active < MAX_CONCURRENT) {
+  while (active < concurrencyCap()) {
     const next = highQueue[0] || normalQueue[0] || backgroundQueue[0];
     if (!next || !canStart(next.lane)) return;
 
