@@ -10,7 +10,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -73,7 +72,7 @@ export const LeadNotesExportDialog: React.FC<Props> = ({ open, onOpenChange, lea
   });
   const [toDate, setToDate] = useState(() => isoDay(new Date()));
   const [agent, setAgent] = useState<string>('all');
-  const [includeSource, setIncludeSource] = useState(!sourceHidden);
+
 
   /** Distinct agents present in the supplied leads, keyed by agent id (or unassigned). */
   const agents = useMemo(() => {
