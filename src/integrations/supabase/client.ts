@@ -77,5 +77,8 @@ function makeClient(): SupabaseClient<Database> {
       params: { eventsPerSecond: 5 },
     },
   });
+}
+
+export const supabase: SupabaseClient<Database> = g[GLOBAL_KEY] ?? makeClient();
 
 g[GLOBAL_KEY] = supabase;
