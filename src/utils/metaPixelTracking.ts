@@ -14,8 +14,8 @@ declare global {
   }
 }
 
-/** Only the lead event is allowed */
-const ALLOWED_EVENTS = ['Lead'];
+/** Only these two events are allowed */
+const ALLOWED_EVENTS = ['Lead', 'Purchase'];
 
 /**
  * Strip empty params, and never send monetary value/currency —
