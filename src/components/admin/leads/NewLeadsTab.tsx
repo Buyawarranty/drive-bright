@@ -75,6 +75,7 @@ import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
 import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { useDailyLeadStatsSnapshot } from '@/hooks/useDailyLeadStatsSnapshot';
 import { EyeOff, Eye, Wifi, Check, MessageCircle } from 'lucide-react';
 
@@ -131,6 +132,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 }) => {
   const { canExportTab, hasGranularPermission } = usePermissions();
   const { exportToCSV, exportToExcel } = useDataExport();
+  // Resolves agent names for exports (assigned_user is only populated optimistically).
+  const adminUsersMapForExport = useAllAdminUsersMap();
   
   // Role-based restrictions
   const isAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_lead' || userRole === 'performance_manager' || userRole === 'lead_gen' || userRole === 'accounts_manager';
@@ -1442,9 +1445,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
     const exportData = leadsToExport.map(lead => ({
       // Every export must name the agent the lead is assigned to.
-      'Agent': [lead.assigned_user?.first_name, lead.assigned_user?.last_name]
-        .filter(Boolean)
-        .join(' ') || lead.assigned_user?.email || 'Awaiting Contact',
+      'Agent': (() => {
+        const fromRow = [lead.assigned_user?.first_name, lead.assigned_user?.last_name]
+          .filter(Boolean)
+          .join(' ') || lead.assigned_user?.email || '';
+        if (fromRow) return fromRow;
+        const u = lead.assigned_to ? adminUsersMapForExport.get(lead.assigned_to) : undefined;
+        return [u?.first_name, u?.last_name].filter(Boolean).join(' ') || u?.email || 'Awaiting Contact';
+      })(),
       'First Name': lead.first_name || '',
       'Last Name': lead.last_name || '',
       'Email': lead.email,
@@ -1456,7 +1464,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       'Vehicle': `${lead.vehicle_make || ''} ${lead.vehicle_model || ''} ${lead.vehicle_year || ''}`.trim(),
       'Plan Interest': lead.plan_interest || '',
       'Quote Amount': lead.quote_amount || '',
-      'Assigned To (email)': lead.assigned_user?.email || 'Awaiting Contact',
+      'Assigned To (email)': lead.assigned_user?.email
+        || (lead.assigned_to ? adminUsersMapForExport.get(lead.assigned_to)?.email : '')
+        || 'Awaiting Contact',
       'Last Contacted': lead.last_contacted_at || '',
       'Created At': lead.created_at,
       'Notes': lead.notes || '',

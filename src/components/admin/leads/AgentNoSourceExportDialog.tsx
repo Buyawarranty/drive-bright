@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { useDataExport } from '@/hooks/useDataExport';
 import { Lead } from '@/hooks/useLeads';
 import { useAgentActivity } from '@/hooks/useAgentActivity';
+import { useAllAdminUsersMap, AdminUserLite } from '@/hooks/useAllAdminUsersMap';
 import { useCustomerActivity, getCustomerActivityLabel } from '@/hooks/useCustomerActivity.tsx';
 import { useLeadResponseTime, formatResponseTime, getResponseSourceLabel } from '@/hooks/useLeadResponseTime';
 import { formatLeadDateUK } from '@/lib/leadFeedDate';
@@ -38,10 +39,16 @@ const isoDay = (d: Date) => d.toISOString().slice(0, 10);
 
 const UNASSIGNED = '__unassigned__';
 
-const agentLabel = (lead: Lead) =>
-  [lead.assigned_user?.first_name, lead.assigned_user?.last_name].filter(Boolean).join(' ') ||
-  lead.assigned_user?.email ||
-  '';
+/** Agent name from the lead row, falling back to the admin_users map (rows rarely embed assigned_user). */
+const agentLabel = (lead: Lead, map?: Map<string, AdminUserLite>) => {
+  const fromRow =
+    [lead.assigned_user?.first_name, lead.assigned_user?.last_name].filter(Boolean).join(' ') ||
+    lead.assigned_user?.email ||
+    '';
+  if (fromRow) return fromRow;
+  const u = lead.assigned_to ? map?.get(lead.assigned_to) : undefined;
+  return [u?.first_name, u?.last_name].filter(Boolean).join(' ') || u?.email || '';
+};
 
 const statusLabels: Record<string, string> = {
   new: 'Not spoken to',
@@ -96,6 +103,7 @@ export const AgentNoSourceExportDialog: React.FC<Props> = ({ open, onOpenChange,
   });
   const [toDate, setToDate] = useState(() => isoDay(new Date()));
   const [agent, setAgent] = useState<string>('all');
+  const adminUsersMap = useAllAdminUsersMap(useMemo(() => leads.map(l => l.assigned_to), [leads]));
 
   const agents = useMemo(() => {
     const map = new Map<string, string>();
@@ -105,7 +113,7 @@ export const AgentNoSourceExportDialog: React.FC<Props> = ({ open, onOpenChange,
         hasUnassigned = true;
         return;
       }
-      const label = agentLabel(lead) || 'Unknown agent';
+      const label = agentLabel(lead, adminUsersMap) || 'Unknown agent';
       if (!map.has(lead.assigned_to)) map.set(lead.assigned_to, label);
     });
     const list = Array.from(map.entries())
@@ -113,7 +121,7 @@ export const AgentNoSourceExportDialog: React.FC<Props> = ({ open, onOpenChange,
       .sort((a, b) => a.label.localeCompare(b.label));
     if (hasUnassigned) list.push({ value: UNASSIGNED, label: 'Awaiting Contact (unassigned)' });
     return list;
-  }, [leads]);
+  }, [leads, adminUsersMap]);
 
   const inRange = useMemo(() => {
     const start = new Date(`${fromDate}T00:00:00`);
@@ -142,7 +150,7 @@ export const AgentNoSourceExportDialog: React.FC<Props> = ({ open, onOpenChange,
     }
 
     const rows = inRange.map(lead => {
-      const assigned = agentLabel(lead) || 'Awaiting Contact';
+      const assigned = agentLabel(lead, adminUsersMap) || 'Awaiting Contact';
       const status = statusLabels[lead.status || ''] || lead.status || '';
       const calls = lead.call_count ?? 0;
       const name = displayName(lead);
