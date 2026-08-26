@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { withBackgroundPriority } from '@/lib/requestQueue';
 
 const BATCH_SIZE = 1000;
 const MAX_RETRIES = 2;
@@ -60,13 +61,18 @@ async function fetchPage<T>(
 }
 
 export async function fetchAllRows<T = any>(
-  buildQuery: () => any
+  buildQuery: () => any,
+  options?: { background?: boolean }
 ): Promise<{ data: T[]; error: any }> {
   const allData: T[] = [];
   let offset = 0;
+  const getPage = (pageOffset: number) =>
+    options?.background
+      ? withBackgroundPriority(() => fetchPage<T>(buildQuery, pageOffset))
+      : fetchPage<T>(buildQuery, pageOffset);
 
   // First page on its own so single-page queries stay a single round trip.
-  const first = await fetchPage<T>(buildQuery, 0);
+  const first = await getPage(0);
   if (first.error) return { data: allData, error: first.error };
   allData.push(...(first.data || []));
   if (!first.data || first.data.length < BATCH_SIZE) {
@@ -78,7 +84,7 @@ export async function fetchAllRows<T = any>(
   // more to come, a short page inside a wave means we've hit the end.
   for (;;) {
     const offsets = Array.from({ length: CONCURRENCY }, (_, i) => offset + i * BATCH_SIZE);
-    const pages = await Promise.all(offsets.map(o => fetchPage<T>(buildQuery, o)));
+    const pages = await Promise.all(offsets.map(o => getPage(o)));
 
     let reachedEnd = false;
     for (const page of pages) {
