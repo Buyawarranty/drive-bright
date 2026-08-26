@@ -149,17 +149,23 @@ export async function withPriority<T>(fn: () => Promise<T>): Promise<T> {
 /** Run non-blocking background CRM work without letting it starve the active page. */
 export async function withBackgroundPriority<T>(fn: () => Promise<T>): Promise<T> {
   backgroundDepth += 1;
-  let promise: Promise<T>;
+  let result: Promise<T>;
   try {
-    // Mark only the fetches synchronously started by `fn` as background. Keeping
-    // the flag set while those requests await would accidentally downgrade an
-    // unrelated foreground screen load that starts in the meantime.
-    promise = fn();
-  } finally {
+    // Mark only the fetches started in the first async turn as background.
+    // Supabase builders are thenables, so `await supabase.from(...)` starts the
+    // actual fetch in a microtask; clearing immediately would miss it, while
+    // clearing after the network completes would downgrade unrelated foreground
+    // work that starts meanwhile.
+    result = fn();
+  } catch (error) {
+    backgroundDepth = Math.max(0, backgroundDepth - 1);
+    throw error;
+  }
+  queueMicrotask(() => {
     backgroundDepth = Math.max(0, backgroundDepth - 1);
     pump();
-  }
-  return await promise;
+  });
+  return await result;
 }
 
 /** For debugging / perf panels. */
