@@ -160,3 +160,4 @@ Updated: just now
 - [AI Sandbox Grounding](mem://features/ai-sandbox-grounding) — Sandbox chatbot answers cover/T&C questions only from approved site material; not confident = specialist handover, never a guess
 - [CallRail Missed Call 30-min Suppression](mem://admin/leads/callrail-missed-call-30min-suppression) — Missed CallRail call only becomes a lead if no Zoiper/Dial 9 call to that number within ±30 minutes
 - [Replaced Turbo / Hybrid Battery](mem://features/replaced-turbo-battery-cover-restarts) — Replaced turbo or hybrid battery stays covered with receipt; 7yr/80k and 10yr/80k clocks restart from the replacement date
+- [Deactivated Agent Leaves Distribution](mem://admin/leads/deactivated-agent-leaves-distribution) — Inactive/archived staff auto-paused, workstreams cleared, hidden from New Leads and Allocation lists
