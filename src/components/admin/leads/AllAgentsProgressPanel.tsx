@@ -367,7 +367,14 @@ export const AllAgentsProgressPanel: React.FC = () => {
                     </div>
                     <div className="text-[11px] text-muted-foreground">{b.note}</div>
                     {names && <div className="mt-0.5 text-[11px] text-muted-foreground">{names}</div>}
+                    <UnattributedSalesAssigner
+                      bucket={b.key}
+                      start={monthStart}
+                      end={endOfMonth(now)}
+                      onSaved={load}
+                    />
                   </li>
+
                 );
               })}
             </ul>
