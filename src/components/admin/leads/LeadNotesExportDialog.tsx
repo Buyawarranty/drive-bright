@@ -10,7 +10,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -63,8 +62,8 @@ const agentLabel = (lead: ExportLead) =>
   lead.assigned_user?.email ||
   '';
 
-/** Manager export: every lead with its call attempts and full note history, over a chosen date range. */
-export const LeadNotesExportDialog: React.FC<Props> = ({ open, onOpenChange, leads, sourceHidden }) => {
+/** Manager export: every lead with its call attempts and full note history, over a chosen date range. Source column is never included. */
+export const LeadNotesExportDialog: React.FC<Props> = ({ open, onOpenChange, leads }) => {
   const { exportToCSV } = useDataExport();
   const [fromDate, setFromDate] = useState(() => {
     const d = new Date();
@@ -73,7 +72,7 @@ export const LeadNotesExportDialog: React.FC<Props> = ({ open, onOpenChange, lea
   });
   const [toDate, setToDate] = useState(() => isoDay(new Date()));
   const [agent, setAgent] = useState<string>('all');
-  const [includeSource, setIncludeSource] = useState(!sourceHidden);
+
 
   /** Distinct agents present in the supplied leads, keyed by agent id (or unassigned). */
   const agents = useMemo(() => {
@@ -131,7 +130,6 @@ export const LeadNotesExportDialog: React.FC<Props> = ({ open, onOpenChange, lea
         'Assigned Agent': agentLabel(lead) || 'Awaiting Contact',
         'Notes': (lead.notes || '').replace(/\r?\n/g, ' | '),
       };
-      if (includeSource && !sourceHidden) row['Lead Source'] = lead.lead_source || '';
       return row;
     });
 
@@ -196,19 +194,6 @@ export const LeadNotesExportDialog: React.FC<Props> = ({ open, onOpenChange, lea
           </Select>
         </div>
 
-        {!sourceHidden && (
-          <div className="flex items-center justify-between rounded-md border p-3">
-            <div className="space-y-0.5">
-              <Label htmlFor="lead-notes-source">Include lead source</Label>
-              <p className="text-xs text-muted-foreground">Turn off to export without attribution.</p>
-            </div>
-            <Switch
-              id="lead-notes-source"
-              checked={includeSource}
-              onCheckedChange={setIncludeSource}
-            />
-          </div>
-        )}
 
         <p className="text-sm text-muted-foreground">
           {inRange.length} lead{inRange.length === 1 ? '' : 's'} match these filters.
