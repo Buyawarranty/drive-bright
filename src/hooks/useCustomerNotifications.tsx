@@ -25,10 +25,21 @@ export const useCustomerNotifications = (customerEmail: string | undefined) => {
     }
 
     fetchNotifications();
-    subscribeToNotifications();
+
+    // Unique channel name per mount: a fixed name collided when the hook was
+    // mounted twice, and the old cleanup created a brand new channel instead of
+    // removing this one — leaking a websocket subscription on every unmount.
+    const channel = supabase
+      .channel(`customer-notifications-${Math.random().toString(36).slice(2)}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'customer_notifications' },
+        () => fetchNotifications(),
+      )
+      .subscribe();
 
     return () => {
-      supabase.channel('customer-notifications').unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [customerEmail]);
 
