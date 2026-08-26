@@ -187,6 +187,12 @@ export async function withBackgroundPriority<T>(fn: () => Promise<T>): Promise<T
   return await result;
 }
 
+// Resume paced background work as soon as the tab is looked at again, and when
+// tab primacy changes (e.g. the primary tab was closed).
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => pump());
+}
+
 /** For debugging / perf panels. */
 export const getRequestQueueStats = () => ({
   active,
