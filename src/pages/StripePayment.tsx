@@ -59,20 +59,24 @@ const StripePayment: React.FC = () => {
         console.log('✅ Redirect payment succeeded, navigating to thank-you');
         localStorage.removeItem('stripe_payment_data');
         const thankYouParams = new URLSearchParams({ source: 'stripe', redirect_status: 'succeeded' });
-        if (paymentData) {
-          thankYouParams.set('plan', paymentData.planName || 'Platinum');
-          thankYouParams.set('payment', paymentData.duration || '');
-          thankYouParams.set('duration', paymentData.duration || '');
-          thankYouParams.set('vehicle_reg', paymentData.vehicleReg || '');
-          thankYouParams.set('vehicle', `${paymentData.vehicleMake || ''} ${paymentData.vehicleModel || ''}`.trim());
-          thankYouParams.set('claim_limit', String(paymentData.claimLimit || ''));
-          thankYouParams.set('labour_rate', String(paymentData.labourRate || ''));
-          thankYouParams.set('excess', String(paymentData.excess ?? ''));
-          thankYouParams.set('final_amount', String(paymentData.amount || 0));
-          thankYouParams.set('total_price', String(paymentData.amount || 0));
-          thankYouParams.set('original_price', String(paymentData.originalAmount || paymentData.amount || 0));
-          if (paymentData.isMonthly && paymentData.monthlyPrice) {
-            thankYouParams.set('monthly_price', String(paymentData.monthlyPrice));
+        // Restore cached payment data so cover details survive redirect returns
+        const cachedRaw = localStorage.getItem('stripe_payment_data');
+        const cachedData = cachedRaw ? (() => { try { return JSON.parse(cachedRaw); } catch { return null; } })() : null;
+        const coverData = paymentData || cachedData;
+        if (coverData) {
+          thankYouParams.set('plan', coverData.planName || 'Platinum');
+          thankYouParams.set('payment', coverData.duration || '');
+          thankYouParams.set('duration', coverData.duration || '');
+          thankYouParams.set('vehicle_reg', coverData.vehicleReg || '');
+          thankYouParams.set('vehicle', `${coverData.vehicleMake || ''} ${coverData.vehicleModel || ''}`.trim());
+          thankYouParams.set('claim_limit', String(coverData.claimLimit || ''));
+          thankYouParams.set('labour_rate', String(coverData.labourRate || ''));
+          thankYouParams.set('excess', String(coverData.excess ?? ''));
+          thankYouParams.set('final_amount', String(coverData.amount || 0));
+          thankYouParams.set('total_price', String(coverData.amount || 0));
+          thankYouParams.set('original_price', String(coverData.originalAmount || coverData.amount || 0));
+          if (coverData.isMonthly && coverData.monthlyPrice) {
+            thankYouParams.set('monthly_price', String(coverData.monthlyPrice));
           }
         }
         navigate(`/thank-you?${thankYouParams.toString()}`, { replace: true });
@@ -90,7 +94,8 @@ const StripePayment: React.FC = () => {
         toast.info('Your payment is being processed. Please wait...');
       }
     }
-  }, [redirectStatus, navigate]);
+  }, [redirectStatus, navigate, paymentData]);
+
 
   // Load payment data from location state or localStorage
   useEffect(() => {
