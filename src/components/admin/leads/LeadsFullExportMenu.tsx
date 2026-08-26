@@ -13,10 +13,11 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Download, FileSpreadsheet, Calendar as CalendarIcon } from 'lucide-react';
+import { Download, FileSpreadsheet, Calendar as CalendarIcon, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useDataExport } from '@/hooks/useDataExport';
+import { AgentNoSourceExportDialog } from './AgentNoSourceExportDialog';
 
 interface LeadsFullExportMenuProps {
   userRole?: string | null;
@@ -67,6 +68,8 @@ export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRo
   const [rangeOpen, setRangeOpen] = useState(false);
   const [rangeFrom, setRangeFrom] = useState('');
   const [rangeTo, setRangeTo] = useState('');
+  const [agentExportOpen, setAgentExportOpen] = useState(false);
+  const [agentExportFormat, setAgentExportFormat] = useState<'csv' | 'xlsx'>('csv');
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail((data.user?.email || '').toLowerCase()));
@@ -262,8 +265,42 @@ export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRo
             <CalendarIcon className="h-4 w-4 mr-2" />
             Custom date range…
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <Users className="h-4 w-4 mr-2" />
+              Export by agent (no source)
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
+              <DropdownMenuItem
+                onClick={() => {
+                  setAgentExportFormat('csv');
+                  setAgentExportOpen(true);
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setAgentExportFormat('xlsx');
+                  setAgentExportOpen(true);
+                }}
+              >
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                Export as Excel
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <AgentNoSourceExportDialog
+        open={agentExportOpen}
+        onOpenChange={setAgentExportOpen}
+        leads={visibleLeads}
+        format={agentExportFormat}
+      />
 
       <Dialog open={rangeOpen} onOpenChange={setRangeOpen}>
         <DialogContent className="max-w-md">
