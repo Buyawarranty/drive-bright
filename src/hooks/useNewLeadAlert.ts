@@ -6,6 +6,7 @@ import { isAlertsMuted } from '@/lib/alertSoundPreference';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { fetchByIdsInBatches } from '@/utils/batchedIn';
 import { isHeavyTabBusy } from '@/lib/heavyTabBusy';
+import { withBackgroundPriority } from '@/lib/requestQueue';
 
 
 // Business-hours gate — pop-ups AND beeps only fire 09:00–18:00 Europe/London.
@@ -113,13 +114,13 @@ const fetchAgentAlertLeads = (adminId: string): Promise<any[]> => {
     if (now - entry.at < ALERT_CACHE_TTL_MS) return Promise.resolve(entry.rows);
   }
   const inflight = (async () => {
-    const { data, error } = await supabase
+    const { data, error } = await withBackgroundPriority(() => supabase
       .from('sales_leads')
       .select('id, first_name, last_name, phone, email, created_at, assigned_at, status, is_paid, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, lead_source, orr_first_call_deadline, orr_attempt_count, pool_status, orr_offer_expires_at')
       .eq('assigned_to', adminId)
       .eq('is_paid', false)
       .order('assigned_at', { ascending: false, nullsFirst: false })
-      .limit(50);
+      .limit(50));
     const rows = error || !data ? [] : (data as any[]);
     _alertCache.set(adminId, { at: Date.now(), rows });
     return rows;
@@ -167,14 +168,14 @@ const computeAgentQueue = (adminId: string): Promise<any[]> => {
       rows = offered;
       if (nonOffered.length > 0) {
         const ids = nonOffered.map((l: any) => l.id);
-        const [noteRows, callRows] = await Promise.all([
+        const [noteRows, callRows] = await withBackgroundPriority(() => Promise.all([
           fetchByIdsInBatches<any>(ids, (batch) =>
             supabase.from('lead_quick_notes').select('lead_id, created_by').in('lead_id', batch).eq('created_by', adminId),
             { label: 'new lead alert notes' }),
           fetchByIdsInBatches<any>(ids, (batch) =>
             supabase.from('lead_call_logs').select('lead_id').in('lead_id', batch).eq('agent_id', adminId),
             { label: 'new lead alert calls' }),
-        ]);
+        ]));
         const touched = new Set<string>();
         noteRows.forEach((r) => { if (r?.lead_id && r.created_by) touched.add(r.lead_id); });
         callRows.forEach((r) => { if (r?.lead_id) touched.add(r.lead_id); });

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { withBackgroundPriority } from '@/lib/requestQueue';
 
 export interface AdminNotification {
   id: string;
@@ -40,7 +41,7 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
     refetchTimerRef.current = window.setTimeout(() => {
       refetchTimerRef.current = null;
       fetchNotificationsRef.current?.();
-    }, 1500);
+    }, 5000);
   }, []);
   const fetchNotificationsRef = useRef<(() => void) | null>(null);
   const lastLeadResubmissionToastRef = useRef<Record<string, number>>({});
@@ -50,52 +51,61 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
     const currentReadIds = readIdsRef.current;
     try {
       // Fetch new contact submissions (last 24 hours, status = 'new')
-      const { data: contacts } = await supabase
-        .from('contact_submissions')
-        .select('id, name, email, created_at')
-        .eq('status', 'new')
-        .order('created_at', { ascending: false })
-        .limit(20);
+      const { contacts, claims, customers, resubmissions } = await withBackgroundPriority(async () => {
+        const contactsPromise = supabase
+          .from('contact_submissions')
+          .select('id, name, email, created_at')
+          .eq('status', 'new')
+          .order('created_at', { ascending: false })
+          .limit(20);
 
-      // Fetch new claims (last 24 hours, status = 'new')
-      const { data: claims } = await supabase
-        .from('claims_submissions')
-        .select('id, name, email, created_at')
-        .eq('status', 'new')
-        .order('created_at', { ascending: false })
-        .limit(20);
+        const claimsPromise = supabase
+          .from('claims_submissions')
+          .select('id, name, email, created_at')
+          .eq('status', 'new')
+          .order('created_at', { ascending: false })
+          .limit(20);
 
-      // Fetch new customers (last 24 hours)
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const { data: customers } = await supabase
-        .from('customers')
-        .select('id, name, email, created_at')
-        .gte('created_at', twentyFourHoursAgo)
-        .order('created_at', { ascending: false })
-        .limit(20);
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const customersPromise = supabase
+          .from('customers')
+          .select('id, name, email, created_at')
+          .gte('created_at', twentyFourHoursAgo)
+          .order('created_at', { ascending: false })
+          .limit(20);
 
-      // Fetch lead resubmissions (last 48 hours, resubmission_count > 0).
-      // Scope: management sees all; sales agents only see resubmissions on
-      // leads they own — a teammate's repeat customer must never surface
-      // in another agent's notifications (looks like a fresh lead popup).
-      const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
-      const isManagement = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
-      let resubQuery = supabase
-        .from('sales_leads')
-        .select('id, first_name, last_name, email, last_resubmitted_at, resubmission_count, vehicle_reg, owner_agent, assigned_to')
-        .gt('resubmission_count', 0)
-        .not('last_resubmitted_at', 'is', null)
-        .gte('last_resubmitted_at', fortyEightHoursAgo)
-        .order('last_resubmitted_at', { ascending: false })
-        .limit(20);
-      if (!isManagement) {
-        if (!adminId) {
-          resubQuery = resubQuery.eq('id', '00000000-0000-0000-0000-000000000000');
-        } else {
-          resubQuery = resubQuery.or(`owner_agent.eq.${adminId},assigned_to.eq.${adminId}`);
+        const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+        const isManagement = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
+        let resubQuery = supabase
+          .from('sales_leads')
+          .select('id, first_name, last_name, email, last_resubmitted_at, resubmission_count, vehicle_reg, owner_agent, assigned_to')
+          .gt('resubmission_count', 0)
+          .not('last_resubmitted_at', 'is', null)
+          .gte('last_resubmitted_at', fortyEightHoursAgo)
+          .order('last_resubmitted_at', { ascending: false })
+          .limit(20);
+        if (!isManagement) {
+          if (!adminId) {
+            resubQuery = resubQuery.eq('id', '00000000-0000-0000-0000-000000000000');
+          } else {
+            resubQuery = resubQuery.or(`owner_agent.eq.${adminId},assigned_to.eq.${adminId}`);
+          }
         }
-      }
-      const { data: resubmissions } = await resubQuery;
+
+        const [contactsRes, claimsRes, customersRes, resubmissionsRes] = await Promise.all([
+          contactsPromise,
+          claimsPromise,
+          customersPromise,
+          resubQuery,
+        ]);
+
+        return {
+          contacts: contactsRes.data,
+          claims: claimsRes.data,
+          customers: customersRes.data,
+          resubmissions: resubmissionsRes.data,
+        };
+      });
 
       const allNotifications: AdminNotification[] = [];
 
