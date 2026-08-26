@@ -1,9 +1,11 @@
 /**
- * Meta Pixel tracking — LEAD GENERATION ONLY.
+ * Meta Pixel tracking — two separate events only:
+ *  - `Lead`     → Step 2 of the website (quote delivery form submission)
+ *  - `Purchase` → completed sale on the thank-you page (sales tracking)
  *
- * We deliberately do NOT track sales/purchase, pricing views or checkout.
- * The only event fired is `Lead`, on Step 2 of the website (quote delivery
- * form submission). Do not add Purchase/AddToCart/InitiateCheckout here.
+ * No pricing-view / AddToCart / InitiateCheckout funnel tracking.
+ * `Lead` never carries value or currency; `Purchase` always sends a numeric
+ * value with a valid GBP currency code (Meta data-quality requirement).
  */
 
 declare global {
@@ -12,8 +14,8 @@ declare global {
   }
 }
 
-/** Only the lead event is allowed */
-const ALLOWED_EVENTS = ['Lead'];
+/** Only these two events are allowed */
+const ALLOWED_EVENTS = ['Lead', 'Purchase'];
 
 /**
  * Strip empty params, and never send monetary value/currency —
@@ -60,4 +62,35 @@ export const trackFBLeadCapture = (vehicleReg?: string) => {
     content_category: 'Lead Capture',
     vehicle_reg: vehicleReg,
   });
+};
+
+/**
+ * Completed sale — fires the Purchase event with a real numeric value and GBP.
+ * Kept entirely separate from the Step 2 Lead event.
+ */
+export const trackFBPurchase = (
+  value: number,
+  transactionId?: string,
+  planName?: string
+) => {
+  if (typeof window === 'undefined' || !window.fbq) return;
+  const numericValue = typeof value === 'number' && isFinite(value) && value > 0 ? value : undefined;
+  if (numericValue === undefined) return; // never send a blank/zero value to Meta
+
+  const payload: Record<string, any> = {
+    value: numericValue,
+    currency: 'GBP',
+  };
+  if (transactionId) payload.order_id = transactionId;
+  if (planName) {
+    payload.content_name = planName;
+    payload.content_type = 'product';
+  }
+
+  try {
+    window.fbq('track', 'Purchase', payload);
+    console.log('📘 Meta Pixel: Purchase', payload);
+  } catch (error) {
+    console.error('Meta Pixel Purchase tracking failed:', error);
+  }
 };

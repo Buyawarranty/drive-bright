@@ -1,4 +1,5 @@
 // Google Analytics & Google Ads tracking utilities
+import { trackFBPurchase } from './metaPixelTracking';
 
 declare global {
   interface Window {
@@ -217,6 +218,9 @@ export const trackPurchaseComplete = (
     value: value,
     currency: 'GBP'
   });
+
+  // Meta Pixel: separate Purchase event for sales tracking (Lead stays Step 2 only)
+  trackFBPurchase(value, transactionId);
 };
 
 export const trackAddToCart = (value: number, itemName?: string) => {
