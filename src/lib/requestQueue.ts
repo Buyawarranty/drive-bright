@@ -149,12 +149,17 @@ export async function withPriority<T>(fn: () => Promise<T>): Promise<T> {
 /** Run non-blocking background CRM work without letting it starve the active page. */
 export async function withBackgroundPriority<T>(fn: () => Promise<T>): Promise<T> {
   backgroundDepth += 1;
+  let promise: Promise<T>;
   try {
-    return await fn();
+    // Mark only the fetches synchronously started by `fn` as background. Keeping
+    // the flag set while those requests await would accidentally downgrade an
+    // unrelated foreground screen load that starts in the meantime.
+    promise = fn();
   } finally {
     backgroundDepth = Math.max(0, backgroundDepth - 1);
     pump();
   }
+  return await promise;
 }
 
 /** For debugging / perf panels. */
