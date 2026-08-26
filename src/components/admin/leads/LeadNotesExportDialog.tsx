@@ -10,6 +10,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDataExport } from '@/hooks/useDataExport';
@@ -34,7 +42,8 @@ interface ExportLead {
   last_contacted_at?: string | null;
   last_activity_date?: string | null;
   notes?: string | null;
-  assigned_user?: { email?: string | null } | null;
+  assigned_to?: string | null;
+  assigned_user?: { first_name?: string | null; last_name?: string | null; email?: string | null } | null;
 }
 
 interface Props {
@@ -47,6 +56,13 @@ interface Props {
 
 const isoDay = (d: Date) => d.toISOString().slice(0, 10);
 
+const UNASSIGNED = '__unassigned__';
+
+const agentLabel = (lead: ExportLead) =>
+  [lead.assigned_user?.first_name, lead.assigned_user?.last_name].filter(Boolean).join(' ') ||
+  lead.assigned_user?.email ||
+  '';
+
 /** Manager export: every lead with its call attempts and full note history, over a chosen date range. */
 export const LeadNotesExportDialog: React.FC<Props> = ({ open, onOpenChange, leads, sourceHidden }) => {
   const { exportToCSV } = useDataExport();
@@ -56,19 +72,43 @@ export const LeadNotesExportDialog: React.FC<Props> = ({ open, onOpenChange, lea
     return isoDay(d);
   });
   const [toDate, setToDate] = useState(() => isoDay(new Date()));
+  const [agent, setAgent] = useState<string>('all');
+  const [includeSource, setIncludeSource] = useState(!sourceHidden);
+
+  /** Distinct agents present in the supplied leads, keyed by agent id (or unassigned). */
+  const agents = useMemo(() => {
+    const map = new Map<string, string>();
+    let hasUnassigned = false;
+    leads.forEach(lead => {
+      if (!lead.assigned_to) {
+        hasUnassigned = true;
+        return;
+      }
+      const label = agentLabel(lead) || 'Unknown agent';
+      if (!map.has(lead.assigned_to)) map.set(lead.assigned_to, label);
+    });
+    const list = Array.from(map.entries())
+      .map(([value, label]) => ({ value, label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+    if (hasUnassigned) list.push({ value: UNASSIGNED, label: 'Awaiting Contact (unassigned)' });
+    return list;
+  }, [leads]);
 
   const inRange = useMemo(() => {
     const start = new Date(`${fromDate}T00:00:00`);
     const end = new Date(`${toDate}T23:59:59`);
     return leads.filter(lead => {
       const created = new Date(lead.created_at);
-      return created >= start && created <= end;
+      if (created < start || created > end) return false;
+      if (agent === 'all') return true;
+      if (agent === UNASSIGNED) return !lead.assigned_to;
+      return lead.assigned_to === agent;
     });
-  }, [leads, fromDate, toDate]);
+  }, [leads, fromDate, toDate, agent]);
 
   const handleExport = () => {
     if (inRange.length === 0) {
-      toast.error('No leads in the selected date range');
+      toast.error('No leads match the selected filters');
       return;
     }
 
@@ -88,14 +128,22 @@ export const LeadNotesExportDialog: React.FC<Props> = ({ open, onOpenChange, lea
         'Calls Attempted': lead.call_count ?? 0,
         'Last Contacted': lead.last_contacted_at ? new Date(lead.last_contacted_at).toLocaleString('en-GB') : '',
         'Last Activity': lead.last_activity_date ? new Date(lead.last_activity_date).toLocaleString('en-GB') : '',
-        'Assigned Agent': lead.assigned_user?.email || 'Awaiting Contact',
+        'Assigned Agent': agentLabel(lead) || 'Awaiting Contact',
         'Notes': (lead.notes || '').replace(/\r?\n/g, ' | '),
       };
-      if (!sourceHidden) row['Lead Source'] = lead.lead_source || '';
+      if (includeSource && !sourceHidden) row['Lead Source'] = lead.lead_source || '';
       return row;
     });
 
-    exportToCSV(rows, { filename: `lead-with-notes_${fromDate}_to_${toDate}`, format: 'csv' });
+    const agentSlug =
+      agent === 'all'
+        ? 'all-agents'
+        : (agents.find(a => a.value === agent)?.label || 'agent').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+    exportToCSV(rows, {
+      filename: `lead-with-notes_${agentSlug}_${fromDate}_to_${toDate}`,
+      format: 'csv',
+    });
     onOpenChange(false);
   };
 
@@ -105,8 +153,8 @@ export const LeadNotesExportDialog: React.FC<Props> = ({ open, onOpenChange, lea
         <DialogHeader>
           <DialogTitle>Lead with notes</DialogTitle>
           <DialogDescription>
-            Exports every lead in the range with calls attempted, note history, contact details, vehicle,
-            status and assigned agent.
+            Exports leads for a chosen agent and date range with calls attempted, note history, contact
+            details, vehicle, status and assigned agent.
           </DialogDescription>
         </DialogHeader>
 
@@ -133,8 +181,37 @@ export const LeadNotesExportDialog: React.FC<Props> = ({ open, onOpenChange, lea
           </div>
         </div>
 
+        <div className="space-y-1.5">
+          <Label>Agent</Label>
+          <Select value={agent} onValueChange={setAgent}>
+            <SelectTrigger>
+              <SelectValue placeholder="All agents" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All agents</SelectItem>
+              {agents.map(a => (
+                <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {!sourceHidden && (
+          <div className="flex items-center justify-between rounded-md border p-3">
+            <div className="space-y-0.5">
+              <Label htmlFor="lead-notes-source">Include lead source</Label>
+              <p className="text-xs text-muted-foreground">Turn off to export without attribution.</p>
+            </div>
+            <Switch
+              id="lead-notes-source"
+              checked={includeSource}
+              onCheckedChange={setIncludeSource}
+            />
+          </div>
+        )}
+
         <p className="text-sm text-muted-foreground">
-          {inRange.length} lead{inRange.length === 1 ? '' : 's'} match this range.
+          {inRange.length} lead{inRange.length === 1 ? '' : 's'} match these filters.
         </p>
 
         <DialogFooter>
