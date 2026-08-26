@@ -735,23 +735,24 @@ const ThankYou = () => {
                 {/* Order Summary */}
                 <OrderSummary 
                   plan={plan}
-                  paymentType={duration || undefined}
+                  paymentType={enrichedDuration || duration || undefined}
                   warrantyStartDate={undefined}
-                  duration={duration || undefined}
+                  duration={enrichedDuration || duration || undefined}
                   warrantyNumber={policyNumber || searchParams.get('warranty_number') || searchParams.get('policy_number') || undefined}
-                  monthlyPrice={monthlyPrice ? parseFloat(monthlyPrice) : undefined}
-                  totalPrice={finalAmount ? parseFloat(finalAmount) : undefined}
+                  monthlyPrice={enrichedMonthlyPrice || (monthlyPrice ? parseFloat(monthlyPrice) : undefined)}
+                  totalPrice={enrichedTotalPrice || (finalAmount ? parseFloat(finalAmount) : undefined)}
                   originalPrice={searchParams.get('original_price') ? parseFloat(searchParams.get('original_price')!) : undefined}
-                  vehicle={vehicle || undefined}
-                  vehicleReg={vehicleReg || undefined}
-                  mileage={mileage || undefined}
-                  claimLimit={claimLimit ? parseInt(claimLimit) : undefined}
-                  labourRate={labourRate ? parseInt(labourRate) : undefined}
-                  excess={excess ? parseInt(excess) : undefined}
+                  vehicle={enrichedVehicle || vehicle || undefined}
+                  vehicleReg={enrichedVehicleReg || vehicleReg || undefined}
+                  mileage={enrichedMileage || mileage || undefined}
+                  claimLimit={enrichedClaimLimit || (claimLimit ? parseInt(claimLimit) : undefined)}
+                  labourRate={enrichedLabourRate || (labourRate ? parseInt(labourRate) : undefined)}
+                  excess={enrichedExcess !== undefined ? enrichedExcess : (excess ? parseInt(excess) : undefined)}
                   addons={addons || undefined}
                   paidInFull={source === 'stripe'}
                   source={source || undefined}
                 />
+
 
                 {/* What Happens Next */}
                 <WhatHappensNext />
