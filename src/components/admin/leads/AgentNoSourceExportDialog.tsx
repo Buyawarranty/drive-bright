@@ -22,7 +22,7 @@ import { toast } from 'sonner';
 import { useDataExport } from '@/hooks/useDataExport';
 import { Lead } from '@/hooks/useLeads';
 import { useAgentActivity } from '@/hooks/useAgentActivity';
-import { useCustomerActivity, getCustomerActivityLabel } from '@/hooks/useCustomerActivity';
+import { useCustomerActivity, getCustomerActivityLabel } from '@/hooks/useCustomerActivity.tsx';
 import { useLeadResponseTime, formatResponseTime, getResponseSourceLabel } from '@/hooks/useLeadResponseTime';
 import { formatLeadDateUK } from '@/lib/leadFeedDate';
 import { format, formatDistanceToNow } from 'date-fns';
