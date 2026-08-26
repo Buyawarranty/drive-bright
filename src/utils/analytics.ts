@@ -343,15 +343,6 @@ export const trackEmailConversion = (emailId: string, campaignName: string, valu
     currency: 'GBP',
     email_id: emailId,
   });
-  
-  // Also track with Meta Pixel
-  if (typeof window !== 'undefined' && window.fbq) {
-    window.fbq('track', 'Purchase', {
-      value: value || 0,
-      currency: 'GBP',
-      content_category: 'email_conversion',
-      email_id: emailId,
-      campaign_name: campaignName,
-    });
-  }
+
+  // Meta Pixel: no sales/purchase tracking by design — lead generation only.
 };

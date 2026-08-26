@@ -11,29 +11,42 @@
  * ourselves: at most MAX_CONCURRENT in flight, the rest wait in a FIFO queue.
  * Nothing is dropped — it just arrives slightly later, in order.
  *
- * Auth and realtime traffic bypasses the queue: token refreshes must never sit
- * behind data reads (that would deadlock every queued request waiting on a JWT).
+ * PRIORITISATION (important):
+ *  1. Bypass (never queued): auth token refresh, realtime, and edge function
+ *     calls. Edge functions are always user-initiated (reg lookup, import lead,
+ *     send quote, MOT history) and have their own client-side timeouts — if
+ *     they sit behind a wall of background dashboard reads they time out and
+ *     look "broken". They are few in number, so they go straight out.
+ *  2. High lane: interactive reads/writes explicitly marked by the UI
+ *     (see `withPriority`). Served before any background work.
+ *  3. Normal lane: everything else — background panel reads, counters, stats.
  */
 
 const MAX_CONCURRENT = 8;
 
 let active = 0;
-const waiting: Array<() => void> = [];
+const highQueue: Array<() => void> = [];
+const normalQueue: Array<() => void> = [];
+
+/** Set while an interactive user action is running (see withPriority). */
+let priorityDepth = 0;
 
 function pump() {
-  while (active < MAX_CONCURRENT && waiting.length > 0) {
-    const next = waiting.shift()!;
+  while (active < MAX_CONCURRENT && (highQueue.length > 0 || normalQueue.length > 0)) {
+    const next = (highQueue.length > 0 ? highQueue.shift() : normalQueue.shift())!;
     active += 1;
     next();
   }
 }
 
-function acquire(): Promise<void> {
+function acquire(high: boolean): Promise<void> {
   if (active < MAX_CONCURRENT) {
     active += 1;
     return Promise.resolve();
   }
-  return new Promise<void>((resolve) => waiting.push(resolve));
+  return new Promise<void>((resolve) => {
+    (high ? highQueue : normalQueue).push(resolve);
+  });
 }
 
 function release() {
@@ -41,8 +54,18 @@ function release() {
   pump();
 }
 
+/**
+ * Requests that must never wait behind background data reads.
+ * - /auth/v1/  : token refresh (queuing it deadlocks everything waiting on a JWT)
+ * - /realtime/ : websocket handshakes
+ * - /functions/v1/ : user-initiated edge functions (reg lookup, import lead, …)
+ */
 function shouldBypass(url: string): boolean {
-  return url.includes('/auth/v1/') || url.includes('/realtime/');
+  return (
+    url.includes('/auth/v1/') ||
+    url.includes('/realtime/') ||
+    url.includes('/functions/v1/')
+  );
 }
 
 /** Drop-in `fetch` that paces Supabase data requests. */
@@ -56,7 +79,8 @@ export const queuedFetch: typeof fetch = async (input, init) => {
 
   if (shouldBypass(url)) return fetch(input as any, init);
 
-  await acquire();
+  const high = priorityDepth > 0;
+  await acquire(high);
   try {
     return await fetch(input as any, init);
   } finally {
@@ -64,5 +88,26 @@ export const queuedFetch: typeof fetch = async (input, init) => {
   }
 };
 
+/**
+ * Run an interactive user action (button click, reg lookup, import, save) so
+ * that any queries it fires jump ahead of background dashboard traffic.
+ *
+ *   await withPriority(() => importLead(id));
+ */
+export async function withPriority<T>(fn: () => Promise<T>): Promise<T> {
+  priorityDepth += 1;
+  try {
+    return await fn();
+  } finally {
+    priorityDepth = Math.max(0, priorityDepth - 1);
+    pump();
+  }
+}
+
 /** For debugging / perf panels. */
-export const getRequestQueueStats = () => ({ active, queued: waiting.length });
+export const getRequestQueueStats = () => ({
+  active,
+  queued: highQueue.length + normalQueue.length,
+  queuedHigh: highQueue.length,
+  queuedNormal: normalQueue.length,
+});

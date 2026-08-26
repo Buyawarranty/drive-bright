@@ -117,21 +117,16 @@ export function trackMetaPixelEmailClick(emailId: string, campaignName: string, 
   }
 }
 
+// Meta Pixel: sales/purchase tracking intentionally disabled — we only send
+// the Step 2 Lead event to Meta. Kept as a no-op so existing callers still work.
 export function trackMetaPixelEmailConversion(
-  emailId: string,
-  campaignName: string,
-  value?: number
+  _emailId: string,
+  _campaignName: string,
+  _value?: number
 ) {
-  if (typeof window !== 'undefined' && window.fbq) {
-    window.fbq('track', 'Purchase', {
-      value: value || 0,
-      currency: 'GBP',
-      content_category: 'email_conversion',
-      email_id: emailId,
-      campaign_name: campaignName,
-    });
-  }
+  return;
 }
+
 
 // Calculate email analytics metrics
 export interface EmailAnalytics {
