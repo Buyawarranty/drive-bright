@@ -130,7 +130,6 @@ export const LeadNotesExportDialog: React.FC<Props> = ({ open, onOpenChange, lea
         'Assigned Agent': agentLabel(lead) || 'Awaiting Contact',
         'Notes': (lead.notes || '').replace(/\r?\n/g, ' | '),
       };
-      if (includeSource && !sourceHidden) row['Lead Source'] = lead.lead_source || '';
       return row;
     });
 
@@ -195,19 +194,6 @@ export const LeadNotesExportDialog: React.FC<Props> = ({ open, onOpenChange, lea
           </Select>
         </div>
 
-        {!sourceHidden && (
-          <div className="flex items-center justify-between rounded-md border p-3">
-            <div className="space-y-0.5">
-              <Label htmlFor="lead-notes-source">Include lead source</Label>
-              <p className="text-xs text-muted-foreground">Turn off to export without attribution.</p>
-            </div>
-            <Switch
-              id="lead-notes-source"
-              checked={includeSource}
-              onCheckedChange={setIncludeSource}
-            />
-          </div>
-        )}
 
         <p className="text-sm text-muted-foreground">
           {inRange.length} lead{inRange.length === 1 ? '' : 's'} match these filters.
