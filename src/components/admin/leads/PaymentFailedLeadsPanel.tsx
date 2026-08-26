@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AlertTriangle, Phone, Mail, Hand, X, Copy, Volume2, VolumeX } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+import { withBackgroundPriority } from '@/lib/requestQueue';
 
 interface StruggleAlert {
   id: string;
@@ -108,13 +109,16 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
   const fetchActive = useCallback(async () => {
     // Only ACTIVE alerts — once someone takes it, status flips to acknowledged
     // and it vanishes from everyone's panel automatically.
-    const { data } = await supabase
-      .from('checkout_struggle_alerts')
-      .select('*')
-      .eq('status', 'active')
-      .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false })
-      .limit(25);
+    const data = await withBackgroundPriority(async () => {
+      const { data } = await supabase
+        .from('checkout_struggle_alerts')
+        .select('*')
+        .eq('status', 'active')
+        .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false })
+        .limit(25);
+      return data;
+    });
     const rows = (data as StruggleAlert[]) || [];
     // Beep once per new unseen alert.
     let hasNew = false;

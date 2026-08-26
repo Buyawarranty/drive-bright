@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { withBackgroundPriority } from '@/lib/requestQueue';
 
 interface LeadAccessRequest {
   id: string;
@@ -19,7 +20,7 @@ export const useLeadAccessRequests = (leadIds: string[], currentAdminUserId: str
   // Fetch access requests for current user's leads
   const { data: accessRequests = [] } = useQuery({
     queryKey: ['lead-access-requests', currentAdminUserId],
-    queryFn: async () => {
+    queryFn: () => withBackgroundPriority(async () => {
       if (!currentAdminUserId) return [];
       const { data, error } = await supabase
         .from('lead_access_requests')
@@ -27,7 +28,7 @@ export const useLeadAccessRequests = (leadIds: string[], currentAdminUserId: str
         .eq('requested_by', currentAdminUserId);
       if (error) throw error;
       return (data || []) as LeadAccessRequest[];
-    },
+    }),
     enabled: !!currentAdminUserId,
   });
 
@@ -77,7 +78,7 @@ export const usePendingAccessRequests = () => {
 
   const { data: pendingRequests = [], isLoading } = useQuery({
     queryKey: ['lead-access-requests-pending'],
-    queryFn: async () => {
+    queryFn: () => withBackgroundPriority(async () => {
       const { data, error } = await supabase
         .from('lead_access_requests')
         .select('*')
@@ -85,7 +86,7 @@ export const usePendingAccessRequests = () => {
         .order('created_at', { ascending: false });
       if (error) throw error;
       return (data || []) as LeadAccessRequest[];
-    },
+    }),
     refetchInterval: 30000,
   });
 

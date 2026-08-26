@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchAllRows } from '@/utils/supabaseBatchFetch';
+import { withBackgroundPriority } from '@/lib/requestQueue';
 import { CustomersTab } from '@/components/admin/CustomersTab';
 import { SetTargetsPanel } from './SetTargetsPanel';
 import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
@@ -93,6 +94,7 @@ const useDashboardStats = () => {
 
     const fetchStats = async () => {
       try {
+        await withBackgroundPriority(async () => {
         const now = new Date();
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
@@ -101,10 +103,10 @@ const useDashboardStats = () => {
             supabase
               .from('sales_leads')
               .select('id, assigned_to, is_paid, payment_amount, cart_value, quote_amount, updated_at, status')
-          ),
+          , { background: true }),
           fetchAllRows(() =>
             supabase.from('abandoned_carts').select('id, contacted_by, is_converted').eq('is_converted', false)
-          ),
+          , { background: true }),
         ]);
 
         if (cancelled) return;
@@ -145,6 +147,7 @@ const useDashboardStats = () => {
             };
           })
         );
+        });
       } catch (err) {
         console.error('[SalesLeadDashboard] stats load failed', err);
       }

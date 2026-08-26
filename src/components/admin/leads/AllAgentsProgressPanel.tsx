@@ -3,6 +3,7 @@ import { addDays, endOfMonth, format, startOfMonth, startOfWeek } from 'date-fns
 import { Loader2, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { buildSaleCreditResolver, fetchSalesCreditAgentIds } from '@/lib/saleCredit';
+import { withBackgroundPriority } from '@/lib/requestQueue';
 
 /**
  * Manager view of the same figures each agent sees on their own "My progress"
@@ -59,7 +60,7 @@ export const AllAgentsProgressPanel: React.FC = () => {
       const weekStartStr = format(weekStart, 'yyyy-MM-dd');
       const weekEndStr = format(addDays(weekStart, 6), 'yyyy-MM-dd');
 
-      const settled = await Promise.allSettled([
+      const settled = await withBackgroundPriority(() => Promise.allSettled([
         supabase.rpc('get_team_scoreboard', {
           p_start: monthStart.toISOString(),
           p_end: endOfMonth(now).toISOString(),
@@ -87,7 +88,7 @@ export const AllAgentsProgressPanel: React.FC = () => {
           p_start: monthStart.toISOString(),
           p_end: endOfMonth(now).toISOString(),
         }),
-      ]);
+      ]));
 
       const val = (i: number): any => (settled[i].status === 'fulfilled' ? (settled[i] as any).value : null);
       const [scoreRes, daysRes, breakRes, breakLogRes, reviewRes, capsRes, salesRes, reconRes] = [0, 1, 2, 3, 4, 5, 6, 7].map(val);

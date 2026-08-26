@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { withBackgroundPriority } from '@/lib/requestQueue';
 
 /**
  * Lightweight hook that returns the count of orphaned/recoverable leads.
@@ -15,7 +16,7 @@ export const useOrphanedLeadCount = () => {
 
     try {
       // Use count queries instead of fetching all rows
-      const [cartsCountRes, leadsCountRes] = await Promise.all([
+      const [cartsCountRes, leadsCountRes] = await withBackgroundPriority(() => Promise.all([
         supabase
           .from('abandoned_carts')
           .select('id', { count: 'exact', head: true })
@@ -25,7 +26,7 @@ export const useOrphanedLeadCount = () => {
         supabase
           .from('sales_leads')
           .select('id', { count: 'exact', head: true })
-      ]);
+      ]));
 
       // Approximate orphan count: carts that aren't yet in sales_leads
       // This is an approximation but avoids fetching 10k+ rows

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCredit';
+import { withBackgroundPriority } from '@/lib/requestQueue';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
@@ -103,23 +104,23 @@ export const useScoreboardData = (): ScoreboardData => {
 
       let myAdminId: string | null = null;
       if (user) {
-        const { data: adminUser } = await supabase
+        const { data: adminUser } = await withBackgroundPriority(() => Promise.resolve(supabase
           .from('admin_users')
           .select('id, role')
           .eq('user_id', user.id)
-          .maybeSingle();
+          .maybeSingle()));
         myAdminId = adminUser?.id || null;
         setCurrentAdminUserId(myAdminId);
         setCurrentUserRole(adminUser?.role || null);
       }
 
       // Only active, non-archived agents appear on the scoreboard.
-      const { data: adminUsers } = await supabase
+      const { data: adminUsers } = await withBackgroundPriority(() => Promise.resolve(supabase
         .from('admin_users')
         .select('id, first_name, last_name, email, role, is_active, sip_extension')
         .in('role', ['sales', 'sales_lead'])
         .eq('is_active', true)
-        .is('archived_at', null);
+        .is('archived_at', null)));
 
       if (!adminUsers?.length) {
         setAgents([]);
@@ -138,7 +139,7 @@ export const useScoreboardData = (): ScoreboardData => {
       // Credit only ever lands on a sales agent — back-office staff who confirm a
       // payment on an agent's behalf never take the sale. Fetch a superset of rows
       // touched by any sales agent, then resolve the single owner in code.
-      const salesAgentIds = await fetchSalesCreditAgentIds();
+      const salesAgentIds = await withBackgroundPriority(fetchSalesCreditAgentIds);
       const resolveCredit = buildSaleCreditResolver(salesAgentIds);
       const salesIdList = Array.from(new Set([...salesAgentIds, ...agentIds])).join(',');
       const attributionFilter = `sale_credit_admin_user_id.in.(${salesIdList}),payment_confirmed_by.in.(${salesIdList}),quote_sent_by.in.(${salesIdList}),assigned_to.in.(${salesIdList})`;
@@ -155,7 +156,7 @@ export const useScoreboardData = (): ScoreboardData => {
           .lte('signup_date', end.toISOString());
       }
 
-      const { data: customers } = await customerQuery;
+      const { data: customers } = await withBackgroundPriority(() => Promise.resolve(customerQuery));
       const attributionOf = (c: any) => resolveCredit(c);
 
 
@@ -169,10 +170,10 @@ export const useScoreboardData = (): ScoreboardData => {
       ));
       const codeMap = new Map<string, { type: string; value: number }>();
       if (referencedCodes.length > 0) {
-        const { data: codeRows } = await supabase
+        const { data: codeRows } = await withBackgroundPriority(() => Promise.resolve(supabase
           .from('discount_codes')
           .select('code, type, value')
-          .in('code', referencedCodes);
+          .in('code', referencedCodes)));
         (codeRows || []).forEach((r: any) => {
           codeMap.set(String(r.code).toUpperCase(), { type: r.type, value: Number(r.value) || 0 });
         });
@@ -199,7 +200,7 @@ export const useScoreboardData = (): ScoreboardData => {
           .lte('signup_date', end.toISOString());
       }
 
-      const { data: cancelledCustomers } = await cancelledQuery;
+      const { data: cancelledCustomers } = await withBackgroundPriority(() => Promise.resolve(cancelledQuery));
 
       // Active workload only: leads currently assigned to the agent that are
       // NOT terminal (lost, fake_lead, converted, not_interested, dormant, archived)
@@ -215,7 +216,7 @@ export const useScoreboardData = (): ScoreboardData => {
         .eq('is_paid', false)
         .not('status', 'in', `(${DEAD_STATUSES.join(',')})`);
 
-      const { data: leads } = await leadsQuery;
+      const { data: leads } = await withBackgroundPriority(() => Promise.resolve(leadsQuery));
 
       // Fetch approved commission claims per agent
       let claimsQuery = supabase
@@ -230,7 +231,7 @@ export const useScoreboardData = (): ScoreboardData => {
           .lte('created_at', end.toISOString());
       }
 
-      const { data: approvedClaims } = await claimsQuery;
+      const { data: approvedClaims } = await withBackgroundPriority(() => Promise.resolve(claimsQuery));
 
       // Live call data straight from the Dial 9 / Zoiper API sync (zoiper_call_events).
       // This is the authoritative dial count — lead_call_logs only records calls that
@@ -248,7 +249,7 @@ export const useScoreboardData = (): ScoreboardData => {
           .gte('started_at', start.toISOString())
           .lte('started_at', end.toISOString());
       }
-      const { data: dialEvents, error: dialErr } = await dialQuery.limit(50000);
+      const { data: dialEvents, error: dialErr } = await withBackgroundPriority(() => Promise.resolve(dialQuery.limit(50000)));
       if (dialErr) console.error('zoiper_call_events error', dialErr);
       const callsMap = new Map<string, number>();
       const connectedMap = new Map<string, number>();
@@ -262,13 +263,13 @@ export const useScoreboardData = (): ScoreboardData => {
 
       // Fetch monthly targets
       const nowIso = new Date().toISOString();
-      const { data: targets } = await supabase
+      const { data: targets } = await withBackgroundPriority(() => Promise.resolve(supabase
         .from('sales_targets')
         .select('admin_user_id, target_amount, target_period, manual_leads_count, revenue_target')
         .in('admin_user_id', agentIds)
         .eq('target_period', 'monthly')
         .lte('start_date', nowIso)
-        .gte('end_date', nowIso);
+        .gte('end_date', nowIso)));
 
       const targetMap = new Map<string, number>();
       const revenueTargetMap = new Map<string, number>();
@@ -285,8 +286,8 @@ export const useScoreboardData = (): ScoreboardData => {
       // Uses a SECURITY DEFINER RPC so sales agents (who can't read other agents' leads via RLS)
       // still see aggregate counts on the scoreboard.
       const mtdLeadsMap = new Map<string, number>();
-      const { data: mtdRows, error: mtdErr } = await supabase
-        .rpc('get_mtd_leads_per_agent', { _agent_ids: agentIds });
+      const { data: mtdRows, error: mtdErr } = await withBackgroundPriority(() => Promise.resolve(supabase
+        .rpc('get_mtd_leads_per_agent', { _agent_ids: agentIds })));
       if (mtdErr) console.error('get_mtd_leads_per_agent error', mtdErr);
       (mtdRows || []).forEach((r: any) => {
         if (r.assigned_to) mtdLeadsMap.set(r.assigned_to, Number(r.lead_count) || 0);
@@ -297,12 +298,12 @@ export const useScoreboardData = (): ScoreboardData => {
       // so it's what the scoreboard shows (no manual overrides, no workload fallbacks).
       const cleanLeadsMap = new Map<string, number>();
       const cleanConvertedMap = new Map<string, number>();
-      const { data: cleanRows, error: cleanErr } = await supabase
+      const { data: cleanRows, error: cleanErr } = await withBackgroundPriority(() => Promise.resolve(supabase
         .rpc('get_clean_leads_per_agent', {
           _agent_ids: agentIds,
           _start: (period !== 'all' ? start : new Date('2020-01-01')).toISOString(),
           _end: end.toISOString(),
-        });
+        })));
       if (cleanErr) console.error('get_clean_leads_per_agent error', cleanErr);
       (cleanRows || []).forEach((r: any) => {
         if (!r.assigned_to) return;

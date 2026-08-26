@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { withBackgroundPriority } from '@/lib/requestQueue';
 
 export interface CheckoutStruggle {
   id: string;
@@ -24,13 +25,16 @@ export function useActiveCheckoutStruggles(windowMinutes = 60 * 24) {
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
-    const since = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
-    const { data } = await supabase
-      .from('checkout_struggle_alerts')
-      .select('id, signal_type, status, created_at, customer_email, customer_phone, vehicle_reg')
-      .gte('created_at', since)
-      .order('created_at', { ascending: false })
-      .limit(500);
+    const data = await withBackgroundPriority(async () => {
+      const since = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
+      const { data } = await supabase
+        .from('checkout_struggle_alerts')
+        .select('id, signal_type, status, created_at, customer_email, customer_phone, vehicle_reg')
+        .gte('created_at', since)
+        .order('created_at', { ascending: false })
+        .limit(500);
+      return data;
+    });
     setStruggles((data as CheckoutStruggle[]) || []);
     setLoading(false);
   }, [windowMinutes]);

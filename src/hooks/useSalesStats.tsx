@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchAllRows } from '@/utils/supabaseBatchFetch';
+import { withBackgroundPriority } from '@/lib/requestQueue';
 
 export interface SalespersonStats {
   userId: string;
@@ -64,18 +65,18 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
   const fetchPersonalStats = useCallback(async (adminUserId: string) => {
     try {
       // Get user info
-      const { data: userData } = await supabase
+      const { data: userData } = await withBackgroundPriority(() => Promise.resolve(supabase
         .from('admin_users')
         .select('id, first_name, last_name, email')
         .eq('id', adminUserId)
-        .maybeSingle();
+        .maybeSingle()));
 
       if (!userData) return null;
 
       // Get leads assigned to this user (paginated)
       const { data: leads } = await fetchAllRows<any>(() =>
         supabase.from('sales_leads').select('*').eq('assigned_to', adminUserId)
-      );
+      , { background: true });
 
       const leadsData = leads || [];
       
@@ -90,7 +91,7 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
           .select('id, final_amount, status')
           .eq('assigned_to', adminUserId)
           .eq('is_deleted', false)
-      );
+      , { background: true });
 
       const activeDeals = (customerDeals || []).filter(c => 
         !['cancelled', 'refunded'].includes((c.status || '').toLowerCase())
@@ -181,15 +182,15 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
         return q;
       };
 
-      const { data: leads } = await fetchAllRows<any>(buildLeadsQuery);
+      const { data: leads } = await fetchAllRows<any>(buildLeadsQuery, { background: true });
       const leadsData = leads || [];
 
       // Get only sales-role users (sales agents and sales leads) — same as scoreboard
-      const { data: users } = await supabase
+      const { data: users } = await withBackgroundPriority(() => Promise.resolve(supabase
         .from('admin_users')
         .select('id, first_name, last_name, email, role')
         .eq('is_active', true)
-        .in('role', ['sales', 'sales_lead']);
+        .in('role', ['sales', 'sales_lead'])));
 
       setSalesUsers(users || []);
       const userIds = (users || []).map(u => u.id);
@@ -219,7 +220,7 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
       };
 
       const { data: customers } = userIds.length > 0
-        ? await fetchAllRows<any>(buildCustomersQuery)
+        ? await fetchAllRows<any>(buildCustomersQuery, { background: true })
         : { data: [] as any[] };
       const customersData = (filters?.agentId === 'unassigned') ? [] : (customers || []);
 
@@ -300,7 +301,7 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
       // Tag distribution
       const { data: tagAssignments } = await fetchAllRows<any>(() =>
         supabase.from('lead_tag_assignments').select('tag_id, lead_tags(name, color)')
-      );
+      , { background: true });
 
       const tagMap = new Map<string, { count: number; color: string }>();
       (tagAssignments || []).forEach((t: any) => {
@@ -340,18 +341,18 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
   const fetchBadges = useCallback(async (adminUserId?: string) => {
     try {
       // Get all badges
-      const { data: badges } = await supabase
+      const { data: badges } = await withBackgroundPriority(() => Promise.resolve(supabase
         .from('sales_badges')
-        .select('*');
+        .select('*')));
 
       setAllBadges(badges || []);
 
       if (adminUserId) {
         // Get user's earned badges
-        const { data: earned } = await supabase
+        const { data: earned } = await withBackgroundPriority(() => Promise.resolve(supabase
           .from('user_badges')
           .select('badge_id, earned_at, sales_badges(*)')
-          .eq('user_id', adminUserId);
+          .eq('user_id', adminUserId)));
 
         const userBadgeList = (earned || []).map((e: any) => ({
           ...e.sales_badges,
@@ -370,14 +371,14 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
       const stats = await fetchPersonalStats(adminUserId);
       if (!stats) return;
 
-      const { data: badges } = await supabase
+      const { data: badges } = await withBackgroundPriority(() => Promise.resolve(supabase
         .from('sales_badges')
-        .select('*');
+        .select('*')));
 
-      const { data: earnedBadges } = await supabase
+      const { data: earnedBadges } = await withBackgroundPriority(() => Promise.resolve(supabase
         .from('user_badges')
         .select('badge_id')
-        .eq('user_id', adminUserId);
+        .eq('user_id', adminUserId)));
 
       const earnedIds = new Set((earnedBadges || []).map(e => e.badge_id));
 

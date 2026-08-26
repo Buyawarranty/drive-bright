@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
+import { withBackgroundPriority } from '@/lib/requestQueue';
 
 /**
  * Last time a HUMAN agent actually touched a lead.
@@ -60,7 +61,7 @@ export const useAgentActivity = (leadIds: string[]) => {
     try {
       for (let i = 0; i < ids.length; i += BATCH) {
         const batch = ids.slice(i, i + BATCH);
-        const [notes, calls, changes, dials, crCalls] = await Promise.all([
+        const [notes, calls, changes, dials, crCalls] = await withBackgroundPriority(() => Promise.all([
           supabase
             .from('lead_quick_notes')
             .select('lead_id, created_at, created_by')
@@ -95,7 +96,7 @@ export const useAgentActivity = (leadIds: string[]) => {
             .in('matched_lead_id', batch)
             .order('started_at', { ascending: false })
             .limit(batch.length * 2),
-        ]);
+        ]));
 
         (notes.data || []).forEach((r: any) => upsert(r.lead_id, r.created_at, 'note'));
         (calls.data || []).forEach((r: any) => upsert(r.lead_id, r.created_at, 'call'));
