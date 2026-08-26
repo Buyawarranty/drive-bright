@@ -76,26 +76,6 @@ export const useCustomerNotifications = (customerEmail: string | undefined) => {
     }
   };
 
-  const subscribeToNotifications = () => {
-    if (!customerEmail) return;
-
-    const channel = supabase
-      .channel('customer-notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'customer_notifications',
-        },
-        (payload) => {
-          console.log('Notification change received:', payload);
-          fetchNotifications();
-        }
-      )
-      .subscribe();
-  };
-
   const markAsRead = async (notificationId: string) => {
     try {
       const { error } = await supabase
