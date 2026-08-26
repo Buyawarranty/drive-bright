@@ -74,6 +74,18 @@ const ThankYou = () => {
   const [timeRemaining, setTimeRemaining] = useState<string>('');
   const [isGtagReady, setIsGtagReady] = useState(false);
   
+  // Enriched order details from process-stripe-success or DB fallback
+  const [enrichedDuration, setEnrichedDuration] = useState<string | undefined>(duration || undefined);
+  const [enrichedClaimLimit, setEnrichedClaimLimit] = useState<number | undefined>(claimLimit ? parseInt(claimLimit) : undefined);
+  const [enrichedLabourRate, setEnrichedLabourRate] = useState<number | undefined>(labourRate ? parseInt(labourRate) : undefined);
+  const [enrichedExcess, setEnrichedExcess] = useState<number | undefined>(excess ? parseInt(excess) : undefined);
+  const [enrichedVehicle, setEnrichedVehicle] = useState<string | undefined>(vehicle || undefined);
+  const [enrichedVehicleReg, setEnrichedVehicleReg] = useState<string | undefined>(vehicleReg || undefined);
+  const [enrichedMileage, setEnrichedMileage] = useState<string | undefined>(mileage || undefined);
+  const [enrichedTotalPrice, setEnrichedTotalPrice] = useState<number | undefined>(finalAmount ? parseFloat(finalAmount) : undefined);
+  const [enrichedMonthlyPrice, setEnrichedMonthlyPrice] = useState<number | undefined>(monthlyPrice ? parseFloat(monthlyPrice) : undefined);
+
+  
   // CRITICAL: Handle failed/cancelled redirect payments IMMEDIATELY
   // This prevents showing the thank-you page for incomplete payments
   useEffect(() => {
