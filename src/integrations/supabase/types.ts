@@ -4564,6 +4564,7 @@ export type Database = {
           google_review_requested_at: string | null
           id: string
           is_deleted: boolean | null
+          is_direct_website_sale: boolean | null
           is_manual_entry: boolean | null
           is_test_cancellation: boolean
           labour_rate: number | null
@@ -4691,6 +4692,7 @@ export type Database = {
           google_review_requested_at?: string | null
           id?: string
           is_deleted?: boolean | null
+          is_direct_website_sale?: boolean | null
           is_manual_entry?: boolean | null
           is_test_cancellation?: boolean
           labour_rate?: number | null
@@ -4818,6 +4820,7 @@ export type Database = {
           google_review_requested_at?: string | null
           id?: string
           is_deleted?: boolean | null
+          is_direct_website_sale?: boolean | null
           is_manual_entry?: boolean | null
           is_test_cancellation?: boolean
           labour_rate?: number | null
@@ -14171,10 +14174,19 @@ export type Database = {
         Args: { _admin_user_id: string; _enabled: boolean }
         Returns: undefined
       }
-      set_sale_credit_agent: {
-        Args: { p_admin_user_id: string; p_customer_id: string }
-        Returns: undefined
-      }
+      set_sale_credit_agent:
+        | {
+            Args: { p_admin_user_id: string; p_customer_id: string }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_admin_user_id: string
+              p_customer_id: string
+              p_direct_website_sale?: boolean
+            }
+            Returns: undefined
+          }
       set_user_offline: { Args: never; Returns: undefined }
       shark_tank_agent_stats: {
         Args: never

@@ -111,6 +111,44 @@ export const UnattributedSalesAssigner: React.FC<Props> = ({ bucket, start, end,
     }
   };
 
+  const markDirectWebsite = async (row: Row) => {
+    setSaving((s) => ({ ...s, [row.customer_id]: true }));
+    try {
+      const { error } = await (supabase as any).rpc('set_sale_credit_agent', {
+        p_customer_id: row.customer_id,
+        p_admin_user_id: null,
+        p_direct_website_sale: true,
+      });
+      if (error) throw error;
+      toast.success(`${row.customer_name || 'Sale'} marked as direct website sale`);
+      setRows((rs) => rs.filter((r) => r.customer_id !== row.customer_id));
+      onSaved?.();
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not mark as direct website sale');
+    } finally {
+      setSaving((s) => ({ ...s, [row.customer_id]: false }));
+    }
+  };
+
+  const unmarkDirectWebsite = async (row: Row) => {
+    setSaving((s) => ({ ...s, [row.customer_id]: true }));
+    try {
+      const { error } = await (supabase as any).rpc('set_sale_credit_agent', {
+        p_customer_id: row.customer_id,
+        p_admin_user_id: null,
+        p_direct_website_sale: false,
+      });
+      if (error) throw error;
+      toast.success(`${row.customer_name || 'Sale'} moved back to unattributed`);
+      setRows((rs) => rs.filter((r) => r.customer_id !== row.customer_id));
+      onSaved?.();
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not update direct website sale flag');
+    } finally {
+      setSaving((s) => ({ ...s, [row.customer_id]: false }));
+    }
+  };
+
   const total = useMemo(() => rows.reduce((t, r) => t + r.amount, 0), [rows]);
 
   return (
@@ -121,7 +159,11 @@ export const UnattributedSalesAssigner: React.FC<Props> = ({ bucket, start, end,
         className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] font-medium hover:bg-muted"
       >
         {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-        {open ? 'Hide these sales' : 'Show these sales and assign an agent'}
+        {open
+          ? 'Hide these sales'
+          : bucket === 'direct_website'
+            ? 'Show direct website sales'
+            : 'Show these sales and assign an agent'}
       </button>
 
       {open && (
@@ -143,7 +185,7 @@ export const UnattributedSalesAssigner: React.FC<Props> = ({ bucket, start, end,
                       <th className="px-3 py-2 font-medium">Amount</th>
                       <th className="px-3 py-2 font-medium">Currently credited</th>
                       <th className="px-3 py-2 font-medium">Assign to sales agent</th>
-                      <th className="px-3 py-2 font-medium" />
+                      <th className="px-3 py-2 font-medium">Or direct website sale</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -161,33 +203,62 @@ export const UnattributedSalesAssigner: React.FC<Props> = ({ bucket, start, end,
                         <td className="px-3 py-2 whitespace-nowrap font-semibold">{gbp(r.amount)}</td>
                         <td className="px-3 py-2 text-muted-foreground">{r.current_label || 'No agent on the record'}</td>
                         <td className="px-3 py-2">
-                          <select
-                            value={picks[r.customer_id] || ''}
-                            onChange={(e) => setPicks((p) => ({ ...p, [r.customer_id]: e.target.value }))}
-                            className="w-44 rounded-md border border-border bg-background px-2 py-1 text-xs"
-                          >
-                            <option value="">Choose agent…</option>
-                            {agents.map((a) => (
-                              <option key={a.id} value={a.id}>
-                                {a.name}
-                              </option>
-                            ))}
-                          </select>
+                          {bucket === 'direct_website' ? (
+                            <span className="text-[11px] text-muted-foreground">—</span>
+                          ) : (
+                            <select
+                              value={picks[r.customer_id] || ''}
+                              onChange={(e) => setPicks((p) => ({ ...p, [r.customer_id]: e.target.value }))}
+                              className="w-44 rounded-md border border-border bg-background px-2 py-1 text-xs"
+                            >
+                              <option value="">Choose agent…</option>
+                              {agents.map((a) => (
+                                <option key={a.id} value={a.id}>
+                                  {a.name}
+                                </option>
+                              ))}
+                            </select>
+                          )}
                         </td>
                         <td className="px-3 py-2">
-                          <button
-                            type="button"
-                            onClick={() => save(r)}
-                            disabled={!picks[r.customer_id] || saving[r.customer_id]}
-                            className="inline-flex items-center gap-1 rounded-md bg-orange-600 px-2 py-1 text-[11px] font-medium text-primary-foreground disabled:opacity-50"
-                          >
-                            {saving[r.customer_id] ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                            ) : (
-                              <Save className="h-3 w-3" />
+                          <div className="flex items-center gap-2">
+                            {bucket !== 'direct_website' && (
+                              <button
+                                type="button"
+                                onClick={() => save(r)}
+                                disabled={!picks[r.customer_id] || saving[r.customer_id]}
+                                className="inline-flex items-center gap-1 rounded-md bg-orange-600 px-2 py-1 text-[11px] font-medium text-primary-foreground disabled:opacity-50"
+                              >
+                                {saving[r.customer_id] ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Save className="h-3 w-3" />
+                                )}
+                                Save
+                              </button>
                             )}
-                            Save
-                          </button>
+                            {bucket === 'direct_website' ? (
+                              <button
+                                type="button"
+                                onClick={() => unmarkDirectWebsite(r)}
+                                disabled={saving[r.customer_id]}
+                                className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] font-medium hover:bg-muted disabled:opacity-50"
+                              >
+                                {saving[r.customer_id] ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                                Unmark
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => markDirectWebsite(r)}
+                                disabled={saving[r.customer_id]}
+                                title="No agent worked this deal — it came straight through the website"
+                                className="inline-flex items-center gap-1 rounded-md border border-dashed border-orange-600/50 bg-orange-600/5 px-2 py-1 text-[11px] font-medium text-orange-700 hover:bg-orange-600/10 disabled:opacity-50"
+                              >
+                                Direct website sale
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -195,8 +266,9 @@ export const UnattributedSalesAssigner: React.FC<Props> = ({ bucket, start, end,
                 </table>
               </div>
               <div className="border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
-                {rows.length} sale{rows.length === 1 ? '' : 's'} · {gbp(total)} waiting to be credited. Saving updates
-                the sale credit on the customer, so Customer Management and the scoreboard both move together.
+                {bucket === 'direct_website'
+                  ? `${rows.length} direct website sale${rows.length === 1 ? '' : 's'} · ${gbp(total)}. Unmarking moves a sale back into the unattributed bucket so it can be assigned to an agent.`
+                  : `${rows.length} sale${rows.length === 1 ? '' : 's'} · ${gbp(total)} waiting to be credited. Saving updates the sale credit on the customer, so Customer Management and the scoreboard both move together.`}
               </div>
             </>
           )}
