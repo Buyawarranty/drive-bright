@@ -161,7 +161,7 @@ export async function withBackgroundPriority<T>(fn: () => Promise<T>): Promise<T
 export const getRequestQueueStats = () => ({
   active,
   activeBackground,
-  queued: highQueue.length + normalQueue.length,
+  queued: highQueue.length + normalQueue.length + backgroundQueue.length,
   queuedBackground: backgroundQueue.length,
   queuedHigh: highQueue.length,
   queuedNormal: normalQueue.length,
