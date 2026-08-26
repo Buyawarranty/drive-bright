@@ -68,6 +68,8 @@ export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRo
   const [rangeOpen, setRangeOpen] = useState(false);
   const [rangeFrom, setRangeFrom] = useState('');
   const [rangeTo, setRangeTo] = useState('');
+  const [agentExportOpen, setAgentExportOpen] = useState(false);
+  const [agentExportFormat, setAgentExportFormat] = useState<'csv' | 'xlsx'>('csv');
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail((data.user?.email || '').toLowerCase()));
