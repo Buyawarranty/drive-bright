@@ -1,4 +1,5 @@
 // Google Analytics & Google Ads tracking utilities
+import { trackFBPurchase } from './metaPixelTracking';
 
 declare global {
   interface Window {
