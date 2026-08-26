@@ -111,6 +111,44 @@ export const UnattributedSalesAssigner: React.FC<Props> = ({ bucket, start, end,
     }
   };
 
+  const markDirectWebsite = async (row: Row) => {
+    setSaving((s) => ({ ...s, [row.customer_id]: true }));
+    try {
+      const { error } = await (supabase as any).rpc('set_sale_credit_agent', {
+        p_customer_id: row.customer_id,
+        p_admin_user_id: null,
+        p_direct_website_sale: true,
+      });
+      if (error) throw error;
+      toast.success(`${row.customer_name || 'Sale'} marked as direct website sale`);
+      setRows((rs) => rs.filter((r) => r.customer_id !== row.customer_id));
+      onSaved?.();
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not mark as direct website sale');
+    } finally {
+      setSaving((s) => ({ ...s, [row.customer_id]: false }));
+    }
+  };
+
+  const unmarkDirectWebsite = async (row: Row) => {
+    setSaving((s) => ({ ...s, [row.customer_id]: true }));
+    try {
+      const { error } = await (supabase as any).rpc('set_sale_credit_agent', {
+        p_customer_id: row.customer_id,
+        p_admin_user_id: null,
+        p_direct_website_sale: false,
+      });
+      if (error) throw error;
+      toast.success(`${row.customer_name || 'Sale'} moved back to unattributed`);
+      setRows((rs) => rs.filter((r) => r.customer_id !== row.customer_id));
+      onSaved?.();
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not update direct website sale flag');
+    } finally {
+      setSaving((s) => ({ ...s, [row.customer_id]: false }));
+    }
+  };
+
   const total = useMemo(() => rows.reduce((t, r) => t + r.amount, 0), [rows]);
 
   return (
