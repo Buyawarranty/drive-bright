@@ -323,3 +323,6 @@ verify_jwt = false
 
 [functions.confirm-inspection-payment]
 verify_jwt = false
+
+[functions.appeal-inspection-option]
+verify_jwt = false
