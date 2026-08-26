@@ -18,8 +18,14 @@ export default function PricingOverrideLoader() {
     let cancelled = false;
     void refreshLivePricing();
 
+    void primeLiveExclusions().catch(() => undefined);
+
     const onFocus = () => {
-      if (!cancelled) void refreshLivePricing();
+      if (cancelled) return;
+      void refreshLivePricing();
+      // Excluded vehicles are independent of pricing versions — re-read them too
+      // so an exclusion added elsewhere applies in this already-open tab.
+      void primeLiveExclusions().catch(() => undefined);
     };
     window.addEventListener('focus', onFocus);
 
