@@ -265,8 +265,42 @@ export const LeadsFullExportMenu: React.FC<LeadsFullExportMenuProps> = ({ userRo
             <CalendarIcon className="h-4 w-4 mr-2" />
             Custom date range…
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <Users className="h-4 w-4 mr-2" />
+              Export by agent (no source)
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
+              <DropdownMenuItem
+                onClick={() => {
+                  setAgentExportFormat('csv');
+                  setAgentExportOpen(true);
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setAgentExportFormat('xlsx');
+                  setAgentExportOpen(true);
+                }}
+              >
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                Export as Excel
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <AgentNoSourceExportDialog
+        open={agentExportOpen}
+        onOpenChange={setAgentExportOpen}
+        leads={visibleLeads}
+        format={agentExportFormat}
+      />
 
       <Dialog open={rangeOpen} onOpenChange={setRangeOpen}>
         <DialogContent className="max-w-md">
