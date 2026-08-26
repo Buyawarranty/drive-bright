@@ -29,9 +29,36 @@ const g = globalThis as typeof globalThis & {
   [GLOBAL_KEY]?: SupabaseClient<Database>;
 };
 
-export const supabase: SupabaseClient<Database> =
-  g[GLOBAL_KEY] ??
-  createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+/**
+ * Extension / hardened-browser safety.
+ *
+ * Supabase's auth client opens a BroadcastChannel (that's how it syncs the
+ * session between tabs) and it *reads* globalThis.BroadcastChannel outside its
+ * own try/catch. Some privacy extensions and locked-down browsers replace that
+ * global with a getter that throws — which made createClient() itself throw and
+ * took the entire app down to a white screen. If the global is booby-trapped we
+ * neutralise it first: auth then falls back to storage-event sync, which our
+ * own tab coordinator already relies on.
+ */
+function ensureBroadcastChannelIsSafe() {
+  try {
+    void (globalThis as any).BroadcastChannel;
+  } catch {
+    try {
+      Object.defineProperty(globalThis, 'BroadcastChannel', {
+        value: undefined,
+        configurable: true,
+        writable: true,
+      });
+    } catch {
+      /* nothing else we can do; the retry below still protects us */
+    }
+  }
+}
+
+function makeClient(): SupabaseClient<Database> {
+  ensureBroadcastChannelIsSafe();
+  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: {
       storage: typeof window !== 'undefined' ? window.localStorage : undefined,
       storageKey: 'sb-mzlpuxzwyrcyrgrongeb-auth-token',
