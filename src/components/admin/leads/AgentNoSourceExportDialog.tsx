@@ -203,7 +203,7 @@ export const AgentNoSourceExportDialog: React.FC<Props> = ({ open, onOpenChange,
         ? 'all-agents'
         : (agents.find(a => a.value === agent)?.label || 'agent').toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-    const filename = `leads-by-agent-no-source_${agentSlug}_${fromDate}_to_${toDate}`;
+    const filename = `Agents-lead-copy_${agentSlug}_${fromDate}_to_${toDate}`;
     if (exportFormat === 'csv') {
       exportToCSV(rows, { filename, format: 'csv' });
     } else {
