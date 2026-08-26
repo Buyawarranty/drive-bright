@@ -161,3 +161,4 @@ Updated: just now
 - [CallRail Missed Call 30-min Suppression](mem://admin/leads/callrail-missed-call-30min-suppression) — Missed CallRail call only becomes a lead if no Zoiper/Dial 9 call to that number within ±30 minutes
 - [Replaced Turbo / Hybrid Battery](mem://features/replaced-turbo-battery-cover-restarts) — Replaced turbo or hybrid battery stays covered with receipt; 7yr/80k and 10yr/80k clocks restart from the replacement date
 - [Deactivated Agent Leaves Distribution](mem://admin/leads/deactivated-agent-leaves-distribution) — Inactive/archived staff auto-paused, workstreams cleared, hidden from New Leads and Allocation lists
+- [Scoreboard Reconciliation Credit](mem://admin/scoreboard/reconciliation-uses-resolve-sale-credit) — Reconciliation and scoreboard must both use resolve_sale_credit; back-office confirmations fall through to the sales agent

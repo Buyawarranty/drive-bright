@@ -329,7 +329,7 @@ export const AllAgentsProgressPanel: React.FC = () => {
         const total = recon.reduce((t, r) => t + r.revenue, 0);
         const agentTotal = sum('agent');
         const buckets: Array<{ key: string; title: string; note: string }> = [
-          { key: 'management', title: 'Credited to management / support accounts', note: 'Confirmed by a manager or support account, so it never lands on an agent row.' },
+          { key: 'management', title: 'Sale credit set to a non-sales account', note: 'A manager has manually set the sale credit to a non-sales account, so it never lands on an agent row.' },
           { key: 'no_team', title: 'Agent not on a lead team', note: 'The scoreboard only lists agents who sit on a team — add them in Lead Teams to see them here.' },
           { key: 'unattributed', title: 'No agent on the record', note: 'Website sales with no owner. Set the sale credit on the customer to move it to an agent.' },
         ];
@@ -372,8 +372,9 @@ export const AllAgentsProgressPanel: React.FC = () => {
               })}
             </ul>
             <div className="mt-3 text-[11px] text-muted-foreground">
-              Both views use the same credit order (sale credit → payment confirmed by → quote sent by → assigned to),
-              count on signup date, exclude cancelled and refunded orders, and now both include approved commission claims.
+              Both views use the same credit order (sale credit → payment confirmed by → quote sent by → assigned to,
+              skipping non-sales accounts so back-office payment confirmations stay with the agent who worked the deal),
+              count on signup date, exclude cancelled and refunded orders, and both include approved commission claims.
             </div>
           </div>
         );
