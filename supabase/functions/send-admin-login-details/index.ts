@@ -72,12 +72,29 @@ serve(async (req) => {
 
     log('Resetting password', { userId, email, usingProvided: !!providedPassword });
 
+    const { data: targetAdmin, error: targetErr } = await admin
+      .from('admin_users')
+      .select('id, user_id, role, is_active, archived_at, access_expires_at')
+      .or(`user_id.eq.${userId},email.ilike.${email}`)
+      .maybeSingle();
+
+    if (targetErr) throw targetErr;
+    if (!targetAdmin) throw new Error('Admin user not found');
+    const expired = !!targetAdmin.access_expires_at && new Date(targetAdmin.access_expires_at).getTime() < Date.now();
+    if (targetAdmin.archived_at || targetAdmin.is_active !== true || expired) {
+      if (expired) await admin.from('admin_users').update({ is_active: false }).eq('id', targetAdmin.id);
+      throw new Error(expired
+        ? 'This temporary login has expired. Extend it before sending login details.'
+        : 'This staff account is inactive or archived. Reactivate it first before sending login details.');
+    }
+
     // Use caller-supplied password when present (so the UI can show + email the same value),
     // otherwise generate a fresh one.
     const newPassword = (typeof providedPassword === 'string' && providedPassword.length >= 6)
       ? providedPassword
       : generatePassword(14);
-    const { error: updateErr } = await admin.auth.admin.updateUserById(userId, {
+    const authUserId = targetAdmin.user_id || userId;
+    const { error: updateErr } = await admin.auth.admin.updateUserById(authUserId, {
       password: newPassword,
     });
     if (updateErr) throw updateErr;
@@ -95,11 +112,6 @@ serve(async (req) => {
     // All other staff use the clean /sales-login gateway.
     let role = providedRole as string | undefined;
     if (!role) {
-      const { data: targetAdmin } = await admin
-        .from('admin_users')
-        .select('role')
-        .eq('user_id', userId)
-        .maybeSingle();
       role = targetAdmin?.role;
     }
     const isAdminTier = role === 'super_admin' || role === 'admin';

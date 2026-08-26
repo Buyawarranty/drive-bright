@@ -30,11 +30,11 @@ serve(async (req) => {
     // Verify super_admin
     const { data: callerAdmin } = await admin
       .from("admin_users")
-      .select("role")
+      .select("role, is_active")
       .eq("user_id", userData.user.id)
       .maybeSingle();
 
-    if (!callerAdmin || callerAdmin.role !== "super_admin") {
+    if (!callerAdmin || callerAdmin.role !== "super_admin" || callerAdmin.is_active !== true) {
       return new Response(JSON.stringify({ error: "Forbidden: super_admin only" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -58,12 +58,22 @@ serve(async (req) => {
     // Look up admin_user row to get any linked user_id and confirm the agent exists
     const { data: targetAdmin } = await admin
       .from("admin_users")
-      .select("user_id, email, first_name, last_name, role")
+      .select("user_id, email, first_name, last_name, role, is_active, archived_at, access_expires_at")
       .ilike("email", normalizedEmail)
       .maybeSingle();
 
     if (!targetAdmin) {
       throw new Error(`Admin user not found for ${normalizedEmail}`);
+    }
+
+    const targetExpired = !!targetAdmin.access_expires_at && new Date(targetAdmin.access_expires_at).getTime() < Date.now();
+    if (targetAdmin.archived_at || targetAdmin.is_active !== true || targetExpired) {
+      if (targetExpired && targetAdmin.user_id) {
+        await admin.from("admin_users").update({ is_active: false }).eq("user_id", targetAdmin.user_id);
+      }
+      throw new Error(targetExpired
+        ? "This temporary login has expired. Extend it before using sign-in-as."
+        : "This staff login is inactive or archived and cannot be signed in as.");
     }
 
     // Resolve the target auth user without immediately trying to create one.

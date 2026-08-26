@@ -64,6 +64,14 @@ serve(async (req) => {
       throw new Error(`Admin user not found: ${adminError?.message || 'No admin user data'}`);
     }
 
+    const expired = !!adminUser.access_expires_at && new Date(adminUser.access_expires_at).getTime() < Date.now();
+    if (adminUser.archived_at || adminUser.is_active !== true || expired) {
+      if (expired) await supabaseClient.from('admin_users').update({ is_active: false }).eq('id', adminUser.id);
+      throw new Error(expired
+        ? 'This temporary login has expired. Extend it before resetting the password.'
+        : 'This staff account is inactive or archived. Reactivate it first before resetting the password.');
+    }
+
     logStep("Admin user found", { 
       email: adminUser.email, 
       name: `${adminUser.first_name} ${adminUser.last_name}`.trim() 
