@@ -25,8 +25,27 @@
  *     waiting for New Leads or Quotes & Orders to paint.
  */
 
+import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
+
 const MAX_CONCURRENT = 8;
 const MAX_BACKGROUND_CONCURRENT = 2;
+
+/**
+ * Agents keep the CRM open in several tabs. Each tab has its own limiter, so
+ * N tabs meant N × the traffic to one origin — which is what leaves the active
+ * tab on a spinner. Duplicate (non-primary) tabs and hidden tabs therefore get
+ * a much smaller share: interactive work is untouched, only background pollers
+ * and counters are squeezed.
+ */
+function backgroundCap(): number {
+  if (typeof document !== 'undefined' && document.hidden) return 1;
+  if (isSecondaryCrmTab()) return 1;
+  return MAX_BACKGROUND_CONCURRENT;
+}
+
+function concurrencyCap(): number {
+  return isSecondaryCrmTab() ? 4 : MAX_CONCURRENT;
+}
 
 let active = 0;
 let activeBackground = 0;
@@ -44,10 +63,10 @@ let priorityDepth = 0;
 let backgroundDepth = 0;
 
 function canStart(lane: RequestLane) {
-  if (active >= MAX_CONCURRENT) return false;
+  if (active >= concurrencyCap()) return false;
   if (lane === 'high') return true;
   if (lane === 'normal') return highQueue.length === 0;
-  return highQueue.length === 0 && normalQueue.length === 0 && activeBackground < MAX_BACKGROUND_CONCURRENT;
+  return highQueue.length === 0 && normalQueue.length === 0 && activeBackground < backgroundCap();
 }
 
 function startRequest(lane: RequestLane, resolve: () => void) {
@@ -57,7 +76,7 @@ function startRequest(lane: RequestLane, resolve: () => void) {
 }
 
 function pump() {
-  while (active < MAX_CONCURRENT) {
+  while (active < concurrencyCap()) {
     const next = highQueue[0] || normalQueue[0] || backgroundQueue[0];
     if (!next || !canStart(next.lane)) return;
 
@@ -166,6 +185,12 @@ export async function withBackgroundPriority<T>(fn: () => Promise<T>): Promise<T
     pump();
   });
   return await result;
+}
+
+// Resume paced background work as soon as the tab is looked at again, and when
+// tab primacy changes (e.g. the primary tab was closed).
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => pump());
 }
 
 /** For debugging / perf panels. */

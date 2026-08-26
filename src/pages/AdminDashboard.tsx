@@ -45,6 +45,7 @@ const SalesStaffPerformancePanel = lazy(() => import('@/components/admin/SalesSt
 
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
 import { DiscountAuthBanner } from '@/components/admin/DiscountAuthBanner';
+import { CrmDuplicateTabBanner } from '@/components/admin/CrmDuplicateTabBanner';
 import { DiscountAuthPopup } from '@/components/admin/DiscountAuthPopup';
 import { GlobalAutoDistributeBar } from '@/components/admin/leads/GlobalAutoDistributeBar';
 import { QuickGrantAccessBar } from '@/components/admin/QuickGrantAccessBar';
@@ -1203,6 +1204,7 @@ const AdminDashboardInner: React.FC<{
           Showing your last known access — reconnecting to the CRM…
         </div>
       )}
+      <CrmDuplicateTabBanner />
       <WorkingWeekReminderBanner userRole={displayRole} />
       <DiscountAuthBanner userRole={displayRole} />
       <DiscountAuthPopup userRole={displayRole} />
