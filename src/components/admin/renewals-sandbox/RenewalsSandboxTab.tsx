@@ -314,9 +314,16 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                           Sold by: {staffName(own.originalAgentId) || 'Website / unknown'}
                         </div>
                       </td>
+                      <td className="max-w-[180px] px-3 py-2 text-xs text-muted-foreground">
+                        {own.nextAction}
+                      </td>
+                      <td className="px-3 py-2">
+                        <Badge variant="secondary">{LIFECYCLE_LABEL[getLifecycle(r)]}</Badge>
+                      </td>
                       <td className="px-3 py-2">
                         {r.policy_end_date ? format(new Date(r.policy_end_date), 'd MMM yyyy') : '—'}
                       </td>
+
 
                     </tr>
                   );
