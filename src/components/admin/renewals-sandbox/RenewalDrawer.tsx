@@ -8,7 +8,13 @@ import { Loader2, Phone, Mail, Car, ShieldCheck, UserCheck, Link2Off, Lock, Poun
 import { format } from 'date-fns';
 import type { SandboxRow } from './types';
 import { priceRenewal, getLifecycle, LIFECYCLE_LABEL } from './renewalPricing';
-import { evaluateOwnership, SLA_LABEL, SLA_TONE } from './renewalOwnership';
+import {
+  evaluateOwnership,
+  SLA_LABEL,
+  SLA_TONE,
+  OWNERSHIP_REASON_LABEL,
+  QUALIFYING_ACTIVITY_LABEL,
+} from './renewalOwnership';
 import { RenewalNegotiationPanel } from './RenewalNegotiationPanel';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
