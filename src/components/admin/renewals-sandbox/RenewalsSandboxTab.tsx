@@ -262,8 +262,13 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                         })()}
                       </td>
                       <td className="px-3 py-2">
+                        <Badge variant="outline" className={SLA_TONE[own.slaState]}>{SLA_LABEL[own.slaState]}</Badge>
+                        <div className="mt-1 text-xs text-muted-foreground">{own.slaHours}h first touch</div>
+                      </td>
+                      <td className="px-3 py-2">
                         {r.policy_end_date ? format(new Date(r.policy_end_date), 'd MMM yyyy') : '—'}
                       </td>
+
                     </tr>
                   );
                 })}
