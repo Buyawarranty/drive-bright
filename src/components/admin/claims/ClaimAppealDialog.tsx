@@ -380,21 +380,38 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Gavel className="h-5 w-5" />
-            {reviewing ? 'Preview the email before sending' : 'Final appeal'}
-          </DialogTitle>
-          <DialogDescription>
-            {reviewing
-              ? 'This is exactly what the customer receives. Go back to edit anything.'
-              : 'The final stage once a complaint has not changed the outcome. Sends the customer their appeal form, and — only if they agree — an independent review with the inspection payment page.'}
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-[#F4F6F8] p-0">
+        <div className="px-6 pt-6">
+          <DialogHeader className="rounded-2xl border border-[#E2E8F0] bg-white p-6 text-left shadow-sm">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[#E8541A]/20 bg-[#FEF0E8] px-3 py-1.5 text-xs font-medium text-[#E8541A]">
+              <Gavel className="h-3.5 w-3.5" /> FINAL APPEAL
+            </div>
+            <DialogTitle className="mt-3 text-2xl font-bold text-[#1A2B4A]">
+              {reviewing ? 'Preview the email before sending' : 'Send the customer their appeal'}
+            </DialogTitle>
+            <DialogDescription className="text-[#5A6B82] leading-relaxed">
+              {reviewing
+                ? 'This is exactly what the customer receives. Go back to edit anything.'
+                : 'The final stage once a complaint has not changed the outcome. Sends the customer their appeal form, and — only if they agree — an independent review with the inspection payment page.'}
+            </DialogDescription>
+            <ul className="mt-4 space-y-2 text-sm text-[#1A2B4A]">
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-[#E8541A]" /> Reviewed by our <strong>claims manager</strong>
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-[#E8541A]" /> Independent inspection is <strong>entirely the customer's choice</strong>
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-[#E8541A]" /> Handled privately and securely
+              </li>
+            </ul>
+          </DialogHeader>
+        </div>
 
+        <div className="px-6 pb-2">
         {!reviewing ? (
-          <div className="space-y-5">
+          <div className="space-y-4">
+
             {/* Customer / claim selection */}
             <div className="space-y-2">
               <Label>Select customer / claim *</Label>
