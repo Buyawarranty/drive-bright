@@ -91,12 +91,6 @@ verify_jwt = false
 [functions.send-welcome-email-manual]
 verify_jwt = false
 
-[functions.send-to-warranties-2000]
-verify_jwt = false
-
-[functions.warranties-2000-registration]
-verify_jwt = false
-
 [functions.track-abandoned-cart]
 verify_jwt = false
 
@@ -175,9 +169,6 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.send-trustpilot-review-emails]
-verify_jwt = false
-
-[functions.process-scheduled-w2000]
 verify_jwt = false
 
 [functions.send-invoice-email]
