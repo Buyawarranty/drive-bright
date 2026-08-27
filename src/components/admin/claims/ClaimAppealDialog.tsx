@@ -413,8 +413,8 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
           <div className="space-y-4">
 
             {/* Customer / claim selection */}
-            <div className="space-y-2">
-              <Label>Select customer / claim *</Label>
+            <div className="space-y-2 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
+              <Label className="text-[#1A2B4A] font-semibold">Select customer / claim *</Label>
               {selected ? (
                 <Card>
                   <CardContent className="flex items-center justify-between gap-3 py-3">
@@ -474,8 +474,8 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label>Grounds for appeal *</Label>
+            <div className="space-y-2 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
+              <Label className="text-[#1A2B4A] font-semibold">Grounds for appeal *</Label>
               <Textarea
                 rows={4}
                 value={reason}
@@ -484,8 +484,8 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
               />
             </div>
 
-            <div className="space-y-2">
-              <Label>New evidence supplied</Label>
+            <div className="space-y-2 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
+              <Label className="text-[#1A2B4A] font-semibold">New evidence supplied</Label>
               <Textarea
                 rows={3}
                 value={newEvidence}
@@ -495,9 +495,9 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             </div>
 
             {/* Appeal form the customer fills in */}
-            <div className="space-y-2 rounded-lg border p-3">
-              <Label>Customer's appeal form *</Label>
-              <p className="text-xs text-muted-foreground">
+            <div className="space-y-2 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
+              <Label className="text-[#1A2B4A] font-semibold">Customer's appeal form *</Label>
+              <p className="text-xs text-[#5A6B82] leading-relaxed">
                 A secure page where the customer gives their account of the fault and uploads
                 invoices, photos and service history. This link goes in the email.
               </p>
@@ -520,7 +520,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             </div>
 
             {/* Independent review — optional */}
-            <div className="space-y-3 rounded-lg border p-3">
+            <div className="space-y-3 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
               <label className="flex items-start gap-2 text-sm font-medium">
                 <Checkbox
                   checked={withReview}
@@ -538,7 +538,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
 
               {withReview && (
                 <>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-[#5A6B82] leading-relaxed">
                     Whichever inspector is available will be booked. The £{feeNumber} inspection fee is
                     paid to the independent inspection company — it is not a Buy a Warranty charge and
                     we keep none of it.
@@ -557,7 +557,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
                             <p className="font-semibold text-sm">{r.name}</p>
                             {reviewerId === r.id && <CheckCircle2 className="h-4 w-4 text-primary" />}
                           </div>
-                          <p className="text-xs text-muted-foreground">{r.blurb}</p>
+                          <p className="text-xs text-[#5A6B82] leading-relaxed">{r.blurb}</p>
                           <a
                             href={r.url}
                             target="_blank"
@@ -574,7 +574,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label>Inspection fee (£) — payable to the inspection company</Label>
+                      <Label className="text-[#1A2B4A] font-semibold text-xs">Inspection fee (£) — payable to the inspection company</Label>
                       <Input
                         type="number"
                         min="0"
@@ -584,7 +584,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Inspection payment link *</Label>
+                      <Label className="text-[#1A2B4A] font-semibold">Inspection payment link *</Label>
                       <div className="flex gap-2">
                         <Input value={paymentLink} readOnly placeholder="Generate the customer's secure payment page" />
                         <Button
@@ -606,7 +606,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
                           </>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-[#5A6B82] leading-relaxed">
                         Creates a real, working page where the customer completes the inspection form
                         and pays £{feeNumber} to the independent inspection company.
                       </p>
@@ -628,21 +628,21 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             </div>
 
             {/* Email */}
-            <div className="space-y-3 rounded-lg border p-3">
+            <div className="space-y-3 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Mail className="h-4 w-4" /> Email to the customer
               </div>
               <div className="space-y-2">
-                <Label>Subject</Label>
+                <Label className="text-[#1A2B4A] font-semibold">Subject</Label>
                 <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>Opening message</Label>
+                <Label className="text-[#1A2B4A] font-semibold">Opening message</Label>
                 <Textarea rows={3} value={intro} onChange={(e) => setIntro(e.target.value)} />
               </div>
             </div>
 
-            <label className="flex items-center gap-2 text-sm">
+            <label className="flex items-center gap-2 text-sm text-[#1A2B4A] rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
               <Checkbox
                 checked={notifyCustomer}
                 onCheckedChange={(v) => setNotifyCustomer(v === true)}
