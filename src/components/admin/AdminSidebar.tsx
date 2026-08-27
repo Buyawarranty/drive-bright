@@ -179,6 +179,12 @@ export const defaultTabs: Tab[] = [
     description: 'Renewals + upsells for active customers'
   },
   {
+    id: 'renewals-sandbox',
+    label: 'Renewals Sandbox',
+    icon: Repeat,
+    description: 'New renewals engine — off until switched live'
+  },
+  {
     id: 'get-quote',
     label: 'Quotes & Orders',
     icon: Calculator,
