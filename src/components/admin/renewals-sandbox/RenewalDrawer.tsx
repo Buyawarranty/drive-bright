@@ -94,7 +94,16 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
   const ownerName = staffName(ownership?.ownerId);
   const originalAgentName = staffName(ownership?.originalAgentId);
 
+  const priority = useMemo(
+    () => (row ? scoreRenewalPriority(row, {
+      customerResponded: !!lead?.last_contact_date,
+    }, ownership) : null),
+    [row, lead?.last_contact_date, ownership],
+  );
+
   return (
+
+
 
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
