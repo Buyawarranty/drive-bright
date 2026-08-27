@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import type { SandboxRow } from './types';
 import type { RenewalQuote } from './renewalPricing';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import { estimateCommission, SALE_KIND_LABEL } from './renewalCommission';
 
 /**
  * RENEWALS SANDBOX — Renew Now completion checks (Stage 6, Step 18)
@@ -112,11 +113,19 @@ export const RenewalCompletionPanel: React.FC<Props> = ({ row, quote, live }) =>
         ))}
       </ul>
 
-      <div className="rounded-md border border-dashed p-2 text-xs text-muted-foreground">
-        On success we would record: status <Badge variant="secondary">RENEWED</Badge>, final price {money(price)},
-        closing agent, commission basis, and create the new policy. The original opportunity and its full
-        activity history are kept, and it drops out of the actionable queues.
-      </div>
+      {(() => {
+        const est = estimateCommission(row, price);
+        return (
+          <div className="rounded-md border border-dashed p-2 text-xs text-muted-foreground">
+            On success we would record: status <Badge variant="secondary">RENEWED</Badge>, final price {money(price)},
+            closing agent, commission basis ({SALE_KIND_LABEL[est.kind]} at {est.pct}% ={' '}
+            {money(est.amount)}{est.incremental !== null ? `, ${money(est.incremental)} vs last year` : ''}),
+            and create the new policy. The original opportunity, original selling agent and full activity history
+            are kept, and it drops out of the actionable queues.
+          </div>
+        );
+      })()}
+
 
       <Button size="sm" onClick={onRenew} disabled={!allOk}>
         {live ? 'Renew now' : (<><Lock className="mr-1 h-3.5 w-3.5" /> Renew now (sandbox)</>)}

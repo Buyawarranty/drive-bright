@@ -18,6 +18,9 @@ import { RenewalSlaConfigPanel } from './RenewalSlaConfigPanel';
 import { RenewalPoolDistributionPanel } from './RenewalPoolDistributionPanel';
 import { RenewalPriorityConfigPanel } from './RenewalPriorityConfigPanel';
 import { scoreRenewalPriority, sortByPriority, PRIORITY_TONE, subscribePriorityWeights } from './renewalPriority';
+import { RenewalCommissionConfigPanel } from './RenewalCommissionConfigPanel';
+import { RenewalSummaryCards } from './RenewalSummaryCards';
+import { getLifecycle, LIFECYCLE_LABEL } from './renewalPricing';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
 type BandId = 'hot' | 'due_8_14' | 'due_15_30' | 'due_31_60' | 'lapsed' | 'all';
@@ -179,11 +182,15 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
 
       <RenewalSandboxQueueBar rows={visible} live={live} onTake={(r) => setSelected(r)} />
 
+      <RenewalSummaryCards />
+
       <div className="grid gap-3">
         <RenewalSlaConfigPanel />
         <RenewalPriorityConfigPanel />
+        <RenewalCommissionConfigPanel />
         <RenewalPoolDistributionPanel rows={visible} live={live} />
       </div>
+
 
 
 
@@ -226,19 +233,22 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                   <th className="px-3 py-2 font-medium">Customer</th>
                   <th className="px-3 py-2 font-medium">Vehicle</th>
                   <th className="px-3 py-2 font-medium">Plan</th>
+                  <th className="px-3 py-2 font-medium">Previous price</th>
                   <th className="px-3 py-2 font-medium">Renewal offer</th>
                   <th className="px-3 py-2 font-medium">Ownership / SLA</th>
+                  <th className="px-3 py-2 font-medium">Next action</th>
+                  <th className="px-3 py-2 font-medium">Status</th>
                   <th className="px-3 py-2 font-medium">Expires</th>
                 </tr>
               </thead>
               <tbody>
                 {loading && (
-                  <tr><td colSpan={9} className="px-3 py-8 text-center text-muted-foreground">
+                  <tr><td colSpan={12} className="px-3 py-8 text-center text-muted-foreground">
                     <Loader2 className="mx-auto h-5 w-5 animate-spin" />
                   </td></tr>
                 )}
                 {!loading && visible.length === 0 && (
-                  <tr><td colSpan={9} className="px-3 py-8 text-center text-muted-foreground">
+                  <tr><td colSpan={12} className="px-3 py-8 text-center text-muted-foreground">
                     No renewals in {activeBand?.label}.
                   </td></tr>
                 )}
@@ -279,6 +289,11 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                       </td>
                       <td className="px-3 py-2">{r.plan_type || '—'}</td>
                       <td className="px-3 py-2">
+                        {typeof r.payment_amount === 'number' && r.payment_amount > 0
+                          ? `£${Math.round(r.payment_amount).toLocaleString('en-GB')}`
+                          : '—'}
+                      </td>
+                      <td className="px-3 py-2">
                         {(() => {
                           const q = priceRenewal(r);
                           if (q.blocked) return <span className="text-xs text-amber-800">Needs review</span>;
@@ -299,9 +314,16 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                           Sold by: {staffName(own.originalAgentId) || 'Website / unknown'}
                         </div>
                       </td>
+                      <td className="max-w-[180px] px-3 py-2 text-xs text-muted-foreground">
+                        {own.nextAction}
+                      </td>
+                      <td className="px-3 py-2">
+                        <Badge variant="secondary">{LIFECYCLE_LABEL[getLifecycle(r)]}</Badge>
+                      </td>
                       <td className="px-3 py-2">
                         {r.policy_end_date ? format(new Date(r.policy_end_date), 'd MMM yyyy') : '—'}
                       </td>
+
 
                     </tr>
                   );
