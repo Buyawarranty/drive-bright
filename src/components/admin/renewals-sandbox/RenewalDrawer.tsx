@@ -262,6 +262,15 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
           <Separator />
 
 
+          {row && (
+            <section className="space-y-3">
+              <RenewalQuoteHandoffPanel row={row} quote={quote} live={live} />
+              <RenewalCompletionPanel row={row} quote={quote} live={live} />
+            </section>
+          )}
+
+          <Separator />
+
           <section className="space-y-2">
             <h4 className="font-semibold">Quick actions</h4>
             <div className="flex flex-wrap gap-2">
