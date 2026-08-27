@@ -3,10 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, RefreshCw, Repeat, ShieldOff } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Loader2, RefreshCw, Repeat, ShieldOff, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { RenewalsEngineLiveSwitch } from './RenewalsEngineLiveSwitch';
+import { RenewalDrawer } from './RenewalDrawer';
+import type { SandboxRow } from './types';
 
 type BandId = 'hot' | 'due_8_14' | 'due_15_30' | 'due_31_60' | 'lapsed' | 'all';
 
@@ -20,25 +23,9 @@ const BANDS: { id: BandId; label: string; hint: string }[] = [
 ];
 
 const EXCLUDED_STATUSES = "('cancelled','refunded','expired','voided','deleted')";
+const RENEWED_OUTCOMES = new Set(['renewed', 'upgraded', 'renewed_upgraded']);
+const INELIGIBLE_OUTCOMES = new Set(['do_not_contact', 'vehicle_sold', 'bought_elsewhere']);
 const PAGE_SIZE = 200;
-
-interface Row {
-  id: string;
-  policy_number: string | null;
-  plan_type: string | null;
-  policy_end_date: string | null;
-  claim_limit: number | null;
-  customers?: {
-    first_name: string | null;
-    last_name: string | null;
-    name: string | null;
-    email: string | null;
-    phone: string | null;
-    registration_plate: string | null;
-    vehicle_make: string | null;
-    vehicle_model: string | null;
-  } | null;
-}
 
 const daysLeft = (end: string | null) => {
   if (!end) return null;
@@ -69,9 +56,11 @@ interface Props {
 export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
   const [live, setLive] = useState(false);
   const [band, setBand] = useState<BandId>('hot');
-  const [rows, setRows] = useState<Row[]>([]);
+  const [rows, setRows] = useState<SandboxRow[]>([]);
   const [counts, setCounts] = useState<Record<BandId, number>>({} as any);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState<SandboxRow | null>(null);
 
   const applyBand = useCallback((q: any, id: BandId) => {
     switch (id) {
@@ -92,15 +81,23 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
     setLoading(true);
     try {
       let q: any = base((supabase.from('customer_policies') as any).select(
-        'id, policy_number, plan_type, policy_end_date, claim_limit, ' +
-        'customers!fk_customer_policies_customer_id ( first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model )'
+        'id, customer_id, policy_number, plan_type, payment_type, policy_start_date, policy_end_date, ' +
+        'claim_limit, retention_outcome, customer_full_name, email, ' +
+        'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, assigned_to, status )'
       ));
       q = applyBand(q, band)
         .order('policy_end_date', { ascending: true, nullsFirst: false })
         .limit(PAGE_SIZE);
       const { data, error } = await q;
       if (error) throw error;
-      setRows((data as Row[]) || []);
+      const list = ((data as any[]) || []).filter((r) => {
+        const cs = (r.customers?.status || '').toLowerCase();
+        if (['cancelled', 'refunded', 'deleted'].includes(cs)) return false;
+        if (RENEWED_OUTCOMES.has(r.retention_outcome || '')) return false;
+        if (INELIGIBLE_OUTCOMES.has(r.retention_outcome || '')) return false;
+        return true;
+      });
+      setRows(list as SandboxRow[]);
     } catch (e: any) {
       toast.error('Failed to load renewals sandbox', { description: e.message });
     } finally {
@@ -126,6 +123,18 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
   useEffect(() => { loadCounts(); }, [loadCounts]);
 
   const activeBand = useMemo(() => BANDS.find(b => b.id === band), [band]);
+
+  const visible = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return rows;
+    return rows.filter((r) => {
+      const c = r.customers;
+      return [
+        c?.first_name, c?.last_name, c?.name, c?.email, r.email, c?.phone,
+        c?.registration_plate, c?.vehicle_make, c?.vehicle_model, r.policy_number,
+      ].filter(Boolean).some((v) => String(v).toLowerCase().includes(term));
+    });
+  }, [rows, search]);
 
   return (
     <div className="space-y-4 p-4 sm:p-6">
@@ -157,6 +166,15 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
         <Button size="sm" variant="ghost" onClick={() => { load(); loadCounts(); }} disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
         </Button>
+        <div className="relative ml-auto w-full sm:w-72">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search name, reg, phone, email, policy"
+            className="pl-8"
+          />
+        </div>
       </div>
 
       <Card>
@@ -179,17 +197,21 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                     <Loader2 className="mx-auto h-5 w-5 animate-spin" />
                   </td></tr>
                 )}
-                {!loading && rows.length === 0 && (
+                {!loading && visible.length === 0 && (
                   <tr><td colSpan={6} className="px-3 py-8 text-center text-muted-foreground">
                     No renewals in {activeBand?.label}.
                   </td></tr>
                 )}
-                {!loading && rows.map((r) => {
+                {!loading && visible.map((r) => {
                   const d = daysLeft(r.policy_end_date);
                   const c = r.customers;
-                  const name = [c?.first_name, c?.last_name].filter(Boolean).join(' ') || c?.name || '—';
+                  const name = [c?.first_name, c?.last_name].filter(Boolean).join(' ') || c?.name || r.customer_full_name || '—';
                   return (
-                    <tr key={r.id} className="border-t">
+                    <tr
+                      key={r.id}
+                      className="cursor-pointer border-t hover:bg-muted/40"
+                      onClick={() => setSelected(r)}
+                    >
                       <td className="px-3 py-2">
                         <Badge variant="outline" className="border-purple-200 bg-purple-100 text-purple-800">
                           <Repeat className="mr-1 h-3 w-3" /> Renewal
@@ -202,7 +224,7 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                       </td>
                       <td className="px-3 py-2">
                         <div className="font-medium">{name}</div>
-                        <div className="text-xs text-muted-foreground">{c?.phone || c?.email || '—'}</div>
+                        <div className="text-xs text-muted-foreground">{c?.phone || c?.email || r.email || '—'}</div>
                       </td>
                       <td className="px-3 py-2">
                         <div>{[c?.vehicle_make, c?.vehicle_model].filter(Boolean).join(' ') || '—'}</div>
@@ -220,6 +242,13 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
           </div>
         </CardContent>
       </Card>
+
+      <RenewalDrawer
+        row={selected}
+        live={live}
+        open={!!selected}
+        onOpenChange={(o) => { if (!o) setSelected(null); }}
+      />
     </div>
   );
 };
