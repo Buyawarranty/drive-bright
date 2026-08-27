@@ -128,79 +128,12 @@ serve(async (req) => {
       };
     }
 
-    // Test Warranties 2000 API Connectivity
-    try {
-      const warrantiesUser = Deno.env.get("WARRANTIES_2000_USERNAME");
-      const warrantiesPass = Deno.env.get("WARRANTIES_2000_PASSWORD");
-      
-      if (warrantiesUser && warrantiesPass) {
-        logStep("Testing Warranties 2000 API connectivity");
-        
-        const testRegistration = {
-          Title: "Mr",
-          First: "John",
-          Surname: "Test",
-          Addr1: "123 Test Street",
-          Addr2: "",
-          Town: "London",
-          PCode: "SW1A 1AA",
-          Tel: "02071234567",
-          Mobile: "07700123456",
-          EMail: "john.test@example.com",
-          PurDate: "2025-08-11",
-          Make: "Ford",
-          Model: "Focus",
-          RegNum: "AB12 CDE",
-          Mileage: "50000",
-          EngSize: "2.0",
-          PurPrc: "381",
-          RegDate: "2020-01-01",
-          WarType: "B-PLATINUM",
-          Month: "12",
-          MaxClm: "3000",
-          MOTExpiry: "2025-12-31",
-          WarrantyRef: "BAW-2501-400001"
-        };
-
-        const credentials = btoa(`${warrantiesUser}:${warrantiesPass}`);
-        
-        const warrantiesResponse = await fetch('https://warranties-epf.co.uk/api.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Basic ${credentials}`,
-          },
-          body: JSON.stringify(testRegistration),
-        });
-
-        const warrantiesText = await warrantiesResponse.text();
-        logStep("Warranties 2000 API response", { 
-          status: warrantiesResponse.status, 
-          ok: warrantiesResponse.ok 
-        });
-
-        testResults.warranties2000 = {
-          status: warrantiesResponse.ok ? 'working' : 'error',
-          details: {
-            status: warrantiesResponse.status,
-            statusText: warrantiesResponse.statusText,
-            responsePreview: warrantiesText.substring(0, 200)
-          }
-        };
-      } else {
-        testResults.warranties2000 = {
-          status: 'missing_credentials',
-          details: 'WARRANTIES_2000_USERNAME or WARRANTIES_2000_PASSWORD not configured'
-        };
-      }
-    } catch (warrantiesError) {
-      const errorMessage = warrantiesError instanceof Error ? warrantiesError.message : String(warrantiesError);
-      logStep("Warranties 2000 API test failed", { error: errorMessage });
-      testResults.warranties2000 = {
-        status: 'error',
-        details: errorMessage
-      };
-    }
+    // Warranties 2000 (Warranties Register) API — PERMANENTLY SWITCHED OFF.
+    // Do NOT reinstate this call. No data of any kind may be sent to them.
+    testResults.warranties2000 = {
+      status: 'permanently_off',
+      details: 'Integration permanently disabled. No requests are made to Warranties 2000.'
+    };
 
     // Test Stripe API Connectivity
     try {
