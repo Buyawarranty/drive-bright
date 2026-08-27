@@ -137,7 +137,7 @@ export function priceRenewal(row: SandboxRow): RenewalQuote {
     deltaVsPrevious: previousPrice === null ? null : loyaltyPrice - previousPrice,
     blocked: breakdown.blocked,
     blockReason: breakdown.blocked
-      ? breakdown.eligibility.reason || 'Vehicle is outside our cover limits'
+      ? breakdown.eligibility.reasons?.[0] || 'Vehicle is outside our cover limits'
       : null,
     breakdown,
   };
