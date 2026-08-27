@@ -11,6 +11,9 @@ import { RenewalsEngineLiveSwitch } from './RenewalsEngineLiveSwitch';
 import { RenewalDrawer } from './RenewalDrawer';
 import type { SandboxRow } from './types';
 import { priceRenewal } from './renewalPricing';
+import { RenewalSandboxQueueBar } from './RenewalSandboxQueueBar';
+import { useRenewalReservation } from '@/hooks/useRenewalPoolReservation';
+import { evaluateOwnership, SLA_TONE, SLA_LABEL } from './renewalOwnership';
 
 type BandId = 'hot' | 'due_8_14' | 'due_15_30' | 'due_31_60' | 'lapsed' | 'all';
 
