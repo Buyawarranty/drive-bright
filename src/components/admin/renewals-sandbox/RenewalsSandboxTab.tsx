@@ -14,6 +14,9 @@ import { priceRenewal } from './renewalPricing';
 import { RenewalSandboxQueueBar } from './RenewalSandboxQueueBar';
 import { useRenewalReservation } from '@/hooks/useRenewalPoolReservation';
 import { evaluateOwnership, SLA_TONE, SLA_LABEL } from './renewalOwnership';
+import { RenewalSlaConfigPanel } from './RenewalSlaConfigPanel';
+import { RenewalPoolDistributionPanel } from './RenewalPoolDistributionPanel';
+import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
 type BandId = 'hot' | 'due_8_14' | 'due_15_30' | 'due_31_60' | 'lapsed' | 'all';
 
