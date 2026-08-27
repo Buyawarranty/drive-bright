@@ -9,7 +9,6 @@
 import { calculateQuotePrice, type QuotePriceResult } from '@/lib/pricing/quotePricingService';
 import { getNetPayableFloor } from '@/lib/pricing/netFloor';
 import { DEFAULT_CLAIM_LIMIT, DEFAULT_EXCESS, DEFAULT_LABOUR_RATE, type PaymentPeriod } from '@/lib/pricingMatrix';
-import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import type { SandboxRow } from './types';
 
 export type RenewalLifecycle =
