@@ -243,12 +243,12 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
               </thead>
               <tbody>
                 {loading && (
-                  <tr><td colSpan={9} className="px-3 py-8 text-center text-muted-foreground">
+                  <tr><td colSpan={12} className="px-3 py-8 text-center text-muted-foreground">
                     <Loader2 className="mx-auto h-5 w-5 animate-spin" />
                   </td></tr>
                 )}
                 {!loading && visible.length === 0 && (
-                  <tr><td colSpan={9} className="px-3 py-8 text-center text-muted-foreground">
+                  <tr><td colSpan={12} className="px-3 py-8 text-center text-muted-foreground">
                     No renewals in {activeBand?.label}.
                   </td></tr>
                 )}
