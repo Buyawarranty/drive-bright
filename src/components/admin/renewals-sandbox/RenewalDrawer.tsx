@@ -226,9 +226,10 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Priced by the live quote engine for {quote.paymentPeriod.replace('months', ' months')}, £{quote.voluntaryExcess} excess,
+                  Priced by the live quote engine for 12 months, £{quote.voluntaryExcess} excess,
                   {' '}£{quote.claimLimit.toLocaleString('en-GB')} claim limit, £{quote.labourRate}/hr labour. Anything below the agent floor
                   needs manager approval; nothing may go below the absolute minimum.
+                  {' '}<span className="font-medium text-foreground">Renewals are currently 1-year only.</span>
                 </p>
                 <RenewalNegotiationPanel quote={quote} live={live} />
               </>

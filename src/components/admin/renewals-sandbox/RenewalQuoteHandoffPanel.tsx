@@ -60,6 +60,7 @@ export const RenewalQuoteHandoffPanel: React.FC<Props> = ({ row, quote, live }) 
             {prefill.daysRemaining !== null ? ` (${prefill.daysRemaining}d)` : ''}
           </span>
           <span className="text-muted-foreground">Paid last time</span><span>{money(prefill.previousPrice)}</span>
+          <span className="text-muted-foreground">Renewal term</span><span>12 months only</span>
           <span className="text-muted-foreground">Recommended</span><span className="font-semibold">{money(prefill.recommendedPrice)}</span>
           <span className="text-muted-foreground">Negotiation range</span>
           <span>{money(prefill.negotiationFrom)} – {money(prefill.negotiationTo)}</span>
