@@ -668,19 +668,31 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
           </div>
         )}
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="gap-2 sm:items-center">
           {reviewing ? (
             <>
+              {sendBlockedReason && (
+                <p className="text-xs text-muted-foreground mr-auto">{sendBlockedReason}</p>
+              )}
               <Button variant="outline" onClick={() => setReviewing(false)} disabled={sending}>
                 <ArrowLeft className="h-4 w-4 mr-1" /> Back to edit
               </Button>
-              <Button onClick={handleSend} disabled={sending}>
+              <Button onClick={handleSend} disabled={sending || !canSend}>
                 {sending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
                 Send email &amp; open appeal
               </Button>
             </>
           ) : (
             <>
+              {!canReview && (
+                <p className="text-xs text-muted-foreground mr-auto">
+                  {!selected
+                    ? 'Select a customer / claim to preview the email.'
+                    : !selected.email
+                      ? 'This claim has no email address.'
+                      : 'Add the grounds for appeal (at least a sentence) to preview the email.'}
+                </p>
+              )}
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
@@ -690,6 +702,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             </>
           )}
         </DialogFooter>
+
       </DialogContent>
     </Dialog>
   );
