@@ -202,17 +202,18 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                   <th className="px-3 py-2 font-medium">Vehicle</th>
                   <th className="px-3 py-2 font-medium">Plan</th>
                   <th className="px-3 py-2 font-medium">Renewal offer</th>
+                  <th className="px-3 py-2 font-medium">Ownership / SLA</th>
                   <th className="px-3 py-2 font-medium">Expires</th>
                 </tr>
               </thead>
               <tbody>
                 {loading && (
-                  <tr><td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">
+                  <tr><td colSpan={8} className="px-3 py-8 text-center text-muted-foreground">
                     <Loader2 className="mx-auto h-5 w-5 animate-spin" />
                   </td></tr>
                 )}
                 {!loading && visible.length === 0 && (
-                  <tr><td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">
+                  <tr><td colSpan={8} className="px-3 py-8 text-center text-muted-foreground">
                     No renewals in {activeBand?.label}.
                   </td></tr>
                 )}
@@ -220,12 +221,15 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                   const d = daysLeft(r.policy_end_date);
                   const c = r.customers;
                   const name = [c?.first_name, c?.last_name].filter(Boolean).join(' ') || c?.name || r.customer_full_name || '—';
+                  const own = evaluateOwnership(r);
+                  const isReserved = reservation?.policyId === r.id;
                   return (
                     <tr
                       key={r.id}
-                      className="cursor-pointer border-t hover:bg-muted/40"
+                      className={`cursor-pointer border-t hover:bg-muted/40 ${isReserved ? 'bg-emerald-50/70' : ''}`}
                       onClick={() => setSelected(r)}
                     >
+
                       <td className="px-3 py-2">
                         <Badge variant="outline" className="border-purple-200 bg-purple-100 text-purple-800">
                           <Repeat className="mr-1 h-3 w-3" /> Renewal
