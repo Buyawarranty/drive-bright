@@ -247,6 +247,7 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                   const c = r.customers;
                   const name = [c?.first_name, c?.last_name].filter(Boolean).join(' ') || c?.name || r.customer_full_name || '—';
                   const own = evaluateOwnership(r);
+                  const prio = scoreRenewalPriority(r, {}, own);
                   const isReserved = reservation?.policyId === r.id;
                   return (
                     <tr
@@ -254,7 +255,10 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                       className={`cursor-pointer border-t hover:bg-muted/40 ${isReserved ? 'bg-emerald-50/70' : ''}`}
                       onClick={() => setSelected(r)}
                     >
-
+                      <td className="px-3 py-2">
+                        <Badge variant="outline" className={PRIORITY_TONE[prio.band]}>{prio.score}</Badge>
+                        <div className="mt-1 text-xs text-muted-foreground">{prio.label}</div>
+                      </td>
                       <td className="px-3 py-2">
                         <Badge variant="outline" className="border-purple-200 bg-purple-100 text-purple-800">
                           <Repeat className="mr-1 h-3 w-3" /> Renewal
