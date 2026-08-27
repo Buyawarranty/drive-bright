@@ -220,6 +220,7 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-left">
                 <tr>
+                  <th className="px-3 py-2 font-medium">Priority</th>
                   <th className="px-3 py-2 font-medium">Type</th>
                   <th className="px-3 py-2 font-medium">Days left</th>
                   <th className="px-3 py-2 font-medium">Customer</th>
