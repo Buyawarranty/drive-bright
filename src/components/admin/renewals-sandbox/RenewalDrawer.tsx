@@ -69,7 +69,15 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
   const quote = useMemo(() => (row ? priceRenewal(row) : null), [row]);
   const lifecycle = useMemo(() => (row ? getLifecycle(row) : null), [row]);
 
+  const ownership = useMemo(() => (row ? evaluateOwnership(row) : null), [row]);
+  const adminMap = useAllAdminUsersMap(ownership?.ownerId ?? null);
+  const owner = ownership?.ownerId ? adminMap.get(ownership.ownerId) : null;
+  const ownerName = owner
+    ? [owner.first_name, owner.last_name].filter(Boolean).join(' ') || owner.email
+    : null;
+
   return (
+
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
         <SheetHeader>
