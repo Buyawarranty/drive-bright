@@ -233,8 +233,11 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                   <th className="px-3 py-2 font-medium">Customer</th>
                   <th className="px-3 py-2 font-medium">Vehicle</th>
                   <th className="px-3 py-2 font-medium">Plan</th>
+                  <th className="px-3 py-2 font-medium">Previous price</th>
                   <th className="px-3 py-2 font-medium">Renewal offer</th>
                   <th className="px-3 py-2 font-medium">Ownership / SLA</th>
+                  <th className="px-3 py-2 font-medium">Next action</th>
+                  <th className="px-3 py-2 font-medium">Status</th>
                   <th className="px-3 py-2 font-medium">Expires</th>
                 </tr>
               </thead>
