@@ -212,22 +212,32 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
     }
   };
 
-  const runSearch = async () => {
-    const term = search.trim();
-    if (term.length < 2) return;
+  const loadClaims = async (term: string) => {
     setSearching(true);
     try {
-      const like = `%${term}%`;
-      const { data, error } = await supabase
+      let query = supabase
         .from('claims_submissions')
-        .select('id, name, email, phone, status, vehicle_registration, created_at')
-        .or(`name.ilike.${like},email.ilike.${like},vehicle_registration.ilike.${like}`)
+        .select('id, name, email, phone, status, vehicle_registration, created_at');
+
+      if (term) {
+        const like = `%${term}%`;
+        const digits = term.replace(/\D/g, '');
+        const filters = [
+          `name.ilike.${like}`,
+          `email.ilike.${like}`,
+          `vehicle_registration.ilike.${like}`,
+        ];
+        if (digits.length >= 5) filters.push(`phone.ilike.%${digits.slice(-9)}%`);
+        query = query.or(filters.join(','));
+      }
+
+      const { data, error } = await query
         .order('created_at', { ascending: false })
-        .limit(15);
+        .limit(term ? 25 : 15);
       if (error) throw error;
       setResults((data || []) as ClaimRow[]);
       if (!data?.length) {
-        toast({ title: 'No claims found', description: 'Try a registration, email or name.' });
+        toast({ title: 'No claims found', description: 'Try a registration, email, name or phone number.' });
       }
     } catch (e: any) {
       toast({ title: 'Search failed', description: e.message, variant: 'destructive' });
@@ -236,12 +246,29 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
     }
   };
 
-  const canReview =
-    !!selected &&
-    !!selected.email &&
-    reason.trim().length > 10 &&
+  const runSearch = () => {
+    const term = search.trim();
+    if (term.length < 2) {
+      toast({ title: 'Enter at least 2 characters', description: 'Or use "Import latest claims".' });
+      return;
+    }
+    void loadClaims(term);
+  };
+
+  /** Preview only needs a customer and the grounds — links can be generated after. */
+  const canReview = !!selected && !!selected.email && reason.trim().length > 10;
+
+  const canSend =
+    canReview &&
     !!formLink.trim() &&
     (!withReview || (!!reviewer && !!paymentLink.trim()));
+
+  const sendBlockedReason = !canSend
+    ? !formLink.trim()
+      ? 'Generate the appeal form link before sending.'
+      : 'Generate the inspection payment page, or switch off the independent review.'
+    : '';
+
 
   const handleSend = async () => {
     if (!selected) return;
@@ -394,12 +421,21 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && runSearch()}
-                      placeholder="Search by registration, email or name"
+                      placeholder="Search by registration, email, name or phone"
                     />
                     <Button onClick={runSearch} disabled={searching} variant="outline">
                       {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                     </Button>
+                    <Button
+                      onClick={() => void loadClaims('')}
+                      disabled={searching}
+                      variant="secondary"
+                      className="whitespace-nowrap"
+                    >
+                      Import latest claims
+                    </Button>
                   </div>
+
                   {results.length > 0 && (
                     <div className="max-h-52 overflow-y-auto rounded-md border divide-y">
                       {results.map((r) => (
@@ -632,19 +668,31 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
           </div>
         )}
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="gap-2 sm:items-center">
           {reviewing ? (
             <>
+              {sendBlockedReason && (
+                <p className="text-xs text-muted-foreground mr-auto">{sendBlockedReason}</p>
+              )}
               <Button variant="outline" onClick={() => setReviewing(false)} disabled={sending}>
                 <ArrowLeft className="h-4 w-4 mr-1" /> Back to edit
               </Button>
-              <Button onClick={handleSend} disabled={sending}>
+              <Button onClick={handleSend} disabled={sending || !canSend}>
                 {sending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
                 Send email &amp; open appeal
               </Button>
             </>
           ) : (
             <>
+              {!canReview && (
+                <p className="text-xs text-muted-foreground mr-auto">
+                  {!selected
+                    ? 'Select a customer / claim to preview the email.'
+                    : !selected.email
+                      ? 'This claim has no email address.'
+                      : 'Add the grounds for appeal (at least a sentence) to preview the email.'}
+                </p>
+              )}
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
@@ -654,6 +702,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             </>
           )}
         </DialogFooter>
+
       </DialogContent>
     </Dialog>
   );

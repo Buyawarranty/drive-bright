@@ -10,7 +10,7 @@
  */
 
 import type { SandboxRow } from './types';
-import { getLifecycle, daysToExpiry } from './renewalPricing';
+import { getLifecycle, daysToEffectiveExpiry } from './renewalPricing';
 
 export type SaleKind = 'new_sale' | 'standard_renewal' | 'win_back' | 'upsell';
 
@@ -82,7 +82,7 @@ export function saleKindFor(row: SandboxRow, opts: { isUpsell?: boolean } = {}):
   if (opts.isUpsell) return 'upsell';
   const lifecycle = getLifecycle(row);
   if (lifecycle === 'lapsed') return 'win_back';
-  const d = daysToExpiry(row.policy_end_date);
+  const d = daysToEffectiveExpiry(row);
   if (d !== null && d < 0) return 'win_back';
   return 'standard_renewal';
 }

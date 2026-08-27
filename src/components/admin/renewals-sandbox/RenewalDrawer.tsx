@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Loader2, Phone, Mail, Car, ShieldCheck, UserCheck, Link2Off, Lock, PoundSterling, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import type { SandboxRow } from './types';
-import { priceRenewal, getLifecycle, LIFECYCLE_LABEL } from './renewalPricing';
+import { priceRenewal, getLifecycle, LIFECYCLE_LABEL, getEffectiveEndDate, getOriginalTermMonths } from './renewalPricing';
 import {
   evaluateOwnership,
   SLA_LABEL,
@@ -146,7 +146,7 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
               <span className="text-muted-foreground">Starts</span>
               <span>{row?.policy_start_date ? format(new Date(row.policy_start_date), 'd MMM yyyy') : '—'}</span>
               <span className="text-muted-foreground">Expires</span>
-              <span>{row?.policy_end_date ? format(new Date(row.policy_end_date), 'd MMM yyyy') : '—'}</span>
+              <span>{row && getEffectiveEndDate(row) ? format(new Date(getEffectiveEndDate(row) as string), 'd MMM yyyy') : '—'}</span>
               <span className="text-muted-foreground">Payment</span><span>{row?.payment_type || '—'}</span>
             </div>
           </section>

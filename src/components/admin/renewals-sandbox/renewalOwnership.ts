@@ -16,7 +16,7 @@
  *  - Close to expiry, retention beats historic ownership.
  */
 
-import { daysToExpiry } from './renewalPricing';
+import { daysToEffectiveExpiry } from './renewalPricing';
 import { getRenewalSlaConfig, slaHoursFromConfig } from './renewalSlaConfig';
 import type { SandboxRow } from './types';
 
@@ -89,7 +89,7 @@ export function evaluateOwnership(row: SandboxRow, opts: OwnershipInputs = {}): 
   const cfg = getRenewalSlaConfig();
   const currentOwnerId = row.customers?.assigned_to || null;
   const originalAgentId = originalSellingAgentId(row);
-  const d = daysToExpiry(row.policy_end_date);
+  const d = daysToEffectiveExpiry(row);
   const slaHours = slaHoursFor(d);
   const lastActivity = opts.lastActivity ?? null;
   const lastActivityAt = opts.lastTouchedAt ?? null;

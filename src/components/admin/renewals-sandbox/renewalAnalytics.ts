@@ -8,7 +8,7 @@
  */
 
 import type { SandboxRow } from './types';
-import { daysToExpiry, getLifecycle, priceRenewal, LIFECYCLE_LABEL } from './renewalPricing';
+import { daysToEffectiveExpiry, getEffectiveEndDate, getLifecycle, priceRenewal, LIFECYCLE_LABEL } from './renewalPricing';
 import { evaluateOwnership } from './renewalOwnership';
 import { estimateCommission } from './renewalCommission';
 import { scoreRenewalPriority } from './renewalPriority';
@@ -38,7 +38,7 @@ export function analyseRenewals(rows: SandboxRow[]): RenewalAnalytics {
     const own = evaluateOwnership(row);
     return {
       row,
-      days: daysToExpiry(row.policy_end_date),
+      days: daysToEffectiveExpiry(row),
       value: q.blocked ? 0 : q.loyaltyPrice,
       blocked: q.blocked,
       own,
@@ -94,8 +94,8 @@ export function renewalsReportCsv(rows: SandboxRow[]): string {
       c?.registration_plate || '',
       [c?.vehicle_make, c?.vehicle_model].filter(Boolean).join(' '),
       row.plan_type || '',
-      row.policy_end_date || '',
-      daysToExpiry(row.policy_end_date) ?? '',
+      getEffectiveEndDate(row) || '',
+      daysToEffectiveExpiry(row) ?? '',
       LIFECYCLE_LABEL[getLifecycle(row)],
       row.payment_amount ?? '',
       q.blocked ? '' : q.loyaltyPrice,
