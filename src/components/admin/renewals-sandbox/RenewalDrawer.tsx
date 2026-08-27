@@ -108,9 +108,14 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
+          <SheetTitle className="flex flex-wrap items-center gap-2">
             {name}
             <Badge variant="outline" className="border-purple-200 bg-purple-100 text-purple-800">Renewal</Badge>
+            {priority && (
+              <Badge variant="outline" className={PRIORITY_TONE[priority.band]}>
+                {priority.label} · {priority.score}
+              </Badge>
+            )}
           </SheetTitle>
           <SheetDescription>
             {live ? 'Engine is live — actions will affect New Leads.' : 'Sandbox — everything here is read-only.'}
