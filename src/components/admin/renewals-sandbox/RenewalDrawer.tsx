@@ -8,6 +8,9 @@ import { Loader2, Phone, Mail, Car, ShieldCheck, UserCheck, Link2Off, Lock, Poun
 import { format } from 'date-fns';
 import type { SandboxRow } from './types';
 import { priceRenewal, getLifecycle, LIFECYCLE_LABEL } from './renewalPricing';
+import { evaluateOwnership, SLA_LABEL, SLA_TONE } from './renewalOwnership';
+import { RenewalNegotiationPanel } from './RenewalNegotiationPanel';
+import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
 interface MatchedLead {
   id: string;
@@ -66,7 +69,15 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
   const quote = useMemo(() => (row ? priceRenewal(row) : null), [row]);
   const lifecycle = useMemo(() => (row ? getLifecycle(row) : null), [row]);
 
+  const ownership = useMemo(() => (row ? evaluateOwnership(row) : null), [row]);
+  const adminMap = useAllAdminUsersMap(ownership?.ownerId ?? null);
+  const owner = ownership?.ownerId ? adminMap.get(ownership.ownerId) : null;
+  const ownerName = owner
+    ? [owner.first_name, owner.last_name].filter(Boolean).join(' ') || owner.email
+    : null;
+
   return (
+
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
         <SheetHeader>
@@ -173,11 +184,41 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
                   {' '}£{quote.claimLimit.toLocaleString('en-GB')} claim limit, £{quote.labourRate}/hr labour. Anything below the agent floor
                   needs manager approval; nothing may go below the absolute minimum.
                 </p>
+                <RenewalNegotiationPanel quote={quote} live={live} />
               </>
             )}
           </section>
 
           <Separator />
+
+          <section className="space-y-2">
+            <h4 className="flex items-center gap-2 font-semibold"><UserCheck className="h-4 w-4" /> Ownership & SLA</h4>
+            {ownership && (
+              <>
+                <div className="grid grid-cols-2 gap-y-1">
+                  <span className="text-muted-foreground">Would belong to</span>
+                  <span>{ownerName || 'Renewal pool (round robin)'}</span>
+                  <span className="text-muted-foreground">Why</span>
+                  <span>{ownership.reason === 'sticky_customer_owner' ? 'Sticky — existing customer owner' : 'No current owner'}</span>
+                  <span className="text-muted-foreground">First-touch SLA</span>
+                  <span>{ownership.slaHours}h</span>
+                </div>
+                <Badge variant="outline" className={SLA_TONE[ownership.slaState]}>
+                  {SLA_LABEL[ownership.slaState]}
+                  {ownership.hoursRemaining !== null && ownership.slaState !== 'breached'
+                    ? ` · ${ownership.hoursRemaining}h left`
+                    : ''}
+                </Badge>
+                <p className="text-xs text-muted-foreground">
+                  A renewal never jumps its existing owner. If the first-touch SLA is missed it becomes eligible for the
+                  renewal queue so another agent can pick it up.
+                </p>
+              </>
+            )}
+          </section>
+
+          <Separator />
+
 
           <section className="space-y-2">
             <h4 className="font-semibold">Quick actions</h4>
