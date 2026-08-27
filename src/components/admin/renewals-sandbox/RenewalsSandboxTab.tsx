@@ -82,8 +82,9 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
     try {
       let q: any = base((supabase.from('customer_policies') as any).select(
         'id, customer_id, policy_number, plan_type, payment_type, policy_start_date, policy_end_date, ' +
-        'claim_limit, retention_outcome, customer_full_name, email, ' +
-        'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, assigned_to, status )'
+        'claim_limit, voluntary_excess, payment_amount, retention_outcome, customer_full_name, email, ' +
+        'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, ' +
+        'vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, vehicle_transmission, mileage, assigned_to, status )'
       ));
       q = applyBand(q, band)
         .order('policy_end_date', { ascending: true, nullsFirst: false })
