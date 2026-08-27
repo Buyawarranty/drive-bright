@@ -234,6 +234,18 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                       </td>
                       <td className="px-3 py-2">{r.plan_type || '—'}</td>
                       <td className="px-3 py-2">
+                        {(() => {
+                          const q = priceRenewal(r);
+                          if (q.blocked) return <span className="text-xs text-amber-800">Needs review</span>;
+                          return (
+                            <div>
+                              <div className="font-medium">£{q.loyaltyPrice.toLocaleString('en-GB')}</div>
+                              <div className="text-xs text-muted-foreground">min £{q.agentFloorPrice.toLocaleString('en-GB')}</div>
+                            </div>
+                          );
+                        })()}
+                      </td>
+                      <td className="px-3 py-2">
                         {r.policy_end_date ? format(new Date(r.policy_end_date), 'd MMM yyyy') : '—'}
                       </td>
                     </tr>
