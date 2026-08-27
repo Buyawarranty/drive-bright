@@ -653,7 +653,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
         ) : (
           /* ── Email preview step ── */
           <div className="space-y-3 text-sm">
-            <div className="rounded-md border bg-muted/40 p-3">
+            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-4 text-[#1A2B4A] shadow-sm">
               <p><span className="text-muted-foreground">To:</span> {selected?.email}</p>
               <p><span className="text-muted-foreground">Subject:</span> {subject}</p>
               <p className="text-muted-foreground">
@@ -665,7 +665,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             <iframe
               title="Appeal email preview"
               srcDoc={emailHtml}
-              className="w-full h-[420px] rounded-md border bg-background"
+              className="w-full h-[520px] rounded-2xl border border-[#E2E8F0] bg-white shadow-sm"
             />
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" size="sm" onClick={() => window.open(formLink, '_blank')} disabled={!formLink}>
@@ -696,7 +696,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
               <Button variant="outline" onClick={() => setReviewing(false)} disabled={sending}>
                 <ArrowLeft className="h-4 w-4 mr-1" /> Back to edit
               </Button>
-              <Button onClick={handleSend} disabled={sending || !canSend}>
+              <Button onClick={handleSend} disabled={sending || !canSend} className="bg-[#E8541A] hover:bg-[#cf471a] text-white">
                 {sending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
                 Send email &amp; open appeal
               </Button>
@@ -715,7 +715,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button onClick={() => setReviewing(true)} disabled={!canReview}>
+              <Button onClick={() => setReviewing(true)} disabled={!canReview} className="bg-[#E8541A] hover:bg-[#cf471a] text-white">
                 <Eye className="h-4 w-4 mr-1" /> Preview email
               </Button>
             </>
