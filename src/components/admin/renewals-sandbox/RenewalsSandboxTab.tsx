@@ -143,6 +143,10 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
 
   const activeBand = useMemo(() => BANDS.find(b => b.id === band), [band]);
 
+  // Re-order when the weights change so tuning is instant.
+  const [weightsVersion, setWeightsVersion] = useState(0);
+  useEffect(() => subscribePriorityWeights(() => setWeightsVersion((v) => v + 1)), []);
+
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase();
     const filtered = !term ? rows : rows.filter((r) => {
@@ -152,11 +156,12 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
         c?.registration_plate, c?.vehicle_make, c?.vehicle_model, r.policy_number,
       ].filter(Boolean).some((v) => String(v).toLowerCase().includes(term));
     });
+    const ordered = sortByPriority(filtered);
     const pinnedId = reservation?.policyId;
-    if (!pinnedId) return filtered;
-    const pinned = filtered.filter((r) => r.id === pinnedId);
-    return pinned.length ? [...pinned, ...filtered.filter((r) => r.id !== pinnedId)] : filtered;
-  }, [rows, search, reservation?.policyId]);
+    if (!pinnedId) return ordered;
+    const pinned = ordered.filter((r) => r.id === pinnedId);
+    return pinned.length ? [...pinned, ...ordered.filter((r) => r.id !== pinnedId)] : ordered;
+  }, [rows, search, reservation?.policyId, weightsVersion]);
 
   return (
     <div className="space-y-4 p-4 sm:p-6">
