@@ -212,22 +212,32 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
     }
   };
 
-  const runSearch = async () => {
-    const term = search.trim();
-    if (term.length < 2) return;
+  const loadClaims = async (term: string) => {
     setSearching(true);
     try {
-      const like = `%${term}%`;
-      const { data, error } = await supabase
+      let query = supabase
         .from('claims_submissions')
-        .select('id, name, email, phone, status, vehicle_registration, created_at')
-        .or(`name.ilike.${like},email.ilike.${like},vehicle_registration.ilike.${like}`)
+        .select('id, name, email, phone, status, vehicle_registration, created_at');
+
+      if (term) {
+        const like = `%${term}%`;
+        const digits = term.replace(/\D/g, '');
+        const filters = [
+          `name.ilike.${like}`,
+          `email.ilike.${like}`,
+          `vehicle_registration.ilike.${like}`,
+        ];
+        if (digits.length >= 5) filters.push(`phone.ilike.%${digits.slice(-9)}%`);
+        query = query.or(filters.join(','));
+      }
+
+      const { data, error } = await query
         .order('created_at', { ascending: false })
-        .limit(15);
+        .limit(term ? 25 : 15);
       if (error) throw error;
       setResults((data || []) as ClaimRow[]);
       if (!data?.length) {
-        toast({ title: 'No claims found', description: 'Try a registration, email or name.' });
+        toast({ title: 'No claims found', description: 'Try a registration, email, name or phone number.' });
       }
     } catch (e: any) {
       toast({ title: 'Search failed', description: e.message, variant: 'destructive' });
@@ -236,12 +246,29 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
     }
   };
 
-  const canReview =
-    !!selected &&
-    !!selected.email &&
-    reason.trim().length > 10 &&
+  const runSearch = () => {
+    const term = search.trim();
+    if (term.length < 2) {
+      toast({ title: 'Enter at least 2 characters', description: 'Or use "Import latest claims".' });
+      return;
+    }
+    void loadClaims(term);
+  };
+
+  /** Preview only needs a customer and the grounds — links can be generated after. */
+  const canReview = !!selected && !!selected.email && reason.trim().length > 10;
+
+  const canSend =
+    canReview &&
     !!formLink.trim() &&
     (!withReview || (!!reviewer && !!paymentLink.trim()));
+
+  const sendBlockedReason = !canSend
+    ? !formLink.trim()
+      ? 'Generate the appeal form link before sending.'
+      : 'Generate the inspection payment page, or switch off the independent review.'
+    : '';
+
 
   const handleSend = async () => {
     if (!selected) return;
