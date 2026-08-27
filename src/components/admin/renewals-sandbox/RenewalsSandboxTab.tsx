@@ -180,13 +180,15 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
         </div>
       )}
 
-      <RenewalSandboxQueueBar rows={visible} live={live} onTake={(r) => setSelected(r)} />
+      <RenewalSummaryCards />
 
       <div className="grid gap-3">
         <RenewalSlaConfigPanel />
         <RenewalPriorityConfigPanel />
+        <RenewalCommissionConfigPanel />
         <RenewalPoolDistributionPanel rows={visible} live={live} />
       </div>
+
 
 
 
