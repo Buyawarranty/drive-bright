@@ -263,105 +263,173 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-left">
                 <tr>
-                  <th className="px-3 py-2 font-medium">Priority</th>
-                  <th className="px-3 py-2 font-medium">Type</th>
-                  <th className="px-3 py-2 font-medium">Days left</th>
-                  <th className="px-3 py-2 font-medium">Customer</th>
-                  <th className="px-3 py-2 font-medium">Vehicle</th>
-                  <th className="px-3 py-2 font-medium">Plan</th>
-                  <th className="px-3 py-2 font-medium">Previous price</th>
-                  <th className="px-3 py-2 font-medium">Renewal offer</th>
-                  <th className="px-3 py-2 font-medium">Ownership / SLA</th>
-                  <th className="px-3 py-2 font-medium">Next action</th>
+                  <th className="px-3 py-2 font-medium">#</th>
+                  <th className="px-3 py-2 font-medium">Agent</th>
+                  <th className="px-3 py-2 font-medium">Src</th>
                   <th className="px-3 py-2 font-medium">Status</th>
-                  <th className="px-3 py-2 font-medium">Expires</th>
+                  <th className="px-3 py-2 font-medium">Calls</th>
+                  <th className="px-3 py-2 font-medium">Actions</th>
+                  <th className="px-3 py-2 font-medium">Name</th>
+                  <th className="px-3 py-2 font-medium">Phone</th>
+                  <th className="px-3 py-2 font-medium">Email</th>
+                  <th className="px-3 py-2 font-medium">Reg</th>
+                  <th className="px-3 py-2 font-medium">Payment</th>
+                  <th className="px-3 py-2 font-medium">Paid Date</th>
+                  <th className="px-3 py-2 font-medium">Agent activity</th>
+                  <th className="px-3 py-2 font-medium">Lead Date</th>
+                  <th className="px-3 py-2 font-medium">Customer activity</th>
+                  <th className="px-3 py-2 font-medium">Time to contact</th>
                 </tr>
               </thead>
               <tbody>
                 {loading && (
-                  <tr><td colSpan={12} className="px-3 py-8 text-center text-muted-foreground">
+                  <tr><td colSpan={16} className="px-3 py-8 text-center text-muted-foreground">
                     <Loader2 className="mx-auto h-5 w-5 animate-spin" />
                   </td></tr>
                 )}
                 {!loading && visible.length === 0 && (
-                  <tr><td colSpan={12} className="px-3 py-8 text-center text-muted-foreground">
+                  <tr><td colSpan={16} className="px-3 py-8 text-center text-muted-foreground">
                     No renewals in {activeBand?.label}.
                   </td></tr>
                 )}
-                {!loading && visible.map((r) => {
+                {!loading && visible.map((r, idx) => {
                   const d = daysToEffectiveExpiry(r);
                   const c = r.customers;
                   const name = [c?.first_name, c?.last_name].filter(Boolean).join(' ') || c?.name || r.customer_full_name || '—';
                   const own = evaluateOwnership(r);
                   const prio = scoreRenewalPriority(r, {}, own);
                   const isReserved = reservation?.policyId === r.id;
+                  const isOpen = expandedId === r.id;
+                  const effEnd = getEffectiveEndDate(r);
+                  const q = priceRenewal(r);
                   return (
-                    <tr
-                      key={r.id}
-                      className={`cursor-pointer border-t hover:bg-muted/40 ${isReserved ? 'bg-emerald-50/70' : ''}`}
-                      onClick={() => setSelected(r)}
-                    >
-                      <td className="px-3 py-2">
-                        <Badge variant="outline" className={PRIORITY_TONE[prio.band]}>{prio.score}</Badge>
-                        <div className="mt-1 text-xs text-muted-foreground">{prio.label}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant="outline" className="border-purple-200 bg-purple-100 text-purple-800">
-                          <Repeat className="mr-1 h-3 w-3" /> Renewal
-                        </Badge>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant="outline" className={bandBadge(d)}>
-                          {d === null ? '—' : d < 0 ? `${Math.abs(d)}d overdue` : `${d}d`}
-                        </Badge>
-                      </td>
-                      <td className="px-3 py-2">
-                        <div className="font-medium">{name}</div>
-                        <div className="text-xs text-muted-foreground">{c?.phone || c?.email || r.email || '—'}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <div>{[c?.vehicle_make, c?.vehicle_model].filter(Boolean).join(' ') || '—'}</div>
-                        <div className="text-xs uppercase text-muted-foreground">{c?.registration_plate || '—'}</div>
-                      </td>
-                      <td className="px-3 py-2">{r.plan_type || '—'}</td>
-                      <td className="px-3 py-2">
-                        {typeof r.payment_amount === 'number' && r.payment_amount > 0
-                          ? `£${Math.round(r.payment_amount).toLocaleString('en-GB')}`
-                          : '—'}
-                      </td>
-                      <td className="px-3 py-2">
-                        {(() => {
-                          const q = priceRenewal(r);
-                          if (q.blocked) return <span className="text-xs text-amber-800">Needs review</span>;
-                          return (
-                            <div>
-                              <div className="font-medium">£{q.loyaltyPrice.toLocaleString('en-GB')}</div>
-                              <div className="text-xs text-muted-foreground">min £{q.agentFloorPrice.toLocaleString('en-GB')}</div>
+                    <React.Fragment key={r.id}>
+                      <tr
+                        className={`cursor-pointer border-t hover:bg-muted/40 ${isReserved ? 'bg-emerald-50/70' : ''}`}
+                        onClick={() => setExpandedId(isOpen ? null : r.id)}
+                      >
+                        <td className="px-3 py-2 text-muted-foreground">{idx + 1}</td>
+                        <td className="px-3 py-2">{staffName(own.ownerId) || 'Pool'}</td>
+                        <td className="px-3 py-2">
+                          <Badge variant="outline" className="border-purple-200 bg-purple-100 text-purple-800">
+                            <Repeat className="mr-1 h-3 w-3" /> Renewal
+                          </Badge>
+                        </td>
+                        <td className="px-3 py-2">
+                          <Badge variant="secondary">{LIFECYCLE_LABEL[getLifecycle(r)]}</Badge>
+                        </td>
+                        <td className="px-3 py-2 text-muted-foreground">—</td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => { e.stopPropagation(); setSelected(r); }}
+                            >
+                              View
+                            </Button>
+                            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 font-medium">{name}</td>
+                        <td className="px-3 py-2">{c?.phone || '—'}</td>
+                        <td className="max-w-[180px] truncate px-3 py-2">{c?.email || r.email || '—'}</td>
+                        <td className="px-3 py-2 uppercase">{c?.registration_plate || '—'}</td>
+                        <td className="px-3 py-2">
+                          {typeof r.payment_amount === 'number' && r.payment_amount > 0
+                            ? `£${Math.round(r.payment_amount).toLocaleString('en-GB')}`
+                            : '—'}
+                        </td>
+                        <td className="px-3 py-2">
+                          {r.policy_start_date ? format(new Date(r.policy_start_date), 'd MMM yyyy') : '—'}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground">—</td>
+                        <td className="px-3 py-2">
+                          {r.policy_start_date ? format(new Date(r.policy_start_date), 'd MMM yyyy') : '—'}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground">—</td>
+                        <td className="px-3 py-2">
+                          <Badge variant="outline" className={SLA_TONE[own.slaState]}>{SLA_LABEL[own.slaState]}</Badge>
+                          <div className="mt-1 text-xs text-muted-foreground">{own.slaHours}h first touch</div>
+                        </td>
+                      </tr>
+                      {isOpen && (
+                        <tr className="border-t bg-muted/20">
+                          <td colSpan={16} className="px-3 py-3">
+                            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                              <div>
+                                <div className="text-xs text-muted-foreground">Priority</div>
+                                <Badge variant="outline" className={PRIORITY_TONE[prio.band]}>{prio.score}</Badge>
+                                <div className="text-xs text-muted-foreground">{prio.label}</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground">Type</div>
+                                <div>Renewal</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground">Days left</div>
+                                <Badge variant="outline" className={bandBadge(d)}>
+                                  {d === null ? '—' : d < 0 ? `${Math.abs(d)}d overdue` : `${d}d`}
+                                </Badge>
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground">Customer</div>
+                                <div>{name}</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground">Vehicle</div>
+                                <div>{[c?.vehicle_make, c?.vehicle_model].filter(Boolean).join(' ') || '—'}</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground">Plan</div>
+                                <div>{r.plan_type || '—'}</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground">Previous price</div>
+                                <div>
+                                  {typeof r.payment_amount === 'number' && r.payment_amount > 0
+                                    ? `£${Math.round(r.payment_amount).toLocaleString('en-GB')}`
+                                    : '—'}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground">Renewal offer</div>
+                                {q.blocked ? (
+                                  <span className="text-xs text-amber-800">Needs review</span>
+                                ) : (
+                                  <div>
+                                    <div className="font-medium">£{q.loyaltyPrice.toLocaleString('en-GB')}</div>
+                                    <div className="text-xs text-muted-foreground">min £{q.agentFloorPrice.toLocaleString('en-GB')}</div>
+                                  </div>
+                                )}
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground">Ownership / SLA</div>
+                                <Badge variant="outline" className={SLA_TONE[own.slaState]}>{SLA_LABEL[own.slaState]}</Badge>
+                                <div className="text-xs text-muted-foreground">
+                                  Owner: {staffName(own.ownerId) || 'Pool'} · {own.slaHours}h first touch
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  Sold by: {staffName(own.originalAgentId) || 'Website / unknown'}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground">Next action</div>
+                                <div className="text-xs text-muted-foreground">{own.nextAction}</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground">Status</div>
+                                <Badge variant="secondary">{LIFECYCLE_LABEL[getLifecycle(r)]}</Badge>
+                              </div>
+                              <div>
+                                <div className="text-xs text-muted-foreground">Expires</div>
+                                <div>{effEnd ? format(new Date(effEnd), 'd MMM yyyy') : '—'}</div>
+                              </div>
                             </div>
-                          );
-                        })()}
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant="outline" className={SLA_TONE[own.slaState]}>{SLA_LABEL[own.slaState]}</Badge>
-                        <div className="mt-1 text-xs text-muted-foreground">
-                          Owner: {staffName(own.ownerId) || 'Pool'} · {own.slaHours}h first touch
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Sold by: {staffName(own.originalAgentId) || 'Website / unknown'}
-                        </div>
-                      </td>
-                      <td className="max-w-[180px] px-3 py-2 text-xs text-muted-foreground">
-                        {own.nextAction}
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant="secondary">{LIFECYCLE_LABEL[getLifecycle(r)]}</Badge>
-                      </td>
-                      <td className="px-3 py-2">
-                        {getEffectiveEndDate(r) ? format(new Date(getEffectiveEndDate(r) as string), 'd MMM yyyy') : '—'}
-                      </td>
-
-
-                    </tr>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
@@ -369,6 +437,7 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
           </div>
         </CardContent>
       </Card>
+
 
       <RenewalDrawer
         row={selected}
