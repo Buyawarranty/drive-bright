@@ -141,6 +141,45 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
           <Separator />
 
           <section className="space-y-2">
+            <h4 className="flex items-center gap-2 font-semibold">
+              <PoundSterling className="h-4 w-4" /> Renewal offer
+              {lifecycle && <Badge variant="secondary">{LIFECYCLE_LABEL[lifecycle]}</Badge>}
+            </h4>
+            {!quote ? null : quote.blocked ? (
+              <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50/60 p-2 text-xs text-amber-900">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                {quote.blockReason} — this renewal needs a manager decision before a price can be offered.
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-y-1">
+                  <span className="text-muted-foreground">Like-for-like</span><span>{money(quote.standardPrice)}</span>
+                  <span className="text-muted-foreground">Loyalty price (lead with)</span>
+                  <span className="font-semibold">{money(quote.loyaltyPrice)}</span>
+                  <span className="text-muted-foreground">Agent floor (no approval)</span><span>{money(quote.agentFloorPrice)}</span>
+                  <span className="text-muted-foreground">Absolute minimum</span><span>{money(quote.netFloor)}</span>
+                  <span className="text-muted-foreground">Paid last time</span><span>{money(quote.previousPrice)}</span>
+                  {quote.deltaVsPrevious !== null && (
+                    <>
+                      <span className="text-muted-foreground">Change vs last year</span>
+                      <span className={quote.deltaVsPrevious > 0 ? 'text-red-700' : 'text-emerald-700'}>
+                        {quote.deltaVsPrevious > 0 ? '+' : ''}{money(quote.deltaVsPrevious)}
+                      </span>
+                    </>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Priced by the live quote engine for {quote.paymentPeriod.replace('months', ' months')}, £{quote.voluntaryExcess} excess,
+                  {' '}£{quote.claimLimit.toLocaleString('en-GB')} claim limit, £{quote.labourRate}/hr labour. Anything below the agent floor
+                  needs manager approval; nothing may go below the absolute minimum.
+                </p>
+              </>
+            )}
+          </section>
+
+          <Separator />
+
+          <section className="space-y-2">
             <h4 className="font-semibold">Quick actions</h4>
             <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="outline" disabled={!live} asChild={live && !!c?.phone}>
