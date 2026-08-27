@@ -22,6 +22,42 @@ export type RenewalLifecycle =
 const RENEWED = new Set(['renewed', 'upgraded', 'renewed_upgraded']);
 const INELIGIBLE = new Set(['do_not_contact', 'vehicle_sold', 'bought_elsewhere']);
 
+/** Original term of the policy in months, from the stored plan/payment type. */
+export function getOriginalTermMonths(row: SandboxRow): number {
+  const raw = `${row.payment_type || ''} ${row.plan_type || ''}`.toLowerCase();
+  if (/36|three\s*year|3\s*year|threeyear/.test(raw)) return 36;
+  if (/24|two\s*year|2\s*year|twoyear/.test(raw)) return 24;
+  if (/12|one\s*year|1\s*year|yearly|annual/.test(raw)) return 12;
+  // Fall back to the stored dates when the plan type is unclear.
+  const start = row.policy_start_date ? new Date(row.policy_start_date) : null;
+  const end = row.policy_end_date ? new Date(row.policy_end_date) : null;
+  if (start && end && !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime())) {
+    const months = (end.getUTCFullYear() - start.getUTCFullYear()) * 12
+      + (end.getUTCMonth() - start.getUTCMonth());
+    if (months >= 30) return 36;
+    if (months >= 18) return 24;
+  }
+  return 12;
+}
+
+/**
+ * True expiry date. Some legacy rows have a policy_end_date that was written as
+ * start + 12 months even though the customer bought 2 or 3 years, which made
+ * multi-year policies look like they were expiring now. We rebuild the end date
+ * from the start date plus the original term so a 2-year policy sold this year
+ * is only due next year.
+ */
+export function getEffectiveEndDate(row: SandboxRow): string | null {
+  const term = getOriginalTermMonths(row);
+  const start = row.policy_start_date ? new Date(row.policy_start_date) : null;
+  if (!start || Number.isNaN(start.getTime())) return row.policy_end_date ?? null;
+  const derived = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + term, start.getUTCDate()));
+  const stored = row.policy_end_date ? new Date(row.policy_end_date) : null;
+  if (!stored || Number.isNaN(stored.getTime())) return derived.toISOString().slice(0, 10);
+  // Keep whichever is later — bonus months already added to the stored date stay.
+  return (stored.getTime() >= derived.getTime() ? stored : derived).toISOString().slice(0, 10);
+}
+
 export const daysToExpiry = (end: string | null | undefined): number | null => {
   if (!end) return null;
   const e = new Date(end); e.setHours(0, 0, 0, 0);
@@ -29,11 +65,15 @@ export const daysToExpiry = (end: string | null | undefined): number | null => {
   return Math.round((e.getTime() - t.getTime()) / 86400000);
 };
 
+/** Days until the policy genuinely expires, term-corrected. */
+export const daysToEffectiveExpiry = (row: SandboxRow): number | null =>
+  daysToExpiry(getEffectiveEndDate(row));
+
 export function getLifecycle(row: SandboxRow): RenewalLifecycle {
   const outcome = (row.retention_outcome || '').toLowerCase();
   if (RENEWED.has(outcome)) return 'renewed';
   if (INELIGIBLE.has(outcome)) return 'ineligible';
-  const d = daysToExpiry(row.policy_end_date);
+  const d = daysToEffectiveExpiry(row);
   if (d === null) return 'not_due';
   if (d < 0) return 'lapsed';
   if (d <= 7) return 'hot';
@@ -51,12 +91,15 @@ export const LIFECYCLE_LABEL: Record<RenewalLifecycle, string> = {
 };
 
 /** Maps a stored payment/plan type onto a pricing period the engine understands.
- *  Renewals are currently offered as 12-month policies only — even if the
- *  existing policy was 24 or 36 months, the renewal quote is rebuilt as 1 year.
+ *  A renewal is quoted like-for-like on the original term.
  */
-export function toPaymentPeriod(_paymentType: string | null | undefined): PaymentPeriod {
+export function toPaymentPeriod(paymentType: string | null | undefined): PaymentPeriod {
+  const raw = (paymentType || '').toLowerCase();
+  if (/36|three\s*year|3\s*year/.test(raw)) return '36months';
+  if (/24|two\s*year|2\s*year/.test(raw)) return '24months';
   return '12months';
 }
+
 
 export interface RenewalQuote {
   paymentPeriod: PaymentPeriod;
