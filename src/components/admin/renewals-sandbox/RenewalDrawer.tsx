@@ -20,6 +20,7 @@ import { RenewalQuoteHandoffPanel } from './RenewalQuoteHandoffPanel';
 import { RenewalCompletionPanel } from './RenewalCompletionPanel';
 import { scoreRenewalPriority, PRIORITY_TONE } from './renewalPriority';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
+import { recordRenewalAudit } from './renewalAudit';
 
 interface MatchedLead {
   id: string;
@@ -93,6 +94,19 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
   };
   const ownerName = staffName(ownership?.ownerId);
   const originalAgentName = staffName(ownership?.originalAgentId);
+
+  // Audit trail (Step 23) — sandbox-local record of the renewal being opened.
+  useEffect(() => {
+    if (!open || !row) return;
+    recordRenewalAudit({
+      action: 'viewed',
+      policyId: row.id,
+      policyNumber: row.policy_number,
+      customerName: name === '—' ? null : name,
+      detail: 'Renewal opened in the sandbox drawer',
+      amount: null,
+    });
+  }, [open, row?.id]);
 
   const priority = useMemo(
     () => (row ? scoreRenewalPriority(row, {

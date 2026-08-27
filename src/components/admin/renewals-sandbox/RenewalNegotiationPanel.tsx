@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle2, ShieldAlert, Lock } from 'lucide-react';
 import { useIsManagement } from '@/hooks/useIsManagement';
 import type { RenewalQuote } from './renewalPricing';
+import { recordRenewalAudit } from './renewalAudit';
 
 /**
  * RENEWALS SANDBOX — negotiation + manager approval (Stage 4, Step 10)
@@ -76,7 +77,21 @@ export const RenewalNegotiationPanel: React.FC<{ quote: RenewalQuote; live: bool
           ) : requested ? (
             <p className="font-medium">Approval request simulated — nothing was sent from the sandbox.</p>
           ) : (
-            <Button size="sm" variant="outline" onClick={() => setRequested(true)}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setRequested(true);
+                recordRenewalAudit({
+                  action: 'discount_requested',
+                  policyId: null,
+                  policyNumber: null,
+                  customerName: null,
+                  detail: `Requested approval below the agent floor of £${quote.agentFloorPrice}`,
+                  amount: price,
+                });
+              }}
+            >
               Request manager approval
             </Button>
           )}

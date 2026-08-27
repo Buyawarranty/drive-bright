@@ -4,7 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, RefreshCw, Repeat, ShieldOff, Search } from 'lucide-react';
+import { Loader2, RefreshCw, Repeat, ShieldOff, Search, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { RenewalsEngineLiveSwitch } from './RenewalsEngineLiveSwitch';
@@ -22,6 +23,9 @@ import { RenewalCommissionConfigPanel } from './RenewalCommissionConfigPanel';
 import { RenewalSummaryCards } from './RenewalSummaryCards';
 import { getLifecycle, LIFECYCLE_LABEL } from './renewalPricing';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
+import { RenewalAnalyticsPanel } from './RenewalAnalyticsPanel';
+import { RenewalPerformanceProtectionPanel } from './RenewalPerformanceProtectionPanel';
+import { RenewalAuditTrailPanel } from './RenewalAuditTrailPanel';
 
 type BandId = 'hot' | 'due_8_14' | 'due_15_30' | 'due_31_60' | 'lapsed' | 'all';
 
@@ -73,6 +77,7 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<SandboxRow | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const reservation = useRenewalReservation();
   const adminMap = useAllAdminUsersMap();
   const staffName = useCallback((id?: string | null) => {
@@ -184,12 +189,28 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
 
       <RenewalSummaryCards />
 
-      <div className="grid gap-3">
-        <RenewalSlaConfigPanel />
-        <RenewalPriorityConfigPanel />
-        <RenewalCommissionConfigPanel />
-        <RenewalPoolDistributionPanel rows={visible} live={live} />
-      </div>
+      <RenewalAnalyticsPanel rows={visible} />
+      <RenewalPerformanceProtectionPanel rows={visible} />
+      <RenewalAuditTrailPanel />
+
+      <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" size="sm" className="w-full justify-between sm:w-auto">
+            <span className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4" /> Renewal settings & distribution
+            </span>
+            <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${settingsOpen ? 'rotate-180' : ''}`} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-3 grid gap-3">
+          <RenewalSlaConfigPanel />
+          <RenewalPriorityConfigPanel />
+          <RenewalCommissionConfigPanel />
+          <RenewalPoolDistributionPanel rows={visible} live={live} />
+        </CollapsibleContent>
+      </Collapsible>
+
+
 
 
 
