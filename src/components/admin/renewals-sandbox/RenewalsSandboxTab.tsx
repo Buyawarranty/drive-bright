@@ -65,6 +65,8 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<SandboxRow | null>(null);
+  const reservation = useRenewalReservation();
+
 
   const applyBand = useCallback((q: any, id: BandId) => {
     switch (id) {
