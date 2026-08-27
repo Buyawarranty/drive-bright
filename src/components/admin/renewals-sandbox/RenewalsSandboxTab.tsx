@@ -21,7 +21,7 @@ import { RenewalPriorityConfigPanel } from './RenewalPriorityConfigPanel';
 import { scoreRenewalPriority, sortByPriority, PRIORITY_TONE, subscribePriorityWeights } from './renewalPriority';
 import { RenewalCommissionConfigPanel } from './RenewalCommissionConfigPanel';
 import { RenewalSummaryCards } from './RenewalSummaryCards';
-import { getLifecycle, LIFECYCLE_LABEL } from './renewalPricing';
+import { getLifecycle, LIFECYCLE_LABEL, getEffectiveEndDate, daysToEffectiveExpiry } from './renewalPricing';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { RenewalAnalyticsPanel } from './RenewalAnalyticsPanel';
 import { RenewalPerformanceProtectionPanel } from './RenewalPerformanceProtectionPanel';
@@ -164,12 +164,27 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
         c?.registration_plate, c?.vehicle_make, c?.vehicle_model, r.policy_number,
       ].filter(Boolean).some((v) => String(v).toLowerCase().includes(term));
     });
-    const ordered = sortByPriority(filtered);
+    // Term correction: only policies that genuinely expire inside the selected
+    // band are shown, so a 2 or 3 year policy sold this year is not treated as
+    // due now just because its stored end date was written as start + 12 months.
+    const inBand = filtered.filter((r) => {
+      const d = daysToEffectiveExpiry(r);
+      if (d === null) return true;
+      switch (band) {
+        case 'hot': return d >= 0 && d <= 7;
+        case 'due_8_14': return d > 7 && d <= 14;
+        case 'due_15_30': return d > 14 && d <= 30;
+        case 'due_31_60': return d > 30 && d <= 60;
+        case 'lapsed': return d < 0 && d >= -180;
+        default: return d >= -180 && d <= 180;
+      }
+    });
+    const ordered = sortByPriority(inBand);
     const pinnedId = reservation?.policyId;
     if (!pinnedId) return ordered;
     const pinned = ordered.filter((r) => r.id === pinnedId);
     return pinned.length ? [...pinned, ...ordered.filter((r) => r.id !== pinnedId)] : ordered;
-  }, [rows, search, reservation?.policyId, weightsVersion]);
+  }, [rows, search, band, reservation?.policyId, weightsVersion]);
 
   return (
     <div className="space-y-4 p-4 sm:p-6">

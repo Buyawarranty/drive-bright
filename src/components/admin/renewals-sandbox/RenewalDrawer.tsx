@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Loader2, Phone, Mail, Car, ShieldCheck, UserCheck, Link2Off, Lock, PoundSterling, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import type { SandboxRow } from './types';
-import { priceRenewal, getLifecycle, LIFECYCLE_LABEL } from './renewalPricing';
+import { priceRenewal, getLifecycle, LIFECYCLE_LABEL, getEffectiveEndDate, getOriginalTermMonths } from './renewalPricing';
 import {
   evaluateOwnership,
   SLA_LABEL,
