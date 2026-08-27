@@ -77,6 +77,7 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<SandboxRow | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const reservation = useRenewalReservation();
   const adminMap = useAllAdminUsersMap();
   const staffName = useCallback((id?: string | null) => {
