@@ -23,20 +23,16 @@ serve(async (req) => {
     const testResults: {
       timestamp: string;
       bumper: { status: string; details: any };
-      warranties2000: { status: string; details: any };
       stripe: { status: string; details: any };
       environment: any;
     } = {
       timestamp: new Date().toISOString(),
       bumper: { status: 'unknown', details: null },
-      warranties2000: { status: 'unknown', details: null },
       stripe: { status: 'unknown', details: null },
       environment: {
         hasStripKey: !!Deno.env.get("STRIPE_SECRET_KEY"),
         hasBumperKey: !!Deno.env.get("BUMPER_API_KEY"),
         hasBumperSecret: !!Deno.env.get("BUMPER_SECRET_KEY"),
-        hasWarrantiesUser: !!Deno.env.get("WARRANTIES_2000_USERNAME"),
-        hasWarrantiesPass: !!Deno.env.get("WARRANTIES_2000_PASSWORD"),
       }
     };
 
@@ -130,10 +126,6 @@ serve(async (req) => {
 
     // Warranties 2000 (Warranties Register) API — PERMANENTLY SWITCHED OFF.
     // Do NOT reinstate this call. No data of any kind may be sent to them.
-    testResults.warranties2000 = {
-      status: 'permanently_off',
-      details: 'Integration permanently disabled. No requests are made to Warranties 2000.'
-    };
 
     // Test Stripe API Connectivity
     try {
