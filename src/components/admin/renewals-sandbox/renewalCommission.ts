@@ -10,7 +10,7 @@
  */
 
 import type { SandboxRow } from './types';
-import { getLifecycle, daysToExpiry } from './renewalPricing';
+import { getLifecycle, daysToEffectiveExpiry } from './renewalPricing';
 
 export type SaleKind = 'new_sale' | 'standard_renewal' | 'win_back' | 'upsell';
 
