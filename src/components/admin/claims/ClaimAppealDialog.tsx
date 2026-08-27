@@ -421,12 +421,21 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && runSearch()}
-                      placeholder="Search by registration, email or name"
+                      placeholder="Search by registration, email, name or phone"
                     />
                     <Button onClick={runSearch} disabled={searching} variant="outline">
                       {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                     </Button>
+                    <Button
+                      onClick={() => void loadClaims('')}
+                      disabled={searching}
+                      variant="secondary"
+                      className="whitespace-nowrap"
+                    >
+                      Import latest claims
+                    </Button>
                   </div>
+
                   {results.length > 0 && (
                     <div className="max-h-52 overflow-y-auto rounded-md border divide-y">
                       {results.map((r) => (
