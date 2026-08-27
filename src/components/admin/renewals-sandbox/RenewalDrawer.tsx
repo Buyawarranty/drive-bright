@@ -16,6 +16,9 @@ import {
   QUALIFYING_ACTIVITY_LABEL,
 } from './renewalOwnership';
 import { RenewalNegotiationPanel } from './RenewalNegotiationPanel';
+import { RenewalQuoteHandoffPanel } from './RenewalQuoteHandoffPanel';
+import { RenewalCompletionPanel } from './RenewalCompletionPanel';
+import { scoreRenewalPriority, PRIORITY_TONE } from './renewalPriority';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
 interface MatchedLead {
@@ -91,14 +94,28 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
   const ownerName = staffName(ownership?.ownerId);
   const originalAgentName = staffName(ownership?.originalAgentId);
 
+  const priority = useMemo(
+    () => (row ? scoreRenewalPriority(row, {
+      customerResponded: !!lead?.last_contact_date,
+    }, ownership) : null),
+    [row, lead?.last_contact_date, ownership],
+  );
+
   return (
+
+
 
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
+          <SheetTitle className="flex flex-wrap items-center gap-2">
             {name}
             <Badge variant="outline" className="border-purple-200 bg-purple-100 text-purple-800">Renewal</Badge>
+            {priority && (
+              <Badge variant="outline" className={PRIORITY_TONE[priority.band]}>
+                {priority.label} · {priority.score}
+              </Badge>
+            )}
           </SheetTitle>
           <SheetDescription>
             {live ? 'Engine is live — actions will affect New Leads.' : 'Sandbox — everything here is read-only.'}
@@ -244,6 +261,15 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
 
           <Separator />
 
+
+          {row && (
+            <section className="space-y-3">
+              <RenewalQuoteHandoffPanel row={row} quote={quote} live={live} />
+              <RenewalCompletionPanel row={row} quote={quote} live={live} />
+            </section>
+          )}
+
+          <Separator />
 
           <section className="space-y-2">
             <h4 className="font-semibold">Quick actions</h4>

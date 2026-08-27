@@ -16,6 +16,8 @@ import { useRenewalReservation } from '@/hooks/useRenewalPoolReservation';
 import { evaluateOwnership, SLA_TONE, SLA_LABEL } from './renewalOwnership';
 import { RenewalSlaConfigPanel } from './RenewalSlaConfigPanel';
 import { RenewalPoolDistributionPanel } from './RenewalPoolDistributionPanel';
+import { RenewalPriorityConfigPanel } from './RenewalPriorityConfigPanel';
+import { scoreRenewalPriority, sortByPriority, PRIORITY_TONE, subscribePriorityWeights } from './renewalPriority';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
 type BandId = 'hot' | 'due_8_14' | 'due_15_30' | 'due_31_60' | 'lapsed' | 'all';
@@ -141,6 +143,10 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
 
   const activeBand = useMemo(() => BANDS.find(b => b.id === band), [band]);
 
+  // Re-order when the weights change so tuning is instant.
+  const [weightsVersion, setWeightsVersion] = useState(0);
+  useEffect(() => subscribePriorityWeights(() => setWeightsVersion((v) => v + 1)), []);
+
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase();
     const filtered = !term ? rows : rows.filter((r) => {
@@ -150,11 +156,12 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
         c?.registration_plate, c?.vehicle_make, c?.vehicle_model, r.policy_number,
       ].filter(Boolean).some((v) => String(v).toLowerCase().includes(term));
     });
+    const ordered = sortByPriority(filtered);
     const pinnedId = reservation?.policyId;
-    if (!pinnedId) return filtered;
-    const pinned = filtered.filter((r) => r.id === pinnedId);
-    return pinned.length ? [...pinned, ...filtered.filter((r) => r.id !== pinnedId)] : filtered;
-  }, [rows, search, reservation?.policyId]);
+    if (!pinnedId) return ordered;
+    const pinned = ordered.filter((r) => r.id === pinnedId);
+    return pinned.length ? [...pinned, ...ordered.filter((r) => r.id !== pinnedId)] : ordered;
+  }, [rows, search, reservation?.policyId, weightsVersion]);
 
   return (
     <div className="space-y-4 p-4 sm:p-6">
@@ -174,6 +181,7 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
 
       <div className="grid gap-3">
         <RenewalSlaConfigPanel />
+        <RenewalPriorityConfigPanel />
         <RenewalPoolDistributionPanel rows={visible} live={live} />
       </div>
 
@@ -212,6 +220,7 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-left">
                 <tr>
+                  <th className="px-3 py-2 font-medium">Priority</th>
                   <th className="px-3 py-2 font-medium">Type</th>
                   <th className="px-3 py-2 font-medium">Days left</th>
                   <th className="px-3 py-2 font-medium">Customer</th>
@@ -224,12 +233,12 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
               </thead>
               <tbody>
                 {loading && (
-                  <tr><td colSpan={8} className="px-3 py-8 text-center text-muted-foreground">
+                  <tr><td colSpan={9} className="px-3 py-8 text-center text-muted-foreground">
                     <Loader2 className="mx-auto h-5 w-5 animate-spin" />
                   </td></tr>
                 )}
                 {!loading && visible.length === 0 && (
-                  <tr><td colSpan={8} className="px-3 py-8 text-center text-muted-foreground">
+                  <tr><td colSpan={9} className="px-3 py-8 text-center text-muted-foreground">
                     No renewals in {activeBand?.label}.
                   </td></tr>
                 )}
@@ -238,6 +247,7 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                   const c = r.customers;
                   const name = [c?.first_name, c?.last_name].filter(Boolean).join(' ') || c?.name || r.customer_full_name || '—';
                   const own = evaluateOwnership(r);
+                  const prio = scoreRenewalPriority(r, {}, own);
                   const isReserved = reservation?.policyId === r.id;
                   return (
                     <tr
@@ -245,7 +255,10 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                       className={`cursor-pointer border-t hover:bg-muted/40 ${isReserved ? 'bg-emerald-50/70' : ''}`}
                       onClick={() => setSelected(r)}
                     >
-
+                      <td className="px-3 py-2">
+                        <Badge variant="outline" className={PRIORITY_TONE[prio.band]}>{prio.score}</Badge>
+                        <div className="mt-1 text-xs text-muted-foreground">{prio.label}</div>
+                      </td>
                       <td className="px-3 py-2">
                         <Badge variant="outline" className="border-purple-200 bg-purple-100 text-purple-800">
                           <Repeat className="mr-1 h-3 w-3" /> Renewal
