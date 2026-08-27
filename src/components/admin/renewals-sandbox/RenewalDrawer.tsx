@@ -63,6 +63,9 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
 
   const name = [c?.first_name, c?.last_name].filter(Boolean).join(' ') || c?.name || row?.customer_full_name || '—';
 
+  const quote = useMemo(() => (row ? priceRenewal(row) : null), [row]);
+  const lifecycle = useMemo(() => (row ? getLifecycle(row) : null), [row]);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
