@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Phone, Mail, Car, ShieldCheck, UserCheck, Link2Off, Lock } from 'lucide-react';
+import { Loader2, Phone, Mail, Car, ShieldCheck, UserCheck, Link2Off, Lock, PoundSterling, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import type { SandboxRow } from './types';
+import { priceRenewal, getLifecycle, LIFECYCLE_LABEL } from './renewalPricing';
 
 interface MatchedLead {
   id: string;
