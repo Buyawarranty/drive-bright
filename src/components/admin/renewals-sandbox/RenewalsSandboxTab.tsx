@@ -181,6 +181,7 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
 
       <div className="grid gap-3">
         <RenewalSlaConfigPanel />
+        <RenewalPriorityConfigPanel />
         <RenewalPoolDistributionPanel rows={visible} live={live} />
       </div>
 
