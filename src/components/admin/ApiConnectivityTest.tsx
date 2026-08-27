@@ -75,6 +75,7 @@ export const ApiConnectivityTest = () => {
 
   return (
     <div className="space-y-6">
+      <WarrantiesRegisterKillSwitch />
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
