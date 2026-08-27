@@ -69,6 +69,12 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<SandboxRow | null>(null);
   const reservation = useRenewalReservation();
+  const adminMap = useAllAdminUsersMap();
+  const staffName = useCallback((id?: string | null) => {
+    if (!id) return null;
+    const u = adminMap.get(id);
+    return u ? ([u.first_name, u.last_name].filter(Boolean).join(' ') || u.email) : null;
+  }, [adminMap]);
 
 
   const applyBand = useCallback((q: any, id: BandId) => {
