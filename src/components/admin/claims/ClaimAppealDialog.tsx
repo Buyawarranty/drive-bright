@@ -684,8 +684,10 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             </p>
           </div>
         )}
+        </div>
 
-        <DialogFooter className="gap-2 sm:items-center">
+        <DialogFooter className="gap-2 border-t border-[#E2E8F0] bg-white px-6 py-4 sm:items-center">
+
           {reviewing ? (
             <>
               {sendBlockedReason && (
