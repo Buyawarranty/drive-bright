@@ -53,8 +53,9 @@ export function buildRenewalQuotePrefill(
     existingPlan: row.plan_type ?? null,
     existingClaimLimit: row.claim_limit ?? null,
     existingExcess: row.voluntary_excess ?? null,
-    existingExpiry: row.policy_end_date ?? null,
-    daysRemaining: daysToExpiry(row.policy_end_date),
+    existingExpiry: getEffectiveEndDate(row),
+    daysRemaining: daysToEffectiveExpiry(row),
+
     previousPrice: quote?.previousPrice ?? row.payment_amount ?? null,
     recommendedPrice: quote?.loyaltyPrice ?? null,
     negotiationFrom: quote?.agentFloorPrice ?? null,
