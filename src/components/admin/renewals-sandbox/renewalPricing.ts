@@ -51,11 +51,11 @@ export const LIFECYCLE_LABEL: Record<RenewalLifecycle, string> = {
   ineligible: 'Not eligible',
 };
 
-/** Maps a stored payment/plan type onto a pricing period the engine understands. */
-export function toPaymentPeriod(paymentType: string | null | undefined): PaymentPeriod {
-  const months = getWarrantyDurationInMonths(paymentType || '12months');
-  if (months >= 36) return '36months';
-  if (months >= 24) return '24months';
+/** Maps a stored payment/plan type onto a pricing period the engine understands.
+ *  Renewals are currently offered as 12-month policies only — even if the
+ *  existing policy was 24 or 36 months, the renewal quote is rebuilt as 1 year.
+ */
+export function toPaymentPeriod(_paymentType: string | null | undefined): PaymentPeriod {
   return '12months';
 }
 
