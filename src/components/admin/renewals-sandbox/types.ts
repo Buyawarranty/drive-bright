@@ -8,6 +8,10 @@ export interface SandboxCustomer {
   registration_plate: string | null;
   vehicle_make: string | null;
   vehicle_model: string | null;
+  vehicle_year?: string | null;
+  vehicle_fuel_type?: string | null;
+  vehicle_transmission?: string | null;
+  mileage?: string | null;
   assigned_to?: string | null;
 }
 
@@ -20,6 +24,8 @@ export interface SandboxRow {
   policy_start_date?: string | null;
   policy_end_date: string | null;
   claim_limit: number | null;
+  voluntary_excess?: number | null;
+  payment_amount?: number | null;
   retention_outcome?: string | null;
   customer_full_name?: string | null;
   email?: string | null;

@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Phone, Mail, Car, ShieldCheck, UserCheck, Link2Off, Lock } from 'lucide-react';
+import { Loader2, Phone, Mail, Car, ShieldCheck, UserCheck, Link2Off, Lock, PoundSterling, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import type { SandboxRow } from './types';
+import { priceRenewal, getLifecycle, LIFECYCLE_LABEL } from './renewalPricing';
 
 interface MatchedLead {
   id: string;
@@ -61,6 +62,9 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
   }, [open, row, email, tail9]);
 
   const name = [c?.first_name, c?.last_name].filter(Boolean).join(' ') || c?.name || row?.customer_full_name || '—';
+
+  const quote = useMemo(() => (row ? priceRenewal(row) : null), [row]);
+  const lifecycle = useMemo(() => (row ? getLifecycle(row) : null), [row]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -131,6 +135,45 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
                 <Link2Off className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 No existing lead matched on email or phone — going live would create a fresh renewal lead.
               </div>
+            )}
+          </section>
+
+          <Separator />
+
+          <section className="space-y-2">
+            <h4 className="flex items-center gap-2 font-semibold">
+              <PoundSterling className="h-4 w-4" /> Renewal offer
+              {lifecycle && <Badge variant="secondary">{LIFECYCLE_LABEL[lifecycle]}</Badge>}
+            </h4>
+            {!quote ? null : quote.blocked ? (
+              <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50/60 p-2 text-xs text-amber-900">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                {quote.blockReason} — this renewal needs a manager decision before a price can be offered.
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-y-1">
+                  <span className="text-muted-foreground">Like-for-like</span><span>{money(quote.standardPrice)}</span>
+                  <span className="text-muted-foreground">Loyalty price (lead with)</span>
+                  <span className="font-semibold">{money(quote.loyaltyPrice)}</span>
+                  <span className="text-muted-foreground">Agent floor (no approval)</span><span>{money(quote.agentFloorPrice)}</span>
+                  <span className="text-muted-foreground">Absolute minimum</span><span>{money(quote.netFloor)}</span>
+                  <span className="text-muted-foreground">Paid last time</span><span>{money(quote.previousPrice)}</span>
+                  {quote.deltaVsPrevious !== null && (
+                    <>
+                      <span className="text-muted-foreground">Change vs last year</span>
+                      <span className={quote.deltaVsPrevious > 0 ? 'text-red-700' : 'text-emerald-700'}>
+                        {quote.deltaVsPrevious > 0 ? '+' : ''}{money(quote.deltaVsPrevious)}
+                      </span>
+                    </>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Priced by the live quote engine for {quote.paymentPeriod.replace('months', ' months')}, £{quote.voluntaryExcess} excess,
+                  {' '}£{quote.claimLimit.toLocaleString('en-GB')} claim limit, £{quote.labourRate}/hr labour. Anything below the agent floor
+                  needs manager approval; nothing may go below the absolute minimum.
+                </p>
+              </>
             )}
           </section>
 

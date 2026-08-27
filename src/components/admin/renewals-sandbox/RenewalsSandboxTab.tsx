@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { RenewalsEngineLiveSwitch } from './RenewalsEngineLiveSwitch';
 import { RenewalDrawer } from './RenewalDrawer';
 import type { SandboxRow } from './types';
+import { priceRenewal } from './renewalPricing';
 
 type BandId = 'hot' | 'due_8_14' | 'due_15_30' | 'due_31_60' | 'lapsed' | 'all';
 
@@ -82,8 +83,9 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
     try {
       let q: any = base((supabase.from('customer_policies') as any).select(
         'id, customer_id, policy_number, plan_type, payment_type, policy_start_date, policy_end_date, ' +
-        'claim_limit, retention_outcome, customer_full_name, email, ' +
-        'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, assigned_to, status )'
+        'claim_limit, voluntary_excess, payment_amount, retention_outcome, customer_full_name, email, ' +
+        'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, ' +
+        'vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, vehicle_transmission, mileage, assigned_to, status )'
       ));
       q = applyBand(q, band)
         .order('policy_end_date', { ascending: true, nullsFirst: false })
@@ -188,17 +190,18 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                   <th className="px-3 py-2 font-medium">Customer</th>
                   <th className="px-3 py-2 font-medium">Vehicle</th>
                   <th className="px-3 py-2 font-medium">Plan</th>
+                  <th className="px-3 py-2 font-medium">Renewal offer</th>
                   <th className="px-3 py-2 font-medium">Expires</th>
                 </tr>
               </thead>
               <tbody>
                 {loading && (
-                  <tr><td colSpan={6} className="px-3 py-8 text-center text-muted-foreground">
+                  <tr><td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">
                     <Loader2 className="mx-auto h-5 w-5 animate-spin" />
                   </td></tr>
                 )}
                 {!loading && visible.length === 0 && (
-                  <tr><td colSpan={6} className="px-3 py-8 text-center text-muted-foreground">
+                  <tr><td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">
                     No renewals in {activeBand?.label}.
                   </td></tr>
                 )}
@@ -231,6 +234,18 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                         <div className="text-xs uppercase text-muted-foreground">{c?.registration_plate || '—'}</div>
                       </td>
                       <td className="px-3 py-2">{r.plan_type || '—'}</td>
+                      <td className="px-3 py-2">
+                        {(() => {
+                          const q = priceRenewal(r);
+                          if (q.blocked) return <span className="text-xs text-amber-800">Needs review</span>;
+                          return (
+                            <div>
+                              <div className="font-medium">£{q.loyaltyPrice.toLocaleString('en-GB')}</div>
+                              <div className="text-xs text-muted-foreground">min £{q.agentFloorPrice.toLocaleString('en-GB')}</div>
+                            </div>
+                          );
+                        })()}
+                      </td>
                       <td className="px-3 py-2">
                         {r.policy_end_date ? format(new Date(r.policy_end_date), 'd MMM yyyy') : '—'}
                       </td>
