@@ -8,7 +8,13 @@ import { Loader2, Phone, Mail, Car, ShieldCheck, UserCheck, Link2Off, Lock, Poun
 import { format } from 'date-fns';
 import type { SandboxRow } from './types';
 import { priceRenewal, getLifecycle, LIFECYCLE_LABEL } from './renewalPricing';
-import { evaluateOwnership, SLA_LABEL, SLA_TONE } from './renewalOwnership';
+import {
+  evaluateOwnership,
+  SLA_LABEL,
+  SLA_TONE,
+  OWNERSHIP_REASON_LABEL,
+  QUALIFYING_ACTIVITY_LABEL,
+} from './renewalOwnership';
 import { RenewalNegotiationPanel } from './RenewalNegotiationPanel';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
@@ -69,12 +75,21 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
   const quote = useMemo(() => (row ? priceRenewal(row) : null), [row]);
   const lifecycle = useMemo(() => (row ? getLifecycle(row) : null), [row]);
 
-  const ownership = useMemo(() => (row ? evaluateOwnership(row) : null), [row]);
+  const ownership = useMemo(
+    () => (row ? evaluateOwnership(row, {
+      lastTouchedAt: lead?.last_contact_date ?? null,
+      lastActivity: lead?.last_contact_date ? 'call' : null,
+    }) : null),
+    [row, lead?.last_contact_date],
+  );
   const adminMap = useAllAdminUsersMap(ownership?.ownerId ?? null);
-  const owner = ownership?.ownerId ? adminMap.get(ownership.ownerId) : null;
-  const ownerName = owner
-    ? [owner.first_name, owner.last_name].filter(Boolean).join(' ') || owner.email
-    : null;
+  const staffName = (id?: string | null) => {
+    if (!id) return null;
+    const u = adminMap.get(id);
+    return u ? ([u.first_name, u.last_name].filter(Boolean).join(' ') || u.email) : null;
+  };
+  const ownerName = staffName(ownership?.ownerId);
+  const originalAgentName = staffName(ownership?.originalAgentId);
 
   return (
 
@@ -196,10 +211,20 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
             {ownership && (
               <>
                 <div className="grid grid-cols-2 gap-y-1">
-                  <span className="text-muted-foreground">Would belong to</span>
+                  <span className="text-muted-foreground">Original selling agent</span>
+                  <span>{originalAgentName || 'Website / unknown'}</span>
+                  <span className="text-muted-foreground">Current owner</span>
                   <span>{ownerName || 'Renewal pool (round robin)'}</span>
                   <span className="text-muted-foreground">Why</span>
-                  <span>{ownership.reason === 'sticky_customer_owner' ? 'Sticky — existing customer owner' : 'No current owner'}</span>
+                  <span>{OWNERSHIP_REASON_LABEL[ownership.reason]}</span>
+                  <span className="text-muted-foreground">Last qualifying activity</span>
+                  <span>
+                    {ownership.lastActivityAt
+                      ? `${ownership.lastActivity ? QUALIFYING_ACTIVITY_LABEL[ownership.lastActivity] : 'Activity'} · ${format(new Date(ownership.lastActivityAt), 'd MMM yyyy')}`
+                      : 'None yet'}
+                  </span>
+                  <span className="text-muted-foreground">Next action</span>
+                  <span>{ownership.nextAction}</span>
                   <span className="text-muted-foreground">First-touch SLA</span>
                   <span>{ownership.slaHours}h</span>
                 </div>

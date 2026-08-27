@@ -27,6 +27,9 @@ export interface SandboxRow {
   voluntary_excess?: number | null;
   payment_amount?: number | null;
   retention_outcome?: string | null;
+  /** Original selling agent candidates — kept separate from the current owner. */
+  quote_sent_by?: string | null;
+  payment_confirmed_by?: string | null;
   customer_full_name?: string | null;
   email?: string | null;
   customers?: SandboxCustomer | null;

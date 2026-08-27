@@ -14,6 +14,9 @@ import { priceRenewal } from './renewalPricing';
 import { RenewalSandboxQueueBar } from './RenewalSandboxQueueBar';
 import { useRenewalReservation } from '@/hooks/useRenewalPoolReservation';
 import { evaluateOwnership, SLA_TONE, SLA_LABEL } from './renewalOwnership';
+import { RenewalSlaConfigPanel } from './RenewalSlaConfigPanel';
+import { RenewalPoolDistributionPanel } from './RenewalPoolDistributionPanel';
+import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
 type BandId = 'hot' | 'due_8_14' | 'due_15_30' | 'due_31_60' | 'lapsed' | 'all';
 
@@ -66,6 +69,12 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<SandboxRow | null>(null);
   const reservation = useRenewalReservation();
+  const adminMap = useAllAdminUsersMap();
+  const staffName = useCallback((id?: string | null) => {
+    if (!id) return null;
+    const u = adminMap.get(id);
+    return u ? ([u.first_name, u.last_name].filter(Boolean).join(' ') || u.email) : null;
+  }, [adminMap]);
 
 
   const applyBand = useCallback((q: any, id: BandId) => {
@@ -89,6 +98,7 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
       let q: any = base((supabase.from('customer_policies') as any).select(
         'id, customer_id, policy_number, plan_type, payment_type, policy_start_date, policy_end_date, ' +
         'claim_limit, voluntary_excess, payment_amount, retention_outcome, customer_full_name, email, ' +
+        'quote_sent_by, payment_confirmed_by, ' +
         'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, ' +
         'vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, vehicle_transmission, mileage, assigned_to, status )'
       ));
@@ -161,6 +171,12 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
       )}
 
       <RenewalSandboxQueueBar rows={visible} live={live} onTake={(r) => setSelected(r)} />
+
+      <div className="grid gap-3">
+        <RenewalSlaConfigPanel />
+        <RenewalPoolDistributionPanel rows={visible} live={live} />
+      </div>
+
 
 
       <div className="flex flex-wrap items-center gap-2">
@@ -263,7 +279,12 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                       </td>
                       <td className="px-3 py-2">
                         <Badge variant="outline" className={SLA_TONE[own.slaState]}>{SLA_LABEL[own.slaState]}</Badge>
-                        <div className="mt-1 text-xs text-muted-foreground">{own.slaHours}h first touch</div>
+                        <div className="mt-1 text-xs text-muted-foreground">
+                          Owner: {staffName(own.ownerId) || 'Pool'} · {own.slaHours}h first touch
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Sold by: {staffName(own.originalAgentId) || 'Website / unknown'}
+                        </div>
                       </td>
                       <td className="px-3 py-2">
                         {r.policy_end_date ? format(new Date(r.policy_end_date), 'd MMM yyyy') : '—'}
