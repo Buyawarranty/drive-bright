@@ -69,12 +69,21 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
   const quote = useMemo(() => (row ? priceRenewal(row) : null), [row]);
   const lifecycle = useMemo(() => (row ? getLifecycle(row) : null), [row]);
 
-  const ownership = useMemo(() => (row ? evaluateOwnership(row) : null), [row]);
+  const ownership = useMemo(
+    () => (row ? evaluateOwnership(row, {
+      lastTouchedAt: lead?.last_contact_date ?? null,
+      lastActivity: lead?.last_contact_date ? 'call' : null,
+    }) : null),
+    [row, lead?.last_contact_date],
+  );
   const adminMap = useAllAdminUsersMap(ownership?.ownerId ?? null);
-  const owner = ownership?.ownerId ? adminMap.get(ownership.ownerId) : null;
-  const ownerName = owner
-    ? [owner.first_name, owner.last_name].filter(Boolean).join(' ') || owner.email
-    : null;
+  const staffName = (id?: string | null) => {
+    if (!id) return null;
+    const u = adminMap.get(id);
+    return u ? ([u.first_name, u.last_name].filter(Boolean).join(' ') || u.email) : null;
+  };
+  const ownerName = staffName(ownership?.ownerId);
+  const originalAgentName = staffName(ownership?.originalAgentId);
 
   return (
 
