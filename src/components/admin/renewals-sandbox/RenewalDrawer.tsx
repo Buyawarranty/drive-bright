@@ -16,6 +16,9 @@ import {
   QUALIFYING_ACTIVITY_LABEL,
 } from './renewalOwnership';
 import { RenewalNegotiationPanel } from './RenewalNegotiationPanel';
+import { RenewalQuoteHandoffPanel } from './RenewalQuoteHandoffPanel';
+import { RenewalCompletionPanel } from './RenewalCompletionPanel';
+import { scoreRenewalPriority, PRIORITY_TONE } from './renewalPriority';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
 interface MatchedLead {
