@@ -133,15 +133,18 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
 
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase();
-    if (!term) return rows;
-    return rows.filter((r) => {
+    const filtered = !term ? rows : rows.filter((r) => {
       const c = r.customers;
       return [
         c?.first_name, c?.last_name, c?.name, c?.email, r.email, c?.phone,
         c?.registration_plate, c?.vehicle_make, c?.vehicle_model, r.policy_number,
       ].filter(Boolean).some((v) => String(v).toLowerCase().includes(term));
     });
-  }, [rows, search]);
+    const pinnedId = reservation?.policyId;
+    if (!pinnedId) return filtered;
+    const pinned = filtered.filter((r) => r.id === pinnedId);
+    return pinned.length ? [...pinned, ...filtered.filter((r) => r.id !== pinnedId)] : filtered;
+  }, [rows, search, reservation?.policyId]);
 
   return (
     <div className="space-y-4 p-4 sm:p-6">
@@ -156,6 +159,9 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
           </span>
         </div>
       )}
+
+      <RenewalSandboxQueueBar rows={visible} live={live} onTake={(r) => setSelected(r)} />
+
 
       <div className="flex flex-wrap items-center gap-2">
         {BANDS.map((b) => (
