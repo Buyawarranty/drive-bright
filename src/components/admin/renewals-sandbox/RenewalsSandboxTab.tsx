@@ -274,7 +274,7 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                   </td></tr>
                 )}
                 {!loading && visible.map((r) => {
-                  const d = daysLeft(r.policy_end_date);
+                  const d = daysToEffectiveExpiry(r);
                   const c = r.customers;
                   const name = [c?.first_name, c?.last_name].filter(Boolean).join(' ') || c?.name || r.customer_full_name || '—';
                   const own = evaluateOwnership(r);
@@ -342,7 +342,7 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                         <Badge variant="secondary">{LIFECYCLE_LABEL[getLifecycle(r)]}</Badge>
                       </td>
                       <td className="px-3 py-2">
-                        {r.policy_end_date ? format(new Date(r.policy_end_date), 'd MMM yyyy') : '—'}
+                        {getEffectiveEndDate(r) ? format(new Date(getEffectiveEndDate(r) as string), 'd MMM yyyy') : '—'}
                       </td>
 
 

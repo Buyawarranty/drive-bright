@@ -146,7 +146,7 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
               <span className="text-muted-foreground">Starts</span>
               <span>{row?.policy_start_date ? format(new Date(row.policy_start_date), 'd MMM yyyy') : '—'}</span>
               <span className="text-muted-foreground">Expires</span>
-              <span>{row?.policy_end_date ? format(new Date(row.policy_end_date), 'd MMM yyyy') : '—'}</span>
+              <span>{row && getEffectiveEndDate(row) ? format(new Date(getEffectiveEndDate(row) as string), 'd MMM yyyy') : '—'}</span>
               <span className="text-muted-foreground">Payment</span><span>{row?.payment_type || '—'}</span>
             </div>
           </section>

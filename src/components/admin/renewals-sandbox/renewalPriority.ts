@@ -7,7 +7,7 @@
  * conversion results without touching the components.
  */
 
-import { daysToExpiry } from './renewalPricing';
+import { daysToEffectiveExpiry, getEffectiveEndDate } from './renewalPricing';
 import type { SandboxRow } from './types';
 import type { RenewalOwnership } from './renewalOwnership';
 
@@ -126,7 +126,7 @@ export function scoreRenewalPriority(
   ownership?: RenewalOwnership | null,
 ): RenewalPriority {
   const w = getPriorityWeights();
-  const d = daysToExpiry(row.policy_end_date);
+  const d = daysToEffectiveExpiry(row);
 
   let band: RenewalPriority['band'];
   let base: number;
@@ -163,8 +163,10 @@ export function sortByPriority(rows: SandboxRow[]): SandboxRow[] {
   return [...rows].sort((a, b) => {
     const diff = scoreRenewalPriority(b).score - scoreRenewalPriority(a).score;
     if (diff !== 0) return diff;
-    const ea = a.policy_end_date ? new Date(a.policy_end_date).getTime() : Infinity;
-    const eb = b.policy_end_date ? new Date(b.policy_end_date).getTime() : Infinity;
+    const eaDate = getEffectiveEndDate(a);
+    const ea = eaDate ? new Date(eaDate).getTime() : Infinity;
+    const ebDate = getEffectiveEndDate(b);
+    const eb = ebDate ? new Date(ebDate).getTime() : Infinity;
     return ea - eb;
   });
 }
