@@ -184,12 +184,28 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
 
       <RenewalSummaryCards />
 
-      <div className="grid gap-3">
-        <RenewalSlaConfigPanel />
-        <RenewalPriorityConfigPanel />
-        <RenewalCommissionConfigPanel />
-        <RenewalPoolDistributionPanel rows={visible} live={live} />
-      </div>
+      <RenewalAnalyticsPanel rows={visible} />
+      <RenewalPerformanceProtectionPanel rows={visible} />
+      <RenewalAuditTrailPanel />
+
+      <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" size="sm" className="w-full justify-between sm:w-auto">
+            <span className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4" /> Renewal settings & distribution
+            </span>
+            <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${settingsOpen ? 'rotate-180' : ''}`} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-3 grid gap-3">
+          <RenewalSlaConfigPanel />
+          <RenewalPriorityConfigPanel />
+          <RenewalCommissionConfigPanel />
+          <RenewalPoolDistributionPanel rows={visible} live={live} />
+        </CollapsibleContent>
+      </Collapsible>
+
+
 
 
 
