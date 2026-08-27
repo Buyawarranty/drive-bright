@@ -166,6 +166,12 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
 
       <RenewalSandboxQueueBar rows={visible} live={live} onTake={(r) => setSelected(r)} />
 
+      <div className="grid gap-3">
+        <RenewalSlaConfigPanel />
+        <RenewalPoolDistributionPanel rows={visible} live={live} />
+      </div>
+
+
 
       <div className="flex flex-wrap items-center gap-2">
         {BANDS.map((b) => (
