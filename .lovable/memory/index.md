@@ -162,3 +162,4 @@ Updated: just now
 - [Replaced Turbo / Hybrid Battery](mem://features/replaced-turbo-battery-cover-restarts) — Replaced turbo or hybrid battery stays covered with receipt; 7yr/80k and 10yr/80k clocks restart from the replacement date
 - [Deactivated Agent Leaves Distribution](mem://admin/leads/deactivated-agent-leaves-distribution) — Inactive/archived staff auto-paused, workstreams cleared, hidden from New Leads and Allocation lists
 - [Scoreboard Reconciliation Credit](mem://admin/scoreboard/reconciliation-uses-resolve-sale-credit) — Reconciliation and scoreboard must both use resolve_sale_credit; back-office confirmations fall through to the sales agent
+- Warranties 2000 / Warranties Register API is permanently off — never send them data or restore any function, cron or test call. See mem://constraints/warranties-2000-api-permanently-off
