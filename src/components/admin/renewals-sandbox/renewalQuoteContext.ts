@@ -9,7 +9,7 @@
 
 import type { SandboxRow } from './types';
 import type { RenewalQuote } from './renewalPricing';
-import { daysToExpiry } from './renewalPricing';
+import { daysToEffectiveExpiry, getEffectiveEndDate } from './renewalPricing';
 
 export interface RenewalQuotePrefill {
   leadType: 'RENEWAL';
