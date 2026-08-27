@@ -64,11 +64,30 @@ export const RenewalCompletionPanel: React.FC<Props> = ({ row, quote, live }) =>
 
   const allOk = checks.every((k) => k.ok);
 
+  const auditName =
+    [c?.first_name, c?.last_name].filter(Boolean).join(' ') || c?.name || row.customer_full_name || null;
+
   const onRenew = () => {
     if (!allOk) {
+      recordRenewalAudit({
+        action: 'completion_checked',
+        policyId: row.id,
+        policyNumber: row.policy_number,
+        customerName: auditName,
+        detail: `Completion blocked — ${checks.filter((k) => !k.ok).length} check(s) outstanding`,
+        amount: Number.isFinite(price) ? price : null,
+      });
       toast.error('Renewal cannot complete yet', { description: 'Clear every validation check first.' });
       return;
     }
+    recordRenewalAudit({
+      action: 'completion_checked',
+      policyId: row.id,
+      policyNumber: row.policy_number,
+      customerName: auditName,
+      detail: `All checks passed — would renew via ${method}`,
+      amount: price,
+    });
     toast.success('Sandbox only — nothing was saved', {
       description: `Would mark this opportunity RENEWED at ${money(price)} and open a new policy.`,
     });
