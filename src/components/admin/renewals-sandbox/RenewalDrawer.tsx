@@ -205,10 +205,20 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
             {ownership && (
               <>
                 <div className="grid grid-cols-2 gap-y-1">
-                  <span className="text-muted-foreground">Would belong to</span>
+                  <span className="text-muted-foreground">Original selling agent</span>
+                  <span>{originalAgentName || 'Website / unknown'}</span>
+                  <span className="text-muted-foreground">Current owner</span>
                   <span>{ownerName || 'Renewal pool (round robin)'}</span>
                   <span className="text-muted-foreground">Why</span>
-                  <span>{ownership.reason === 'sticky_customer_owner' ? 'Sticky — existing customer owner' : 'No current owner'}</span>
+                  <span>{OWNERSHIP_REASON_LABEL[ownership.reason]}</span>
+                  <span className="text-muted-foreground">Last qualifying activity</span>
+                  <span>
+                    {ownership.lastActivityAt
+                      ? `${ownership.lastActivity ? QUALIFYING_ACTIVITY_LABEL[ownership.lastActivity] : 'Activity'} · ${format(new Date(ownership.lastActivityAt), 'd MMM yyyy')}`
+                      : 'None yet'}
+                  </span>
+                  <span className="text-muted-foreground">Next action</span>
+                  <span>{ownership.nextAction}</span>
                   <span className="text-muted-foreground">First-touch SLA</span>
                   <span>{ownership.slaHours}h</span>
                 </div>
