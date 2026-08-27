@@ -23,6 +23,9 @@ import { RenewalCommissionConfigPanel } from './RenewalCommissionConfigPanel';
 import { RenewalSummaryCards } from './RenewalSummaryCards';
 import { getLifecycle, LIFECYCLE_LABEL } from './renewalPricing';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
+import { RenewalAnalyticsPanel } from './RenewalAnalyticsPanel';
+import { RenewalPerformanceProtectionPanel } from './RenewalPerformanceProtectionPanel';
+import { RenewalAuditTrailPanel } from './RenewalAuditTrailPanel';
 
 type BandId = 'hot' | 'due_8_14' | 'due_15_30' | 'due_31_60' | 'lapsed' | 'all';
 
