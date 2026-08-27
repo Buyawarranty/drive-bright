@@ -9,6 +9,7 @@ import type { SandboxRow } from './types';
 import type { RenewalQuote } from './renewalPricing';
 import { useIsManagement } from '@/hooks/useIsManagement';
 import { estimateCommission, SALE_KIND_LABEL } from './renewalCommission';
+import { recordRenewalAudit } from './renewalAudit';
 
 /**
  * RENEWALS SANDBOX — Renew Now completion checks (Stage 6, Step 18)
