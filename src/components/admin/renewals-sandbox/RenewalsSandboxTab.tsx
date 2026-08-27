@@ -289,6 +289,11 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
                       </td>
                       <td className="px-3 py-2">{r.plan_type || '—'}</td>
                       <td className="px-3 py-2">
+                        {typeof r.payment_amount === 'number' && r.payment_amount > 0
+                          ? `£${Math.round(r.payment_amount).toLocaleString('en-GB')}`
+                          : '—'}
+                      </td>
+                      <td className="px-3 py-2">
                         {(() => {
                           const q = priceRenewal(r);
                           if (q.blocked) return <span className="text-xs text-amber-800">Needs review</span>;
