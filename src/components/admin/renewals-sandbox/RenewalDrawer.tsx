@@ -20,6 +20,7 @@ import { RenewalQuoteHandoffPanel } from './RenewalQuoteHandoffPanel';
 import { RenewalCompletionPanel } from './RenewalCompletionPanel';
 import { scoreRenewalPriority, PRIORITY_TONE } from './renewalPriority';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
+import { recordRenewalAudit } from './renewalAudit';
 
 interface MatchedLead {
   id: string;
