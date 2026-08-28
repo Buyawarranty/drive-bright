@@ -99,7 +99,7 @@ export default function SiteChatWidget({
           {showNudge && (
             <button
               onClick={openChat}
-              className="mb-1 hidden max-w-[190px] rounded-2xl rounded-br-sm border border-border bg-background/95 px-3 py-1.5 text-left text-xs text-muted-foreground shadow-md sm:block"
+              className="mb-1 hidden max-w-[230px] rounded-2xl rounded-br-sm border border-border bg-background/95 px-4 py-2 text-left text-sm text-muted-foreground shadow-md sm:block"
             >
               {greeting}
             </button>
@@ -107,19 +107,20 @@ export default function SiteChatWidget({
           <button
             onClick={openChat}
             aria-label="Chat with Miles, our AI warranty assistant"
-            className="group relative flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/90 opacity-80 shadow-md backdrop-blur transition-all hover:opacity-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            className="group relative flex h-16 w-16 items-center justify-center rounded-full border border-border bg-background shadow-lg backdrop-blur transition-all hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:h-[68px] sm:w-[68px]"
           >
-            <span className="block h-9 w-9 overflow-hidden rounded-full">
+            <span className="block h-[54px] w-[54px] overflow-hidden rounded-full sm:h-[58px] sm:w-[58px]">
               <img
                 src={milesAvatar.url}
                 alt="Miles the panda"
-                width={36}
-                height={36}
+                width={58}
+                height={58}
                 className="h-full w-full scale-[1.35] object-cover object-center"
               />
             </span>
-            <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-green-500" />
+            <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-background bg-green-500" />
           </button>
+
         </div>
 
       )}
@@ -129,8 +130,9 @@ export default function SiteChatWidget({
         <div
           className={`fixed z-[70] flex flex-col overflow-hidden border border-border bg-background shadow-2xl ${
             open ? 'flex' : 'hidden'
-          } inset-0 rounded-none sm:inset-auto sm:bottom-6 sm:right-6 sm:max-h-[calc(100vh-3rem)] sm:rounded-2xl ${
-            expanded ? 'sm:h-[760px] sm:w-[520px]' : 'sm:h-[600px] sm:w-[400px]'
+          } inset-0 rounded-none sm:inset-auto sm:bottom-6 sm:right-6 sm:max-h-[calc(100vh-3rem)] sm:max-w-[calc(100vw-3rem)] sm:rounded-2xl ${
+            expanded ? 'sm:h-[860px] sm:w-[680px]' : 'sm:h-[calc(100vh-6rem)] sm:w-[480px]'
+
           }`}
           role="dialog"
           aria-label="Chat with Miles"
