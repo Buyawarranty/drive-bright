@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { addDays, endOfMonth, format, startOfMonth, startOfWeek } from 'date-fns';
-import { Loader2, Target } from 'lucide-react';
+import { Check, Loader2, Pencil, Target, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { buildSaleCreditResolver, fetchSalesCreditAgentIds } from '@/lib/saleCredit';
 import { withBackgroundPriority } from '@/lib/requestQueue';
+import { useIsManagement } from '@/hooks/useIsManagement';
 import { UnattributedSalesAssigner } from './UnattributedSalesAssigner';
 
 
@@ -48,9 +50,13 @@ interface ReconRow {
 }
 
 export const AllAgentsProgressPanel: React.FC = () => {
+  const { isManagement } = useIsManagement();
   const [rows, setRows] = useState<AgentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [recon, setRecon] = useState<ReconRow[]>([]);
+  const [editingTarget, setEditingTarget] = useState<string | null>(null);
+  const [targetDraft, setTargetDraft] = useState('');
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   const now = new Date();
   const weekStart = useMemo(() => startOfWeek(now, { weekStartsOn: 1 }), [now.toDateString()]);
@@ -179,8 +185,20 @@ export const AllAgentsProgressPanel: React.FC = () => {
         };
       });
 
-      built.sort((a, b) => b.revenue - a.revenue);
-      setRows(built);
+      // Staff who have left (inactive or archived) must never show here.
+      const { data: staff } = await supabase
+        .from('admin_users')
+        .select('id, is_active, archived_at')
+        .in('id', built.map((b) => b.adminUserId));
+      const gone = new Set(
+        ((staff || []) as any[])
+          .filter((s) => s.is_active === false || s.archived_at != null)
+          .map((s) => s.id as string),
+      );
+
+      const live = built.filter((b) => !gone.has(b.adminUserId));
+      live.sort((a, b) => b.revenue - a.revenue);
+      setRows(live);
     } finally {
       setLoading(false);
     }
@@ -190,6 +208,86 @@ export const AllAgentsProgressPanel: React.FC = () => {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Managers can change this month's target straight from the table.
+  const saveTarget = async (agentId: string) => {
+    const amount = Math.round(Number(String(targetDraft).replace(/[^0-9.]/g, '')) || 0);
+    if (amount <= 0) {
+      toast.error('Enter a target amount');
+      return;
+    }
+    setSavingId(agentId);
+    try {
+      const mStart = startOfMonth(now);
+      const mEnd = endOfMonth(now);
+      const { data: existing } = await (supabase as any)
+        .from('sales_targets')
+        .select('id')
+        .eq('admin_user_id', agentId)
+        .eq('target_period', 'monthly')
+        .lte('start_date', now.toISOString())
+        .gte('end_date', now.toISOString())
+        .maybeSingle();
+
+      if (existing?.id) {
+        const { data, error } = await (supabase as any)
+          .from('sales_targets')
+          .update({ revenue_target: amount, updated_at: new Date().toISOString() })
+          .eq('id', existing.id)
+          .select('id');
+        if (error) throw error;
+        if (!data || data.length === 0) throw new Error('No permission to update this target');
+      } else {
+        const { error } = await (supabase as any).from('sales_targets').insert({
+          admin_user_id: agentId,
+          revenue_target: amount,
+          target_amount: 0,
+          target_period: 'monthly',
+          start_date: mStart.toISOString(),
+          end_date: mEnd.toISOString(),
+        });
+        if (error) throw error;
+      }
+      setRows((prev) =>
+        prev.map((r) =>
+          r.adminUserId === agentId
+            ? { ...r, target: amount, pct: amount > 0 ? Math.min(100, Math.round((r.revenue / amount) * 100)) : null }
+            : r,
+        ),
+      );
+      setEditingTarget(null);
+      toast.success('Target updated');
+    } catch (e: any) {
+      toast.error('Could not save target', { description: e?.message });
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  // Managers can pause or resume an agent's lead flow from the same row.
+  const toggleLeadAccess = async (row: AgentRow) => {
+    const next = !row.paused;
+    setSavingId(row.adminUserId);
+    try {
+      const { error } = await (supabase as any)
+        .from('agent_distribution_caps')
+        .update({ paused: next, freeze_reason: next ? 'Paused by a manager' : null })
+        .eq('admin_user_id', row.adminUserId);
+      if (error) throw error;
+      setRows((prev) =>
+        prev.map((r) =>
+          r.adminUserId === row.adminUserId
+            ? { ...r, paused: next, freezeReason: next ? 'Paused by a manager' : null }
+            : r,
+        ),
+      );
+      toast.success(next ? 'Leads paused for this agent' : 'Agent is receiving leads again');
+    } catch (e: any) {
+      toast.error('Could not change lead access', { description: e?.message });
+    } finally {
+      setSavingId(null);
+    }
+  };
 
   return (
     <div className="space-y-2">
@@ -229,11 +327,59 @@ export const AllAgentsProgressPanel: React.FC = () => {
               <tr key={r.adminUserId} className="border-b border-border last:border-0 align-top">
                 <td className="px-3 py-2 font-medium whitespace-nowrap">{r.name}</td>
                 <td className="px-3 py-2 whitespace-nowrap">
-                  <div className="font-semibold">
+                  <div className="flex items-center gap-1.5 font-semibold">
                     {gbp(r.revenue)}
-                    <span className="ml-1 text-xs font-normal text-muted-foreground">
-                      {r.target ? `of ${gbp(r.target)}${r.pct != null ? ` · ${r.pct}%` : ''}` : 'no target set'}
-                    </span>
+                    {editingTarget === r.adminUserId ? (
+                      <span className="flex items-center gap-1">
+                        <span className="text-xs font-normal text-muted-foreground">of £</span>
+                        <input
+                          autoFocus
+                          value={targetDraft}
+                          onChange={(e) => setTargetDraft(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveTarget(r.adminUserId);
+                            if (e.key === 'Escape') setEditingTarget(null);
+                          }}
+                          className="h-6 w-20 rounded border border-border bg-background px-1.5 text-xs"
+                        />
+                        <button
+                          type="button"
+                          title="Save target"
+                          disabled={savingId === r.adminUserId}
+                          onClick={() => saveTarget(r.adminUserId)}
+                          className="rounded p-0.5 text-emerald-700 hover:bg-emerald-100"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          title="Cancel"
+                          onClick={() => setEditingTarget(null)}
+                          className="rounded p-0.5 text-muted-foreground hover:bg-muted"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </span>
+                    ) : (
+                      <>
+                        <span className="text-xs font-normal text-muted-foreground">
+                          {r.target ? `of ${gbp(r.target)}${r.pct != null ? ` · ${r.pct}%` : ''}` : 'no target set'}
+                        </span>
+                        {isManagement && (
+                          <button
+                            type="button"
+                            title="Change this month's target"
+                            onClick={() => {
+                              setEditingTarget(r.adminUserId);
+                              setTargetDraft(r.target != null ? String(r.target) : '');
+                            }}
+                            className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
                   <div className="mt-1 h-1.5 w-32 rounded-full bg-muted">
                     <div className="h-1.5 rounded-full bg-orange-500" style={{ width: `${r.pct ?? 0}%` }} />
@@ -288,6 +434,16 @@ export const AllAgentsProgressPanel: React.FC = () => {
                   >
                     {r.paused ? 'Leads paused by a manager' : 'Receiving leads'}
                   </span>
+                  {isManagement && (
+                    <button
+                      type="button"
+                      disabled={savingId === r.adminUserId}
+                      onClick={() => toggleLeadAccess(r)}
+                      className="ml-2 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground hover:bg-muted disabled:opacity-50"
+                    >
+                      {r.paused ? 'Resume leads' : 'Pause leads'}
+                    </button>
+                  )}
                   {r.paused && r.freezeReason && (
                     <div className="mt-0.5 max-w-[16rem] text-[11px] text-muted-foreground">{r.freezeReason}</div>
                   )}
