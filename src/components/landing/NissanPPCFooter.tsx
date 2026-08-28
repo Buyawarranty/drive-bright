@@ -71,6 +71,8 @@ const NissanPPCFooter: React.FC = () => {
           </div>
         </div>
 
+        <SocialLinks variant="dark" className="justify-center mb-6" />
+
         <div className="text-center pt-6 border-t border-gray-200 max-w-4xl mx-auto">
           <p className="text-xs text-gray-600 leading-relaxed">
             Fast online quotes for Nissan extended warranty cover and used Nissan car warranties. Trusted Nissan vehicle warranty protection for Nissan Micra, Juke, Qashqai, X-Trail, Note, Pulsar and electric models including Leaf and Ariya. Cover levels and eligibility criteria apply. Buyawarranty.co.uk is a trading name of Buy A Warranty Limited, established 2016, registered in the United Kingdom under Company number 10314863, registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England. Buyawarranty is an independent warranty provider and is not affiliated with Nissan Motor Co. Ltd. Cover levels, limits, exclusions and eligibility criteria apply — please refer to your selected policy documents for full terms and conditions. © Buy a Warranty. All rights reserved.

@@ -71,6 +71,8 @@ const CitroenPPCFooter: React.FC = () => {
           </div>
         </div>
 
+        <SocialLinks variant="dark" className="justify-center mb-6" />
+
         <div className="text-center pt-6 border-t border-gray-200 max-w-4xl mx-auto">
           <p className="text-xs text-gray-600 leading-relaxed">
             Fast online quotes for Citroen extended warranty cover and used Citroen car warranties. Trusted Citroen vehicle warranty protection for Citroen C1, C3, C3 Aircross, C4, C4 Cactus, C4 Picasso, C5 Aircross SUV, Berlingo, DS3, DS4, DS5 and electric models including e-C4 and e-Berlingo. Cover levels and eligibility criteria apply. Buyawarranty.co.uk is a trading name of Buy A Warranty Limited, established 2016, registered in the United Kingdom under Company number 10314863, registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England. Buyawarranty is an independent warranty provider and is not affiliated with Citroen or Stellantis. Cover levels, limits, exclusions and eligibility criteria apply — please refer to your selected policy documents for full terms and conditions. © Buy a Warranty. All rights reserved.
