@@ -1247,12 +1247,47 @@ export function SandboxChatWindow({
         ref={composerRef}
       >
 
+        {(attachments.length > 0 || attachError) && (
+          <div className="mb-2 space-y-2">
+            {attachments.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {attachments.map((a) => (
+                  <div key={a.id} className="relative h-16 w-16 overflow-hidden rounded-lg border border-border">
+                    <img src={a.url} alt={a.name} className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      aria-label={`Remove ${a.name}`}
+                      onClick={() => setAttachments((prev) => prev.filter((p) => p.id !== a.id))}
+                      className="absolute right-0.5 top-0.5 rounded-full bg-background/90 p-0.5 text-foreground shadow"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {attachError && <p className="text-xs text-destructive">{attachError}</p>}
+          </div>
+        )}
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            void addFiles(e.target.files);
+            e.currentTarget.value = '';
+          }}
+        />
+
         <PromptInput
           onSubmit={(message) => send(message.text ?? '')}
           className="rounded-2xl border border-primary/40 bg-card shadow-md transition-all focus-within:border-primary focus-within:shadow-lg focus-within:ring-2 focus-within:ring-primary/20"
         >
           <PromptInputTextarea
-            className="min-h-[52px] text-base placeholder:text-muted-foreground/80"
+            className="min-h-[44px] text-base placeholder:text-muted-foreground/80"
             placeholder={
               agentMode
                 ? 'Reply as the warranty specialist…'
@@ -1260,7 +1295,51 @@ export function SandboxChatWindow({
             }
           />
           <PromptInputFooter className="items-center justify-between gap-2 border-0 pt-0">
+            <div className="flex min-w-0 items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Attach a photo"
+                disabled={busy || attachments.length >= MAX_ATTACHMENTS}
+                onClick={() => fileInputRef.current?.click()}
+                className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary"
+              >
+                <Paperclip className="h-5 w-5" />
+              </Button>
+              <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Insert an emoji"
+                    className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary"
+                  >
+                    <Smile className="h-5 w-5" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" side="top" className="w-64 p-2">
+                  <div className="grid grid-cols-8 gap-1">
+                    {CHAT_EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        className="rounded p-1 text-lg leading-none hover:bg-muted"
+                        onClick={() => {
+                          insertIntoComposer(emoji);
+                          setEmojiOpen(false);
+                        }}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
             <div className="flex min-w-0 items-center gap-2">
+
               {!isGuest && (
                 <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
                   Sandbox · test links only
