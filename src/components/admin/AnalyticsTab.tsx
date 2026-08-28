@@ -2247,6 +2247,9 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       </Card>
 
 
+      <AnalyticsSectionHeading id="organic-source-breakdown" title="Organic leads — web vs offline" description="Non-paid leads split by first-touch referrer. Organic W came from the web (search, blogs, organic social, directories). Organic O arrived with no referrer (billboard, van livery, radio, leaflet, word of mouth)." accent="border-sky-500/60" controls={sectionFilters} />
+      <OrganicSourceBreakdownPanel />
+
       <AnalyticsSectionHeading id="price-metrics" title="Price metrics" description="Lowest, highest and average order values, broken down by source." accent="border-yellow-500/60" controls={sectionFilters} />
 
       {/* Price Metrics: Lowest, Highest, Average - by Source */}
