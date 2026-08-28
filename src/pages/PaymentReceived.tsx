@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { CheckCircle, Clock, Phone, Mail } from 'lucide-react';
+import { CheckCircle, Clock, Phone, Mail, XCircle, AlertCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Helmet } from 'react-helmet-async';
 
@@ -17,6 +17,9 @@ const PaymentReceived = () => {
   const vehicleModel = params.get('vehicle_model') || '';
   const amount = params.get('final_amount') || '';
   const paymentMethod = params.get('source') || params.get('payment') || '';
+  // Worldpay hosted pages redirect back with ?status=failed|error|cancelled|expired
+  const status = (params.get('status') || 'success').toLowerCase();
+  const isSuccess = status === 'success' || status === 'pending';
   const transactionId =
     params.get('transaction_id') ||
     params.get('order_id') ||
@@ -26,7 +29,7 @@ const PaymentReceived = () => {
 
   const pushedRef = useRef(false);
   useEffect(() => {
-    if (pushedRef.current) return;
+    if (pushedRef.current || !isSuccess) return;
     pushedRef.current = true;
     const value = parseFloat(amount);
     window.dataLayer = window.dataLayer || [];
@@ -36,7 +39,67 @@ const PaymentReceived = () => {
       value: isNaN(value) ? 0 : value,
       currency: 'GBP',
     });
-  }, [amount, transactionId]);
+  }, [amount, transactionId, isSuccess]);
+
+  const failureCopy: Record<string, { title: string; message: string }> = {
+    failed: {
+      title: "Payment didn't go through",
+      message: 'Your card was not charged. This can happen if the bank declines the payment — please try again with the same or a different card, or call us and we can take payment over the phone.',
+    },
+    error: {
+      title: 'Something went wrong',
+      message: 'A technical error occurred while processing your payment. Your card was not charged. Please try again, or call us and we will help you complete the payment.',
+    },
+    cancelled: {
+      title: 'Payment cancelled',
+      message: 'You cancelled the payment before it completed, so nothing has been charged. If you still want to go ahead, simply reopen the payment link or call us.',
+    },
+    expired: {
+      title: 'Payment link expired',
+      message: 'This payment link has expired and can no longer be used. Please contact us and we will send you a fresh link straight away.',
+    },
+  };
+
+  if (!isSuccess) {
+    const copy = failureCopy[status] || failureCopy.failed;
+    return (
+      <>
+        <Helmet>
+          <title>{copy.title} | Buy a Warranty</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+        <div className="min-h-screen bg-gradient-to-b from-red-50 to-white flex items-center justify-center p-4">
+          <div className="max-w-lg w-full space-y-6">
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-100 mb-4">
+                {status === 'cancelled' || status === 'expired'
+                  ? <AlertCircle className="w-10 h-10 text-amber-600" />
+                  : <XCircle className="w-10 h-10 text-red-600" />}
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{copy.title}</h1>
+              <p className="text-gray-600 mt-2">{copy.message}</p>
+            </div>
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-sm text-gray-600 mb-3">Need a hand? Our team can take payment or send a new link:</p>
+                <div className="flex flex-col sm:flex-row gap-3 text-sm">
+                  <a href="tel:03302295040" className="flex items-center gap-2 text-primary hover:underline">
+                    <Phone className="w-4 h-4" />
+                    Call us: 0330 229 5040
+                  </a>
+                  <a href="mailto:info@buyawarranty.co.uk" className="flex items-center gap-2 text-primary hover:underline">
+                    <Mail className="w-4 h-4" />
+                    info@buyawarranty.co.uk
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+            <p className="text-center text-xs text-gray-400">No payment has been taken. You can safely close this page.</p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
