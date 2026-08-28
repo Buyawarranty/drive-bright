@@ -13,7 +13,7 @@ import {
   ArrowRight,
   ChevronRight,
   CheckCheck,
-
+  X,
   type LucideIcon,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -63,11 +63,11 @@ const splitTrailingQuestion = (text: string): { body: string; question: string }
 
 // consistent chat body size so replies don't render at mixed font sizes.
 const CHAT_TEXT = [
-  'text-sm leading-relaxed',
-  '[&_p]:text-sm [&_p]:leading-relaxed [&_p]:my-2',
-  '[&_li]:text-sm [&_li]:leading-relaxed',
+  'text-base leading-relaxed',
+  '[&_p]:text-base [&_p]:leading-relaxed [&_p]:my-2',
+  '[&_li]:text-base [&_li]:leading-relaxed',
   '[&_ul]:my-2 [&_ol]:my-2 [&_ul]:pl-5 [&_ol]:pl-5',
-  '[&_h1]:text-sm [&_h2]:text-sm [&_h3]:text-sm [&_h4]:text-sm [&_h5]:text-sm [&_h6]:text-sm',
+  '[&_h1]:text-base [&_h2]:text-base [&_h3]:text-base [&_h4]:text-base [&_h5]:text-base [&_h6]:text-base',
   '[&_h1]:font-semibold [&_h2]:font-semibold [&_h3]:font-semibold [&_h4]:font-semibold',
   '[&_h1]:my-2 [&_h2]:my-2 [&_h3]:my-2 [&_h4]:my-2',
   '[&_strong]:font-semibold [&_a]:underline',
@@ -297,14 +297,14 @@ function OptionRow({
 }) {
   return (
     <div>
-      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-      <div className="mt-1 flex flex-wrap gap-1.5">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <div className="mt-1 flex flex-wrap gap-2">
         {options.map((o) => (
           <button
             key={o}
             type="button"
             onClick={() => onChange(o)}
-            className={`rounded-lg border px-2.5 py-1 text-xs transition-colors ${
+            className={`rounded-lg border px-3 py-1.5 text-sm transition-colors ${
               value === o
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -333,12 +333,14 @@ function extractPrice(text?: string | null) {
 function PriceOptionsPanel({
   disabled,
   onSend,
+  onClose,
   reg,
   mileage,
   lastAssistantText,
 }: {
   disabled?: boolean;
   onSend: (text: string) => void;
+  onClose?: () => void;
   reg?: string | null;
   mileage?: string | null;
   lastAssistantText?: string | null;
@@ -372,20 +374,33 @@ function PriceOptionsPanel({
     <div className="rounded-2xl border border-border bg-card p-4 text-left shadow-sm">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-sm font-semibold text-foreground">Build your price</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <p className="text-base font-semibold text-foreground">Build your price</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">
             {optionsOpen ? "Pick your options and I'll show you the price." : combo}
           </p>
         </div>
-        {priceRequested && (
-          <button
-            type="button"
-            onClick={() => setOptionsOpen((v) => !v)}
-            className="shrink-0 rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted"
-          >
-            {optionsOpen ? 'Hide options' : 'Change options'}
-          </button>
-        )}
+        <div className="flex shrink-0 items-center gap-1">
+          {priceRequested && (
+            <button
+              type="button"
+              onClick={() => setOptionsOpen((v) => !v)}
+              className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted"
+            >
+              {optionsOpen ? 'Hide options' : 'Change options'}
+            </button>
+          )}
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close price builder"
+              title="Close price builder"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {quoted && (
@@ -569,6 +584,7 @@ export function SandboxChatWindow({
   );
   const [handover, setHandover] = useState<Handover | null>(null);
   const [agentMode, setAgentMode] = useState(false);
+  const [pricePanelOpen, setPricePanelOpen] = useState(true);
   const composerRef = useRef<HTMLDivElement | null>(null);
   // Keeps a stable "sent at" time per message so stamps don't jump on re-render.
   const stampsRef = useRef<Map<string, Date>>(new Map());
@@ -708,18 +724,22 @@ export function SandboxChatWindow({
   }, [messages]);
 
 
-  // Show the price builder once Miles has looked the vehicle up or quoted a price
+  // Show the price builder only when Miles has actually priced a vehicle.
+  // A plain vehicle lookup (e.g. "what's covered?") should not open the panel.
   const hasPriceQuote = useMemo(
     () =>
       messages.some((m) =>
         m.parts.some(
-          (p) =>
-            typeof p.type === 'string' &&
-            (p.type === 'tool-get_indicative_price' || p.type === 'tool-lookup_vehicle'),
+          (p) => typeof p.type === 'string' && p.type === 'tool-get_indicative_price',
         ),
       ),
     [messages],
   );
+
+  // Reopen the price builder automatically when a fresh price is quoted.
+  useEffect(() => {
+    if (hasPriceQuote) setPricePanelOpen(true);
+  }, [hasPriceQuote]);
 
   // Latest assistant reply, so the price panel can echo the quoted figure.
   const lastAssistantText = useMemo(() => {
@@ -1004,7 +1024,7 @@ export function SandboxChatWindow({
                 <MessageContent
                   className={
                     message.role === 'user'
-                      ? 'rounded-2xl rounded-br-sm border border-primary/30 bg-primary/10 px-4 py-3 text-foreground shadow-sm'
+                      ? 'rounded-2xl rounded-br-sm bg-primary px-4 py-3 text-primary-foreground shadow-sm'
                       : 'rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-foreground'
                   }
                 >
@@ -1030,7 +1050,7 @@ export function SandboxChatWindow({
                           </div>
                         );
                       }
-                      return <MessageResponse key={i} className={CHAT_TEXT}>{text}</MessageResponse>;
+                      return <MessageResponse key={i} className={`${CHAT_TEXT} text-primary-foreground [&_p]:text-primary-foreground`}>{text}</MessageResponse>;
                     }
 
                     // Model "thinking" is internal working-out — never show it to a
@@ -1096,9 +1116,16 @@ export function SandboxChatWindow({
 
           })}
 
-          {!agentMode && hasPriceQuote && (
+          {!agentMode && hasPriceQuote && pricePanelOpen && (
             <div className="px-2 pb-2">
-              <PriceOptionsPanel disabled={busy} onSend={send} reg={detectedReg} mileage={detectedMileage} lastAssistantText={lastAssistantText} />
+              <PriceOptionsPanel
+                disabled={busy}
+                onSend={send}
+                onClose={() => setPricePanelOpen(false)}
+                reg={detectedReg}
+                mileage={detectedMileage}
+                lastAssistantText={lastAssistantText}
+              />
             </div>
           )}
 
@@ -1153,7 +1180,7 @@ export function SandboxChatWindow({
                 : 'Ask about cover, pricing, claims…'
             }
           />
-          <PromptInputFooter className="items-center justify-between gap-1 border-0 pt-0">
+          <PromptInputFooter className="items-center justify-between gap-2 border-0 pt-0">
             <div className="flex min-w-0 items-center gap-2">
               {!isGuest && (
                 <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
@@ -1164,30 +1191,32 @@ export function SandboxChatWindow({
                 <Badge className="text-[10px] uppercase tracking-wide">Human specialist</Badge>
               )}
             </div>
-            <VoiceDictateButton
-              iconOnly
-              disabled={busy}
-              onTranscript={(text) => {
-                const ta = composerRef.current?.querySelector('textarea');
-                if (ta) {
-                  const setter = Object.getOwnPropertyDescriptor(
-                    window.HTMLTextAreaElement.prototype,
-                    'value',
-                  )?.set;
-                  const next = ta.value ? `${ta.value} ${text}` : text;
-                  setter ? setter.call(ta, next) : (ta.value = next);
-                  ta.dispatchEvent(new Event('input', { bubbles: true }));
-                  ta.focus();
-                } else {
-                  send(text);
-                }
-              }}
-            />
-            <PromptInputSubmit
-              status={status}
-              onClick={busy ? () => stop() : undefined}
-              className="h-11 w-11 rounded-full bg-primary text-primary-foreground shadow-md transition-transform hover:scale-105 hover:bg-primary/90 [&_svg]:size-5"
-            />
+            <div className="flex shrink-0 items-center gap-1">
+              <VoiceDictateButton
+                iconOnly
+                disabled={busy}
+                onTranscript={(text) => {
+                  const ta = composerRef.current?.querySelector('textarea');
+                  if (ta) {
+                    const setter = Object.getOwnPropertyDescriptor(
+                      window.HTMLTextAreaElement.prototype,
+                      'value',
+                    )?.set;
+                    const next = ta.value ? `${ta.value} ${text}` : text;
+                    setter ? setter.call(ta, next) : (ta.value = next);
+                    ta.dispatchEvent(new Event('input', { bubbles: true }));
+                    ta.focus();
+                  } else {
+                    send(text);
+                  }
+                }}
+              />
+              <PromptInputSubmit
+                status={status}
+                onClick={busy ? () => stop() : undefined}
+                className="h-11 w-11 rounded-full bg-primary text-primary-foreground shadow-md transition-transform hover:scale-105 hover:bg-primary/90 [&_svg]:size-5"
+              />
+            </div>
           </PromptInputFooter>
         </PromptInput>
       </div>
