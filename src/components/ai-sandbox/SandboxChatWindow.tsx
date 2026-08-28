@@ -1050,7 +1050,7 @@ export function SandboxChatWindow({
                           </div>
                         );
                       }
-                      return <MessageResponse key={i} className={CHAT_TEXT}>{text}</MessageResponse>;
+                      return <MessageResponse key={i} className={`${CHAT_TEXT} text-primary-foreground [&_p]:text-primary-foreground`}>{text}</MessageResponse>;
                     }
 
                     // Model "thinking" is internal working-out — never show it to a
