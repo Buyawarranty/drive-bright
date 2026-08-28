@@ -42,6 +42,13 @@ import milesCalls from '@/assets/miles-calls.png.asset.json';
 import { isTeamOpenNow, openingHoursLabel, nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
 import { useSandboxSpecialistPresence } from '@/hooks/useSandboxSpecialistPresence';
 import { CallMeBackPanel } from '@/components/ai-sandbox/CallMeBackPanel';
+import {
+  prepareAttachment,
+  CHAT_EMOJIS,
+  MAX_ATTACHMENTS,
+  type ChatAttachment,
+} from '@/components/ai-sandbox/chatAttachments';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-chat`;
