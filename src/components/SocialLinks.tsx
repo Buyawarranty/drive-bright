@@ -25,9 +25,9 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ variant = 'dark', className }
   const linkBase = cn(
     'inline-flex items-center justify-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
     isLight
-      ? 'text-white/70 hover:text-white bg-white/10 hover:bg-white/20 focus:ring-white/50'
-      : 'text-gray-400 hover:text-[#eb4b00] bg-gray-100 hover:bg-gray-200 focus:ring-[#eb4b00]/50',
-    'w-9 h-9'
+      ? 'text-white/80 hover:text-white bg-white/10 hover:bg-white/20 focus:ring-white/50'
+      : 'text-gray-500 hover:text-[#eb4b00] bg-gray-100 hover:bg-gray-200 focus:ring-[#eb4b00]/50',
+    'w-10 h-10 sm:w-9 sm:h-9'
   );
 
   return (
