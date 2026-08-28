@@ -20,6 +20,7 @@ import { PriceConversionAovPanel } from './analytics/PriceConversionAovPanel';
 import { LeadsToSalesRatioPanel } from './analytics/LeadsToSalesRatioPanel';
 import { DailyLeadVolumePanel } from './analytics/DailyLeadVolumePanel';
 import { TimeToConvertPanel } from './analytics/TimeToConvertPanel';
+import { OrganicSourceBreakdownPanel } from './marketing/OrganicSourceBreakdownPanel';
 
 
 
@@ -113,6 +114,7 @@ const ANALYTICS_QUICK_LINKS = [
   { id: 'filters', label: 'Price analysis per day', className: 'bg-slate-300/50 text-slate-900 border-slate-200/50 hover:bg-slate-400/50' },
   { id: 'key-metrics', label: 'Key metrics', className: 'bg-amber-200/50 text-amber-900 border-amber-100/50 hover:bg-amber-300/50' },
   { id: 'sales-by-source', label: 'Sales by source', className: 'bg-orange-300/50 text-orange-900 border-orange-200/50 hover:bg-orange-400/50' },
+  { id: 'organic-source-breakdown', label: 'Organic W / O', className: 'bg-sky-300/50 text-sky-900 border-sky-200/50 hover:bg-sky-400/50' },
   { id: 'price-metrics', label: 'Price metrics', className: 'bg-yellow-300/50 text-yellow-900 border-yellow-200/50 hover:bg-yellow-400/50' },
   { id: 'refunds-cancellations', label: 'Refunds & cancellations', className: 'bg-red-300/50 text-red-900 border-red-200/50 hover:bg-red-400/50' },
   { id: 'signups-vehicles', label: 'Signups & vehicles', className: 'bg-cyan-300/50 text-cyan-900 border-cyan-200/50 hover:bg-cyan-400/50' },
@@ -2244,6 +2246,9 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         </CardContent>
       </Card>
 
+
+      <AnalyticsSectionHeading id="organic-source-breakdown" title="Organic leads — web vs offline" description="Non-paid leads split by first-touch referrer. Organic W came from the web (search, blogs, organic social, directories). Organic O arrived with no referrer (billboard, van livery, radio, leaflet, word of mouth)." accent="border-sky-500/60" controls={sectionFilters} />
+      <OrganicSourceBreakdownPanel />
 
       <AnalyticsSectionHeading id="price-metrics" title="Price metrics" description="Lowest, highest and average order values, broken down by source." accent="border-yellow-500/60" controls={sectionFilters} />
 
