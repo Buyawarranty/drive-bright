@@ -812,7 +812,7 @@ const FAQ = () => {
       } else if (lowerQuery.includes('breakdown') || lowerQuery.includes('recovery') || lowerQuery.includes('roadside')) {
         response = 'We offer 24/7 Vehicle Recovery as an add-on for £4/month. This covers recovery costs when you\'ve already been recovered. We also offer European coverage and vehicle rental during repairs as additional options.';
       } else if (lowerQuery.includes('service') || lowerQuery.includes('maintenance') || lowerQuery.includes('mot')) {
-        response = 'Yes, you need to keep up with regular servicing to maintain your warranty validity. Follow the manufacturer\'s service schedule and keep your receipts. Routine maintenance isn\'t covered unless you add our Wear & Tear cover add-on.';
+        response = 'Yes, you need to keep up with regular servicing to maintain your warranty validity. Follow the manufacturer\'s service schedule and keep your receipts. Routine maintenance is not part of the cover.';
       } else {
         response = `I couldn't find a specific FAQ for "${query}", but I can help! Our comprehensive warranty covers mechanical and electrical parts for cars, vans, and motorcycles. For specific questions, please contact our team at 0330 229 5045 or support@buyawarranty.co.uk. You can also browse our detailed FAQ categories above for more information.`;
       }
