@@ -25,9 +25,9 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ variant = 'dark', className }
   const linkBase = cn(
     'inline-flex items-center justify-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
     isLight
-      ? 'text-white/70 hover:text-white bg-white/10 hover:bg-white/20 focus:ring-white/50'
-      : 'text-gray-400 hover:text-[#eb4b00] bg-gray-100 hover:bg-gray-200 focus:ring-[#eb4b00]/50',
-    'w-9 h-9'
+      ? 'text-white/80 hover:text-white bg-white/10 hover:bg-white/20 focus:ring-white/50'
+      : 'text-gray-500 hover:text-[#eb4b00] bg-gray-100 hover:bg-gray-200 focus:ring-[#eb4b00]/50',
+    'w-10 h-10 sm:w-9 sm:h-9'
   );
 
   return (
@@ -39,7 +39,7 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ variant = 'dark', className }
         aria-label="Buy a Warranty on Facebook"
         className={linkBase}
       >
-        <Facebook className="w-4 h-4" />
+        <Facebook className="w-5 h-5 sm:w-4 sm:h-4" />
       </a>
       <a
         href={INSTAGRAM_URL}
@@ -48,7 +48,7 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ variant = 'dark', className }
         aria-label="Buy a Warranty on Instagram"
         className={linkBase}
       >
-        <Instagram className="w-4 h-4" />
+        <Instagram className="w-5 h-5 sm:w-4 sm:h-4" />
       </a>
       <a
         href={TIKTOK_URL}
@@ -57,7 +57,7 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ variant = 'dark', className }
         aria-label="Buy a Warranty on TikTok"
         className={linkBase}
       >
-        <TikTokIcon className="w-4 h-4" />
+        <TikTokIcon className="w-5 h-5 sm:w-4 sm:h-4" />
       </a>
     </div>
   );
