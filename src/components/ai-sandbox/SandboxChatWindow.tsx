@@ -14,6 +14,8 @@ import {
   ChevronRight,
   CheckCheck,
   X,
+  Smile,
+  Paperclip,
   type LucideIcon,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
