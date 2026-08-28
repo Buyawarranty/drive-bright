@@ -2,6 +2,7 @@
 import React from 'react';
 import { Phone, Mail, BookOpen, X, LogIn } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SocialLinks from '@/components/SocialLinks';
 
 const NewFooter = () => {
   return (
@@ -56,6 +57,7 @@ const NewFooter = () => {
             </Link>
           </div>
 
+          <SocialLinks variant="light" className="justify-center mt-6" />
         </div>
       </div>
     </div>

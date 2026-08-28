@@ -1,5 +1,6 @@
 import React from 'react';
 import { Phone, Mail } from 'lucide-react';
+import SocialLinks from '@/components/SocialLinks';
 
 const MinimalLandingFooter: React.FC = () => {
   return (
@@ -21,6 +22,7 @@ const MinimalLandingFooter: React.FC = () => {
               © {new Date().getFullYear()} Buy A Warranty. All rights reserved.
             </p>
           </div>
+          <SocialLinks variant="dark" className="justify-center" />
         </div>
       </div>
     </footer>

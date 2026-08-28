@@ -3,6 +3,7 @@ import React from 'react';
 import { Phone, Mail, Facebook, Instagram } from 'lucide-react';
 import { X } from 'lucide-react';
 import { SALES_PHONE, SALES_PHONE_TEL, SUPPORT_EMAIL } from '@/constants/contact';
+import SocialLinks from '@/components/SocialLinks';
 import icoLogo from '@/assets/ico-registered.png.asset.json';
 
 const Footer = () => {
@@ -110,6 +111,7 @@ const Footer = () => {
 
           {/* Bottom section */}
           <div className="mt-8 pt-4 border-t border-white/10 text-center text-sm text-gray-300">
+            <SocialLinks variant="light" className="justify-center mb-4" />
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
               <span className="inline-flex items-center bg-white rounded-md px-2.5 py-1.5">
                 <img
