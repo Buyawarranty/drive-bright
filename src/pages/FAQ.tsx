@@ -365,7 +365,7 @@ const FAQ = () => {
         {
           id: 'optional-extras',
           question: 'What optional extras do you offer?',
-          answer: 'Here\'s your list with brief descriptions for each benefit:\n\n* Vehicle rental – Get a courtesy vehicle while your car is being repaired, so you\'re never left stranded.\n* Wear & tear cover – Protection for certain parts that fail due to normal use, not just sudden breakdowns.\n* Tyre replacement cover – Covers the cost of replacing tyres damaged by punctures or road hazards.\n* European repair cover – Enjoy warranty protection even when driving in Europe.\n* Breakdown recovery – Roadside recovery claim-back to get you moving again if your car breaks down.\n* Transferable warranty – If you sell your car, you can transfer the remaining warranty to the new owner.\n\nFor full details on what\'s included, visit our https://buyawarranty.co.uk/what-is-covered'
+          answer: 'Here\'s your list with brief descriptions for each benefit:\n\n* Vehicle rental – Get a courtesy vehicle while your car is being repaired, so you\'re never left stranded.\n* Tyre replacement cover – Covers the cost of replacing tyres damaged by punctures or road hazards.\n* European repair cover – Enjoy warranty protection even when driving in Europe.\n* Breakdown recovery – Roadside recovery claim-back to get you moving again if your car breaks down.\n* Transferable warranty – If you sell your car, you can transfer the remaining warranty to the new owner.\n\nFor full details on what\'s included, visit our https://buyawarranty.co.uk/what-is-covered'
         },
         {
           id: 'what-not-covered',
@@ -381,12 +381,7 @@ const FAQ = () => {
         {
           id: 'not-covered',
           question: 'Are there items that aren\'t covered?',
-          answer: 'Yes, some items like wear-and-tear items (e.g. tyres, brake pads) unless you take the add-on option for wear and tear, tyre cover etc or damage from accidents are not included. We\'ll always be upfront about what\'s covered and what\'s not, so there are no surprises.'
-        },
-        {
-          id: 'wear-tear',
-          question: 'Does my warranty cover wear and tear?',
-          answer: 'Warranty plans are designed to cover unexpected faults and failures, rather than items that naturally wear out over time. Even manufacturer warranties on brand-new cars don\'t include normal wear and tear.\nHowever, for extra peace of mind, we offer wear & tear cover as an optional add-on. You can select this additional protection when purchasing your warranty—just look for the option on the pricing page.\nFor full details on what\'s included and available add-ons, please visit our \'What\'s covered\' page.'
+          answer: 'Yes, routine servicing and consumable items (e.g. tyres, brake pads) and damage from accidents are not included. We\'ll always be upfront about what\'s covered and what\'s not, so there are no surprises.'
         },
         {
           id: 'diagnostic-charges',
