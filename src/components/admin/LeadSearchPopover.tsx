@@ -164,9 +164,10 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         // The sales lead result is the primary import path. Show it as soon as it
         // lands — agents were left staring at a spinner while the optional
         // abandoned-cart enrichment finished (or timed out).
-        const cartResPromise = bounded(cartQuery, 3500);
-        const customerResPromise = customerQuery ? bounded(customerQuery, 4000) : null;
-        let slRes: any = await bounded(query, 6000);
+        const cartResPromise = bounded(cartQuery, 10000);
+        const customerResPromise = customerQuery ? bounded(customerQuery, 10000) : null;
+        let slRes: any = await bounded(query, 15000);
+
         if (cancelled) return;
 
         if (slRes.error) console.error('Error fetching leads:', slRes.error);
