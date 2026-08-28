@@ -55,3 +55,13 @@ export function saveGuestChatOpen(open: boolean) {
     /* ignore */
   }
 }
+
+/** Ends a conversation: the next chat starts from a clean slate. */
+export function clearGuestChat(token: string | null | undefined) {
+  try {
+    if (token) window.localStorage.removeItem(MESSAGES_PREFIX + token);
+    window.localStorage.removeItem(OPEN_KEY);
+  } catch {
+    /* ignore */
+  }
+}
