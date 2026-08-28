@@ -19,6 +19,7 @@ import {
   Mail,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import WorldpayCardForm from '@/components/inspection/WorldpayCardForm';
 
 interface InspectionRequest {
   id: string;
@@ -105,6 +106,9 @@ const IndependentInspection: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [detailsSaved, setDetailsSaved] = useState(false);
+  const [cardFormAvailable, setCardFormAvailable] = useState(true);
   const [errors, setErrors] = useState<Partial<Record<ErrorKey, string>>>({});
   const [form, setForm] = useState<FormState>({
     garageName: '',
@@ -163,6 +167,27 @@ const IndependentInspection: React.FC = () => {
     load();
   }, [load]);
 
+  // Return from an in-page Worldpay 3-D Secure challenge
+  const wp3dsReturn = searchParams.get('wp3ds') === '1';
+  const wp3dsRef = searchParams.get('ref');
+  useEffect(() => {
+    if (!wp3dsReturn || !token) return;
+    // If we're inside the bank's challenge iframe, tell the parent and stop.
+    if (window.self !== window.top) {
+      window.parent.postMessage('wp3ds-done', window.location.origin);
+      return;
+    }
+    if (wp3dsRef) {
+      (async () => {
+        await supabase.functions.invoke('worldpay-payment-status', {
+          body: { token, transactionReference: wp3dsRef },
+        });
+        await load();
+      })();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wp3dsReturn, wp3dsRef, token]);
+
   // Confirm payment on return from the payment page
   useEffect(() => {
     if (!paidFlag || !sessionId || !token) return;
@@ -199,7 +224,11 @@ const IndependentInspection: React.FC = () => {
       });
       if (fnError) throw new Error(fnError.message);
       if (data?.checkout_url) {
-        window.location.href = data.checkout_url;
+        // Details saved — show the in-page card form (falls back to the hosted page).
+        setCheckoutUrl(data.checkout_url);
+        setDetailsSaved(true);
+        setSubmitting(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
       throw new Error(data?.error || 'Could not start payment');
@@ -254,6 +283,11 @@ const IndependentInspection: React.FC = () => {
       </div>
     </footer>
   );
+
+  // Rendered inside the bank's 3DS iframe — parent page handles completion.
+  if (wp3dsReturn && window.self !== window.top) {
+    return null;
+  }
 
   if (loading) {
     return (
@@ -634,24 +668,54 @@ const IndependentInspection: React.FC = () => {
                       <TrustpilotMicroWidget className="pt-1" />
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={submit}
-                      disabled={submitting}
-                      className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#E8541A] hover:bg-[#cf471a] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm"
-                    >
-                      {submitting ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <Lock className="h-4 w-4" />
-                          Pay now · £{fee.toFixed(2)}
-                        </>
-                      )}
-                    </button>
-                    <p className="text-xs text-center text-slate-500">
-                      You'll be taken to a secure payment page to enter your card details.
-                    </p>
+                    {detailsSaved && cardFormAvailable && token ? (
+                      <>
+                        <WorldpayCardForm
+                          token={token}
+                          fee={fee}
+                          onPaid={load}
+                          onFallback={() => {
+                            if (checkoutUrl) window.location.href = checkoutUrl;
+                          }}
+                          onUnavailable={() => setCardFormAvailable(false)}
+                        />
+                        {checkoutUrl && (
+                          <p className="text-xs text-center text-slate-500">
+                            Prefer the standard page?{' '}
+                            <a href={checkoutUrl} className="font-semibold text-[#E8541A] hover:underline">
+                              Pay on our secure payment page
+                            </a>
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (checkoutUrl) {
+                              window.location.href = checkoutUrl;
+                            } else {
+                              submit();
+                            }
+                          }}
+                          disabled={submitting}
+                          className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#E8541A] hover:bg-[#cf471a] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm"
+                        >
+                          {submitting ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Lock className="h-4 w-4" />
+                              Pay now · £{fee.toFixed(2)}
+                            </>
+                          )}
+                        </button>
+                        <p className="text-xs text-center text-slate-500">
+                          You'll be taken to a secure payment page to enter your card details.
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
 

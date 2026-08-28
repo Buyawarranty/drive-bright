@@ -320,3 +320,12 @@ verify_jwt = false
 
 [functions.provision-temp-login]
 verify_jwt = true
+
+[functions.worldpay-checkout-config]
+verify_jwt = false
+
+[functions.worldpay-take-inspection-payment]
+verify_jwt = false
+
+[functions.worldpay-payment-status]
+verify_jwt = false
