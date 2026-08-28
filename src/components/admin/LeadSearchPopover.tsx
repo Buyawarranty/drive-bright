@@ -8,6 +8,8 @@ import { Search, UserPlus, Phone, Mail, Car, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { cn } from '@/lib/utils';
+import { withPriority } from '@/lib/requestQueue';
+
 
 export interface LeadData {
   id: string;
