@@ -57,17 +57,24 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
     // Agents reported "unable to import the lead": a slow lead/cart query left the
     // popover spinning forever with no result and no error. Every request is now
     // time-bounded and degrades to whatever came back.
-    const bounded = async <T,>(p: PromiseLike<T>, ms = 8000): Promise<T | { data: null; error: Error }> => {
+    // Agents reported "unable to import the lead": a slow lead/cart query left the
+    // popover spinning forever with no result and no error. Every request is now
+    // time-bounded, runs in the interactive (high) request lane so it never waits
+    // behind background dashboard reads, and degrades to whatever came back.
+    const bounded = async <T,>(p: PromiseLike<T>, ms = 15000): Promise<T | { data: null; error: Error }> => {
       let timer: ReturnType<typeof setTimeout> | undefined;
       const timeout = new Promise<{ data: null; error: Error }>((resolve) => {
         timer = setTimeout(() => resolve({ data: null, error: new Error('Search timed out') }), ms);
       });
       try {
-        return (await Promise.race([Promise.resolve(p), timeout])) as any;
+        return await withPriority(
+          async () => (await Promise.race([Promise.resolve(p), timeout])) as any,
+        );
       } finally {
         if (timer) clearTimeout(timer);
       }
     };
+
 
     const fetchLeads = async () => {
       setLoading(true);
