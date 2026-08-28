@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { addDays, endOfMonth, format, startOfMonth, startOfWeek } from 'date-fns';
-import { Loader2, Target } from 'lucide-react';
+import { Check, Loader2, Pencil, Target, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { buildSaleCreditResolver, fetchSalesCreditAgentIds } from '@/lib/saleCredit';
 import { withBackgroundPriority } from '@/lib/requestQueue';
+import { useIsManagement } from '@/hooks/useIsManagement';
 import { UnattributedSalesAssigner } from './UnattributedSalesAssigner';
 
 
