@@ -284,6 +284,11 @@ const IndependentInspection: React.FC = () => {
     </footer>
   );
 
+  // Rendered inside the bank's 3DS iframe — parent page handles completion.
+  if (wp3dsReturn && window.self !== window.top) {
+    return null;
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F4F6F8] flex flex-col">
@@ -663,24 +668,54 @@ const IndependentInspection: React.FC = () => {
                       <TrustpilotMicroWidget className="pt-1" />
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={submit}
-                      disabled={submitting}
-                      className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#E8541A] hover:bg-[#cf471a] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm"
-                    >
-                      {submitting ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <Lock className="h-4 w-4" />
-                          Pay now · £{fee.toFixed(2)}
-                        </>
-                      )}
-                    </button>
-                    <p className="text-xs text-center text-slate-500">
-                      You'll be taken to a secure payment page to enter your card details.
-                    </p>
+                    {detailsSaved && cardFormAvailable && token ? (
+                      <>
+                        <WorldpayCardForm
+                          token={token}
+                          fee={fee}
+                          onPaid={load}
+                          onFallback={() => {
+                            if (checkoutUrl) window.location.href = checkoutUrl;
+                          }}
+                          onUnavailable={() => setCardFormAvailable(false)}
+                        />
+                        {checkoutUrl && (
+                          <p className="text-xs text-center text-slate-500">
+                            Prefer the standard page?{' '}
+                            <a href={checkoutUrl} className="font-semibold text-[#E8541A] hover:underline">
+                              Pay on our secure payment page
+                            </a>
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (checkoutUrl) {
+                              window.location.href = checkoutUrl;
+                            } else {
+                              submit();
+                            }
+                          }}
+                          disabled={submitting}
+                          className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#E8541A] hover:bg-[#cf471a] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm"
+                        >
+                          {submitting ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Lock className="h-4 w-4" />
+                              Pay now · £{fee.toFixed(2)}
+                            </>
+                          )}
+                        </button>
+                        <p className="text-xs text-center text-slate-500">
+                          You'll be taken to a secure payment page to enter your card details.
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
 
