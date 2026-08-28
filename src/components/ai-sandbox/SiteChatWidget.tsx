@@ -84,10 +84,21 @@ export default function SiteChatWidget({
     saveGuestChatOpen(true);
   };
 
+  // Minimise: keep the transcript so the visitor can pick up where they left off.
   const closeChat = () => {
     setOpen(false);
     saveGuestChatOpen(false);
   };
+
+  // Close (X): the conversation is finished — wipe it and start fresh next time.
+  const endChat = () => {
+    setOpen(false);
+    saveGuestChatOpen(false);
+    clearGuestChat(tokenRef.current);
+    tokenRef.current = newGuestToken();
+    setSessionKey((k) => k + 1);
+  };
+
 
   if (hidden) return null;
 
