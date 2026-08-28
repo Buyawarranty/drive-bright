@@ -6981,6 +6981,7 @@ Questions? Call 0330 229 5040`;
 
 
                     {/* Worldpay — virtual terminal + pay by link */}
+                    <Suspense fallback={null}>
                     <WorldpayPaymentPanel
                       amountPounds={currentPrice.payInFullPrice || Math.ceil(currentPrice.totalPrice * 0.9)}
                       description={`Vehicle warranty${customerFirstName ? ` — ${customerFirstName} ${customerLastName}`.trim() : ''}`}
