@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Search, UserPlus, Phone, Mail, Car, Loader2 } from 'lucide-react';
+import { Search, UserPlus, Phone, Mail, Car, Loader2, LifeBuoy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { cn } from '@/lib/utils';
@@ -41,6 +41,8 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
   const [leads, setLeads] = useState<LeadData[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [rescuing, setRescuing] = useState(false);
+  const [rescueNote, setRescueNote] = useState<string | null>(null);
   const adminMap = useAllAdminUsersMap();
 
   const ownerNameFor = React.useCallback((assignedTo?: string | null) => {
@@ -49,6 +51,108 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
     if (!u) return null;
     return [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email;
   }, [adminMap]);
+
+  /**
+   * Backup of the backup: when the normal (and already-fallback) lead search
+   * still fails or comes back empty for an agent, this runs the simplest
+   * possible queries — one plain single-column match at a time, no `or()`
+   * filter, no request queue, no cart/customer enrichment. Slower, but it is
+   * the least likely thing in the app to break, so the agent can always get
+   * the record and keep the customer on the phone.
+   */
+  const runEmergencySearch = React.useCallback(async () => {
+    const raw = searchTerm.trim();
+    if (!raw) return;
+    setRescuing(true);
+    setRescueNote(null);
+    setLoadError(null);
+    try {
+      const compact = raw.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      const spaced = compact.length >= 5 ? `${compact.slice(0, -3)} ${compact.slice(-3)}` : compact;
+      const digits = raw.replace(/\D/g, '');
+
+      const leadCols =
+        'id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest, assigned_to';
+      const custCols =
+        'id, name, first_name, last_name, email, phone, registration_plate, vehicle_make, vehicle_model, vehicle_year, mileage, plan_type, assigned_to';
+
+      const attempts: Array<() => PromiseLike<any>> = [
+        () => supabase.from('sales_leads').select(leadCols).ilike('vehicle_reg', `%${compact}%`).limit(20),
+        () => supabase.from('sales_leads').select(leadCols).ilike('vehicle_reg', `%${spaced}%`).limit(20),
+        () => supabase.from('sales_leads').select(leadCols).ilike('email', `%${raw}%`).limit(20),
+        () => supabase.from('sales_leads').select(leadCols).ilike('first_name', `%${raw}%`).limit(20),
+        () => supabase.from('sales_leads').select(leadCols).ilike('last_name', `%${raw}%`).limit(20),
+      ];
+      if (digits.length >= 7) {
+        attempts.push(() =>
+          supabase.from('sales_leads').select(leadCols).ilike('phone', `%${digits.slice(-9)}%`).limit(20)
+        );
+      }
+
+      const found: LeadData[] = [];
+      const seen = new Set<string>();
+      const push = (row: LeadData) => {
+        if (seen.has(row.id)) return;
+        seen.add(row.id);
+        found.push(row);
+      };
+
+      for (const attempt of attempts) {
+        try {
+          const { data } = (await attempt()) as any;
+          for (const row of (data as any[]) || []) push(row as LeadData);
+        } catch {
+          /* try the next shape */
+        }
+        if (found.length >= 20) break;
+      }
+
+      if (found.length === 0) {
+        // Last resort: the customer record itself.
+        for (const plate of [compact, spaced]) {
+          try {
+            const { data } = (await supabase
+              .from('customers')
+              .select(custCols)
+              .ilike('registration_plate', `%${plate}%`)
+              .limit(20)) as any;
+            for (const c of (data as any[]) || []) {
+              const parts = String(c.name || '').trim().split(/\s+/);
+              push({
+                id: `customer:${c.id}`,
+                first_name: c.first_name || parts[0] || null,
+                last_name: c.last_name || parts.slice(1).join(' ') || null,
+                email: c.email || null,
+                phone: c.phone || null,
+                vehicle_reg: c.registration_plate || null,
+                vehicle_make: c.vehicle_make || null,
+                vehicle_model: c.vehicle_model || null,
+                vehicle_year: c.vehicle_year || null,
+                mileage: c.mileage != null ? String(c.mileage) : null,
+                plan_interest: c.plan_type || null,
+                assigned_to: c.assigned_to || null,
+              });
+            }
+          } catch {
+            /* ignore */
+          }
+          if (found.length > 0) break;
+        }
+      }
+
+      setLeads(found);
+      setRescueNote(
+        found.length > 0
+          ? `Backup search found ${found.length} record${found.length === 1 ? '' : 's'}.`
+          : 'Backup search found nothing for that name, reg, email or phone.'
+      );
+    } catch (e: any) {
+      setRescueNote(e?.message || 'Backup search failed — please try once more.');
+    } finally {
+      setRescuing(false);
+    }
+  }, [searchTerm]);
+
 
   // Fetch leads when popover opens or search term changes
   useEffect(() => {
@@ -347,17 +451,40 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         </div>
         
         <ScrollArea className="h-[300px]">
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
+          {loading || rescuing ? (
+            <div className="flex flex-col items-center justify-center gap-2 py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              {rescuing && <span className="text-xs text-muted-foreground">Running backup search…</span>}
             </div>
           ) : leads.length === 0 ? (
-            <div className="text-center py-8 px-3 text-muted-foreground">
-              {loadError ? (
-                <span className="text-destructive text-xs">{loadError}</span>
-              ) : searchTerm ? 'No leads found' : 'No unpaid leads available'}
+            <div className="text-center py-8 px-3 text-muted-foreground space-y-3">
+              <div>
+                {loadError ? (
+                  <span className="text-destructive text-xs">{loadError}</span>
+                ) : searchTerm ? 'No leads found' : 'No unpaid leads available'}
+              </div>
+              {rescueNote && <div className="text-xs">{rescueNote}</div>}
+              {searchTerm.trim() && (
+                <div className="space-y-1">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={runEmergencySearch}
+                    className="gap-2"
+                  >
+                    <LifeBuoy className="h-4 w-4" />
+                    Backup search (bypass)
+                  </Button>
+                  <p className="text-[11px] leading-snug px-2">
+                    Uses the simplest possible lookup — one field at a time, no queue. Slower, but works
+                    when the normal search times out.
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
+
             <div className="p-2 space-y-1">
               {leads.map((lead) => (
                 <button
