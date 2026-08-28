@@ -44,7 +44,7 @@ const coveredItems = [
 ];
 
 const notCoveredItems = [
-  'Wear and tear (tyres, brake pads, etc.)',
+  'Routine servicing and consumable items (tyres, brake pads, etc.)',
   'Accidental or cosmetic damage',
   'Pre-existing faults at purchase',
   'Negligence or lack of servicing',

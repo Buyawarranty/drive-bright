@@ -365,7 +365,7 @@ const FAQ = () => {
         {
           id: 'optional-extras',
           question: 'What optional extras do you offer?',
-          answer: 'Here\'s your list with brief descriptions for each benefit:\n\n* Vehicle rental – Get a courtesy vehicle while your car is being repaired, so you\'re never left stranded.\n* Wear & tear cover – Protection for certain parts that fail due to normal use, not just sudden breakdowns.\n* Tyre replacement cover – Covers the cost of replacing tyres damaged by punctures or road hazards.\n* European repair cover – Enjoy warranty protection even when driving in Europe.\n* Breakdown recovery – Roadside recovery claim-back to get you moving again if your car breaks down.\n* Transferable warranty – If you sell your car, you can transfer the remaining warranty to the new owner.\n\nFor full details on what\'s included, visit our https://buyawarranty.co.uk/what-is-covered'
+          answer: 'Here\'s your list with brief descriptions for each benefit:\n\n* Vehicle rental – Get a courtesy vehicle while your car is being repaired, so you\'re never left stranded.\n* Tyre replacement cover – Covers the cost of replacing tyres damaged by punctures or road hazards.\n* European repair cover – Enjoy warranty protection even when driving in Europe.\n* Breakdown recovery – Roadside recovery claim-back to get you moving again if your car breaks down.\n* Transferable warranty – If you sell your car, you can transfer the remaining warranty to the new owner.\n\nFor full details on what\'s included, visit our https://buyawarranty.co.uk/what-is-covered'
         },
         {
           id: 'what-not-covered',
@@ -381,12 +381,7 @@ const FAQ = () => {
         {
           id: 'not-covered',
           question: 'Are there items that aren\'t covered?',
-          answer: 'Yes, some items like wear-and-tear items (e.g. tyres, brake pads) unless you take the add-on option for wear and tear, tyre cover etc or damage from accidents are not included. We\'ll always be upfront about what\'s covered and what\'s not, so there are no surprises.'
-        },
-        {
-          id: 'wear-tear',
-          question: 'Does my warranty cover wear and tear?',
-          answer: 'Warranty plans are designed to cover unexpected faults and failures, rather than items that naturally wear out over time. Even manufacturer warranties on brand-new cars don\'t include normal wear and tear.\nHowever, for extra peace of mind, we offer wear & tear cover as an optional add-on. You can select this additional protection when purchasing your warranty—just look for the option on the pricing page.\nFor full details on what\'s included and available add-ons, please visit our \'What\'s covered\' page.'
+          answer: 'Yes, routine servicing and consumable items (e.g. tyres, brake pads) and damage from accidents are not included. We\'ll always be upfront about what\'s covered and what\'s not, so there are no surprises.'
         },
         {
           id: 'diagnostic-charges',
@@ -472,7 +467,7 @@ const FAQ = () => {
         {
           id: 'limited-warranty-meaning',
           question: 'What does a "limited warranty" actually cover?',
-          answer: 'A limited warranty means that coverage is restricted to specific parts, timeframes, or conditions listed in the policy, rather than covering "everything." For example, a manufacturer\u2019s limited warranty typically protects against factory defects in materials or workmanship but explicitly excludes everyday wear-and-tear items (like brake pads, tyres, and wiper blades), routine servicing, and damage from accidents or neglect. Our policies clearly define these limits upfront so you always know exactly what is protected.'
+          answer: 'A limited warranty means that coverage is restricted to specific parts, timeframes, or conditions listed in the policy, rather than covering "everything." For example, a manufacturer\u2019s limited warranty typically protects against factory defects in materials or workmanship but explicitly excludes everyday consumable items (like brake pads, tyres, and wiper blades), routine servicing, and damage from accidents or neglect. Our policies clearly define these limits upfront so you always know exactly what is protected.'
         }
       ]
     },
@@ -746,7 +741,7 @@ const FAQ = () => {
         - Extended warranties for cars, vans, and motorcycles
         - Coverage for petrol, diesel, hybrid, PHEV, and electric vehicles
         - One comprehensive Platinum Plan covering mechanical and electrical parts
-        - Optional add-ons: Wear & tear, 24/7 recovery, tyre cover, Europe cover, vehicle rental, transfer cover
+        - Optional add-ons: 24/7 recovery, tyre cover, Europe cover, vehicle rental, transfer cover
         
         Key Features:
         - Warranty costs from £12/month
@@ -803,7 +798,7 @@ const FAQ = () => {
       } else if (lowerQuery.includes('claim') || lowerQuery.includes('repair')) {
         response = 'To make a claim, contact our Claims Team at 0330 229 5045 (Mon-Fri 09:00-17:30) or use our online form. Get your vehicle diagnosed at a garage first, then the garage must contact our claims team before starting repairs. We process claims within 90 minutes of approval and can pay the garage directly.';
       } else if (lowerQuery.includes('cover') || lowerQuery.includes('what') || lowerQuery.includes('include')) {
-        response = 'Our Platinum Plan covers all mechanical and electrical parts including engine, gearbox, drivetrain, electrical systems, ECUs, sensors, and labour costs. We cover cars, vans, and motorcycles (petrol, diesel, hybrid, and electric). Optional add-ons available for wear & tear, tyres, Europe cover, and more.';
+        response = 'Our Platinum Plan covers all mechanical and electrical parts including engine, gearbox, drivetrain, electrical systems, ECUs, sensors, and labour costs. We cover cars, vans, and motorcycles (petrol, diesel, hybrid, and electric). Optional add-ons available for tyres, Europe cover, and more.';
       } else if (lowerQuery.includes('electric') || lowerQuery.includes('ev') || lowerQuery.includes('hybrid')) {
         response = 'Yes, we cover electric and hybrid vehicles! For EVs we cover drive motors, high-voltage battery, inverters, chargers, and thermal systems. For hybrids we cover all the above plus petrol/diesel engine components, hybrid drive motors, batteries, and power control units.';
       } else if (lowerQuery.includes('garage') || lowerQuery.includes('mechanic')) {
@@ -817,7 +812,7 @@ const FAQ = () => {
       } else if (lowerQuery.includes('breakdown') || lowerQuery.includes('recovery') || lowerQuery.includes('roadside')) {
         response = 'We offer 24/7 Vehicle Recovery as an add-on for £4/month. This covers recovery costs when you\'ve already been recovered. We also offer European coverage and vehicle rental during repairs as additional options.';
       } else if (lowerQuery.includes('service') || lowerQuery.includes('maintenance') || lowerQuery.includes('mot')) {
-        response = 'Yes, you need to keep up with regular servicing to maintain your warranty validity. Follow the manufacturer\'s service schedule and keep your receipts. Routine maintenance isn\'t covered unless you add our Wear & Tear cover add-on.';
+        response = 'Yes, you need to keep up with regular servicing to maintain your warranty validity. Follow the manufacturer\'s service schedule and keep your receipts. Routine maintenance is not part of the cover.';
       } else {
         response = `I couldn't find a specific FAQ for "${query}", but I can help! Our comprehensive warranty covers mechanical and electrical parts for cars, vans, and motorcycles. For specific questions, please contact our team at 0330 229 5045 or support@buyawarranty.co.uk. You can also browse our detailed FAQ categories above for more information.`;
       }
@@ -855,11 +850,10 @@ const FAQ = () => {
     { question: "What parts are covered for Hybrid & PHEV Vehicle?", answer: "Our warranty covers a wide range of hybrid and plug-in hybrid components, including: all petrol/diesel engine parts and labour, hybrid drive motors & ECUs, hybrid battery failure, power control units, inverters & DC-DC converters, regenerative braking systems, high-voltage cables & connectors, cooling systems for hybrid components, charging ports & on-board charging modules, hybrid transmission components, braking systems, suspension & steering systems, air conditioning, electrical components, ECUs & sensors, lighting & ignition systems, factory-fitted multimedia & infotainment systems, driver assistance systems, and safety systems." },
     { question: "What's covered for Electric Vehicles (EVs)?", answer: "Our warranty covers a wide range of essential EV components, including: EV drive motors & reduction gear, EV transmission & reduction gearbox assemblies, high-voltage battery failure, power control units & inverters, on-board charger (OBC) & charging ports, DC-DC converters, thermal management systems, high-voltage cables & connectors, and EV-specific control electronics." },
     { question: "What parts are covered for my motorbike?", answer: "Our warranty covers a wide range of key motorcycle components, including: Engine / motor & drivetrain components, Gearbox / transmission systems, ECUs, sensors & control modules, Electrical systems & wiring, High-voltage battery failure (hybrid & EV), Suspension & steering systems, Braking systems, Cooling & thermal systems, Lighting & ignition systems, and Instrumentation & rider controls." },
-    { question: "What optional extras do you offer?", answer: "We offer vehicle rental options, wear & tear cover, tyre replacement cover, European repair cover, breakdown recovery, and transferable warranty protection options. For full details on what's included, visit our 'What's covered' page." },
+    { question: "What optional extras do you offer?", answer: "We offer vehicle rental options, tyre replacement cover, European repair cover, breakdown recovery, and transferable warranty protection options. For full details on what's included, visit our 'What's covered' page." },
     { question: "What's not covered?", answer: "We do not cover pre-existing faults, routine servicing or maintenance (e.g. fluids, tyres, brake pads), vehicles used for hire or reward (e.g. taxi, rental, courier), accident or collision damage, and indirect or knock-on financial losses (e.g. hotel bookings, lost earnings)." },
     { question: "What does your warranty cover?", answer: "Our plans cover a wide range of parts – from the engine and gearbox to electrical systems and more. We offer the most comprehensive warranty plan for our customers to ensure that you get the most cover." },
-    { question: "Are there items that aren't covered?", answer: "Yes, some items like wear-and-tear items (e.g. tyres, brake pads) unless you take the add-on option for wear and tear, tyre cover etc or damage from accidents are not included. We'll always be upfront about what's covered and what's not, so there are no surprises." },
-    { question: "Does my warranty cover wear and tear?", answer: "Warranty plans are designed to cover unexpected faults and failures, rather than items that naturally wear out over time. Even manufacturer warranties on brand-new cars don't include normal wear and tear. However, for extra peace of mind, we offer wear & tear cover as an optional add-on. You can select this additional protection when purchasing your warranty—just look for the option on the pricing page." },
+    { question: "Are there items that aren't covered?", answer: "Yes, routine servicing and consumable items (e.g. tyres, brake pads) and damage from accidents are not included. We'll always be upfront about what's covered and what's not, so there are no surprises." },
     { question: "Does my warranty cover diagnostic charges?", answer: "The warranty does cover diagnostic charges. We also cover physical dismantling charges in the event of a valid claim, subject to the warranty's maximum claim limit." },
     { question: "What counts as mechanical or electrical parts?", answer: "Mechanical parts are things like your engine, gearbox and suspension. Electrical parts include your car's wiring, sensors, and tech systems. We'll explain exactly what's covered in your plan." },
     { question: "What claim limit is right for me?", answer: "It depends on your vehicle and how much protection you want. £1,000 is ideal for smaller or lower‑cost repairs. £2,000 offers broader cover for most mid‑range repairs. £3,000 is our most popular option and covers the majority of common faults in full. £5,000 provides our highest level of protection and is best suited to newer, higher‑value or more complex vehicles where repair costs can be significantly higher." },
@@ -876,7 +870,7 @@ const FAQ = () => {
     { question: "Do I need a full service history?", answer: "A reasonable service history is fine. Many vehicles are accepted even if servicing has been missed." },
     { question: "Are diagnostics covered?", answer: "Diagnostics are usually covered when the fault is approved." },
     { question: "Is your car warranty cover valid across the entire UK?", answer: "Yes, all of our car warranty plans offer complete coverage across England, Scotland, Wales, and Northern Ireland. If your vehicle breaks down anywhere in the UK, you can take it to any VAT-registered garage nationwide, or utilise our network of approved repair specialists to get you back on the road quickly." },
-    { question: "What does a \"limited warranty\" actually cover?", answer: "A limited warranty means that coverage is restricted to specific parts, timeframes, or conditions listed in the policy, rather than covering \"everything.\" For example, a manufacturer's limited warranty typically protects against factory defects in materials or workmanship but explicitly excludes everyday wear-and-tear items (like brake pads, tyres, and wiper blades), routine servicing, and damage from accidents or neglect. Our policies clearly define these limits upfront so you always know exactly what is protected." },
+    { question: "What does a \"limited warranty\" actually cover?", answer: "A limited warranty means that coverage is restricted to specific parts, timeframes, or conditions listed in the policy, rather than covering \"everything.\" For example, a manufacturer's limited warranty typically protects against factory defects in materials or workmanship but explicitly excludes everyday consumable items (like brake pads, tyres, and wiper blades), routine servicing, and damage from accidents or neglect. Our policies clearly define these limits upfront so you always know exactly what is protected." },
     { question: "Can I use my preferred garage for repairs?", answer: "You can use your own garage, including main dealers or local independents, as long as they're VAT registered. If the repair cost goes over your claim limit, you may need to pay the difference (top up the extra amount)." },
     { question: "Can I use my own garage?", answer: "Absolutely – as long as they're VAT-registered and follow our repair guidelines. We want you to feel comfortable with who's working on your car." },
     { question: "What if I break down outside office hours or on holiday?", answer: "Our office hours are 9am to 5:30pm, Monday to Friday. If you break down outside these hours, you can still take your vehicle to a garage and ask them to contact us on Monday morning. If it's the weekend, you can also complete the claim form online. Please note, we're only able to make payments and authorise repairs between 9am and 5:30pm, Monday to Friday—so please don't start any work without our go-ahead." },
