@@ -19,6 +19,7 @@ import {
   Mail,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import WorldpayCardForm from '@/components/inspection/WorldpayCardForm';
 
 interface InspectionRequest {
   id: string;
@@ -105,6 +106,9 @@ const IndependentInspection: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [detailsSaved, setDetailsSaved] = useState(false);
+  const [cardFormAvailable, setCardFormAvailable] = useState(true);
   const [errors, setErrors] = useState<Partial<Record<ErrorKey, string>>>({});
   const [form, setForm] = useState<FormState>({
     garageName: '',
@@ -163,6 +167,27 @@ const IndependentInspection: React.FC = () => {
     load();
   }, [load]);
 
+  // Return from an in-page Worldpay 3-D Secure challenge
+  const wp3dsReturn = searchParams.get('wp3ds') === '1';
+  const wp3dsRef = searchParams.get('ref');
+  useEffect(() => {
+    if (!wp3dsReturn || !token) return;
+    // If we're inside the bank's challenge iframe, tell the parent and stop.
+    if (window.self !== window.top) {
+      window.parent.postMessage('wp3ds-done', window.location.origin);
+      return;
+    }
+    if (wp3dsRef) {
+      (async () => {
+        await supabase.functions.invoke('worldpay-payment-status', {
+          body: { token, transactionReference: wp3dsRef },
+        });
+        await load();
+      })();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wp3dsReturn, wp3dsRef, token]);
+
   // Confirm payment on return from the payment page
   useEffect(() => {
     if (!paidFlag || !sessionId || !token) return;
@@ -199,7 +224,11 @@ const IndependentInspection: React.FC = () => {
       });
       if (fnError) throw new Error(fnError.message);
       if (data?.checkout_url) {
-        window.location.href = data.checkout_url;
+        // Details saved — show the in-page card form (falls back to the hosted page).
+        setCheckoutUrl(data.checkout_url);
+        setDetailsSaved(true);
+        setSubmitting(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
       throw new Error(data?.error || 'Could not start payment');
