@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Target, Facebook, Search, Music2 } from 'lucide-react';
 import { MarketingOverviewCards } from './marketing/MarketingOverviewCards';
+import { OrganicSourceBreakdownPanel } from './marketing/OrganicSourceBreakdownPanel';
 
 const GoogleAdsSettingsTab = lazy(() => import('@/components/admin/GoogleAdsSettingsTab').then(m => ({ default: m.GoogleAdsSettingsTab })));
 const FacebookAdsTab = lazy(() => import('@/components/admin/FacebookAdsTab').then(m => ({ default: m.FacebookAdsTab })));
@@ -26,6 +27,9 @@ export const MarketingAnalyticsTab: React.FC = () => {
 
       {/* Overview cards — deals & revenue by channel */}
       <MarketingOverviewCards />
+
+      {/* Organic split — web (search/blogs) vs offline (billboard, word of mouth) */}
+      <OrganicSourceBreakdownPanel />
 
       <Tabs defaultValue="google" className="w-full">
         <TabsList className="grid w-full max-w-3xl grid-cols-4 gap-2 bg-transparent p-1">

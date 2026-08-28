@@ -13,6 +13,7 @@ import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick
 import { getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { getTrackingData, getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
 import { getUtmPayload } from '@/utils/utmCapture';
+import { getEntryPayload } from '@/utils/entryCapture';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { getAddOnInfo, normalizePaymentType, calculateAddOnPrice } from '@/lib/addOnsUtils';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -1276,6 +1277,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             ...(!getSessionFbclid() && getSessionFbReferrer() ? { fb_referrer: getSessionFbReferrer() } : {}),
             device_type: detectDeviceType(),
             ...getUtmPayload(),
+            ...getEntryPayload(),
           }
         });
       } catch (error) {

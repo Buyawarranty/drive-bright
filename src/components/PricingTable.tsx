@@ -4,6 +4,7 @@ import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { getStoredFbclid, getSessionFbclid } from '@/utils/fbclidCapture';
 import { getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
 import { getUtmPayload } from '@/utils/utmCapture';
+import { getEntryPayload } from '@/utils/entryCapture';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ProtectedButton } from '@/components/ui/protected-button';
@@ -534,6 +535,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             ...(getSessionFbclid() ? { fbclid: getSessionFbclid() } : {}),
             ...(getSessionGclid() ? { gclid: getSessionGclid() } : {}),
             ...getUtmPayload(),
+            ...getEntryPayload(),
           }
         });
         console.log('✅ Tracked abandoned cart at Step 3 (Pricing Page) with pricing selections for:', vehicleData.email);

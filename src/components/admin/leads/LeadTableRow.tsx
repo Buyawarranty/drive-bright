@@ -43,6 +43,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow, isPast, differenceInHours, differenceInDays, isToday } from 'date-fns';
+import { classifyOrganicOrigin } from '@/lib/organicOrigin';
 import { cn } from '@/lib/utils';
 import { TeamBadge } from './TeamBadge';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
@@ -880,7 +881,20 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               return chip('TikTok', 'bg-zinc-200 text-zinc-900 border-zinc-400', parts);
             }
 
-            return chip('Organic', 'bg-muted text-muted-foreground border-border', ['Organic / direct']);
+            // Organic split: ORGANIC W (came from the web) vs ORGANIC O (offline demand)
+            const origin = classifyOrganicOrigin(metadata);
+            const originCls = origin.kind === 'web'
+              ? 'bg-lime-100 text-lime-800 border-lime-300'
+              : origin.kind === 'offline'
+                ? 'bg-amber-100 text-amber-900 border-amber-300'
+                : 'bg-muted text-muted-foreground border-border';
+            return chip(
+              origin.label + (origin.estimated && origin.kind !== 'unknown' ? '*' : ''),
+              originCls,
+              origin.estimated && origin.kind !== 'unknown'
+                ? [...origin.detail, '* estimated from legacy data']
+                : origin.detail,
+            );
           })()}
         </TableCell>
       )}

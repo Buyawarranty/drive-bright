@@ -30,6 +30,7 @@ import { captureFbclid, getStoredFbclid, getStoredFbReferrer, getSessionFbclid, 
 import { captureMsclkid, getSessionMsclkid } from '@/utils/msclkidCapture';
 import { captureTtclid, getSessionTtclid } from '@/utils/ttclidCapture';
 import { getUtmPayload } from '@/utils/utmCapture';
+import { getEntryPayload } from '@/utils/entryCapture';
 import { trackMetaPixelFunnelEvent } from '@/utils/metaPixelTracking';
 import { formatStepParam, stepNumber } from '@/utils/abVariant';
 import { CarDrivingLoader } from '@/components/ui/car-driving-loader';
@@ -1521,6 +1522,7 @@ const Index = () => {
           ...(ttclid ? { ttclid } : {}),
           ...(fbReferrer && !fbclid ? { fb_referrer: fbReferrer } : {}),
           ...getUtmPayload(),
+            ...getEntryPayload(),
         }
       });
       console.log(`✅ Tracked abandoned cart at step ${step} for:`, data.email);
