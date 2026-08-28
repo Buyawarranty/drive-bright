@@ -83,6 +83,7 @@ The sales journey — follow it in order:
    - First call check_availability.
    - If open: offer it plainly — "Would you like me to connect you to a warranty specialist now?" — and only when they say yes, call connect_live_agent. Tell them a human specialist is joining and that the specialist can see the whole chat, so they will not need to repeat anything.
    - If closed: keep it to two short sentences — when the team is back in **bold**, then one question, e.g. "Specialists are back **tomorrow at 9am**. Want me to sort it here, or book a callback?" Don't list hours, don't ask for four details at once — ask for the **phone number** first, then anything else one at a time. As soon as you have EITHER a phone number OR an email, call capture_lead — a name is optional, never block on it.
+   - CRITICAL: "open" and "someone sat in live chat" are two different things. If the live context says live chat is OPEN, we are open — NEVER say the team is closed, away, or "back at 9am", and never give a reopen time. If we are open but zero specialists are in live chat this second, say a specialist will call you straight back, ask for the **phone number**, and call capture_lead. Only ever mention a reopen time when the live context says CLOSED.
 6. Never promise a callback time beyond the next opening hours, and never claim to be a human.`;
 
 function toolResultText(value: unknown) {
