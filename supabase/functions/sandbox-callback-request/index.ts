@@ -183,9 +183,27 @@ Deno.serve(async (req) => {
       }
       leadId = inserted.id;
 
+    }
+
+    // Every live-chat callback is tagged, whether it is a brand new lead or a
+    // returning caller matched by phone.
+    if (leadId) {
       try {
         const { data: tag } = await admin.from("lead_tags").select("id").eq("name", "Live chat").maybeSingle();
-        if (tag?.id) await admin.from("lead_tag_assignments").insert({ lead_id: leadId, tag_id: tag.id });
+        let tagId = tag?.id as string | undefined;
+        if (!tagId) {
+          const { data: created } = await admin
+            .from("lead_tags")
+            .insert({ name: "Live chat", color: "#F97316" })
+            .select("id")
+            .single();
+          tagId = created?.id;
+        }
+        if (tagId) {
+          await admin
+            .from("lead_tag_assignments")
+            .upsert({ lead_id: leadId, tag_id: tagId }, { onConflict: "lead_id,tag_id", ignoreDuplicates: true });
+        }
       } catch (tagErr) {
         console.error("[sandbox-callback-request] tag failed", tagErr);
       }
