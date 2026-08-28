@@ -209,6 +209,86 @@ export const AllAgentsProgressPanel: React.FC = () => {
     load();
   }, [load]);
 
+  // Managers can change this month's target straight from the table.
+  const saveTarget = async (agentId: string) => {
+    const amount = Math.round(Number(String(targetDraft).replace(/[^0-9.]/g, '')) || 0);
+    if (amount <= 0) {
+      toast.error('Enter a target amount');
+      return;
+    }
+    setSavingId(agentId);
+    try {
+      const mStart = startOfMonth(now);
+      const mEnd = endOfMonth(now);
+      const { data: existing } = await (supabase as any)
+        .from('sales_targets')
+        .select('id')
+        .eq('admin_user_id', agentId)
+        .eq('target_period', 'monthly')
+        .lte('start_date', now.toISOString())
+        .gte('end_date', now.toISOString())
+        .maybeSingle();
+
+      if (existing?.id) {
+        const { data, error } = await (supabase as any)
+          .from('sales_targets')
+          .update({ revenue_target: amount, updated_at: new Date().toISOString() })
+          .eq('id', existing.id)
+          .select('id');
+        if (error) throw error;
+        if (!data || data.length === 0) throw new Error('No permission to update this target');
+      } else {
+        const { error } = await (supabase as any).from('sales_targets').insert({
+          admin_user_id: agentId,
+          revenue_target: amount,
+          target_amount: 0,
+          target_period: 'monthly',
+          start_date: mStart.toISOString(),
+          end_date: mEnd.toISOString(),
+        });
+        if (error) throw error;
+      }
+      setRows((prev) =>
+        prev.map((r) =>
+          r.adminUserId === agentId
+            ? { ...r, target: amount, pct: amount > 0 ? Math.min(100, Math.round((r.revenue / amount) * 100)) : null }
+            : r,
+        ),
+      );
+      setEditingTarget(null);
+      toast.success('Target updated');
+    } catch (e: any) {
+      toast.error('Could not save target', { description: e?.message });
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  // Managers can pause or resume an agent's lead flow from the same row.
+  const toggleLeadAccess = async (row: AgentRow) => {
+    const next = !row.paused;
+    setSavingId(row.adminUserId);
+    try {
+      const { error } = await (supabase as any)
+        .from('agent_distribution_caps')
+        .update({ paused: next, freeze_reason: next ? 'Paused by a manager' : null })
+        .eq('admin_user_id', row.adminUserId);
+      if (error) throw error;
+      setRows((prev) =>
+        prev.map((r) =>
+          r.adminUserId === row.adminUserId
+            ? { ...r, paused: next, freezeReason: next ? 'Paused by a manager' : null }
+            : r,
+        ),
+      );
+      toast.success(next ? 'Leads paused for this agent' : 'Agent is receiving leads again');
+    } catch (e: any) {
+      toast.error('Could not change lead access', { description: e?.message });
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
