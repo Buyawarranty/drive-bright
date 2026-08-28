@@ -721,6 +721,22 @@ export function SandboxChatWindow({
     [messages],
   );
 
+  // Latest assistant reply, so the price panel can echo the quoted figure.
+  const lastAssistantText = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      const m = messages[i];
+      if (m.role !== 'assistant') continue;
+      const text = m.parts
+        .map((p) => (p.type === 'text' ? (p as { text: string }).text : ''))
+        .join(' ')
+        .trim();
+      if (text) return text;
+    }
+    return null;
+  }, [messages]);
+
+
+
 
   const sendAsAgent = async (text: string) => {
     const content = `${AGENT_PREFIX} ${text}`;
