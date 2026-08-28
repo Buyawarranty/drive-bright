@@ -374,20 +374,33 @@ function PriceOptionsPanel({
     <div className="rounded-2xl border border-border bg-card p-4 text-left shadow-sm">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-sm font-semibold text-foreground">Build your price</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <p className="text-base font-semibold text-foreground">Build your price</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">
             {optionsOpen ? "Pick your options and I'll show you the price." : combo}
           </p>
         </div>
-        {priceRequested && (
-          <button
-            type="button"
-            onClick={() => setOptionsOpen((v) => !v)}
-            className="shrink-0 rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted"
-          >
-            {optionsOpen ? 'Hide options' : 'Change options'}
-          </button>
-        )}
+        <div className="flex shrink-0 items-center gap-1">
+          {priceRequested && (
+            <button
+              type="button"
+              onClick={() => setOptionsOpen((v) => !v)}
+              className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted"
+            >
+              {optionsOpen ? 'Hide options' : 'Change options'}
+            </button>
+          )}
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close price builder"
+              title="Close price builder"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {quoted && (
