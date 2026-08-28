@@ -733,9 +733,12 @@ export const UserPermissionsTab = () => {
 
   const fetchUsers = async () => {
     try {
+      // Deleted (archived) staff must never reappear in this list — archiving is
+      // how deletion works here so their sales history stays intact.
       const { data, error } = await supabase
         .from('admin_users')
         .select('*')
+        .is('archived_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
