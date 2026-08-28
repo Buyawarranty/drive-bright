@@ -333,12 +333,14 @@ function extractPrice(text?: string | null) {
 function PriceOptionsPanel({
   disabled,
   onSend,
+  onClose,
   reg,
   mileage,
   lastAssistantText,
 }: {
   disabled?: boolean;
   onSend: (text: string) => void;
+  onClose?: () => void;
   reg?: string | null;
   mileage?: string | null;
   lastAssistantText?: string | null;
