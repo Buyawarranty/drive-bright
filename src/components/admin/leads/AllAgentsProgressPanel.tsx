@@ -327,11 +327,59 @@ export const AllAgentsProgressPanel: React.FC = () => {
               <tr key={r.adminUserId} className="border-b border-border last:border-0 align-top">
                 <td className="px-3 py-2 font-medium whitespace-nowrap">{r.name}</td>
                 <td className="px-3 py-2 whitespace-nowrap">
-                  <div className="font-semibold">
+                  <div className="flex items-center gap-1.5 font-semibold">
                     {gbp(r.revenue)}
-                    <span className="ml-1 text-xs font-normal text-muted-foreground">
-                      {r.target ? `of ${gbp(r.target)}${r.pct != null ? ` · ${r.pct}%` : ''}` : 'no target set'}
-                    </span>
+                    {editingTarget === r.adminUserId ? (
+                      <span className="flex items-center gap-1">
+                        <span className="text-xs font-normal text-muted-foreground">of £</span>
+                        <input
+                          autoFocus
+                          value={targetDraft}
+                          onChange={(e) => setTargetDraft(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveTarget(r.adminUserId);
+                            if (e.key === 'Escape') setEditingTarget(null);
+                          }}
+                          className="h-6 w-20 rounded border border-border bg-background px-1.5 text-xs"
+                        />
+                        <button
+                          type="button"
+                          title="Save target"
+                          disabled={savingId === r.adminUserId}
+                          onClick={() => saveTarget(r.adminUserId)}
+                          className="rounded p-0.5 text-emerald-700 hover:bg-emerald-100"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          title="Cancel"
+                          onClick={() => setEditingTarget(null)}
+                          className="rounded p-0.5 text-muted-foreground hover:bg-muted"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </span>
+                    ) : (
+                      <>
+                        <span className="text-xs font-normal text-muted-foreground">
+                          {r.target ? `of ${gbp(r.target)}${r.pct != null ? ` · ${r.pct}%` : ''}` : 'no target set'}
+                        </span>
+                        {isManagement && (
+                          <button
+                            type="button"
+                            title="Change this month's target"
+                            onClick={() => {
+                              setEditingTarget(r.adminUserId);
+                              setTargetDraft(r.target != null ? String(r.target) : '');
+                            }}
+                            className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
                   <div className="mt-1 h-1.5 w-32 rounded-full bg-muted">
                     <div className="h-1.5 rounded-full bg-orange-500" style={{ width: `${r.pct ?? 0}%` }} />
