@@ -1,6 +1,7 @@
 import React from 'react';
 import { Phone, Mail, MessageCircle } from 'lucide-react';
 import TrustpilotMicroWidget from '@/components/TrustpilotMicroWidget';
+import SocialLinks from '@/components/SocialLinks';
 
 const VolkswagenPPCFooter: React.FC = () => {
   return (
@@ -91,6 +92,8 @@ const VolkswagenPPCFooter: React.FC = () => {
         </div>
 
         {/* Combined trust + legal section */}
+        <SocialLinks variant="dark" className="justify-center mb-6" />
+
         <div className="text-center pt-6 border-t border-gray-200 max-w-4xl mx-auto">
           <p className="text-xs text-gray-600 leading-relaxed">
             Fast online quotes for Volkswagen extended warranty cover and used VW car warranties. Trusted Volkswagen vehicle warranty protection for VW Golf, Polo, Passat, Tiguan, T-Roc, Touareg, Transporter, Caddy and ID. electric models (ID.3, ID.4, ID.5, ID. Buzz). Cover levels and eligibility criteria apply. Buyawarranty.co.uk is a trading name of Buy A Warranty Limited, established 2016, registered in the United Kingdom under Company number 10314863, registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England. Buyawarranty is an independent warranty provider and is not affiliated with Volkswagen. Cover levels, limits, exclusions and eligibility criteria apply — please refer to your selected policy documents for full terms and conditions. © Buy a Warranty. All rights reserved.

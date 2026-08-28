@@ -2,6 +2,7 @@ import React from 'react';
 import { Star, Phone, Mail, MessageCircle } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { OptimizedImage } from '@/components/OptimizedImage';
+import SocialLinks from '@/components/SocialLinks';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 
 // Pages that have their own final CTA section
@@ -164,6 +165,7 @@ const WebsiteFooter = () => {
 
           {/* Copyright & Company Details */}
           <div className="text-center pt-8 border-t border-gray-200 mt-8">
+            <SocialLinks variant="dark" className="justify-center mb-4" />
             <p className="text-xs text-gray-600 max-w-4xl mx-auto">
               © Buy a Warranty. All rights reserved.
             </p>

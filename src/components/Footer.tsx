@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Phone, Mail, Facebook, Instagram } from 'lucide-react';
-import { X } from 'lucide-react';
+import { Phone, Mail } from 'lucide-react';
 import { SALES_PHONE, SALES_PHONE_TEL, SUPPORT_EMAIL } from '@/constants/contact';
+import SocialLinks from '@/components/SocialLinks';
 import icoLogo from '@/assets/ico-registered.png.asset.json';
 
 const Footer = () => {
@@ -80,36 +80,12 @@ const Footer = () => {
             </div>
 
             {/* Social media links */}
-            <div className="flex justify-center lg:justify-end gap-4">
-              <a 
-                href="https://facebook.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#eb4b00] transition-colors"
-              >
-                <Facebook size={20} />
-              </a>
-              <a 
-                href="https://twitter.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#eb4b00] transition-colors"
-              >
-                <X size={20} />
-              </a>
-              <a 
-                href="https://instagram.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#eb4b00] transition-colors"
-              >
-                <Instagram size={20} />
-              </a>
-            </div>
+            <SocialLinks variant="light" className="justify-center lg:justify-end" />
           </div>
 
           {/* Bottom section */}
           <div className="mt-8 pt-4 border-t border-white/10 text-center text-sm text-gray-300">
+            <SocialLinks variant="light" className="justify-center mb-4" />
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
               <span className="inline-flex items-center bg-white rounded-md px-2.5 py-1.5">
                 <img

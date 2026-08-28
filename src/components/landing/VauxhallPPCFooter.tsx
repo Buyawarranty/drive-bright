@@ -1,6 +1,7 @@
 import React from 'react';
 import { Phone, Mail, MessageCircle } from 'lucide-react';
 import TrustpilotMicroWidget from '@/components/TrustpilotMicroWidget';
+import SocialLinks from '@/components/SocialLinks';
 
 const VauxhallPPCFooter: React.FC = () => {
   return (
@@ -67,6 +68,8 @@ const VauxhallPPCFooter: React.FC = () => {
             </div>
           </div>
         </div>
+
+        <SocialLinks variant="dark" className="justify-center mb-6" />
 
         <div className="text-center pt-6 border-t border-gray-200 max-w-4xl mx-auto">
           <p className="text-xs text-gray-600 leading-relaxed">
