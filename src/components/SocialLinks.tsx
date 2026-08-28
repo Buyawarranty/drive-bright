@@ -39,7 +39,7 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ variant = 'dark', className }
         aria-label="Buy a Warranty on Facebook"
         className={linkBase}
       >
-        <Facebook className="w-4 h-4" />
+        <Facebook className="w-5 h-5 sm:w-4 sm:h-4" />
       </a>
       <a
         href={INSTAGRAM_URL}
@@ -48,7 +48,7 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ variant = 'dark', className }
         aria-label="Buy a Warranty on Instagram"
         className={linkBase}
       >
-        <Instagram className="w-4 h-4" />
+        <Instagram className="w-5 h-5 sm:w-4 sm:h-4" />
       </a>
       <a
         href={TIKTOK_URL}
@@ -57,7 +57,7 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ variant = 'dark', className }
         aria-label="Buy a Warranty on TikTok"
         className={linkBase}
       >
-        <TikTokIcon className="w-4 h-4" />
+        <TikTokIcon className="w-5 h-5 sm:w-4 sm:h-4" />
       </a>
     </div>
   );
