@@ -1180,7 +1180,7 @@ export function SandboxChatWindow({
                 : 'Ask about cover, pricing, claims…'
             }
           />
-          <PromptInputFooter className="items-center justify-between gap-1 border-0 pt-0">
+          <PromptInputFooter className="items-center justify-between gap-2 border-0 pt-0">
             <div className="flex min-w-0 items-center gap-2">
               {!isGuest && (
                 <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
@@ -1191,30 +1191,32 @@ export function SandboxChatWindow({
                 <Badge className="text-[10px] uppercase tracking-wide">Human specialist</Badge>
               )}
             </div>
-            <VoiceDictateButton
-              iconOnly
-              disabled={busy}
-              onTranscript={(text) => {
-                const ta = composerRef.current?.querySelector('textarea');
-                if (ta) {
-                  const setter = Object.getOwnPropertyDescriptor(
-                    window.HTMLTextAreaElement.prototype,
-                    'value',
-                  )?.set;
-                  const next = ta.value ? `${ta.value} ${text}` : text;
-                  setter ? setter.call(ta, next) : (ta.value = next);
-                  ta.dispatchEvent(new Event('input', { bubbles: true }));
-                  ta.focus();
-                } else {
-                  send(text);
-                }
-              }}
-            />
-            <PromptInputSubmit
-              status={status}
-              onClick={busy ? () => stop() : undefined}
-              className="h-11 w-11 rounded-full bg-primary text-primary-foreground shadow-md transition-transform hover:scale-105 hover:bg-primary/90 [&_svg]:size-5"
-            />
+            <div className="flex shrink-0 items-center gap-1">
+              <VoiceDictateButton
+                iconOnly
+                disabled={busy}
+                onTranscript={(text) => {
+                  const ta = composerRef.current?.querySelector('textarea');
+                  if (ta) {
+                    const setter = Object.getOwnPropertyDescriptor(
+                      window.HTMLTextAreaElement.prototype,
+                      'value',
+                    )?.set;
+                    const next = ta.value ? `${ta.value} ${text}` : text;
+                    setter ? setter.call(ta, next) : (ta.value = next);
+                    ta.dispatchEvent(new Event('input', { bubbles: true }));
+                    ta.focus();
+                  } else {
+                    send(text);
+                  }
+                }}
+              />
+              <PromptInputSubmit
+                status={status}
+                onClick={busy ? () => stop() : undefined}
+                className="h-11 w-11 rounded-full bg-primary text-primary-foreground shadow-md transition-transform hover:scale-105 hover:bg-primary/90 [&_svg]:size-5"
+              />
+            </div>
           </PromptInputFooter>
         </PromptInput>
       </div>
