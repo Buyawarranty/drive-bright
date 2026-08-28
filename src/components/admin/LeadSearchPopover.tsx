@@ -8,6 +8,8 @@ import { Search, UserPlus, Phone, Mail, Car, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { cn } from '@/lib/utils';
+import { withPriority } from '@/lib/requestQueue';
+
 
 export interface LeadData {
   id: string;
@@ -57,17 +59,24 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
     // Agents reported "unable to import the lead": a slow lead/cart query left the
     // popover spinning forever with no result and no error. Every request is now
     // time-bounded and degrades to whatever came back.
-    const bounded = async <T,>(p: PromiseLike<T>, ms = 8000): Promise<T | { data: null; error: Error }> => {
+    // Agents reported "unable to import the lead": a slow lead/cart query left the
+    // popover spinning forever with no result and no error. Every request is now
+    // time-bounded, runs in the interactive (high) request lane so it never waits
+    // behind background dashboard reads, and degrades to whatever came back.
+    const bounded = async <T,>(p: PromiseLike<T>, ms = 15000): Promise<T | { data: null; error: Error }> => {
       let timer: ReturnType<typeof setTimeout> | undefined;
       const timeout = new Promise<{ data: null; error: Error }>((resolve) => {
         timer = setTimeout(() => resolve({ data: null, error: new Error('Search timed out') }), ms);
       });
       try {
-        return (await Promise.race([Promise.resolve(p), timeout])) as any;
+        return await withPriority(
+          async () => (await Promise.race([Promise.resolve(p), timeout])) as any,
+        );
       } finally {
         if (timer) clearTimeout(timer);
       }
     };
+
 
     const fetchLeads = async () => {
       setLoading(true);
@@ -155,9 +164,10 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         // The sales lead result is the primary import path. Show it as soon as it
         // lands — agents were left staring at a spinner while the optional
         // abandoned-cart enrichment finished (or timed out).
-        const cartResPromise = bounded(cartQuery, 3500);
-        const customerResPromise = customerQuery ? bounded(customerQuery, 4000) : null;
-        let slRes: any = await bounded(query, 6000);
+        const cartResPromise = bounded(cartQuery, 10000);
+        const customerResPromise = customerQuery ? bounded(customerQuery, 10000) : null;
+        let slRes: any = await bounded(query, 15000);
+
         if (cancelled) return;
 
         if (slRes.error) console.error('Error fetching leads:', slRes.error);
