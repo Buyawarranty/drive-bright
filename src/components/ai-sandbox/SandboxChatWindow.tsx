@@ -112,9 +112,25 @@ function senderOf(message: UIMessage): Sender {
   return 'ai';
 }
 
-function stripPrefix(text: string) {
-  return text.startsWith(AGENT_PREFIX) ? text.slice(AGENT_PREFIX.length).trim() : text;
+// Internal working-out sometimes leaks into the visible answer (a stray
+// "thought" label, references to the system prompt or tool names). Customers
+// must never read that, so scrub it before rendering.
+const INTERNAL_LINE = /(system prompt|confident:\s*(true|false)|approved material|i must not|let'?s call\s+\w+|check_availability|get_indicative_price|lookup_vehicle|tool call|function call)/i;
+
+function sanitizeForCustomer(text: string) {
+  let out = text.replace(/^\s*(thought|thinking|reasoning)\b[:\-–—]?\s*/i, '');
+  const kept = out
+    .split(/\n{2,}/)
+    .filter((block) => !INTERNAL_LINE.test(block));
+  out = (kept.length ? kept : out.split(/\n{2,}/)).join('\n\n');
+  return out.trim();
 }
+
+function stripPrefix(text: string) {
+  const base = text.startsWith(AGENT_PREFIX) ? text.slice(AGENT_PREFIX.length).trim() : text;
+  return sanitizeForCustomer(base);
+}
+
 
 function rowsToUIMessages(
   rows: Array<{ id: string; role: string; parts: unknown; content: string }>,
