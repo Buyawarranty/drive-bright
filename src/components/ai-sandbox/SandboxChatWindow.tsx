@@ -790,14 +790,66 @@ export function SandboxChatWindow({
     if (insertError) console.error('Failed to save specialist message', insertError);
   };
 
+  // WhatsApp-style attachments: photos picked here are shrunk in the browser
+  // first, so nothing large is held in memory or uploaded.
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
+  const [attachError, setAttachError] = useState<string | null>(null);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const addFiles = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setAttachError(null);
+    const room = MAX_ATTACHMENTS - attachments.length;
+    if (room <= 0) {
+      setAttachError(`You can send up to ${MAX_ATTACHMENTS} photos at a time.`);
+      return;
+    }
+    for (const file of Array.from(files).slice(0, room)) {
+      try {
+        const prepared = await prepareAttachment(file);
+        setAttachments((prev) => [...prev, prepared]);
+      } catch (e) {
+        setAttachError(e instanceof Error ? e.message : 'That file could not be attached.');
+      }
+    }
+  };
+
+  const insertIntoComposer = (snippet: string) => {
+    const ta = composerRef.current?.querySelector('textarea');
+    if (!ta) return;
+    const setter = Object.getOwnPropertyDescriptor(
+      window.HTMLTextAreaElement.prototype,
+      'value',
+    )?.set;
+    const next = `${ta.value}${snippet}`;
+    setter ? setter.call(ta, next) : (ta.value = next);
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    ta.focus();
+  };
+
   const send = (text: string) => {
     const trimmed = (text ?? '').trim();
-    if (!trimmed || busy) return;
+    const files = attachments;
+    if ((!trimmed && files.length === 0) || busy) return;
     if (agentMode) {
-      void sendAsAgent(trimmed);
+      if (trimmed) void sendAsAgent(trimmed);
       return;
     }
     lastSentRef.current = trimmed;
+    if (files.length) {
+      sendMessage({
+        text: trimmed || 'Here you go.',
+        files: files.map((f) => ({
+          type: 'file' as const,
+          filename: f.name,
+          mediaType: f.mediaType,
+          url: f.url,
+        })),
+      });
+      setAttachments([]);
+      return;
+    }
     sendMessage({ text: trimmed });
   };
 
