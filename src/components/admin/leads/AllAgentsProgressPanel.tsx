@@ -185,8 +185,20 @@ export const AllAgentsProgressPanel: React.FC = () => {
         };
       });
 
-      built.sort((a, b) => b.revenue - a.revenue);
-      setRows(built);
+      // Staff who have left (inactive or archived) must never show here.
+      const { data: staff } = await supabase
+        .from('admin_users')
+        .select('id, is_active, archived_at')
+        .in('id', built.map((b) => b.adminUserId));
+      const gone = new Set(
+        ((staff || []) as any[])
+          .filter((s) => s.is_active === false || s.archived_at != null)
+          .map((s) => s.id as string),
+      );
+
+      const live = built.filter((b) => !gone.has(b.adminUserId));
+      live.sort((a, b) => b.revenue - a.revenue);
+      setRows(live);
     } finally {
       setLoading(false);
     }
