@@ -174,12 +174,13 @@ export default function SiteChatWidget({
               {expanded ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
             </button>
             <button
-              onClick={closeChat}
+              onClick={endChat}
               aria-label="Close chat"
               className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <X className="h-4 w-4" />
             </button>
+
           </div>
 
           <div className="min-h-0 flex-1">
