@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { Bot, MessageSquare, Car, PoundSterling, PhoneCall, UserPlus, RefreshCw, Download, ExternalLink, Eraser } from 'lucide-react';
 import ChatConversationsPanel from './ChatConversationsPanel';
+import ChatActionQueuePanel from './ChatActionQueuePanel';
 
 type ChatEvent = {
   id: string;
@@ -278,13 +279,18 @@ export default function ChatbotDataTab() {
         className="max-w-md"
       />
 
-      <Tabs defaultValue="conversations">
+      <Tabs defaultValue="queue">
         <TabsList>
+          <TabsTrigger value="queue">Action queue</TabsTrigger>
           <TabsTrigger value="conversations">Conversations &amp; leads</TabsTrigger>
           <TabsTrigger value="wants">What customers want</TabsTrigger>
           <TabsTrigger value="vehicles">Vehicles &amp; prices</TabsTrigger>
           <TabsTrigger value="raw">Raw activity</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="queue" className="pt-4">
+          <ChatActionQueuePanel rangeDays={range} />
+        </TabsContent>
 
         <TabsContent value="conversations" className="pt-4">
           <ChatConversationsPanel rangeDays={range} />
