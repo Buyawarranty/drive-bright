@@ -293,7 +293,7 @@ export function CallMeBackPanel({
           {error && <p className="text-xs font-medium text-destructive">{error}</p>}
           <div className="flex gap-2">
             <Button onClick={submit} disabled={submitting} className="h-12 flex-1 rounded-xl text-base font-bold">
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : open ? 'Yes, call me now' : 'Yes, book my call'}
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Submit'}
             </Button>
             <Button
               variant="outline"
