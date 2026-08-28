@@ -1114,6 +1114,24 @@ export function SandboxChatWindow({
                       return <MessageResponse key={i} className={`${CHAT_TEXT} text-primary-foreground [&_p]:text-primary-foreground`}>{text}</MessageResponse>;
                     }
 
+                    // Photos the visitor attached, shown WhatsApp-style inside
+                    // the bubble.
+                    if (part.type === 'file') {
+                      const f = part as unknown as { url: string; mediaType?: string; filename?: string };
+                      if (!f.url || !(f.mediaType ?? '').startsWith('image/')) return null;
+                      return (
+                        <img
+                          key={i}
+                          src={f.url}
+                          alt={f.filename || 'Attached photo'}
+                          loading="lazy"
+                          className="mt-1 max-h-56 w-full rounded-lg object-cover"
+                        />
+                      );
+                    }
+
+
+
                     // Model "thinking" is internal working-out — never show it to a
                     // customer. Agent mode keeps it for debugging.
                     if (part.type === 'reasoning' && part.text) {
