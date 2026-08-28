@@ -451,17 +451,40 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         </div>
         
         <ScrollArea className="h-[300px]">
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
+          {loading || rescuing ? (
+            <div className="flex flex-col items-center justify-center gap-2 py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              {rescuing && <span className="text-xs text-muted-foreground">Running backup search…</span>}
             </div>
           ) : leads.length === 0 ? (
-            <div className="text-center py-8 px-3 text-muted-foreground">
-              {loadError ? (
-                <span className="text-destructive text-xs">{loadError}</span>
-              ) : searchTerm ? 'No leads found' : 'No unpaid leads available'}
+            <div className="text-center py-8 px-3 text-muted-foreground space-y-3">
+              <div>
+                {loadError ? (
+                  <span className="text-destructive text-xs">{loadError}</span>
+                ) : searchTerm ? 'No leads found' : 'No unpaid leads available'}
+              </div>
+              {rescueNote && <div className="text-xs">{rescueNote}</div>}
+              {searchTerm.trim() && (
+                <div className="space-y-1">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={runEmergencySearch}
+                    className="gap-2"
+                  >
+                    <LifeBuoy className="h-4 w-4" />
+                    Backup search (bypass)
+                  </Button>
+                  <p className="text-[11px] leading-snug px-2">
+                    Uses the simplest possible lookup — one field at a time, no queue. Slower, but works
+                    when the normal search times out.
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
+
             <div className="p-2 space-y-1">
               {leads.map((lead) => (
                 <button
