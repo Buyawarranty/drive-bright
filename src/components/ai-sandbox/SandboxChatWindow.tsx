@@ -127,9 +127,9 @@ function sanitizeForCustomer(text: string) {
 }
 
 function stripPrefix(text: string) {
-  const base = text.startsWith(AGENT_PREFIX) ? text.slice(AGENT_PREFIX.length).trim() : text;
-  return sanitizeForCustomer(base);
+  return text.startsWith(AGENT_PREFIX) ? text.slice(AGENT_PREFIX.length).trim() : text;
 }
+
 
 
 function rowsToUIMessages(
