@@ -951,8 +951,11 @@ export function SandboxChatWindow({
                     if (part.type === 'text') {
                       const text = stripPrefix(part.text);
                       if (message.role !== 'user') {
-                        const { body, question } = splitTrailingQuestion(text);
+                        const clean = agentMode ? text : sanitizeForCustomer(text);
+                        if (!clean) return null;
+                        const { body, question } = splitTrailingQuestion(clean);
                         return (
+
                           <div key={i}>
                             {body && <MessageResponse className={CHAT_TEXT}>{body}</MessageResponse>}
                             {question && (
