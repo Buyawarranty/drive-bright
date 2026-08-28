@@ -14,6 +14,8 @@ import {
   ChevronRight,
   CheckCheck,
   X,
+  Smile,
+  Paperclip,
   type LucideIcon,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,6 +42,13 @@ import milesCalls from '@/assets/miles-calls.png.asset.json';
 import { isTeamOpenNow, openingHoursLabel, nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
 import { useSandboxSpecialistPresence } from '@/hooks/useSandboxSpecialistPresence';
 import { CallMeBackPanel } from '@/components/ai-sandbox/CallMeBackPanel';
+import {
+  prepareAttachment,
+  CHAT_EMOJIS,
+  MAX_ATTACHMENTS,
+  type ChatAttachment,
+} from '@/components/ai-sandbox/chatAttachments';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-chat`;
@@ -781,14 +790,66 @@ export function SandboxChatWindow({
     if (insertError) console.error('Failed to save specialist message', insertError);
   };
 
+  // WhatsApp-style attachments: photos picked here are shrunk in the browser
+  // first, so nothing large is held in memory or uploaded.
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
+  const [attachError, setAttachError] = useState<string | null>(null);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const addFiles = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setAttachError(null);
+    const room = MAX_ATTACHMENTS - attachments.length;
+    if (room <= 0) {
+      setAttachError(`You can send up to ${MAX_ATTACHMENTS} photos at a time.`);
+      return;
+    }
+    for (const file of Array.from(files).slice(0, room)) {
+      try {
+        const prepared = await prepareAttachment(file);
+        setAttachments((prev) => [...prev, prepared]);
+      } catch (e) {
+        setAttachError(e instanceof Error ? e.message : 'That file could not be attached.');
+      }
+    }
+  };
+
+  const insertIntoComposer = (snippet: string) => {
+    const ta = composerRef.current?.querySelector('textarea');
+    if (!ta) return;
+    const setter = Object.getOwnPropertyDescriptor(
+      window.HTMLTextAreaElement.prototype,
+      'value',
+    )?.set;
+    const next = `${ta.value}${snippet}`;
+    setter ? setter.call(ta, next) : (ta.value = next);
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    ta.focus();
+  };
+
   const send = (text: string) => {
     const trimmed = (text ?? '').trim();
-    if (!trimmed || busy) return;
+    const files = attachments;
+    if ((!trimmed && files.length === 0) || busy) return;
     if (agentMode) {
-      void sendAsAgent(trimmed);
+      if (trimmed) void sendAsAgent(trimmed);
       return;
     }
     lastSentRef.current = trimmed;
+    if (files.length) {
+      sendMessage({
+        text: trimmed || 'Here you go.',
+        files: files.map((f) => ({
+          type: 'file' as const,
+          filename: f.name,
+          mediaType: f.mediaType,
+          url: f.url,
+        })),
+      });
+      setAttachments([]);
+      return;
+    }
     sendMessage({ text: trimmed });
   };
 
@@ -1053,6 +1114,24 @@ export function SandboxChatWindow({
                       return <MessageResponse key={i} className={`${CHAT_TEXT} text-primary-foreground [&_p]:text-primary-foreground`}>{text}</MessageResponse>;
                     }
 
+                    // Photos the visitor attached, shown WhatsApp-style inside
+                    // the bubble.
+                    if (part.type === 'file') {
+                      const f = part as unknown as { url: string; mediaType?: string; filename?: string };
+                      if (!f.url || !(f.mediaType ?? '').startsWith('image/')) return null;
+                      return (
+                        <img
+                          key={i}
+                          src={f.url}
+                          alt={f.filename || 'Attached photo'}
+                          loading="lazy"
+                          className="mt-1 max-h-56 w-full rounded-lg object-cover"
+                        />
+                      );
+                    }
+
+
+
                     // Model "thinking" is internal working-out — never show it to a
                     // customer. Agent mode keeps it for debugging.
                     if (part.type === 'reasoning' && part.text) {
@@ -1168,12 +1247,47 @@ export function SandboxChatWindow({
         ref={composerRef}
       >
 
+        {(attachments.length > 0 || attachError) && (
+          <div className="mb-2 space-y-2">
+            {attachments.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {attachments.map((a) => (
+                  <div key={a.id} className="relative h-16 w-16 overflow-hidden rounded-lg border border-border">
+                    <img src={a.url} alt={a.name} className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      aria-label={`Remove ${a.name}`}
+                      onClick={() => setAttachments((prev) => prev.filter((p) => p.id !== a.id))}
+                      className="absolute right-0.5 top-0.5 rounded-full bg-background/90 p-0.5 text-foreground shadow"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {attachError && <p className="text-xs text-destructive">{attachError}</p>}
+          </div>
+        )}
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            void addFiles(e.target.files);
+            e.currentTarget.value = '';
+          }}
+        />
+
         <PromptInput
           onSubmit={(message) => send(message.text ?? '')}
           className="rounded-2xl border border-primary/40 bg-card shadow-md transition-all focus-within:border-primary focus-within:shadow-lg focus-within:ring-2 focus-within:ring-primary/20"
         >
           <PromptInputTextarea
-            className="min-h-[52px] text-base placeholder:text-muted-foreground/80"
+            className="min-h-[44px] text-base placeholder:text-muted-foreground/80"
             placeholder={
               agentMode
                 ? 'Reply as the warranty specialist…'
@@ -1181,7 +1295,51 @@ export function SandboxChatWindow({
             }
           />
           <PromptInputFooter className="items-center justify-between gap-2 border-0 pt-0">
+            <div className="flex min-w-0 items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Attach a photo"
+                disabled={busy || attachments.length >= MAX_ATTACHMENTS}
+                onClick={() => fileInputRef.current?.click()}
+                className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary"
+              >
+                <Paperclip className="h-5 w-5" />
+              </Button>
+              <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Insert an emoji"
+                    className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary"
+                  >
+                    <Smile className="h-5 w-5" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" side="top" className="w-64 p-2">
+                  <div className="grid grid-cols-8 gap-1">
+                    {CHAT_EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        className="rounded p-1 text-lg leading-none hover:bg-muted"
+                        onClick={() => {
+                          insertIntoComposer(emoji);
+                          setEmojiOpen(false);
+                        }}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
             <div className="flex min-w-0 items-center gap-2">
+
               {!isGuest && (
                 <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
                   Sandbox · test links only
