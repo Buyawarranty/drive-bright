@@ -5,6 +5,7 @@ import { captureFbclid } from '@/utils/fbclidCapture';
 import { captureMsclkid } from '@/utils/msclkidCapture';
 import { captureTtclid } from '@/utils/ttclidCapture';
 import { captureUtms } from '@/utils/utmCapture';
+import { captureEntryContext } from '@/utils/entryCapture';
 
 // Track page views in Google Ads/Analytics on route changes
 export const PageViewTracker = () => {
@@ -18,6 +19,7 @@ export const PageViewTracker = () => {
     captureMsclkid();
     captureTtclid();
     captureUtms();
+    captureEntryContext();
 
 
     // Check if gtag is available

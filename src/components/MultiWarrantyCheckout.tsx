@@ -12,6 +12,7 @@ import { trackFormSubmission, trackConversion, trackEvent } from '@/utils/analyt
 import { getAddOnInfo, isAddOnAutoIncluded, normalizePaymentType } from '@/lib/addOnsUtils';
 import { getTrackingData } from '@/utils/gclidCapture';
 import { getUtmPayload } from '@/utils/utmCapture';
+import { getEntryPayload } from '@/utils/entryCapture';
 
 interface MultiWarrantyCheckoutProps {
   items: CartItem[];
@@ -409,7 +410,8 @@ const MultiWarrantyCheckout: React.FC<MultiWarrantyCheckoutProps> = ({ items, on
             },
             // Protection add-ons
             protection_addons: item.pricingData.selectedAddOns || {},
-            ...getUtmPayload()
+            ...getUtmPayload(),
+            ...getEntryPayload(),
           }
         });
       }
