@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Search, UserPlus, Phone, Mail, Car, Loader2 } from 'lucide-react';
+import { Search, UserPlus, Phone, Mail, Car, Loader2, LifeBuoy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { cn } from '@/lib/utils';
