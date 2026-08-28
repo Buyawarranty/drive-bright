@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { X, Minus, Expand, Shrink } from 'lucide-react';
 import SandboxChatWindow from '@/components/ai-sandbox/SandboxChatWindow';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
-import { loadGuestChatOpen, saveGuestChatOpen } from '@/components/ai-sandbox/guestChatStore';
+import { loadGuestChatOpen, saveGuestChatOpen, clearGuestChat } from '@/components/ai-sandbox/guestChatStore';
 
 
 const TOKEN_KEY = 'baw_chat_guest_token';
@@ -53,6 +53,8 @@ export default function SiteChatWidget({
   const [open, setOpen] = useState(() => loadGuestChatOpen());
   const [everOpened, setEverOpened] = useState(() => loadGuestChatOpen());
   const [expanded, setExpanded] = useState(false);
+  // Bumped when a conversation is ended so the chat window remounts empty.
+  const [sessionKey, setSessionKey] = useState(0);
   const [showNudge, setShowNudge] = useState(false);
   const tokenRef = useRef<string | null>(null);
   if (tokenRef.current === null) tokenRef.current = getGuestToken();
@@ -204,7 +206,7 @@ export default function SiteChatWidget({
           </div>
 
           <div className="min-h-0 flex-1">
-            <SandboxChatWindow guestToken={tokenRef.current!} source={source} compact autoFocus={false} />
+            <SandboxChatWindow key={sessionKey} guestToken={tokenRef.current!} source={source} compact autoFocus={false} />
           </div>
         </div>
       )}
