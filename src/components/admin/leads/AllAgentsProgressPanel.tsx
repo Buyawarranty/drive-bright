@@ -434,6 +434,16 @@ export const AllAgentsProgressPanel: React.FC = () => {
                   >
                     {r.paused ? 'Leads paused by a manager' : 'Receiving leads'}
                   </span>
+                  {isManagement && (
+                    <button
+                      type="button"
+                      disabled={savingId === r.adminUserId}
+                      onClick={() => toggleLeadAccess(r)}
+                      className="ml-2 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground hover:bg-muted disabled:opacity-50"
+                    >
+                      {r.paused ? 'Resume leads' : 'Pause leads'}
+                    </button>
+                  )}
                   {r.paused && r.freezeReason && (
                     <div className="mt-0.5 max-w-[16rem] text-[11px] text-muted-foreground">{r.freezeReason}</div>
                   )}
