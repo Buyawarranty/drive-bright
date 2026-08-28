@@ -2,6 +2,7 @@ import React from 'react';
 import { Phone, Mail, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TrustpilotMicroWidget from '@/components/TrustpilotMicroWidget';
+import SocialLinks from '@/components/SocialLinks';
 
 const BMWPPCFooter: React.FC = () => {
   return (

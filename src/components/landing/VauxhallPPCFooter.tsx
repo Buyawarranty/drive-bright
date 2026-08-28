@@ -1,6 +1,7 @@
 import React from 'react';
 import { Phone, Mail, MessageCircle } from 'lucide-react';
 import TrustpilotMicroWidget from '@/components/TrustpilotMicroWidget';
+import SocialLinks from '@/components/SocialLinks';
 
 const VauxhallPPCFooter: React.FC = () => {
   return (
