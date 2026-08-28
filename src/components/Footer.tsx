@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Phone, Mail, X } from 'lucide-react';
+import { Phone, Mail } from 'lucide-react';
 import { SALES_PHONE, SALES_PHONE_TEL, SUPPORT_EMAIL } from '@/constants/contact';
 import SocialLinks from '@/components/SocialLinks';
 import icoLogo from '@/assets/ico-registered.png.asset.json';
