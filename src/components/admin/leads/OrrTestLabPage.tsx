@@ -1,5 +1,11 @@
 import React from 'react';
 import { ArrowLeft, FlaskConical } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { QueueCapacityDashboard } from './QueueCapacityDashboard';
+import { OpenPoolActivityMonitor } from './OpenPoolActivityMonitor';
+import { OpenPoolManagerAlerts } from './OpenPoolManagerAlerts';
+import { OrrGoLiveSwitch } from './OrrGoLiveSwitch';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
 import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
 import { OrrGlanceStrip } from './OrrGlanceStrip';
@@ -10,6 +16,13 @@ import { OrrPerformancePanel } from './OrrPerformancePanel';
 import { OrrLeadFreezePanel } from './OrrLeadFreezePanel';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 import { useViewAs } from '@/contexts/ViewAsContext';
+
+const JUMP_LINKS = [
+  { id: 'orr-practice', label: 'Practice lab', className: 'bg-primary/20 text-primary border-primary/20 hover:bg-primary/30' },
+  { id: 'orr-queue-capacity', label: 'Queue & capacity', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
+  { id: 'orr-live-distribution', label: 'Live distribution', className: 'bg-teal-300/50 text-teal-900 border-teal-200/50 hover:bg-teal-400/50' },
+  { id: 'orr-activity', label: 'Activity & alerts', className: 'bg-amber-200/50 text-amber-900 border-amber-100/50 hover:bg-amber-300/50' },
+];
 
 interface OrrTestLabPageProps {
   onNavigateToTab?: (tab: string) => void;
@@ -22,6 +35,28 @@ interface OrrTestLabPageProps {
  */
 export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab }) => {
   const { effectiveRole } = useViewAs();
+  const [orrLive, setOrrLive] = React.useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('lead_distribution_settings')
+        .select('open_round_robin_enabled');
+      if (cancelled) return;
+      setOrrLive((data || []).some(r => r.open_round_robin_enabled === true));
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const jumpTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.history.replaceState(null, '', `#${id}`);
+    }
+  };
+
   const isManagement =
     effectiveRole === 'super_admin' ||
     effectiveRole === 'admin' ||
@@ -77,6 +112,29 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
         )}
       </div>
 
+      <OrrGoLiveSwitch live={orrLive} canEdit={isManagement} onChange={setOrrLive} />
+
+      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-background/95 backdrop-blur border-b border-border">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <span className="text-xs font-semibold text-foreground shrink-0">Jump to:</span>
+          {JUMP_LINKS.map(link => (
+            <button
+              key={link.id}
+              type="button"
+              onClick={() => jumpTo(link.id)}
+              className={cn(
+                'shrink-0 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border hover:shadow-md transition-colors',
+                link.className,
+              )}
+            >
+              {link.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div id="orr-practice" />
+
       <WidgetErrorBoundary label="At a glance">
         <OrrGlanceStrip teamLabel="Open Round Robin" />
       </WidgetErrorBoundary>
@@ -105,21 +163,46 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
       <OpenRoundRobinTestPanel />
 
 
-      <div className="border-l-4 border-primary/40 pl-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          <h2 className="text-base font-semibold text-foreground">Rolling round-robin — Team Blue testing only</h2>
-          <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
-            Open pool testing
-          </span>
+      <div id="orr-queue-capacity" className="space-y-4">
+        <div className="border-l-4 border-primary/60 pl-3">
+          <h2 className="text-lg font-semibold text-foreground">Open Round Robin — Queue &amp; Capacity</h2>
+          <p className="text-xs text-muted-foreground">
+            Live view of every Open Round Robin agent (all teams) — queues, capacity, warnings, and agent activity audit.
+          </p>
         </div>
-        <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
-          Trial of the 30-minute first-call window for the open pool. Shown here for observation only — running a pass is
-          disabled in the lab, so no real lead is handed out or pulled back. It is not part of the live Lead Allocation page.
-        </p>
+        <WidgetErrorBoundary label="Queue & capacity">
+          <QueueCapacityDashboard />
+        </WidgetErrorBoundary>
       </div>
 
-      <RollingRoundRobinLivePanel canEdit={isManagement} readOnly />
+      <div id="orr-live-distribution" className="space-y-4">
+        <div className="border-l-4 border-teal-500/60 pl-3">
+          <h2 className="text-lg font-semibold text-foreground">Live lead distribution</h2>
+          <p className="text-xs text-muted-foreground">
+            {orrLive === true
+              ? 'Running a pass here updates real CRM assignments.'
+              : 'Read-only while Open Round Robin is in practice mode — no real lead is handed out or pulled back.'}
+          </p>
+        </div>
+        <WidgetErrorBoundary label="Live lead distribution">
+          <RollingRoundRobinLivePanel canEdit={isManagement && orrLive === true} readOnly={orrLive !== true} />
+        </WidgetErrorBoundary>
+      </div>
 
+      <div id="orr-activity" className="space-y-4">
+        <div className="border-l-4 border-amber-500/60 pl-3">
+          <h2 className="text-lg font-semibold text-foreground">Activity &amp; manager alerts</h2>
+          <p className="text-xs text-muted-foreground">
+            Live audit activity, missed windows and routing warnings requiring attention.
+          </p>
+        </div>
+        <WidgetErrorBoundary label="Activity monitor">
+          <OpenPoolActivityMonitor />
+        </WidgetErrorBoundary>
+        <WidgetErrorBoundary label="Manager alerts">
+          <OpenPoolManagerAlerts />
+        </WidgetErrorBoundary>
+      </div>
 
       <div className="rounded-md border border-border bg-muted/40 p-4 text-xs text-muted-foreground space-y-1">
         <div><strong className="text-foreground">How to use:</strong></div>

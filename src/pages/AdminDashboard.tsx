@@ -77,7 +77,6 @@ const FeatureFlagsTab = lazy(() => import('@/components/admin/FeatureFlagsTab'))
 const ApiConnectivityTest = lazy(() => import('@/components/admin/ApiConnectivityTest').then(m => ({ default: m.ApiConnectivityTest })));
 const UserPermissionsTab = lazy(() => import('@/components/admin/UserPermissionsTab').then(m => ({ default: m.UserPermissionsTab })));
 const LeadTeamsTab = lazy(() => import('@/components/admin/LeadTeamsTab').then(m => ({ default: m.LeadTeamsTab })));
-const OpenRoundRobinPage = lazy(() => import('@/components/admin/leads/OpenRoundRobinPage').then(m => ({ default: m.OpenRoundRobinPage })));
 const OrrTestLabPage = lazy(() => import('@/components/admin/leads/OrrTestLabPage').then(m => ({ default: m.OrrTestLabPage })));
 const DocumentMappingTab = lazy(() => import('@/components/admin/DocumentMappingTab').then(m => ({ default: m.DocumentMappingTab })));
 const BulkPricingTab = lazy(() => import('@/components/admin/BulkPricingTab').then(m => ({ default: m.BulkPricingTab })));
@@ -991,11 +990,9 @@ const AdminDashboard = () => {
           );
         }
         return <LeadTeamsTab onNavigateToTab={handleTabChange} />;
+      // The old standalone Open Round Robin tab was folded into the ORR Test Lab,
+      // which now holds both the practice lab and the live queues plus a go-live switch.
       case 'open-round-robin':
-        if (!isTabAllowedForRole('open-round-robin', effectiveUserRole, effectiveUserPermissions)) {
-          return <AccessDenied label="Open Round Robin" />;
-        }
-        return <OpenRoundRobinPage onNavigateToTab={handleTabChange} />;
       case 'orr-test-lab':
         if (!isTabAllowedForRole('orr-test-lab', effectiveUserRole, effectiveUserPermissions)) {
           return <AccessDenied label="ORR Test Lab" />;
