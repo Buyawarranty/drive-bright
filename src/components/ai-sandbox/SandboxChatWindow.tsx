@@ -724,18 +724,22 @@ export function SandboxChatWindow({
   }, [messages]);
 
 
-  // Show the price builder once Miles has looked the vehicle up or quoted a price
+  // Show the price builder only when Miles has actually priced a vehicle.
+  // A plain vehicle lookup (e.g. "what's covered?") should not open the panel.
   const hasPriceQuote = useMemo(
     () =>
       messages.some((m) =>
         m.parts.some(
-          (p) =>
-            typeof p.type === 'string' &&
-            (p.type === 'tool-get_indicative_price' || p.type === 'tool-lookup_vehicle'),
+          (p) => typeof p.type === 'string' && p.type === 'tool-get_indicative_price',
         ),
       ),
     [messages],
   );
+
+  // Reopen the price builder automatically when a fresh price is quoted.
+  useEffect(() => {
+    if (hasPriceQuote) setPricePanelOpen(true);
+  }, [hasPriceQuote]);
 
   // Latest assistant reply, so the price panel can echo the quoted figure.
   const lastAssistantText = useMemo(() => {
