@@ -50,9 +50,13 @@ interface ReconRow {
 }
 
 export const AllAgentsProgressPanel: React.FC = () => {
+  const { isManagement } = useIsManagement();
   const [rows, setRows] = useState<AgentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [recon, setRecon] = useState<ReconRow[]>([]);
+  const [editingTarget, setEditingTarget] = useState<string | null>(null);
+  const [targetDraft, setTargetDraft] = useState('');
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   const now = new Date();
   const weekStart = useMemo(() => startOfWeek(now, { weekStartsOn: 1 }), [now.toDateString()]);
