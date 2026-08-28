@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { CheckCircle, Clock, Phone, Mail } from 'lucide-react';
+import { CheckCircle, Clock, Phone, Mail, XCircle, AlertCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Helmet } from 'react-helmet-async';
 
@@ -17,6 +17,9 @@ const PaymentReceived = () => {
   const vehicleModel = params.get('vehicle_model') || '';
   const amount = params.get('final_amount') || '';
   const paymentMethod = params.get('source') || params.get('payment') || '';
+  // Worldpay hosted pages redirect back with ?status=failed|error|cancelled|expired
+  const status = (params.get('status') || 'success').toLowerCase();
+  const isSuccess = status === 'success' || status === 'pending';
   const transactionId =
     params.get('transaction_id') ||
     params.get('order_id') ||
@@ -26,7 +29,7 @@ const PaymentReceived = () => {
 
   const pushedRef = useRef(false);
   useEffect(() => {
-    if (pushedRef.current) return;
+    if (pushedRef.current || !isSuccess) return;
     pushedRef.current = true;
     const value = parseFloat(amount);
     window.dataLayer = window.dataLayer || [];
