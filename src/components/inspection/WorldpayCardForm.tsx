@@ -14,6 +14,7 @@ interface Props {
   fee: number;
   onPaid: () => void;
   onFallback: () => void; // redirect to hosted/Stripe payment page
+  onUnavailable?: () => void; // custom form can't load — show the hosted-page button
 }
 
 type Stage = 'loading' | 'unavailable' | 'form' | 'processing' | 'challenge';
@@ -40,7 +41,7 @@ const collectDeviceData = () => {
   };
 };
 
-const WorldpayCardForm: React.FC<Props> = ({ token, fee, onPaid, onFallback }) => {
+const WorldpayCardForm: React.FC<Props> = ({ token, fee, onPaid, onFallback, onUnavailable }) => {
   const [stage, setStage] = useState<Stage>('loading');
   const [cardHolder, setCardHolder] = useState('');
   const [holderError, setHolderError] = useState('');
@@ -80,6 +81,7 @@ const WorldpayCardForm: React.FC<Props> = ({ token, fee, onPaid, onFallback }) =
       if (cancelled) return;
       if (!data?.available) {
         setStage('unavailable');
+        onUnavailable?.();
         return;
       }
       try {
@@ -107,6 +109,7 @@ const WorldpayCardForm: React.FC<Props> = ({ token, fee, onPaid, onFallback }) =
         setStage('form');
       } catch {
         setStage('unavailable');
+        onUnavailable?.();
       }
     })();
     return () => {
