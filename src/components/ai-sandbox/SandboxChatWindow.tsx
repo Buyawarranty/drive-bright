@@ -950,13 +950,17 @@ export function SandboxChatWindow({
                       return <MessageResponse key={i} className={CHAT_TEXT}>{text}</MessageResponse>;
                     }
 
+                    // Model "thinking" is internal working-out — never show it to a
+                    // customer. Agent mode keeps it for debugging.
                     if (part.type === 'reasoning' && part.text) {
+                      if (!agentMode) return null;
                       return (
                         <p key={i} className="text-xs italic text-muted-foreground">
                           {part.text}
                         </p>
                       );
                     }
+
                     if (typeof part.type === 'string' && part.type.startsWith('tool-')) {
                       const p = part as unknown as {
                         type: string;
