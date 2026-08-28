@@ -1004,7 +1004,7 @@ export function SandboxChatWindow({
                 <MessageContent
                   className={
                     message.role === 'user'
-                      ? 'rounded-2xl rounded-br-sm border border-primary/30 bg-primary/10 px-4 py-3 text-foreground shadow-sm'
+                      ? 'rounded-2xl rounded-br-sm bg-primary px-4 py-3 text-primary-foreground shadow-sm'
                       : 'rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-foreground'
                   }
                 >
