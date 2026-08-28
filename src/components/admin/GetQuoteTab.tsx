@@ -6989,6 +6989,7 @@ Questions? Call 0330 229 5040`;
                       customerEmail={customerEmail}
                       customerPhone={editableCustomerPhone || customerPhone}
                     />
+                    </Suspense>
                   </div>
                 </details>
 
