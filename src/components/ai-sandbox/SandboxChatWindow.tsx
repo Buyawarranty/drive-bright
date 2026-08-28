@@ -63,11 +63,11 @@ const splitTrailingQuestion = (text: string): { body: string; question: string }
 
 // consistent chat body size so replies don't render at mixed font sizes.
 const CHAT_TEXT = [
-  'text-sm leading-relaxed',
-  '[&_p]:text-sm [&_p]:leading-relaxed [&_p]:my-2',
-  '[&_li]:text-sm [&_li]:leading-relaxed',
+  'text-base leading-relaxed',
+  '[&_p]:text-base [&_p]:leading-relaxed [&_p]:my-2',
+  '[&_li]:text-base [&_li]:leading-relaxed',
   '[&_ul]:my-2 [&_ol]:my-2 [&_ul]:pl-5 [&_ol]:pl-5',
-  '[&_h1]:text-sm [&_h2]:text-sm [&_h3]:text-sm [&_h4]:text-sm [&_h5]:text-sm [&_h6]:text-sm',
+  '[&_h1]:text-base [&_h2]:text-base [&_h3]:text-base [&_h4]:text-base [&_h5]:text-base [&_h6]:text-base',
   '[&_h1]:font-semibold [&_h2]:font-semibold [&_h3]:font-semibold [&_h4]:font-semibold',
   '[&_h1]:my-2 [&_h2]:my-2 [&_h3]:my-2 [&_h4]:my-2',
   '[&_strong]:font-semibold [&_a]:underline',
