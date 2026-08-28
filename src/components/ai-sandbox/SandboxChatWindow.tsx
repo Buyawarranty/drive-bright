@@ -297,14 +297,14 @@ function OptionRow({
 }) {
   return (
     <div>
-      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-      <div className="mt-1 flex flex-wrap gap-1.5">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <div className="mt-1 flex flex-wrap gap-2">
         {options.map((o) => (
           <button
             key={o}
             type="button"
             onClick={() => onChange(o)}
-            className={`rounded-lg border px-2.5 py-1 text-xs transition-colors ${
+            className={`rounded-lg border px-3 py-1.5 text-sm transition-colors ${
               value === o
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
