@@ -112,9 +112,25 @@ function senderOf(message: UIMessage): Sender {
   return 'ai';
 }
 
+// Internal working-out sometimes leaks into the visible answer (a stray
+// "thought" label, references to the system prompt or tool names). Customers
+// must never read that, so scrub it before rendering.
+const INTERNAL_LINE = /(system prompt|confident:\s*(true|false)|approved material|i must not|let'?s call\s+\w+|check_availability|get_indicative_price|lookup_vehicle|tool call|function call)/i;
+
+function sanitizeForCustomer(text: string) {
+  let out = text.replace(/^\s*(thought|thinking|reasoning)\b[:\-–—]?\s*/i, '');
+  const kept = out
+    .split(/\n{2,}/)
+    .filter((block) => !INTERNAL_LINE.test(block));
+  out = (kept.length ? kept : out.split(/\n{2,}/)).join('\n\n');
+  return out.trim();
+}
+
 function stripPrefix(text: string) {
   return text.startsWith(AGENT_PREFIX) ? text.slice(AGENT_PREFIX.length).trim() : text;
 }
+
+
 
 function rowsToUIMessages(
   rows: Array<{ id: string; role: string; parts: unknown; content: string }>,
@@ -302,16 +318,30 @@ function OptionRow({
   );
 }
 
+/** Pulls the headline total (and any monthly figure) out of the assistant's reply. */
+function extractPrice(text?: string | null) {
+  if (!text) return null;
+  const amounts = Array.from(text.matchAll(/£\s?([\d,]+(?:\.\d{2})?)/g))
+    .map((m) => ({ raw: `£${m[1]}`, value: Number(m[1].replace(/,/g, '')) }))
+    .filter((a) => Number.isFinite(a.value));
+  const monthly = amounts.find((a) => a.value > 5 && a.value < 200 && /month/i.test(text));
+  const total = amounts.filter((a) => a.value >= 150).sort((a, b) => b.value - a.value)[0];
+  if (!total) return null;
+  return { total: total.raw, monthly: monthly && monthly.raw !== total.raw ? monthly.raw : null };
+}
+
 function PriceOptionsPanel({
   disabled,
   onSend,
   reg,
   mileage,
+  lastAssistantText,
 }: {
   disabled?: boolean;
   onSend: (text: string) => void;
   reg?: string | null;
   mileage?: string | null;
+  lastAssistantText?: string | null;
 }) {
   const [term, setTerm] = useState(24);
   const [limit, setLimit] = useState(2000);
@@ -321,6 +351,9 @@ function PriceOptionsPanel({
   // wording only appear once the customer has asked to see their price.
   const [priceRequested, setPriceRequested] = useState(false);
   const [pending, setPending] = useState<'full' | 'monthly' | null>(null);
+  // Once a price has been asked for, the tall option grid folds away so the
+  // answer above stays visible — the customer can reopen it to tweak options.
+  const [optionsOpen, setOptionsOpen] = useState(true);
 
   // Chat does persuasion and price; the real cart takes the money. Once we know
   // the reg we can hand the customer straight to plan selection (step 3) with
@@ -333,20 +366,47 @@ function PriceOptionsPanel({
 
   const termLabel = (v: number) => (v % 12 === 0 ? `${v / 12} year${v / 12 > 1 ? 's' : ''}` : `${v} months`);
   const combo = `${termLabel(term)} cover, £${limit.toLocaleString()} claim limit, £${excess} excess, £${labour}/hr labour rate`;
+  const quoted = priceRequested ? extractPrice(lastAssistantText) : null;
 
   return (
     <div className="rounded-2xl border border-border bg-card p-4 text-left shadow-sm">
-      <p className="text-sm font-semibold text-foreground">Build your price</p>
-      <p className="mt-0.5 text-xs text-muted-foreground">
-        Pick your options and I'll show you the price.
-      </p>
-
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <OptionRow label="Cover length" options={TERM_OPTIONS} value={term} onChange={setTerm} format={termLabel} />
-        <OptionRow label="Claim limit" options={LIMIT_OPTIONS} value={limit} onChange={setLimit} format={(v) => `£${v.toLocaleString()}`} />
-        <OptionRow label="Excess" options={EXCESS_OPTIONS} value={excess} onChange={setExcess} format={(v) => `£${v}`} />
-        <OptionRow label="Labour rate" options={LABOUR_OPTIONS} value={labour} onChange={setLabour} format={(v) => `£${v}/hr`} />
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="text-sm font-semibold text-foreground">Build your price</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {optionsOpen ? "Pick your options and I'll show you the price." : combo}
+          </p>
+        </div>
+        {priceRequested && (
+          <button
+            type="button"
+            onClick={() => setOptionsOpen((v) => !v)}
+            className="shrink-0 rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted"
+          >
+            {optionsOpen ? 'Hide options' : 'Change options'}
+          </button>
+        )}
       </div>
+
+      {quoted && (
+        <div className="mt-3 rounded-xl border border-[#FF6B00]/30 bg-[#FF6B00]/10 p-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-[#B34A08]">Your price</p>
+          <p className="mt-0.5 text-2xl font-extrabold leading-none text-foreground">{quoted.total}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {combo}
+            {quoted.monthly ? ` · or ${quoted.monthly}/month over 12 instalments at 0% APR` : ''}
+          </p>
+        </div>
+      )}
+
+      {optionsOpen && (
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <OptionRow label="Cover length" options={TERM_OPTIONS} value={term} onChange={setTerm} format={termLabel} />
+          <OptionRow label="Claim limit" options={LIMIT_OPTIONS} value={limit} onChange={setLimit} format={(v) => `£${v.toLocaleString()}`} />
+          <OptionRow label="Excess" options={EXCESS_OPTIONS} value={excess} onChange={setExcess} format={(v) => `£${v}`} />
+          <OptionRow label="Labour rate" options={LABOUR_OPTIONS} value={labour} onChange={setLabour} format={(v) => `£${v}/hr`} />
+        </div>
+      )}
 
       <div className="mt-3 flex flex-wrap gap-2">
         <Button
@@ -355,11 +415,15 @@ function PriceOptionsPanel({
           className="bg-[#FF6B00] font-bold text-white shadow-sm hover:bg-[#E85F00]"
           onClick={() => {
             setPriceRequested(true);
-            onSend(`Price this for me: ${combo}. What's the total?`);
+            setOptionsOpen(false);
+            onSend(
+              `Price this for me: ${combo}. Reply with the total price in £ on the first line, and the monthly amount if paying over 12 instalments.`,
+            );
           }}
         >
-          Show my price
+          {priceRequested ? 'Update my price' : 'Show my price'}
         </Button>
+
 
 
         {priceRequested && !pending && (
@@ -657,6 +721,22 @@ export function SandboxChatWindow({
     [messages],
   );
 
+  // Latest assistant reply, so the price panel can echo the quoted figure.
+  const lastAssistantText = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      const m = messages[i];
+      if (m.role !== 'assistant') continue;
+      const text = m.parts
+        .map((p) => (p.type === 'text' ? (p as { text: string }).text : ''))
+        .join(' ')
+        .trim();
+      if (text) return text;
+    }
+    return null;
+  }, [messages]);
+
+
+
 
   const sendAsAgent = async (text: string) => {
     const content = `${AGENT_PREFIX} ${text}`;
@@ -935,8 +1015,11 @@ export function SandboxChatWindow({
                     if (part.type === 'text') {
                       const text = stripPrefix(part.text);
                       if (message.role !== 'user') {
-                        const { body, question } = splitTrailingQuestion(text);
+                        const clean = agentMode ? text : sanitizeForCustomer(text);
+                        if (!clean) return null;
+                        const { body, question } = splitTrailingQuestion(clean);
                         return (
+
                           <div key={i}>
                             {body && <MessageResponse className={CHAT_TEXT}>{body}</MessageResponse>}
                             {question && (
@@ -950,13 +1033,17 @@ export function SandboxChatWindow({
                       return <MessageResponse key={i} className={CHAT_TEXT}>{text}</MessageResponse>;
                     }
 
+                    // Model "thinking" is internal working-out — never show it to a
+                    // customer. Agent mode keeps it for debugging.
                     if (part.type === 'reasoning' && part.text) {
+                      if (!agentMode) return null;
                       return (
                         <p key={i} className="text-xs italic text-muted-foreground">
                           {part.text}
                         </p>
                       );
                     }
+
                     if (typeof part.type === 'string' && part.type.startsWith('tool-')) {
                       const p = part as unknown as {
                         type: string;
@@ -1011,7 +1098,7 @@ export function SandboxChatWindow({
 
           {!agentMode && hasPriceQuote && (
             <div className="px-2 pb-2">
-              <PriceOptionsPanel disabled={busy} onSend={send} reg={detectedReg} mileage={detectedMileage} />
+              <PriceOptionsPanel disabled={busy} onSend={send} reg={detectedReg} mileage={detectedMileage} lastAssistantText={lastAssistantText} />
             </div>
           )}
 

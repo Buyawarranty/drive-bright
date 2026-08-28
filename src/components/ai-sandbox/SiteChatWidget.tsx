@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { X, Minus, Expand, Shrink } from 'lucide-react';
 import SandboxChatWindow from '@/components/ai-sandbox/SandboxChatWindow';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
-import { loadGuestChatOpen, saveGuestChatOpen } from '@/components/ai-sandbox/guestChatStore';
+import { loadGuestChatOpen, saveGuestChatOpen, clearGuestChat } from '@/components/ai-sandbox/guestChatStore';
 
 
 const TOKEN_KEY = 'baw_chat_guest_token';
@@ -12,17 +12,26 @@ const TOKEN_KEY = 'baw_chat_guest_token';
  * The random per-browser token that owns a website visitor's conversation.
  * Nothing personal is stored — it just lets the same visitor keep one thread.
  */
+function newGuestToken(): string {
+  const fresh = crypto.randomUUID();
+  try {
+    window.localStorage.setItem(TOKEN_KEY, fresh);
+  } catch {
+    /* ignore */
+  }
+  return fresh;
+}
+
 function getGuestToken(): string {
   try {
     const existing = window.localStorage.getItem(TOKEN_KEY);
     if (existing && existing.length >= 16) return existing;
-    const fresh = crypto.randomUUID();
-    window.localStorage.setItem(TOKEN_KEY, fresh);
-    return fresh;
+    return newGuestToken();
   } catch {
     return crypto.randomUUID();
   }
 }
+
 
 /**
  * Floating "chat with Miles" widget for public website pages.
@@ -44,6 +53,8 @@ export default function SiteChatWidget({
   const [open, setOpen] = useState(() => loadGuestChatOpen());
   const [everOpened, setEverOpened] = useState(() => loadGuestChatOpen());
   const [expanded, setExpanded] = useState(false);
+  // Bumped when a conversation is ended so the chat window remounts empty.
+  const [sessionKey, setSessionKey] = useState(0);
   const [showNudge, setShowNudge] = useState(false);
   const tokenRef = useRef<string | null>(null);
   if (tokenRef.current === null) tokenRef.current = getGuestToken();
@@ -84,10 +95,21 @@ export default function SiteChatWidget({
     saveGuestChatOpen(true);
   };
 
+  // Minimise: keep the transcript so the visitor can pick up where they left off.
   const closeChat = () => {
     setOpen(false);
     saveGuestChatOpen(false);
   };
+
+  // Close (X): the conversation is finished — wipe it and start fresh next time.
+  const endChat = () => {
+    setOpen(false);
+    saveGuestChatOpen(false);
+    clearGuestChat(tokenRef.current);
+    tokenRef.current = newGuestToken();
+    setSessionKey((k) => k + 1);
+  };
+
 
   if (hidden) return null;
 
@@ -174,16 +196,17 @@ export default function SiteChatWidget({
               {expanded ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
             </button>
             <button
-              onClick={closeChat}
+              onClick={endChat}
               aria-label="Close chat"
               className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <X className="h-4 w-4" />
             </button>
+
           </div>
 
           <div className="min-h-0 flex-1">
-            <SandboxChatWindow guestToken={tokenRef.current!} source={source} compact autoFocus={false} />
+            <SandboxChatWindow key={sessionKey} guestToken={tokenRef.current!} source={source} compact autoFocus={false} />
           </div>
         </div>
       )}
