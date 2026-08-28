@@ -12,17 +12,26 @@ const TOKEN_KEY = 'baw_chat_guest_token';
  * The random per-browser token that owns a website visitor's conversation.
  * Nothing personal is stored — it just lets the same visitor keep one thread.
  */
+function newGuestToken(): string {
+  const fresh = crypto.randomUUID();
+  try {
+    window.localStorage.setItem(TOKEN_KEY, fresh);
+  } catch {
+    /* ignore */
+  }
+  return fresh;
+}
+
 function getGuestToken(): string {
   try {
     const existing = window.localStorage.getItem(TOKEN_KEY);
     if (existing && existing.length >= 16) return existing;
-    const fresh = crypto.randomUUID();
-    window.localStorage.setItem(TOKEN_KEY, fresh);
-    return fresh;
+    return newGuestToken();
   } catch {
     return crypto.randomUUID();
   }
 }
+
 
 /**
  * Floating "chat with Miles" widget for public website pages.
