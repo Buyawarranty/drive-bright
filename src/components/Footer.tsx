@@ -80,32 +80,7 @@ const Footer = () => {
             </div>
 
             {/* Social media links */}
-            <div className="flex justify-center lg:justify-end gap-4">
-              <a 
-                href="https://facebook.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#eb4b00] transition-colors"
-              >
-                <Facebook size={20} />
-              </a>
-              <a 
-                href="https://twitter.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#eb4b00] transition-colors"
-              >
-                <X size={20} />
-              </a>
-              <a 
-                href="https://instagram.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#eb4b00] transition-colors"
-              >
-                <Instagram size={20} />
-              </a>
-            </div>
+            <SocialLinks variant="light" className="justify-center lg:justify-end" />
           </div>
 
           {/* Bottom section */}
