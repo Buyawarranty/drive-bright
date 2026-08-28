@@ -41,7 +41,7 @@ export const OrganicSourceBreakdownPanel: React.FC = () => {
         .from('sales_leads')
         .select('id, created_at, lead_source, abandoned_cart:abandoned_carts(cart_metadata)')
         .gte('created_at', since.toISOString())
-        .in('lead_source', ['website', 'organic', 'other'])
+        .in('lead_source', ['website', 'other'])
         .order('created_at', { ascending: false })
         .limit(5000);
 
