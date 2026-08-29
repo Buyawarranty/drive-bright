@@ -106,6 +106,7 @@ export default function LiveQuotePage() {
   // Postcode lookup state
   const [isLookingUpPostcode, setIsLookingUpPostcode] = useState(false);
   const [postcodeLookupError, setPostcodeLookupError] = useState<string | null>(null);
+  const [postcoderAddresses, setPostcoderAddresses] = useState<any[]>([]);
   const postcodeDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Paid confirmation flow state (must be before early returns)
