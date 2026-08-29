@@ -188,15 +188,22 @@ export default function LiveQuotePage() {
   // Free-text address search (street or town), same picker as postcode lookup
   const searchAddresses = useCallback(async (term: string) => {
     const query = term.trim();
-    if (query.length < 4) return;
+    if (query.length < 3) return;
     setIsLookingUpPostcode(true);
     setPostcodeLookupError(null);
     try {
       const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
         body: { action: 'search', term: query },
       });
+      // Broad searches (town / street) come back as clickable containers to drill into.
       const rows = Array.isArray(data?.suggestions)
-        ? data.suggestions.map((sug: any) => sug.resolved).filter(Boolean)
+        ? data.suggestions
+            .map((sug: any) =>
+              sug.container
+                ? { __container: true, label: sug.address, count: sug.count, drill: sug.drill || sug.address }
+                : sug.resolved,
+            )
+            .filter(Boolean)
         : [];
       if (!error && rows.length > 0) {
         setPostcoderAddresses(rows);
@@ -211,6 +218,7 @@ export default function LiveQuotePage() {
       setIsLookingUpPostcode(false);
     }
   }, []);
+
 
   // Handle postcode change with debounce
   const handlePostcodeChange = useCallback((value: string) => {
