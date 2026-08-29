@@ -238,6 +238,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [customerBuildingNumber, setCustomerBuildingNumber] = useState('');
   const [customerCounty, setCustomerCounty] = useState('');
   const [skipAddressDetails, setSkipAddressDetails] = useState(true);
+  // Address fields stay hidden until an address is picked from postcode lookup (or manual entry)
+  const [showAddressFields, setShowAddressFields] = useState(false);
   
   // Editable fields for dialog
   const [editableFirstName, setEditableFirstName] = useState('');
@@ -1431,19 +1433,30 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                     {!skipAddressDetails ? (
                       <div className="space-y-4">
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-500">Address lookup</Label>
+                          <Label className="text-xs font-semibold text-slate-500">Postcode lookup <span className="text-destructive">*</span></Label>
                           <AddressAutocomplete
-                            placeholder="Start typing postcode or address..."
+                            placeholder="Enter postcode, e.g. M1 1AA"
                             onAddressSelect={(address: AddressData) => {
                               if (address.building_number) setCustomerBuildingNumber(address.building_number);
                               if (address.line_1) setCustomerStreet(address.line_1);
                               if (address.town) setCustomerTown(address.town);
                               if (address.county) setCustomerCounty(address.county);
                               if (address.postcode) setCustomerPostcode(address.postcode.toUpperCase());
+                              setShowAddressFields(true);
                             }}
                           />
-                          <p className="text-[11px] text-slate-500">Search by postcode or address, then adjust fields below if needed.</p>
+                          <p className="text-[11px] text-slate-500">Select an address and the fields below will fill in automatically.</p>
                         </div>
+                        {!showAddressFields && (
+                          <button
+                            type="button"
+                            onClick={() => setShowAddressFields(true)}
+                            className="text-xs text-primary hover:underline"
+                          >
+                            Can't find the address? Enter it manually
+                          </button>
+                        )}
+                        {showAddressFields && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                           <div className="space-y-1.5">
                             <Label className="text-xs font-semibold text-slate-500">House/Building Number <span className="text-destructive">*</span></Label>
@@ -1466,6 +1479,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                             <Input value={customerPostcode} onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())} className={`uppercase ${!customerPostcode.trim() ? 'border-destructive focus-visible:ring-destructive' : ''}`} />
                           </div>
                         </div>
+                        )}
                         <p className="text-[11px] text-destructive">Address is required unless you tick "Customer will complete in dashboard".</p>
                       </div>
 

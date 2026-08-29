@@ -1,4 +1,5 @@
 import { getVehicleAge } from '@/lib/vehicleAge';
+import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -99,7 +100,7 @@ const UK_PHONE_REGEX = /^(?:\+?44|0)\s?\d{2,4}[\s-]?\d{3,4}[\s-]?\d{3,4}$/;
 const UK_POSTCODE_REGEX = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
 const isValidEmail = (v: string) => !!v && EMAIL_REGEX.test(v.trim());
 const isValidUkPhone = (v: string) => !!v && UK_PHONE_REGEX.test(v.replace(/\s/g, ''));
-const isValidUkPostcode = (v: string) => !!v && UK_POSTCODE_REGEX.test(v.replace(/\s/g, ''));
+const isValidUkPostcode = (v: string) => !!v && UK_POSTCODE_REGEX.test(v.replace(/\s/g, '')); // kept for validation helpers
 
 interface VehicleData {
   regNumber: string;
@@ -676,7 +677,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [externalPaymentStep, setExternalPaymentStep] = useState<'details' | 'preview' | 'complete'>('details');
   const [quotedPriceOverride, setQuotedPriceOverride] = useState<string>('');
-  const [isLookingUpPostcode, setIsLookingUpPostcode] = useState(false);
   const [postcodeLookupSuccess, setPostcodeLookupSuccess] = useState(false);
   
   // Warranty Start Date (separate from payment date)
@@ -691,6 +691,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [customerBuildingNumber, setCustomerBuildingNumber] = useState('');
   const [customerCounty, setCustomerCounty] = useState('');
   const [skipAddressDetails, setSkipAddressDetails] = useState(false);
+  // Address fields stay hidden until an address is picked from postcode lookup (or manual entry)
+  const [showAddressFields, setShowAddressFields] = useState(false);
   
   // Editable customer fields for external payment dialog
   const [editableCustomerName, setEditableCustomerName] = useState('');
@@ -758,6 +760,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       if (typeof d.customerBuildingNumber === 'string') setCustomerBuildingNumber(d.customerBuildingNumber);
       if (typeof d.customerCounty === 'string') setCustomerCounty(d.customerCounty);
       if (typeof d.skipAddressDetails === 'boolean') setSkipAddressDetails(d.skipAddressDetails);
+      if (d.customerPostcode || d.customerStreet) setShowAddressFields(true);
       // NOTE: intentionally not restoring customMonthlyPrice / customFullPrice /
       // quotedPriceOverride here — otherwise a refresh keeps figures stuck on
       // the previous quote even after starting a new one.
@@ -3238,6 +3241,7 @@ Questions? Call 0330 229 5040`;
     setCustomerBuildingNumber('');
     setCustomerCounty('');
     setSkipAddressDetails(false);
+    setShowAddressFields(false);
     
     setShowConfirmPaymentDialog(true);
   };
@@ -3894,6 +3898,7 @@ Questions? Call 0330 229 5040`;
     setCustomerBuildingNumber('');
     setCustomerCounty('');
     setSkipAddressDetails(false);
+    setShowAddressFields(false);
     setPaymentType('24months');
     setExcessAmount(100);
     setClaimLimit(2000);
@@ -7952,105 +7957,95 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         </div>
                         
                         {!skipAddressDetails && (
-                          <div className="grid grid-cols-2 gap-4 pt-2">
+                          <div className="space-y-4 pt-2">
                             <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">House/Building Number <span className="text-red-600">*</span></Label>
-                              <Input
-                                value={customerBuildingNumber}
-                                onChange={(e) => setCustomerBuildingNumber(e.target.value)}
-                                placeholder="e.g. 42"
-                                className={cn(
-                                  "bg-gray-50 focus:bg-white transition-colors",
-                                  customerBuildingNumber.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
-                                )}
+                              <Label className="text-xs font-medium text-gray-600">Postcode lookup <span className="text-red-600">*</span></Label>
+                              <AddressAutocomplete
+                                placeholder="Enter postcode, e.g. M1 1AA"
+                                onAddressSelect={(address: AddressData) => {
+                                  if (address.building_number) setCustomerBuildingNumber(address.building_number);
+                                  if (address.line_1) setCustomerStreet(address.line_1);
+                                  if (address.town) setCustomerTown(address.town);
+                                  if (address.county) setCustomerCounty(address.county);
+                                  if (address.postcode) setCustomerPostcode(address.postcode.toUpperCase());
+                                  setShowAddressFields(true);
+                                }}
                               />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">Street <span className="text-red-600">*</span></Label>
-                              <Input
-                                value={customerStreet}
-                                onChange={(e) => setCustomerStreet(e.target.value)}
-                                placeholder="e.g. High Street"
-                                className={cn(
-                                  "bg-gray-50 focus:bg-white transition-colors",
-                                  customerStreet.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
-                                )}
-                              />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">Town/City <span className="text-red-600">*</span></Label>
-                              <Input
-                                value={customerTown}
-                                onChange={(e) => setCustomerTown(e.target.value)}
-                                placeholder="e.g. Manchester"
-                                className={cn(
-                                  "bg-gray-50 focus:bg-white transition-colors",
-                                  customerTown.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
-                                )}
-                              />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">County</Label>
-                              <Input
-                                value={customerCounty}
-                                onChange={(e) => setCustomerCounty(e.target.value)}
-                                placeholder="e.g. Greater Manchester"
-                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                              />
+                              <p className="text-[11px] text-gray-500">Select an address and the fields below will fill in automatically.</p>
                             </div>
 
-                            <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600 flex items-center gap-2">
-                                Postcode *
-                                {isLookingUpPostcode && (
-                                  <span className="flex items-center gap-1 text-xs text-blue-600">
-                                    <Loader2 className="w-3 h-3 animate-spin" />
-                                    Looking up...
-                                  </span>
-                                )}
-                              </Label>
-                              <div className="relative">
+                            {!showAddressFields && (
+                              <button
+                                type="button"
+                                onClick={() => setShowAddressFields(true)}
+                                className="text-xs text-blue-600 hover:underline"
+                              >
+                                Can't find the address? Enter it manually
+                              </button>
+                            )}
+
+                            {showAddressFields && (
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-gray-600">House/Building Number <span className="text-red-600">*</span></Label>
+                                <Input
+                                  value={customerBuildingNumber}
+                                  onChange={(e) => setCustomerBuildingNumber(e.target.value)}
+                                  placeholder="e.g. 42"
+                                  className={cn(
+                                    "bg-gray-50 focus:bg-white transition-colors",
+                                    customerBuildingNumber.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                                  )}
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-gray-600">Street <span className="text-red-600">*</span></Label>
+                                <Input
+                                  value={customerStreet}
+                                  onChange={(e) => setCustomerStreet(e.target.value)}
+                                  placeholder="e.g. High Street"
+                                  className={cn(
+                                    "bg-gray-50 focus:bg-white transition-colors",
+                                    customerStreet.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                                  )}
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-gray-600">Town/City <span className="text-red-600">*</span></Label>
+                                <Input
+                                  value={customerTown}
+                                  onChange={(e) => setCustomerTown(e.target.value)}
+                                  placeholder="e.g. Manchester"
+                                  className={cn(
+                                    "bg-gray-50 focus:bg-white transition-colors",
+                                    customerTown.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                                  )}
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-gray-600">County</Label>
+                                <Input
+                                  value={customerCounty}
+                                  onChange={(e) => setCustomerCounty(e.target.value)}
+                                  placeholder="e.g. Greater Manchester"
+                                  className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                                />
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-gray-600">Postcode <span className="text-red-600">*</span></Label>
                                 <Input
                                   value={customerPostcode}
-                                  onChange={(e) => {
-                                    const v = e.target.value.toUpperCase();
-                                    setCustomerPostcode(v);
-                                    setPostcodeLookupSuccess(false);
-                                    const clean = v.replace(/\s/g, '');
-                                    if (isValidUkPostcode(clean)) {
-                                      setIsLookingUpPostcode(true);
-                                      fetch(`https://api.postcodes.io/postcodes/${clean}`)
-                                        .then(r => r.ok ? r.json() : null)
-                                        .then(data => {
-                                          if (data?.result) {
-                                            const town = data.result.admin_district || data.result.parish || data.result.admin_ward || '';
-                                            const county = data.result.admin_county || data.result.region || '';
-                                            setCustomerPostcode(data.result.postcode || v);
-                                            if (town) setCustomerTown(town);
-                                            if (county && !customerCounty) setCustomerCounty(county);
-                                            setPostcodeLookupSuccess(true);
-                                          }
-                                        })
-                                        .catch(() => {})
-                                        .finally(() => setIsLookingUpPostcode(false));
-                                    }
-                                  }}
+                                  onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())}
                                   placeholder="e.g. M1 1AA"
                                   className={cn(
                                     "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors uppercase",
-                                    !customerPostcode.trim() && "border-2 border-red-400 focus:border-red-500",
-                                    postcodeLookupSuccess && "pr-8 border-green-300"
+                                    !customerPostcode.trim() && "border-2 border-red-400 focus:border-red-500"
                                   )}
-
                                 />
-                                {postcodeLookupSuccess && (
-                                  <CheckCircle2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
-                                )}
                               </div>
-                              {postcodeLookupSuccess && (
-                                <p className="text-xs text-green-600">Town auto-filled from postcode</p>
-                              )}
                             </div>
+                            )}
                           </div>
                         )}
                         
