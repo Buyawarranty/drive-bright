@@ -8041,15 +8041,8 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                             )}
                           </div>
                         )}
-                        
-                        {skipAddressDetails && (
-                          <Alert className="bg-gray-50 border-gray-200 mt-2">
-                            <Info className="h-4 w-4 text-gray-500" />
-                            <AlertDescription className="text-gray-600 text-sm">
-                              The customer will be prompted to complete their address when they log into their dashboard.
-                            </AlertDescription>
-                          </Alert>
-                        )}
+
+
                       </div>
                     )}
                   </div>
