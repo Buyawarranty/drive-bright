@@ -340,11 +340,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           setShowAddressFields(true);
         } else {
           setAddressLookupFailed(true);
+          setManualAddressEntry(true);
           setShowAddressFields(true);
         }
       } else {
         console.log('⚠️ Postcode API returned non-OK status:', response.status);
         setAddressLookupFailed(true);
+        setManualAddressEntry(true);
         setShowAddressFields(true);
         const formatted = cleanPostcode.length > 3 
           ? cleanPostcode.slice(0, -3) + ' ' + cleanPostcode.slice(-3) 
@@ -425,6 +427,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setTownAutoFilled(!!town);
     setShowAddressDropdown(false);
     setAddressSuggestions([]);
+    setManualAddressEntry(false);
     setShowAddressFields(true);
   }, []);
   
