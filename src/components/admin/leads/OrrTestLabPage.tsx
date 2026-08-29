@@ -6,6 +6,7 @@ import { QueueCapacityDashboard } from './QueueCapacityDashboard';
 import { OpenPoolActivityMonitor } from './OpenPoolActivityMonitor';
 import { OpenPoolManagerAlerts } from './OpenPoolManagerAlerts';
 import { OrrGoLiveSwitch } from './OrrGoLiveSwitch';
+import { OrrTeamSelectionPanel } from './OrrTeamSelectionPanel';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
 import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
 import { OrrGlanceStrip } from './OrrGlanceStrip';
