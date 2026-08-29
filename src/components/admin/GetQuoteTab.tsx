@@ -759,7 +759,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       if (typeof d.customerTown === 'string') setCustomerTown(d.customerTown);
       if (typeof d.customerBuildingNumber === 'string') setCustomerBuildingNumber(d.customerBuildingNumber);
       if (typeof d.customerCounty === 'string') setCustomerCounty(d.customerCounty);
-      if (typeof d.skipAddressDetails === 'boolean') setSkipAddressDetails(d.skipAddressDetails);
+      // Address is always compulsory now — never restore a "skip address" flag.
       if (d.customerPostcode || d.customerStreet) setShowAddressFields(true);
       // NOTE: intentionally not restoring customMonthlyPrice / customFullPrice /
       // quotedPriceOverride here — otherwise a refresh keeps figures stuck on
@@ -2374,6 +2374,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanCustomerEmail)) {
         throw new Error('Please enter a valid customer email before sending.');
+      }
+
+      // Address is compulsory on every quote.
+      const missingAddress = [
+        !customerStreet.trim() && 'street',
+        !customerTown.trim() && 'town/city',
+        !customerPostcode.trim() && 'postcode',
+      ].filter(Boolean) as string[];
+      if (missingAddress.length > 0) {
+        throw new Error(`Customer address is required — please add the ${missingAddress.join(', ')} in Customer Address.`);
       }
 
       if (!cleanVehicleData.regNumber) {
@@ -7927,7 +7937,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                           <h4 className="font-semibold text-gray-800 text-sm">Customer Address</h4>
                           {!expandedSections.address && (
                             <p className="text-xs text-gray-500 mt-0.5">
-                              {skipAddressDetails ? 'Customer will complete in dashboard' : (customerPostcode ? `${customerBuildingNumber} ${customerStreet}, ${customerPostcode}` : 'Not entered')}
+                              {customerPostcode ? `${customerBuildingNumber} ${customerStreet}, ${customerPostcode}` : 'Required — not entered yet'}
                             </p>
                           )}
                         </div>
@@ -7945,23 +7955,13 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                     
                     {expandedSections.address && (
                       <div className="px-4 pb-4 pt-0 border-t border-gray-100">
-                        <div className="flex items-center gap-2 pt-3 pb-2">
-                          <Checkbox
-                            id="skip-address"
-                            checked={skipAddressDetails}
-                            onCheckedChange={(checked) => setSkipAddressDetails(checked === true)}
-                          />
-                          <Label htmlFor="skip-address" className="text-xs text-gray-600 cursor-pointer">
-                            Customer will complete in dashboard
-                          </Label>
-                        </div>
-                        
-                        {!skipAddressDetails && (
-                          <div className="space-y-4 pt-2">
+                        {true && (
+                          <div className="space-y-4 pt-4">
                             <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">Postcode lookup <span className="text-red-600">*</span></Label>
+                              <Label className="text-sm font-semibold text-gray-900">Postcode, street or town <span className="text-red-600">*</span></Label>
                               <AddressAutocomplete
-                                placeholder="Enter postcode, e.g. M1 1AA"
+                                placeholder="e.g. SW1A 1AA or High Street, Bath"
+                                className={!customerPostcode.trim() ? 'border-2 border-red-400 focus-visible:border-red-500' : ''}
                                 onAddressSelect={(address: AddressData) => {
                                   if (address.building_number) setCustomerBuildingNumber(address.building_number);
                                   if (address.line_1) setCustomerStreet(address.line_1);
@@ -7971,18 +7971,21 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                                   setShowAddressFields(true);
                                 }}
                               />
-                              <p className="text-[11px] text-gray-500">Select an address and the fields below will fill in automatically.</p>
+                              {!customerPostcode.trim() && (
+                                <p className="text-xs text-red-600">Address is required — search and select the customer's address.</p>
+                              )}
                             </div>
 
                             {!showAddressFields && (
                               <button
                                 type="button"
                                 onClick={() => setShowAddressFields(true)}
-                                className="text-xs text-blue-600 hover:underline"
+                                className="text-sm font-semibold text-gray-900 hover:underline"
                               >
-                                Can't find the address? Enter it manually
+                                Enter your address manually
                               </button>
                             )}
+
 
                             {showAddressFields && (
                             <div className="grid grid-cols-2 gap-4">
@@ -8048,15 +8051,8 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                             )}
                           </div>
                         )}
-                        
-                        {skipAddressDetails && (
-                          <Alert className="bg-gray-50 border-gray-200 mt-2">
-                            <Info className="h-4 w-4 text-gray-500" />
-                            <AlertDescription className="text-gray-600 text-sm">
-                              The customer will be prompted to complete their address when they log into their dashboard.
-                            </AlertDescription>
-                          </Alert>
-                        )}
+
+
                       </div>
                     )}
                   </div>
