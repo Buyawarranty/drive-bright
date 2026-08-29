@@ -326,10 +326,65 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
     return m;
   }, [ordered]);
 
-  const unassigned = ordered.filter(r => !r.assigned_to).length;
+  const unassignedRows = useMemo(() => ordered.filter(r => !r.assigned_to), [ordered]);
+  const unassigned = unassignedRows.length;
   const counts = agents.map(a => tally.get(a.id) ?? 0);
   const spread = counts.length ? Math.max(...counts) - Math.min(...counts) : 0;
   const totalAssigned = ordered.length - unassigned;
+
+  // Ticking clock so the waiting age stays honest without a full reload.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    if (unassigned === 0) return;
+    const t = setInterval(() => { if (document.hidden) return; setNowMs(Date.now()); }, 15_000);
+    return () => clearInterval(t);
+  }, [unassigned]);
+
+  /** Minutes the oldest unassigned lead has been waiting. */
+  const oldestUnassignedMins = useMemo(() => {
+    if (unassignedRows.length === 0) return 0;
+    const oldest = Math.min(...unassignedRows.map(r => new Date(r.created_at).getTime()));
+    return Math.max(0, Math.floor((nowMs - oldest) / 60000));
+  }, [unassignedRows, nowMs]);
+
+  const OVERDUE_MINS = 10;
+  const unassignedOverdue = unassigned > 0 && oldestUnassignedMins >= OVERDUE_MINS;
+
+  /**
+   * As soon as at least one agent is live (switched on, not paused), waiting
+   * leads must flow back into the rotation instead of sitting Unassigned.
+   * Runs the same live distribution pass the rest of the CRM uses — it only
+   * ever hands out eligible, never-contacted, unowned leads.
+   */
+  const sweeping = useRef(false);
+  useEffect(() => {
+    if (!canOverrideLock) return;      // management screens only
+    if (!unassignedOverdue) return;
+    let cancelled = false;
+    const run = async () => {
+      if (sweeping.current || cancelled) return;
+      sweeping.current = true;
+      try {
+        const { data: caps } = await (supabase as any)
+          .from('agent_distribution_caps')
+          .select('admin_user_id')
+          .eq('paused', false)
+          .eq('assignment_mode', 'round_robin')
+          .limit(1);
+        if (!caps || caps.length === 0) return; // nobody live — leave them waiting
+        await (supabase as any).rpc('rolling_rr_distribute', { _batch_cap: 25, _window_minutes: 60 * 24 * 7 });
+        if (!cancelled) load();
+      } catch (e) {
+        console.error('[live stream auto-assign]', e);
+      } finally {
+        sweeping.current = false;
+      }
+    };
+    const kick = setTimeout(run, 1000);
+    const t = setInterval(run, 60_000);
+    return () => { cancelled = true; clearTimeout(kick); clearInterval(t); };
+  }, [canOverrideLock, unassignedOverdue, load]);
+
 
   return (
     <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
@@ -410,11 +465,25 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
           );
         })}
         {unassigned > 0 && (
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-amber-300 bg-amber-50 text-amber-900 text-[11px] font-semibold">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+          <span
+            title={
+              unassignedOverdue
+                ? `Waiting ${oldestUnassignedMins}m — over ${OVERDUE_MINS} minutes. As soon as an agent is switched on, these are handed back into the rotation automatically.`
+                : `Waiting ${oldestUnassignedMins}m — normal while the rotation picks them up or an Open Pool agent takes them.`
+            }
+            className={cn(
+              'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-semibold',
+              unassignedOverdue
+                ? 'border-red-400 bg-red-100 text-red-800 animate-pulse'
+                : 'border-amber-300 bg-amber-50 text-amber-900',
+            )}
+          >
+            <span className={cn('h-1.5 w-1.5 rounded-full', unassignedOverdue ? 'bg-red-600' : 'bg-amber-500')} />
             Unassigned <span className="tabular-nums">{unassigned}</span>
+            <span className="tabular-nums font-normal opacity-80">· {oldestUnassignedMins}m</span>
           </span>
         )}
+
         <span
           className={cn(
             'ml-auto text-[11px] font-semibold tabular-nums',
