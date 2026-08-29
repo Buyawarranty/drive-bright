@@ -3899,6 +3899,7 @@ Questions? Call 0330 229 5040`;
     setCustomerBuildingNumber('');
     setCustomerCounty('');
     setSkipAddressDetails(false);
+    setShowAddressFields(false);
     setPaymentType('24months');
     setExcessAmount(100);
     setClaimLimit(2000);
