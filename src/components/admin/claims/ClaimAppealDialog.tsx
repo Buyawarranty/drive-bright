@@ -113,9 +113,24 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
   const [generatingLink, setGeneratingLink] = useState(false);
   const [generatingForm, setGeneratingForm] = useState(false);
 
+  /** Where the appeal goes. Editable — the claim's email is only a starting point. */
+  const [toEmail, setToEmail] = useState('');
+  const [testEmail, setTestEmail] = useState('');
+  const [sendingTest, setSendingTest] = useState(false);
+  /** Optional text message with the same links. */
+  const [toPhone, setToPhone] = useState('');
+  const [testPhone, setTestPhone] = useState('');
+  const [sendingSms, setSendingSms] = useState(false);
+  const [sendingTestSms, setSendingTestSms] = useState(false);
+
   useEffect(() => {
     if (open) setSelected(claim);
   }, [open, claim]);
+
+  useEffect(() => {
+    setToEmail(selected?.email || '');
+    setToPhone(selected?.phone || '');
+  }, [selected?.id, selected?.email, selected?.phone]);
 
   useEffect(() => {
     if (!open) {
@@ -133,8 +148,11 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
       setReviewing(false);
       setGeneratingLink(false);
       setGeneratingForm(false);
+      setTestEmail('');
+      setTestPhone('');
     }
   }, [open]);
+
 
   useEffect(() => {
     setSubject(buildAppealEmailSubject(selected?.vehicle_registration));
@@ -258,22 +276,100 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
   /** Preview is always available once a claim is selected, even if the grounds are empty. */
   const canPreview = !!selected;
 
-  const canSend =
-    !!selected &&
-    !!selected.email &&
-    reason.trim().length > 10 &&
-    !!formLink.trim() &&
-    (!withReview || (!!reviewer && !!paymentLink.trim()));
+  const emailLooksValid = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  const phoneLooksValid = (value: string) => value.replace(/\D/g, '').length >= 10;
 
-  const sendBlockedReason = !canSend
-    ? !selected || !selected.email
-      ? 'Select a claim with an email address before sending.'
-      : reason.trim().length <= 10
-        ? 'Add the grounds for appeal (at least a sentence) before sending.'
-        : !formLink.trim()
-          ? 'Generate the appeal form link before sending.'
-          : 'Generate the inspection payment page, or switch off the independent review.'
-    : '';
+  /**
+   * The email is a blank invitation — the CUSTOMER fills the form in, not us.
+   * So the only thing we insist on is a real address to send it to.
+   */
+  const canSend = !!selected && emailLooksValid(toEmail);
+
+  const sendBlockedReason = !selected
+    ? 'Select a customer / claim first.'
+    : !emailLooksValid(toEmail)
+      ? 'Enter the customer\u2019s email address to send to.'
+      : '';
+
+  /** Friendly nudges only — they never block sending. */
+  const sendNotes = [
+    !formLink.trim() ? 'No appeal form link generated yet.' : '',
+    withReview && !paymentLink.trim() ? 'No inspection payment page generated yet.' : '',
+  ].filter(Boolean);
+
+  const smsText = useMemo(() => {
+    const reg = selected?.vehicle_registration ? ` (${selected.vehicle_registration})` : '';
+    const lines = [
+      `Buy a Warranty: we have opened your final claim appeal${reg}.`,
+      formLink ? `Complete your appeal form: ${formLink}` : '',
+      withReview && paymentLink
+        ? `Independent inspection \u00a3${feeNumber || DEFAULT_APPEAL_FEE} (paid to the inspection company): ${paymentLink}`
+        : '',
+      'Questions? Reply or call 0330 229 5040.',
+    ].filter(Boolean);
+    return lines.join('\n');
+  }, [selected?.vehicle_registration, formLink, withReview, paymentLink, feeNumber]);
+
+  const sendAppealEmailTo = async (address: string) => {
+    const { data, error } = await supabase.functions.invoke('send-appeal-email', {
+      body: {
+        to: address,
+        subject: subject.trim() || buildAppealEmailSubject(selected?.vehicle_registration),
+        html: emailHtml,
+        claimId: selected?.id,
+        registration: selected?.vehicle_registration,
+      },
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+  };
+
+  const handleSendTestEmail = async () => {
+    const address = testEmail.trim() || toEmail.trim();
+    if (!emailLooksValid(address)) {
+      toast({ title: 'Enter a valid test email address', variant: 'destructive' });
+      return;
+    }
+    setSendingTest(true);
+    try {
+      await sendAppealEmailTo(address);
+      toast({ title: 'Test email sent', description: `Sent to ${address}. Nothing was changed on the claim.` });
+    } catch (e: any) {
+      toast({ title: 'Test email failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setSendingTest(false);
+    }
+  };
+
+  const sendSmsTo = async (number: string) => {
+    const { data, error } = await supabase.functions.invoke('send-clicksend-sms', {
+      body: { to: number, message: smsText },
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+  };
+
+  const handleSendSms = async (mode: 'customer' | 'test') => {
+    const number = (mode === 'test' ? testPhone : toPhone).trim();
+    if (!phoneLooksValid(number)) {
+      toast({ title: 'Enter a valid UK mobile number', variant: 'destructive' });
+      return;
+    }
+    mode === 'test' ? setSendingTestSms(true) : setSendingSms(true);
+    try {
+      await sendSmsTo(number);
+      toast({
+        title: mode === 'test' ? 'Test text sent' : 'Text sent to the customer',
+        description: `Sent to ${number}.`,
+      });
+    } catch (e: any) {
+      toast({ title: 'Text failed', description: e.message, variant: 'destructive' });
+    } finally {
+      mode === 'test' ? setSendingTestSms(false) : setSendingSms(false);
+    }
+  };
+
+
 
 
   const handleSend = async () => {
@@ -284,34 +380,25 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
       const fee = withReview ? feeNumber : 0;
 
       // 1. Email the customer the appeal, the form link and (if agreed) the payment page.
-      const { data: emailRes, error: emailErr } = await supabase.functions.invoke('send-appeal-email', {
-        body: {
-          to: selected.email,
-          subject: subject.trim() || buildAppealEmailSubject(selected.vehicle_registration),
-          html: emailHtml,
-          claimId: selected.id,
-          registration: selected.vehicle_registration,
-        },
-      });
-      if (emailErr) throw emailErr;
-      if (emailRes?.error) throw new Error(emailRes.error);
+      await sendAppealEmailTo(toEmail.trim());
 
       // 2. Store the appeal.
       const { error: appealError } = await supabase.from('claim_appeals').insert({
         claim_id: selected.id,
-        reason: reason.trim(),
+        reason: reason.trim() || 'Final appeal opened — customer to complete the appeal form.',
         new_evidence: newEvidence.trim() || null,
         status: 'submitted',
         independent_reviewer: withReview ? reviewer?.name : 'No independent review (internal appeal)',
         reviewer_url: withReview ? reviewer?.url : null,
         appeal_fee: fee,
-        payment_link: withReview ? paymentLink.trim() : formLink.trim(),
+        payment_link: (withReview ? paymentLink.trim() : formLink.trim()) || null,
         sent_at: new Date().toISOString(),
-        customer_email: selected.email,
+        customer_email: toEmail.trim(),
         customer_notified: false,
         created_by: userRes?.user?.id ?? null,
       } as any);
       if (appealError) throw appealError;
+
 
       // 3. Claim moves to the appeal stage.
       const { error: statusError } = await supabase
@@ -322,11 +409,11 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
 
       // 4. Portal notification.
       let notified = false;
-      if (notifyCustomer && selected.email) {
+      if (notifyCustomer && toEmail.trim()) {
         const { data: customer } = await supabase
           .from('customers')
           .select('id')
-          .ilike('email', selected.email)
+          .ilike('email', toEmail.trim())
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -337,12 +424,14 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             created_by: userRes?.user?.id ?? null,
             message:
               `Your claim appeal has been opened${selected.vehicle_registration ? ` for ${selected.vehicle_registration}` : ''}. ` +
-              `Complete your appeal form here: ${formLink.trim()}. ` +
+              (formLink.trim() ? `Complete your appeal form here: ${formLink.trim()}. ` : '') +
               (withReview
-                ? `You have asked for an independent review — the £${fee} inspection fee is paid to the independent inspection company, not to Buy a Warranty. Complete the inspection form and pay here: ${paymentLink.trim()}. `
+                ? `You have asked for an independent review — the £${fee} inspection fee is paid to the independent inspection company, not to Buy a Warranty.` +
+                  (paymentLink.trim() ? ` Complete the inspection form and pay here: ${paymentLink.trim()}. ` : ' ')
                 : `You have chosen to appeal without an independent inspection, so there is nothing to pay. `) +
               `We will post every update on this appeal here in your profile.`,
           });
+
           notified = !notifyError;
           if (!notifyError) {
             await supabase
@@ -652,6 +741,22 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Mail className="h-4 w-4" /> Email to the customer
               </div>
+              <p className="text-xs text-[#5A6B82] leading-relaxed">
+                The email goes out blank — the customer fills the appeal form in themselves and makes
+                any payment. Nothing here needs completing by the claims team.
+              </p>
+              <div className="space-y-2">
+                <Label className="text-[#1A2B4A] font-semibold">Send to *</Label>
+                <Input
+                  type="email"
+                  value={toEmail}
+                  onChange={(e) => setToEmail(e.target.value)}
+                  placeholder="customer@email.co.uk"
+                />
+                <p className="text-xs text-[#5A6B82]">
+                  Prefilled from the claim — change it if the customer uses a different address.
+                </p>
+              </div>
               <div className="space-y-2">
                 <Label className="text-[#1A2B4A] font-semibold">Subject</Label>
                 <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
@@ -659,6 +764,82 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
               <div className="space-y-2">
                 <Label className="text-[#1A2B4A] font-semibold">Opening message</Label>
                 <Textarea rows={3} value={intro} onChange={(e) => setIntro(e.target.value)} />
+              </div>
+
+              <div className="rounded-md border border-dashed border-border bg-muted/20 p-3 space-y-2">
+                <Label className="text-xs font-semibold text-[#1A2B4A]">Send yourself a test email</Label>
+                <div className="flex flex-wrap gap-2">
+                  <Input
+                    type="email"
+                    value={testEmail}
+                    onChange={(e) => setTestEmail(e.target.value)}
+                    placeholder="your.name@buyawarranty.co.uk"
+                    className="flex-1 min-w-[200px] bg-background"
+                  />
+                  <Button type="button" variant="outline" onClick={handleSendTestEmail} disabled={sendingTest}>
+                    {sendingTest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
+                    Send test
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Sends the identical email to you only — the claim is not changed and the customer is
+                  not contacted.
+                </p>
+              </div>
+            </div>
+
+            {/* Text message — preview before anything is sent */}
+            <div className="space-y-3 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Send className="h-4 w-4" /> Text message (optional)
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="text-[#1A2B4A] font-semibold">Customer's mobile</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={toPhone}
+                      onChange={(e) => setToPhone(e.target.value)}
+                      placeholder="07…"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleSendSms('customer')}
+                      disabled={sendingSms}
+                      className="whitespace-nowrap"
+                    >
+                      {sendingSms ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send text'}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-[#5A6B82]">Check this number carefully before sending.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[#1A2B4A] font-semibold">Test number</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={testPhone}
+                      onChange={(e) => setTestPhone(e.target.value)}
+                      placeholder="Your own mobile"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleSendSms('test')}
+                      disabled={sendingTestSms}
+                      className="whitespace-nowrap"
+                    >
+                      {sendingTestSms ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send test'}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-[#5A6B82]">Goes to you only.</p>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1A2B4A]">Text preview</Label>
+                <pre className="whitespace-pre-wrap rounded-md border border-[#E2E8F0] bg-muted/30 p-3 text-xs text-[#1A2B4A]">
+                  {smsText}
+                </pre>
               </div>
             </div>
 
@@ -673,14 +854,30 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
         ) : (
           /* ── Email preview step ── */
           <div className="space-y-3 text-sm">
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-4 text-[#1A2B4A] shadow-sm">
-              <p><span className="text-muted-foreground">To:</span> {selected?.email}</p>
+            <div className="space-y-3 rounded-2xl border border-[#E2E8F0] bg-white p-4 text-[#1A2B4A] shadow-sm">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1A2B4A]">To</Label>
+                <Input type="email" value={toEmail} onChange={(e) => setToEmail(e.target.value)} />
+              </div>
               <p><span className="text-muted-foreground">Subject:</span> {subject}</p>
               <p className="text-muted-foreground">
                 {withReview
                   ? `Independent review agreed — ${reviewer?.name} · £${feeNumber} paid to the inspection company`
                   : 'No independent review — nothing for the customer to pay'}
               </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Input
+                  type="email"
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  placeholder="Test address (yourself)"
+                  className="flex-1 min-w-[200px]"
+                />
+                <Button type="button" variant="outline" size="sm" onClick={handleSendTestEmail} disabled={sendingTest}>
+                  {sendingTest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
+                  Send test email
+                </Button>
+              </div>
             </div>
             <iframe
               title="Appeal email preview"
@@ -697,22 +894,36 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
                 </Button>
               )}
             </div>
+            <div className="space-y-1 rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-sm">
+              <Label className="text-xs font-semibold text-[#1A2B4A]">Text message preview</Label>
+              <pre className="whitespace-pre-wrap rounded-md border border-[#E2E8F0] bg-muted/30 p-3 text-xs text-[#1A2B4A]">
+                {smsText}
+              </pre>
+              <p className="text-xs text-muted-foreground">
+                Nothing is texted when you send this email — texts are sent from the previous step.
+              </p>
+            </div>
             <p className="text-muted-foreground">
-              Sending will email the customer, store the appeal, set the claim to{' '}
+              This is the blank invitation the customer receives — they complete the form and any
+              payment themselves. Sending will email them, store the appeal, set the claim to{' '}
               <Badge>appeal</Badge>{' '}
               {notifyCustomer ? 'and post an update in their profile.' : 'without a profile notification.'}
             </p>
           </div>
         )}
+
         </div>
 
         <DialogFooter className="gap-2 border-t border-[#E2E8F0] bg-white px-6 py-4 sm:items-center">
 
           {reviewing ? (
             <>
-              {sendBlockedReason && (
-                <p className="text-xs text-muted-foreground mr-auto">{sendBlockedReason}</p>
+              {(sendBlockedReason || sendNotes.length > 0) && (
+                <p className="text-xs text-muted-foreground mr-auto">
+                  {sendBlockedReason || sendNotes.join(' ')}
+                </p>
               )}
+
               <Button variant="outline" onClick={() => setReviewing(false)} disabled={sending}>
                 <ArrowLeft className="h-4 w-4 mr-1" /> Back to edit
               </Button>
