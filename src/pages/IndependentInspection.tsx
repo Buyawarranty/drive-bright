@@ -368,9 +368,14 @@ const IndependentInspection: React.FC = () => {
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#1A2B4A]">Independent inspection</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#1A2B4A]">
+            {request.customer_name
+              ? `Hi ${request.customer_name.split(' ')[0]}, let's arrange your independent inspection`
+              : 'Your independent inspection'}
+          </h1>
           <p className="text-sm text-slate-600 mt-1">
-            An independent engineer inspects the vehicle and gives the final decision on your claim.
+            Just tell us where the vehicle is, then pay the £{fee.toFixed(0)} inspection fee securely by card. An independent
+            engineer will inspect the vehicle and give the final decision on your claim.
           </p>
         </div>
 
