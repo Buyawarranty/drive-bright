@@ -15,7 +15,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { 
   Shield, Car, Clock, CheckCircle, CreditCard, Calendar, 
   Phone, Mail, MessageCircle, AlertCircle, Loader2, Lock,
-  Wrench, MapPin, Zap, FileText, Award, Heart, User, Check, Pencil
+  Wrench, MapPin, Zap, FileText, Award, Heart, User, Check, Pencil, ChevronRight
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
