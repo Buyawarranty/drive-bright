@@ -465,11 +465,25 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
           );
         })}
         {unassigned > 0 && (
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-amber-300 bg-amber-50 text-amber-900 text-[11px] font-semibold">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+          <span
+            title={
+              unassignedOverdue
+                ? `Waiting ${oldestUnassignedMins}m — over ${OVERDUE_MINS} minutes. As soon as an agent is switched on, these are handed back into the rotation automatically.`
+                : `Waiting ${oldestUnassignedMins}m — normal while the rotation picks them up or an Open Pool agent takes them.`
+            }
+            className={cn(
+              'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-semibold',
+              unassignedOverdue
+                ? 'border-red-400 bg-red-100 text-red-800 animate-pulse'
+                : 'border-amber-300 bg-amber-50 text-amber-900',
+            )}
+          >
+            <span className={cn('h-1.5 w-1.5 rounded-full', unassignedOverdue ? 'bg-red-600' : 'bg-amber-500')} />
             Unassigned <span className="tabular-nums">{unassigned}</span>
+            <span className="tabular-nums font-normal opacity-80">· {oldestUnassignedMins}m</span>
           </span>
         )}
+
         <span
           className={cn(
             'ml-auto text-[11px] font-semibold tabular-nums',
