@@ -225,11 +225,11 @@ const IndependentInspection: React.FC = () => {
       });
       if (fnError) throw new Error(fnError.message);
       if (data?.checkout_url) {
-        // Details saved — show the in-page card form (falls back to the hosted page).
+        // Details saved — send the customer to the secure Worldpay payment page.
         setCheckoutUrl(data.checkout_url);
         setDetailsSaved(true);
         setSubmitting(false);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.location.href = WORLDPAY_HPP_URL;
         return;
       }
       throw new Error(data?.error || 'Could not start payment');
