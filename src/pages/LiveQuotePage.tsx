@@ -15,7 +15,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { 
   Shield, Car, Clock, CheckCircle, CreditCard, Calendar, 
   Phone, Mail, MessageCircle, AlertCircle, Loader2, Lock,
-  Wrench, MapPin, Zap, FileText, Award, Heart, User, Check
+  Wrench, MapPin, Zap, FileText, Award, Heart, User, Check, Pencil
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -185,9 +185,37 @@ export default function LiveQuotePage() {
     }
   }, []);
   
+  // Free-text address search (street or town), same picker as postcode lookup
+  const searchAddresses = useCallback(async (term: string) => {
+    const query = term.trim();
+    if (query.length < 4) return;
+    setIsLookingUpPostcode(true);
+    setPostcodeLookupError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
+        body: { action: 'search', term: query },
+      });
+      const rows = Array.isArray(data?.suggestions)
+        ? data.suggestions.map((sug: any) => sug.resolved).filter(Boolean)
+        : [];
+      if (!error && rows.length > 0) {
+        setPostcoderAddresses(rows);
+      } else {
+        setPostcoderAddresses([]);
+        setPostcodeLookupError('No addresses found. Try a postcode or enter your address manually.');
+      }
+    } catch (err) {
+      console.warn('Address search unavailable', err);
+      setPostcoderAddresses([]);
+    } finally {
+      setIsLookingUpPostcode(false);
+    }
+  }, []);
+
   // Handle postcode change with debounce
   const handlePostcodeChange = useCallback((value: string) => {
-    const uppercaseValue = value.toUpperCase();
+    const looksLikePostcode = /^[A-Za-z0-9\s]{0,8}$/.test(value) && /\d/.test(value);
+    const uppercaseValue = looksLikePostcode ? value.toUpperCase() : value;
     setCustomerData(prev => ({ ...prev, postcode: uppercaseValue }));
     setPostcodeLookupError(null);
     
