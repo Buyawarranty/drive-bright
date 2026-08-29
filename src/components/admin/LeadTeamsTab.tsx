@@ -43,6 +43,8 @@ import { SaveOnlineSaleAllocationPanel } from './leads/SaveOnlineSaleAllocationP
 
 
 import { ScoreboardTargetsSection } from './leads/ScoreboardTargetsSection';
+import { OrrSection } from './leads/OrrSection';
+
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
