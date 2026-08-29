@@ -83,11 +83,21 @@ let priorityDepth = 0;
 /** Set while non-blocking CRM work is running (pollers, counters, badges). */
 let backgroundDepth = 0;
 
+/**
+ * Safety valve: a deep-sleeping tab holds its background reads back, but never
+ * hoards them forever — past this many waiting reads we let them trickle out
+ * one at a time so nothing can leak memory or hang a caller indefinitely.
+ */
+const MAX_HELD_BACKGROUND = 40;
+
 function canStart(lane: RequestLane) {
   if (active >= concurrencyCap()) return false;
   if (lane === 'high') return true;
   if (lane === 'normal') return highQueue.length === 0;
-  return highQueue.length === 0 && normalQueue.length === 0 && activeBackground < backgroundCap();
+  const cap = backgroundCap();
+  const allowance =
+    cap === 0 && backgroundQueue.length > MAX_HELD_BACKGROUND ? 1 : cap;
+  return highQueue.length === 0 && normalQueue.length === 0 && activeBackground < allowance;
 }
 
 function startRequest(lane: RequestLane, resolve: () => void) {
