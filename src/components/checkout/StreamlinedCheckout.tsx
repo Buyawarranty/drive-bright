@@ -281,6 +281,28 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     
     try {
       console.log('🔍 Auto postcode lookup for:', cleanPostcode);
+
+      // Postcoder full address lookup (via edge function, key stays server-side)
+      try {
+        const { data: pcData, error: pcError } = await supabase.functions.invoke('postcoder-lookup', {
+          body: { action: 'find', postcode: cleanPostcode },
+        });
+        const rows = Array.isArray(pcData?.addresses) ? pcData.addresses : [];
+        if (!pcError && rows.length > 0) {
+          const displayPostcode = rows[0].postcode || postcode;
+          setPostcodeInput(displayPostcode);
+          setAddressData(prev => ({ ...prev, postcode: displayPostcode }));
+          setAddressValidated(prev => ({ ...prev, postcode: true }));
+          setAddressErrors(prev => ({ ...prev, postcode: '' }));
+          setAddressSuggestions(rows);
+          setShowAddressDropdown(true);
+          setIsLookingUp(false);
+          return;
+        }
+      } catch (pcErr) {
+        console.warn('Postcoder lookup unavailable, falling back', pcErr);
+      }
+
       const response = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
       
       if (response.ok) {
