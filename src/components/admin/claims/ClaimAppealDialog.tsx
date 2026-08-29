@@ -626,23 +626,15 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
 
                   <div className="rounded-md border border-dashed border-border bg-muted/20 p-3 flex flex-wrap items-center gap-x-4 gap-y-2">
                     <span className="text-xs text-muted-foreground">
-                      See the design the customer experiences:
+                      See the design the customer experiences after paying:
                     </span>
-                    <Button
-                      type="button"
-                      variant="link"
-                      className="h-auto p-0 text-xs text-[#E8541A]"
-                      onClick={() => window.open('/independent-inspection/preview', '_blank')}
-                    >
-                      <Eye className="mr-1 h-3.5 w-3.5" /> Inspection payment form
-                    </Button>
                     <Button
                       type="button"
                       variant="link"
                       className="h-auto p-0 text-xs text-[#E8541A]"
                       onClick={() => window.open('/inspection-payment-received', '_blank')}
                     >
-                      <Eye className="mr-1 h-3.5 w-3.5" /> Payment received thank-you page
+                      <Eye className="mr-1 h-3.5 w-3.5" /> "Payment received" thank-you page
                     </Button>
                   </div>
                 </>
