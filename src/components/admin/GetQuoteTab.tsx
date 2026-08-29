@@ -759,7 +759,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       if (typeof d.customerTown === 'string') setCustomerTown(d.customerTown);
       if (typeof d.customerBuildingNumber === 'string') setCustomerBuildingNumber(d.customerBuildingNumber);
       if (typeof d.customerCounty === 'string') setCustomerCounty(d.customerCounty);
-      if (typeof d.skipAddressDetails === 'boolean') setSkipAddressDetails(d.skipAddressDetails);
+      // Address is always compulsory now — never restore a "skip address" flag.
       if (d.customerPostcode || d.customerStreet) setShowAddressFields(true);
       // NOTE: intentionally not restoring customMonthlyPrice / customFullPrice /
       // quotedPriceOverride here — otherwise a refresh keeps figures stuck on
