@@ -228,6 +228,11 @@ serve(async (req) => {
                 <div class="info-row"><span class="info-label">Labour Rate:</span><span class="info-value">${variables?.labourRateDisplay || 'N/A'}</span></div>
                 <div class="info-row"><span class="info-label">Payment Method:</span><span class="info-value">${variables?.paymentMethod || variables?.paymentType || 'N/A'}</span></div>
               </div>
+              <div class="info-box">
+                <h3>What's included with Platinum</h3>
+                <p>Your Platinum warranty covers thousands of mechanical and electrical parts, including:</p>
+                <div class="documents-list"><ul><li>Engine, gearbox, clutch and drivetrain</li><li>Electrics, ECUs, sensors and diagnostics</li><li>Turbo, fuel and cooling systems</li><li>Air conditioning, steering and suspension</li><li>Any VAT-registered garage in the UK — or we can help you find one</li><li>Approved parts and labour paid directly to your garage</li><li>UK Team Claims support</li><li>Transferable if you sell your car</li></ul></div>
+              </div>
               ${variables?.temporaryPassword && !variables?.isExistingCustomer ? `
               <div class="login-box">
                 <h3>🔐 Your Portal Login Details!</h3>
