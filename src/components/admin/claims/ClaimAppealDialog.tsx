@@ -255,18 +255,24 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
     void loadClaims(term);
   };
 
-  /** Preview only needs a customer and the grounds — links can be generated after. */
-  const canReview = !!selected && !!selected.email && reason.trim().length > 10;
+  /** Preview is always available once a claim is selected, even if the grounds are empty. */
+  const canPreview = !!selected;
 
   const canSend =
-    canReview &&
+    !!selected &&
+    !!selected.email &&
+    reason.trim().length > 10 &&
     !!formLink.trim() &&
     (!withReview || (!!reviewer && !!paymentLink.trim()));
 
   const sendBlockedReason = !canSend
-    ? !formLink.trim()
-      ? 'Generate the appeal form link before sending.'
-      : 'Generate the inspection payment page, or switch off the independent review.'
+    ? !selected || !selected.email
+      ? 'Select a claim with an email address before sending.'
+      : reason.trim().length <= 10
+        ? 'Add the grounds for appeal (at least a sentence) before sending.'
+        : !formLink.trim()
+          ? 'Generate the appeal form link before sending.'
+          : 'Generate the inspection payment page, or switch off the independent review.'
     : '';
 
 
