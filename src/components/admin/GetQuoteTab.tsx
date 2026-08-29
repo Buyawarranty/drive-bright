@@ -7956,105 +7956,95 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         </div>
                         
                         {!skipAddressDetails && (
-                          <div className="grid grid-cols-2 gap-4 pt-2">
+                          <div className="space-y-4 pt-2">
                             <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">House/Building Number <span className="text-red-600">*</span></Label>
-                              <Input
-                                value={customerBuildingNumber}
-                                onChange={(e) => setCustomerBuildingNumber(e.target.value)}
-                                placeholder="e.g. 42"
-                                className={cn(
-                                  "bg-gray-50 focus:bg-white transition-colors",
-                                  customerBuildingNumber.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
-                                )}
+                              <Label className="text-xs font-medium text-gray-600">Postcode lookup <span className="text-red-600">*</span></Label>
+                              <AddressAutocomplete
+                                placeholder="Enter postcode, e.g. M1 1AA"
+                                onAddressSelect={(address: AddressData) => {
+                                  if (address.building_number) setCustomerBuildingNumber(address.building_number);
+                                  if (address.line_1) setCustomerStreet(address.line_1);
+                                  if (address.town) setCustomerTown(address.town);
+                                  if (address.county) setCustomerCounty(address.county);
+                                  if (address.postcode) setCustomerPostcode(address.postcode.toUpperCase());
+                                  setShowAddressFields(true);
+                                }}
                               />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">Street <span className="text-red-600">*</span></Label>
-                              <Input
-                                value={customerStreet}
-                                onChange={(e) => setCustomerStreet(e.target.value)}
-                                placeholder="e.g. High Street"
-                                className={cn(
-                                  "bg-gray-50 focus:bg-white transition-colors",
-                                  customerStreet.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
-                                )}
-                              />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">Town/City <span className="text-red-600">*</span></Label>
-                              <Input
-                                value={customerTown}
-                                onChange={(e) => setCustomerTown(e.target.value)}
-                                placeholder="e.g. Manchester"
-                                className={cn(
-                                  "bg-gray-50 focus:bg-white transition-colors",
-                                  customerTown.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
-                                )}
-                              />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600">County</Label>
-                              <Input
-                                value={customerCounty}
-                                onChange={(e) => setCustomerCounty(e.target.value)}
-                                placeholder="e.g. Greater Manchester"
-                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                              />
+                              <p className="text-[11px] text-gray-500">Select an address and the fields below will fill in automatically.</p>
                             </div>
 
-                            <div className="space-y-1.5">
-                              <Label className="text-xs font-medium text-gray-600 flex items-center gap-2">
-                                Postcode *
-                                {isLookingUpPostcode && (
-                                  <span className="flex items-center gap-1 text-xs text-blue-600">
-                                    <Loader2 className="w-3 h-3 animate-spin" />
-                                    Looking up...
-                                  </span>
-                                )}
-                              </Label>
-                              <div className="relative">
+                            {!showAddressFields && (
+                              <button
+                                type="button"
+                                onClick={() => setShowAddressFields(true)}
+                                className="text-xs text-blue-600 hover:underline"
+                              >
+                                Can't find the address? Enter it manually
+                              </button>
+                            )}
+
+                            {showAddressFields && (
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-gray-600">House/Building Number <span className="text-red-600">*</span></Label>
+                                <Input
+                                  value={customerBuildingNumber}
+                                  onChange={(e) => setCustomerBuildingNumber(e.target.value)}
+                                  placeholder="e.g. 42"
+                                  className={cn(
+                                    "bg-gray-50 focus:bg-white transition-colors",
+                                    customerBuildingNumber.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                                  )}
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-gray-600">Street <span className="text-red-600">*</span></Label>
+                                <Input
+                                  value={customerStreet}
+                                  onChange={(e) => setCustomerStreet(e.target.value)}
+                                  placeholder="e.g. High Street"
+                                  className={cn(
+                                    "bg-gray-50 focus:bg-white transition-colors",
+                                    customerStreet.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                                  )}
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-gray-600">Town/City <span className="text-red-600">*</span></Label>
+                                <Input
+                                  value={customerTown}
+                                  onChange={(e) => setCustomerTown(e.target.value)}
+                                  placeholder="e.g. Manchester"
+                                  className={cn(
+                                    "bg-gray-50 focus:bg-white transition-colors",
+                                    customerTown.trim() ? "border-gray-200 focus:border-blue-400" : "border-2 border-red-400 focus:border-red-500"
+                                  )}
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-gray-600">County</Label>
+                                <Input
+                                  value={customerCounty}
+                                  onChange={(e) => setCustomerCounty(e.target.value)}
+                                  placeholder="e.g. Greater Manchester"
+                                  className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                                />
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <Label className="text-xs font-medium text-gray-600">Postcode <span className="text-red-600">*</span></Label>
                                 <Input
                                   value={customerPostcode}
-                                  onChange={(e) => {
-                                    const v = e.target.value.toUpperCase();
-                                    setCustomerPostcode(v);
-                                    setPostcodeLookupSuccess(false);
-                                    const clean = v.replace(/\s/g, '');
-                                    if (isValidUkPostcode(clean)) {
-                                      setIsLookingUpPostcode(true);
-                                      fetch(`https://api.postcodes.io/postcodes/${clean}`)
-                                        .then(r => r.ok ? r.json() : null)
-                                        .then(data => {
-                                          if (data?.result) {
-                                            const town = data.result.admin_district || data.result.parish || data.result.admin_ward || '';
-                                            const county = data.result.admin_county || data.result.region || '';
-                                            setCustomerPostcode(data.result.postcode || v);
-                                            if (town) setCustomerTown(town);
-                                            if (county && !customerCounty) setCustomerCounty(county);
-                                            setPostcodeLookupSuccess(true);
-                                          }
-                                        })
-                                        .catch(() => {})
-                                        .finally(() => setIsLookingUpPostcode(false));
-                                    }
-                                  }}
+                                  onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())}
                                   placeholder="e.g. M1 1AA"
                                   className={cn(
                                     "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors uppercase",
-                                    !customerPostcode.trim() && "border-2 border-red-400 focus:border-red-500",
-                                    postcodeLookupSuccess && "pr-8 border-green-300"
+                                    !customerPostcode.trim() && "border-2 border-red-400 focus:border-red-500"
                                   )}
-
                                 />
-                                {postcodeLookupSuccess && (
-                                  <CheckCircle2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
-                                )}
                               </div>
-                              {postcodeLookupSuccess && (
-                                <p className="text-xs text-green-600">Town auto-filled from postcode</p>
-                              )}
                             </div>
+                            )}
                           </div>
                         )}
                         
