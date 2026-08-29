@@ -246,7 +246,7 @@ export const PrintablePolicySummary: React.FC<PrintablePolicySummaryProps> = ({
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '18px' }}>
               <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', padding: '10px 12px', textAlign: 'center' }}>
                 <div style={{ color: '#64748b', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Claim Limit</div>
-                <div style={{ fontWeight: '700', fontSize: '16px', color: '#1e3a5f', marginTop: '2px' }}>£{(policy.claim_limit || 1250).toLocaleString()}</div>
+                <div style={{ fontWeight: '700', fontSize: '16px', color: '#1e3a5f', marginTop: '2px' }}>£{getDisplayClaimLimitValue(policy.claim_limit || 1250).toLocaleString()}</div>
               </div>
               <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', padding: '10px 12px', textAlign: 'center' }}>
                 <div style={{ color: '#64748b', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Voluntary Excess</div>

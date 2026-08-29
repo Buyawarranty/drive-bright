@@ -1,4 +1,5 @@
 // Shared quote email template.
+import { formatClaimLimit } from "./claim-limit-display.ts";
 //
 // Deliberately plain / letter-style so Gmail files it under Primary rather than
 // Promotions. It reads like a personal email from the agent who prepared it:
@@ -80,7 +81,7 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
     ? Number(data.totalPrice)
     : (monthlyNum ? Math.round(monthlyNum * 12) : null);
 
-  const claimLimitStr = data.claimLimit ? `£${Number(data.claimLimit).toLocaleString()} per claim` : null;
+  const claimLimitStr = data.claimLimit ? `${formatClaimLimit(data.claimLimit)} per claim` : null;
   const excessStr = data.excessAmount !== null && data.excessAmount !== undefined ? `£${Number(data.excessAmount)}` : null;
   const labourStr = data.labourRate ? `£${Number(data.labourRate)} per hour` : null;
   const mileageStr = data.mileage ? `${Number(data.mileage).toLocaleString()} miles` : null;

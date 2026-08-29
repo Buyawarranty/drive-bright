@@ -21,6 +21,7 @@ import { RenewalCompletionPanel } from './RenewalCompletionPanel';
 import { scoreRenewalPriority, PRIORITY_TONE } from './renewalPriority';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { recordRenewalAudit } from './renewalAudit';
+import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 interface MatchedLead {
   id: string;
@@ -142,7 +143,7 @@ export const RenewalDrawer: React.FC<Props> = ({ row, live, open, onOpenChange }
             <div className="grid grid-cols-2 gap-y-1">
               <span className="text-muted-foreground">Policy</span><span>{row?.policy_number || '—'}</span>
               <span className="text-muted-foreground">Plan</span><span>{row?.plan_type || '—'}</span>
-              <span className="text-muted-foreground">Claim limit</span><span>{money(row?.claim_limit)}</span>
+              <span className="text-muted-foreground">Claim limit</span><span>{row?.claim_limit ? `£${getDisplayClaimLimitValue(Number(row.claim_limit)).toLocaleString()}` : '—'}</span>
               <span className="text-muted-foreground">Starts</span>
               <span>{row?.policy_start_date ? format(new Date(row.policy_start_date), 'd MMM yyyy') : '—'}</span>
               <span className="text-muted-foreground">Expires</span>
