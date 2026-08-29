@@ -1503,6 +1503,8 @@ export default function LiveQuotePage() {
                       <p className="text-xs text-red-500">{fieldErrors.city}</p>
                     )}
                   </div>
+                  </>
+                  )}
                 </div>
 
                 <Separator />
