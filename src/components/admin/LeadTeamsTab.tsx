@@ -308,6 +308,12 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
               Website sales asking to cancel. Pick an agent and send it to them as an urgent save lead.
             </p>
           </div>
+          <ImportLeadToAgentPanel
+            title="Import a lead and send it to an agent"
+            description="Already have the lead in the system? Find them by reg plate, name, email or phone, pick the agent, and it goes to them as an urgent save cancellation lead."
+            noteTag="SAVE CANCELLATION"
+            markUrgent
+          />
           <CancellationsAllocationPanel />
         </div>
       )}
