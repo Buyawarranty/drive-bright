@@ -1531,6 +1531,7 @@ export default function LiveQuotePage() {
                       type="button"
                       onClick={() => {
                         setShowAddressFields(false);
+                        setManualAddressEntry(false);
                         setPostcoderAddresses([]);
                       }}
                       className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:underline"
