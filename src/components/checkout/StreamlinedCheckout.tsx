@@ -2593,7 +2593,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </p>
                 )}
 
-                {/* Address picker — choose your address to fill the fields below */}
+                {/* Address picker — drill into a street or town, then pick the address */}
                 {showAddressDropdown && addressSuggestions.length > 0 && (
                   <div className="mt-2 rounded-lg border border-border bg-background shadow-sm">
                     <p className="px-3 py-2 text-xs font-medium text-muted-foreground border-b border-border">
@@ -2602,17 +2602,35 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <div className="max-h-56 overflow-auto">
                       {addressSuggestions.map((addr: any, i: number) => (
                         <button
-                          key={`${addr.formatted_address}-${i}`}
+                          key={`${addr.__container ? addr.label : addr.formatted_address}-${i}`}
                           type="button"
-                          onClick={() => handleSelectLookupAddress(addr)}
-                          className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b border-border/60 last:border-b-0"
+                          onClick={() => {
+                            if (addr.__container) {
+                              setPostcodeInput(addr.drill);
+                              performAddressSearch(addr.drill);
+                            } else {
+                              handleSelectLookupAddress(addr);
+                            }
+                          }}
+                          className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b border-border/60 last:border-b-0 flex items-center justify-between gap-2"
                         >
-                          {addr.formatted_address || [addr.line_1, addr.town_or_city, addr.postcode].filter(Boolean).join(', ')}
+                          <span className="min-w-0 truncate">
+                            {addr.__container
+                              ? addr.label
+                              : addr.formatted_address || [addr.line_1, addr.town_or_city, addr.postcode].filter(Boolean).join(', ')}
+                          </span>
+                          {addr.__container && (
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+                              {addr.count} addresses
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </span>
+                          )}
                         </button>
                       ))}
                     </div>
                   </div>
                 )}
+
 
                 {/* Postcode validation error */}
                 {(showValidation || addressTouched.postcode) && addressErrors.postcode && (
