@@ -357,6 +357,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     } catch (err) {
       console.error('Postcode lookup error:', err);
       setAddressLookupFailed(true);
+      setManualAddressEntry(true);
       setShowAddressFields(true);
     } finally {
       setIsLookingUp(false);
@@ -2676,6 +2677,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     type="button"
                     onClick={() => {
                       setShowAddressFields(true);
+                      setManualAddressEntry(true);
                       setShowAddressDropdown(false);
                       if (ukPostcodeRegex.test(postcodeInput.replace(/\s/g, ''))) {
                         const formatted = postcodeInput.replace(/\s/g, '').toUpperCase();
@@ -2701,6 +2703,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       type="button"
                       onClick={() => {
                         setShowAddressFields(false);
+                        setManualAddressEntry(false);
                         setShowAddressDropdown(false);
                         setAddressSuggestions([]);
                       }}
