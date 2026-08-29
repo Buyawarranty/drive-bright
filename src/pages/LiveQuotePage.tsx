@@ -15,7 +15,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { 
   Shield, Car, Clock, CheckCircle, CreditCard, Calendar, 
   Phone, Mail, MessageCircle, AlertCircle, Loader2, Lock,
-  Wrench, MapPin, Zap, FileText, Award, Heart, User, Check
+  Wrench, MapPin, Zap, FileText, Award, Heart, User, Check, Pencil
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -185,9 +185,37 @@ export default function LiveQuotePage() {
     }
   }, []);
   
+  // Free-text address search (street or town), same picker as postcode lookup
+  const searchAddresses = useCallback(async (term: string) => {
+    const query = term.trim();
+    if (query.length < 4) return;
+    setIsLookingUpPostcode(true);
+    setPostcodeLookupError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
+        body: { action: 'search', term: query },
+      });
+      const rows = Array.isArray(data?.suggestions)
+        ? data.suggestions.map((sug: any) => sug.resolved).filter(Boolean)
+        : [];
+      if (!error && rows.length > 0) {
+        setPostcoderAddresses(rows);
+      } else {
+        setPostcoderAddresses([]);
+        setPostcodeLookupError('No addresses found. Try a postcode or enter your address manually.');
+      }
+    } catch (err) {
+      console.warn('Address search unavailable', err);
+      setPostcoderAddresses([]);
+    } finally {
+      setIsLookingUpPostcode(false);
+    }
+  }, []);
+
   // Handle postcode change with debounce
   const handlePostcodeChange = useCallback((value: string) => {
-    const uppercaseValue = value.toUpperCase();
+    const looksLikePostcode = /^[A-Za-z0-9\s]{0,8}$/.test(value) && /\d/.test(value);
+    const uppercaseValue = looksLikePostcode ? value.toUpperCase() : value;
     setCustomerData(prev => ({ ...prev, postcode: uppercaseValue }));
     setPostcodeLookupError(null);
     
@@ -196,13 +224,18 @@ export default function LiveQuotePage() {
       clearTimeout(postcodeDebounceRef.current);
     }
     
-    // Only trigger lookup if postcode looks valid (has enough characters)
+    // Postcode lookup, or free-text street/town search
     if (uppercaseValue.length >= 5 && postcodeRegexForLookup.test(uppercaseValue.trim())) {
       postcodeDebounceRef.current = setTimeout(() => {
         lookupPostcode(uppercaseValue);
       }, 300);
+    } else if (uppercaseValue.trim().length >= 4) {
+      postcodeDebounceRef.current = setTimeout(() => {
+        searchAddresses(uppercaseValue);
+      }, 500);
     }
-  }, [lookupPostcode]);
+  }, [lookupPostcode, searchAddresses]);
+
   
   // Cleanup debounce timeout on unmount
   useEffect(() => {
@@ -1363,7 +1396,7 @@ export default function LiveQuotePage() {
                   {/* Postcode with auto-lookup */}
                   <div className="space-y-2">
                     <Label htmlFor="postcodeDisplay" className="flex items-center gap-2">
-                      Postcode *
+                      Postcode, street or town *
                       {isLookingUpPostcode && (
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <Loader2 className="h-3 w-3 animate-spin" />
@@ -1384,7 +1417,7 @@ export default function LiveQuotePage() {
                           }
                         }}
                         className={`pr-10 ${shouldShowError('postcode') ? 'border-red-500' : isFieldValid('postcode') ? 'border-green-500' : ''}`}
-                        placeholder="e.g. SW1A 1AA"
+                        placeholder="e.g. SW1A 1AA or High Street, Bath"
                       />
                       {isLookingUpPostcode ? (
                         <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-500 animate-spin" />
@@ -1454,6 +1487,19 @@ export default function LiveQuotePage() {
 
                   {showAddressFields && (
                   <>
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAddressFields(false);
+                        setPostcoderAddresses([]);
+                      }}
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:underline"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      Search a different address
+                    </button>
+                  </div>
                   {/* Address Line 1 */}
                   <div className="space-y-2">
                     <Label htmlFor="addressLine1">Address Line 1 *</Label>

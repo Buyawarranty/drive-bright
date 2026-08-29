@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ArrowLeft, CheckCircle, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, X, Info, Calendar, Loader2, Search, Car, Home } from 'lucide-react';
+import { ArrowLeft, CheckCircle, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, X, Info, Calendar, Loader2, Search, Car, Home, Pencil } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -360,6 +360,37 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       setIsLookingUp(false);
     }
   }, []);
+
+  // Free-text address search — works for street names, towns and partial addresses
+  const performAddressSearch = useCallback(async (term: string) => {
+    const query = term.trim();
+    if (query.length < 4) return;
+
+    setIsLookingUp(true);
+    setAddressLookupFailed(false);
+    try {
+      const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
+        body: { action: 'search', term: query },
+      });
+      const rows = Array.isArray(data?.suggestions)
+        ? data.suggestions.map((s: any) => s.resolved).filter(Boolean)
+        : [];
+      if (!error && rows.length > 0) {
+        setAddressSuggestions(rows);
+        setShowAddressDropdown(true);
+      } else {
+        setAddressSuggestions([]);
+        setShowAddressDropdown(false);
+      }
+    } catch (err) {
+      console.warn('Address search unavailable', err);
+      setAddressSuggestions([]);
+      setShowAddressDropdown(false);
+    } finally {
+      setIsLookingUp(false);
+    }
+  }, []);
+
 
   // Populate every address field once the customer picks their final address
   const handleSelectLookupAddress = useCallback((addr: any) => {
@@ -2485,28 +2516,34 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             <div id="address-fields" className="space-y-4">
               {/* Postcode Lookup - Auto triggers on valid format or blur */}
               <div>
-                <Label className="text-sm font-medium text-foreground/80">Postcode *</Label>
+                <Label className="text-sm font-medium text-foreground/80">Postcode, street or town *</Label>
                 <div className="relative mt-1.5">
                   <Input
                     id="postcode-lookup"
                     type="text"
                     value={postcodeInput}
                     onChange={(e) => {
-                      const value = e.target.value.toUpperCase();
+                      const raw = e.target.value;
+                      const looksLikePostcode = /^[A-Za-z0-9\s]{0,8}$/.test(raw) && /\d/.test(raw);
+                      const value = looksLikePostcode ? raw.toUpperCase() : raw;
                       setPostcodeInput(value);
                       setAddressData(prev => ({ ...prev, postcode: value }));
-                      
+
                       // Clear existing timeout
                       if (postcodeLookupTimeoutRef.current) {
                         clearTimeout(postcodeLookupTimeoutRef.current);
                       }
-                      
-                      // Debounce: auto-lookup after 300ms if valid format
+
                       const cleanValue = value.replace(/\s/g, '');
                       if (ukPostcodeRegex.test(cleanValue)) {
                         postcodeLookupTimeoutRef.current = setTimeout(() => {
                           performPostcodeLookup(value);
                         }, 300);
+                      } else if (value.trim().length >= 4) {
+                        // Street / town search
+                        postcodeLookupTimeoutRef.current = setTimeout(() => {
+                          performAddressSearch(value);
+                        }, 500);
                       }
                     }}
                     onBlur={() => {
@@ -2518,10 +2555,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       setAddressTouched(prev => ({ ...prev, postcode: true }));
                       validateAddressField('postcode');
                     }}
-                    placeholder="e.g. SW1A 1AA"
-                    maxLength={8}
-                    className={`h-11 sm:h-12 text-base font-medium uppercase tracking-wider pr-10 ${getAddressInputValidationClass('postcode')}`}
+                    placeholder="e.g. SW1A 1AA or High Street, Bath"
+                    className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('postcode')}`}
                   />
+
                   {isLookingUp ? (
                     <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground animate-spin" />
                   ) : addressValidated.postcode && !addressErrors.postcode ? (
@@ -2584,7 +2621,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     }}
                     className="mt-2 text-sm text-[#1a1a1a] hover:underline font-medium"
                   >
-                    Enter your address
+                    Enter your address manually
                   </button>
                 )}
               </div>
@@ -2592,6 +2629,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               {/* Address Fields - Shown after lookup or manual entry click */}
               {showAddressFields && (
                 <div className="space-y-4 pt-2">
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAddressFields(false);
+                        setShowAddressDropdown(false);
+                        setAddressSuggestions([]);
+                      }}
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-[#1a1a1a] hover:underline"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      Search a different address
+                    </button>
+                  </div>
+
                   {/* Address Line 1 */}
                   <div>
                     <Label htmlFor="address_line_1" className="text-sm font-medium text-foreground/80">
