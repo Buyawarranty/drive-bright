@@ -239,9 +239,22 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   // Fetch full address details when user selects a suggestion
   // IMPORTANT: If this fails, we keep whatever the user typed - never clear
   const handleSelectAddress = async (suggestion: AutocompleteSuggestion) => {
+    // Container group → drill down: keep narrowing until final addresses appear
+    if (suggestion.container && suggestion.drill) {
+      const drillTerm = suggestion.drill;
+      setInputValue(drillTerm);
+      setHasSelected(false);
+      setSelectedIndex(-1);
+      await fetchSuggestions(drillTerm);
+      setShowDropdown(true);
+      // Keep focus so the user can keep clicking through the list
+      inputRef.current?.focus();
+      return;
+    }
+
     setIsLoading(true);
     setShowDropdown(false);
-    
+
     // Update display value to show selected address
     setInputValue(suggestion.address);
 
