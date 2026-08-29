@@ -256,13 +256,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   
   // Track if address lookup failed (for showing manual entry)
   const [addressLookupFailed, setAddressLookupFailed] = useState(false);
-  // Track if address fields should be shown (after lookup or manual entry click)
-  const [showAddressFields, setShowAddressFields] = useState(
-    // Show if address is already populated
-    !!(addressData.address_line_1 && addressData.town && addressData.postcode)
-  );
-  // Postcode input for lookup
-  const [postcodeInput, setPostcodeInput] = useState(addressData.postcode || '');
+  // Track if address fields should be shown (only after lookup selection or manual entry click)
+  const [showAddressFields, setShowAddressFields] = useState(false);
+  // True when the customer opened the fields via "Enter your address manually" —
+  // clearing the search box must not collapse fields they're typing into.
+  const [manualAddressEntry, setManualAddressEntry] = useState(false);
+  // Postcode/street/town search input — starts empty even if an address was restored
+  const [postcodeInput, setPostcodeInput] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
   const [showAddressDropdown, setShowAddressDropdown] = useState(false);
@@ -337,14 +337,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           } else {
             setTownAutoFilled(false);
           }
+          setManualAddressEntry(false);
           setShowAddressFields(true);
         } else {
           setAddressLookupFailed(true);
+          setManualAddressEntry(true);
           setShowAddressFields(true);
         }
       } else {
         console.log('⚠️ Postcode API returned non-OK status:', response.status);
         setAddressLookupFailed(true);
+        setManualAddressEntry(true);
         setShowAddressFields(true);
         const formatted = cleanPostcode.length > 3 
           ? cleanPostcode.slice(0, -3) + ' ' + cleanPostcode.slice(-3) 
@@ -355,6 +358,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     } catch (err) {
       console.error('Postcode lookup error:', err);
       setAddressLookupFailed(true);
+      setManualAddressEntry(true);
       setShowAddressFields(true);
     } finally {
       setIsLookingUp(false);
@@ -425,6 +429,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setTownAutoFilled(!!town);
     setShowAddressDropdown(false);
     setAddressSuggestions([]);
+    setManualAddressEntry(false);
     setShowAddressFields(true);
   }, []);
   
@@ -2548,6 +2553,33 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         clearTimeout(postcodeLookupTimeoutRef.current);
                       }
 
+                      // Search emptied — hide the dropdown and, unless the customer
+                      // is typing a manual address, collapse and clear the address fields
+                      if (value.trim().length === 0) {
+                        setAddressSuggestions([]);
+                        setShowAddressDropdown(false);
+                        setAddressLookupFailed(false);
+                        if (!manualAddressEntry) {
+                          setShowAddressFields(false);
+                          setTownAutoFilled(false);
+                          setAddressData(prev => ({
+                            ...prev,
+                            address_line_1: '',
+                            address_line_2: '',
+                            town: '',
+                            county: '',
+                            postcode: '',
+                          }));
+                          setAddressValidated(prev => ({
+                            ...prev,
+                            address_line_1: false,
+                            town: false,
+                            postcode: false,
+                          }));
+                        }
+                        return;
+                      }
+
                       const cleanValue = value.replace(/\s/g, '');
                       if (ukPostcodeRegex.test(cleanValue)) {
                         postcodeLookupTimeoutRef.current = setTimeout(() => {
@@ -2646,6 +2678,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     type="button"
                     onClick={() => {
                       setShowAddressFields(true);
+                      setManualAddressEntry(true);
                       setShowAddressDropdown(false);
                       if (ukPostcodeRegex.test(postcodeInput.replace(/\s/g, ''))) {
                         const formatted = postcodeInput.replace(/\s/g, '').toUpperCase();
@@ -2671,6 +2704,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       type="button"
                       onClick={() => {
                         setShowAddressFields(false);
+                        setManualAddressEntry(false);
                         setShowAddressDropdown(false);
                         setAddressSuggestions([]);
                       }}
