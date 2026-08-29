@@ -237,7 +237,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [customerTown, setCustomerTown] = useState('');
   const [customerBuildingNumber, setCustomerBuildingNumber] = useState('');
   const [customerCounty, setCustomerCounty] = useState('');
-  const [skipAddressDetails, setSkipAddressDetails] = useState(false);
+  
   // Address fields stay hidden until an address is picked from postcode lookup (or manual entry)
   const [showAddressFields, setShowAddressFields] = useState(false);
   
@@ -657,21 +657,19 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     }
 
 
-    if (!skipAddressDetails) {
-      const missing = [
-        !customerBuildingNumber.trim() && 'house/building number',
-        !customerStreet.trim() && 'street',
-        !customerTown.trim() && 'town/city',
-        !customerPostcode.trim() && 'postcode',
-      ].filter(Boolean);
-      if (missing.length > 0) {
-        toast({
-          title: "Address required",
-          description: `Please complete: ${missing.join(', ')}.`,
-          variant: "destructive",
-        });
-        return;
-      }
+    const missingAddress = [
+      !customerBuildingNumber.trim() && 'house/building number',
+      !customerStreet.trim() && 'street',
+      !customerTown.trim() && 'town/city',
+      !customerPostcode.trim() && 'postcode',
+    ].filter(Boolean);
+    if (missingAddress.length > 0) {
+      toast({
+        title: "Address required",
+        description: `Please complete: ${missingAddress.join(', ')}.`,
+        variant: "destructive",
+      });
+      return;
     }
 
     if (!paymentSource || !paymentAmount) {
@@ -736,6 +734,22 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       return;
     }
 
+    // Full address is required before a policy can be created.
+    const missingAddress = [
+      !customerBuildingNumber.trim() && 'house/building number',
+      !customerStreet.trim() && 'street',
+      !customerTown.trim() && 'town/city',
+      !customerPostcode.trim() && 'postcode',
+    ].filter(Boolean);
+    if (missingAddress.length > 0) {
+      toast({
+        title: "Address required",
+        description: `Please complete: ${missingAddress.join(', ')}.`,
+        variant: "destructive",
+      });
+      setExternalPaymentStep('details');
+      return;
+    }
 
     // Price match journey: answered, file uploaded and confirmed as received.
     const pmGate = priceMatchGate();
@@ -806,8 +820,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
           bonusMonths,
           sendToW2k,
           sendWelcomeEmail,
-          skipAddressDetails,
-          address: skipAddressDetails ? null : {
+          skipAddressDetails: false,
+          address: {
             buildingNumber: customerBuildingNumber,
             street: customerStreet,
             town: customerTown,
