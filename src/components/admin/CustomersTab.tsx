@@ -553,6 +553,8 @@ export const CustomersTab = ({
   const [initialContactSort, setInitialContactSort] = useState<'desc' | 'asc' | null>(null);
   const [filterByPlan, setFilterByPlan] = useState('all');
   const [filterByStatus, setFilterByStatus] = useState('all');
+  // Set by the amber "orders need payment confirmation" banner.
+  const [showPendingConfirmationOnly, setShowPendingConfirmationOnly] = useState(false);
   const [filterByTag, setFilterByTag] = useState('all');
   const [filterBySource, setFilterBySource] = useState('all_view'); // Default to All View
   const [filterByWarrantyPeriod, setFilterByWarrantyPeriod] = useState('all');
@@ -1486,6 +1488,14 @@ export const CustomersTab = ({
       );
     }
 
+    // Awaiting payment confirmation — the exact rows the amber banner counts
+    // (agent/manual sales a manager still has to tick off). The banner used to
+    // jump to the generic "pending" status filter, which matches a different
+    // column entirely and usually came back empty.
+    if (showPendingConfirmationOnly) {
+      filtered = filtered.filter(customer => customer.is_manual_entry && customer.payment_verified === false);
+    }
+
     // Apply status filter - using cached data instead of DB calls
     if (filterByStatus !== 'all') {
       if (filterByStatus === 'refunded') {
@@ -1689,8 +1699,10 @@ export const CustomersTab = ({
 
     // Apply date range filter — bypass when actively searching (so users can find any customer by name/email/reg)
     // For sales agents: ALWAYS enforce 2-month restriction even if dateRange state is somehow cleared
+    // Also bypass the date range while showing the payment-confirmation queue:
+    // an order can sit unconfirmed for days, so limiting it to "Today" hid them.
     const isActivelySearching = !!debouncedSearchTerm;
-    if (!isActivelySearching) {
+    if (!isActivelySearching && !showPendingConfirmationOnly) {
       const effectiveDateRange = dateRange;
 
       if (effectiveDateRange?.from) {
@@ -1768,7 +1780,7 @@ export const CustomersTab = ({
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, serverSearchResults, debouncedSearchTerm, sortBy, timeToLeadSort, initialContactSort, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, filterByPartPayment, partPaymentPlans, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
+  }, [customers, serverSearchResults, debouncedSearchTerm, sortBy, timeToLeadSort, initialContactSort, filterByPlan, filterByStatus, showPendingConfirmationOnly, filterByTag, filterBySource, filterByWarrantyPeriod, filterByPaymentSource, paymentSourceDateFilter, filterByAgent, filterByPartPayment, partPaymentPlans, dateRange, totalSalesDateFilter, tagAssignmentsCache, refundedCustomerIds, currentAdminUser, isSuperAdmin, isSalesAgent, isSalesScopedRole, effectiveAdminId, isImpersonating]);
 
   const getCurrentUser = async () => {
     try {
@@ -4523,10 +4535,18 @@ Buyawarranty.co.uk`,
               variant="outline"
               className="border-amber-500 bg-white text-amber-900 hover:bg-amber-100"
               onClick={() => {
-                setFilterByStatus('pending');
+                // Clear anything that would fight the queue, then show exactly
+                // the orders this banner is counting.
+                setShowPendingConfirmationOnly(true);
+                setFilterByStatus('all');
+                setSearchTerm('');
+                setFilterByPartPayment('all');
                 setSortBy('newest');
-                const el = document.getElementById('customers-list-anchor');
-                el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                requestAnimationFrame(() => {
+                  const el = document.getElementById('customers-list-anchor');
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
               }}
             >
               Review pending payments
@@ -4796,6 +4816,9 @@ Buyawarranty.co.uk`,
           {(() => {
             // Build active filter chips (only show non-defaults)
             const chips: { key: string; label: string; value: string; onRemove: () => void }[] = [];
+            if (showPendingConfirmationOnly) {
+              chips.push({ key: 'awaiting-confirm', label: 'Showing', value: 'Awaiting payment confirmation', onRemove: () => setShowPendingConfirmationOnly(false) });
+            }
             if (filterByStatus !== 'all') {
               const statusLabels: Record<string, string> = {
                 active: 'Active', pending: 'Pending', cancelled: 'Cancelled',
@@ -5357,6 +5380,9 @@ Buyawarranty.co.uk`,
         customers={customersPagination.paginatedData}
         onOpen={openCustomerDialog}
       />
+
+      {/* Scroll target for the payment-confirmation banner */}
+      <div id="customers-list-anchor" className="scroll-mt-24" />
 
       {/* Results Table (desktop) */}
       <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden mt-2">
