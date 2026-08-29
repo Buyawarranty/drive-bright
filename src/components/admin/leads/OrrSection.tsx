@@ -7,6 +7,7 @@ import { OrrTeamSelectionPanel } from './OrrTeamSelectionPanel';
 import { OrrGoLiveSwitch } from './OrrGoLiveSwitch';
 import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
+import { ImportLeadToAgentPanel } from './ImportLeadToAgentPanel';
 
 /**
  * Open Round Robin — the single, simplified home for ORR inside Lead Allocation.
