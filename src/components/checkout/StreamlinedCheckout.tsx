@@ -364,7 +364,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Free-text address search — works for street names, towns and partial addresses
   const performAddressSearch = useCallback(async (term: string) => {
     const query = term.trim();
-    if (query.length < 4) return;
+    if (query.length < 3) return;
 
     setIsLookingUp(true);
     setAddressLookupFailed(false);
@@ -372,8 +372,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
         body: { action: 'search', term: query },
       });
+      // Postcoder-style results: broad searches return clickable containers
+      // (street / town groups); narrow searches return final addresses.
       const rows = Array.isArray(data?.suggestions)
-        ? data.suggestions.map((s: any) => s.resolved).filter(Boolean)
+        ? data.suggestions
+            .map((s: any) =>
+              s.container
+                ? { __container: true, label: s.address, count: s.count, drill: s.drill || s.address }
+                : s.resolved,
+            )
+            .filter(Boolean)
         : [];
       if (!error && rows.length > 0) {
         setAddressSuggestions(rows);
@@ -390,6 +398,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       setIsLookingUp(false);
     }
   }, []);
+
 
 
   // Populate every address field once the customer picks their final address
