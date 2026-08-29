@@ -2536,7 +2536,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       const looksLikePostcode = /^[A-Za-z0-9\s]{0,8}$/.test(raw) && /\d/.test(raw);
                       const value = looksLikePostcode ? raw.toUpperCase() : raw;
                       setPostcodeInput(value);
-                      setAddressData(prev => ({ ...prev, postcode: value }));
+                      // Only mirror into the postcode field when it looks like a postcode —
+                      // a street or town search must not be treated as an invalid postcode.
+                      if (looksLikePostcode) {
+                        setAddressData(prev => ({ ...prev, postcode: value }));
+                      }
+                      setAddressErrors(prev => ({ ...prev, postcode: '' }));
 
                       // Clear existing timeout
                       if (postcodeLookupTimeoutRef.current) {
@@ -2548,11 +2553,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         postcodeLookupTimeoutRef.current = setTimeout(() => {
                           performPostcodeLookup(value);
                         }, 300);
-                      } else if (value.trim().length >= 4) {
+                      } else if (value.trim().length >= 3) {
                         // Street / town search
                         postcodeLookupTimeoutRef.current = setTimeout(() => {
                           performAddressSearch(value);
-                        }, 500);
+                        }, 400);
                       }
                     }}
                     onBlur={() => {
@@ -2561,9 +2566,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       if (ukPostcodeRegex.test(cleanValue) && !isLookingUp && !showAddressFields) {
                         performPostcodeLookup(postcodeInput);
                       }
-                      setAddressTouched(prev => ({ ...prev, postcode: true }));
-                      validateAddressField('postcode');
+                      // Once an address has been picked (or manual entry opened) the
+                      // search box is just a search box — don't flag it as a postcode.
+                      if (!showAddressFields) {
+                        setAddressTouched(prev => ({ ...prev, postcode: true }));
+                        validateAddressField('postcode');
+                      }
                     }}
+
                     placeholder="e.g. SW1A 1AA or High Street, Bath"
                     className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('postcode')}`}
                   />
