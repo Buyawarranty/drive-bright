@@ -5434,14 +5434,15 @@ Buyawarranty.co.uk`,
                   <div className="space-y-4">
                     <AlertCircle className="h-12 w-12 text-gray-400 mx-auto" />
                     <div>
-                      <p className="text-gray-500 text-lg">No customers found</p>
+                      <p className="text-gray-500 text-lg">No sales in this date range</p>
                       <p className="text-gray-400 text-sm mt-2">
-                        This might be due to RLS policies or missing data
+                        Nothing has come through for the period you've selected. Try a wider
+                        range — This week or This month — or search by reg plate, name or email.
                       </p>
                     </div>
                     <Button onClick={fetchCustomers} variant="outline" size="sm">
                       <RefreshCw className="h-4 w-4 mr-2" />
-                      Try Again
+                      Refresh
                     </Button>
                   </div>
                 </TableCell>
