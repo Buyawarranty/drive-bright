@@ -46,10 +46,27 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
     return () => { cancelled = true; };
   }, [isManagement]);
 
+  // Arriving via the "Open Round Robin" jump pill (or a #open-round-robin link)
+  // scrolls here and opens the practice lab, so "take lead" is never hidden.
+  React.useEffect(() => {
+    if (!isManagement) return;
+    const openIfTargeted = () => {
+      if (window.location.hash !== '#open-round-robin') return;
+      setSandboxOpen(true);
+      requestAnimationFrame(() => {
+        document.getElementById('open-round-robin')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    };
+    openIfTargeted();
+    window.addEventListener('hashchange', openIfTargeted);
+    return () => window.removeEventListener('hashchange', openIfTargeted);
+  }, [isManagement]);
+
   if (!isManagement) return null;
 
   return (
-    <div id="open-round-robin" className="space-y-4">
+    <div id="open-round-robin" className="space-y-4 scroll-mt-28">
+
       <div className="border-l-4 border-primary/60 pl-3">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-lg font-semibold text-foreground">Open Round Robin</h2>
