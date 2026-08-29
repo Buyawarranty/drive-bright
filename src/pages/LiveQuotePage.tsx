@@ -129,6 +129,22 @@ export default function LiveQuotePage() {
     setPostcodeLookupError(null);
     
     try {
+      // Postcoder full address lookup first (key stays server-side)
+      try {
+        const { data: pcData, error: pcError } = await supabase.functions.invoke('postcoder-lookup', {
+          body: { action: 'find', postcode: trimmedPostcode },
+        });
+        const rows = Array.isArray(pcData?.addresses) ? pcData.addresses : [];
+        if (!pcError && rows.length > 0) {
+          setCustomerData(prev => ({ ...prev, postcode: rows[0].postcode || trimmedPostcode.toUpperCase() }));
+          setPostcoderAddresses(rows);
+          setIsLookingUpPostcode(false);
+          return;
+        }
+      } catch (pcErr) {
+        console.warn('Postcoder lookup unavailable, falling back', pcErr);
+      }
+
       const response = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(trimmedPostcode)}`);
       const data = await response.json();
       
