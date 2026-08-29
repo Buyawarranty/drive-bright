@@ -142,15 +142,15 @@ export const ImportLeadToAgentPanel: React.FC<{
       if (noteTag || markUrgent) {
         const stamp = new Date().toLocaleString('en-GB');
         const note = `${noteTag ? `${noteTag} — ` : ''}Imported and sent to ${agentName(agent)} by a manager on ${stamp}.`;
-        const update: Record<string, unknown> = {
-          notes: lead.status ? undefined : undefined,
-        };
-        delete update.notes;
+        const update: Record<string, unknown> = {};
         if (markUrgent) {
           update.priority = 'urgent';
           update.status = 'urgent_callback';
         }
-        await supabase.from('sales_leads').update(update as any).eq('id', lead.id);
+        if (Object.keys(update).length > 0) {
+          await supabase.from('sales_leads').update(update as any).eq('id', lead.id);
+        }
+
         await supabase.from('lead_quick_notes').insert({ lead_id: lead.id, note } as any);
       }
 
