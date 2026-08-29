@@ -990,14 +990,15 @@ const AdminDashboard = () => {
           );
         }
         return <LeadTeamsTab onNavigateToTab={handleTabChange} />;
-      // The old standalone Open Round Robin tab was folded into the ORR Test Lab,
-      // which now holds both the practice lab and the live queues plus a go-live switch.
+      // Open Round Robin (live controls + sandbox) now lives inside Lead Allocation.
+      // Both old tab URLs render Lead Allocation so no bookmark breaks.
       case 'open-round-robin':
       case 'orr-test-lab':
-        if (!isTabAllowedForRole('orr-test-lab', effectiveUserRole, effectiveUserPermissions)) {
-          return <AccessDenied label="ORR Test Lab" />;
+        if (!isTabAllowedForRole('lead-teams', effectiveUserRole, effectiveUserPermissions)) {
+          return <AccessDenied label="Lead Allocation" />;
         }
-        return <OrrTestLabPage onNavigateToTab={handleTabChange} />;
+        return <LeadTeamsTab onNavigateToTab={handleTabChange} />;
+
 
       case 'price-updates':
         return <PriceUpdatesTab />;
