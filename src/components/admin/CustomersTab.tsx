@@ -1486,6 +1486,14 @@ export const CustomersTab = ({
       );
     }
 
+    // Awaiting payment confirmation — the exact rows the amber banner counts
+    // (agent/manual sales a manager still has to tick off). The banner used to
+    // jump to the generic "pending" status filter, which matches a different
+    // column entirely and usually came back empty.
+    if (showPendingConfirmationOnly) {
+      filtered = filtered.filter(customer => customer.is_manual_entry && customer.payment_verified === false);
+    }
+
     // Apply status filter - using cached data instead of DB calls
     if (filterByStatus !== 'all') {
       if (filterByStatus === 'refunded') {
