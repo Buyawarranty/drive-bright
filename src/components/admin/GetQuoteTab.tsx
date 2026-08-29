@@ -7927,7 +7927,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                           <h4 className="font-semibold text-gray-800 text-sm">Customer Address</h4>
                           {!expandedSections.address && (
                             <p className="text-xs text-gray-500 mt-0.5">
-                              {skipAddressDetails ? 'Customer will complete in dashboard' : (customerPostcode ? `${customerBuildingNumber} ${customerStreet}, ${customerPostcode}` : 'Not entered')}
+                              {customerPostcode ? `${customerBuildingNumber} ${customerStreet}, ${customerPostcode}` : 'Required — not entered yet'}
                             </p>
                           )}
                         </div>
