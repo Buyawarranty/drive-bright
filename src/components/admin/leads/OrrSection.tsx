@@ -75,7 +75,7 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
       <div className="rounded-lg border border-border bg-card shadow-sm p-4 space-y-4">
         <div className="flex items-center gap-2">
           <Rocket className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold text-foreground">Setup</h3>
+          <h3 className="text-sm font-semibold text-foreground">Open Round Robin setup</h3>
         </div>
         <OrrTeamSelectionPanel
           selectedTeamIds={selectedTeamIds}
@@ -93,7 +93,7 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
 
       {/* 2. Live status ------------------------------------------------- */}
       <div className="space-y-2">
-        <h3 className="text-sm font-semibold text-foreground">Open Pool status</h3>
+        <h3 className="text-sm font-semibold text-foreground">Open Round Robin pool status</h3>
         <p className="text-xs text-muted-foreground">
           {orrLive === true
             ? 'Live figures. Running a pass here updates real CRM assignments.'
