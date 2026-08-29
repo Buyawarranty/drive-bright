@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { MapPin, ChevronDown, Check } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Address {
   formatted_address: string;
@@ -69,48 +70,41 @@ export const PostcodeAutocomplete: React.FC<PostcodeAutocompleteProps> = ({
     }
 
     setIsLoading(true);
-    
-    try {
-      // Using UK Government's postcode API (free service)
-      const response = await fetch(`https://api.postcodes.io/postcodes/${postcode.replace(/\s/g, '')}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.result) {
-          // Create a mock address structure based on postcode data
-          const mockAddresses: Address[] = [
-            {
-              formatted_address: `${data.result.postcode}, ${data.result.admin_district}, ${data.result.country}`,
-              line_1: "", // User will need to fill this
-              town_or_city: data.result.admin_district || data.result.parish || "",
-              county: data.result.admin_county || data.result.region || "",
-              postcode: data.result.postcode
-            }
-          ];
-          setSuggestions(mockAddresses);
-        }
-      } else {
-        // Fallback: create basic structure from user input
-        const formattedPostcode = formatPostcode(postcode);
-        setSuggestions([{
-          formatted_address: formattedPostcode,
-          line_1: "",
-          town_or_city: "",
-          county: "",
-          postcode: formattedPostcode
-        }]);
-      }
-    } catch (error) {
-      console.error('Postcode lookup error:', error);
-      // Fallback: create basic structure from user input
+
+    const fallback = (): Address[] => {
       const formattedPostcode = formatPostcode(postcode);
-      setSuggestions([{
+      return [{
         formatted_address: formattedPostcode,
         line_1: "",
         town_or_city: "",
         county: "",
-        postcode: formattedPostcode
-      }]);
+        postcode: formattedPostcode,
+      }];
+    };
+
+    try {
+      // Postcoder address lookup (via edge function so the API key stays server-side)
+      const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
+        body: { action: 'find', postcode },
+      });
+
+      const rows = Array.isArray(data?.addresses) ? data.addresses : [];
+      if (error || rows.length === 0) {
+        if (error) console.error('Postcoder lookup error:', error);
+        setSuggestions(fallback());
+      } else {
+        setSuggestions(rows.map((a: any) => ({
+          formatted_address: a.formatted_address || [a.line_1, a.line_2, a.town_or_city, a.postcode].filter(Boolean).join(', '),
+          line_1: a.line_1 || '',
+          line_2: a.line_2 || '',
+          town_or_city: a.town_or_city || '',
+          county: a.county || '',
+          postcode: a.postcode || formatPostcode(postcode),
+        })));
+      }
+    } catch (error) {
+      console.error('Postcode lookup error:', error);
+      setSuggestions(fallback());
     } finally {
       setIsLoading(false);
     }
@@ -208,10 +202,13 @@ export const PostcodeAutocomplete: React.FC<PostcodeAutocompleteProps> = ({
               <div className="flex items-center">
                 <MapPin className="h-4 w-4 text-orange-500 mr-2 flex-shrink-0" />
                 <div>
-                  <div className="font-medium text-gray-900">{address.postcode}</div>
+                  <div className="font-medium text-gray-900">
+                    {address.line_1 || address.formatted_address || address.postcode}
+                  </div>
                   <div className="text-sm text-gray-600">
-                    {address.town_or_city && `${address.town_or_city}, `}
-                    {address.county}
+                    {[address.line_2, address.town_or_city, address.county, address.postcode]
+                      .filter(Boolean)
+                      .join(', ')}
                   </div>
                 </div>
               </div>

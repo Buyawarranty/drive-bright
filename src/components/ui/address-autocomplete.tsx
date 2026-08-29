@@ -18,6 +18,17 @@ interface AutocompleteSuggestion {
   address: string;
   url: string;
   id: string;
+  /** Full address returned by a postcode lookup (no second call needed) */
+  resolved?: {
+    line_1?: string;
+    line_2?: string;
+    line_3?: string;
+    town_or_city?: string;
+    county?: string;
+    postcode?: string;
+    building_number?: string;
+    building_name?: string;
+  };
 }
 
 interface AddressAutocompleteProps {
@@ -102,7 +113,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     };
   }, []);
 
-  // Fetch suggestions from getaddress.io via edge function
+  // Fetch suggestions from Postcoder via edge function
   // IMPORTANT: This function NEVER clears or modifies inputValue
   const fetchSuggestions = useCallback(async (term: string) => {
     // Don't search for very short terms
@@ -115,11 +126,37 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 
     setIsLoading(true);
     // Don't reset lookupFailed here - only set it on actual failure
-    
+
+    // A complete postcode gets the full address list straight away
+    if (isValidUKPostcode(term)) {
+      try {
+        const { data: pcData, error: pcError } = await supabase.functions.invoke('postcoder-lookup', {
+          body: { action: 'find', postcode: term },
+        });
+        const rows = Array.isArray(pcData?.addresses) ? pcData.addresses : [];
+        if (!pcError && rows.length > 0) {
+          setSuggestions(rows.map((a: any, i: number) => ({
+            id: `pc-${i}`,
+            url: '',
+            address: a.formatted_address || [a.line_1, a.town_or_city, a.postcode].filter(Boolean).join(', '),
+            resolved: a,
+          })));
+          setShowDropdown(true);
+          setLookupFailed(false);
+          onLookupError?.(false);
+          setIsLoading(false);
+          return;
+        }
+      } catch (pcErr) {
+        console.warn('Postcode address lookup failed, trying address search', pcErr);
+      }
+    }
+
     try {
-      const { data, error } = await supabase.functions.invoke('getaddress-lookup', {
+      const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
         body: { action: 'autocomplete', term }
       });
+
 
       if (error) {
         // API call failed - show fallback message but NEVER clear input
@@ -203,9 +240,28 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     // Update display value to show selected address
     setInputValue(suggestion.address);
 
+    // Postcode lookups already carry the full address — populate immediately
+    if (suggestion.resolved) {
+      const r = suggestion.resolved;
+      setHasSelected(true);
+      setLookupFailed(false);
+      onLookupError?.(false);
+      onAddressSelect({
+        line_1: r.line_1 || '',
+        line_2: [r.line_2, r.line_3].filter(Boolean).join(', '),
+        town: r.town_or_city || '',
+        county: r.county || '',
+        postcode: r.postcode || '',
+        building_number: r.building_number || '',
+        building_name: r.building_name || '',
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const { data, error } = await supabase.functions.invoke('getaddress-lookup', {
-        body: { action: 'get', id: suggestion.id }
+      const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
+        body: { action: 'get', id: suggestion.id, term: inputValue }
       });
 
       if (error) {

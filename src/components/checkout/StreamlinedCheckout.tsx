@@ -281,6 +281,28 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     
     try {
       console.log('🔍 Auto postcode lookup for:', cleanPostcode);
+
+      // Postcoder full address lookup (via edge function, key stays server-side)
+      try {
+        const { data: pcData, error: pcError } = await supabase.functions.invoke('postcoder-lookup', {
+          body: { action: 'find', postcode: cleanPostcode },
+        });
+        const rows = Array.isArray(pcData?.addresses) ? pcData.addresses : [];
+        if (!pcError && rows.length > 0) {
+          const displayPostcode = rows[0].postcode || postcode;
+          setPostcodeInput(displayPostcode);
+          setAddressData(prev => ({ ...prev, postcode: displayPostcode }));
+          setAddressValidated(prev => ({ ...prev, postcode: true }));
+          setAddressErrors(prev => ({ ...prev, postcode: '' }));
+          setAddressSuggestions(rows);
+          setShowAddressDropdown(true);
+          setIsLookingUp(false);
+          return;
+        }
+      } catch (pcErr) {
+        console.warn('Postcoder lookup unavailable, falling back', pcErr);
+      }
+
       const response = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
       
       if (response.ok) {
@@ -337,6 +359,33 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     } finally {
       setIsLookingUp(false);
     }
+  }, []);
+
+  // Populate every address field once the customer picks their final address
+  const handleSelectLookupAddress = useCallback((addr: any) => {
+    const line1 = addr.line_1 || '';
+    const line2 = [addr.line_2, addr.line_3].filter(Boolean).join(', ');
+    const town = addr.town_or_city || '';
+    setAddressData(prev => ({
+      ...prev,
+      address_line_1: line1,
+      address_line_2: line2,
+      town,
+      county: addr.county || prev.county || '',
+      postcode: addr.postcode || prev.postcode,
+    }));
+    setAddressValidated(prev => ({
+      ...prev,
+      address_line_1: !!line1,
+      town: !!town,
+      postcode: true,
+    }));
+    setAddressErrors(prev => ({ ...prev, address_line_1: '', town: '', postcode: '' }));
+    if (addr.postcode) setPostcodeInput(addr.postcode);
+    setTownAutoFilled(!!town);
+    setShowAddressDropdown(false);
+    setAddressSuggestions([]);
+    setShowAddressFields(true);
   }, []);
   
   // Form states
@@ -2487,9 +2536,28 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     Looking up address...
                   </p>
                 )}
-                
-                
-                
+
+                {/* Address picker — choose your address to fill the fields below */}
+                {showAddressDropdown && addressSuggestions.length > 0 && (
+                  <div className="mt-2 rounded-lg border border-border bg-background shadow-sm">
+                    <p className="px-3 py-2 text-xs font-medium text-muted-foreground border-b border-border">
+                      Select your address ({addressSuggestions.length} found)
+                    </p>
+                    <div className="max-h-56 overflow-auto">
+                      {addressSuggestions.map((addr: any, i: number) => (
+                        <button
+                          key={`${addr.formatted_address}-${i}`}
+                          type="button"
+                          onClick={() => handleSelectLookupAddress(addr)}
+                          className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b border-border/60 last:border-b-0"
+                        >
+                          {addr.formatted_address || [addr.line_1, addr.town_or_city, addr.postcode].filter(Boolean).join(', ')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Postcode validation error */}
                 {(showValidation || addressTouched.postcode) && addressErrors.postcode && (
                   <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">

@@ -106,6 +106,7 @@ export default function LiveQuotePage() {
   // Postcode lookup state
   const [isLookingUpPostcode, setIsLookingUpPostcode] = useState(false);
   const [postcodeLookupError, setPostcodeLookupError] = useState<string | null>(null);
+  const [postcoderAddresses, setPostcoderAddresses] = useState<any[]>([]);
   const postcodeDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Paid confirmation flow state (must be before early returns)
@@ -129,6 +130,22 @@ export default function LiveQuotePage() {
     setPostcodeLookupError(null);
     
     try {
+      // Postcoder full address lookup first (key stays server-side)
+      try {
+        const { data: pcData, error: pcError } = await supabase.functions.invoke('postcoder-lookup', {
+          body: { action: 'find', postcode: trimmedPostcode },
+        });
+        const rows = Array.isArray(pcData?.addresses) ? pcData.addresses : [];
+        if (!pcError && rows.length > 0) {
+          setCustomerData(prev => ({ ...prev, postcode: rows[0].postcode || trimmedPostcode.toUpperCase() }));
+          setPostcoderAddresses(rows);
+          setIsLookingUpPostcode(false);
+          return;
+        }
+      } catch (pcErr) {
+        console.warn('Postcoder lookup unavailable, falling back', pcErr);
+      }
+
       const response = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(trimmedPostcode)}`);
       const data = await response.json();
       
@@ -1385,6 +1402,40 @@ export default function LiveQuotePage() {
                         <Check className="h-3 w-3" />
                         Address details auto-filled
                       </p>
+                    )}
+
+                    {postcoderAddresses.length > 0 && (
+                      <div className="rounded-lg border bg-background shadow-sm">
+                        <p className="px-3 py-2 text-xs font-medium text-muted-foreground border-b">
+                          Select your address ({postcoderAddresses.length} found)
+                        </p>
+                        <div className="max-h-56 overflow-auto">
+                          {postcoderAddresses.map((addr: any, i: number) => (
+                            <button
+                              key={`${addr.formatted_address}-${i}`}
+                              type="button"
+                              onClick={() => {
+                                setCustomerData(prev => ({
+                                  ...prev,
+                                  addressLine1: addr.line_1 || '',
+                                  addressLine2: [addr.line_2, addr.line_3].filter(Boolean).join(', '),
+                                  city: addr.town_or_city || '',
+                                  postcode: addr.postcode || prev.postcode,
+                                }));
+                                setTouchedFields(prev => ({ ...prev, city: true, addressLine1: true }));
+                                setFieldErrors(prev => {
+                                  const { city: _c, addressLine1: _a, ...rest } = prev;
+                                  return rest;
+                                });
+                                setPostcoderAddresses([]);
+                              }}
+                              className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b last:border-b-0"
+                            >
+                              {addr.formatted_address || [addr.line_1, addr.town_or_city, addr.postcode].filter(Boolean).join(', ')}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
 
