@@ -395,11 +395,8 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         )}
       </div>
 
-      {/* ─────────────────────────────────────────────────────────────
-          OPEN ROUND ROBIN — setup, live status, and a clearly-labelled
-          sandbox. Merged in from the old standalone ORR tabs.
-         ───────────────────────────────────────────────────────────── */}
-      <OrrSection isManagement={isManagement} />
+      {/* Open Round Robin now lives at the very bottom of this page. */}
+
 
 
 
