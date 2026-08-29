@@ -77,7 +77,7 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
       <div className="p-6">
         <h2 className="text-xl font-semibold">Access denied</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          The ORR Test Lab is restricted to managers and admins.
+          The Open Round Robin Test Lab is restricted to managers and admins.
         </p>
       </div>
     );
