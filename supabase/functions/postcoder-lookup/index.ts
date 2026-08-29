@@ -125,7 +125,7 @@ serve(async (req) => {
 
     /** Free-text address search (postcode, street or town) via the address endpoint. */
     const addressSearch = async (query: string) => {
-      const url = `${base}/address/uk/${encodeURIComponent(query)}?format=json&lines=2&maximumresults=50`;
+      const url = `${base}/address/uk/${encodeURIComponent(query)}?format=json&lines=2&maximumresults=100`;
       const res = await fetch(url);
       if (!res.ok) {
         const text = await res.text();
