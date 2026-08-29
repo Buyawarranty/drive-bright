@@ -2548,6 +2548,33 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         clearTimeout(postcodeLookupTimeoutRef.current);
                       }
 
+                      // Search emptied — hide the dropdown and, unless the customer
+                      // is typing a manual address, collapse and clear the address fields
+                      if (value.trim().length === 0) {
+                        setAddressSuggestions([]);
+                        setShowAddressDropdown(false);
+                        setAddressLookupFailed(false);
+                        if (!manualAddressEntry) {
+                          setShowAddressFields(false);
+                          setTownAutoFilled(false);
+                          setAddressData(prev => ({
+                            ...prev,
+                            address_line_1: '',
+                            address_line_2: '',
+                            town: '',
+                            county: '',
+                            postcode: '',
+                          }));
+                          setAddressValidated(prev => ({
+                            ...prev,
+                            address_line_1: false,
+                            town: false,
+                            postcode: false,
+                          }));
+                        }
+                        return;
+                      }
+
                       const cleanValue = value.replace(/\s/g, '');
                       if (ukPostcodeRegex.test(cleanValue)) {
                         postcodeLookupTimeoutRef.current = setTimeout(() => {
