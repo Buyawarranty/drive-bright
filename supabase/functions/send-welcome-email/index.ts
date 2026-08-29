@@ -359,7 +359,7 @@ serve(async (req) => {
       to: [email],
       bcc: ['buyawarranty.co.uk+8fc526946e@invite.trustpilot.com'],
       reply_to: 'support@buyawarranty.co.uk',
-      subject: `${finalCustomerName}, your warranty is now active`,
+      subject: `Valued Customer, your warranty details`,
       headers: {
         'X-Entity-Ref-ID': `welcome-${policyNumber}-${Date.now()}`,
       },
