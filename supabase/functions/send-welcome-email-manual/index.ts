@@ -746,6 +746,23 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
           ` : ''}
 
+          <div style="margin-bottom: 25px;">
+            <h2 style="color: #333; font-size: 20px; margin-bottom: 15px;">What's included with Platinum</h2>
+            <p style="color: #333; margin-bottom: 15px;">
+              Your Platinum warranty covers thousands of mechanical and electrical parts, including:
+            </p>
+            <ul style="color: #333; padding-left: 20px;">
+              <li style="margin-bottom: 5px;">Engine, gearbox, clutch and drivetrain</li>
+              <li style="margin-bottom: 5px;">Electrics, ECUs, sensors and diagnostics</li>
+              <li style="margin-bottom: 5px;">Turbo, fuel and cooling systems</li>
+              <li style="margin-bottom: 5px;">Air conditioning, steering and suspension</li>
+              <li style="margin-bottom: 5px;">Any VAT-registered garage in the UK — or we can help you find one</li>
+              <li style="margin-bottom: 5px;">Approved parts and labour paid directly to your garage</li>
+              <li style="margin-bottom: 5px;">UK Team Claims support</li>
+              <li style="margin-bottom: 5px;">Transferable if you sell your car</li>
+            </ul>
+          </div>
+
           ${shouldIncludeLoginDetails ? `
           <div style="margin-bottom: 25px;">
             <h2 style="color: #333; font-size: 20px; margin-bottom: 15px;">🔐 Your Portal Login Details!</h2>
