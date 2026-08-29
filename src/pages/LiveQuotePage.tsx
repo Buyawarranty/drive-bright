@@ -224,13 +224,18 @@ export default function LiveQuotePage() {
       clearTimeout(postcodeDebounceRef.current);
     }
     
-    // Only trigger lookup if postcode looks valid (has enough characters)
+    // Postcode lookup, or free-text street/town search
     if (uppercaseValue.length >= 5 && postcodeRegexForLookup.test(uppercaseValue.trim())) {
       postcodeDebounceRef.current = setTimeout(() => {
         lookupPostcode(uppercaseValue);
       }, 300);
+    } else if (uppercaseValue.trim().length >= 4) {
+      postcodeDebounceRef.current = setTimeout(() => {
+        searchAddresses(uppercaseValue);
+      }, 500);
     }
-  }, [lookupPostcode]);
+  }, [lookupPostcode, searchAddresses]);
+
   
   // Cleanup debounce timeout on unmount
   useEffect(() => {
