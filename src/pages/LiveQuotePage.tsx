@@ -107,6 +107,7 @@ export default function LiveQuotePage() {
   const [isLookingUpPostcode, setIsLookingUpPostcode] = useState(false);
   const [postcodeLookupError, setPostcodeLookupError] = useState<string | null>(null);
   const [postcoderAddresses, setPostcoderAddresses] = useState<any[]>([]);
+  const [showAddressFields, setShowAddressFields] = useState(false);
   const postcodeDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Paid confirmation flow state (must be before early returns)
@@ -1428,6 +1429,7 @@ export default function LiveQuotePage() {
                                   return rest;
                                 });
                                 setPostcoderAddresses([]);
+                                setShowAddressFields(true);
                               }}
                               className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b last:border-b-0"
                             >
@@ -1439,6 +1441,19 @@ export default function LiveQuotePage() {
                     )}
                   </div>
 
+                  {/* Manual entry link — address fields stay hidden until an address is selected */}
+                  {!showAddressFields && !isLookingUpPostcode && postcoderAddresses.length === 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAddressFields(true)}
+                      className="text-sm text-foreground hover:underline font-medium"
+                    >
+                      Enter your address manually
+                    </button>
+                  )}
+
+                  {showAddressFields && (
+                  <>
                   {/* Address Line 1 */}
                   <div className="space-y-2">
                     <Label htmlFor="addressLine1">Address Line 1 *</Label>
@@ -1488,6 +1503,8 @@ export default function LiveQuotePage() {
                       <p className="text-xs text-red-500">{fieldErrors.city}</p>
                     )}
                   </div>
+                  </>
+                  )}
                 </div>
 
                 <Separator />
