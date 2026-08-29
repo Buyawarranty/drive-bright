@@ -19,11 +19,49 @@ export interface ClaimMoney {
   paid_amount?: number | null;
 }
 
-/** Statuses where money has genuinely left the business. */
-export const SETTLED_STATUSES = ['approved', 'paid'];
+/**
+ * Statuses where money has genuinely left the business.
+ * Includes partial approvals/payments and refunds — those are real payouts and
+ * must show up in claim cost totals as soon as the status/amount is saved.
+ */
+export const SETTLED_STATUSES = [
+  'approved',
+  'claim_approved',
+  'paid',
+  'settled',
+  'partially_approved',
+  'partial_approved',
+  'partial_approval',
+  'partial',
+  'partial_payment',
+  'partially_paid',
+  'refund',
+  'refunded',
+  'partial_refund',
+  'partially_refunded',
+];
+
+/** Statuses that count as an approval (full or partial) for approval-rate metrics. */
+export const APPROVED_STATUSES = [
+  'approved',
+  'claim_approved',
+  'paid',
+  'settled',
+  'partially_approved',
+  'partial_approved',
+  'partial_approval',
+  'partial',
+  'partial_payment',
+  'partially_paid',
+];
+
+const norm = (s?: string) => (s || '').toLowerCase().trim();
 
 export const isSettledClaim = (c: ClaimMoney): boolean =>
-  SETTLED_STATUSES.includes((c.status || '').toLowerCase()) && (c.paid_amount || 0) > 0;
+  SETTLED_STATUSES.includes(norm(c.status)) && (c.paid_amount || 0) > 0;
+
+export const isApprovedClaim = (c: ClaimMoney): boolean =>
+  APPROVED_STATUSES.includes(norm(c.status));
 
 /** What we actually paid out. Zero for anything not settled. */
 export const settledCost = (c: ClaimMoney): number =>
@@ -32,3 +70,4 @@ export const settledCost = (c: ClaimMoney): number =>
 /** What was asked for — useful for exposure/severity, never for cost. */
 export const claimedCost = (c: ClaimMoney): number =>
   Number(c.claimed_amount ?? c.payment_amount ?? 0) || 0;
+

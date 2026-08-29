@@ -9,6 +9,7 @@ import {
   useClaimReminders,
 } from '@/hooks/useClaimReminders';
 import { isAlertsMuted, muteAlertsFor, unmuteAlerts, subscribeAlertsMuted } from '@/lib/alertSoundPreference';
+import { ReminderAssigneeSelect, useAssigneeName } from './ReminderAssigneeSelect';
 
 /** Short, gentle two-tone chime. */
 const playChime = () => {
@@ -43,18 +44,24 @@ const kindTone: Record<string, string> = {
 
 interface RowProps {
   reminder: ClaimReminder;
+  onAssign: (r: ClaimReminder, adminUserId: string | null) => void;
   onSnooze: (r: ClaimReminder) => void;
   onMute: (r: ClaimReminder) => void;
   onDone: (r: ClaimReminder) => void;
   onOpenClaim?: (claimId: string) => void;
 }
 
-const ReminderRow: React.FC<RowProps> = ({ reminder, onSnooze, onMute, onDone, onOpenClaim }) => {
+const ReminderRow: React.FC<RowProps> = ({ reminder, onAssign, onSnooze, onMute, onDone, onOpenClaim }) => {
   const due = new Date(reminder.due_at);
   const overdue = isPast(due);
+  const assigneeName = useAssigneeName(reminder.assigned_to);
 
   return (
-    <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-3 py-2.5 rounded-lg bg-background/70 border">
+    <div
+      className={`flex flex-wrap items-center gap-2 sm:gap-3 px-3 py-2.5 rounded-lg bg-background/70 border ${
+        reminder.assigned_to ? '' : 'border-destructive/60 border-dashed'
+      }`}
+    >
       <Badge variant="outline" className={`${kindTone[reminder.reminder_kind] || kindTone.other} text-[11px] shrink-0`}>
         {KIND_LABELS[reminder.reminder_kind] ?? 'Reminder'}
       </Badge>
@@ -72,6 +79,16 @@ const ReminderRow: React.FC<RowProps> = ({ reminder, onSnooze, onMute, onDone, o
       </div>
 
       <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[11px] text-muted-foreground">
+            {assigneeName ? 'Responsible' : 'Assign to'}
+          </span>
+          <ReminderAssigneeSelect
+            compact
+            value={reminder.assigned_to}
+            onChange={(id) => onAssign(reminder, id)}
+          />
+        </div>
         {reminder.claim_id && onOpenClaim && (
           <Button variant="ghost" size="sm" onClick={() => onOpenClaim(reminder.claim_id!)}>
             Open claim
@@ -107,7 +124,7 @@ interface Props {
  * muted individually, or marked done. One global control mutes all alert sounds.
  */
 export const ClaimRemindersBanner: React.FC<Props> = ({ onOpenClaim, onManage }) => {
-  const { showing, snoozeOneDay, toggleMute, complete } = useClaimReminders();
+  const { showing, snoozeOneDay, toggleMute, complete, patch } = useClaimReminders();
   const [collapsed, setCollapsed] = useState(false);
   const [soundMuted, setSoundMuted] = useState(isAlertsMuted());
   const chimedRef = useRef<Set<string>>(new Set());
@@ -121,6 +138,8 @@ export const ClaimRemindersBanner: React.FC<Props> = ({ onOpenClaim, onManage })
     if (fresh.length > 0 && !isAlertsMuted()) playChime();
   }, [showing]);
 
+  const unassignedCount = showing.filter(r => !r.assigned_to).length;
+
   if (showing.length === 0) return null;
 
   return (
@@ -130,6 +149,11 @@ export const ClaimRemindersBanner: React.FC<Props> = ({ onOpenClaim, onManage })
           <Bell className="h-4 w-4" />
           {showing.length} claim reminder{showing.length === 1 ? '' : 's'} due
         </span>
+        {unassignedCount > 0 && (
+          <Badge variant="outline" className="border-destructive text-destructive bg-white text-[11px]">
+            {unassignedCount} with nobody responsible
+          </Badge>
+        )}
         <div className="ml-auto flex items-center gap-1.5">
           <Button
             variant="outline"
@@ -155,6 +179,7 @@ export const ClaimRemindersBanner: React.FC<Props> = ({ onOpenClaim, onManage })
             <ReminderRow
               key={r.id}
               reminder={r}
+              onAssign={(rem, id) => patch(rem.id, { assigned_to: id })}
               onSnooze={snoozeOneDay}
               onMute={toggleMute}
               onDone={complete}

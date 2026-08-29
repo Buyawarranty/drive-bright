@@ -27,6 +27,7 @@ import { AddressAutocomplete, AddressData as AutocompleteAddressData } from '@/c
 import PolicyDocumentsNotice from '@/components/PolicyDocumentsNotice';
 import MyClaimsPanel from '@/components/customer-dashboard/MyClaimsPanel';
 import EmailPreferencesCard from '@/components/customer/EmailPreferencesCard';
+import { useLatestPolicyDocs } from '@/hooks/useLatestPolicyDocs';
 
 
 
@@ -124,6 +125,9 @@ const CustomerDashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { isImpersonating, impersonatedCustomer, stopImpersonation } = useImpersonation();
+  // Customers must always see the CURRENT documents, never the version that
+  // was live on the day they bought. These come from customer_documents.
+  const latestDocs = useLatestPolicyDocs();
   const [policies, setPolicies] = useState<CustomerPolicy[]>([]);
   const [selectedPolicy, setSelectedPolicy] = useState<CustomerPolicy | null>(null);
   const [policyLoading, setPolicyLoading] = useState(true);
@@ -947,7 +951,13 @@ const CustomerDashboard = () => {
 
   const getPolicyPdf = (policy: CustomerPolicy) => {
     if (!policy) return null;
-    
+
+    // Always the latest uploaded warranty plan — a policy bought under an older
+    // version must still open the current document.
+    if (!latestDocs.loading && latestDocs.platinumUrl) {
+      return latestDocs.platinumUrl;
+    }
+
     // Use the fetched document URL first, then fallback to the old fields
     if (policy.document_url) {
       return policy.document_url;
@@ -1748,10 +1758,11 @@ const CustomerDashboard = () => {
                                     .eq('plan_type', 'terms-and-conditions')
                                     .order('created_at', { ascending: false })
                                     .limit(1)
-                                    .single();
-                                  
-                                  if (data?.file_url) {
-                                    window.open(data.file_url, '_blank');
+                                    .maybeSingle();
+
+                                  const url = data?.file_url || latestDocs.termsUrl;
+                                  if (url) {
+                                    window.open(url, '_blank');
                                   } else {
                                     toast({
                                       title: "Error",

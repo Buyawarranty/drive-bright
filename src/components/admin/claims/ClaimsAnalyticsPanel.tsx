@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { PoundSterling, FileText, CheckCircle, TrendingUp } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 import { ClaimsVehicleAnalytics } from './ClaimsVehicleAnalytics';
-import { settledCost } from './claimCost';
+import { settledCost, isApprovedClaim } from './claimCost';
 import {
   format,
   startOfWeek, endOfWeek,
@@ -96,7 +96,7 @@ export const ClaimsAnalyticsPanel: React.FC<ClaimsAnalyticsPanelProps> = ({ clai
   // Summary stats for filtered range
   const summary = useMemo(() => {
     const total = filteredClaims.length;
-    const approved = filteredClaims.filter(c => c.status === 'approved' || c.status === 'paid').length;
+    const approved = filteredClaims.filter(c => isApprovedClaim(c)).length;
     const paid = filteredClaims.filter(c => settledCost(c) > 0);
     const totalPaid = paid.reduce((s, c) => s + settledCost(c), 0);
     const avgClaim = paid.length > 0 ? totalPaid / paid.length : 0;
@@ -121,7 +121,7 @@ export const ClaimsAnalyticsPanel: React.FC<ClaimsAnalyticsPanelProps> = ({ clai
         return {
           label: format(weekStart, 'dd MMM'),
           totalClaims: inWeek.length,
-          approvedClaims: inWeek.filter(c => c.status === 'approved' || c.status === 'paid').length,
+          approvedClaims: inWeek.filter(c => isApprovedClaim(c)).length,
           totalPaid: Math.round(paid * 100) / 100,
         };
       });
@@ -134,7 +134,7 @@ export const ClaimsAnalyticsPanel: React.FC<ClaimsAnalyticsPanelProps> = ({ clai
         if (!years.has(y)) years.set(y, { totalClaims: 0, approvedClaims: 0, totalPaid: 0 });
         const entry = years.get(y)!;
         entry.totalClaims++;
-        if (c.status === 'approved' || c.status === 'paid') entry.approvedClaims++;
+        if (isApprovedClaim(c)) entry.approvedClaims++;
         entry.totalPaid += settledCost(c);
       });
       return Array.from(years.entries())
@@ -158,7 +158,7 @@ export const ClaimsAnalyticsPanel: React.FC<ClaimsAnalyticsPanelProps> = ({ clai
       return {
         label: format(monthStart, 'MMM yy'),
         totalClaims: inMonth.length,
-        approvedClaims: inMonth.filter(c => c.status === 'approved' || c.status === 'paid').length,
+        approvedClaims: inMonth.filter(c => isApprovedClaim(c)).length,
         totalPaid: Math.round(paid * 100) / 100,
       };
     });
