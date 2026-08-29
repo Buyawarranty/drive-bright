@@ -2536,9 +2536,28 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     Looking up address...
                   </p>
                 )}
-                
-                
-                
+
+                {/* Address picker — choose your address to fill the fields below */}
+                {showAddressDropdown && addressSuggestions.length > 0 && (
+                  <div className="mt-2 rounded-lg border border-border bg-background shadow-sm">
+                    <p className="px-3 py-2 text-xs font-medium text-muted-foreground border-b border-border">
+                      Select your address ({addressSuggestions.length} found)
+                    </p>
+                    <div className="max-h-56 overflow-auto">
+                      {addressSuggestions.map((addr: any, i: number) => (
+                        <button
+                          key={`${addr.formatted_address}-${i}`}
+                          type="button"
+                          onClick={() => handleSelectLookupAddress(addr)}
+                          className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b border-border/60 last:border-b-0"
+                        >
+                          {addr.formatted_address || [addr.line_1, addr.town_or_city, addr.postcode].filter(Boolean).join(', ')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Postcode validation error */}
                 {(showValidation || addressTouched.postcode) && addressErrors.postcode && (
                   <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
