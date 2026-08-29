@@ -256,13 +256,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   
   // Track if address lookup failed (for showing manual entry)
   const [addressLookupFailed, setAddressLookupFailed] = useState(false);
-  // Track if address fields should be shown (after lookup or manual entry click)
-  const [showAddressFields, setShowAddressFields] = useState(
-    // Show if address is already populated
-    !!(addressData.address_line_1 && addressData.town && addressData.postcode)
-  );
-  // Postcode input for lookup
-  const [postcodeInput, setPostcodeInput] = useState(addressData.postcode || '');
+  // Track if address fields should be shown (only after lookup selection or manual entry click)
+  const [showAddressFields, setShowAddressFields] = useState(false);
+  // True when the customer opened the fields via "Enter your address manually" —
+  // clearing the search box must not collapse fields they're typing into.
+  const [manualAddressEntry, setManualAddressEntry] = useState(false);
+  // Postcode/street/town search input — starts empty even if an address was restored
+  const [postcodeInput, setPostcodeInput] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
   const [showAddressDropdown, setShowAddressDropdown] = useState(false);
