@@ -1403,6 +1403,40 @@ export default function LiveQuotePage() {
                         Address details auto-filled
                       </p>
                     )}
+
+                    {postcoderAddresses.length > 0 && (
+                      <div className="rounded-lg border bg-background shadow-sm">
+                        <p className="px-3 py-2 text-xs font-medium text-muted-foreground border-b">
+                          Select your address ({postcoderAddresses.length} found)
+                        </p>
+                        <div className="max-h-56 overflow-auto">
+                          {postcoderAddresses.map((addr: any, i: number) => (
+                            <button
+                              key={`${addr.formatted_address}-${i}`}
+                              type="button"
+                              onClick={() => {
+                                setCustomerData(prev => ({
+                                  ...prev,
+                                  addressLine1: addr.line_1 || '',
+                                  addressLine2: [addr.line_2, addr.line_3].filter(Boolean).join(', '),
+                                  city: addr.town_or_city || '',
+                                  postcode: addr.postcode || prev.postcode,
+                                }));
+                                setTouchedFields(prev => ({ ...prev, city: true, addressLine1: true }));
+                                setFieldErrors(prev => {
+                                  const { city: _c, addressLine1: _a, ...rest } = prev;
+                                  return rest;
+                                });
+                                setPostcoderAddresses([]);
+                              }}
+                              className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b last:border-b-0"
+                            >
+                              {addr.formatted_address || [addr.line_1, addr.town_or_city, addr.postcode].filter(Boolean).join(', ')}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Address Line 1 */}
