@@ -4542,7 +4542,7 @@ Buyawarranty.co.uk`,
                 setSearchTerm('');
                 setFilterByPartPayment('all');
                 setSortBy('newest');
-                setCustomersPage(1);
+                
                 requestAnimationFrame(() => {
                   const el = document.getElementById('customers-list-anchor');
                   el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
