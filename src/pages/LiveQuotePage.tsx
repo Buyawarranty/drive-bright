@@ -256,7 +256,7 @@ export default function LiveQuotePage() {
       }, 400);
     }
 
-  }, [lookupPostcode, searchAddresses]);
+  }, [lookupPostcode, searchAddresses, manualAddressEntry]);
 
   
   // Cleanup debounce timeout on unmount
@@ -1489,6 +1489,7 @@ export default function LiveQuotePage() {
                                   return rest;
                                 });
                                 setPostcoderAddresses([]);
+                                setManualAddressEntry(false);
                                 setShowAddressFields(true);
                               }}
                               className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b last:border-b-0 flex items-center justify-between gap-2"
@@ -1516,7 +1517,7 @@ export default function LiveQuotePage() {
                   {!showAddressFields && !isLookingUpPostcode && postcoderAddresses.length === 0 && (
                     <button
                       type="button"
-                      onClick={() => setShowAddressFields(true)}
+                      onClick={() => { setManualAddressEntry(true); setShowAddressFields(true); }}
                       className="text-sm text-foreground hover:underline font-medium"
                     >
                       Enter your address manually
