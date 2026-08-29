@@ -2516,28 +2516,34 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             <div id="address-fields" className="space-y-4">
               {/* Postcode Lookup - Auto triggers on valid format or blur */}
               <div>
-                <Label className="text-sm font-medium text-foreground/80">Postcode *</Label>
+                <Label className="text-sm font-medium text-foreground/80">Postcode, street or town *</Label>
                 <div className="relative mt-1.5">
                   <Input
                     id="postcode-lookup"
                     type="text"
                     value={postcodeInput}
                     onChange={(e) => {
-                      const value = e.target.value.toUpperCase();
+                      const raw = e.target.value;
+                      const looksLikePostcode = /^[A-Za-z0-9\s]{0,8}$/.test(raw) && /\d/.test(raw);
+                      const value = looksLikePostcode ? raw.toUpperCase() : raw;
                       setPostcodeInput(value);
                       setAddressData(prev => ({ ...prev, postcode: value }));
-                      
+
                       // Clear existing timeout
                       if (postcodeLookupTimeoutRef.current) {
                         clearTimeout(postcodeLookupTimeoutRef.current);
                       }
-                      
-                      // Debounce: auto-lookup after 300ms if valid format
+
                       const cleanValue = value.replace(/\s/g, '');
                       if (ukPostcodeRegex.test(cleanValue)) {
                         postcodeLookupTimeoutRef.current = setTimeout(() => {
                           performPostcodeLookup(value);
                         }, 300);
+                      } else if (value.trim().length >= 4) {
+                        // Street / town search
+                        postcodeLookupTimeoutRef.current = setTimeout(() => {
+                          performAddressSearch(value);
+                        }, 500);
                       }
                     }}
                     onBlur={() => {
@@ -2549,10 +2555,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       setAddressTouched(prev => ({ ...prev, postcode: true }));
                       validateAddressField('postcode');
                     }}
-                    placeholder="e.g. SW1A 1AA"
-                    maxLength={8}
-                    className={`h-11 sm:h-12 text-base font-medium uppercase tracking-wider pr-10 ${getAddressInputValidationClass('postcode')}`}
+                    placeholder="e.g. SW1A 1AA or High Street, Bath"
+                    className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('postcode')}`}
                   />
+
                   {isLookingUp ? (
                     <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground animate-spin" />
                   ) : addressValidated.postcode && !addressErrors.postcode ? (
