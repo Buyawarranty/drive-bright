@@ -4535,10 +4535,18 @@ Buyawarranty.co.uk`,
               variant="outline"
               className="border-amber-500 bg-white text-amber-900 hover:bg-amber-100"
               onClick={() => {
-                setFilterByStatus('pending');
+                // Clear anything that would fight the queue, then show exactly
+                // the orders this banner is counting.
+                setShowPendingConfirmationOnly(true);
+                setFilterByStatus('all');
+                setSearchTerm('');
+                setFilterByPartPayment('all');
                 setSortBy('newest');
-                const el = document.getElementById('customers-list-anchor');
-                el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setCustomersPage(1);
+                requestAnimationFrame(() => {
+                  const el = document.getElementById('customers-list-anchor');
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
               }}
             >
               Review pending payments
