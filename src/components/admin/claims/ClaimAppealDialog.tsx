@@ -380,34 +380,25 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
       const fee = withReview ? feeNumber : 0;
 
       // 1. Email the customer the appeal, the form link and (if agreed) the payment page.
-      const { data: emailRes, error: emailErr } = await supabase.functions.invoke('send-appeal-email', {
-        body: {
-          to: selected.email,
-          subject: subject.trim() || buildAppealEmailSubject(selected.vehicle_registration),
-          html: emailHtml,
-          claimId: selected.id,
-          registration: selected.vehicle_registration,
-        },
-      });
-      if (emailErr) throw emailErr;
-      if (emailRes?.error) throw new Error(emailRes.error);
+      await sendAppealEmailTo(toEmail.trim());
 
       // 2. Store the appeal.
       const { error: appealError } = await supabase.from('claim_appeals').insert({
         claim_id: selected.id,
-        reason: reason.trim(),
+        reason: reason.trim() || 'Final appeal opened — customer to complete the appeal form.',
         new_evidence: newEvidence.trim() || null,
         status: 'submitted',
         independent_reviewer: withReview ? reviewer?.name : 'No independent review (internal appeal)',
         reviewer_url: withReview ? reviewer?.url : null,
         appeal_fee: fee,
-        payment_link: withReview ? paymentLink.trim() : formLink.trim(),
+        payment_link: (withReview ? paymentLink.trim() : formLink.trim()) || null,
         sent_at: new Date().toISOString(),
-        customer_email: selected.email,
+        customer_email: toEmail.trim(),
         customer_notified: false,
         created_by: userRes?.user?.id ?? null,
       } as any);
       if (appealError) throw appealError;
+
 
       // 3. Claim moves to the appeal stage.
       const { error: statusError } = await supabase
