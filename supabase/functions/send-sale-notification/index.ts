@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sendInternalNotification } from "../_shared/send-internal-notification.ts";
 import { sourceLetterFromLeadSource, saleSubjectPrefix } from "../_shared/saleSubjectPrefix.ts";
+import { formatClaimLimit } from "../_shared/claim-limit-display.ts";
 
 
 const corsHeaders = {
@@ -102,7 +103,7 @@ serve(async (req: Request) => {
       if (custRow) saleExtras = custRow as any;
 
     } catch (_) { /* ignore */ }
-    const claimLimitDisplay = saleExtras.claim_limit ? `£${Number(saleExtras.claim_limit).toLocaleString()}` : 'Not set';
+    const claimLimitDisplay = saleExtras.claim_limit ? formatClaimLimit(saleExtras.claim_limit) : 'Not set';
     const excessDisplay = saleExtras.voluntary_excess != null ? `£${Number(saleExtras.voluntary_excess).toFixed(2)}` : 'Not set';
     const labourRateDisplay = saleExtras.labour_rate ? `£${Number(saleExtras.labour_rate).toFixed(2)}/hr` : 'Not set';
     const durationDisplay = durationLabel(durationMonths, saleExtras.payment_type, plan);

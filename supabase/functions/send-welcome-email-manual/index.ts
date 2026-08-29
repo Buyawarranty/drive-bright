@@ -3,6 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { logCustomerEmail } from '../_shared/log-email.ts';
 import { getLatestPolicyDocs } from '../_shared/latestPolicyDocs.ts';
 import { verifyPassword } from '../_shared/verify-password.ts';
+import { formatClaimLimit } from "../_shared/claim-limit-display.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -723,7 +724,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <strong>Expiry Date:</strong> ${formatDate(policyEndDate)}
               </li>
               <li style="margin-bottom: 8px; color: #333;">
-                <strong>Claim Limit:</strong> £${(() => { const cl = policy.claim_limit || customerDetails?.claim_limit || 1250; return cl.toLocaleString(); })()} per claim
+                <strong>Claim Limit:</strong> ${formatClaimLimit(policy.claim_limit || customerDetails?.claim_limit || 1250)} per claim
               </li>
               <li style="margin-bottom: 8px; color: #333;">
                 <strong>Voluntary Excess:</strong> £${policy.voluntary_excess ?? customerDetails?.voluntary_excess ?? 0}
