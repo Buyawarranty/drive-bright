@@ -553,6 +553,8 @@ export const CustomersTab = ({
   const [initialContactSort, setInitialContactSort] = useState<'desc' | 'asc' | null>(null);
   const [filterByPlan, setFilterByPlan] = useState('all');
   const [filterByStatus, setFilterByStatus] = useState('all');
+  // Set by the amber "orders need payment confirmation" banner.
+  const [showPendingConfirmationOnly, setShowPendingConfirmationOnly] = useState(false);
   const [filterByTag, setFilterByTag] = useState('all');
   const [filterBySource, setFilterBySource] = useState('all_view'); // Default to All View
   const [filterByWarrantyPeriod, setFilterByWarrantyPeriod] = useState('all');
