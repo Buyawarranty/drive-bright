@@ -439,6 +439,14 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         </div>
       )}
 
+      {/* ─────────────────────────────────────────────────────────────
+          OPEN ROUND ROBIN — last section on the page so it can never
+          interfere with the live Round Robin controls above.
+         ───────────────────────────────────────────────────────────── */}
+      <OrrSection isManagement={isManagement} />
+
+
+
 
     </div>
   );
