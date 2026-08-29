@@ -154,7 +154,7 @@ serve(async (req) => {
     }
     logStep("Resend API key found");
 
-    let subject = customSubject || "Your warranty is now active";
+    let subject = customSubject || "Valued Customer, your warranty details";
     let htmlContent = customHtml || "";
     
     if (templateId === 'policy_documents' || templateId === 'welcome_email') {
@@ -163,9 +163,9 @@ serve(async (req) => {
       const namePrefix = firstName && firstName !== 'Valued Customer' ? `${firstName}, ` : '';
       subject = customSubject || (isFutureActivation
         ? `${namePrefix}your warranty is confirmed`
-        : `${namePrefix}your warranty is now active`);
+        : `Valued Customer, your warranty details`);
       
-      const headerText = isFutureActivation ? 'Future Activation Confirmed!' : 'Your Policy Is Now Active!';
+      const headerText = isFutureActivation ? 'Future Activation Confirmed!' : 'Valued Customer, your warranty details';
       const introText = isFutureActivation
         ? `Thanks for choosing Buy A Warranty to protect your vehicle — we're pleased to confirm your warranty has been set up and will activate on <strong>${variables?.policyStartDate || 'N/A'}</strong>.`
         : `Thanks for choosing Buy A Warranty to protect your vehicle — we're pleased to let you know that your warranty is now active!`;
