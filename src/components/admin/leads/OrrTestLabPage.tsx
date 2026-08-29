@@ -37,15 +37,23 @@ interface OrrTestLabPageProps {
 export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab }) => {
   const { effectiveRole } = useViewAs();
   const [orrLive, setOrrLive] = React.useState<boolean | null>(null);
+  const [selectedTeamIds, setSelectedTeamIds] = React.useState<string[]>([]);
+  const [teamNamesById, setTeamNamesById] = React.useState<Record<string, string>>({});
 
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from('lead_distribution_settings')
-        .select('open_round_robin_enabled');
+      const [{ data: settings }, { data: teams }] = await Promise.all([
+        supabase.from('lead_distribution_settings').select('team_id, open_round_robin_enabled'),
+        supabase.from('lead_teams').select('id, name'),
+      ]);
       if (cancelled) return;
-      setOrrLive((data || []).some(r => r.open_round_robin_enabled === true));
+      const enabledTeamIds = (settings || [])
+        .filter(r => r.open_round_robin_enabled === true && r.team_id)
+        .map(r => r.team_id as string);
+      setOrrLive(enabledTeamIds.length > 0);
+      setSelectedTeamIds(enabledTeamIds);
+      setTeamNamesById(Object.fromEntries(((teams as { id: string; name: string }[]) || []).map(t => [t.id, t.name])));
     })();
     return () => { cancelled = true; };
   }, []);
