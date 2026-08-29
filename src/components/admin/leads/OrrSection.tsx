@@ -8,6 +8,8 @@ import { OrrGoLiveSwitch } from './OrrGoLiveSwitch';
 import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
 import { ImportLeadToAgentPanel } from './ImportLeadToAgentPanel';
+import { OrrOvernightSandboxPanel } from './OrrOvernightSandboxPanel';
+
 
 /**
  * Open Round Robin — the single, simplified home for ORR inside Lead Allocation.
@@ -191,9 +193,13 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
                 see what each colleague would see. Clear it whenever you like.
               </span>
             </div>
+            <WidgetErrorBoundary label="Sandbox — overnight Open Round Robin practice">
+              <OrrOvernightSandboxPanel />
+            </WidgetErrorBoundary>
             <WidgetErrorBoundary label="Sandbox — testing only">
               <OpenRoundRobinTestPanel />
             </WidgetErrorBoundary>
+
           </div>
         )}
       </div>
