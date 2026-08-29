@@ -18,6 +18,17 @@ interface AutocompleteSuggestion {
   address: string;
   url: string;
   id: string;
+  /** Full address returned by a postcode lookup (no second call needed) */
+  resolved?: {
+    line_1?: string;
+    line_2?: string;
+    line_3?: string;
+    town_or_city?: string;
+    county?: string;
+    postcode?: string;
+    building_number?: string;
+    building_name?: string;
+  };
 }
 
 interface AddressAutocompleteProps {
