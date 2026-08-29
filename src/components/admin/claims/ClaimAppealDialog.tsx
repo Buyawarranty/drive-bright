@@ -276,22 +276,100 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
   /** Preview is always available once a claim is selected, even if the grounds are empty. */
   const canPreview = !!selected;
 
-  const canSend =
-    !!selected &&
-    !!selected.email &&
-    reason.trim().length > 10 &&
-    !!formLink.trim() &&
-    (!withReview || (!!reviewer && !!paymentLink.trim()));
+  const emailLooksValid = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  const phoneLooksValid = (value: string) => value.replace(/\D/g, '').length >= 10;
 
-  const sendBlockedReason = !canSend
-    ? !selected || !selected.email
-      ? 'Select a claim with an email address before sending.'
-      : reason.trim().length <= 10
-        ? 'Add the grounds for appeal (at least a sentence) before sending.'
-        : !formLink.trim()
-          ? 'Generate the appeal form link before sending.'
-          : 'Generate the inspection payment page, or switch off the independent review.'
-    : '';
+  /**
+   * The email is a blank invitation — the CUSTOMER fills the form in, not us.
+   * So the only thing we insist on is a real address to send it to.
+   */
+  const canSend = !!selected && emailLooksValid(toEmail);
+
+  const sendBlockedReason = !selected
+    ? 'Select a customer / claim first.'
+    : !emailLooksValid(toEmail)
+      ? 'Enter the customer\u2019s email address to send to.'
+      : '';
+
+  /** Friendly nudges only — they never block sending. */
+  const sendNotes = [
+    !formLink.trim() ? 'No appeal form link generated yet.' : '',
+    withReview && !paymentLink.trim() ? 'No inspection payment page generated yet.' : '',
+  ].filter(Boolean);
+
+  const smsText = useMemo(() => {
+    const reg = selected?.vehicle_registration ? ` (${selected.vehicle_registration})` : '';
+    const lines = [
+      `Buy a Warranty: we have opened your final claim appeal${reg}.`,
+      formLink ? `Complete your appeal form: ${formLink}` : '',
+      withReview && paymentLink
+        ? `Independent inspection \u00a3${feeNumber || DEFAULT_APPEAL_FEE} (paid to the inspection company): ${paymentLink}`
+        : '',
+      'Questions? Reply or call 0330 229 5040.',
+    ].filter(Boolean);
+    return lines.join('\n');
+  }, [selected?.vehicle_registration, formLink, withReview, paymentLink, feeNumber]);
+
+  const sendAppealEmailTo = async (address: string) => {
+    const { data, error } = await supabase.functions.invoke('send-appeal-email', {
+      body: {
+        to: address,
+        subject: subject.trim() || buildAppealEmailSubject(selected?.vehicle_registration),
+        html: emailHtml,
+        claimId: selected?.id,
+        registration: selected?.vehicle_registration,
+      },
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+  };
+
+  const handleSendTestEmail = async () => {
+    const address = testEmail.trim() || toEmail.trim();
+    if (!emailLooksValid(address)) {
+      toast({ title: 'Enter a valid test email address', variant: 'destructive' });
+      return;
+    }
+    setSendingTest(true);
+    try {
+      await sendAppealEmailTo(address);
+      toast({ title: 'Test email sent', description: `Sent to ${address}. Nothing was changed on the claim.` });
+    } catch (e: any) {
+      toast({ title: 'Test email failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setSendingTest(false);
+    }
+  };
+
+  const sendSmsTo = async (number: string) => {
+    const { data, error } = await supabase.functions.invoke('send-clicksend-sms', {
+      body: { to: number, message: smsText },
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+  };
+
+  const handleSendSms = async (mode: 'customer' | 'test') => {
+    const number = (mode === 'test' ? testPhone : toPhone).trim();
+    if (!phoneLooksValid(number)) {
+      toast({ title: 'Enter a valid UK mobile number', variant: 'destructive' });
+      return;
+    }
+    mode === 'test' ? setSendingTestSms(true) : setSendingSms(true);
+    try {
+      await sendSmsTo(number);
+      toast({
+        title: mode === 'test' ? 'Test text sent' : 'Text sent to the customer',
+        description: `Sent to ${number}.`,
+      });
+    } catch (e: any) {
+      toast({ title: 'Text failed', description: e.message, variant: 'destructive' });
+    } finally {
+      mode === 'test' ? setSendingTestSms(false) : setSendingSms(false);
+    }
+  };
+
+
 
 
   const handleSend = async () => {
