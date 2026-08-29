@@ -2621,7 +2621,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     }}
                     className="mt-2 text-sm text-[#1a1a1a] hover:underline font-medium"
                   >
-                    Enter your address
+                    Enter your address manually
                   </button>
                 )}
               </div>
@@ -2629,6 +2629,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               {/* Address Fields - Shown after lookup or manual entry click */}
               {showAddressFields && (
                 <div className="space-y-4 pt-2">
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAddressFields(false);
+                        setShowAddressDropdown(false);
+                        setAddressSuggestions([]);
+                      }}
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-[#1a1a1a] hover:underline"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      Search a different address
+                    </button>
+                  </div>
+
                   {/* Address Line 1 */}
                   <div>
                     <Label htmlFor="address_line_1" className="text-sm font-medium text-foreground/80">
