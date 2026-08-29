@@ -450,7 +450,8 @@ const App = () => {
                     <Route path="/warranty-types/:brand/" element={<DynamicLandingPage />} />
                     <Route path="/claim-update/:token" element={<ClaimUpdateForm />} />
                     <Route path="/independent-inspection/:token" element={<IndependentInspection />} />
-                    <Route path="/inspection-payment-received" element={<InspectionThankYou />} />
+<Route path="/inspection-payment-received" element={<InspectionThankYou />} />
+                    <Route path="/inspection-payment-received/" element={<InspectionThankYou />} />
                     <Route path="/steptest" element={<StepTest />} />
                     
                     {/* Dealer Portal */}
