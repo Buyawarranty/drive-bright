@@ -240,6 +240,25 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     // Update display value to show selected address
     setInputValue(suggestion.address);
 
+    // Postcode lookups already carry the full address — populate immediately
+    if (suggestion.resolved) {
+      const r = suggestion.resolved;
+      setHasSelected(true);
+      setLookupFailed(false);
+      onLookupError?.(false);
+      onAddressSelect({
+        line_1: r.line_1 || '',
+        line_2: [r.line_2, r.line_3].filter(Boolean).join(', '),
+        town: r.town_or_city || '',
+        county: r.county || '',
+        postcode: r.postcode || '',
+        building_number: r.building_number || '',
+        building_name: r.building_name || '',
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
         body: { action: 'get', id: suggestion.id, term: inputValue }
