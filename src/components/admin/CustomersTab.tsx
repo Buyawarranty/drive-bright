@@ -5381,6 +5381,9 @@ Buyawarranty.co.uk`,
         onOpen={openCustomerDialog}
       />
 
+      {/* Scroll target for the payment-confirmation banner */}
+      <div id="customers-list-anchor" className="scroll-mt-24" />
+
       {/* Results Table (desktop) */}
       <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden mt-2">
 
