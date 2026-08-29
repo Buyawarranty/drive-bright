@@ -121,6 +121,7 @@ serve(async (req) => {
     const term = typeof body?.term === 'string' ? body.term.trim() : '';
     const postcode = typeof body?.postcode === 'string' ? body.postcode.trim() : '';
     const id = typeof body?.id === 'string' ? body.id.trim() : '';
+    const drillDown = body?.drillDown === true;
     const base = `https://ws.postcoder.com/pcw/${encodeURIComponent(apiKey)}`;
 
     /** Free-text address search (postcode, street or town) via the address endpoint. */
@@ -138,6 +139,21 @@ serve(async (req) => {
 
     if (action === 'autocomplete' || action === 'search') {
       if (term.length < 3) return json({ suggestions: [] });
+
+      // A container has already been selected. Resolve that exact street/area
+      // into its individual addresses instead of grouping it into itself again.
+      if (drillDown) {
+        const addresses = await addressSearch(term);
+        if (!addresses) return json({ suggestions: [], error: 'Lookup failed' }, 502);
+        return json({ suggestions: addresses.slice(0, 100).map((a, i) => ({
+          id: `as-${i}`,
+          address: a.formatted_address,
+          url: '',
+          count: 1,
+          type: 'address',
+          resolved: a,
+        })) });
+      }
 
       // Preferred: Postcoder autocomplete (needs the autocomplete product on the key)
       const url = `${base}/autocomplete/find?query=${encodeURIComponent(term)}&country=uk&format=json&maximumresults=25`;

@@ -120,7 +120,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 
   // Fetch suggestions from Postcoder via edge function
   // IMPORTANT: This function NEVER clears or modifies inputValue
-  const fetchSuggestions = useCallback(async (term: string) => {
+  const fetchSuggestions = useCallback(async (term: string, drillDown = false) => {
     // Don't search for very short terms
     if (term.length < 3) {
       setSuggestions([]);
@@ -159,7 +159,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 
     try {
       const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
-        body: { action: 'autocomplete', term }
+        body: { action: 'autocomplete', term, drillDown }
       });
 
 
@@ -245,7 +245,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       setInputValue(drillTerm);
       setHasSelected(false);
       setSelectedIndex(-1);
-      await fetchSuggestions(drillTerm);
+       await fetchSuggestions(drillTerm, true);
       setShowDropdown(true);
       // Keep focus so the user can keep clicking through the list
       inputRef.current?.focus();
