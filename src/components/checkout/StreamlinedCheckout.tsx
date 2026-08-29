@@ -337,6 +337,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           } else {
             setTownAutoFilled(false);
           }
+          setManualAddressEntry(false);
           setShowAddressFields(true);
         } else {
           setAddressLookupFailed(true);
