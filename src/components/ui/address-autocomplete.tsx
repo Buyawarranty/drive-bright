@@ -117,7 +117,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     // Don't reset lookupFailed here - only set it on actual failure
     
     try {
-      const { data, error } = await supabase.functions.invoke('getaddress-lookup', {
+      const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
         body: { action: 'autocomplete', term }
       });
 
