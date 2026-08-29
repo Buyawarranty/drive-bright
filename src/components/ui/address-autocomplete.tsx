@@ -460,7 +460,21 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                 setTimeout(() => { isSelectingRef.current = false; }, 300);
               }}
             >
-              <span className="text-foreground">{suggestion.address}</span>
+              {suggestion.container ? (
+                <span className="flex items-center justify-between gap-2">
+                  <span className="text-foreground font-medium truncate">
+                    {suggestion.address}
+                    {typeof suggestion.count === 'number' && suggestion.count > 1 && (
+                      <span className="ml-2 text-muted-foreground font-normal">
+                        ({suggestion.count} {suggestion.count === 1 ? 'address' : 'addresses'})
+                      </span>
+                    )}
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                </span>
+              ) : (
+                <span className="text-foreground">{suggestion.address}</span>
+              )}
             </button>
           ))}
         </div>
