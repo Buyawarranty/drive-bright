@@ -237,7 +237,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [customerTown, setCustomerTown] = useState('');
   const [customerBuildingNumber, setCustomerBuildingNumber] = useState('');
   const [customerCounty, setCustomerCounty] = useState('');
-  const [skipAddressDetails, setSkipAddressDetails] = useState(true);
+  const [skipAddressDetails, setSkipAddressDetails] = useState(false);
   // Address fields stay hidden until an address is picked from postcode lookup (or manual entry)
   const [showAddressFields, setShowAddressFields] = useState(false);
   
@@ -667,7 +667,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       if (missing.length > 0) {
         toast({
           title: "Address required",
-          description: `Please complete: ${missing.join(', ')} — or tick "Customer will complete in dashboard".`,
+          description: `Please complete: ${missing.join(', ')}.`,
           variant: "destructive",
         });
         return;
