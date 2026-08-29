@@ -204,8 +204,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     setInputValue(suggestion.address);
 
     try {
-      const { data, error } = await supabase.functions.invoke('getaddress-lookup', {
-        body: { action: 'get', id: suggestion.id }
+      const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
+        body: { action: 'get', id: suggestion.id, term: inputValue }
       });
 
       if (error) {
