@@ -108,6 +108,8 @@ export default function LiveQuotePage() {
   const [postcodeLookupError, setPostcodeLookupError] = useState<string | null>(null);
   const [postcoderAddresses, setPostcoderAddresses] = useState<any[]>([]);
   const [showAddressFields, setShowAddressFields] = useState(false);
+  // True only when the customer opened the fields via "Enter your address manually"
+  const [manualAddressEntry, setManualAddressEntry] = useState(false);
   const postcodeDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Paid confirmation flow state (must be before early returns)
@@ -231,7 +233,18 @@ export default function LiveQuotePage() {
     if (postcodeDebounceRef.current) {
       clearTimeout(postcodeDebounceRef.current);
     }
-    
+
+    // Search emptied — hide suggestions and, unless entering manually,
+    // collapse and clear the address fields
+    if (uppercaseValue.trim().length === 0) {
+      setPostcoderAddresses([]);
+      if (!manualAddressEntry) {
+        setShowAddressFields(false);
+        setCustomerData(prev => ({ ...prev, addressLine1: '', addressLine2: '', city: '', postcode: '' }));
+      }
+      return;
+    }
+
     // Postcode lookup, or free-text street/town search
     if (uppercaseValue.length >= 5 && postcodeRegexForLookup.test(uppercaseValue.trim())) {
       postcodeDebounceRef.current = setTimeout(() => {
