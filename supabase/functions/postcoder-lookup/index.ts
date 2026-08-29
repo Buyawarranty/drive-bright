@@ -63,25 +63,53 @@ serve(async (req) => {
     const id = typeof body?.id === 'string' ? body.id.trim() : '';
     const base = `https://ws.postcoder.com/pcw/${encodeURIComponent(apiKey)}`;
 
-    if (action === 'autocomplete') {
-      if (term.length < 3) return json({ suggestions: [] });
-      const url = `${base}/autocomplete/find?query=${encodeURIComponent(term)}&country=uk&format=json&maximumresults=25`;
+    /** Free-text address search (postcode, street or town) via the address endpoint. */
+    const addressSearch = async (query: string) => {
+      const url = `${base}/address/uk/${encodeURIComponent(query)}?format=json&lines=2&maximumresults=50`;
       const res = await fetch(url);
       if (!res.ok) {
         const text = await res.text();
-        console.error('Postcoder autocomplete error', res.status, text);
-        return json({ suggestions: [], error: `Lookup failed (${res.status})`, detail: text.slice(0, 300) }, res.status === 404 ? 200 : 502);
+        console.error('Postcoder address search error', res.status, text);
+        return null;
       }
-      const rows = (await res.json()) as Array<Record<string, unknown>>;
-      const suggestions = (Array.isArray(rows) ? rows : []).map((r) => ({
-        id: String(r.id ?? ''),
-        address: [r.summaryline, r.locationsummary].filter(Boolean).join(', '),
+      const rows = (await res.json()) as PostcoderAddress[];
+      return (Array.isArray(rows) ? rows : []).map(normalise);
+    };
+
+    if (action === 'autocomplete' || action === 'search') {
+      if (term.length < 3) return json({ suggestions: [] });
+
+      // Preferred: Postcoder autocomplete (needs the autocomplete product on the key)
+      const url = `${base}/autocomplete/find?query=${encodeURIComponent(term)}&country=uk&format=json&maximumresults=25`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const rows = (await res.json()) as Array<Record<string, unknown>>;
+        const suggestions = (Array.isArray(rows) ? rows : []).map((r) => ({
+          id: String(r.id ?? ''),
+          address: [r.summaryline, r.locationsummary].filter(Boolean).join(', '),
+          url: '',
+          count: Number(r.count ?? 1),
+          type: String(r.type ?? ''),
+        }));
+        if (suggestions.length > 0) return json({ suggestions });
+      } else {
+        console.warn('Postcoder autocomplete unavailable', res.status, '- using address search');
+      }
+
+      // Fallback: full address search works for postcodes, streets and towns
+      const addresses = await addressSearch(term);
+      if (!addresses) return json({ suggestions: [], error: 'Lookup failed' }, 502);
+      const suggestions = addresses.map((a, i) => ({
+        id: `as-${i}`,
+        address: a.formatted_address,
         url: '',
-        count: Number(r.count ?? 1),
-        type: String(r.type ?? ''),
+        count: 1,
+        type: 'address',
+        resolved: a,
       }));
       return json({ suggestions });
     }
+
 
     if (action === 'get') {
       if (!id) return json({ error: 'Address id is required' }, 400);
