@@ -100,7 +100,7 @@ const UK_PHONE_REGEX = /^(?:\+?44|0)\s?\d{2,4}[\s-]?\d{3,4}[\s-]?\d{3,4}$/;
 const UK_POSTCODE_REGEX = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
 const isValidEmail = (v: string) => !!v && EMAIL_REGEX.test(v.trim());
 const isValidUkPhone = (v: string) => !!v && UK_PHONE_REGEX.test(v.replace(/\s/g, ''));
-const isValidUkPostcode = (v: string) => !!v && UK_POSTCODE_REGEX.test(v.replace(/\s/g, ''));
+const isValidUkPostcode = (v: string) => !!v && UK_POSTCODE_REGEX.test(v.replace(/\s/g, '')); // kept for validation helpers
 
 interface VehicleData {
   regNumber: string;
@@ -677,7 +677,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [externalPaymentStep, setExternalPaymentStep] = useState<'details' | 'preview' | 'complete'>('details');
   const [quotedPriceOverride, setQuotedPriceOverride] = useState<string>('');
-  const [isLookingUpPostcode, setIsLookingUpPostcode] = useState(false);
   const [postcodeLookupSuccess, setPostcodeLookupSuccess] = useState(false);
   
   // Warranty Start Date (separate from payment date)
