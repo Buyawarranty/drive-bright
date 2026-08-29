@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { displayClaimLimitValue } from "../_shared/claim-limit-display.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -90,7 +91,7 @@ serve(async (req) => {
             durationMonths: quote.duration_months,
             bonusMonths: quote.bonus_months,
             excessAmount: quote.excess_amount,
-            claimLimit: quote.claim_limit,
+            claimLimit: displayClaimLimitValue(quote.claim_limit),
             labourRate: quote.labour_rate,
             boostAddon: quote.boost_addon,
             breakdownIncluded: quote.breakdown_included,
