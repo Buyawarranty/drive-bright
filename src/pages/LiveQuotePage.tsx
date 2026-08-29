@@ -1446,9 +1446,14 @@ export default function LiveQuotePage() {
                         <div className="max-h-56 overflow-auto">
                           {postcoderAddresses.map((addr: any, i: number) => (
                             <button
-                              key={`${addr.formatted_address}-${i}`}
+                              key={`${addr.__container ? addr.label : addr.formatted_address}-${i}`}
                               type="button"
                               onClick={() => {
+                                if (addr.__container) {
+                                  setCustomerData(prev => ({ ...prev, postcode: addr.drill }));
+                                  searchAddresses(addr.drill);
+                                  return;
+                                }
                                 setCustomerData(prev => ({
                                   ...prev,
                                   addressLine1: addr.line_1 || '',
@@ -1464,14 +1469,25 @@ export default function LiveQuotePage() {
                                 setPostcoderAddresses([]);
                                 setShowAddressFields(true);
                               }}
-                              className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b last:border-b-0"
+                              className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b last:border-b-0 flex items-center justify-between gap-2"
                             >
-                              {addr.formatted_address || [addr.line_1, addr.town_or_city, addr.postcode].filter(Boolean).join(', ')}
+                              <span className="min-w-0 truncate">
+                                {addr.__container
+                                  ? addr.label
+                                  : addr.formatted_address || [addr.line_1, addr.town_or_city, addr.postcode].filter(Boolean).join(', ')}
+                              </span>
+                              {addr.__container && (
+                                <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+                                  {addr.count} addresses
+                                  <ChevronRight className="w-3.5 h-3.5" />
+                                </span>
+                              )}
                             </button>
                           ))}
                         </div>
                       </div>
                     )}
+
                   </div>
 
                   {/* Manual entry link — address fields stay hidden until an address is selected */}
