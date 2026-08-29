@@ -113,9 +113,24 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
   const [generatingLink, setGeneratingLink] = useState(false);
   const [generatingForm, setGeneratingForm] = useState(false);
 
+  /** Where the appeal goes. Editable — the claim's email is only a starting point. */
+  const [toEmail, setToEmail] = useState('');
+  const [testEmail, setTestEmail] = useState('');
+  const [sendingTest, setSendingTest] = useState(false);
+  /** Optional text message with the same links. */
+  const [toPhone, setToPhone] = useState('');
+  const [testPhone, setTestPhone] = useState('');
+  const [sendingSms, setSendingSms] = useState(false);
+  const [sendingTestSms, setSendingTestSms] = useState(false);
+
   useEffect(() => {
     if (open) setSelected(claim);
   }, [open, claim]);
+
+  useEffect(() => {
+    setToEmail(selected?.email || '');
+    setToPhone(selected?.phone || '');
+  }, [selected?.id, selected?.email, selected?.phone]);
 
   useEffect(() => {
     if (!open) {
@@ -133,8 +148,11 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
       setReviewing(false);
       setGeneratingLink(false);
       setGeneratingForm(false);
+      setTestEmail('');
+      setTestPhone('');
     }
   }, [open]);
+
 
   useEffect(() => {
     setSubject(buildAppealEmailSubject(selected?.vehicle_registration));
