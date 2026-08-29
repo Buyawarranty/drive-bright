@@ -440,6 +440,38 @@ serve(async (req) => {
               </table>
             </div>
 
+            <!-- What's included with Platinum -->
+            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+              <h2 class="baw-h2" style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 20px 0;">What's included with Platinum</h2>
+              <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 16px 0;">Your Platinum warranty covers thousands of mechanical and electrical parts, including:</p>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Engine, gearbox, clutch and drivetrain</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Electrics, ECUs, sensors and diagnostics</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Turbo, fuel and cooling systems</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Air conditioning, steering and suspension</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Any VAT-registered garage in the UK — or we can help you find one</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Approved parts and labour paid directly to your garage</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>UK Team Claims support</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Transferable if you sell your car</td>
+                </tr>
+              </table>
+            </div>
+
             <!-- Customer Portal -->
             <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
               <h2 class="baw-h2" style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 12px 0;">Access your customer portal</h2>
