@@ -7,6 +7,7 @@ import { OrrTeamSelectionPanel } from './OrrTeamSelectionPanel';
 import { OrrGoLiveSwitch } from './OrrGoLiveSwitch';
 import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
+import { ImportLeadToAgentPanel } from './ImportLeadToAgentPanel';
 
 /**
  * Open Round Robin — the single, simplified home for ORR inside Lead Allocation.
@@ -46,10 +47,27 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
     return () => { cancelled = true; };
   }, [isManagement]);
 
+  // Arriving via the "Open Round Robin" jump pill (or a #open-round-robin link)
+  // scrolls here and opens the practice lab, so "take lead" is never hidden.
+  React.useEffect(() => {
+    if (!isManagement) return;
+    const openIfTargeted = () => {
+      if (window.location.hash !== '#open-round-robin') return;
+      setSandboxOpen(true);
+      requestAnimationFrame(() => {
+        document.getElementById('open-round-robin')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    };
+    openIfTargeted();
+    window.addEventListener('hashchange', openIfTargeted);
+    return () => window.removeEventListener('hashchange', openIfTargeted);
+  }, [isManagement]);
+
   if (!isManagement) return null;
 
   return (
-    <div id="open-round-robin" className="space-y-4">
+    <div id="open-round-robin" className="space-y-4 scroll-mt-28">
+
       <div className="border-l-4 border-primary/60 pl-3">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-lg font-semibold text-foreground">Open Round Robin</h2>
@@ -90,6 +108,13 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
           onChange={setOrrLive}
         />
       </div>
+
+      {/* Import a lead and send it to a chosen agent ------------------- */}
+      <ImportLeadToAgentPanel
+        title="Import a lead and send it to an agent"
+        description="Find any existing lead by reg plate, name, email or phone, pick the agent, and it goes to them through the normal lead flow. Round Robin above is untouched."
+      />
+
 
       {/* 2. Live status ------------------------------------------------- */}
       <div className="space-y-2">

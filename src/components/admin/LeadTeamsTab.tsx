@@ -44,6 +44,7 @@ import { SaveOnlineSaleAllocationPanel } from './leads/SaveOnlineSaleAllocationP
 
 import { ScoreboardTargetsSection } from './leads/ScoreboardTargetsSection';
 import { OrrSection } from './leads/OrrSection';
+import { ImportLeadToAgentPanel } from './leads/ImportLeadToAgentPanel';
 
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
@@ -308,6 +309,12 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
               Website sales asking to cancel. Pick an agent and send it to them as an urgent save lead.
             </p>
           </div>
+          <ImportLeadToAgentPanel
+            title="Import a lead and send it to an agent"
+            description="Already have the lead in the system? Find them by reg plate, name, email or phone, pick the agent, and it goes to them as an urgent save cancellation lead."
+            noteTag="SAVE CANCELLATION"
+            markUrgent
+          />
           <CancellationsAllocationPanel />
         </div>
       )}
@@ -395,11 +402,8 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         )}
       </div>
 
-      {/* ─────────────────────────────────────────────────────────────
-          OPEN ROUND ROBIN — setup, live status, and a clearly-labelled
-          sandbox. Merged in from the old standalone ORR tabs.
-         ───────────────────────────────────────────────────────────── */}
-      <OrrSection isManagement={isManagement} />
+      {/* Open Round Robin now lives at the very bottom of this page. */}
+
 
 
 
@@ -441,6 +445,14 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
           <ManagerOverrideAuditPanel />
         </div>
       )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          OPEN ROUND ROBIN — last section on the page so it can never
+          interfere with the live Round Robin controls above.
+         ───────────────────────────────────────────────────────────── */}
+      <OrrSection isManagement={isManagement} />
+
+
 
 
     </div>
