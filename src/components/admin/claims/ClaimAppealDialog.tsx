@@ -741,6 +741,22 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Mail className="h-4 w-4" /> Email to the customer
               </div>
+              <p className="text-xs text-[#5A6B82] leading-relaxed">
+                The email goes out blank — the customer fills the appeal form in themselves and makes
+                any payment. Nothing here needs completing by the claims team.
+              </p>
+              <div className="space-y-2">
+                <Label className="text-[#1A2B4A] font-semibold">Send to *</Label>
+                <Input
+                  type="email"
+                  value={toEmail}
+                  onChange={(e) => setToEmail(e.target.value)}
+                  placeholder="customer@email.co.uk"
+                />
+                <p className="text-xs text-[#5A6B82]">
+                  Prefilled from the claim — change it if the customer uses a different address.
+                </p>
+              </div>
               <div className="space-y-2">
                 <Label className="text-[#1A2B4A] font-semibold">Subject</Label>
                 <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
@@ -748,6 +764,82 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
               <div className="space-y-2">
                 <Label className="text-[#1A2B4A] font-semibold">Opening message</Label>
                 <Textarea rows={3} value={intro} onChange={(e) => setIntro(e.target.value)} />
+              </div>
+
+              <div className="rounded-md border border-dashed border-border bg-muted/20 p-3 space-y-2">
+                <Label className="text-xs font-semibold text-[#1A2B4A]">Send yourself a test email</Label>
+                <div className="flex flex-wrap gap-2">
+                  <Input
+                    type="email"
+                    value={testEmail}
+                    onChange={(e) => setTestEmail(e.target.value)}
+                    placeholder="your.name@buyawarranty.co.uk"
+                    className="flex-1 min-w-[200px] bg-background"
+                  />
+                  <Button type="button" variant="outline" onClick={handleSendTestEmail} disabled={sendingTest}>
+                    {sendingTest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
+                    Send test
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Sends the identical email to you only — the claim is not changed and the customer is
+                  not contacted.
+                </p>
+              </div>
+            </div>
+
+            {/* Text message — preview before anything is sent */}
+            <div className="space-y-3 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Send className="h-4 w-4" /> Text message (optional)
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="text-[#1A2B4A] font-semibold">Customer's mobile</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={toPhone}
+                      onChange={(e) => setToPhone(e.target.value)}
+                      placeholder="07…"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleSendSms('customer')}
+                      disabled={sendingSms}
+                      className="whitespace-nowrap"
+                    >
+                      {sendingSms ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send text'}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-[#5A6B82]">Check this number carefully before sending.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[#1A2B4A] font-semibold">Test number</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={testPhone}
+                      onChange={(e) => setTestPhone(e.target.value)}
+                      placeholder="Your own mobile"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleSendSms('test')}
+                      disabled={sendingTestSms}
+                      className="whitespace-nowrap"
+                    >
+                      {sendingTestSms ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send test'}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-[#5A6B82]">Goes to you only.</p>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1A2B4A]">Text preview</Label>
+                <pre className="whitespace-pre-wrap rounded-md border border-[#E2E8F0] bg-muted/30 p-3 text-xs text-[#1A2B4A]">
+                  {smsText}
+                </pre>
               </div>
             </div>
 
@@ -762,14 +854,30 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
         ) : (
           /* ── Email preview step ── */
           <div className="space-y-3 text-sm">
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-4 text-[#1A2B4A] shadow-sm">
-              <p><span className="text-muted-foreground">To:</span> {selected?.email}</p>
+            <div className="space-y-3 rounded-2xl border border-[#E2E8F0] bg-white p-4 text-[#1A2B4A] shadow-sm">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1A2B4A]">To</Label>
+                <Input type="email" value={toEmail} onChange={(e) => setToEmail(e.target.value)} />
+              </div>
               <p><span className="text-muted-foreground">Subject:</span> {subject}</p>
               <p className="text-muted-foreground">
                 {withReview
                   ? `Independent review agreed — ${reviewer?.name} · £${feeNumber} paid to the inspection company`
                   : 'No independent review — nothing for the customer to pay'}
               </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Input
+                  type="email"
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  placeholder="Test address (yourself)"
+                  className="flex-1 min-w-[200px]"
+                />
+                <Button type="button" variant="outline" size="sm" onClick={handleSendTestEmail} disabled={sendingTest}>
+                  {sendingTest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
+                  Send test email
+                </Button>
+              </div>
             </div>
             <iframe
               title="Appeal email preview"
@@ -786,13 +894,24 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
                 </Button>
               )}
             </div>
+            <div className="space-y-1 rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-sm">
+              <Label className="text-xs font-semibold text-[#1A2B4A]">Text message preview</Label>
+              <pre className="whitespace-pre-wrap rounded-md border border-[#E2E8F0] bg-muted/30 p-3 text-xs text-[#1A2B4A]">
+                {smsText}
+              </pre>
+              <p className="text-xs text-muted-foreground">
+                Nothing is texted when you send this email — texts are sent from the previous step.
+              </p>
+            </div>
             <p className="text-muted-foreground">
-              Sending will email the customer, store the appeal, set the claim to{' '}
+              This is the blank invitation the customer receives — they complete the form and any
+              payment themselves. Sending will email them, store the appeal, set the claim to{' '}
               <Badge>appeal</Badge>{' '}
               {notifyCustomer ? 'and post an update in their profile.' : 'without a profile notification.'}
             </p>
           </div>
         )}
+
         </div>
 
         <DialogFooter className="gap-2 border-t border-[#E2E8F0] bg-white px-6 py-4 sm:items-center">
