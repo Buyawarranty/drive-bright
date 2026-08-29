@@ -326,10 +326,65 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
     return m;
   }, [ordered]);
 
-  const unassigned = ordered.filter(r => !r.assigned_to).length;
+  const unassignedRows = useMemo(() => ordered.filter(r => !r.assigned_to), [ordered]);
+  const unassigned = unassignedRows.length;
   const counts = agents.map(a => tally.get(a.id) ?? 0);
   const spread = counts.length ? Math.max(...counts) - Math.min(...counts) : 0;
   const totalAssigned = ordered.length - unassigned;
+
+  // Ticking clock so the waiting age stays honest without a full reload.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    if (unassigned === 0) return;
+    const t = setInterval(() => { if (document.hidden) return; setNowMs(Date.now()); }, 15_000);
+    return () => clearInterval(t);
+  }, [unassigned]);
+
+  /** Minutes the oldest unassigned lead has been waiting. */
+  const oldestUnassignedMins = useMemo(() => {
+    if (unassignedRows.length === 0) return 0;
+    const oldest = Math.min(...unassignedRows.map(r => new Date(r.created_at).getTime()));
+    return Math.max(0, Math.floor((nowMs - oldest) / 60000));
+  }, [unassignedRows, nowMs]);
+
+  const OVERDUE_MINS = 10;
+  const unassignedOverdue = unassigned > 0 && oldestUnassignedMins >= OVERDUE_MINS;
+
+  /**
+   * As soon as at least one agent is live (switched on, not paused), waiting
+   * leads must flow back into the rotation instead of sitting Unassigned.
+   * Runs the same live distribution pass the rest of the CRM uses — it only
+   * ever hands out eligible, never-contacted, unowned leads.
+   */
+  const sweeping = useRef(false);
+  useEffect(() => {
+    if (!canOverrideLock) return;      // management screens only
+    if (!unassignedOverdue) return;
+    let cancelled = false;
+    const run = async () => {
+      if (sweeping.current || cancelled) return;
+      sweeping.current = true;
+      try {
+        const { data: caps } = await (supabase as any)
+          .from('agent_distribution_caps')
+          .select('admin_user_id')
+          .eq('paused', false)
+          .eq('assignment_mode', 'round_robin')
+          .limit(1);
+        if (!caps || caps.length === 0) return; // nobody live — leave them waiting
+        await (supabase as any).rpc('rolling_rr_distribute', { _batch_cap: 25, _window_minutes: 60 * 24 * 7 });
+        if (!cancelled) load();
+      } catch (e) {
+        console.error('[live stream auto-assign]', e);
+      } finally {
+        sweeping.current = false;
+      }
+    };
+    const kick = setTimeout(run, 1000);
+    const t = setInterval(run, 60_000);
+    return () => { cancelled = true; clearTimeout(kick); clearInterval(t); };
+  }, [canOverrideLock, unassignedOverdue, load]);
+
 
   return (
     <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
