@@ -68,25 +68,45 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
   return (
     <div id="open-round-robin" className="space-y-4 scroll-mt-28">
 
-      <div className="border-l-4 border-primary/60 pl-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-lg font-semibold text-foreground">Open Round Robin</h2>
-          <span
-            className={cn(
-              'inline-flex items-center gap-1 rounded-md text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 border',
-              orrLive === true
-                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                : 'bg-muted text-muted-foreground border-border',
-            )}
-          >
-            {orrLive === true ? 'Live' : 'Not live'}
-          </span>
+      {/* Big, unmistakable section header — Open Round Robin is NOT live Round Robin. */}
+      <div className="rounded-xl border-2 border-violet-300 bg-gradient-to-r from-violet-50 to-background p-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-violet-900">
+                Open Round Robin
+              </h2>
+              <span
+                className={cn(
+                  'inline-flex items-center gap-1 rounded-md text-xs font-bold uppercase tracking-wide px-2.5 py-1 border',
+                  orrLive === true
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                    : 'bg-muted text-muted-foreground border-border',
+                )}
+              >
+                {orrLive === true ? 'Live' : 'Not live'}
+              </span>
+            </div>
+            <p className="text-sm font-medium text-violet-800/90">
+              Sandbox / testing area — not the live Round Robin.
+            </p>
+          </div>
+          <div className="shrink-0 rounded-lg bg-amber-100 border border-amber-300 px-3 py-2">
+            <p className="text-xs font-semibold text-amber-900">
+              TESTING ONLY
+            </p>
+            <p className="text-[10px] text-amber-900/80">
+              No real leads move here unless this is switched live.
+            </p>
+          </div>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Agents take their own leads from the Open Pool instead of being sent one. Round Robin carries on
-          exactly as it does now — how the two share new leads is set by <strong>Flow</strong> in
-          “Who gets the leads?” above.
-        </p>
+        <div className="mt-4 pt-4 border-t border-violet-200">
+          <p className="text-sm text-foreground/90">
+            Agents take their own leads from the Open Pool instead of being sent one.{' '}
+            <strong>Round Robin carries on exactly as it does now</strong> — how the two share new leads is set by{' '}
+            <strong>Flow</strong> in “Who gets the leads?” above.
+          </p>
+        </div>
       </div>
 
       {/* 1. Setup ------------------------------------------------------- */}
