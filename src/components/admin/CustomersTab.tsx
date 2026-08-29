@@ -1699,8 +1699,10 @@ export const CustomersTab = ({
 
     // Apply date range filter — bypass when actively searching (so users can find any customer by name/email/reg)
     // For sales agents: ALWAYS enforce 2-month restriction even if dateRange state is somehow cleared
+    // Also bypass the date range while showing the payment-confirmation queue:
+    // an order can sit unconfirmed for days, so limiting it to "Today" hid them.
     const isActivelySearching = !!debouncedSearchTerm;
-    if (!isActivelySearching) {
+    if (!isActivelySearching && !showPendingConfirmationOnly) {
       const effectiveDateRange = dateRange;
 
       if (effectiveDateRange?.from) {
