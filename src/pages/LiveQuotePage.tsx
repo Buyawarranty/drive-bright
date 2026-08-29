@@ -15,7 +15,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { 
   Shield, Car, Clock, CheckCircle, CreditCard, Calendar, 
   Phone, Mail, MessageCircle, AlertCircle, Loader2, Lock,
-  Wrench, MapPin, Zap, FileText, Award, Heart, User, Check, Pencil
+  Wrench, MapPin, Zap, FileText, Award, Heart, User, Check, Pencil, ChevronRight
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -188,15 +188,22 @@ export default function LiveQuotePage() {
   // Free-text address search (street or town), same picker as postcode lookup
   const searchAddresses = useCallback(async (term: string) => {
     const query = term.trim();
-    if (query.length < 4) return;
+    if (query.length < 3) return;
     setIsLookingUpPostcode(true);
     setPostcodeLookupError(null);
     try {
       const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
         body: { action: 'search', term: query },
       });
+      // Broad searches (town / street) come back as clickable containers to drill into.
       const rows = Array.isArray(data?.suggestions)
-        ? data.suggestions.map((sug: any) => sug.resolved).filter(Boolean)
+        ? data.suggestions
+            .map((sug: any) =>
+              sug.container
+                ? { __container: true, label: sug.address, count: sug.count, drill: sug.drill || sug.address }
+                : sug.resolved,
+            )
+            .filter(Boolean)
         : [];
       if (!error && rows.length > 0) {
         setPostcoderAddresses(rows);
@@ -211,6 +218,7 @@ export default function LiveQuotePage() {
       setIsLookingUpPostcode(false);
     }
   }, []);
+
 
   // Handle postcode change with debounce
   const handlePostcodeChange = useCallback((value: string) => {
@@ -229,11 +237,12 @@ export default function LiveQuotePage() {
       postcodeDebounceRef.current = setTimeout(() => {
         lookupPostcode(uppercaseValue);
       }, 300);
-    } else if (uppercaseValue.trim().length >= 4) {
+    } else if (uppercaseValue.trim().length >= 3) {
       postcodeDebounceRef.current = setTimeout(() => {
         searchAddresses(uppercaseValue);
-      }, 500);
+      }, 400);
     }
+
   }, [lookupPostcode, searchAddresses]);
 
   
@@ -1446,9 +1455,14 @@ export default function LiveQuotePage() {
                         <div className="max-h-56 overflow-auto">
                           {postcoderAddresses.map((addr: any, i: number) => (
                             <button
-                              key={`${addr.formatted_address}-${i}`}
+                              key={`${addr.__container ? addr.label : addr.formatted_address}-${i}`}
                               type="button"
                               onClick={() => {
+                                if (addr.__container) {
+                                  setCustomerData(prev => ({ ...prev, postcode: addr.drill }));
+                                  searchAddresses(addr.drill);
+                                  return;
+                                }
                                 setCustomerData(prev => ({
                                   ...prev,
                                   addressLine1: addr.line_1 || '',
@@ -1464,14 +1478,25 @@ export default function LiveQuotePage() {
                                 setPostcoderAddresses([]);
                                 setShowAddressFields(true);
                               }}
-                              className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b last:border-b-0"
+                              className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b last:border-b-0 flex items-center justify-between gap-2"
                             >
-                              {addr.formatted_address || [addr.line_1, addr.town_or_city, addr.postcode].filter(Boolean).join(', ')}
+                              <span className="min-w-0 truncate">
+                                {addr.__container
+                                  ? addr.label
+                                  : addr.formatted_address || [addr.line_1, addr.town_or_city, addr.postcode].filter(Boolean).join(', ')}
+                              </span>
+                              {addr.__container && (
+                                <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+                                  {addr.count} addresses
+                                  <ChevronRight className="w-3.5 h-3.5" />
+                                </span>
+                              )}
                             </button>
                           ))}
                         </div>
                       </div>
                     )}
+
                   </div>
 
                   {/* Manual entry link — address fields stay hidden until an address is selected */}

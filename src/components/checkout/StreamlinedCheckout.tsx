@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ArrowLeft, CheckCircle, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, X, Info, Calendar, Loader2, Search, Car, Home, Pencil } from 'lucide-react';
+import { ArrowLeft, CheckCircle, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, ChevronRight, Tag, Shield, AlertCircle, User, X, Info, Calendar, Loader2, Search, Car, Home, Pencil } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -364,7 +364,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Free-text address search — works for street names, towns and partial addresses
   const performAddressSearch = useCallback(async (term: string) => {
     const query = term.trim();
-    if (query.length < 4) return;
+    if (query.length < 3) return;
 
     setIsLookingUp(true);
     setAddressLookupFailed(false);
@@ -372,8 +372,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
         body: { action: 'search', term: query },
       });
+      // Postcoder-style results: broad searches return clickable containers
+      // (street / town groups); narrow searches return final addresses.
       const rows = Array.isArray(data?.suggestions)
-        ? data.suggestions.map((s: any) => s.resolved).filter(Boolean)
+        ? data.suggestions
+            .map((s: any) =>
+              s.container
+                ? { __container: true, label: s.address, count: s.count, drill: s.drill || s.address }
+                : s.resolved,
+            )
+            .filter(Boolean)
         : [];
       if (!error && rows.length > 0) {
         setAddressSuggestions(rows);
@@ -390,6 +398,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       setIsLookingUp(false);
     }
   }, []);
+
 
 
   // Populate every address field once the customer picks their final address
@@ -2527,7 +2536,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       const looksLikePostcode = /^[A-Za-z0-9\s]{0,8}$/.test(raw) && /\d/.test(raw);
                       const value = looksLikePostcode ? raw.toUpperCase() : raw;
                       setPostcodeInput(value);
-                      setAddressData(prev => ({ ...prev, postcode: value }));
+                      // Only mirror into the postcode field when it looks like a postcode —
+                      // a street or town search must not be treated as an invalid postcode.
+                      if (looksLikePostcode) {
+                        setAddressData(prev => ({ ...prev, postcode: value }));
+                      }
+                      setAddressErrors(prev => ({ ...prev, postcode: '' }));
 
                       // Clear existing timeout
                       if (postcodeLookupTimeoutRef.current) {
@@ -2539,11 +2553,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         postcodeLookupTimeoutRef.current = setTimeout(() => {
                           performPostcodeLookup(value);
                         }, 300);
-                      } else if (value.trim().length >= 4) {
+                      } else if (value.trim().length >= 3) {
                         // Street / town search
                         postcodeLookupTimeoutRef.current = setTimeout(() => {
                           performAddressSearch(value);
-                        }, 500);
+                        }, 400);
                       }
                     }}
                     onBlur={() => {
@@ -2552,9 +2566,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       if (ukPostcodeRegex.test(cleanValue) && !isLookingUp && !showAddressFields) {
                         performPostcodeLookup(postcodeInput);
                       }
-                      setAddressTouched(prev => ({ ...prev, postcode: true }));
-                      validateAddressField('postcode');
+                      // Once an address has been picked (or manual entry opened) the
+                      // search box is just a search box — don't flag it as a postcode.
+                      if (!showAddressFields) {
+                        setAddressTouched(prev => ({ ...prev, postcode: true }));
+                        validateAddressField('postcode');
+                      }
                     }}
+
                     placeholder="e.g. SW1A 1AA or High Street, Bath"
                     className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('postcode')}`}
                   />
@@ -2574,7 +2593,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </p>
                 )}
 
-                {/* Address picker — choose your address to fill the fields below */}
+                {/* Address picker — drill into a street or town, then pick the address */}
                 {showAddressDropdown && addressSuggestions.length > 0 && (
                   <div className="mt-2 rounded-lg border border-border bg-background shadow-sm">
                     <p className="px-3 py-2 text-xs font-medium text-muted-foreground border-b border-border">
@@ -2583,17 +2602,35 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <div className="max-h-56 overflow-auto">
                       {addressSuggestions.map((addr: any, i: number) => (
                         <button
-                          key={`${addr.formatted_address}-${i}`}
+                          key={`${addr.__container ? addr.label : addr.formatted_address}-${i}`}
                           type="button"
-                          onClick={() => handleSelectLookupAddress(addr)}
-                          className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b border-border/60 last:border-b-0"
+                          onClick={() => {
+                            if (addr.__container) {
+                              setPostcodeInput(addr.drill);
+                              performAddressSearch(addr.drill);
+                            } else {
+                              handleSelectLookupAddress(addr);
+                            }
+                          }}
+                          className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b border-border/60 last:border-b-0 flex items-center justify-between gap-2"
                         >
-                          {addr.formatted_address || [addr.line_1, addr.town_or_city, addr.postcode].filter(Boolean).join(', ')}
+                          <span className="min-w-0 truncate">
+                            {addr.__container
+                              ? addr.label
+                              : addr.formatted_address || [addr.line_1, addr.town_or_city, addr.postcode].filter(Boolean).join(', ')}
+                          </span>
+                          {addr.__container && (
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+                              {addr.count} addresses
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </span>
+                          )}
                         </button>
                       ))}
                     </div>
                   </div>
                 )}
+
 
                 {/* Postcode validation error */}
                 {(showValidation || addressTouched.postcode) && addressErrors.postcode && (
