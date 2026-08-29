@@ -1475,17 +1475,9 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           </div>
                         </div>
                         )}
-                        <p className="text-[11px] text-destructive">Address is required unless you tick "Customer will complete in dashboard".</p>
+                        <p className="text-[11px] text-destructive">A full address is required to confirm the payment.</p>
                       </div>
-
-                    ) : (
-                      <Alert className="bg-slate-50 border-slate-200">
-                        <Info className="h-4 w-4 text-slate-500" />
-                        <AlertDescription className="text-slate-600 text-sm">
-                          The customer will be prompted to complete their address in their dashboard.
-                        </AlertDescription>
-                      </Alert>
-                    )}
+                    ) : null}
                   </div>
                 </section>
 
