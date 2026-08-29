@@ -159,15 +159,7 @@ serve(async (req) => {
       // Fallback: full address search works for postcodes, streets and towns
       const addresses = await addressSearch(term);
       if (!addresses) return json({ suggestions: [], error: 'Lookup failed' }, 502);
-      const suggestions = addresses.map((a, i) => ({
-        id: `as-${i}`,
-        address: a.formatted_address,
-        url: '',
-        count: 1,
-        type: 'address',
-        resolved: a,
-      }));
-      return json({ suggestions });
+      return json({ suggestions: buildSuggestions(term, addresses) });
     }
 
 
