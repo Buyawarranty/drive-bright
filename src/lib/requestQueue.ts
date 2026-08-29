@@ -37,7 +37,28 @@ const MAX_BACKGROUND_CONCURRENT = 2;
  * a much smaller share: interactive work is untouched, only background pollers
  * and counters are squeezed.
  */
+/**
+ * Deep sleep for forgotten tabs.
+ *
+ * Telemetry from the sales CRM showed a tab left open on Customers overnight
+ * still firing background reads the next morning, while the agent's *active*
+ * New Leads tab waited 15 seconds for five reads that all landed at once —
+ * the classic "blank screen" signature. A tab nobody has looked at for two
+ * minutes has no business polling, so once it crosses that line we stop
+ * granting it background slots entirely. Interactive work (high lane) and the
+ * active screen's reads (normal lane) are untouched, and everything resumes on
+ * the next `visibilitychange`.
+ */
+const DEEP_SLEEP_AFTER_HIDDEN_MS = 120_000;
+let hiddenSince: number | null =
+  typeof document !== 'undefined' && document.hidden ? Date.now() : null;
+
+function isDeepSleeping(): boolean {
+  return hiddenSince !== null && Date.now() - hiddenSince >= DEEP_SLEEP_AFTER_HIDDEN_MS;
+}
+
 function backgroundCap(): number {
+  if (isDeepSleeping()) return 0;
   if (typeof document !== 'undefined' && document.hidden) return 1;
   if (isSecondaryCrmTab()) return 1;
   return MAX_BACKGROUND_CONCURRENT;
