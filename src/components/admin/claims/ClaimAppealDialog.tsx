@@ -409,11 +409,11 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
 
       // 4. Portal notification.
       let notified = false;
-      if (notifyCustomer && selected.email) {
+      if (notifyCustomer && toEmail.trim()) {
         const { data: customer } = await supabase
           .from('customers')
           .select('id')
-          .ilike('email', selected.email)
+          .ilike('email', toEmail.trim())
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -424,12 +424,14 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             created_by: userRes?.user?.id ?? null,
             message:
               `Your claim appeal has been opened${selected.vehicle_registration ? ` for ${selected.vehicle_registration}` : ''}. ` +
-              `Complete your appeal form here: ${formLink.trim()}. ` +
+              (formLink.trim() ? `Complete your appeal form here: ${formLink.trim()}. ` : '') +
               (withReview
-                ? `You have asked for an independent review — the £${fee} inspection fee is paid to the independent inspection company, not to Buy a Warranty. Complete the inspection form and pay here: ${paymentLink.trim()}. `
+                ? `You have asked for an independent review — the £${fee} inspection fee is paid to the independent inspection company, not to Buy a Warranty.` +
+                  (paymentLink.trim() ? ` Complete the inspection form and pay here: ${paymentLink.trim()}. ` : ' ')
                 : `You have chosen to appeal without an independent inspection, so there is nothing to pay. `) +
               `We will post every update on this appeal here in your profile.`,
           });
+
           notified = !notifyError;
           if (!notifyError) {
             await supabase
