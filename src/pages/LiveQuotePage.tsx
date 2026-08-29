@@ -1429,6 +1429,7 @@ export default function LiveQuotePage() {
                                   return rest;
                                 });
                                 setPostcoderAddresses([]);
+                                setShowAddressFields(true);
                               }}
                               className="w-full text-left px-3 py-2.5 text-sm hover:bg-muted border-b last:border-b-0"
                             >
