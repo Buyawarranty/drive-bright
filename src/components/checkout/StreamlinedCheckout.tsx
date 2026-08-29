@@ -360,6 +360,33 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       setIsLookingUp(false);
     }
   }, []);
+
+  // Populate every address field once the customer picks their final address
+  const handleSelectLookupAddress = useCallback((addr: any) => {
+    const line1 = addr.line_1 || '';
+    const line2 = [addr.line_2, addr.line_3].filter(Boolean).join(', ');
+    const town = addr.town_or_city || '';
+    setAddressData(prev => ({
+      ...prev,
+      address_line_1: line1,
+      address_line_2: line2,
+      town,
+      county: addr.county || prev.county || '',
+      postcode: addr.postcode || prev.postcode,
+    }));
+    setAddressValidated(prev => ({
+      ...prev,
+      address_line_1: !!line1,
+      town: !!town,
+      postcode: true,
+    }));
+    setAddressErrors(prev => ({ ...prev, address_line_1: '', town: '', postcode: '' }));
+    if (addr.postcode) setPostcodeInput(addr.postcode);
+    setTownAutoFilled(!!town);
+    setShowAddressDropdown(false);
+    setAddressSuggestions([]);
+    setShowAddressFields(true);
+  }, []);
   
   // Form states
   const [showValidation, setShowValidation] = useState(false);
