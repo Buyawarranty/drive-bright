@@ -237,11 +237,12 @@ export default function LiveQuotePage() {
       postcodeDebounceRef.current = setTimeout(() => {
         lookupPostcode(uppercaseValue);
       }, 300);
-    } else if (uppercaseValue.trim().length >= 4) {
+    } else if (uppercaseValue.trim().length >= 3) {
       postcodeDebounceRef.current = setTimeout(() => {
         searchAddresses(uppercaseValue);
-      }, 500);
+      }, 400);
     }
+
   }, [lookupPostcode, searchAddresses]);
 
   
