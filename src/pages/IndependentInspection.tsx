@@ -19,7 +19,9 @@ import {
   Mail,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import WorldpayCardForm from '@/components/inspection/WorldpayCardForm';
+
+// Hosted Worldpay payment page (Pay by Link) for the inspection fee.
+const WORLDPAY_HPP_URL = 'https://payments.worldpay.com/app/hpp/169-0/payment/start';
 
 interface InspectionRequest {
   id: string;
@@ -108,7 +110,6 @@ const IndependentInspection: React.FC = () => {
   const [accepted, setAccepted] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [detailsSaved, setDetailsSaved] = useState(false);
-  const [cardFormAvailable, setCardFormAvailable] = useState(true);
   const [errors, setErrors] = useState<Partial<Record<ErrorKey, string>>>({});
   const [form, setForm] = useState<FormState>({
     garageName: '',
