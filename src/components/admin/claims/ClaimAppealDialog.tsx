@@ -918,9 +918,12 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
 
           {reviewing ? (
             <>
-              {sendBlockedReason && (
-                <p className="text-xs text-muted-foreground mr-auto">{sendBlockedReason}</p>
+              {(sendBlockedReason || sendNotes.length > 0) && (
+                <p className="text-xs text-muted-foreground mr-auto">
+                  {sendBlockedReason || sendNotes.join(' ')}
+                </p>
               )}
+
               <Button variant="outline" onClick={() => setReviewing(false)} disabled={sending}>
                 <ArrowLeft className="h-4 w-4 mr-1" /> Back to edit
               </Button>
