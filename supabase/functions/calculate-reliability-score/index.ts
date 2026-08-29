@@ -153,8 +153,9 @@ serve(async (req) => {
   }
 
   try {
-    // Staff-only tool. JWT is validated in code (gateway verify_jwt is off so
-    // the browser preflight always gets CORS headers back).
+    // Public pricing tool: called from the customer quote pages with the anon
+    // key as well as from staff tools with a user JWT. A Bearer token (anon or
+    // user) is required; a signed-in user is optional.
     const authHeader = req.headers.get('Authorization') || '';
     if (!authHeader.startsWith('Bearer ')) {
       return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
@@ -168,15 +169,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { data: authData, error: authError } = await supabase.auth.getUser(
-      authHeader.replace(/^Bearer\s+/i, '').trim(),
-    );
-    if (authError || !authData?.user) {
-      return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 401,
-      });
-    }
+
 
 
     const { registration, mileage } = await req.json();
