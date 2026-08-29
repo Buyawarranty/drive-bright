@@ -188,14 +188,14 @@ export default function LiveQuotePage() {
   }, []);
   
   // Free-text address search (street or town), same picker as postcode lookup
-  const searchAddresses = useCallback(async (term: string) => {
+  const searchAddresses = useCallback(async (term: string, drillDown = false) => {
     const query = term.trim();
     if (query.length < 3) return;
     setIsLookingUpPostcode(true);
     setPostcodeLookupError(null);
     try {
       const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
-        body: { action: 'search', term: query },
+        body: { action: 'search', term: query, drillDown },
       });
       // Broad searches (town / street) come back as clickable containers to drill into.
       const rows = Array.isArray(data?.suggestions)
@@ -1473,7 +1473,7 @@ export default function LiveQuotePage() {
                               onClick={() => {
                                 if (addr.__container) {
                                   setCustomerData(prev => ({ ...prev, postcode: addr.drill }));
-                                  searchAddresses(addr.drill);
+                                  searchAddresses(addr.drill, true);
                                   return;
                                 }
                                 setCustomerData(prev => ({

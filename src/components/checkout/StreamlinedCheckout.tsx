@@ -366,7 +366,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   }, []);
 
   // Free-text address search — works for street names, towns and partial addresses
-  const performAddressSearch = useCallback(async (term: string) => {
+  const performAddressSearch = useCallback(async (term: string, drillDown = false) => {
     const query = term.trim();
     if (query.length < 3) return;
 
@@ -374,7 +374,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setAddressLookupFailed(false);
     try {
       const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
-        body: { action: 'search', term: query },
+        body: { action: 'search', term: query, drillDown },
       });
       // Postcoder-style results: broad searches return clickable containers
       // (street / town groups); narrow searches return final addresses.
@@ -2639,7 +2639,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           onClick={() => {
                             if (addr.__container) {
                               setPostcodeInput(addr.drill);
-                              performAddressSearch(addr.drill);
+                              performAddressSearch(addr.drill, true);
                             } else {
                               handleSelectLookupAddress(addr);
                             }
