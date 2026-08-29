@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { Loader2, Check, AlertCircle } from 'lucide-react';
+import { Loader2, Check, AlertCircle, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface AddressData {
@@ -18,6 +18,11 @@ interface AutocompleteSuggestion {
   address: string;
   url: string;
   id: string;
+  /** Container group (e.g. "London Road, Portsmouth") — click to drill down */
+  container?: boolean;
+  count?: number;
+  /** Search term to drill into this container */
+  drill?: string;
   /** Full address returned by a postcode lookup (no second call needed) */
   resolved?: {
     line_1?: string;
