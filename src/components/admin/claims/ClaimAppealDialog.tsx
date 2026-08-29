@@ -723,19 +723,15 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             </>
           ) : (
             <>
-              {!canReview && (
+              {!canPreview && (
                 <p className="text-xs text-muted-foreground mr-auto">
-                  {!selected
-                    ? 'Select a customer / claim to preview the email.'
-                    : !selected.email
-                      ? 'This claim has no email address.'
-                      : 'Add the grounds for appeal (at least a sentence) to preview the email.'}
+                  Select a customer / claim to preview the email.
                 </p>
               )}
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button onClick={() => setReviewing(true)} disabled={!canReview} className="bg-[#E8541A] hover:bg-[#cf471a] text-white">
+              <Button onClick={() => setReviewing(true)} disabled={!canPreview} className="bg-[#E8541A] hover:bg-[#cf471a] text-white">
                 <Eye className="h-4 w-4 mr-1" /> Preview email
               </Button>
             </>
