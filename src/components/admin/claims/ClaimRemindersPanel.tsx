@@ -16,6 +16,8 @@ import {
   useClaimReminders, LEAD_TIME_OPTIONS, KIND_LABELS, ReminderKind, isReminderShowing, ClaimReminder,
 } from '@/hooks/useClaimReminders';
 import { isAlertsMuted, muteAlertsFor, unmuteAlerts, subscribeAlertsMuted } from '@/lib/alertSoundPreference';
+import { ReminderAssigneeSelect, adminUserName } from './ReminderAssigneeSelect';
+import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { toast } from 'sonner';
 
 interface ClaimOption {
@@ -59,13 +61,15 @@ interface DraftReminder {
   claimId: string;
   dueLocal: string;
   leadTime: number;
+  assignedTo: string | null;
 }
 
 
 export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
   const {
-    active, done, loading, create, snoozeOneDay, unsnooze, toggleMute, complete, reopen, remove,
+    active, done, loading, create, patch, snoozeOneDay, unsnooze, toggleMute, complete, reopen, remove,
   } = useClaimReminders();
+  const adminUsers = useAllAdminUsersMap();
 
   const [kind, setKind] = useState<ReminderKind>('claim');
   const [title, setTitle] = useState('');
@@ -78,6 +82,7 @@ export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
     return toLocalInput(d);
   });
   const [leadTime, setLeadTime] = useState(1440);
+  const [assignedTo, setAssignedTo] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [soundMuted, setSoundMuted] = useState(isAlertsMuted());
   const [claimPickerOpen, setClaimPickerOpen] = useState(false);
@@ -107,13 +112,13 @@ export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
 
   const resetForm = () => {
     setTitle(''); setNotes(''); setClaimId('none'); setKind('claim');
-    setDueLocal(nextDefaultDue()); setLeadTime(1440);
+    setDueLocal(nextDefaultDue()); setLeadTime(1440); setAssignedTo(null);
   };
 
   const currentDraft = (): DraftReminder | null => {
     if (!title.trim()) { toast.error('Give the reminder a title'); return null; }
     if (!dueLocal) { toast.error('Pick a date and time'); return null; }
-    return { key: `${Date.now()}-${Math.random()}`, kind, title: title.trim(), notes, claimId, dueLocal, leadTime };
+    return { key: `${Date.now()}-${Math.random()}`, kind, title: title.trim(), notes, claimId, dueLocal, leadTime, assignedTo };
   };
 
   const handleAddAnother = () => {
@@ -131,6 +136,7 @@ export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
     claim_id: d.claimId === 'none' ? null : d.claimId,
     due_at: new Date(d.dueLocal).toISOString(),
     lead_time_minutes: d.leadTime,
+    assigned_to: d.assignedTo,
   });
 
   const handleSave = async () => {
@@ -189,6 +195,22 @@ export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
+          {!isDone ? (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-muted-foreground">Responsible</span>
+              <ReminderAssigneeSelect
+                compact
+                value={r.assigned_to}
+                onChange={(id) => patch(r.id, { assigned_to: id })}
+              />
+            </div>
+          ) : (
+            r.assigned_to && (
+              <Badge variant="outline" className="text-[11px]">
+                {adminUserName(adminUsers.get(r.assigned_to)) || 'Assigned'}
+              </Badge>
+            )
+          )}
           {!isDone && showing && <Badge className="bg-orange-500 text-white">Showing now</Badge>}
           {!isDone && snoozed && (
             <Badge variant="outline" className="text-[11px]">
@@ -265,6 +287,10 @@ export const ClaimRemindersPanel: React.FC<Props> = ({ claims = [] }) => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Who is responsible?</Label>
+              <ReminderAssigneeSelect value={assignedTo} onChange={setAssignedTo} />
             </div>
             <div className="md:col-span-2">
               <Label className="text-xs" htmlFor="reminder-title">Reminder</Label>
