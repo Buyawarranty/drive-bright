@@ -10,6 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { DateRange } from 'react-day-picker';
 import { PRICING_UPDATED_EVENT } from '@/lib/pricingMatrix';
 import { useLabourRateTiers } from '@/hooks/useLabourRateTiers';
+import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 interface Row {
   labour_rate: number | null;
@@ -199,7 +200,7 @@ export const CoverOptionsMixPanel: React.FC<{ dateRange?: DateRange }> = ({ date
     [rows, labourFmt]
   );
   const claim = useMemo(
-    () => buildDist(rows.map((r) => r.claim_limit), (v) => `£${v.toLocaleString('en-GB')}`),
+    () => buildDist(rows.map((r) => (r.claim_limit == null ? r.claim_limit : getDisplayClaimLimitValue(Number(r.claim_limit)))), (v) => `£${v.toLocaleString('en-GB')}`),
     [rows]
   );
   const excess = useMemo(

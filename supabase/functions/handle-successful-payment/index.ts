@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sourceLetterFromLeadSource, sourceLetterFromAdSource, saleSubjectPrefix } from "../_shared/saleSubjectPrefix.ts";
+import { formatClaimLimit } from "../_shared/claim-limit-display.ts";
 
 const INTERNAL_NOTIFICATION_FROM =
   Deno.env.get("INTERNAL_NOTIFICATION_FROM") ||
@@ -1033,7 +1034,7 @@ serve(async (req) => {
               <tr><td style="padding: 8px; background: #fde68a;"><strong>Warranty Duration:</strong></td><td style="padding: 8px; font-weight: 700;">${getWarrantyDurationInMonths(paymentType)} months</td></tr>
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Type:</strong></td><td style="padding: 8px;">${paymentTypeDisplay}</td></tr>
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Voluntary Excess:</strong></td><td style="padding: 8px;">£${customerRecord.voluntary_excess || 0}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">£${customerRecord.claim_limit === 750 ? 1000 : (customerRecord.claim_limit || 1250)}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">${formatClaimLimit(customerRecord.claim_limit || 1250)}</td></tr>
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Labour Rate:</strong></td><td style="padding: 8px;">£${customerRecord.labour_rate || labourRate || parseInt(metadata?.labour_rate) || 70}/hr</td></tr>
             </table>
 

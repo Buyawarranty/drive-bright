@@ -8887,7 +8887,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                     </div>
                     <div>
                       <p className="text-sm font-semibold">Coverage</p>
-                      <p className="text-sm">£{selectedHistoryQuote.excess_amount} excess | £{selectedHistoryQuote.claim_limit} limit</p>
+                      <p className="text-sm">£{selectedHistoryQuote.excess_amount} excess | £{getDisplayClaimLimitValue(selectedHistoryQuote.claim_limit).toLocaleString()} limit</p>
                       <p className="text-xs text-muted-foreground">
                         £{selectedHistoryQuote.labour_rate || 70}/hr labour
                         {selectedHistoryQuote.boost_addon && ' | Boost enabled'}
@@ -9018,7 +9018,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                             <div className="text-sm">{quote.payment_type}</div>
                           </TableCell>
                           <TableCell>
-                            <div className="text-sm">£{quote.excess_amount} / £{quote.claim_limit}</div>
+                            <div className="text-sm">£{quote.excess_amount} / £{getDisplayClaimLimitValue(quote.claim_limit).toLocaleString()}</div>
                             <div className="text-xs text-muted-foreground">
                               £{quote.labour_rate || 70}/hr
                               {quote.boost_addon && <Badge variant="outline" className="ml-1 text-[10px]">Boost</Badge>}

@@ -11,6 +11,7 @@ import { PaidOrderEditDialog } from './PaidOrderEditDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import CustomerLoginDebugTool from './CustomerLoginDebugTool';
 import { fetchByIdsInBatches } from '@/utils/batchedIn';
+import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 interface PaidOrder {
   id: string;
@@ -414,7 +415,7 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      <div className="text-sm">£{order.claim_limit} limit</div>
+                      <div className="text-sm">£{getDisplayClaimLimitValue(order.claim_limit).toLocaleString()} limit</div>
                       <div className="text-xs text-muted-foreground">
                         £{order.labour_rate}/hr • £{order.excess_amount} excess
                       </div>

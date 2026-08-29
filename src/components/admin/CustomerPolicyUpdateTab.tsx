@@ -54,7 +54,7 @@ interface PolicyData {
 }
 
 const claimLimitOptions = [
-  750, 2000, 3000, 5000
+  1000, 2000, 3000, 5000
 ];
 
 const excessOptions = [0, 50, 100, 150, 250, 500];

@@ -3,6 +3,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 import { logCustomerEmail } from '../_shared/log-email.ts';
 import { requireAdmin } from '../_shared/admin-auth.ts';
 import { renderBrandedQuoteEmail } from '../_shared/quote-email-template.ts';
+import { displayClaimLimitValue } from "../_shared/claim-limit-display.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -210,7 +211,7 @@ const handler = async (req: Request): Promise<Response> => {
     const totalMonths = coverMonths + bonusMonths;
     const mileageDisplay = Number(String(vehicleData.mileage || '0').replace(/,/g, '')) || 0;
     const sanitizedAgentName = (agentName || '').replace(/[<>",]/g, '').trim();
-    const claimLimitDisplay = Number(quoteDetails.claimLimit) || 2000;
+    const claimLimitDisplay = displayClaimLimitValue(quoteDetails.claimLimit) || 2000;
     const excessAmountDisplay = Number(quoteDetails.excessAmount) || 0;
     const labourRateDisplay = Number(quoteDetails.labourRate) || 70;
     

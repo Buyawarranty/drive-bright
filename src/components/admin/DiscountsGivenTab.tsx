@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { PriceOverridesPanel } from './pricing/PriceOverridesPanel';
 import { getRecordedOrderDiscount } from '@/lib/pricing/orderDiscount';
+import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 
 interface CustomerRecord {
@@ -1099,7 +1100,7 @@ export const DiscountsGivenTab: React.FC = () => {
                           </TableCell>
                           <TableCell className="text-xs">{durationLabel}</TableCell>
                           <TableCell className="text-xs">£{c.voluntary_excess ?? 100}</TableCell>
-                          <TableCell className="text-xs">£{(c.claim_limit ?? 1250).toLocaleString()}</TableCell>
+                          <TableCell className="text-xs">£{getDisplayClaimLimitValue(c.claim_limit ?? 1250).toLocaleString()}</TableCell>
                           <TableCell className="text-xs">£{c.labour_rate ?? 70}/hr</TableCell>
                           <TableCell className="text-xs">{c.discount_code || '-'}</TableCell>
                           <TableCell className="text-xs whitespace-nowrap">
