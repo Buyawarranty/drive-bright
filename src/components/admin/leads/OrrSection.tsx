@@ -109,6 +109,13 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
         />
       </div>
 
+      {/* Import a lead and send it to a chosen agent ------------------- */}
+      <ImportLeadToAgentPanel
+        title="Import a lead and send it to an agent"
+        description="Find any existing lead by reg plate, name, email or phone, pick the agent, and it goes to them through the normal lead flow. Round Robin above is untouched."
+      />
+
+
       {/* 2. Live status ------------------------------------------------- */}
       <div className="space-y-2">
         <h3 className="text-sm font-semibold text-foreground">Open Round Robin pool status</h3>
