@@ -1396,7 +1396,7 @@ export default function LiveQuotePage() {
                   {/* Postcode with auto-lookup */}
                   <div className="space-y-2">
                     <Label htmlFor="postcodeDisplay" className="flex items-center gap-2">
-                      Postcode *
+                      Postcode, street or town *
                       {isLookingUpPostcode && (
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <Loader2 className="h-3 w-3 animate-spin" />
@@ -1417,7 +1417,7 @@ export default function LiveQuotePage() {
                           }
                         }}
                         className={`pr-10 ${shouldShowError('postcode') ? 'border-red-500' : isFieldValid('postcode') ? 'border-green-500' : ''}`}
-                        placeholder="e.g. SW1A 1AA"
+                        placeholder="e.g. SW1A 1AA or High Street, Bath"
                       />
                       {isLookingUpPostcode ? (
                         <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-500 animate-spin" />
@@ -1487,6 +1487,19 @@ export default function LiveQuotePage() {
 
                   {showAddressFields && (
                   <>
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAddressFields(false);
+                        setPostcoderAddresses([]);
+                      }}
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:underline"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      Search a different address
+                    </button>
+                  </div>
                   {/* Address Line 1 */}
                   <div className="space-y-2">
                     <Label htmlFor="addressLine1">Address Line 1 *</Label>
