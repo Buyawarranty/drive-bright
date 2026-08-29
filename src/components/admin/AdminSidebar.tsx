@@ -359,12 +359,7 @@ export const defaultTabs: Tab[] = [
     description: 'Assign agents to teams (red, blue, green) and manage lead routing'
   },
   {
-    id: 'orr-test-lab',
-    label: 'ORR Test Lab',
-    icon: Users,
-    description: 'Open Round Robin — practice lab, live queues and the go-live switch'
-  },
-  {
+
     id: 'price-updates',
     label: 'Price Updates',
     icon: FlaskConical,

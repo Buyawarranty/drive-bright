@@ -43,6 +43,8 @@ import { SaveOnlineSaleAllocationPanel } from './leads/SaveOnlineSaleAllocationP
 
 
 import { ScoreboardTargetsSection } from './leads/ScoreboardTargetsSection';
+import { OrrSection } from './leads/OrrSection';
+
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
@@ -63,7 +65,7 @@ const QUICK_LINKS = [
 
   { id: 'staff-lead-access', label: 'Staff Lead Access', className: 'bg-indigo-300/50 text-indigo-900 border-indigo-200/50 hover:bg-indigo-400/50' },
   { id: 'scoreboard-targets', label: 'Scoreboard targets', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
-  { id: 'open-round-robin', label: 'Open Round Robin →', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
+  { id: 'open-round-robin', label: 'Open Round Robin', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
   { id: 'recontact-leads', label: 'Recontact leads', className: 'bg-rose-300/50 text-rose-900 border-rose-200/50 hover:bg-rose-400/50' },
   { id: 'recovery-audit', label: 'Recover leads', className: 'bg-cyan-300/50 text-cyan-900 border-cyan-200/50 hover:bg-cyan-400/50' },
 ];
@@ -393,31 +395,12 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         )}
       </div>
 
-      {isManagement && (
-        <div id="open-round-robin" className="space-y-3">
-          <div className="border-l-4 border-primary/60 pl-3">
-            <h2 className="text-lg font-semibold text-foreground">Open Round Robin</h2>
-            <p className="text-xs text-muted-foreground">
-               Live queues, distribution controls, capacity, agent activity and manager alerts now live in their own section.
-            </p>
-          </div>
-          <div className="rounded-lg border border-border bg-card shadow-sm p-4 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground max-w-2xl">
-               There's a lot to manage here, so Open Round Robin has its own live operations page. Dummy simulations
-               remain separate in the ORR Test Lab.
-            </p>
-            {onNavigateToTab && (
-              <button
-                type="button"
-                onClick={() => onNavigateToTab('open-round-robin')}
-                className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
-              >
-                Open Round Robin section
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+      {/* ─────────────────────────────────────────────────────────────
+          OPEN ROUND ROBIN — setup, live status, and a clearly-labelled
+          sandbox. Merged in from the old standalone ORR tabs.
+         ───────────────────────────────────────────────────────────── */}
+      <OrrSection isManagement={isManagement} />
+
 
 
 
