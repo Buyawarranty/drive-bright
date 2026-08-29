@@ -1098,6 +1098,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     // Users need to confirm their details before proceeding
   }, [personalDetailsComplete, addressComplete]);
 
+  // The "please complete…" banner stays on screen for six seconds, so a customer
+  // who fixes the offending field straight away (picking "Same as MOT", for
+  // example) was left staring at an error that no longer applied. Clear it the
+  // moment nothing is outstanding.
+  useEffect(() => {
+    if (personalDetailsComplete && addressComplete) {
+      toast.dismiss('checkout-required-fields');
+    }
+  }, [personalDetailsComplete, addressComplete]);
+
   // Track page load
   useEffect(() => {
     trackStripeCheckoutPageLoad();
