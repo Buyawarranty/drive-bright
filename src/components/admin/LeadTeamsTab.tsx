@@ -393,31 +393,12 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
         )}
       </div>
 
-      {isManagement && (
-        <div id="open-round-robin" className="space-y-3">
-          <div className="border-l-4 border-primary/60 pl-3">
-            <h2 className="text-lg font-semibold text-foreground">Open Round Robin</h2>
-            <p className="text-xs text-muted-foreground">
-               Live queues, distribution controls, capacity, agent activity and manager alerts now live in their own section.
-            </p>
-          </div>
-          <div className="rounded-lg border border-border bg-card shadow-sm p-4 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground max-w-2xl">
-               There's a lot to manage here, so Open Round Robin has its own live operations page. Dummy simulations
-               remain separate in the ORR Test Lab.
-            </p>
-            {onNavigateToTab && (
-              <button
-                type="button"
-                onClick={() => onNavigateToTab('open-round-robin')}
-                className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
-              >
-                Open Round Robin section
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+      {/* ─────────────────────────────────────────────────────────────
+          OPEN ROUND ROBIN — setup, live status, and a clearly-labelled
+          sandbox. Merged in from the old standalone ORR tabs.
+         ───────────────────────────────────────────────────────────── */}
+      <OrrSection isManagement={isManagement} />
+
 
 
 
