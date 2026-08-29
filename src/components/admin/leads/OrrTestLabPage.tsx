@@ -77,7 +77,7 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
       <div className="p-6">
         <h2 className="text-xl font-semibold">Access denied</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          The ORR Test Lab is restricted to managers and admins.
+          The Open Round Robin Test Lab is restricted to managers and admins.
         </p>
       </div>
     );
@@ -92,7 +92,7 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">ORR Test Lab</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">Open Round Robin Test Lab</h1>
               <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5">
                 Practice mode
               </span>
@@ -198,7 +198,7 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
 
       <div id="orr-live-distribution" className="space-y-4">
         <div className="border-l-4 border-teal-500/60 pl-3">
-          <h2 className="text-lg font-semibold text-foreground">Live lead distribution</h2>
+          <h2 className="text-lg font-semibold text-foreground">Open Round Robin live lead distribution</h2>
           <p className="text-xs text-muted-foreground">
             {orrLive === true
               ? 'Running a pass here updates real CRM assignments.'
@@ -212,7 +212,7 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
 
       <div id="orr-activity" className="space-y-4">
         <div className="border-l-4 border-amber-500/60 pl-3">
-          <h2 className="text-lg font-semibold text-foreground">Activity &amp; manager alerts</h2>
+          <h2 className="text-lg font-semibold text-foreground">Open Round Robin activity &amp; manager alerts</h2>
           <p className="text-xs text-muted-foreground">
             Live audit activity, missed windows and routing warnings requiring attention.
           </p>

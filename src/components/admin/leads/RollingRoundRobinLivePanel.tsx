@@ -212,7 +212,7 @@ export function RollingRoundRobinLivePanel({ canEdit, readOnly = false }: { canE
         <div>
           <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <Clock className="h-4 w-4 text-primary" />
-            Live rolling round-robin · 30-minute first-call window
+            Open Round Robin live pool · 30-minute first-call window
             <Badge className={cn('text-[10px]', readOnly ? 'bg-muted text-muted-foreground hover:bg-muted' : 'bg-teal-600 hover:bg-teal-600')}>{readOnly ? 'Read-only view' : 'Live CRM'}</Badge>
           </h3>
           <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
@@ -231,7 +231,7 @@ export function RollingRoundRobinLivePanel({ canEdit, readOnly = false }: { canE
       <div className="flex items-center gap-2 flex-wrap">
         <Button size="sm" onClick={() => runPass(false)} disabled={!allowWrites || running}>
           {running ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Play className="h-3.5 w-3.5 mr-1.5" />}
-          Run rolling pass
+          Run Open Round Robin pass
         </Button>
         <Button size="sm" variant="outline" onClick={() => load()} disabled={loading}>
           <RefreshCw className={cn('h-3.5 w-3.5 mr-1.5', loading && 'animate-spin')} /> Refresh

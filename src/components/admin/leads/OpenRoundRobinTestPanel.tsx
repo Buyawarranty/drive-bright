@@ -809,7 +809,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
               <Clock className={cn('h-4 w-4', theme.icon)} />
             </div>
             <div>
-              <h4 className="text-base font-semibold text-foreground">New Leads — {theme.label}</h4>
+              <h4 className="text-base font-semibold text-foreground">Practice New Leads — {theme.label}</h4>
 
               <p className="text-xs text-muted-foreground">
                 Assigned automatically in a fair rotation and reserved for one agent at a time.
