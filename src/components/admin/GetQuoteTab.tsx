@@ -2378,6 +2378,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
       // Address is compulsory on every quote.
       const missingAddress = [
+        !customerBuildingNumber.trim() && 'house/building number',
         !customerStreet.trim() && 'street',
         !customerTown.trim() && 'town/city',
         !customerPostcode.trim() && 'postcode',
@@ -3005,6 +3006,7 @@ Questions? Call 0330 229 5040`;
 
   // State for quote link generation
   const [isGeneratingQuoteLink, setIsGeneratingQuoteLink] = useState(false);
+  const [isRefreshingOrder, setIsRefreshingOrder] = useState(false);
   const [quoteLink, setQuoteLink] = useState<string | null>(null);
   const [quoteGenerated, setQuoteGenerated] = useState(false);
   // Identity of the quote the current link belongs to. If any of these change
@@ -3147,6 +3149,67 @@ Questions? Call 0330 229 5040`;
     await generateQuoteLink();
   };
 
+  // Refresh the order on Step 3: re-fetch vehicle details and force a fresh quote link
+  const handleRefreshOrder = async () => {
+    if (!regNumber.trim() || !vehicleData) {
+      toast({
+        title: 'Cannot refresh',
+        description: 'Vehicle details are missing.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsRefreshingOrder(true);
+    try {
+      const cleanReg = regNumber.replace(/\s/g, '').toUpperCase();
+      const { data, error } = await lookupVehicleByReg(cleanReg, { skipAgeCheck: ageOverrideEnabled });
+      const currentMileage = vehicleData?.mileage || mileage;
+      const apiMotMileage = (data?.motMileage as number | null | undefined) ?? null;
+      let resolvedMileage = currentMileage;
+
+      if (!currentMileage.trim() && apiMotMileage && Number(apiMotMileage) > 0) {
+        resolvedMileage = Number(apiMotMileage).toLocaleString();
+        setMileage(resolvedMileage);
+        const numeric = parseInt(resolvedMileage.replace(/[^0-9]/g, ''), 10);
+        if (!isNaN(numeric)) setSliderMileage(Math.min(numeric, 150000));
+      }
+
+      if (data?.make) {
+        setVehicleData({
+          regNumber: cleanReg,
+          mileage: resolvedMileage,
+          make: data.make,
+          model: data.model || '',
+          fuelType: data.fuelType || '',
+          transmission: data.transmission || '',
+          year: (data as any).yearOfManufacture || data.year || '',
+          vehicleType: data.vehicleType || '',
+          registrationDate: data.registrationDate || undefined,
+          manufactureDate: data.manufactureDate || undefined,
+        });
+      }
+
+      // Invalidate the current quote link so the auto-generation effect mints a fresh one
+      setQuoteLink(null);
+      setQuoteGenerated(false);
+
+      toast({
+        title: 'Order refreshed',
+        description: 'Vehicle details updated and a fresh quote link is being generated.',
+      });
+    } catch (error: any) {
+      console.error('[GetQuote] Refresh order failed:', error);
+      toast({
+        title: 'Refresh failed',
+        description: error?.message || 'Could not refresh vehicle details. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRefreshingOrder(false);
+    }
+  };
+
   // Copy quote link to clipboard
   const handleCopyQuoteLink = async () => {
     if (!quoteLink) return;
@@ -3272,11 +3335,9 @@ Questions? Call 0330 229 5040`;
         name: editableCustomerName || customerName,
         email: (editableCustomerEmail || customerEmail).toLowerCase(),
         phone: editableCustomerPhone || customerPhone || 'Not provided',
-        address: skipAddressDetails 
-          ? 'Customer will complete in dashboard' 
-          : customerPostcode 
-            ? `${customerBuildingNumber ? customerBuildingNumber + ' ' : ''}${customerStreet}, ${customerTown}${customerCounty ? ', ' + customerCounty : ''}, ${customerPostcode}`
-            : 'Not provided',
+        address: customerPostcode
+          ? `${customerBuildingNumber ? customerBuildingNumber + ' ' : ''}${customerStreet}, ${customerTown}${customerCounty ? ', ' + customerCounty : ''}, ${customerPostcode}`
+          : 'Not provided',
         postcode: customerPostcode,
         street: customerStreet,
         town: customerTown,
@@ -3324,11 +3385,17 @@ Questions? Call 0330 229 5040`;
 
   // Validate payment confirmation form
   const isPaymentFormValid = () => {
+    const hasAddress =
+      customerBuildingNumber.trim() !== '' &&
+      customerStreet.trim() !== '' &&
+      customerTown.trim() !== '' &&
+      customerPostcode.trim() !== '';
     return (
       paymentSource.trim() !== '' &&
       paymentAmount.trim() !== '' &&
       warrantyStartDate !== undefined &&
       paymentConfirmed === true &&
+      hasAddress &&
       !(isUnderAbsoluteMin(paymentAmount) && !priceMatchEvidenced)
     );
   };
@@ -6794,6 +6861,16 @@ Questions? Call 0330 229 5040`;
                     >
                       <RefreshCw className="w-3 h-3 mr-1" />
                       Edit Vehicle
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRefreshOrder}
+                      disabled={isRefreshingOrder || isGeneratingQuoteLink}
+                      className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                    >
+                      <RefreshCw className={cn("w-3 h-3 mr-1", isRefreshingOrder && "animate-spin")} />
+                      Refresh
                     </Button>
                     <Button 
                       variant="ghost" 
