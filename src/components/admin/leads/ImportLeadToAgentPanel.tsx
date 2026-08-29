@@ -27,7 +27,7 @@ interface Agent {
   role: string | null;
 }
 
-const SALES_ROLES = ['sales', 'sales_lead', 'sales_manager'];
+const SALES_ROLES = ['sales', 'sales_lead', 'sales_manager'] as const;
 
 const leadName = (l: FoundLead) =>
   [l.first_name, l.last_name].filter(Boolean).join(' ').trim() || l.email || l.phone || 'Unnamed lead';
