@@ -40,8 +40,68 @@ const normalise = (a: PostcoderAddress) => {
     postcode: (a.postcode || '').trim(),
     building_number: (a.buildingnumber || '').trim(),
     building_name: (a.buildingname || '').trim(),
+    street: (a.street || '').trim(),
+    posttown: (a.posttown || '').trim(),
     formatted_address: a.summaryline || [line1, line2, a.posttown, a.county, a.postcode].filter(Boolean).join(', '),
   };
+};
+
+type Normalised = ReturnType<typeof normalise>;
+
+/**
+ * Postcoder-style drill-down: when a broad search (town, area, partial street)
+ * returns many addresses, return clickable "container" groups instead, e.g.
+ * "London Road, Portsmouth (12 addresses)". The client re-searches with the
+ * container's label until the results fit on one screen, then shows the final
+ * addresses.
+ */
+const buildSuggestions = (term: string, addresses: Normalised[]) => {
+  const looksLikePostcode = /[0-9][A-Z]{2}$/i.test(term.replace(/\s+/g, ''));
+
+  const toFinal = (list: Normalised[]) =>
+    list.map((a, i) => ({
+      id: `as-${i}`,
+      address: a.formatted_address,
+      url: '',
+      count: 1,
+      type: 'address',
+      resolved: a,
+    }));
+
+  // Full postcodes and small result sets show final addresses straight away.
+  if (looksLikePostcode || addresses.length <= 15) return toFinal(addresses);
+
+  // Group by street + town; fall back to town alone when there are too many streets.
+  const group = (keyFn: (a: Normalised) => string) => {
+    const map = new Map<string, { label: string; count: number }>();
+    for (const a of addresses) {
+      const label = keyFn(a);
+      if (!label) continue;
+      const entry = map.get(label) || { label, count: 0 };
+      entry.count += 1;
+      map.set(label, entry);
+    }
+    return [...map.values()];
+  };
+
+  const streetKey = (a: Normalised) =>
+    [a.street, a.posttown].filter(Boolean).join(', ');
+  const townKey = (a: Normalised) => [a.posttown, a.county].filter(Boolean).join(', ');
+
+  let groups = group(streetKey);
+  if (groups.length > 20) groups = group(townKey);
+  // A single group means the search is already narrow enough - show addresses.
+  if (groups.length <= 1) return toFinal(addresses.slice(0, 50));
+
+  return groups.map((g, i) => ({
+    id: `c-${i}`,
+    address: g.label,
+    url: '',
+    count: g.count,
+    type: 'container',
+    container: true,
+    drill: g.label,
+  }));
 };
 
 serve(async (req) => {
@@ -65,7 +125,7 @@ serve(async (req) => {
 
     /** Free-text address search (postcode, street or town) via the address endpoint. */
     const addressSearch = async (query: string) => {
-      const url = `${base}/address/uk/${encodeURIComponent(query)}?format=json&lines=2&maximumresults=50`;
+      const url = `${base}/address/uk/${encodeURIComponent(query)}?format=json&lines=2&maximumresults=100`;
       const res = await fetch(url);
       if (!res.ok) {
         const text = await res.text();
@@ -99,15 +159,7 @@ serve(async (req) => {
       // Fallback: full address search works for postcodes, streets and towns
       const addresses = await addressSearch(term);
       if (!addresses) return json({ suggestions: [], error: 'Lookup failed' }, 502);
-      const suggestions = addresses.map((a, i) => ({
-        id: `as-${i}`,
-        address: a.formatted_address,
-        url: '',
-        count: 1,
-        type: 'address',
-        resolved: a,
-      }));
-      return json({ suggestions });
+      return json({ suggestions: buildSuggestions(term, addresses) });
     }
 
 

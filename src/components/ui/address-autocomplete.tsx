@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { Loader2, Check, AlertCircle } from 'lucide-react';
+import { Loader2, Check, AlertCircle, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface AddressData {
@@ -18,6 +18,11 @@ interface AutocompleteSuggestion {
   address: string;
   url: string;
   id: string;
+  /** Container group (e.g. "London Road, Portsmouth") — click to drill down */
+  container?: boolean;
+  count?: number;
+  /** Search term to drill into this container */
+  drill?: string;
   /** Full address returned by a postcode lookup (no second call needed) */
   resolved?: {
     line_1?: string;
@@ -234,9 +239,22 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   // Fetch full address details when user selects a suggestion
   // IMPORTANT: If this fails, we keep whatever the user typed - never clear
   const handleSelectAddress = async (suggestion: AutocompleteSuggestion) => {
+    // Container group → drill down: keep narrowing until final addresses appear
+    if (suggestion.container && suggestion.drill) {
+      const drillTerm = suggestion.drill;
+      setInputValue(drillTerm);
+      setHasSelected(false);
+      setSelectedIndex(-1);
+      await fetchSuggestions(drillTerm);
+      setShowDropdown(true);
+      // Keep focus so the user can keep clicking through the list
+      inputRef.current?.focus();
+      return;
+    }
+
     setIsLoading(true);
     setShowDropdown(false);
-    
+
     // Update display value to show selected address
     setInputValue(suggestion.address);
 
@@ -442,7 +460,21 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                 setTimeout(() => { isSelectingRef.current = false; }, 300);
               }}
             >
-              <span className="text-foreground">{suggestion.address}</span>
+              {suggestion.container ? (
+                <span className="flex items-center justify-between gap-2">
+                  <span className="text-foreground font-medium truncate">
+                    {suggestion.address}
+                    {typeof suggestion.count === 'number' && suggestion.count > 1 && (
+                      <span className="ml-2 text-muted-foreground font-normal">
+                        ({suggestion.count} {suggestion.count === 1 ? 'address' : 'addresses'})
+                      </span>
+                    )}
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                </span>
+              ) : (
+                <span className="text-foreground">{suggestion.address}</span>
+              )}
             </button>
           ))}
         </div>
