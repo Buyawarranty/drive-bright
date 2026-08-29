@@ -191,9 +191,13 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
                 see what each colleague would see. Clear it whenever you like.
               </span>
             </div>
+            <WidgetErrorBoundary label="Sandbox — overnight Open Round Robin practice">
+              <OrrOvernightSandboxPanel />
+            </WidgetErrorBoundary>
             <WidgetErrorBoundary label="Sandbox — testing only">
               <OpenRoundRobinTestPanel />
             </WidgetErrorBoundary>
+
           </div>
         )}
       </div>
