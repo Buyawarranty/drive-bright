@@ -202,10 +202,13 @@ export const PostcodeAutocomplete: React.FC<PostcodeAutocompleteProps> = ({
               <div className="flex items-center">
                 <MapPin className="h-4 w-4 text-orange-500 mr-2 flex-shrink-0" />
                 <div>
-                  <div className="font-medium text-gray-900">{address.postcode}</div>
+                  <div className="font-medium text-gray-900">
+                    {address.line_1 || address.formatted_address || address.postcode}
+                  </div>
                   <div className="text-sm text-gray-600">
-                    {address.town_or_city && `${address.town_or_city}, `}
-                    {address.county}
+                    {[address.line_2, address.town_or_city, address.county, address.postcode]
+                      .filter(Boolean)
+                      .join(', ')}
                   </div>
                 </div>
               </div>
