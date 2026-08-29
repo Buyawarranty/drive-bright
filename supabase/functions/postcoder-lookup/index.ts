@@ -65,12 +65,12 @@ serve(async (req) => {
 
     if (action === 'autocomplete') {
       if (term.length < 3) return json({ suggestions: [] });
-      const url = `${base}/autocomplete/find?query=${encodeURIComponent(term)}&country=UK&format=json&maximumresults=25`;
+      const url = `${base}/autocomplete/find?query=${encodeURIComponent(term)}&country=uk&format=json&maximumresults=25`;
       const res = await fetch(url);
       if (!res.ok) {
         const text = await res.text();
         console.error('Postcoder autocomplete error', res.status, text);
-        return json({ suggestions: [], error: `Lookup failed (${res.status})` }, res.status === 404 ? 200 : 502);
+        return json({ suggestions: [], error: `Lookup failed (${res.status})`, detail: text.slice(0, 300) }, res.status === 404 ? 200 : 502);
       }
       const rows = (await res.json()) as Array<Record<string, unknown>>;
       const suggestions = (Array.isArray(rows) ? rows : []).map((r) => ({
@@ -85,7 +85,7 @@ serve(async (req) => {
 
     if (action === 'get') {
       if (!id) return json({ error: 'Address id is required' }, 400);
-      const url = `${base}/autocomplete/retrieve?id=${encodeURIComponent(id)}&query=${encodeURIComponent(term)}&country=UK&format=json&lines=2`;
+      const url = `${base}/autocomplete/retrieve?id=${encodeURIComponent(id)}&query=${encodeURIComponent(term)}&country=uk&format=json&lines=2`;
       const res = await fetch(url);
       if (!res.ok) {
         const text = await res.text();
