@@ -99,7 +99,7 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
             ? 'Live figures. Running a pass here updates real CRM assignments.'
             : 'Read-only while Open Round Robin is not live — no real lead is handed out or pulled back.'}
         </p>
-        <WidgetErrorBoundary label="Open Pool status">
+        <WidgetErrorBoundary label="Open Round Robin pool status">
           <RollingRoundRobinLivePanel
             canEdit={isManagement && orrLive === true}
             readOnly={orrLive !== true}
