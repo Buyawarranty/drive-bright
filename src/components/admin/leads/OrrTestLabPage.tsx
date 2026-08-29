@@ -121,7 +121,19 @@ export const OrrTestLabPage: React.FC<OrrTestLabPageProps> = ({ onNavigateToTab 
         )}
       </div>
 
-      <OrrGoLiveSwitch live={orrLive} canEdit={isManagement} onChange={setOrrLive} />
+      <OrrTeamSelectionPanel
+        selectedTeamIds={selectedTeamIds}
+        onChange={setSelectedTeamIds}
+        disabled={orrLive === true}
+      />
+
+      <OrrGoLiveSwitch
+        live={orrLive}
+        canEdit={isManagement}
+        selectedTeamIds={selectedTeamIds}
+        teamNamesById={teamNamesById}
+        onChange={setOrrLive}
+      />
 
       <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-background/95 backdrop-blur border-b border-border">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
