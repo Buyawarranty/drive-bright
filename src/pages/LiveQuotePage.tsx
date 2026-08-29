@@ -18,6 +18,7 @@ import {
   Wrench, MapPin, Zap, FileText, Award, Heart, User, Check, Pencil, ChevronRight
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import { toast } from 'sonner';
 import { startOfDay, format, isToday } from 'date-fns';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
@@ -712,7 +713,7 @@ export default function LiveQuotePage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Claim Limit</span>
-                  <span className="font-medium">£{quote.cover.claimLimit.toLocaleString()}</span>
+                  <span className="font-medium">£{getDisplayClaimLimitValue(quote.cover.claimLimit).toLocaleString()}</span>
                 </div>
               </div>
               <div className="text-sm text-gray-500 space-y-1">
@@ -770,7 +771,7 @@ export default function LiveQuotePage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Claim Limit</span>
-                <span className="font-medium">£{quote.cover.claimLimit.toLocaleString()}</span>
+                <span className="font-medium">£{getDisplayClaimLimitValue(quote.cover.claimLimit).toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Labour Rate</span>
@@ -848,7 +849,8 @@ export default function LiveQuotePage() {
   }
 
   const totalMonths = quote.cover.durationMonths + quote.cover.bonusMonths;
-  const displayClaimLimit = quote.cover.boostAddon ? quote.cover.claimLimit + 1000 : quote.cover.claimLimit;
+  const baseClaimLimit = getDisplayClaimLimitValue(quote.cover.claimLimit);
+  const displayClaimLimit = quote.cover.boostAddon ? baseClaimLimit + 1000 : baseClaimLimit;
   const firstName = quote.customerName.split(' ')[0];
   const bumperMonthlyTotal = quote.pricing.monthlyPrice * 12;
 
