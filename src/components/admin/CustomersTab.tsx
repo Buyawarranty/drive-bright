@@ -4808,6 +4808,9 @@ Buyawarranty.co.uk`,
           {(() => {
             // Build active filter chips (only show non-defaults)
             const chips: { key: string; label: string; value: string; onRemove: () => void }[] = [];
+            if (showPendingConfirmationOnly) {
+              chips.push({ key: 'awaiting-confirm', label: 'Showing', value: 'Awaiting payment confirmation', onRemove: () => setShowPendingConfirmationOnly(false) });
+            }
             if (filterByStatus !== 'all') {
               const statusLabels: Record<string, string> = {
                 active: 'Active', pending: 'Pending', cancelled: 'Cancelled',
