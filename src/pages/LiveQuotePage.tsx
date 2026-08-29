@@ -1441,6 +1441,19 @@ export default function LiveQuotePage() {
                     )}
                   </div>
 
+                  {/* Manual entry link — address fields stay hidden until an address is selected */}
+                  {!showAddressFields && !isLookingUpPostcode && postcoderAddresses.length === 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAddressFields(true)}
+                      className="text-sm text-foreground hover:underline font-medium"
+                    >
+                      Enter your address manually
+                    </button>
+                  )}
+
+                  {showAddressFields && (
+                  <>
                   {/* Address Line 1 */}
                   <div className="space-y-2">
                     <Label htmlFor="addressLine1">Address Line 1 *</Label>
