@@ -691,6 +691,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [customerBuildingNumber, setCustomerBuildingNumber] = useState('');
   const [customerCounty, setCustomerCounty] = useState('');
   const [skipAddressDetails, setSkipAddressDetails] = useState(false);
+  // Address fields stay hidden until an address is picked from postcode lookup (or manual entry)
+  const [showAddressFields, setShowAddressFields] = useState(false);
   
   // Editable customer fields for external payment dialog
   const [editableCustomerName, setEditableCustomerName] = useState('');
@@ -758,6 +760,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       if (typeof d.customerBuildingNumber === 'string') setCustomerBuildingNumber(d.customerBuildingNumber);
       if (typeof d.customerCounty === 'string') setCustomerCounty(d.customerCounty);
       if (typeof d.skipAddressDetails === 'boolean') setSkipAddressDetails(d.skipAddressDetails);
+      if (d.customerPostcode || d.customerStreet) setShowAddressFields(true);
       // NOTE: intentionally not restoring customMonthlyPrice / customFullPrice /
       // quotedPriceOverride here — otherwise a refresh keeps figures stuck on
       // the previous quote even after starting a new one.
@@ -3238,6 +3241,7 @@ Questions? Call 0330 229 5040`;
     setCustomerBuildingNumber('');
     setCustomerCounty('');
     setSkipAddressDetails(false);
+    setShowAddressFields(false);
     
     setShowConfirmPaymentDialog(true);
   };
