@@ -1818,15 +1818,22 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         scrollToFirstIncomplete();
       }, 200);
       
-      const mileageVal = parseInt(String(customerData.mileage || '').replace(/[^0-9]/g, '') || '0');
-      const mileageMissing = !customerData.mileage || mileageVal < 1000 || mileageVal > 150000;
-      const toastMsg = !personalDetailsComplete
-        ? (mileageMissing
-            ? 'Please check your mileage and complete the remaining details.'
-            : 'Please complete your personal details to continue.')
-        : !addressComplete
-          ? 'Please complete your address to continue.'
-          : 'Please check the highlighted fields to continue.';
+      // Name the fields that are actually outstanding. The old copy assumed a
+      // missing mileage whenever personal details were incomplete, so a customer
+      // who had already confirmed their mileage was told to check it again.
+      const missing: string[] = [];
+      if (!customerData.first_name?.trim() || customerData.first_name.trim().length < 2) missing.push('first name');
+      if (!customerData.last_name?.trim() || customerData.last_name.trim().length < 2) missing.push('last name');
+      if (!customerData.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email)) missing.push('email');
+      if (!customerData.phone?.trim()) missing.push('phone number');
+      if (!mileageValueValid) missing.push('mileage');
+      if (!addressComplete) missing.push('address');
+
+      const toastMsg = missing.length
+        ? `Please complete your ${missing.length === 1
+            ? missing[0]
+            : `${missing.slice(0, -1).join(', ')} and ${missing[missing.length - 1]}`} to continue.`
+        : 'Please check the highlighted fields to continue.';
       toast.error(toastMsg, {
         id: 'checkout-required-fields',
         duration: 6000,
