@@ -255,18 +255,24 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
     void loadClaims(term);
   };
 
-  /** Preview only needs a customer and the grounds — links can be generated after. */
-  const canReview = !!selected && !!selected.email && reason.trim().length > 10;
+  /** Preview is always available once a claim is selected, even if the grounds are empty. */
+  const canPreview = !!selected;
 
   const canSend =
-    canReview &&
+    !!selected &&
+    !!selected.email &&
+    reason.trim().length > 10 &&
     !!formLink.trim() &&
     (!withReview || (!!reviewer && !!paymentLink.trim()));
 
   const sendBlockedReason = !canSend
-    ? !formLink.trim()
-      ? 'Generate the appeal form link before sending.'
-      : 'Generate the inspection payment page, or switch off the independent review.'
+    ? !selected || !selected.email
+      ? 'Select a claim with an email address before sending.'
+      : reason.trim().length <= 10
+        ? 'Add the grounds for appeal (at least a sentence) before sending.'
+        : !formLink.trim()
+          ? 'Generate the appeal form link before sending.'
+          : 'Generate the inspection payment page, or switch off the independent review.'
     : '';
 
 
@@ -717,19 +723,15 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
             </>
           ) : (
             <>
-              {!canReview && (
+              {!canPreview && (
                 <p className="text-xs text-muted-foreground mr-auto">
-                  {!selected
-                    ? 'Select a customer / claim to preview the email.'
-                    : !selected.email
-                      ? 'This claim has no email address.'
-                      : 'Add the grounds for appeal (at least a sentence) to preview the email.'}
+                  Select a customer / claim to preview the email.
                 </p>
               )}
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button onClick={() => setReviewing(true)} disabled={!canReview} className="bg-[#E8541A] hover:bg-[#cf471a] text-white">
+              <Button onClick={() => setReviewing(true)} disabled={!canPreview} className="bg-[#E8541A] hover:bg-[#cf471a] text-white">
                 <Eye className="h-4 w-4 mr-1" /> Preview email
               </Button>
             </>
