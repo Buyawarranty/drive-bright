@@ -1596,8 +1596,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const getAddressInputValidationClass = (field: string) => {
-    // Validated fields always show green, even if showValidation is true
-    if (addressValidated[field]) {
+    // Validated fields always show green, even if showValidation is true,
+    // but only when the field actually has a value.
+    if (addressValidated[field] && addressData[field as keyof typeof addressData]?.trim()) {
       return 'border-green-500 bg-green-50/30 cursor-text focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white';
     }
     if ((showValidation || addressTouched[field]) && addressErrors[field]) {
@@ -2632,7 +2633,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
                   {isLookingUp ? (
                     <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground animate-spin" />
-                  ) : addressValidated.postcode && !addressErrors.postcode ? (
+                  ) : postcodeInput.trim() && addressValidated.postcode && !addressErrors.postcode ? (
                     <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" />
                   ) : null}
                 </div>
