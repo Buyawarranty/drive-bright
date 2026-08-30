@@ -294,7 +294,8 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
 
         {isManagement && <ReassignRequestsPanel />}
         {(isManagement || (isSalesLead && salesLeadsCanReassign)) && <QuickReassignPanel />}
-        {isManagement && <AgentOffboardingPanel />}
+        {isManagement && <AgentActiveStatusPanel />}
+        {isManagement && <div id="agent-offboarding"><AgentOffboardingPanel /></div>}
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
