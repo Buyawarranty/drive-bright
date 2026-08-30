@@ -1538,7 +1538,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       case 'postcode':
         // Nothing typed and nothing picked — the customer skipped the address entirely.
         if (!addressData.postcode?.trim()) {
-          error = 'Please enter postcode';
+          error = 'Enter postcode, street or town';
           isValid = false;
         } else if (!ukPostcodeRegex.test(addressData.postcode.replace(/\s/g, ''))) {
           // Trust an API-confirmed postcode even if the raw string looks odd.
@@ -1596,13 +1596,20 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const getAddressInputValidationClass = (field: string) => {
-    // Validated fields always show green, even if showValidation is true,
-    // but only when the field actually has a value.
-    if (addressValidated[field] && addressData[field as keyof typeof addressData]?.trim()) {
-      return 'border-green-500 bg-green-50/30 cursor-text focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white';
+    // The lookup is only complete after the customer has selected or manually
+    // entered a full address. A recognised postcode by itself must never look done.
+    if (field === 'postcode' && showValidation && !addressComplete) {
+      return 'border-2 border-[#FF385C] ring-2 ring-[#FF385C]/25 bg-[#FF385C]/5 focus:ring-[#FF385C]/40 focus:border-[#FF385C]';
     }
     if ((showValidation || addressTouched[field]) && addressErrors[field]) {
       return 'border-2 border-[#FF385C] ring-2 ring-[#FF385C]/25 bg-[#FF385C]/5 focus:ring-[#FF385C]/40 focus:border-[#FF385C]';
+    }
+    if (
+      addressValidated[field] &&
+      addressData[field as keyof typeof addressData]?.trim() &&
+      (field !== 'postcode' || (postcodeInput.trim() && addressComplete))
+    ) {
+      return 'border-green-500 bg-green-50/30 cursor-text focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white';
     }
     return 'bg-[#F5F5F5] border-gray-200 focus:bg-white';
   };
@@ -1921,7 +1928,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setAddressTouched(prev => ({ ...prev, postcode: true, address_line_1: true, town: true }));
     setAddressErrors(prev => ({
       ...prev,
-      postcode: pcOk ? '' : (pc ? 'Please enter a valid UK postcode.' : 'Please enter postcode'),
+      postcode: pcOk && line1 && town
+        ? ''
+        : (pc && !pcOk ? 'Please enter a valid UK postcode.' : 'Enter postcode, street or town'),
       address_line_1: line1 ? '' : 'Please enter your address.',
       town: town ? '' : 'Enter your town or city.',
     }));
@@ -2680,7 +2689,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
                   {isLookingUp ? (
                     <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground animate-spin" />
-                  ) : postcodeInput.trim() && addressValidated.postcode && !addressErrors.postcode ? (
+                  ) : postcodeInput.trim() && addressComplete && addressValidated.postcode && !addressErrors.postcode ? (
                     <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" />
                   ) : null}
                 </div>
@@ -2744,7 +2753,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 {showValidation && !addressErrors.postcode && !addressData.address_line_1?.trim() && (
                   <p className="text-[#FF385C] text-sm font-medium mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
-                    Please enter postcode and select your address
+                    Enter postcode, street or town
                   </p>
                 )}
                 
