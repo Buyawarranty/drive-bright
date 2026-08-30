@@ -341,11 +341,12 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
           release now.
         </p>
         <p className="text-[11px] text-amber-900/90 border-l-2 border-amber-400 pl-2">
-          <strong>Late start (e.g. 10am instead of 9am):</strong> the 09:00 release goes only to agents
-          switched on at release time. A late starter rejoins at the <strong>back of the rotation</strong> and
-          takes normal turns from the moment they switch on — there is no catch-up and nobody's allocation is
-          redone. To rehearse it: run the release with an agent switched off, then switch them on and watch the
-          next leads go to them in turn.
+          <strong>Late start (e.g. 10am instead of 9am):</strong> the 09:00 overnight batch is shared only
+          between agents switched on at 09:00 — a late starter gets <strong>none of that batch, ever</strong>.
+          The leads were the pool's, never theirs, so nothing is owed. From the moment they switch on they
+          rejoin the <strong>back of the rotation</strong> and take normal turns from leads still waiting plus
+          new ones arriving — no catch-up, nobody's allocation is redone. To rehearse it: run the release with
+          an agent switched off, then switch them on and watch the next leads go to them in turn.
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-[11px] font-semibold text-amber-900 bg-amber-200/70 border border-amber-400/60 rounded px-2 py-1">
