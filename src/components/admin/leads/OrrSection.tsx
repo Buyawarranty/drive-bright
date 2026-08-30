@@ -26,7 +26,7 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
   const [orrLive, setOrrLive] = React.useState<boolean | null>(null);
   const [selectedTeamIds, setSelectedTeamIds] = React.useState<string[]>([]);
   const [teamNamesById, setTeamNamesById] = React.useState<Record<string, string>>({});
-  const [sandboxOpen, setSandboxOpen] = React.useState(false);
+  const [sandboxOpen, setSandboxOpen] = React.useState(true);
 
   React.useEffect(() => {
     if (!isManagement) return;

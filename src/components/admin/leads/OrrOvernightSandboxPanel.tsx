@@ -1,5 +1,5 @@
 import React from 'react';
-import { Split, RefreshCw, Moon, Sunrise } from 'lucide-react';
+import { Split, RefreshCw, Moon, Sunrise, Hand as HandGrab } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
 /**
@@ -85,7 +85,10 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
   const [lastRun, setLastRun] = React.useState<Date | null>(null);
   const [catchUpAgent, setCatchUpAgent] = React.useState('');
   const [catchUpN, setCatchUpN] = React.useState(5);
+  const [previewAgentId, setPreviewAgentId] = React.useState('a1');
+  const [morningRun, setMorningRun] = React.useState<Date | null>(null);
   const [tick, setTick] = React.useState(() => new Date());
+
 
   const onAgents = agents.filter(a => a.on);
   const waiting = leads.filter(l => !l.assignedTo);
@@ -134,7 +137,30 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
     return () => window.clearInterval(t);
   }, [autoOn, handOut]);
 
+  /** ORR self-claim — the agent takes the oldest waiting lead themselves. */
+  const takeNextLead = React.useCallback((agentId: string) => {
+    setLeads(prev => {
+      const oldest = prev
+        .filter(l => !l.assignedTo)
+        .sort((a, b) => a.arrived.getTime() - b.arrived.getTime())[0];
+      if (!oldest) return prev;
+      const now = new Date();
+      return prev.map(l =>
+        l.id === oldest.id
+          ? { ...l, assignedTo: agentId, why: 'Agent took it from the Open Pool', assignedAt: now }
+          : l,
+      );
+    });
+  }, []);
+
+  /** Morning distribution — release the whole parked overnight batch, one each. */
+  const runMorningRelease = React.useCallback(() => {
+    setMorningRun(new Date());
+    handOut('rotate', leads.filter(l => !l.assignedTo).length);
+  }, [handOut, leads]);
+
   const perAgentCount = agents.map(a => ({
+
     ...a,
     count: leads.filter(l => l.assignedTo === a.id).length,
   }));
@@ -266,7 +292,77 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
         </div>
       </div>
 
+      {/* ── Take next lead (agent view) ── */}
+      <div className="rounded-lg border-2 border-emerald-300 bg-emerald-50/60 p-3 space-y-2">
+        <h4 className="text-xs font-semibold text-emerald-900 flex items-center gap-2">
+          <HandGrab className="h-4 w-4" />
+          Take next lead — agent view (practice)
+        </h4>
+        <p className="text-[11px] text-emerald-900/90">
+          This is the Open Round Robin action itself: the agent takes the oldest waiting lead from the pool
+          rather than being sent one. Pick who you are practising as, then press Take next lead.
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={previewAgentId}
+            onChange={e => setPreviewAgentId(e.target.value)}
+            className="h-8 rounded-md border border-border bg-background px-2 text-xs"
+          >
+            {agents.map(a => (
+              <option key={a.id} value={a.id}>{a.name} · ext {a.ext}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => takeNextLead(previewAgentId)}
+            disabled={!waiting.length}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-60"
+          >
+            <HandGrab className="h-3.5 w-3.5" />
+            Take next lead
+          </button>
+          <span className="text-[11px] text-emerald-900/80">
+            {waiting.length
+              ? `${waiting.length} waiting in the pool · you hold ${leads.filter(l => l.assignedTo === previewAgentId).length}`
+              : 'Pool empty — reset the overnight batch to practise again.'}
+          </span>
+        </div>
+      </div>
+
+      {/* ── Morning lead distribution ── */}
+      <div className="rounded-lg border-2 border-amber-300 bg-amber-50/70 p-3 space-y-2">
+        <h4 className="text-xs font-semibold text-amber-900 flex items-center gap-2">
+          <Sunrise className="h-4 w-4" />
+          Morning lead distribution — 09:00 release (practice)
+        </h4>
+        <p className="text-[11px] text-amber-900/90">
+          Leads that arrived after 6pm or overnight are parked until 09:00 on the next working day, then
+          released one each in rotation to the switched-on agents. Press the button to rehearse that 9am
+          release now.
+        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-[11px] font-semibold text-amber-900 bg-amber-200/70 border border-amber-400/60 rounded px-2 py-1">
+            {waiting.length} parked overnight
+          </span>
+          <button
+            type="button"
+            onClick={runMorningRelease}
+            disabled={!waiting.length || !onAgents.length}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-amber-600 text-white text-xs font-semibold hover:bg-amber-700 disabled:opacity-60"
+          >
+            <Sunrise className="h-3.5 w-3.5" />
+            Run the 09:00 morning release
+          </button>
+          <span className="text-[11px] text-amber-900/80">
+            {morningRun
+              ? `Released at ${fmtTime(morningRun)} across ${onAgents.length} agent(s).`
+              : 'Not run yet this practice session.'}
+          </span>
+        </div>
+      </div>
+
       {/* ── Practice lead stream ── */}
+
       <div className="rounded-lg border border-border bg-card overflow-hidden">
         <div className="px-3 py-2 border-b border-border flex flex-wrap items-center gap-2 bg-muted/20">
           <h4 className="text-xs font-semibold text-foreground">Practice lead stream</h4>
