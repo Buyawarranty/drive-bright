@@ -2717,7 +2717,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         setAddressValidated(prev => ({ ...prev, postcode: true }));
                       }
                     }}
-                    className="mt-2 text-sm text-[#1a1a1a] hover:underline font-medium"
+                    className="mt-2 text-sm text-[#1a1a1a] underline font-medium"
                   >
                     Enter your address manually
                   </button>
