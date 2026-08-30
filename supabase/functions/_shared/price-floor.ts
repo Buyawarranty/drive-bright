@@ -162,7 +162,35 @@ function getBasePriceFromPlan(plan: any, paymentType: string): number {
  * Returns { ok: false, reason } if the price looks manipulated and the
  * caller should reject the checkout request with HTTP 400.
  */
+/**
+ * Is this a genuine, currently usable discount code row? Used to gate the TEST
+ * £1 bypass so a made-up "TEST..." string cannot lower the price floor.
+ */
+async function isLiveDiscountCode(supabase: SupabaseClient, code: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from("discount_codes")
+      .select("valid_from, valid_to, usage_limit, used_count")
+      .eq("code", code.trim().toUpperCase())
+      .eq("active", true)
+      .eq("archived", false)
+      .maybeSingle();
+
+    if (error || !data) return false;
+
+    const now = Date.now();
+    if (data.valid_from && now < new Date(data.valid_from).getTime()) return false;
+    if (data.valid_to && now > new Date(data.valid_to).getTime()) return false;
+    if (data.usage_limit && Number(data.used_count ?? 0) >= Number(data.usage_limit)) return false;
+
+    return true;
+  } catch (_e) {
+    return false;
+  }
+}
+
 export async function validateCheckoutPrice(
+
   input: PriceFloorInput,
   supabaseAdmin?: SupabaseClient,
 ): Promise<PriceFloorResult> {
@@ -174,13 +202,16 @@ export async function validateCheckoutPrice(
     { auth: { persistSession: false } },
   );
 
-  // TEST bypass codes drop the floor to £1 for anyone who knows the code.
-  // Normal promo codes are still subject to the term floor and the 50% plan
-  // price backstop below.
-  const codeLooksLikeBypass = isTestBypassCode(discountCode);
-  const bypass = codeLooksLikeBypass;
+  // TEST bypass codes drop the floor to £1 for anyone who knows the code — but
+  // ONLY if the code really exists in discount_codes, is active, not archived,
+  // in date and within its usage limit. A guessed string like "TEST123" is not
+  // enough: without that DB row the normal floors apply.
+  const bypass = isTestBypassCode(discountCode)
+    ? await isLiveDiscountCode(supabase, discountCode!)
+    : false;
   const termFloor = getTermFloorGBP(paymentType);
   const absoluteFloor = bypass ? TEST_MIN_GBP : termFloor;
+
 
   // 1. Absolute floor — fast reject
   if (!finalAmount || finalAmount < absoluteFloor) {
