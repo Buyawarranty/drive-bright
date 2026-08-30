@@ -1212,47 +1212,27 @@ const AdminDashboardInner: React.FC<{
 
       
       
+      {/* Admin-only slim bar. The public marketing nav (What's Covered / FAQs /
+          WhatsApp / Get my quote) is intentionally NOT rendered here — the admin
+          dashboard must show one navigation row only. */}
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
+          <div className="flex items-center justify-between h-11">
+            <div className="flex items-center gap-3">
               <Link to="/" className="hover:opacity-80 transition-opacity">
-                <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty" className="h-6 sm:h-8 w-auto" />
+                <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty" className="h-5 sm:h-6 w-auto" />
               </Link>
+              <span className="hidden sm:inline text-xs font-semibold uppercase tracking-wide text-gray-500">Admin dashboard</span>
             </div>
-            
-            <nav className="hidden lg:flex items-center space-x-4 xl:space-x-6">
-              <Link to="/what-is-covered/" className="text-gray-700 hover:text-gray-900 font-medium text-sm">What's Covered</Link>
-              <Link to="/make-a-claim/" className="text-gray-700 hover:text-gray-900 font-medium text-sm">Make a Claim</Link>
-              <Link to="/faq/" className="text-gray-700 hover:text-gray-900 font-medium text-sm">FAQs</Link>
-              <Link to="/contact-us/" className="text-gray-700 hover:text-gray-900 font-medium text-sm">Contact Us</Link>
-            </nav>
 
             <div className="hidden lg:flex items-center space-x-3">
               <GlobalQuickReminderButton />
               {/* View As dropdown - super_admin only */}
               {isSuperAdmin && <ViewAsDropdown />}
-
-              
-              <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer nofollow">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="bg-green-500 text-white border-green-500 hover:bg-green-600 hover:border-green-600 px-3 text-sm"
-                >
-                  WhatsApp Us
-                </Button>
-              </a>
-              <Button 
-                size="sm"
-                onClick={navigateToQuoteForm}
-                className="bg-orange-500 text-white hover:bg-orange-600 px-3 text-sm"
-              >
-                Get my quote
-              </Button>
             </div>
 
             <div className="lg:hidden flex items-center space-x-2">
+
               
               <GlobalQuickReminderButton />
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
