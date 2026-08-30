@@ -26,9 +26,24 @@ type Staff = {
   archived_at: string | null;
 };
 
+type LeavePeriod = {
+  id: string;
+  admin_user_id: string;
+  start_date: string;
+  end_date: string;
+  leave_type: string;
+};
+
+type LeaveDraft = { start: string; end: string; type: string };
+
+const LEAVE_TYPES = ['holiday', 'sick', 'training', 'unpaid leave', 'other'];
+
+const todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
+
 const SALES_ROLES = new Set([
   'sales', 'sales_agent', 'sales_lead', 'sales_manager', 'lead_gen', 'performance_manager',
 ]);
+
 
 const nameOf = (s: Staff) =>
   [s.first_name, s.last_name].filter(Boolean).join(' ').trim() || s.email;
