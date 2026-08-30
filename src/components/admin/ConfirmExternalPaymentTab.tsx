@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getInstalmentOptions, isInstalmentAllowed, instalmentAmount, type InstalmentCount } from '@/lib/instalmentOptions';
+import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, type InstalmentCount } from '@/lib/instalmentOptions';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 import { getNetPayableFloor } from '@/lib/pricing/netFloor';
@@ -215,7 +215,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   // Instalment plan is separate from cover duration: 2-year = 12 or 24, 3-year = 12 or 36.
   const [instalmentCount, setInstalmentCount] = useState<InstalmentCount>(12);
   useEffect(() => {
-    if (!isInstalmentAllowed(paymentType, instalmentCount)) setInstalmentCount(12);
+    // 36 instalments is visible but disabled (Coming Soon), so never let it be selected.
+    if (!isInstalmentAllowed(paymentType, instalmentCount) || isInstalmentComingSoon(instalmentCount)) setInstalmentCount(12);
   }, [paymentType, instalmentCount]);
   const [excessAmount, setExcessAmount] = useState(100);
   const [claimLimit, setClaimLimit] = useState(2000);
@@ -1246,24 +1247,41 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         <div className="space-y-1.5 md:col-span-2">
                           <Label className="text-xs font-semibold text-slate-500">Instalment plan</Label>
                           <div className="grid grid-cols-2 gap-2">
-                            {getInstalmentOptions(paymentType).map((count) => (
-                              <button
-                                key={count}
-                                type="button"
-                                onClick={() => setInstalmentCount(count)}
-                                className={cn(
-                                  "rounded-lg border-2 p-3 text-left transition-all",
-                                  instalmentCount === count
-                                    ? "border-indigo-500 bg-indigo-50"
-                                    : "border-slate-200 bg-white hover:border-indigo-300"
-                                )}
-                              >
-                                <div className="text-sm font-semibold text-slate-800">{count} instalments</div>
-                                <div className="text-xs font-medium text-slate-900">
-                                  £{instalmentAmount(currentPrice.totalPrice, count)}/mo · same £{currentPrice.totalPrice} total
-                                </div>
-                              </button>
-                            ))}
+                            {getInstalmentOptions(paymentType).map((count) => {
+                              const comingSoon = isInstalmentComingSoon(count);
+                              return (
+                                <button
+                                  key={count}
+                                  type="button"
+                                  disabled={comingSoon}
+                                  onClick={() => !comingSoon && setInstalmentCount(count)}
+                                  className={cn(
+                                    "rounded-lg border-2 p-3 text-left transition-all relative",
+                                    comingSoon
+                                      ? "border-dashed border-slate-300 bg-slate-100 opacity-70 cursor-not-allowed"
+                                      : instalmentCount === count
+                                        ? "border-indigo-500 bg-indigo-50"
+                                        : "border-slate-200 bg-white hover:border-indigo-300"
+                                  )}
+                                >
+                                  {comingSoon && (
+                                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
+                                      <Badge className="bg-amber-500 text-white hover:bg-amber-500 text-[10px] px-2 py-0.5">
+                                        Coming Soon
+                                      </Badge>
+                                    </div>
+                                  )}
+                                  <div className={cn("text-sm font-semibold", comingSoon ? "text-slate-500" : "text-slate-800")}>
+                                    {count} instalments
+                                  </div>
+                                  <div className={cn("text-xs font-medium", comingSoon ? "text-slate-400" : "text-slate-900")}>
+                                    {comingSoon
+                                      ? "Not active yet"
+                                      : `£${instalmentAmount(currentPrice.totalPrice, count)}/mo · same £${currentPrice.totalPrice} total`}
+                                  </div>
+                                </button>
+                              );
+                            })}
                           </div>
                           <p className="text-[11px] text-slate-500">
                             Same total price — this only changes how many monthly payments it is spread over.

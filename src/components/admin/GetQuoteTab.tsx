@@ -1,5 +1,5 @@
 import { getVehicleAge } from '@/lib/vehicleAge';
-import { getInstalmentOptions, isInstalmentAllowed, instalmentAmount, type InstalmentCount } from '@/lib/instalmentOptions';
+import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, type InstalmentCount } from '@/lib/instalmentOptions';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 
@@ -257,7 +257,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [instalmentCount, setInstalmentCount] = useState<InstalmentCount>(12);
   useEffect(() => {
     // Keep the instalment plan valid whenever the cover term changes.
-    if (!isInstalmentAllowed(paymentType, instalmentCount)) setInstalmentCount(12);
+    // 36 instalments is visible but disabled (Coming Soon), so never let it be selected.
+    if (!isInstalmentAllowed(paymentType, instalmentCount) || isInstalmentComingSoon(instalmentCount)) setInstalmentCount(12);
   }, [paymentType, instalmentCount]);
   // Landing default matches Step 3: 2 years, £2,000 claim limit, £100 excess, £70/hr
   const [excessAmount, setExcessAmount] = useState(100);
@@ -4992,20 +4993,35 @@ Questions? Call 0330 229 5040`;
                       <div className="grid grid-cols-2 gap-2">
                         {getInstalmentOptions(paymentType).map((count) => {
                           const amount = instalmentAmount(displayedTotalPrice, count);
+                          const comingSoon = isInstalmentComingSoon(count);
                           return (
                             <button
                               key={count}
                               type="button"
-                              onClick={() => setInstalmentCount(count)}
+                              disabled={comingSoon}
+                              onClick={() => !comingSoon && setInstalmentCount(count)}
                               className={cn(
-                                "rounded-lg border-2 p-3 text-left transition-all",
-                                instalmentCount === count
-                                  ? "border-primary bg-primary/10"
-                                  : "border-border bg-white hover:border-primary/50"
+                                "rounded-lg border-2 p-3 text-left transition-all relative",
+                                comingSoon
+                                  ? "border-dashed border-slate-300 bg-slate-100 opacity-70 cursor-not-allowed"
+                                  : instalmentCount === count
+                                    ? "border-primary bg-primary/10"
+                                    : "border-border bg-white hover:border-primary/50"
                               )}
                             >
-                              <div className="font-semibold text-sm">{count} instalments</div>
-                              <div className="text-xs text-black font-medium">£{amount}/mo · same £{displayedTotalPrice} total</div>
+                              {comingSoon && (
+                                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
+                                  <Badge className="bg-amber-500 text-white hover:bg-amber-500 text-[10px] px-2 py-0.5">
+                                    Coming Soon
+                                  </Badge>
+                                </div>
+                              )}
+                              <div className={cn("font-semibold text-sm", comingSoon && "text-slate-500")}>
+                                {count} instalments
+                              </div>
+                              <div className={cn("text-xs font-medium", comingSoon ? "text-slate-400" : "text-black")}>
+                                {comingSoon ? "Not active yet" : `£${amount}/mo · same £${displayedTotalPrice} total`}
+                              </div>
                             </button>
                           );
                         })}

@@ -29,3 +29,8 @@ export function instalmentAmount(totalPrice: number, count: InstalmentCount): nu
 export function instalmentLabel(count: InstalmentCount): string {
   return `${count} instalments`;
 }
+
+/** Instalment plans that are visible but not selectable yet. */
+export function isInstalmentComingSoon(count: InstalmentCount): boolean {
+  return count === 36;
+}
