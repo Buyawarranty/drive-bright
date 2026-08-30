@@ -9,7 +9,11 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Loader2, Power, ShieldOff, ArrowRightLeft, Database } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
+import { Loader2, Power, ShieldOff, ArrowRightLeft, Database, CalendarOff, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 type Staff = {
