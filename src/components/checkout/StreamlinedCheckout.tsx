@@ -2684,11 +2684,19 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 )}
 
 
-                {/* Postcode validation error */}
+                {/* Postcode validation error — Airbnb pink */}
                 {(showValidation || addressTouched.postcode) && addressErrors.postcode && (
-                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                  <p className="text-[#FF385C] text-sm font-medium mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     {addressErrors.postcode}
+                  </p>
+                )}
+
+                {/* Nothing picked from the lookup yet — the customer must still choose an address */}
+                {showValidation && !addressErrors.postcode && !addressData.address_line_1?.trim() && (
+                  <p className="text-[#FF385C] text-sm font-medium mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    Please enter postcode and select your address
                   </p>
                 )}
                 
