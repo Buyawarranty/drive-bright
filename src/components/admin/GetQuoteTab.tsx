@@ -5015,7 +5015,7 @@ Questions? Call 0330 229 5040`;
                               className={cn(
                                 "rounded-lg border-2 p-3 text-left transition-all relative",
                                 comingSoon
-                                  ? "border-dashed border-slate-300 bg-slate-100 opacity-70 cursor-not-allowed"
+                                  ? "border-dashed border-slate-300 bg-slate-50 cursor-not-allowed"
                                   : instalmentCount === count
                                     ? "border-primary bg-primary/10"
                                     : "border-border bg-white hover:border-primary/50"
@@ -5028,10 +5028,10 @@ Questions? Call 0330 229 5040`;
                                   </Badge>
                                 </div>
                               )}
-                              <div className={cn("font-semibold text-sm", comingSoon && "text-slate-500")}>
+                              <div className={cn("font-semibold text-sm", comingSoon && "text-slate-600")}>
                                 {count} instalments
                               </div>
-                              <div className={cn("text-xs font-medium", comingSoon ? "text-slate-400" : "text-black")}>
+                              <div className={cn("text-xs font-medium", comingSoon ? "text-slate-500" : "text-black")}>
                                 {comingSoon ? "Not active yet" : `£${amount}/mo · same £${displayedTotalPrice} total`}
                               </div>
                             </button>

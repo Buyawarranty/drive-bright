@@ -1258,7 +1258,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                                   className={cn(
                                     "rounded-lg border-2 p-3 text-left transition-all relative",
                                     comingSoon
-                                      ? "border-dashed border-slate-300 bg-slate-100 opacity-70 cursor-not-allowed"
+                                      ? "border-dashed border-slate-300 bg-slate-50 cursor-not-allowed"
                                       : instalmentCount === count
                                         ? "border-indigo-500 bg-indigo-50"
                                         : "border-slate-200 bg-white hover:border-indigo-300"
@@ -1271,10 +1271,10 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                                       </Badge>
                                     </div>
                                   )}
-                                  <div className={cn("text-sm font-semibold", comingSoon ? "text-slate-500" : "text-slate-800")}>
+                                  <div className={cn("text-sm font-semibold", comingSoon ? "text-slate-600" : "text-slate-800")}>
                                     {count} instalments
                                   </div>
-                                  <div className={cn("text-xs font-medium", comingSoon ? "text-slate-400" : "text-slate-900")}>
+                                  <div className={cn("text-xs font-medium", comingSoon ? "text-slate-500" : "text-slate-900")}>
                                     {comingSoon
                                       ? "Not active yet"
                                       : `£${instalmentAmount(currentPrice.totalPrice, count)}/mo · same £${currentPrice.totalPrice} total`}

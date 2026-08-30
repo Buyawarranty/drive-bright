@@ -32,5 +32,5 @@ export function instalmentLabel(count: InstalmentCount): string {
 
 /** Instalment plans that are visible but not selectable yet. */
 export function isInstalmentComingSoon(count: InstalmentCount): boolean {
-  return count === 36;
+  return count === 24 || count === 36;
 }
