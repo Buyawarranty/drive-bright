@@ -1135,6 +1135,47 @@ export type Database = {
           },
         ]
       }
+      agent_leave_periods: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          created_by: string | null
+          end_date: string
+          id: string
+          leave_type: string
+          note: string | null
+          start_date: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          created_by?: string | null
+          end_date: string
+          id?: string
+          leave_type?: string
+          note?: string | null
+          start_date: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          created_by?: string | null
+          end_date?: string
+          id?: string
+          leave_type?: string
+          note?: string | null
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_leave_periods_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_offboarding_events: {
         Row: {
           also_deactivated: boolean
@@ -13351,6 +13392,10 @@ export type Database = {
       adjust_sales_lead_call_count: {
         Args: { p_delta: number; p_lead_id: string }
         Returns: number
+      }
+      agent_on_leave: {
+        Args: { p_admin_user_id: string; p_on_date?: string }
+        Returns: boolean
       }
       agent_works_new_leads: {
         Args: { p_admin_user_id: string }
