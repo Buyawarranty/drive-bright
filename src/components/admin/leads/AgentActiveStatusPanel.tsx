@@ -55,8 +55,18 @@ export const AgentActiveStatusPanel: React.FC = () => {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [pending, setPending] = useState<Staff | null>(null);
   const [leadCounts, setLeadCounts] = useState<Record<string, number>>({});
+  const [leave, setLeave] = useState<LeavePeriod[]>([]);
+  const [leaveDraft, setLeaveDraft] = useState<Record<string, LeaveDraft>>({});
+  const [savingLeaveFor, setSavingLeaveFor] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const loadLeave = useCallback(async () => {
+    const { data } = await (supabase.from('agent_leave_periods') as any)
+      .select('id, admin_user_id, start_date, end_date, leave_type')
+      .gte('end_date', todayIso)
+      .order('start_date');
+    setLeave((data || []) as LeavePeriod[]);
+  }, []);
+
     const { data } = await (supabase.from('admin_users') as any)
       .select('id, first_name, last_name, email, role, is_active, archived_at')
       .order('first_name');
