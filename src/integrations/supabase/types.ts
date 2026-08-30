@@ -8778,6 +8778,36 @@ export type Database = {
         }
         Relationships: []
       }
+      manager_discount_access: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string
+          enabled: boolean
+          id: string
+          note: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email: string
+          enabled?: boolean
+          id?: string
+          note?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          enabled?: boolean
+          id?: string
+          note?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       marketing_audience: {
         Row: {
           contact_count: number | null
@@ -13712,6 +13742,10 @@ export type Database = {
         Returns: boolean
       }
       has_all_leads_permission: { Args: { _user_id: string }; Returns: boolean }
+      has_manager_discount_access: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       has_price_updates_access: { Args: { _user_id: string }; Returns: boolean }
       has_tab_access: {
         Args: { _tab: string; _user_id: string }
