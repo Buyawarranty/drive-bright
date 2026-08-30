@@ -16,6 +16,8 @@ import { DiscountCodeUsageHistory } from "./DiscountCodeUsageHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useManagerDiscountAccess } from "@/hooks/useManagerDiscountAccess";
+import { ManagerDiscountAccessPanel } from "@/components/admin/ManagerDiscountAccessPanel";
 import { format } from "date-fns";
 import { UnifiedDateFilter, periodToRange, type PeriodKey, type DateScope } from "@/components/admin/UnifiedDateFilter";
 import { DateRange } from "react-day-picker";
