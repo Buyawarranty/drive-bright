@@ -1903,7 +1903,52 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     }
   };
 
+  // FINAL HARD GATE — no payment provider may be reached without a full address.
+  // This runs immediately before Bumper/Stripe are called, so it cannot be
+  // bypassed by any UI path, auto-trigger or stale validation state.
+  const enforceAddressBeforePayment = (): boolean => {
+    const ukPc = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
+    const pc = (addressData.postcode || '').trim();
+    const line1 = (addressData.address_line_1 || '').trim();
+    const town = (addressData.town || '').trim();
+    const pcOk = !!pc && ukPc.test(pc.replace(/\s/g, ''));
+
+    if (pcOk && line1 && town) return true;
+
+    setShowValidation(true);
+    setAddressExpanded(true);
+    setShowAddressFields(true);
+    setAddressTouched(prev => ({ ...prev, postcode: true, address_line_1: true, town: true }));
+    setAddressErrors(prev => ({
+      ...prev,
+      postcode: pcOk ? '' : (pc ? 'Please enter a valid UK postcode.' : 'Please enter postcode'),
+      address_line_1: line1 ? '' : 'Please enter your address.',
+      town: town ? '' : 'Enter your town or city.',
+    }));
+    setAddressValidated(prev => ({ ...prev, postcode: pcOk, address_line_1: !!line1, town: !!town }));
+    setIsLoading(false);
+
+    setTimeout(() => {
+      const el = document.getElementById(!pcOk ? 'postcode-lookup' : !line1 ? 'address_line_1' : 'town');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (el as HTMLInputElement).focus?.();
+      }
+    }, 100);
+
+    toast.error('Please enter your postcode and select your address to continue.', {
+      id: 'checkout-address-required',
+      duration: 6000,
+      closeButton: true,
+      dismissible: true,
+      className: 'border-2 border-[#FF385C] shadow-2xl',
+    });
+    return false;
+  };
+
   const processBumperCheckout = async () => {
+    if (!enforceAddressBeforePayment()) return;
+
     try {
       const finalPrice = discountedBumperPrice;
       
