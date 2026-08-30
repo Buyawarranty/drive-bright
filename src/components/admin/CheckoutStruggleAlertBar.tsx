@@ -200,7 +200,7 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
     const { error } = await supabase
       .from('checkout_struggle_alerts')
       .update({ status: 'acknowledged', acknowledged_by: adminId, acknowledged_at: new Date().toISOString() })
-      .eq('id', id);
+      .in('id', ids);
     if (error) {
       console.error('[CheckoutStruggleAlertBar] acknowledge failed', error);
       fetchActive();
@@ -208,12 +208,13 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
   };
 
   const dismiss = async (id: string) => {
-    if (!canResolve) { hideLocally(id); return; }
-    setAlerts((prev) => prev.filter((a) => a.id !== id));
+    const ids = siblingIds(id);
+    if (!canResolve) { ids.forEach(hideLocally); return; }
+    setAlerts((prev) => prev.filter((a) => !ids.includes(a.id)));
     const { error } = await supabase
       .from('checkout_struggle_alerts')
       .update({ status: 'resolved', resolved_at: new Date().toISOString() })
-      .eq('id', id);
+      .in('id', ids);
     if (error) {
       console.error('[CheckoutStruggleAlertBar] dismiss failed', error);
       fetchActive();
