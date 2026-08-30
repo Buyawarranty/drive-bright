@@ -29,6 +29,8 @@ const MANAGEMENT_ROLES = new Set(['admin', 'super_admin', 'sales_manager']);
 interface Props {
   userRole: string | null;
   onGoToPool?: () => void;
+  /** When true, runs the background sweep only — renders no visible bar. */
+  headless?: boolean;
 }
 
 interface Cap {
@@ -38,7 +40,7 @@ interface Cap {
   daily_cap: number | null;
 }
 
-export const GlobalAutoDistributeBar = ({ userRole, onGoToPool }: Props) => {
+export const GlobalAutoDistributeBar = ({ userRole, onGoToPool, headless = false }: Props) => {
   const isManager = !!userRole && MANAGEMENT_ROLES.has(userRole);
   const [autoOn, setAutoOn] = useState<boolean>(false);
   const [loaded, setLoaded] = useState(false);
@@ -212,6 +214,10 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool }: Props) => {
   }, [isManager, autoOn, runSweep]);
 
   const warn = useMemo(() => !autoOn && poolCount > 0, [autoOn, poolCount]);
+
+  // Headless mode: keep the background sweep alive (so the ON/OFF toggle in
+  // Lead Allocation still works from any page) but render nothing.
+  if (headless) return null;
 
   if (!isManager || !loaded) return null;
 
