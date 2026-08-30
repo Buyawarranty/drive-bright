@@ -4985,6 +4985,36 @@ Questions? Call 0330 229 5040`;
                       );
                     })}
                   </div>
+                  {/* Instalment plan — separate from cover duration */}
+                  {getInstalmentOptions(paymentType).length > 1 && (
+                    <div className="space-y-2 rounded-lg border border-blue-200 bg-blue-50/50 p-3">
+                      <Label className="text-sm font-semibold">Instalment plan</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {getInstalmentOptions(paymentType).map((count) => {
+                          const amount = instalmentAmount(displayedTotalPrice, count);
+                          return (
+                            <button
+                              key={count}
+                              type="button"
+                              onClick={() => setInstalmentCount(count)}
+                              className={cn(
+                                "rounded-lg border-2 p-3 text-left transition-all",
+                                instalmentCount === count
+                                  ? "border-primary bg-primary/10"
+                                  : "border-border bg-white hover:border-primary/50"
+                              )}
+                            >
+                              <div className="font-semibold text-sm">{count} instalments</div>
+                              <div className="text-xs text-black font-medium">£{amount}/mo · same £{displayedTotalPrice} total</div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        Same total price — this only changes how many monthly payments it is spread over.
+                      </p>
+                    </div>
+                  )}
                   {termSavings['24months'] && (
                     <p className="text-xs text-muted-foreground">
                       Savings compare the full term price against buying 1-year cover repeatedly, with the same claim
