@@ -1250,6 +1250,13 @@ export function DiscountCodesTab() {
                 ))}
               </TableBody>
             </Table>
+            <ManagerDiscountAccessPanel
+              grants={managerAccessGrants}
+              canManage={canManageManagerAccess}
+              addGrant={addManagerAccessGrant}
+              setGrantEnabled={setManagerAccessGrantEnabled}
+              removeGrant={removeManagerAccessGrant}
+            />
           </CardContent>
         </Card>
       )}
