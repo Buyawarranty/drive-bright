@@ -1285,11 +1285,9 @@ const AdminDashboardInner: React.FC<{
           <>
             {isManagementAlerts && (
               <>
-                {/* Global auto-distribute control + backlog warning */}
-                <GlobalAutoDistributeBar
-                  userRole={displayRole}
-                  onGoToPool={() => handleTabChange('new-leads')}
-                />
+                {/* Background auto-distribute sweep only (no visible bar) —
+                    the ON/OFF toggle lives in Lead Allocation. */}
+                <GlobalAutoDistributeBar headless userRole={displayRole} />
 
                 {/* Quick-grant access bar for admins */}
                 <QuickGrantAccessBar userRole={displayRole} />
