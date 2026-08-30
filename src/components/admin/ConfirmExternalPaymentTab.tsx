@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getInstalmentOptions, isInstalmentAllowed, instalmentAmount, type InstalmentCount } from '@/lib/instalmentOptions';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 import { getNetPayableFloor } from '@/lib/pricing/netFloor';
@@ -211,6 +212,11 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   
   // Policy configuration
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
+  // Instalment plan is separate from cover duration: 2-year = 12 or 24, 3-year = 12 or 36.
+  const [instalmentCount, setInstalmentCount] = useState<InstalmentCount>(12);
+  useEffect(() => {
+    if (!isInstalmentAllowed(paymentType, instalmentCount)) setInstalmentCount(12);
+  }, [paymentType, instalmentCount]);
   const [excessAmount, setExcessAmount] = useState(100);
   const [claimLimit, setClaimLimit] = useState(2000);
   const [labourRate, setLabourRate] = useState(70);
@@ -1236,6 +1242,34 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           </SelectContent>
                         </Select>
                       </div>
+                      {getInstalmentOptions(paymentType).length > 1 && (
+                        <div className="space-y-1.5 md:col-span-2">
+                          <Label className="text-xs font-semibold text-slate-500">Instalment plan</Label>
+                          <div className="grid grid-cols-2 gap-2">
+                            {getInstalmentOptions(paymentType).map((count) => (
+                              <button
+                                key={count}
+                                type="button"
+                                onClick={() => setInstalmentCount(count)}
+                                className={cn(
+                                  "rounded-lg border-2 p-3 text-left transition-all",
+                                  instalmentCount === count
+                                    ? "border-indigo-500 bg-indigo-50"
+                                    : "border-slate-200 bg-white hover:border-indigo-300"
+                                )}
+                              >
+                                <div className="text-sm font-semibold text-slate-800">{count} instalments</div>
+                                <div className="text-xs font-medium text-slate-900">
+                                  £{instalmentAmount(currentPrice.totalPrice, count)}/mo · same £{currentPrice.totalPrice} total
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                          <p className="text-[11px] text-slate-500">
+                            Same total price — this only changes how many monthly payments it is spread over.
+                          </p>
+                        </div>
+                      )}
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-500">Excess</Label>
                         <Select value={excessAmount.toString()} onValueChange={(v) => setExcessAmount(parseInt(v))}>
@@ -1333,7 +1367,10 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         <span className="text-3xl font-bold">£{currentPrice.totalPrice}</span>
                       </div>
                       {currentPrice.monthlyPrice > 0 && (
-                        <p className="text-xs text-slate-500 text-right mt-1">£{currentPrice.monthlyPrice}/month equivalent</p>
+                        <p className="text-xs text-slate-500 text-right mt-1">
+                          £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(currentPrice.totalPrice, instalmentCount)}/month
+                          {' '}× {instalmentCount} instalments
+                        </p>
                       )}
                     </div>
                   </div>

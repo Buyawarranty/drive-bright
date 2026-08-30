@@ -1,4 +1,5 @@
 import { getVehicleAge } from '@/lib/vehicleAge';
+import { getInstalmentOptions, isInstalmentAllowed, instalmentAmount, type InstalmentCount } from '@/lib/instalmentOptions';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 
@@ -251,6 +252,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [selectedLeadOwnerId, setSelectedLeadOwnerId] = useState<string | null>(null);
   const matchedLeadOwner = useLeadOwner(customerEmail, customerPhone);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
+  // Instalment plan is a SEPARATE choice from cover duration (admin surfaces only).
+  // 2-year = 12 or 24 instalments, 3-year = 12 or 36, 1-year = 12.
+  const [instalmentCount, setInstalmentCount] = useState<InstalmentCount>(12);
+  useEffect(() => {
+    // Keep the instalment plan valid whenever the cover term changes.
+    if (!isInstalmentAllowed(paymentType, instalmentCount)) setInstalmentCount(12);
+  }, [paymentType, instalmentCount]);
   // Landing default matches Step 3: 2 years, £2,000 claim limit, £100 excess, £70/hr
   const [excessAmount, setExcessAmount] = useState(100);
   const [claimLimit, setClaimLimit] = useState(2000);
@@ -4977,6 +4985,36 @@ Questions? Call 0330 229 5040`;
                       );
                     })}
                   </div>
+                  {/* Instalment plan — separate from cover duration */}
+                  {getInstalmentOptions(paymentType).length > 1 && (
+                    <div className="space-y-2 rounded-lg border border-blue-200 bg-blue-50/50 p-3">
+                      <Label className="text-sm font-semibold">Instalment plan</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {getInstalmentOptions(paymentType).map((count) => {
+                          const amount = instalmentAmount(displayedTotalPrice, count);
+                          return (
+                            <button
+                              key={count}
+                              type="button"
+                              onClick={() => setInstalmentCount(count)}
+                              className={cn(
+                                "rounded-lg border-2 p-3 text-left transition-all",
+                                instalmentCount === count
+                                  ? "border-primary bg-primary/10"
+                                  : "border-border bg-white hover:border-primary/50"
+                              )}
+                            >
+                              <div className="font-semibold text-sm">{count} instalments</div>
+                              <div className="text-xs text-black font-medium">£{amount}/mo · same £{displayedTotalPrice} total</div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        Same total price — this only changes how many monthly payments it is spread over.
+                      </p>
+                    </div>
+                  )}
                   {termSavings['24months'] && (
                     <p className="text-xs text-muted-foreground">
                       Savings compare the full term price against buying 1-year cover repeatedly, with the same claim
@@ -6693,11 +6731,11 @@ Questions? Call 0330 229 5040`;
 
                       {/* 1 — Monthly */}
                       <div className="rounded-lg border border-blue-200 bg-blue-50/60 px-3 py-2.5">
-                        <div className="text-[11px] font-bold uppercase tracking-wide text-blue-700">Monthly · Bumper (12)</div>
+                        <div className="text-[11px] font-bold uppercase tracking-wide text-blue-700">Monthly · Bumper ({instalmentCount})</div>
                         <div className="mt-1 text-2xl font-extrabold leading-none text-blue-800">
-                          £{currentPrice.monthlyPrice}<span className="text-sm font-semibold text-blue-600">/mo</span>
+                          £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(monthlyTotal, instalmentCount)}<span className="text-sm font-semibold text-blue-600">/mo</span>
                         </div>
-                        <div className="mt-1.5 text-[11px] text-blue-700">Total £{monthlyTotal} · 12 × £{currentPrice.monthlyPrice}</div>
+                        <div className="mt-1.5 text-[11px] text-blue-700">Total £{monthlyTotal} · {instalmentCount} × £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(monthlyTotal, instalmentCount)}</div>
                         <div className="text-[11px] text-blue-600/80">{fmtPerDay(monthlyPence)} over cover</div>
                       </div>
 
