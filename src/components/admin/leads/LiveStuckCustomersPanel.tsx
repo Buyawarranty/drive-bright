@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertTriangle, Phone, RefreshCw, Copy } from 'lucide-react';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
+import { isTestStruggle } from '@/lib/checkoutStruggleTest';
 
 interface StuckRow {
   id: string;
@@ -28,17 +29,7 @@ const SIGNAL_LABELS: Record<string, string> = {
 };
 
 // Sandbox / staff test traffic — never shown as a live stuck customer.
-const isTestRow = (r: StuckRow): boolean => {
-  const name = (r.customer_name || '').toLowerCase();
-  const email = (r.customer_email || '').toLowerCase();
-  const digits = (r.customer_phone || '').replace(/\D/g, '');
-  if (/\btest\b|^test|dummy|sandbox|demo/.test(name)) return true;
-  if (email.endsWith('@buyawarranty.co.uk')) return true;
-  if (/test|example\.com/.test(email)) return true;
-  if (digits && /^(\d)\1+$/.test(digits.slice(2))) return true; // 0790000000, 07111111111 etc
-  if (digits === '0790000000' || digits === '447900000000') return true;
-  return false;
-};
+const isTestRow = (r: StuckRow): boolean => isTestStruggle(r);
 
 const minsAgo = (iso: string) => Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
 

@@ -8,9 +8,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
+import { isTestStruggle } from '@/lib/checkoutStruggleTest';
 
 interface StruggleAlert {
   id: string;
+  session_key?: string | null;
   signal_type: string;
   customer_name: string | null;
   customer_email: string | null;
@@ -121,7 +123,8 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
       .gte('created_at', new Date(Date.now() - 30 * 60 * 1000).toISOString()) // last 30 min
       .order('created_at', { ascending: false })
       .limit(20);
-    const list = (data as StruggleAlert[]) || [];
+    // Internal test / sandbox traffic must never show as a live stuck customer.
+    const list = ((data as StruggleAlert[]) || []).filter((a) => !isTestStruggle(a));
     // Beep once per new alert id we haven't seen before this session.
     let hasNew = false;
     for (const a of list) {
@@ -163,9 +166,27 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
     });
   };
 
+  // Every signal from the same checkout session belongs to the same customer.
+  // Clearing one must clear them all, or a second signal (idle → long dwell)
+  // makes the banner look like it never goes away.
+  const siblingIds = useCallback((id: string): string[] => {
+    const target = alerts.find((a) => a.id === id);
+    if (!target) return [id];
+    const key = (v?: string | null) => (v || '').trim().toLowerCase();
+    return alerts
+      .filter((a) =>
+        a.id === id ||
+        (target.session_key && a.session_key === target.session_key) ||
+        (key(target.customer_email) && key(a.customer_email) === key(target.customer_email)) ||
+        (key(target.customer_phone) && key(a.customer_phone) === key(target.customer_phone))
+      )
+      .map((a) => a.id);
+  }, [alerts]);
+
   const acknowledge = async (id: string) => {
-    if (!canResolve) { hideLocally(id); return; }
-    setAlerts((prev) => prev.filter((a) => a.id !== id));
+    const ids = siblingIds(id);
+    if (!canResolve) { ids.forEach(hideLocally); return; }
+    setAlerts((prev) => prev.filter((a) => !ids.includes(a.id)));
     const { data: { user } } = await supabase.auth.getUser();
     let adminId: string | null = null;
     if (user) {
@@ -179,7 +200,7 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
     const { error } = await supabase
       .from('checkout_struggle_alerts')
       .update({ status: 'acknowledged', acknowledged_by: adminId, acknowledged_at: new Date().toISOString() })
-      .eq('id', id);
+      .in('id', ids);
     if (error) {
       console.error('[CheckoutStruggleAlertBar] acknowledge failed', error);
       fetchActive();
@@ -187,12 +208,13 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
   };
 
   const dismiss = async (id: string) => {
-    if (!canResolve) { hideLocally(id); return; }
-    setAlerts((prev) => prev.filter((a) => a.id !== id));
+    const ids = siblingIds(id);
+    if (!canResolve) { ids.forEach(hideLocally); return; }
+    setAlerts((prev) => prev.filter((a) => !ids.includes(a.id)));
     const { error } = await supabase
       .from('checkout_struggle_alerts')
       .update({ status: 'resolved', resolved_at: new Date().toISOString() })
-      .eq('id', id);
+      .in('id', ids);
     if (error) {
       console.error('[CheckoutStruggleAlertBar] dismiss failed', error);
       fetchActive();
