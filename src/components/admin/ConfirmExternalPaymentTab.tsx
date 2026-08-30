@@ -212,6 +212,11 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   
   // Policy configuration
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
+  // Instalment plan is separate from cover duration: 2-year = 12 or 24, 3-year = 12 or 36.
+  const [instalmentCount, setInstalmentCount] = useState<InstalmentCount>(12);
+  useEffect(() => {
+    if (!isInstalmentAllowed(paymentType, instalmentCount)) setInstalmentCount(12);
+  }, [paymentType, instalmentCount]);
   const [excessAmount, setExcessAmount] = useState(100);
   const [claimLimit, setClaimLimit] = useState(2000);
   const [labourRate, setLabourRate] = useState(70);
