@@ -1242,6 +1242,34 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           </SelectContent>
                         </Select>
                       </div>
+                      {getInstalmentOptions(paymentType).length > 1 && (
+                        <div className="space-y-1.5 md:col-span-2">
+                          <Label className="text-xs font-semibold text-slate-500">Instalment plan</Label>
+                          <div className="grid grid-cols-2 gap-2">
+                            {getInstalmentOptions(paymentType).map((count) => (
+                              <button
+                                key={count}
+                                type="button"
+                                onClick={() => setInstalmentCount(count)}
+                                className={cn(
+                                  "rounded-lg border-2 p-3 text-left transition-all",
+                                  instalmentCount === count
+                                    ? "border-indigo-500 bg-indigo-50"
+                                    : "border-slate-200 bg-white hover:border-indigo-300"
+                                )}
+                              >
+                                <div className="text-sm font-semibold text-slate-800">{count} instalments</div>
+                                <div className="text-xs font-medium text-slate-900">
+                                  £{instalmentAmount(currentPrice.totalPrice, count)}/mo · same £{currentPrice.totalPrice} total
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                          <p className="text-[11px] text-slate-500">
+                            Same total price — this only changes how many monthly payments it is spread over.
+                          </p>
+                        </div>
+                      )}
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-500">Excess</Label>
                         <Select value={excessAmount.toString()} onValueChange={(v) => setExcessAmount(parseInt(v))}>
