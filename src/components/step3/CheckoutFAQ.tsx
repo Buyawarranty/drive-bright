@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { HelpCircle } from 'lucide-react';
 import {
   Accordion,
@@ -31,7 +32,15 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
   },
   {
     q: 'How do I make a claim?',
-    a: "Simply ask your garage to contact our claims team before any repairs are carried out. We'll guide them through the process and aim to keep everything moving smoothly.",
+    a: (
+      <>
+        Simply visit our{' '}
+        <Link to="/make-a-claim/" className="text-primary underline hover:text-primary/80">
+          Make a claim page
+        </Link>{' '}
+        before any repairs are carried out. We'll guide you through the process and aim to keep everything moving smoothly.
+      </>
+    ),
   },
   {
     q: 'Can I pay monthly?',
