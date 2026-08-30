@@ -4956,7 +4956,7 @@ Questions? Call 0330 229 5040`;
                         <div className="font-semibold">{term.label}</div>
                         {s && (
                           <div className="mt-1.5 space-y-1">
-                            <div className="text-xs text-muted-foreground">£{s.total} total · £{s.perYear}/yr</div>
+                            <div className="text-xs text-black font-medium">£{s.total} total · £{s.perYear}/yr</div>
                             {years === 1 ? (
                               <div className="text-[11px] font-medium text-muted-foreground">Baseline price</div>
                             ) : s.saving > 0 ? (
