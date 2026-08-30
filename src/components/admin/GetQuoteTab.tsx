@@ -257,7 +257,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [instalmentCount, setInstalmentCount] = useState<InstalmentCount>(12);
   useEffect(() => {
     // Keep the instalment plan valid whenever the cover term changes.
-    if (!isInstalmentAllowed(paymentType, instalmentCount)) setInstalmentCount(12);
+    // 36 instalments is visible but disabled (Coming Soon), so never let it be selected.
+    if (!isInstalmentAllowed(paymentType, instalmentCount) || isInstalmentComingSoon(instalmentCount)) setInstalmentCount(12);
   }, [paymentType, instalmentCount]);
   // Landing default matches Step 3: 2 years, £2,000 claim limit, £100 excess, £70/hr
   const [excessAmount, setExcessAmount] = useState(100);
