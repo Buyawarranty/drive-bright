@@ -128,7 +128,7 @@ export function UnsubscribeLeadButton({
       </TooltipProvider>
 
       <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+        <AlertDialogContent className="max-w-sm" onClick={(e) => e.stopPropagation()}>
           <AlertDialogHeader>
             <AlertDialogTitle>
               {blocked ? `Re-subscribe ${email}?` : `Unsubscribe ${email}?`}
