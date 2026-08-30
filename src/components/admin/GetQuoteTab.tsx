@@ -6731,11 +6731,11 @@ Questions? Call 0330 229 5040`;
 
                       {/* 1 — Monthly */}
                       <div className="rounded-lg border border-blue-200 bg-blue-50/60 px-3 py-2.5">
-                        <div className="text-[11px] font-bold uppercase tracking-wide text-blue-700">Monthly · Bumper (12)</div>
+                        <div className="text-[11px] font-bold uppercase tracking-wide text-blue-700">Monthly · Bumper ({instalmentCount})</div>
                         <div className="mt-1 text-2xl font-extrabold leading-none text-blue-800">
-                          £{currentPrice.monthlyPrice}<span className="text-sm font-semibold text-blue-600">/mo</span>
+                          £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(monthlyTotal, instalmentCount)}<span className="text-sm font-semibold text-blue-600">/mo</span>
                         </div>
-                        <div className="mt-1.5 text-[11px] text-blue-700">Total £{monthlyTotal} · 12 × £{currentPrice.monthlyPrice}</div>
+                        <div className="mt-1.5 text-[11px] text-blue-700">Total £{monthlyTotal} · {instalmentCount} × £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(monthlyTotal, instalmentCount)}</div>
                         <div className="text-[11px] text-blue-600/80">{fmtPerDay(monthlyPence)} over cover</div>
                       </div>
 
