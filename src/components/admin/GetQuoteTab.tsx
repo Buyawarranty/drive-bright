@@ -1,4 +1,5 @@
 import { getVehicleAge } from '@/lib/vehicleAge';
+import { getInstalmentOptions, isInstalmentAllowed, instalmentAmount, type InstalmentCount } from '@/lib/instalmentOptions';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 
