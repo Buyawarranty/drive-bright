@@ -1367,7 +1367,10 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         <span className="text-3xl font-bold">£{currentPrice.totalPrice}</span>
                       </div>
                       {currentPrice.monthlyPrice > 0 && (
-                        <p className="text-xs text-slate-500 text-right mt-1">£{currentPrice.monthlyPrice}/month equivalent</p>
+                        <p className="text-xs text-slate-500 text-right mt-1">
+                          £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(currentPrice.totalPrice, instalmentCount)}/month
+                          {' '}× {instalmentCount} instalments
+                        </p>
                       )}
                     </div>
                   </div>
