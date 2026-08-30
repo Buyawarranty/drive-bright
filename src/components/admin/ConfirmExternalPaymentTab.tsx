@@ -215,7 +215,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   // Instalment plan is separate from cover duration: 2-year = 12 or 24, 3-year = 12 or 36.
   const [instalmentCount, setInstalmentCount] = useState<InstalmentCount>(12);
   useEffect(() => {
-    if (!isInstalmentAllowed(paymentType, instalmentCount)) setInstalmentCount(12);
+    // 36 instalments is visible but disabled (Coming Soon), so never let it be selected.
+    if (!isInstalmentAllowed(paymentType, instalmentCount) || isInstalmentComingSoon(instalmentCount)) setInstalmentCount(12);
   }, [paymentType, instalmentCount]);
   const [excessAmount, setExcessAmount] = useState(100);
   const [claimLimit, setClaimLimit] = useState(2000);
