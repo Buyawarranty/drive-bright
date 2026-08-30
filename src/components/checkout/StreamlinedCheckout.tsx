@@ -1536,16 +1536,19 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }
         break;
       case 'postcode':
-        // If postcode was already validated by API, skip re-validation
-        if (addressValidated.postcode) {
-          isValid = true;
-          error = '';
-        } else if (!addressData.postcode?.trim()) {
-          error = 'Please enter a valid UK postcode.';
+        // Nothing typed and nothing picked — the customer skipped the address entirely.
+        if (!addressData.postcode?.trim()) {
+          error = 'Please enter postcode';
           isValid = false;
         } else if (!ukPostcodeRegex.test(addressData.postcode.replace(/\s/g, ''))) {
-          error = 'Please enter a valid UK postcode.';
-          isValid = false;
+          // Trust an API-confirmed postcode even if the raw string looks odd.
+          if (addressValidated.postcode) {
+            isValid = true;
+            error = '';
+          } else {
+            error = 'Please enter a valid UK postcode.';
+            isValid = false;
+          }
         }
         break;
     }
@@ -1597,7 +1600,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (addressValidated[field]) {
       return 'border-green-500 bg-green-50/30 cursor-text focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white';
     }
-    if (showValidation && addressErrors[field]) {
+    if ((showValidation || addressTouched[field]) && addressErrors[field]) {
       return 'border-2 border-[#FF385C] ring-2 ring-[#FF385C]/25 bg-[#FF385C]/5 focus:ring-[#FF385C]/40 focus:border-[#FF385C]';
     }
     return 'bg-[#F5F5F5] border-gray-200 focus:bg-white';
@@ -2681,11 +2684,19 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 )}
 
 
-                {/* Postcode validation error */}
+                {/* Postcode validation error — Airbnb pink */}
                 {(showValidation || addressTouched.postcode) && addressErrors.postcode && (
-                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                  <p className="text-[#FF385C] text-sm font-medium mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     {addressErrors.postcode}
+                  </p>
+                )}
+
+                {/* Nothing picked from the lookup yet — the customer must still choose an address */}
+                {showValidation && !addressErrors.postcode && !addressData.address_line_1?.trim() && (
+                  <p className="text-[#FF385C] text-sm font-medium mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    Please enter postcode and select your address
                   </p>
                 )}
                 
