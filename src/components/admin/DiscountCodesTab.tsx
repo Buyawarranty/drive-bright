@@ -101,6 +101,14 @@ export function DiscountCodesTab() {
   const { toast } = useToast();
   const { userRole } = useAuth();
   const isReadOnly = userRole === 'sales' || userRole === 'sales_lead';
+  const canManageManagerAccess = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
+  const {
+    hasAccess: hasManagerCodeAccess,
+    grants: managerAccessGrants,
+    addGrant: addManagerAccessGrant,
+    setGrantEnabled: setManagerAccessGrantEnabled,
+    removeGrant: removeManagerAccessGrant,
+  } = useManagerDiscountAccess(canManageManagerAccess);
 
   useEffect(() => {
     fetchDiscountCodes();
