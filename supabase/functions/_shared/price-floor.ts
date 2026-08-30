@@ -162,7 +162,35 @@ function getBasePriceFromPlan(plan: any, paymentType: string): number {
  * Returns { ok: false, reason } if the price looks manipulated and the
  * caller should reject the checkout request with HTTP 400.
  */
+/**
+ * Is this a genuine, currently usable discount code row? Used to gate the TEST
+ * £1 bypass so a made-up "TEST..." string cannot lower the price floor.
+ */
+async function isLiveDiscountCode(supabase: SupabaseClient, code: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from("discount_codes")
+      .select("valid_from, valid_to, usage_limit, used_count")
+      .eq("code", code.trim().toUpperCase())
+      .eq("active", true)
+      .eq("archived", false)
+      .maybeSingle();
+
+    if (error || !data) return false;
+
+    const now = Date.now();
+    if (data.valid_from && now < new Date(data.valid_from).getTime()) return false;
+    if (data.valid_to && now > new Date(data.valid_to).getTime()) return false;
+    if (data.usage_limit && Number(data.used_count ?? 0) >= Number(data.usage_limit)) return false;
+
+    return true;
+  } catch (_e) {
+    return false;
+  }
+}
+
 export async function validateCheckoutPrice(
+
   input: PriceFloorInput,
   supabaseAdmin?: SupabaseClient,
 ): Promise<PriceFloorResult> {
