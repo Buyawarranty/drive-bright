@@ -85,7 +85,10 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
   const [lastRun, setLastRun] = React.useState<Date | null>(null);
   const [catchUpAgent, setCatchUpAgent] = React.useState('');
   const [catchUpN, setCatchUpN] = React.useState(5);
+  const [previewAgentId, setPreviewAgentId] = React.useState('a1');
+  const [morningRun, setMorningRun] = React.useState<Date | null>(null);
   const [tick, setTick] = React.useState(() => new Date());
+
 
   const onAgents = agents.filter(a => a.on);
   const waiting = leads.filter(l => !l.assignedTo);
