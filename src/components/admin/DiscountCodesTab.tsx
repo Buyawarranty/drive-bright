@@ -739,7 +739,8 @@ export function DiscountCodesTab() {
   const filteredCodes = getFilteredCodes();
   const activeCodes = discountCodes.filter(code => !code.archived && !isManagerAccessCode(code) && !isRenewalAutoCode(code));
   const archivedCodes = discountCodes.filter(code => code.archived && !isManagerAccessCode(code) && !isRenewalAutoCode(code));
-  const isManager = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
+  const isRoleManager = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
+  const isManager = isRoleManager || hasManagerCodeAccess;
   const managerAccessCodes = discountCodes
     .filter(isManagerAccessCode)
     .sort((a, b) => a.code.localeCompare(b.code));
