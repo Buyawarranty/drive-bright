@@ -67,6 +67,7 @@ export const AgentActiveStatusPanel: React.FC = () => {
     setLeave((data || []) as LeavePeriod[]);
   }, []);
 
+  const load = useCallback(async () => {
     const { data } = await (supabase.from('admin_users') as any)
       .select('id, first_name, last_name, email, role, is_active, archived_at')
       .order('first_name');
