@@ -2100,6 +2100,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const processStripeCheckout = async () => {
+    if (!enforceAddressBeforePayment()) return;
+
     try {
       console.log('💳 processStripeCheckout: Starting...');
       const finalPrice = discountedStripePrice;
