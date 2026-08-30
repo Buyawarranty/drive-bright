@@ -1538,7 +1538,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       case 'postcode':
         // Nothing typed and nothing picked — the customer skipped the address entirely.
         if (!addressData.postcode?.trim()) {
-          error = 'Please enter postcode';
+          error = 'Enter postcode, street or town';
           isValid = false;
         } else if (!ukPostcodeRegex.test(addressData.postcode.replace(/\s/g, ''))) {
           // Trust an API-confirmed postcode even if the raw string looks odd.
@@ -1928,7 +1928,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setAddressTouched(prev => ({ ...prev, postcode: true, address_line_1: true, town: true }));
     setAddressErrors(prev => ({
       ...prev,
-      postcode: pcOk ? '' : (pc ? 'Please enter a valid UK postcode.' : 'Please enter postcode'),
+      postcode: pcOk && line1 && town
+        ? ''
+        : (pc && !pcOk ? 'Please enter a valid UK postcode.' : 'Enter postcode, street or town'),
       address_line_1: line1 ? '' : 'Please enter your address.',
       town: town ? '' : 'Enter your town or city.',
     }));
@@ -2751,7 +2753,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 {showValidation && !addressErrors.postcode && !addressData.address_line_1?.trim() && (
                   <p className="text-[#FF385C] text-sm font-medium mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
-                    Please enter postcode and select your address
+                    Enter postcode, street or town
                   </p>
                 )}
                 
