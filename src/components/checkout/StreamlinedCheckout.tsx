@@ -1600,7 +1600,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (addressValidated[field]) {
       return 'border-green-500 bg-green-50/30 cursor-text focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white';
     }
-    if (showValidation && addressErrors[field]) {
+    if ((showValidation || addressTouched[field]) && addressErrors[field]) {
       return 'border-2 border-[#FF385C] ring-2 ring-[#FF385C]/25 bg-[#FF385C]/5 focus:ring-[#FF385C]/40 focus:border-[#FF385C]';
     }
     return 'bg-[#F5F5F5] border-gray-200 focus:bg-white';
