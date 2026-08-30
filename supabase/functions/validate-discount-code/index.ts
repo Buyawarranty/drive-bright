@@ -61,8 +61,10 @@ serve(async (req) => {
           ]);
           const hasUserRole = Array.isArray(roles) && roles.some((r: any) => managerRoles.has(r.role));
           const hasAdminRole = !!adminRow && adminRow.is_active !== false && managerRoles.has(adminRow.role);
-          allowed = hasUserRole || hasAdminRole;
-          logStep("TEST code role check", { uid, hasUserRole, hasAdminRole });
+          // Individually granted people (e.g. ads@) live in manager_discount_access.
+          const { data: granted } = await supabaseClient.rpc("has_manager_discount_access", { _user_id: uid });
+          allowed = hasUserRole || hasAdminRole || granted === true;
+          logStep("TEST code role check", { uid, hasUserRole, hasAdminRole, granted: granted === true });
         }
       }
       if (!allowed) {

@@ -54,6 +54,12 @@ export async function refreshManagerPriceBypass(): Promise<boolean> {
       writeManagerFlag(false);
       return false;
     }
+    // Manager roles, plus anyone individually switched on in manager_discount_access.
+    const { data: granted } = await supabase.rpc('has_manager_discount_access' as any, { _user_id: userId });
+    if (granted === true) {
+      writeManagerFlag(true);
+      return true;
+    }
     const { data: roles } = await supabase.from('user_roles').select('role').eq('user_id', userId);
     const allowed = Array.isArray(roles) && roles.some((r: any) => MANAGER_ROLES.has(r?.role));
     writeManagerFlag(!!allowed);

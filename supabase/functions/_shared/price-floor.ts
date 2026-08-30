@@ -88,6 +88,9 @@ async function callerIsManager(
     const { data: userData, error: userErr } = await supabase.auth.getUser(token);
     if (userErr || !userData?.user?.id) return false;
     const uid = userData.user.id;
+    // Manager roles OR an individual grant in public.manager_discount_access.
+    const { data: granted } = await supabase.rpc("has_manager_discount_access", { _user_id: uid });
+    if (granted === true) return true;
     const { data: roles } = await supabase
       .from("user_roles")
       .select("role")

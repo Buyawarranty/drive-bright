@@ -16,6 +16,8 @@ import { DiscountCodeUsageHistory } from "./DiscountCodeUsageHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useManagerDiscountAccess } from "@/hooks/useManagerDiscountAccess";
+import { ManagerDiscountAccessPanel } from "@/components/admin/ManagerDiscountAccessPanel";
 import { format } from "date-fns";
 import { UnifiedDateFilter, periodToRange, type PeriodKey, type DateScope } from "@/components/admin/UnifiedDateFilter";
 import { DateRange } from "react-day-picker";
@@ -101,6 +103,14 @@ export function DiscountCodesTab() {
   const { toast } = useToast();
   const { userRole } = useAuth();
   const isReadOnly = userRole === 'sales' || userRole === 'sales_lead';
+  const canManageManagerAccess = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
+  const {
+    hasAccess: hasManagerCodeAccess,
+    grants: managerAccessGrants,
+    addGrant: addManagerAccessGrant,
+    setGrantEnabled: setManagerAccessGrantEnabled,
+    removeGrant: removeManagerAccessGrant,
+  } = useManagerDiscountAccess(canManageManagerAccess);
 
   useEffect(() => {
     fetchDiscountCodes();
@@ -739,7 +749,8 @@ export function DiscountCodesTab() {
   const filteredCodes = getFilteredCodes();
   const activeCodes = discountCodes.filter(code => !code.archived && !isManagerAccessCode(code) && !isRenewalAutoCode(code));
   const archivedCodes = discountCodes.filter(code => code.archived && !isManagerAccessCode(code) && !isRenewalAutoCode(code));
-  const isManager = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
+  const isRoleManager = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
+  const isManager = isRoleManager || hasManagerCodeAccess;
   const managerAccessCodes = discountCodes
     .filter(isManagerAccessCode)
     .sort((a, b) => a.code.localeCompare(b.code));
@@ -1239,6 +1250,13 @@ export function DiscountCodesTab() {
                 ))}
               </TableBody>
             </Table>
+            <ManagerDiscountAccessPanel
+              grants={managerAccessGrants}
+              canManage={canManageManagerAccess}
+              addGrant={addManagerAccessGrant}
+              setGrantEnabled={setManagerAccessGrantEnabled}
+              removeGrant={removeManagerAccessGrant}
+            />
           </CardContent>
         </Card>
       )}
