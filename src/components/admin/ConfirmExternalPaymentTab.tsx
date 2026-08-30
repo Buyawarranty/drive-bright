@@ -2255,7 +2255,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                   <div><strong>Customer:</strong> {editableFirstName} {editableLastName}</div>
                   <div><strong>Email:</strong> {editableCustomerEmail}</div>
                   <div><strong>Vehicle:</strong> {editableRegNumber}</div>
-                  <div><strong>Mileage:</strong> {editableMileage ? parseInt(editableMileage).toLocaleString() : '—'}</div>
+                  <div><strong>Mileage:</strong> {editableMileage ? parseInt(editableMileage.replace(/\D/g, ''), 10).toLocaleString() : '—'}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-sm pt-3 border-t border-slate-100">
                   <div><strong>Duration:</strong> {termOptions.find(t => t.id === paymentType)?.label}</div>
