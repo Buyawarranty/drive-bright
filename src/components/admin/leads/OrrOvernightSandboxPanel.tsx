@@ -137,7 +137,30 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
     return () => window.clearInterval(t);
   }, [autoOn, handOut]);
 
+  /** ORR self-claim — the agent takes the oldest waiting lead themselves. */
+  const takeNextLead = React.useCallback((agentId: string) => {
+    setLeads(prev => {
+      const oldest = prev
+        .filter(l => !l.assignedTo)
+        .sort((a, b) => a.arrived.getTime() - b.arrived.getTime())[0];
+      if (!oldest) return prev;
+      const now = new Date();
+      return prev.map(l =>
+        l.id === oldest.id
+          ? { ...l, assignedTo: agentId, why: 'Agent took it from the Open Pool', assignedAt: now }
+          : l,
+      );
+    });
+  }, []);
+
+  /** Morning distribution — release the whole parked overnight batch, one each. */
+  const runMorningRelease = React.useCallback(() => {
+    setMorningRun(new Date());
+    handOut('rotate', leads.filter(l => !l.assignedTo).length);
+  }, [handOut, leads]);
+
   const perAgentCount = agents.map(a => ({
+
     ...a,
     count: leads.filter(l => l.assignedTo === a.id).length,
   }));
