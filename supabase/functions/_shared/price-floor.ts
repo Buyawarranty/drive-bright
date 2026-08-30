@@ -174,13 +174,16 @@ export async function validateCheckoutPrice(
     { auth: { persistSession: false } },
   );
 
-  // TEST bypass codes drop the floor to £1 for anyone who knows the code.
-  // Normal promo codes are still subject to the term floor and the 50% plan
-  // price backstop below.
-  const codeLooksLikeBypass = isTestBypassCode(discountCode);
-  const bypass = codeLooksLikeBypass;
+  // TEST bypass codes drop the floor to £1 for anyone who knows the code — but
+  // ONLY if the code really exists in discount_codes, is active, not archived,
+  // in date and within its usage limit. A guessed string like "TEST123" is not
+  // enough: without that DB row the normal floors apply.
+  const bypass = isTestBypassCode(discountCode)
+    ? await isLiveDiscountCode(supabase, discountCode!)
+    : false;
   const termFloor = getTermFloorGBP(paymentType);
   const absoluteFloor = bypass ? TEST_MIN_GBP : termFloor;
+
 
   // 1. Absolute floor — fast reject
   if (!finalAmount || finalAmount < absoluteFloor) {
