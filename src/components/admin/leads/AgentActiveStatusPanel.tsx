@@ -60,7 +60,7 @@ export const AgentActiveStatusPanel: React.FC = () => {
   const [savingLeaveFor, setSavingLeaveFor] = useState<string | null>(null);
 
   const loadLeave = useCallback(async () => {
-    const { data } = await (supabase.from('agent_leave_periods') as any)
+    const { data } = await (supabase as any).from('agent_leave_periods')
       .select('id, admin_user_id, start_date, end_date, leave_type')
       .gte('end_date', todayIso)
       .order('start_date');
@@ -135,7 +135,7 @@ export const AgentActiveStatusPanel: React.FC = () => {
       return;
     }
     setSavingLeaveFor(agent.id);
-    const { error } = await (supabase.from('agent_leave_periods') as any).insert({
+    const { error } = await (supabase as any).from('agent_leave_periods').insert({
       admin_user_id: agent.id,
       start_date: draft.start,
       end_date: draft.end,
@@ -152,7 +152,7 @@ export const AgentActiveStatusPanel: React.FC = () => {
   };
 
   const removeLeave = async (id: string) => {
-    const { error } = await (supabase.from('agent_leave_periods') as any).delete().eq('id', id);
+    const { error } = await (supabase as any).from('agent_leave_periods').delete().eq('id', id);
     if (error) {
       toast.error(`Could not remove the leave — ${error.message}`);
       return;
