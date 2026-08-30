@@ -8,9 +8,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
+import { isTestStruggle } from '@/lib/checkoutStruggleTest';
 
 interface StruggleAlert {
   id: string;
+  session_key?: string | null;
   signal_type: string;
   customer_name: string | null;
   customer_email: string | null;
