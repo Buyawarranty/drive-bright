@@ -15,13 +15,13 @@ export interface PriceFloorInput {
   voluntaryExcess?: number;   // £
   claimLimit?: number;        // £750 | £1250 | £2000
   finalAmount: number;        // £ - what the client says the customer should pay
-  discountCode?: string;      // Optional - test codes (TEST*) only bypass when a manager JWT is present
-  authHeader?: string | null; // Optional - caller's Authorization header, used to gate TEST bypass to managers
+  discountCode?: string;      // Optional - test codes (TEST*) bypass the floor for anyone
+  authHeader?: string | null; // Optional - retained for backwards compatibility; no longer used for gating
 }
 
 // Test discount codes that bypass the £120 absolute floor and 50% plan floor.
-// ONLY managers (admin, super_admin, sales_manager) can use these. Any code
-// starting with "TEST" is also treated as a manager-gated test bypass.
+// Anyone who knows one of these codes can use it. Any code starting with "TEST"
+// is also treated as a test bypass.
 const TEST_BYPASS_CODES = new Set<string>([
   "SAVE99GOLDEN",
 ]);
@@ -33,13 +33,13 @@ export function isTestBypassCode(code?: string | null): boolean {
   return c.startsWith("TEST") || TEST_BYPASS_CODES.has(c);
 }
 
-// When a manager applies a TEST code, allow the transaction down to £1 (still
-// above Stripe's £0.30 minimum) so QA can run realistic low-value flows.
+// When a TEST code is applied, allow the transaction down to £1 (still above
+// Stripe's £0.30 minimum) so QA can run realistic low-value flows.
 const TEST_MIN_GBP = 1;
 
 export interface PriceFloorResult {
   ok: boolean;
-  bypass?: boolean;   // true when a manager applied a TEST bypass code
+  bypass?: boolean;   // true when a TEST bypass code is present
   reason?: string;
   serverBasePrice?: number;
   minimumAllowed?: number;
@@ -73,34 +73,6 @@ export function getTermFloorGBP(paymentType: string): number {
 
 // Retained for callers that need a single hard number with no term context.
 export const ABSOLUTE_MIN_GBP = 120;
-
-// Returns true if the caller's JWT belongs to an admin / super_admin /
-// sales_manager. Used to gate TEST bypass codes so they can never be abused
-// from a public checkout, even if someone knows the code string.
-async function callerIsManager(
-  authHeader: string | null | undefined,
-  supabase: SupabaseClient,
-): Promise<boolean> {
-  if (!authHeader) return false;
-  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
-  if (!token) return false;
-  try {
-    const { data: userData, error: userErr } = await supabase.auth.getUser(token);
-    if (userErr || !userData?.user?.id) return false;
-    const uid = userData.user.id;
-    // Manager roles OR an individual grant in public.manager_discount_access.
-    const { data: granted } = await supabase.rpc("has_manager_discount_access", { _user_id: uid });
-    if (granted === true) return true;
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", uid);
-    const allowed = new Set(["admin", "super_admin", "sales_manager"]);
-    return Array.isArray(roles) && roles.some((r: any) => allowed.has(r.role));
-  } catch {
-    return false;
-  }
-}
 
 
 // Maximum legitimate discount stack (voluntary excess + promo + 10% pay-in-full)
@@ -194,7 +166,7 @@ export async function validateCheckoutPrice(
   input: PriceFloorInput,
   supabaseAdmin?: SupabaseClient,
 ): Promise<PriceFloorResult> {
-  const { planId, paymentType, voluntaryExcess, claimLimit, finalAmount, discountCode, authHeader } = input;
+  const { planId, paymentType, voluntaryExcess, claimLimit, finalAmount, discountCode } = input;
 
   const supabase = supabaseAdmin ?? createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
@@ -202,11 +174,11 @@ export async function validateCheckoutPrice(
     { auth: { persistSession: false } },
   );
 
-  // TEST bypass codes ONLY apply when the caller is an authenticated manager.
-  // A public checkout that includes "SAVE99GOLDEN" or "TEST123" cannot drop
-  // below £120 because the JWT check fails.
+  // TEST bypass codes drop the floor to £1 for anyone who knows the code.
+  // Normal promo codes are still subject to the term floor and the 50% plan
+  // price backstop below.
   const codeLooksLikeBypass = isTestBypassCode(discountCode);
-  const bypass = codeLooksLikeBypass && (await callerIsManager(authHeader, supabase));
+  const bypass = codeLooksLikeBypass;
   const termFloor = getTermFloorGBP(paymentType);
   const absoluteFloor = bypass ? TEST_MIN_GBP : termFloor;
 
@@ -214,10 +186,7 @@ export async function validateCheckoutPrice(
   if (!finalAmount || finalAmount < absoluteFloor) {
     return {
       ok: false,
-      reason: `Submitted price £${finalAmount} is below the absolute minimum of £${absoluteFloor}. ` +
-              (codeLooksLikeBypass && !bypass
-                ? `TEST bypass codes require a manager account.`
-                : `This indicates a manipulated request.`),
+      reason: `Submitted price £${finalAmount} is below the absolute minimum of £${absoluteFloor}. This indicates a manipulated request.`,
     };
   }
 

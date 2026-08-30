@@ -1,7 +1,7 @@
-// Manager-only test promo codes (e.g. 99% off) used for QA of the checkout flow.
-// The public checkout can NEVER price below £120: the lowered display floor only
-// applies to signed-in managers, and the server independently gates the real
-// bypass to a manager JWT in supabase/functions/_shared/price-floor.ts.
+// Test/QA promo codes (e.g. 99% off) used for checkout-flow testing.
+// Anyone who knows a test code can use it; the display floor drops to £1 for
+// those codes. The server-side floor in supabase/functions/_shared/price-floor.ts
+// matches this behaviour so a test code cannot be blocked by the public £120 floor.
 
 import { supabase } from '@/integrations/supabase/client';
 
@@ -79,10 +79,9 @@ export function isTestBypassCode(code?: string | null): boolean {
 
 /**
  * Returns the price floor to apply given the currently applied promo codes.
- * Public customers are always clamped at £120; only signed-in managers using a
- * TEST bypass code can go lower.
+ * Test/QA bypass codes drop the floor to £1 for anyone; all other codes keep
+ * the standard £120 public floor.
  */
 export function minimumPriceForCodes(codes: Array<{ code: string }> = []): number {
-  if (!isManagerPriceBypassAllowed()) return STANDARD_MINIMUM_PRICE;
   return codes.some((c) => isTestBypassCode(c?.code)) ? TEST_MINIMUM_PRICE : STANDARD_MINIMUM_PRICE;
 }

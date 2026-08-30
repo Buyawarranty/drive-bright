@@ -34,52 +34,12 @@ serve(async (req) => {
     logStep("Auto-expiring codes before validation");
     await supabaseClient.rpc('auto_expire_discount_codes');
 
-    // TEST bypass codes (TEST* and SAVE99GOLDEN) can only be validated by an
-    // authenticated manager. This prevents anyone from typing a QA code on the
-    // public checkout and receiving a large discount.
+    // Test/QA bypass codes (TEST* and SAVE99GOLDEN) drop the validation floor
+    // to £1 so low-value checkout flows can be exercised. Anyone who knows the
+    // code can use it; normal code validity, date, usage and per-customer limits
+    // still apply below.
     const codeUpper = (code || "").toUpperCase();
     const isTestCode = codeUpper.startsWith("TEST") || codeUpper === "SAVE99GOLDEN";
-    if (isTestCode) {
-      const authHeader = req.headers.get("Authorization") || "";
-      const token = authHeader.replace(/^Bearer\s+/i, "").trim();
-      const managerRoles = new Set(["admin", "super_admin", "sales_manager"]);
-      let allowed = false;
-      let uid: string | undefined;
-      if (token) {
-        const { data: userData, error: userErr } = await supabaseClient.auth.getUser(token);
-        uid = userData?.user?.id;
-        if (userErr) logStep("TEST code: token lookup failed", { message: userErr.message });
-        if (uid) {
-          // Managers can live in user_roles and/or admin_users — accept either.
-          const [{ data: roles }, { data: adminRow }] = await Promise.all([
-            supabaseClient.from("user_roles").select("role").eq("user_id", uid),
-            supabaseClient
-              .from("admin_users")
-              .select("role, is_active")
-              .eq("user_id", uid)
-              .maybeSingle(),
-          ]);
-          const hasUserRole = Array.isArray(roles) && roles.some((r: any) => managerRoles.has(r.role));
-          const hasAdminRole = !!adminRow && adminRow.is_active !== false && managerRoles.has(adminRow.role);
-          // Individually granted people (e.g. ads@) live in manager_discount_access.
-          const { data: granted } = await supabaseClient.rpc("has_manager_discount_access", { _user_id: uid });
-          allowed = hasUserRole || hasAdminRole || granted === true;
-          logStep("TEST code role check", { uid, hasUserRole, hasAdminRole, granted: granted === true });
-        }
-      }
-      if (!allowed) {
-        logStep("TEST bypass code blocked for non-manager", { code, hasToken: !!token, uid });
-        return new Response(JSON.stringify({
-          valid: false,
-          error: token
-            ? "This test code is restricted to managers. Sign in with a manager account to use it."
-            : "This test code only works while signed in as a manager on the same browser.",
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-    }
 
 
     // Get the discount code details (including archived status)
@@ -187,8 +147,8 @@ serve(async (req) => {
 
     // Calculate discount amount with minimum price floor.
     // IMPORTANT: mirrors the server-side checkout price floor (ABSOLUTE_MIN_GBP = £120)
-    // in supabase/functions/_shared/price-floor.ts. TEST codes reach this point only
-    // when the caller is a manager (gated above), so they get the £1 QA floor.
+    // in supabase/functions/_shared/price-floor.ts. TEST/QA codes use the £1 floor
+    // so realistic low-value checkout runs can be completed by anyone with the code.
     const MINIMUM_FINAL_AMOUNT = isTestCode ? 1 : 120;
 
     let discountAmount = 0;
