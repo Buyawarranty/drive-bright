@@ -42,6 +42,8 @@ const ConditionalSeasonalBanner = () => {
 const ConditionalStickyNavigation = () => {
   const location = useLocation();
   if (location.pathname.startsWith('/dealer-portal')) return null;
+  // Admin dashboard renders its own header — avoid a duplicate second nav row
+  if (location.pathname === '/admin' || location.pathname === '/admin/' || location.pathname.startsWith('/admin-dashboard')) return null;
   if (location.pathname.startsWith('/bmw-extended-warranty')) return null;
   if (location.pathname.startsWith('/car-extended-warranty/bmw')) return null;
   if (location.pathname.startsWith('/car-extended-warranty/mercedes-benz')) return null;
