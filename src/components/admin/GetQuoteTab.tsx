@@ -252,6 +252,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [selectedLeadOwnerId, setSelectedLeadOwnerId] = useState<string | null>(null);
   const matchedLeadOwner = useLeadOwner(customerEmail, customerPhone);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
+  // Instalment plan is a SEPARATE choice from cover duration (admin surfaces only).
+  // 2-year = 12 or 24 instalments, 3-year = 12 or 36, 1-year = 12.
+  const [instalmentCount, setInstalmentCount] = useState<InstalmentCount>(12);
+  useEffect(() => {
+    // Keep the instalment plan valid whenever the cover term changes.
+    if (!isInstalmentAllowed(paymentType, instalmentCount)) setInstalmentCount(12);
+  }, [paymentType, instalmentCount]);
   // Landing default matches Step 3: 2 years, £2,000 claim limit, £100 excess, £70/hr
   const [excessAmount, setExcessAmount] = useState(100);
   const [claimLimit, setClaimLimit] = useState(2000);
