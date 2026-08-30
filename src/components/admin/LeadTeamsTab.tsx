@@ -15,6 +15,7 @@ import { BulkReassignDialog } from './leads/BulkReassignDialog';
 import { NewSince6pmBadge } from './leads/NewSince6pmBadge';
 import { RebalanceWindowPicker } from './leads/RebalanceWindowPicker';
 import { AgentOffboardingPanel } from './leads/AgentOffboardingPanel';
+import { AgentActiveStatusPanel } from './leads/AgentActiveStatusPanel';
 import { QuickReassignPanel } from './leads/QuickReassignPanel';
 import { ReassignRequestsPanel } from './leads/ReassignRequestsPanel';
 import { Switch } from '@/components/ui/switch';
