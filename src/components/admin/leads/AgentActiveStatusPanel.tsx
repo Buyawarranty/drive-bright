@@ -91,7 +91,7 @@ export const AgentActiveStatusPanel: React.FC = () => {
     setLoading(false);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(); loadLeave(); }, [load, loadLeave]);
 
   const active = useMemo(() => staff.filter(s => s.is_active && !s.archived_at), [staff]);
   const departed = useMemo(() => staff.filter(s => !s.is_active || s.archived_at), [staff]);
