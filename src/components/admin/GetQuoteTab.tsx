@@ -3350,7 +3350,7 @@ Questions? Call 0330 229 5040`;
         make: vehicleData?.make || 'Unknown',
         model: vehicleData?.model || 'Unknown',
         year: vehicleData?.year || 'Unknown',
-        mileage: parseInt(editableMileage || vehicleData?.mileage || '0').toLocaleString(),
+        mileage: String(editableMileage || vehicleData?.mileage || '0').replace(/[^0-9]/g, ''),
         fuelType: vehicleData?.fuelType || 'Unknown',
         transmission: vehicleData?.transmission || 'Unknown',
       },
@@ -6895,7 +6895,7 @@ Questions? Call 0330 229 5040`;
                     <p><strong>Email:</strong> {customerEmail}</p>
                     <p><strong>Vehicle:</strong> {vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
                     <p><strong>Registration:</strong> {vehicleData?.regNumber}</p>
-                    <p><strong>Mileage:</strong> {parseInt(vehicleData?.mileage || '0').toLocaleString()} miles</p>
+                    <p><strong>Mileage:</strong> {parseInt(String(vehicleData?.mileage || '0').replace(/[^0-9]/g, ''), 10).toLocaleString()} miles</p>
                     <p><strong>Duration:</strong> {termOptions.find(t => t.id === paymentType)?.label}{freeExtendedCover !== 'none' && <span className="ml-1 text-green-600 font-semibold">+ {selectedBonusMonths} months FREE</span>}</p>
                     <p><strong>Excess:</strong> £{excessAmount}</p>
                     <p><strong>Claim Limit:</strong> £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
@@ -7649,7 +7649,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                             </tr>
                             <tr className="border-b">
                               <td className="py-2 text-gray-500">Mileage</td>
-                              <td className="py-2 text-right font-semibold">{parseInt(vehicleData?.mileage || '0').toLocaleString()} miles</td>
+                              <td className="py-2 text-right font-semibold">{parseInt(String(vehicleData?.mileage || '0').replace(/[^0-9]/g, ''), 10).toLocaleString()} miles</td>
                             </tr>
                             <tr className="border-b">
                               <td className="py-2 text-gray-500">Plan</td>
@@ -7739,7 +7739,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         <span className="text-gray-600">Year:</span>
                         <span className="font-medium">{vehicleData?.year}</span>
                         <span className="text-gray-600">Mileage:</span>
-                        <span className="font-medium">{parseInt(vehicleData?.mileage || '0').toLocaleString()} miles</span>
+                        <span className="font-medium">{parseInt(String(vehicleData?.mileage || '0').replace(/[^0-9]/g, ''), 10).toLocaleString()} miles</span>
                         <span className="text-gray-600">Fuel Type:</span>
                         <span className="font-medium">{vehicleData?.fuelType || 'N/A'}</span>
                         <span className="text-gray-600">Transmission:</span>
