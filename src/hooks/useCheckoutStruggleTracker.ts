@@ -70,7 +70,12 @@ export function useCheckoutStruggleTracker(input: TrackerInput) {
     }
 
     try {
-      await supabase.from('checkout_struggle_alerts').upsert({
+      // Plain INSERT — never upsert. PostgREST treats an upsert as INSERT+UPDATE,
+      // and the UPDATE policy on this table is staff-only, so an upsert from a
+      // real (anonymous) website visitor is refused by RLS and no alert is ever
+      // recorded. Duplicates are already prevented by firedRef, and the unique
+      // constraint below is tolerated silently.
+      const { error } = await supabase.from('checkout_struggle_alerts').insert({
         session_key: SESSION_KEY,
         signal_type: signal,
         customer_name: name || null,
@@ -88,7 +93,11 @@ export function useCheckoutStruggleTracker(input: TrackerInput) {
           ...extraDetails,
         },
         status: 'active',
-      }, { onConflict: 'session_key,signal_type', ignoreDuplicates: true });
+      });
+      // 23505 = duplicate for this session/signal, which is fine.
+      if (error && error.code !== '23505') {
+        console.warn('[StruggleTracker] failed to insert alert', error);
+      }
     } catch (err) {
       console.warn('[StruggleTracker] failed to insert alert', err);
     }
