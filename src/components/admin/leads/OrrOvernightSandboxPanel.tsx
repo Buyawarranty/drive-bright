@@ -1,5 +1,5 @@
 import React from 'react';
-import { Split, RefreshCw, Moon, Sunrise } from 'lucide-react';
+import { Split, RefreshCw, Moon, Sunrise, Hand as HandGrab } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
 /**
