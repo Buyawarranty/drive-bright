@@ -349,8 +349,16 @@ export const ClaimsTab = ({
           <Button onClick={() => setShowFilesDialog(true)} variant="outline" size="sm">
             <Paperclip className="h-4 w-4 mr-1" /> Upload file
           </Button>
-          <Button onClick={() => setShowAppealDialog(true)} variant="outline" size="sm">
+          <Button onClick={() => setShowAppealDialog(true)} variant="outline" size="sm" className="relative">
             <Gavel className="h-4 w-4 mr-1" /> Appeals
+            {appealsTotalCount > 0 && (
+              <span
+                className={`ml-2 inline-flex min-w-[1.25rem] h-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold text-white ${appealsUnreadCount > 0 ? 'bg-[#E8541A] animate-pulse' : 'bg-slate-500'}`}
+                title={`${appealsTotalCount} appeal(s) returned by customers`}
+              >
+                {appealsTotalCount}
+              </span>
+            )}
           </Button>
 
 
