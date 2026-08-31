@@ -81,8 +81,6 @@ const seedOvernightLeads = (count: number): PracticeLead[] => {
   }).sort((a, b) => a.arrived.getTime() - b.arrived.getTime());
 };
 
-};
-
 const fmtTime = (d: Date) =>
   d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 const fmtArrived = (d: Date) =>
