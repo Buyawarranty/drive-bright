@@ -200,7 +200,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
     setRows(rs => rs.map(r => (r.id === leadId ? { ...r, assigned_to: agentId } : r)));
     const { error } = await supabase
       .from('sales_leads')
-      .update({ assigned_to: agentId })
+      .update({ assigned_to: agentId, assigned_at: new Date().toISOString() })
       .eq('id', leadId);
     setSavingId(null);
     if (error) {
