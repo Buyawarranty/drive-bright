@@ -159,6 +159,7 @@ export const PausedAgentsOverrideBar: React.FC<{ canEdit?: boolean }> = ({ canEd
             <div className="min-w-0">
               <div className="text-sm font-semibold text-foreground flex flex-wrap items-center gap-2">
                 {row.name}
+                <TeamBadge userId={row.admin_user_id} variant="pill" />
                 <span className="inline-flex items-center rounded-full border border-rose-400 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-rose-700">
                   {row.freeze_source === 'auto' ? 'Auto freeze' : 'Switched off by manager'}
                 </span>
