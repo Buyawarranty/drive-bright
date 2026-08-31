@@ -455,7 +455,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
       if (reassignTargetAgent && agentToDelete.leadCount > 0) {
         const { error: reassignError } = await supabase
           .from('sales_leads')
-          .update({ assigned_to: reassignTargetAgent })
+          .update({ assigned_to: reassignTargetAgent, assigned_at: new Date().toISOString() })
           .eq('assigned_to', agentToDelete.id);
         
         if (reassignError) throw reassignError;
@@ -577,7 +577,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
         const targetAgent = bulkTargetAgents[index % bulkTargetAgents.length];
         return supabase
           .from('sales_leads')
-          .update({ assigned_to: targetAgent, updated_at: now })
+          .update({ assigned_to: targetAgent, assigned_at: now, updated_at: now })
           .eq('id', lead.id);
       });
 

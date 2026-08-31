@@ -124,7 +124,7 @@ export const useLeadReassignRequests = (userRole?: string | null) => {
       if (status === 'approved') {
         const { error: leadError } = await supabase
           .from('sales_leads')
-          .update({ assigned_to: request.requested_to })
+          .update({ assigned_to: request.requested_to, assigned_at: new Date().toISOString() })
           .eq('id', request.lead_id);
         if (leadError) throw leadError;
       }

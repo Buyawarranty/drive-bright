@@ -993,7 +993,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         // Direct assignment — no cap/mode/pause checks, strictly one each.
         const { error } = await supabase
           .from('sales_leads')
-          .update({ assigned_to: agent.id, updated_at: new Date().toISOString() } as any)
+          .update({ assigned_to: agent.id, assigned_at: new Date().toISOString(), updated_at: new Date().toISOString() } as any)
           .eq('id', lead.id)
           .is('assigned_to', null);
         if (error) {
