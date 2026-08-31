@@ -101,6 +101,14 @@ export const ClaimsTab = ({
   const [activeSubTab, setActiveSubTab] = useState<'claims' | 'reminders' | 'claims-data'>('claims');
 
   const { claims: managerClaims, loading: managerLoading, refetch: refetchManager } = useClaims();
+  const {
+    appeals: returnedAppeals,
+    unreadCount: appealsUnreadCount,
+    totalCount: appealsTotalCount,
+    loading: appealsLoading,
+    markAsRead: markAppealAsRead,
+    refetch: refetchAppeals,
+  } = useReturnedAppeals();
 
   useEffect(() => { fetchClaims(); }, []);
 
