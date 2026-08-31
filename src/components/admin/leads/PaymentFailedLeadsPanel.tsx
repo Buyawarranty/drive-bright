@@ -38,6 +38,85 @@ const SIGNAL_LABELS: Record<string, string> = {
 const MUTE_KEY = 'payment-failed-panel-muted';
 const HIDDEN_KEY = 'payment-failed-panel-hidden-ids';
 
+// Same customer signalling repeatedly within this window is ONE alert row.
+// A fresh row (and a fresh beep) only appears once they go quiet for longer than this.
+const DEDUPE_WINDOW_MS = 30 * 60 * 1000;
+
+/** Stable identity for a customer across signals: email → phone tail-9 → name. */
+const customerKey = (a: StruggleAlert): string => {
+  const email = (a.customer_email || '').trim().toLowerCase();
+  if (email) return `e:${email}`;
+  const digits = (a.customer_phone || '').replace(/\D/g, '');
+  if (digits.length >= 9) return `p:${digits.slice(-9)}`;
+  const reg = (a.vehicle_reg || '').replace(/\s/g, '').toUpperCase();
+  if (reg) return `r:${reg}`;
+  return `n:${(a.customer_name || 'unknown').trim().toLowerCase()}`;
+};
+
+interface AlertGroup {
+  primary: StruggleAlert;
+  ids: string[];
+  repeats: number;
+  extraLabels: string[];
+  firstAt: string;
+}
+
+/**
+ * Collapse alerts so one customer never stacks up multiple pop-up rows at the
+ * same time. Signals within DEDUPE_WINDOW_MS of each other roll into the newest
+ * row; a genuinely later burst (hours apart) gets its own row again.
+ */
+const groupAlerts = (rows: StruggleAlert[]): AlertGroup[] => {
+  const byKey = new Map<string, StruggleAlert[]>();
+  for (const a of rows) {
+    const k = customerKey(a);
+    const list = byKey.get(k) || [];
+    list.push(a);
+    byKey.set(k, list);
+  }
+  const groups: AlertGroup[] = [];
+  byKey.forEach((list) => {
+    const sorted = [...list].sort(
+      (x, y) => new Date(y.created_at).getTime() - new Date(x.created_at).getTime()
+    );
+    let bucket: StruggleAlert[] = [];
+    const flush = () => {
+      if (!bucket.length) return;
+      const primary = bucket[0];
+      const extras = bucket.slice(1);
+      const labels = Array.from(
+        new Set(extras.map((e) => SIGNAL_LABELS[e.signal_type] || e.signal_type))
+      ).filter((l) => l !== (SIGNAL_LABELS[primary.signal_type] || primary.signal_type));
+      groups.push({
+        primary,
+        ids: bucket.map((b) => b.id),
+        repeats: extras.length,
+        extraLabels: labels,
+        firstAt: bucket[bucket.length - 1].created_at,
+      });
+      bucket = [];
+    };
+    for (const a of sorted) {
+      if (!bucket.length) {
+        bucket.push(a);
+        continue;
+      }
+      const prev = new Date(bucket[bucket.length - 1].created_at).getTime();
+      const cur = new Date(a.created_at).getTime();
+      if (prev - cur <= DEDUPE_WINDOW_MS) bucket.push(a);
+      else {
+        flush();
+        bucket.push(a);
+      }
+    }
+    flush();
+  });
+  return groups.sort(
+    (a, b) => new Date(b.primary.created_at).getTime() - new Date(a.primary.created_at).getTime()
+  );
+};
+
+
 // Short attention beep — synthesised at runtime.
 let _beepCtx: AudioContext | null = null;
 const playAlertBeep = () => {
@@ -80,7 +159,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
       return new Set<string>();
     }
   });
-  const seenIdsRef = useRef<Set<string>>(new Set());
+  const seenKeysRef = useRef<Map<string, number>>(new Map());
 
   const persistHidden = useCallback((next: Set<string>) => {
     try {
@@ -97,14 +176,15 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
     });
   };
 
-  const hideLocally = (id: string) => {
+  const hideLocally = (ids: string[]) => {
     setHiddenIds((prev) => {
       const next = new Set(prev);
-      next.add(id);
+      ids.forEach((id) => next.add(id));
       persistHidden(next);
       return next;
     });
   };
+
 
   const fetchActive = useCallback(async () => {
     // Only ACTIVE alerts — once someone takes it, status flips to acknowledged
@@ -120,17 +200,21 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
       return data;
     });
     const rows = (data as StruggleAlert[]) || [];
-    // Beep once per new unseen alert.
+    // Beep once per customer per dedupe window — never again for the same person
+    // signalling repeatedly minutes apart.
     let hasNew = false;
-    for (const a of rows) {
-      if (!seenIdsRef.current.has(a.id) && !hiddenIds.has(a.id)) {
-        hasNew = true;
-        seenIdsRef.current.add(a.id);
-      }
+    const now = Date.now();
+    for (const g of groupAlerts(rows)) {
+      if (g.ids.every((id) => hiddenIds.has(id))) continue;
+      const key = customerKey(g.primary);
+      const last = seenKeysRef.current.get(key);
+      if (last === undefined || now - last > DEDUPE_WINDOW_MS) hasNew = true;
+      seenKeysRef.current.set(key, now);
     }
     if (hasNew && !muted) playAlertBeep();
     setAlerts(rows);
   }, [muted, hiddenIds]);
+
 
   useEffect(() => {
     (async () => {
@@ -162,12 +246,13 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
     };
   }, [fetchActive]);
 
-  const claim = async (id: string) => {
+  const claim = async (ids: string[]) => {
     if (!currentAdminId) {
       toast.error('Unable to identify you — please refresh and try again');
       return;
     }
     setLoading(true);
+    // Claim every signal from this customer in one go so the row can't reappear.
     const { error } = await supabase
       .from('checkout_struggle_alerts')
       .update({
@@ -175,7 +260,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
         acknowledged_by: currentAdminId,
         acknowledged_at: new Date().toISOString(),
       })
-      .eq('id', id)
+      .in('id', ids)
       .is('acknowledged_by', null);
     setLoading(false);
     if (error) {
@@ -193,8 +278,9 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
     );
   };
 
-  const visible = alerts.filter((a) => !hiddenIds.has(a.id));
-  if (visible.length === 0) return null;
+  const groups = groupAlerts(alerts.filter((a) => !hiddenIds.has(a.id)));
+  if (groups.length === 0) return null;
+
 
   return (
     <div className="rounded-lg overflow-hidden shadow-lg bg-red-600 text-white border-2 border-red-800">
@@ -202,7 +288,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
       <div className="flex items-center justify-between px-4 py-2.5 bg-red-700">
         <div className="flex items-center gap-2 font-semibold text-sm">
           <AlertTriangle className="h-4 w-4" />
-          Failed payment — customer needs a call now ({visible.length})
+          Failed payment — customer needs a call now ({groups.length})
         </div>
         <button
           onClick={toggleMute}
@@ -226,11 +312,13 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
 
       {/* Rows */}
       <div className="divide-y divide-red-500/50">
-        {visible.map((a) => {
+        {groups.map((g) => {
+          const a = g.primary;
           const name = a.customer_name || a.customer_email || a.customer_phone || 'Customer';
           const label = SIGNAL_LABELS[a.signal_type] || a.signal_type;
           const phone = a.customer_phone || '';
           const telHref = phone ? `tel:${phone.replace(/\s/g, '')}` : null;
+
           return (
             <div
               key={a.id}
@@ -255,6 +343,22 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
                 <span className="inline-flex items-center bg-white text-red-700 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
                   {label}
                 </span>
+                {g.extraLabels.map((l) => (
+                  <span
+                    key={l}
+                    className="inline-flex items-center bg-red-900/70 text-white text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded"
+                  >
+                    {l}
+                  </span>
+                ))}
+                {g.repeats > 0 && (
+                  <span
+                    className="inline-flex items-center bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded"
+                    title={`${g.repeats + 1} signals from this customer in this session — collapsed into one alert`}
+                  >
+                    ×{g.repeats + 1} signals
+                  </span>
+                )}
                 {isSuperAdmin && a.device_type && (
                   <span className="inline-flex items-center bg-red-800/60 text-white text-[10px] px-2 py-0.5 rounded">
                     {a.device_type}
@@ -271,6 +375,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
                   </span>
                 )}
               </div>
+
 
               {/* Phone column — click-to-dial + copy */}
               <div className="min-w-0">
@@ -301,13 +406,19 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
               {/* When */}
               <div className="text-xs text-red-50/90 whitespace-nowrap">
                 {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
+                {g.repeats > 0 && (
+                  <div className="text-[11px] text-red-100/80">
+                    first signal {formatDistanceToNow(new Date(g.firstAt), { addSuffix: true })}
+                  </div>
+                )}
               </div>
 
               {/* Actions */}
               <div className="flex items-center justify-end gap-2">
                 <button
                   disabled={loading}
-                  onClick={() => claim(a.id)}
+                  onClick={() => claim(g.ids)}
+
                   className="inline-flex items-center gap-1.5 bg-white text-red-700 hover:bg-red-50 text-xs font-bold px-3 py-1.5 rounded disabled:opacity-60"
                 >
                   <Hand className="h-3.5 w-3.5" />
@@ -322,7 +433,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
                   </a>
                 )}
                 <button
-                  onClick={() => hideLocally(a.id)}
+                  onClick={() => hideLocally(g.ids)}
                   className="p-1.5 rounded hover:bg-red-800/70"
                   title="Hide for me — stays live for other agents until someone takes it"
                   aria-label="Hide for me"
