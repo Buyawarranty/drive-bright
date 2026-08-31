@@ -176,14 +176,15 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
     });
   };
 
-  const hideLocally = (id: string) => {
+  const hideLocally = (ids: string[]) => {
     setHiddenIds((prev) => {
       const next = new Set(prev);
-      next.add(id);
+      ids.forEach((id) => next.add(id));
       persistHidden(next);
       return next;
     });
   };
+
 
   const fetchActive = useCallback(async () => {
     // Only ACTIVE alerts — once someone takes it, status flips to acknowledged
