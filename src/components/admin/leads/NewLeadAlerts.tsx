@@ -66,11 +66,23 @@ export const NewLeadAlerts: React.FC = () => {
     });
   }, []);
 
-  // Beeping for new leads is owned by NewLeadTopBanner (single source of
-  // truth) so the banner and this stack can never double-chime.
+  // This stack is now the single alert surface, so it owns the beep: one
+  // chime when a new lead arrives, then a reminder every 10s while any
+  // un-muted card is visible. Silent while the agent is on a call.
   useEffect(() => {
-    if (queue.length === 0) lastBeepCountRef.current = 0;
-    else lastBeepCountRef.current = queue.length;
+    if (queue.length === 0) {
+      lastBeepCountRef.current = 0;
+      return;
+    }
+    const audible = queue.filter((l) => !mutedIds.has(l.id));
+    if (onCall || audible.length === 0) {
+      lastBeepCountRef.current = queue.length;
+      return;
+    }
+    if (queue.length > lastBeepCountRef.current) playNewLeadBeep();
+    lastBeepCountRef.current = queue.length;
+    const t = window.setInterval(() => playNewLeadBeep(), 10_000);
+    return () => window.clearInterval(t);
   }, [queue, mutedIds, onCall]);
 
 
