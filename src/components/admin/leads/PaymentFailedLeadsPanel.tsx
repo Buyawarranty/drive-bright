@@ -343,6 +343,22 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
                 <span className="inline-flex items-center bg-white text-red-700 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
                   {label}
                 </span>
+                {g.extraLabels.map((l) => (
+                  <span
+                    key={l}
+                    className="inline-flex items-center bg-red-900/70 text-white text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded"
+                  >
+                    {l}
+                  </span>
+                ))}
+                {g.repeats > 0 && (
+                  <span
+                    className="inline-flex items-center bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded"
+                    title={`${g.repeats + 1} signals from this customer in this session — collapsed into one alert`}
+                  >
+                    ×{g.repeats + 1} signals
+                  </span>
+                )}
                 {isSuperAdmin && a.device_type && (
                   <span className="inline-flex items-center bg-red-800/60 text-white text-[10px] px-2 py-0.5 rounded">
                     {a.device_type}
@@ -359,6 +375,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
                   </span>
                 )}
               </div>
+
 
               {/* Phone column — click-to-dial + copy */}
               <div className="min-w-0">
