@@ -246,12 +246,13 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
     };
   }, [fetchActive]);
 
-  const claim = async (id: string) => {
+  const claim = async (ids: string[]) => {
     if (!currentAdminId) {
       toast.error('Unable to identify you — please refresh and try again');
       return;
     }
     setLoading(true);
+    // Claim every signal from this customer in one go so the row can't reappear.
     const { error } = await supabase
       .from('checkout_struggle_alerts')
       .update({
@@ -259,7 +260,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
         acknowledged_by: currentAdminId,
         acknowledged_at: new Date().toISOString(),
       })
-      .eq('id', id)
+      .in('id', ids)
       .is('acknowledged_by', null);
     setLoading(false);
     if (error) {
@@ -277,8 +278,9 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
     );
   };
 
-  const visible = alerts.filter((a) => !hiddenIds.has(a.id));
-  if (visible.length === 0) return null;
+  const groups = groupAlerts(alerts.filter((a) => !hiddenIds.has(a.id)));
+  if (groups.length === 0) return null;
+
 
   return (
     <div className="rounded-lg overflow-hidden shadow-lg bg-red-600 text-white border-2 border-red-800">
