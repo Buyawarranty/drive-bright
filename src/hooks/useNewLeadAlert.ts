@@ -156,8 +156,11 @@ const computeAgentQueue = (adminId: string): Promise<any[]> => {
       const actionable = data.filter((l: any) => {
         const status = (l.status || 'new').toLowerCase();
         if (!ACTIVE_ALERT_STATUSES.includes(status)) return false;
-        if (!l.assigned_at) return false;
-        if (Date.now() - new Date(l.assigned_at).getTime() > MAX_ALERT_AGE_MS) return false;
+        // Some assignment paths never stamp assigned_at — fall back to
+        // created_at so those leads still reach the agent's pop-up stack.
+        const stamp = l.assigned_at || l.created_at;
+        if (!stamp) return false;
+        if (Date.now() - new Date(stamp).getTime() > MAX_ALERT_AGE_MS) return false;
         return true;
       });
 
