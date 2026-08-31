@@ -173,10 +173,9 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
     )
   );
 
-  // Fetch note counts for all visible leads
   const leadIds = useMemo(() => leadsWithReservation.map(l => l.id), [leadsWithReservation]);
-  const noteCounts = useLeadNoteCounts(leadIds);
   const { activityByLead } = useAgentActivity(leadIds);
+
   const { responseByLead } = useLeadResponseTime(
     useMemo(() => leadsWithReservation.map(l => ({ id: l.id, created_at: l.created_at })), [leadsWithReservation])
   );
@@ -245,6 +244,13 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   const pageStart = (page - 1) * PAGE_SIZE;
   const pageEnd = Math.min(pageStart + PAGE_SIZE, totalCount);
   const pagedLeads = useMemo(() => sortedLeads.slice(pageStart, pageEnd), [sortedLeads, pageStart, pageEnd]);
+
+  // Note-count badges: fetch only for the rows actually on screen. Fetching for
+  // every loaded lead (thousands, now that agents default to "all") made the
+  // request too large and the badges silently came back empty.
+  const pagedLeadIds = useMemo(() => pagedLeads.map(l => l.id), [pagedLeads]);
+  const noteCounts = useLeadNoteCounts(pagedLeadIds);
+
 
   const handleToggleSort = useCallback((key: ColumnSortKey) => {
     setSortKey(prev => {
