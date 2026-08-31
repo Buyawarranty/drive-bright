@@ -1537,8 +1537,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         break;
       case 'postcode':
         // Nothing typed and nothing picked — the customer skipped the address entirely.
-        if (!addressData.postcode?.trim()) {
-          error = 'Enter postcode, street or town';
+        if (!postcodeInput.trim() || !addressData.postcode?.trim()) {
+          error = 'Please enter postcode';
           isValid = false;
         } else if (!ukPostcodeRegex.test(addressData.postcode.replace(/\s/g, ''))) {
           // Trust an API-confirmed postcode even if the raw string looks odd.
@@ -1707,6 +1707,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const processPayment = async (paymentOverride?: 'monthly' | 'full') => {
     const effectivePayment = paymentOverride || selectedPayment || selectedPaymentRef.current;
     console.log('💳 processPayment called:', { paymentOverride, selectedPayment, refValue: selectedPaymentRef.current, effectivePayment });
+
+    // Validate at the shared payment entry point as well as at each provider.
+    // This blocks stale saved address data and an already-open Stripe form when
+    // the visible postcode/search field has not been completed this session.
+    if (!enforceAddressBeforePayment()) return;
     
     // If Stripe form is already showing, just scroll to it instead of creating a new PaymentIntent
     if (effectivePayment === 'full' && showEmbeddedCheckout && stripeClientSecret) {
@@ -1775,7 +1780,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       // Also expand address section if address fields are incomplete
       if (!addressComplete) {
         setAddressExpanded(true);
-        setShowAddressFields(true);
+        if (manualAddressEntry || postcodeInput.trim()) setShowAddressFields(true);
       }
       
       // Determine which section to scroll to based on what's missing
@@ -1915,22 +1920,23 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // bypassed by any UI path, auto-trigger or stale validation state.
   const enforceAddressBeforePayment = (): boolean => {
     const ukPc = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
+    const visibleSearch = postcodeInput.trim();
     const pc = (addressData.postcode || '').trim();
     const line1 = (addressData.address_line_1 || '').trim();
     const town = (addressData.town || '').trim();
-    const pcOk = !!pc && ukPc.test(pc.replace(/\s/g, ''));
+    const pcOk = !!visibleSearch && !!pc && ukPc.test(pc.replace(/\s/g, ''));
 
     if (pcOk && line1 && town) return true;
 
     setShowValidation(true);
     setAddressExpanded(true);
-    setShowAddressFields(true);
+    if (manualAddressEntry || visibleSearch) setShowAddressFields(true);
     setAddressTouched(prev => ({ ...prev, postcode: true, address_line_1: true, town: true }));
     setAddressErrors(prev => ({
       ...prev,
       postcode: pcOk && line1 && town
         ? ''
-        : (pc && !pcOk ? 'Please enter a valid UK postcode.' : 'Enter postcode, street or town'),
+        : (!visibleSearch ? 'Please enter postcode' : (pc && !ukPc.test(pc.replace(/\s/g, '')) ? 'Please enter a valid UK postcode.' : 'Please enter postcode')),
       address_line_1: line1 ? '' : 'Please enter your address.',
       town: town ? '' : 'Enter your town or city.',
     }));
@@ -1945,7 +1951,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       }
     }, 100);
 
-    toast.error('Please enter your postcode and select your address to continue.', {
+    toast.error('Please enter postcode and select your address to continue.', {
       id: 'checkout-address-required',
       duration: 6000,
       closeButton: true,
@@ -2753,7 +2759,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 {showValidation && !addressErrors.postcode && !addressData.address_line_1?.trim() && (
                   <p className="text-[#FF385C] text-sm font-medium mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
-                    Enter postcode, street or town
+                    Please enter postcode
                   </p>
                 )}
                 
