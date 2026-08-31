@@ -28,7 +28,7 @@ const SLOW_READ_MS = 8_000;
  * We cap how many CRM reads run at once and queue the rest, and we share one
  * response between identical reads fired at the same moment.
  */
-const MAX_CONCURRENT_READS = 10;
+const MAX_CONCURRENT_READS = 6;
 
 let inFlight = 0;
 const waiters: Array<() => void> = [];
@@ -158,8 +158,11 @@ export const installAdminStallGuard = (): (() => void) => {
       }
       return res;
     } catch (firstError) {
-      // Timed out or the socket died. Refresh the session, then retry ONCE on a
-      // fresh connection — this is what previously needed a browser restart.
+      // Timed out, the socket died, or Chrome refused the connection outright
+      // (net::ERR_INSUFFICIENT_RESOURCES surfaces as a TypeError within a few
+      // milliseconds). An instant refusal is NOT fixed by retrying instantly —
+      // the browser needs a moment for its sockets to drain — so back off
+      // between attempts instead of burning both tries in 40ms.
       const ms = performance.now() - startedAt;
       logAdminSlowLoad('CRM data read stalled — retrying', ms, {
         url: String(url).split('?')[0],
@@ -167,22 +170,38 @@ export const installAdminStallGuard = (): (() => void) => {
       });
 
       const token = await refreshStaffToken();
-      const retryInit: RequestInit = { ...init, cache: 'no-store' };
-      if (token) {
-        const headers = new Headers(init?.headers || (input instanceof Request ? input.headers : undefined));
-        headers.set('Authorization', `Bearer ${token}`);
-        retryInit.headers = headers;
+      const baseHeaders = new Headers(
+        init?.headers || (input instanceof Request ? input.headers : undefined),
+      );
+      if (token) baseHeaders.set('Authorization', `Bearer ${token}`);
+
+      let lastError: unknown = firstError;
+      // Backoff schedule: settle, then one longer pause before giving up.
+      for (const waitMs of [400, 1500]) {
+        await new Promise((r) => setTimeout(r, waitMs));
+        try {
+          // Deliberately drop the caller's AbortSignal here: if that signal
+          // already fired, every retry would abort instantly and the screen
+          // would sit on a spinner with no data.
+          return await withTimeout(
+            url as any,
+            { headers: baseHeaders, cache: 'no-store' },
+            originalFetch,
+            READ_TIMEOUT_MS,
+          );
+        } catch (retryError) {
+          lastError = retryError;
+        }
       }
-      try {
-        return await withTimeout(url as any, retryInit, originalFetch, READ_TIMEOUT_MS);
-      } catch (secondError) {
-        logAdminSlowLoad('CRM data read failed after retry', performance.now() - startedAt, {
-          url: String(url).split('?')[0],
-        });
-        throw secondError;
-      }
+
+      logAdminSlowLoad('CRM data read failed after retry', performance.now() - startedAt, {
+        url: String(url).split('?')[0],
+        reason: (lastError as any)?.name || 'error',
+      });
+      throw lastError;
     }
   };
+
 
   const guarded: typeof fetch = async (input, init) => {
     // Extension-safety: ad blockers, password managers and dialler extensions
