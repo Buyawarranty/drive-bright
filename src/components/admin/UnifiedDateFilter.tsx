@@ -205,6 +205,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
     onChange({ scope, period: 'custom', customRange: { from: newFrom, to: newTo } });
   };
 
+  const showAll = period !== 'all';
   const showLast30 = period !== '30days';
   const showToday = period !== 'today';
   const showYesterday = period !== 'yesterday';
