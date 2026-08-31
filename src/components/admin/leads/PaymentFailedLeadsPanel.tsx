@@ -406,13 +406,19 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
               {/* When */}
               <div className="text-xs text-red-50/90 whitespace-nowrap">
                 {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
+                {g.repeats > 0 && (
+                  <div className="text-[11px] text-red-100/80">
+                    first signal {formatDistanceToNow(new Date(g.firstAt), { addSuffix: true })}
+                  </div>
+                )}
               </div>
 
               {/* Actions */}
               <div className="flex items-center justify-end gap-2">
                 <button
                   disabled={loading}
-                  onClick={() => claim(a.id)}
+                  onClick={() => claim(g.ids)}
+
                   className="inline-flex items-center gap-1.5 bg-white text-red-700 hover:bg-red-50 text-xs font-bold px-3 py-1.5 rounded disabled:opacity-60"
                 >
                   <Hand className="h-3.5 w-3.5" />
