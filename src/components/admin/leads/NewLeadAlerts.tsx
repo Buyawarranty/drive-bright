@@ -135,17 +135,28 @@ export const NewLeadAlerts: React.FC = () => {
   return (
     <AlertRailSlot order={ALERT_RAIL_ORDER.newLeadPopup}>
     <div className="w-full flex flex-col gap-1.5">
-      <div className={`flex items-center justify-between rounded-lg bg-[#0F1B34] text-white px-2.5 py-1.5 shadow-lg border ${headerBorder} shrink-0`}>
-        <div className="flex items-center gap-1.5 text-xs font-semibold min-w-0">
-          <Flame className={`w-3.5 h-3.5 ${headerFlame} animate-pulse shrink-0`} />
-          <span className="truncate">
-            {orrCount > 0 && rrCount > 0
-              ? `${rrCount} new · ${orrCount} ORR`
-              : orrCount > 0
-                ? `${orrCount} ORR lead${orrCount === 1 ? '' : 's'}`
-                : queue.length === 1 ? 'New lead' : `${queue.length} new leads`}
+      <div className={`flex items-center justify-between rounded-lg bg-[#0F1B34] text-white px-3 py-2 shadow-lg border ${headerBorder} shrink-0`}>
+        <button
+          type="button"
+          onClick={() => setCollapsedStack((c) => !c)}
+          className="flex items-center gap-2 min-w-0 text-left flex-1 rounded hover:opacity-90"
+          aria-expanded={!collapsedStack}
+          aria-label={collapsedStack ? 'Expand new lead alerts' : 'Collapse new lead alerts'}
+        >
+          <Flame className={`w-5 h-5 ${headerFlame} animate-pulse shrink-0`} />
+          <span className="min-w-0">
+            <span className="block text-sm font-bold leading-tight truncate">
+              {orrCount > 0 && rrCount > 0
+                ? `${rrCount} new · ${orrCount} ORR`
+                : orrCount > 0
+                  ? `${orrCount} ORR lead${orrCount === 1 ? '' : 's'}`
+                  : queue.length === 1 ? '1 new lead' : `${queue.length} new leads`}
+            </span>
+            <span className="block text-[11px] text-white/70 leading-tight">
+              {collapsedStack ? 'Click to expand' : 'Click to collapse'}
+            </span>
           </span>
-        </div>
+        </button>
         <div className="flex items-center gap-0.5 shrink-0">
           {onCall && (
             <button
@@ -157,22 +168,23 @@ export const NewLeadAlerts: React.FC = () => {
               End call
             </button>
           )}
-          <MuteAlertsMenu />
+          <MuteAlertsMenu size={18} />
           <button
             type="button"
             onClick={() => {
               queue.forEach((l) => dismissLead(l.id));
               toast('All alerts dismissed', { duration: 2000 });
             }}
-            className="inline-flex items-center gap-0.5 text-[11px] font-medium hover:text-emerald-200 px-1 py-0.5 rounded"
+            className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-white/20"
             aria-label="Dismiss all new lead alerts"
             title="Close all"
           >
-            <X className="w-3 h-3" /> All
+            <X className="w-4 h-4" />
           </button>
         </div>
       </div>
 
+      {!collapsedStack && (
       <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1 -mr-1">
         {expandedLead && (
           <LeadAlertCard
