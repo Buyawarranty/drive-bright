@@ -170,68 +170,75 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
   const rows = [...leads].sort((a, b) => b.arrived.getTime() - a.arrived.getTime());
 
   return (
-    <div className="space-y-3">
-      {/* ── Main ORR practice card — mirrors the live "one lead each" panel ── */}
-      <div className={`rounded-lg border-2 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center gap-4 ${autoOn ? 'border-violet-500 bg-violet-100' : 'border-violet-300 bg-violet-50'}`}>
-        <div className="space-y-1.5 flex-1">
-          <h3 className="text-sm font-semibold text-violet-900 flex items-center gap-2">
-            <Moon className="h-4 w-4" />
-            Open Round Robin — overnight leads, one each
-            <span className={`text-[10px] font-bold uppercase rounded px-1.5 py-0.5 ${autoOn ? 'bg-violet-600 text-white' : 'bg-violet-200 text-violet-800'}`}>
-              {autoOn ? 'On' : 'Off'}
-            </span>
-            <span className="text-[10px] font-bold uppercase rounded px-1.5 py-0.5 bg-amber-200 text-amber-900">
-              Sandbox
-            </span>
-          </h3>
-          <p className="text-[11px] font-medium text-violet-900 bg-violet-200/70 border border-violet-400/50 rounded px-2 py-1">
-            Practice only. These leads arrived overnight (from 6pm yesterday) and are waiting for the morning —
-            nothing here is a real customer, no agent is notified and no live allocation changes.
-          </p>
-          <p className="text-xs text-violet-800">
-            <strong>When ON:</strong> one waiting overnight lead is released to the next switched-on Open Round Robin
-            agent, in arrow order — one each, no pile-up. Runs every 20 seconds until you turn it off.
-          </p>
-          <ul className="text-[11px] text-violet-700/90 space-y-0.5 list-disc pl-4">
-            <li><strong>Open Round Robin agents</strong> ({onAgents.length}) take their own lead from the pool.</li>
-            <li>Round Robin agents are untouched — this rehearsal never sends them anything.</li>
-            <li>Only brand-new, never-contacted, unowned leads from the last 7 days would be eligible live.</li>
-          </ul>
-          <p className="text-[11px] text-violet-700">
-            Next agent in line: <strong>{nextAgent ? nextAgent.name.split(' ')[0] : '—'}</strong>
-            {lastRun ? ` · last checked ${fmtTime(lastRun)}` : ''}
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <label className="flex flex-col items-center gap-1 text-xs font-semibold text-violet-900 cursor-pointer">
-            <Switch checked={autoOn} onCheckedChange={setAutoOn} />
-            <span>{autoOn ? 'On' : 'Turn on'}</span>
-          </label>
-          <div className="flex flex-col items-center gap-1">
-            <div className="text-[11px] font-semibold text-violet-800 bg-violet-100 border border-violet-300 rounded-md px-2 py-1">
-              {waiting.length} waiting
+    <div className="space-y-4">
+      {/* ── Header card — matches the Open Round Robin practice panel layout ── */}
+      <section className="rounded-xl border border-border bg-card shadow-sm p-5">
+        <div className="flex items-start justify-between flex-wrap gap-4">
+          <div className="flex items-start gap-4">
+            <div className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0 bg-violet-50 border border-violet-100">
+              <Moon className="h-5 w-5 text-violet-600" />
             </div>
-            <button
-              type="button"
-              onClick={() => handOut('rotate', waiting.length)}
-              disabled={!waiting.length || !onAgents.length}
-              title="Release every overnight lead now, one each in arrow order."
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-violet-600 bg-white text-violet-800 text-xs font-semibold hover:bg-violet-50 transition-colors disabled:opacity-60"
-            >
-              <Split className="h-3.5 w-3.5" />
-              Hand out waiting leads now
-            </button>
-            <button
-              type="button"
-              onClick={() => { setLeads(seedOvernightLeads(14)); setCursor(0); setLastRun(null); }}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-background text-xs font-medium hover:bg-muted transition-colors"
-            >
-              <Sunrise className="h-3.5 w-3.5" />
-              Reset overnight batch
-            </button>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-lg font-semibold tracking-tight text-foreground">
+                  Open Round Robin practice — overnight leads, one each
+                </h3>
+                <span className="rounded-full bg-violet-50 text-violet-700 border border-violet-100 text-[11px] font-medium px-2.5 py-0.5">
+                  Practice mode
+                </span>
+                <span className="rounded-full bg-muted text-muted-foreground text-[11px] font-medium px-2.5 py-0.5">
+                  Managers only
+                </span>
+                <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-[11px] font-medium px-2.5 py-0.5">
+                  Nothing counts
+                </span>
+                <span className={`rounded-full text-[11px] font-medium px-2.5 py-0.5 border ${autoOn ? 'bg-violet-600 text-white border-violet-600' : 'bg-background text-muted-foreground border-border'}`}>
+                  {autoOn ? 'On' : 'Off'}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+                A safe place to rehearse the overnight batch: leads that arrived from 6pm yesterday wait in the Open
+                Pool and are released one each, in arrow order, to switched-on Open Round Robin agents. Every name here
+                is made up — no customer is contacted and no agent's figures change.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Next agent in line: <strong className="text-foreground">{nextAgent ? nextAgent.name.split(' ')[0] : '—'}</strong>
+                {lastRun ? ` · last checked ${fmtTime(lastRun)}` : ''} · Round Robin agents are untouched · live
+                eligibility is brand-new, never-contacted, unowned leads from the last 7 days.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+
+        <div className="mt-5 pt-4 border-t border-border flex items-center gap-2 flex-wrap">
+          <label className="inline-flex items-center gap-2 text-xs font-medium text-foreground cursor-pointer">
+            <Switch checked={autoOn} onCheckedChange={setAutoOn} />
+            <span>{autoOn ? 'Releasing every 20s' : 'Turn on auto-release'}</span>
+          </label>
+          <button
+            type="button"
+            onClick={() => handOut('rotate', waiting.length)}
+            disabled={!waiting.length || !onAgents.length}
+            title="Release every overnight lead now, one each in arrow order."
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md border border-violet-600 bg-white text-violet-800 text-xs font-semibold hover:bg-violet-50 transition-colors disabled:opacity-60"
+          >
+            <Split className="h-3.5 w-3.5" />
+            Hand out waiting leads now
+          </button>
+          <button
+            type="button"
+            onClick={() => { setLeads(seedOvernightLeads(14)); setCursor(0); setLastRun(null); }}
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-background text-xs font-medium hover:bg-muted transition-colors"
+          >
+            <Sunrise className="h-3.5 w-3.5" />
+            Reset overnight batch
+          </button>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground">
+            {waiting.length} waiting · {onAgents.length} agents on
+          </span>
+        </div>
+      </section>
+
 
       {/* ── Per-agent on/off ── */}
       <div className="rounded-lg border border-border bg-background p-3">
