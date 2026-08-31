@@ -300,16 +300,16 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [leadNotesExportOpen, setLeadNotesExportOpen] = useState(false);
   const [watiSummaryOpen, setWatiSummaryOpen] = useState(false);
-  // Everyone (agents, sales, sales leads and managers) opens New Leads on
-  // today's leads. The date pill already said "Today", so leaving the range
-  // empty for non-managers made the filter label and the feed disagree.
+  // Managers open on today's leads; sales agents / sales leads open on ALL of
+  // their leads and can then pick Today / Yesterday etc. from the date filter.
   const isManagerRole =
     userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_manager';
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined; exact?: boolean }>(() => {
+    if (!isManagerRole) return { from: undefined, to: undefined };
     const r = periodToRange('today');
     return { from: r?.from, to: r?.to };
   });
-  const [datePeriod, setDatePeriod] = useState<PeriodKey>('today');
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>(isManagerRole ? 'today' : 'all');
 
   // Manager-only: "Since 6pm yesterday" filter — pins from 18:00 London yesterday to now.
   const [since6pmActive, setSince6pmActive] = useState(false);
