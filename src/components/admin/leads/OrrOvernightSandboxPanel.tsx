@@ -37,11 +37,14 @@ const FIRST_NAMES = [
   'Nathan', 'Priya', 'Callum', 'Beverley', 'Omar', 'Sian', 'Dermot', 'Aisha',
   'Gordon', 'Leanne', 'Rhys', 'Marta', 'Duncan', 'Yvonne', 'Kofi', 'Tomasz',
 ];
+const SURNAMES = ['Whitfield', 'Ainsley', 'Doherty', 'Kelsall', 'Mensah', 'Okoro', 'Brannigan', 'Halstead'];
+const STATUSES = ['New', 'Contacted', 'Follow up', 'Quote sent'];
 const REG_LETTERS = 'ABCDEFGHJKLMNOPRSTVWXY';
 
 const rand = (n: number) => Math.floor(Math.random() * n);
 const fakeReg = () =>
   `${REG_LETTERS[rand(REG_LETTERS.length)]}${REG_LETTERS[rand(REG_LETTERS.length)]}${10 + rand(65)} ${REG_LETTERS[rand(REG_LETTERS.length)]}${REG_LETTERS[rand(REG_LETTERS.length)]}${REG_LETTERS[rand(REG_LETTERS.length)]}`;
+const fakePhone = () => `07${rand(9)}00 ${100000 + rand(899999)}`.slice(0, 13);
 
 /** Overnight window: 6pm yesterday → 8am today, in arrival order. */
 const seedOvernightLeads = (count: number): PracticeLead[] => {
@@ -55,12 +58,20 @@ const seedOvernightLeads = (count: number): PracticeLead[] => {
 
   return Array.from({ length: count }, (_, i) => {
     const arrived = new Date(start.getTime() + Math.round((span * (i + 0.5)) / count) + rand(9 * 60 * 1000));
+    const name = FIRST_NAMES[(i + rand(3)) % FIRST_NAMES.length];
+    const surname = SURNAMES[i % SURNAMES.length];
     return {
       id: `practice-${i}-${arrived.getTime()}`,
       arrived,
-      name: FIRST_NAMES[(i + rand(3)) % FIRST_NAMES.length],
+      name,
+      surname,
+      phone: fakePhone(),
+      email: `${name.toLowerCase()}.${surname.toLowerCase()}@practice.test`,
       reg: fakeReg(),
       repeat: i % 7 === 3,
+      status: STATUSES[i % STATUSES.length],
+      payment: 'Not paid',
+      paidDate: null,
       assignedTo: null,
       why: 'Waiting in Open Pool',
       calls: 0,
@@ -68,6 +79,8 @@ const seedOvernightLeads = (count: number): PracticeLead[] => {
       assignedAt: null,
     };
   }).sort((a, b) => a.arrived.getTime() - b.arrived.getTime());
+};
+
 };
 
 const fmtTime = (d: Date) =>
