@@ -37,6 +37,8 @@ import { useQuotePaymentRoutes } from '@/hooks/useQuotePaymentRoutes';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 
 import { CustomerNotesSection } from './CustomerNotesSection';
+import { CustomerAssignmentHistoryPanel } from './customers/CustomerAssignmentHistoryPanel';
+
 import { SmartDateInput } from './SmartDateInput';
 import { StructuredNotesSection } from './StructuredNotesSection';
 import { CustomerServiceNotes } from './CustomerServiceNotes';
