@@ -34,7 +34,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import {
   Loader2, Search, Gavel, ExternalLink, Send, ArrowLeft, CheckCircle2, Copy, Eye, Mail,
+  ShieldCheck, Lock as LockIcon, Info,
 } from 'lucide-react';
+import brandLogo from '@/assets/buyawarranty-logo.png.asset.json';
 import {
   buildAppealEmailHtml,
   buildAppealEmailSubject,
@@ -476,32 +478,71 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-[#F4F6F8] p-0">
-        <div className="px-6 pt-6">
-          <DialogHeader className="rounded-2xl border border-[#E2E8F0] bg-white p-6 text-left shadow-sm">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[#E8541A]/20 bg-[#FEF0E8] px-3 py-1.5 text-xs font-medium text-[#E8541A]">
-              <Gavel className="h-3.5 w-3.5" /> FINAL APPEAL
-            </div>
-            <DialogTitle className="mt-3 text-2xl font-bold text-[#1A2B4A]">
-              {reviewing ? 'Preview the email before sending' : 'Send the customer their appeal'}
-            </DialogTitle>
-            <DialogDescription className="text-[#5A6B82] leading-relaxed">
-              {reviewing
-                ? 'This is exactly what the customer receives. Go back to edit anything.'
-                : 'The final stage once a complaint has not changed the outcome. Sends the customer their appeal form, and — only if they agree — an independent review with the inspection payment page.'}
-            </DialogDescription>
-            <ul className="mt-4 space-y-2 text-sm text-[#1A2B4A]">
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-[#E8541A]" /> Reviewed by our <strong>claims manager</strong>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-[#E8541A]" /> Independent inspection is <strong>entirely the customer's choice</strong>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-[#E8541A]" /> Handled privately and securely
-              </li>
-            </ul>
-          </DialogHeader>
+        {/* Brand bar */}
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#E2E8F0] bg-white px-6 py-3">
+          <img
+            src={brandLogo.url}
+            alt="Buy a Warranty"
+            className="h-7 w-auto"
+          />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#1A2B4A] px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+            <ShieldCheck className="h-3.5 w-3.5" /> Claims
+          </span>
         </div>
+
+        <div className="px-6 pt-5">
+          <DialogHeader className="rounded-2xl border border-[#E2E8F0] bg-white p-6 text-left shadow-sm">
+            <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-start">
+              <div>
+                <div className="flex items-start gap-4">
+                  <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#E8541A]/25 bg-[#FEF0E8] sm:flex">
+                    <Gavel className="h-6 w-6 text-[#E8541A]" />
+                  </div>
+                  <div>
+                    <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[#E8541A]/20 bg-[#FEF0E8] px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#E8541A]">
+                      Final appeal
+                    </div>
+                    <DialogTitle className="mt-2 text-2xl font-bold text-[#1A2B4A]">
+                      {reviewing ? 'Preview the email before sending' : 'Send the customer their appeal'}
+                    </DialogTitle>
+                    <DialogDescription className="mt-1 text-[#5A6B82] leading-relaxed">
+                      {reviewing
+                        ? 'This is exactly what the customer receives. Go back to edit anything.'
+                        : 'The final stage once a complaint has not changed the outcome. Sends the customer their appeal form, and — only if they agree — an independent review with the inspection payment page.'}
+                    </DialogDescription>
+                  </div>
+                </div>
+              </div>
+
+              <ul className="space-y-3 rounded-xl border border-[#E2E8F0] bg-[#F7F9FC] p-4 text-sm text-[#1A2B4A] md:max-w-[280px]">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#E8541A]" />
+                  <span>Reviewed by our <strong>claims manager</strong></span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#E8541A]" />
+                  <span>Independent inspection is <strong>entirely the customer's choice</strong></span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <LockIcon className="mt-0.5 h-4 w-4 shrink-0 text-[#1A2B4A]" />
+                  <span>Handled privately and securely</span>
+                </li>
+              </ul>
+            </div>
+          </DialogHeader>
+
+          <div className="mt-4 flex items-start gap-3 rounded-2xl border border-[#1A2B4A]/15 bg-[#EEF3FA] p-4">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#1A2B4A]" />
+            <p className="text-sm text-[#1A2B4A] leading-relaxed">
+              <strong>This final appeal is available after the claim has been reviewed and the complaint process completed.</strong>
+              <span className="block text-[#5A6B82]">
+                Complete the details below so the customer receives everything they need in one email.
+              </span>
+            </p>
+          </div>
+        </div>
+
+
 
         <div className="px-6 pb-2">
         {!reviewing ? (
