@@ -19,7 +19,7 @@ export const ALERT_RAIL_ORDER = {
 export const AlertRailHost: React.FC = () => (
   <div
     id={RAIL_ID}
-    className="fixed left-2 bottom-2 top-16 z-[120] flex w-[300px] max-w-[calc(100vw-1rem)] flex-col justify-end gap-2 overflow-y-auto overflow-x-hidden pointer-events-none"
+    className="fixed left-2 bottom-2 top-16 z-[120] flex w-[340px] max-w-[calc(100vw-1rem)] flex-col justify-end gap-2 overflow-y-auto overflow-x-hidden pointer-events-none"
   />
 );
 
