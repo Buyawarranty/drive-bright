@@ -17,14 +17,21 @@ type PracticeLead = {
   id: string;
   arrived: Date;
   name: string;
+  surname: string;
+  phone: string;
+  email: string;
   reg: string;
   repeat?: boolean;
+  status: string;
+  payment: string;
+  paidDate: Date | null;
   assignedTo: string | null; // agent id
   why: string;
   calls: number;
   notes: number;
   assignedAt: Date | null;
 };
+
 
 const FIRST_NAMES = [
   'Nathan', 'Priya', 'Callum', 'Beverley', 'Omar', 'Sian', 'Dermot', 'Aisha',
