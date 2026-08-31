@@ -523,6 +523,16 @@ export const ClaimsTab = ({
           <WidgetErrorBoundary label="Customer claim updates">
             <ClaimUpdateNotifications />
           </WidgetErrorBoundary>
+          <div id="appeals-section" className="scroll-mt-4">
+            <WidgetErrorBoundary label="Appeals">
+              <AppealsInboxPanel
+                appeals={returnedAppeals}
+                loading={appealsLoading}
+                onMarkAsRead={markAppealAsRead}
+                onOpenAppealDialog={() => setShowAppealDialog(true)}
+              />
+            </WidgetErrorBoundary>
+          </div>
           <WidgetErrorBoundary label="Claims performance">
             <PerformanceKpiStrip
               avgPayout={perfKpis.avgPayout}
