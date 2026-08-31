@@ -37,6 +37,8 @@ import { VehicleIntelligenceExplorer } from './claims/VehicleIntelligenceExplore
 import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
 import { ClaimsAgeMileageAnalytics } from './claims/ClaimsAgeMileageAnalytics';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
+import { AppealsInboxPanel } from './claims/AppealsInboxPanel';
+import { useReturnedAppeals } from '@/hooks/useReturnedAppeals';
 
 interface ClaimSubmission {
   id: string;
