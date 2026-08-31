@@ -228,6 +228,31 @@ export const NewLeadAlerts: React.FC = () => {
           </button>
         )}
       </div>
+      )}
+
+      {!collapsedStack && (
+        <div className="flex items-center justify-between rounded-lg bg-white border border-slate-200 shadow px-3 py-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              queue.forEach((l) => dismissLead(l.id));
+              toast('All alerts cleared', { duration: 2000 });
+            }}
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-slate-700 hover:text-emerald-700"
+          >
+            <Check className="h-4 w-4 text-emerald-600" />
+            Mark all as read
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/admin-dashboard/?tab=new-leads')}
+            className="inline-flex items-center gap-1 text-[12px] font-semibold text-slate-700 hover:text-emerald-700"
+          >
+            View all leads
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
     </div>
     </AlertRailSlot>
   );
