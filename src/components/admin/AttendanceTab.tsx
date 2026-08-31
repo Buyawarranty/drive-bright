@@ -589,7 +589,10 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
           </p>
         </CardContent>
       </Card>
+
+      <AttendanceLoginCharts employees={filteredUsers} />
     </div>
+
   );
 };
 
