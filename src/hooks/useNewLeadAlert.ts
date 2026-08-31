@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useSyncExternalStore } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId, useRealAdminId } from '@/hooks/useCurrentAdminId';
 import { useViewAs } from '@/contexts/ViewAsContext';
@@ -308,6 +308,7 @@ export const useNewLeadAlert = () => {
   const adminId = isImpersonating ? null : (realAdminId || viewedAdminId);
   const [alertsAllowed, setAlertsAllowed] = useState<boolean | null>(null);
   const [queue, setQueue] = useState<NewLeadAlertData[]>([]);
+  const testAlerts = useSyncExternalStore(subscribeTestAlerts, getTestAlerts, getTestAlerts);
 
 
   const [now, setNow] = useState(() => Date.now());
