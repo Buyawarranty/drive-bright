@@ -17,8 +17,14 @@ type PracticeLead = {
   id: string;
   arrived: Date;
   name: string;
+  surname: string;
+  phone: string;
+  email: string;
   reg: string;
   repeat?: boolean;
+  status: string;
+  payment: string;
+  paidDate: Date | null;
   assignedTo: string | null; // agent id
   why: string;
   calls: number;
@@ -26,15 +32,19 @@ type PracticeLead = {
   assignedAt: Date | null;
 };
 
+
 const FIRST_NAMES = [
   'Nathan', 'Priya', 'Callum', 'Beverley', 'Omar', 'Sian', 'Dermot', 'Aisha',
   'Gordon', 'Leanne', 'Rhys', 'Marta', 'Duncan', 'Yvonne', 'Kofi', 'Tomasz',
 ];
+const SURNAMES = ['Whitfield', 'Ainsley', 'Doherty', 'Kelsall', 'Mensah', 'Okoro', 'Brannigan', 'Halstead'];
+const STATUSES = ['New', 'Contacted', 'Follow up', 'Quote sent'];
 const REG_LETTERS = 'ABCDEFGHJKLMNOPRSTVWXY';
 
 const rand = (n: number) => Math.floor(Math.random() * n);
 const fakeReg = () =>
   `${REG_LETTERS[rand(REG_LETTERS.length)]}${REG_LETTERS[rand(REG_LETTERS.length)]}${10 + rand(65)} ${REG_LETTERS[rand(REG_LETTERS.length)]}${REG_LETTERS[rand(REG_LETTERS.length)]}${REG_LETTERS[rand(REG_LETTERS.length)]}`;
+const fakePhone = () => `07${rand(9)}00 ${100000 + rand(899999)}`.slice(0, 13);
 
 /** Overnight window: 6pm yesterday → 8am today, in arrival order. */
 const seedOvernightLeads = (count: number): PracticeLead[] => {
@@ -48,12 +58,20 @@ const seedOvernightLeads = (count: number): PracticeLead[] => {
 
   return Array.from({ length: count }, (_, i) => {
     const arrived = new Date(start.getTime() + Math.round((span * (i + 0.5)) / count) + rand(9 * 60 * 1000));
+    const name = FIRST_NAMES[(i + rand(3)) % FIRST_NAMES.length];
+    const surname = SURNAMES[i % SURNAMES.length];
     return {
       id: `practice-${i}-${arrived.getTime()}`,
       arrived,
-      name: FIRST_NAMES[(i + rand(3)) % FIRST_NAMES.length],
+      name,
+      surname,
+      phone: fakePhone(),
+      email: `${name.toLowerCase()}.${surname.toLowerCase()}@practice.test`,
       reg: fakeReg(),
       repeat: i % 7 === 3,
+      status: STATUSES[i % STATUSES.length],
+      payment: 'Not paid',
+      paidDate: null,
       assignedTo: null,
       why: 'Waiting in Open Pool',
       calls: 0,
@@ -404,7 +422,7 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
           <table className="w-full text-[11px]">
             <thead className="bg-muted/30 text-muted-foreground">
               <tr>
-                {['#', 'Arrived', 'Lead', 'Reg', 'Assigned to', 'Why', 'Interaction', 'Assigned at', 'Lead time'].map(h => (
+                {['#', 'Agent', 'Status', 'Calls', 'Actions', 'Name', 'Phone', 'Email', 'Reg', 'Payment', 'Paid Date', 'Agent activity', 'Lead Date', 'Customer activity', 'Time to contact'].map(h => (
                   <th key={h} className="text-left font-semibold px-2 py-1.5 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -413,28 +431,50 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
               {rows.map((l, i) => (
                 <tr key={l.id} className="border-t border-border/60">
                   <td className="px-2 py-1.5 text-muted-foreground">{i + 1}</td>
-                  <td className="px-2 py-1.5 whitespace-nowrap">{fmtArrived(l.arrived)}</td>
-                  <td className="px-2 py-1.5">
-                    {l.name}
-                    {l.repeat && (
-                      <span className="ml-1 text-[9px] font-bold uppercase rounded px-1 bg-amber-100 text-amber-800 border border-amber-300">Repeat</span>
-                    )}
-                  </td>
-                  <td className="px-2 py-1.5 font-mono">{l.reg}</td>
-                  <td className="px-2 py-1.5">
+                  <td className="px-2 py-1.5 whitespace-nowrap">
                     {l.assignedTo
                       ? <span className="font-medium">{nameOf(l.assignedTo)}</span>
                       : <span className="text-muted-foreground">Unassigned</span>}
                   </td>
-                  <td className="px-2 py-1.5 text-muted-foreground">{l.why}</td>
-                  <td className="px-2 py-1.5 text-muted-foreground">No interaction yet</td>
-                  <td className="px-2 py-1.5 whitespace-nowrap">{l.assignedAt ? fmtTime(l.assignedAt) : '—'}</td>
+                  <td className="px-2 py-1.5 whitespace-nowrap">
+                    <span className="inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-semibold">
+                      {l.status}
+                    </span>
+                  </td>
+                  <td className="px-2 py-1.5 text-muted-foreground">{l.calls}</td>
+                  <td className="px-2 py-1.5">
+                    <button
+                      type="button"
+                      onClick={() => nextAgent && handOut('single', 1, nextAgent.id)}
+                      disabled={!!l.assignedTo || !nextAgent}
+                      className="inline-flex items-center gap-1 h-6 px-2 rounded border border-input bg-background text-[10px] font-semibold hover:bg-muted disabled:opacity-50"
+                    >
+                      <HandGrab className="h-3 w-3" /> Take lead
+                    </button>
+                  </td>
+                  <td className="px-2 py-1.5 whitespace-nowrap">
+                    {l.name} {l.surname}
+                    {l.repeat && (
+                      <span className="ml-1 text-[9px] font-bold uppercase rounded px-1 bg-amber-100 text-amber-800 border border-amber-300">Repeat</span>
+                    )}
+                  </td>
+                  <td className="px-2 py-1.5 whitespace-nowrap font-mono">{l.phone}</td>
+                  <td className="px-2 py-1.5 whitespace-nowrap text-muted-foreground">{l.email}</td>
+                  <td className="px-2 py-1.5 font-mono whitespace-nowrap">{l.reg}</td>
+                  <td className="px-2 py-1.5 text-muted-foreground whitespace-nowrap">{l.payment}</td>
+                  <td className="px-2 py-1.5 whitespace-nowrap">{l.paidDate ? fmtArrived(l.paidDate) : '—'}</td>
+                  <td className="px-2 py-1.5 text-muted-foreground whitespace-nowrap">
+                    {l.assignedAt ? `Assigned ${fmtTime(l.assignedAt)} · ${l.why}` : 'No interaction yet'}
+                  </td>
+                  <td className="px-2 py-1.5 whitespace-nowrap">{fmtArrived(l.arrived)}</td>
+                  <td className="px-2 py-1.5 text-muted-foreground whitespace-nowrap">No customer activity</td>
                   <td className="px-2 py-1.5 whitespace-nowrap">
                     {l.assignedAt ? fmtWait(l.arrived, l.assignedAt) : fmtWait(l.arrived, tick)}
                   </td>
                 </tr>
               ))}
             </tbody>
+
           </table>
         </div>
         <p className="px-3 py-2 text-[10px] text-muted-foreground border-t border-border">
