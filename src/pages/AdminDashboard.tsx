@@ -28,7 +28,7 @@ import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 import { AlertRailHost } from '@/components/admin/AlertRail';
 
 
-import { NewLeadTopBanner } from '@/components/admin/leads/NewLeadTopBanner';
+
 
 import { ReassignRequestPopup } from '@/components/admin/leads/ReassignRequestPopup';
 
