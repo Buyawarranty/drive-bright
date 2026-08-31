@@ -433,7 +433,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
                   </a>
                 )}
                 <button
-                  onClick={() => hideLocally(a.id)}
+                  onClick={() => hideLocally(g.ids)}
                   className="p-1.5 rounded hover:bg-red-800/70"
                   title="Hide for me — stays live for other agents until someone takes it"
                   aria-label="Hide for me"
