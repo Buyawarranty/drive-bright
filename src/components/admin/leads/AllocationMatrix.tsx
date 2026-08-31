@@ -20,6 +20,8 @@ import { PushOpenPoolControl } from './PushOpenPoolControl';
 import { OpenPoolBacklogBanner } from './OpenPoolBacklogBanner';
 import { getSince6pmYesterdayRange } from '@/lib/leadFeedDate';
 import LeadAssignmentStream from './LeadAssignmentStream';
+import { TeamBadge } from './TeamBadge';
+import { useAgentTeams } from '@/hooks/useAgentTeams';
 
 
 
@@ -292,6 +294,23 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     () => admins.filter(a => a.role === 'sales' || a.role === 'sales_lead'),
     [admins]
   );
+
+  // Team labels only — purely visual grouping, no effect on distribution.
+  const { byAgent: teamByAgent } = useAgentTeams();
+  const overflowAgentsByTeam = useMemo(() => {
+    const groups = new Map<string, { label: string; agents: typeof salesAgents }>();
+    salesAgents.forEach(a => {
+      const team = teamByAgent.get(a.id);
+      const key = team?.id ?? '__none__';
+      const label = team ? team.name.replace(/^Formula\s+/i, '') : 'No team';
+      const g = groups.get(key) ?? { label, agents: [] as typeof salesAgents };
+      g.agents.push(a);
+      groups.set(key, g);
+    });
+    return Array.from(groups.values()).sort((a, b) =>
+      a.label === 'No team' ? 1 : b.label === 'No team' ? -1 : a.label.localeCompare(b.label)
+    );
+  }, [salesAgents, teamByAgent]);
 
   const memberByAgent = useMemo(() => {
     const map = new Map<string, Member>();
@@ -1257,35 +1276,45 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           </p>
         </div>
         <div className="px-5 py-4">
-          <div className="flex flex-wrap gap-2">
-            {salesAgents.map(a => {
-              const on = isOverflow(a.id);
-              const displayName = `${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email;
-              const isOpenPool = (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') === 'open_pool';
-              return (
-                <button
-                  key={a.id}
-                  type="button"
-                  disabled={!canEdit}
-                  onClick={() => toggleOverflow(a.id)}
-                  aria-pressed={on}
-                  title={isOpenPool ? `${displayName} is on Open Round Robin — overflow will still auto-assign to them if picked here.` : undefined}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-                    on
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-background text-muted-foreground border-border hover:border-foreground/30'
-                  } ${canEdit ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
-                >
-                  {on ? <Check className="h-3.5 w-3.5" /> : <span className="h-3.5 w-3.5 rounded-full border border-current opacity-50" />}
-                  {displayName}
-                  {isOpenPool && (
-                    <span className={`ml-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide rounded ${on ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-amber-100 text-amber-800'}`}>
-                      Open Round Robin
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+          <div className="space-y-3">
+            {overflowAgentsByTeam.map(group => (
+              <div key={group.label}>
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                  {group.label}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {group.agents.map(a => {
+                    const on = isOverflow(a.id);
+                    const displayName = `${a.first_name ?? ''} ${a.last_name ?? ''}`.trim() || a.email;
+                    const isOpenPool = (capByAgent.get(a.id)?.assignment_mode ?? 'round_robin') === 'open_pool';
+                    return (
+                      <button
+                        key={a.id}
+                        type="button"
+                        disabled={!canEdit}
+                        onClick={() => toggleOverflow(a.id)}
+                        aria-pressed={on}
+                        title={isOpenPool ? `${displayName} is on Open Round Robin — overflow will still auto-assign to them if picked here.` : undefined}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+                          on
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-background text-muted-foreground border-border hover:border-foreground/30'
+                        } ${canEdit ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+                      >
+                        {on ? <Check className="h-3.5 w-3.5" /> : <span className="h-3.5 w-3.5 rounded-full border border-current opacity-50" />}
+                        {displayName}
+                        <TeamBadge userId={a.id} />
+                        {isOpenPool && (
+                          <span className={`ml-1 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide rounded ${on ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-amber-100 text-amber-800'}`}>
+                            Open Round Robin
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
             {salesAgents.length === 0 && !loading && (
               <div className="text-xs text-muted-foreground">
                 {loadError
