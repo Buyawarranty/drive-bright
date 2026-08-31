@@ -40,6 +40,21 @@ const LEAVE_TYPES = ['holiday', 'sick', 'training', 'unpaid leave', 'other'];
 
 const todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
 
+const TEAM_CHIP: Record<'red' | 'blue' | 'green' | 'slate', { on: string; dot: string }> = {
+  red: { on: 'bg-red-100 text-red-800 border-red-300', dot: 'bg-red-500' },
+  blue: { on: 'bg-blue-100 text-blue-800 border-blue-300', dot: 'bg-blue-500' },
+  green: { on: 'bg-emerald-100 text-emerald-800 border-emerald-300', dot: 'bg-emerald-500' },
+  slate: { on: 'bg-slate-100 text-slate-700 border-slate-300', dot: 'bg-slate-400' },
+};
+
+const colourKeyOf = (name: string): 'red' | 'blue' | 'green' | 'slate' => {
+  const n = name.toLowerCase();
+  if (n.includes('red')) return 'red';
+  if (n.includes('blue')) return 'blue';
+  if (n.includes('green')) return 'green';
+  return 'slate';
+};
+
 const SALES_ROLES = new Set([
   'sales', 'sales_agent', 'sales_lead', 'sales_manager', 'lead_gen', 'performance_manager',
 ]);
@@ -73,6 +88,18 @@ export const AgentActiveStatusPanel: React.FC = () => {
   const [leave, setLeave] = useState<LeavePeriod[]>([]);
   const [leaveDraft, setLeaveDraft] = useState<Record<string, LeaveDraft>>({});
   const [savingLeaveFor, setSavingLeaveFor] = useState<string | null>(null);
+  const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
+  const [memberships, setMemberships] = useState<{ id: string; admin_user_id: string; team_id: string }[]>([]);
+  const [savingTeamFor, setSavingTeamFor] = useState<string | null>(null);
+
+  const loadTeams = useCallback(async () => {
+    const [{ data: t }, { data: m }] = await Promise.all([
+      (supabase as any).from('lead_teams').select('id, name').eq('is_active', true).order('name'),
+      (supabase as any).from('lead_team_members').select('id, admin_user_id, team_id'),
+    ]);
+    setTeams((t || []) as any);
+    setMemberships((m || []) as any);
+  }, []);
 
   const loadLeave = useCallback(async () => {
     const { data } = await (supabase as any).from('agent_leave_periods')
@@ -91,7 +118,52 @@ export const AgentActiveStatusPanel: React.FC = () => {
     setLoading(false);
   }, []);
 
-  useEffect(() => { load(); loadLeave(); }, [load, loadLeave]);
+  useEffect(() => { load(); loadLeave(); loadTeams(); }, [load, loadLeave, loadTeams]);
+
+  /**
+   * Team colour switch. Labelling / grouping only — this writes the agent's
+   * lead_team_members row and never touches the live New Leads flow,
+   * distribution caps or workstream switches.
+   */
+  const setTeam = async (agent: Staff, newTeamId: string | null) => {
+    const existing = memberships.find(m => m.admin_user_id === agent.id);
+    if ((existing?.team_id ?? null) === newTeamId) return;
+    setSavingTeamFor(agent.id);
+    let error: any = null;
+    if (newTeamId === null) {
+      if (existing) ({ error } = await (supabase as any).from('lead_team_members').delete().eq('id', existing.id));
+    } else if (existing) {
+      ({ error } = await (supabase as any)
+        .from('lead_team_members')
+        .update({
+          team_id: newTeamId,
+          previous_team_id: existing.team_id,
+          team_changed_at: new Date().toISOString(),
+          notice_seen_at: null,
+        })
+        .eq('id', existing.id));
+    } else {
+      ({ error } = await (supabase as any).from('lead_team_members').insert({
+        team_id: newTeamId,
+        admin_user_id: agent.id,
+        // Workstreams stay OFF — a manager ticks lead types in Allocation.
+        workstream_new_leads: false,
+        workstream_recontact: false,
+        workstream_renewals: false,
+        team_changed_at: new Date().toISOString(),
+        notice_seen_at: null,
+      }));
+    }
+    setSavingTeamFor(null);
+    if (error) {
+      toast.error(`Could not change team — ${error.message}`);
+      return;
+    }
+    const teamName = teams.find(t => t.id === newTeamId)?.name;
+    toast.success(newTeamId ? `${nameOf(agent)} moved to ${teamName}.` : `${nameOf(agent)} removed from their team.`);
+    loadTeams();
+  };
+
 
   const active = useMemo(() => staff.filter(s => s.is_active && !s.archived_at), [staff]);
   const departed = useMemo(() => staff.filter(s => !s.is_active || s.archived_at), [staff]);
@@ -230,6 +302,30 @@ export const AgentActiveStatusPanel: React.FC = () => {
                     </div>
 
                     <div className="pl-11 space-y-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[11px] text-muted-foreground mr-0.5">Team</span>
+                        {teams.map(t => {
+                          const currentTeamId = memberships.find(m => m.admin_user_id === s.id)?.team_id ?? null;
+                          const activeTeam = currentTeamId === t.id;
+                          const colour = TEAM_CHIP[colourKeyOf(t.name)];
+                          return (
+                            <button
+                              key={t.id}
+                              type="button"
+                              disabled={savingTeamFor === s.id}
+                              onClick={() => setTeam(s, activeTeam ? null : t.id)}
+                              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors disabled:opacity-60 ${
+                                activeTeam ? colour.on : 'bg-background text-muted-foreground border-border hover:bg-muted'
+                              }`}
+                            >
+                              <span className={`h-1.5 w-1.5 rounded-full ${colour.dot}`} />
+                              {t.name.replace(/^Formula\s+/i, '')}
+                            </button>
+                          );
+                        })}
+                        {savingTeamFor === s.id && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                      </div>
+
                       {mine.length > 0 && (
                         <div className="flex flex-wrap gap-1.5">
                           {mine.map(l => (
