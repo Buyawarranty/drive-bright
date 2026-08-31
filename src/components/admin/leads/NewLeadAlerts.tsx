@@ -40,6 +40,7 @@ const useOnCall = () =>
  */
 export const NewLeadAlerts: React.FC = () => {
   const { queue, dismissLead, snoozeLead } = useNewLeadAlert();
+  const navigate = useNavigate();
   const [mutedIds, setMutedIds] = useState<Set<string>>(new Set());
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [collapsedStack, setCollapsedStack] = useState(false);
