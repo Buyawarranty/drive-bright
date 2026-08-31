@@ -28,7 +28,7 @@ const SLOW_READ_MS = 8_000;
  * We cap how many CRM reads run at once and queue the rest, and we share one
  * response between identical reads fired at the same moment.
  */
-const MAX_CONCURRENT_READS = 10;
+const MAX_CONCURRENT_READS = 6;
 
 let inFlight = 0;
 const waiters: Array<() => void> = [];
