@@ -977,12 +977,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const addressComplete = useMemo(() => {
     const ukPostcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
     return !!(
+      postcodeInput.trim() &&
       addressData.address_line_1?.trim() &&
       addressData.town?.trim() &&
       addressData.postcode?.trim() &&
       ukPostcodeRegex.test(addressData.postcode.replace(/\s/g, ''))
     );
-  }, [addressData]);
+  }, [addressData, postcodeInput]);
   
   // Count missing address fields
   const addressFieldsMissing = useMemo(() => {
