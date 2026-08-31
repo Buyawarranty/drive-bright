@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { AlertTriangle, CheckCircle2, Loader2, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { TeamBadge } from './TeamBadge';
 
 interface PausedRow {
   admin_user_id: string;
