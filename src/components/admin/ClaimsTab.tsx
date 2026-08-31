@@ -324,6 +324,34 @@ export const ClaimsTab = ({
       {/* Due reminders — sticky banner across every claims sub-tab */}
       <ClaimRemindersBanner onManage={() => setActiveSubTab('reminders')} />
 
+      {/* Appeal received back — banner across every claims sub-tab */}
+      {appealsTotalCount > 0 && (
+        <div className="rounded-xl border-2 border-[#E8541A] bg-orange-50 px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#E8541A]">
+              <Gavel className="h-4 w-4 text-white" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-[#1A2B4A]">
+                {appealsTotalCount} appeal{appealsTotalCount === 1 ? '' : 's'} received back
+                {appealsUnreadCount > 0 ? ` — ${appealsUnreadCount} not yet read` : ''}
+              </p>
+              <p className="text-xs text-slate-600">Full details are in the Appeals section below.</p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            className="bg-[#E8541A] hover:bg-[#cf4915] text-white"
+            onClick={() => {
+              setActiveSubTab('claims');
+              setTimeout(() => document.getElementById('appeals-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+            }}
+          >
+            View appeals
+          </Button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex justify-between items-center flex-wrap gap-3">
         <div>
