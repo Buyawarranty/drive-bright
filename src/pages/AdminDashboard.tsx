@@ -1328,16 +1328,9 @@ const AdminDashboardInner: React.FC<{
               </>
             )}
 
-            {/* The only alert everyone sees: stacked new-lead banner (beep + mute + close) */}
-            <NewLeadTopBanner
-              onGo={(leadId, focus) => {
-                handleTabChange('new-leads');
-                setSearchParams(
-                  { tab: 'new-leads', leadId, ...(focus ? { q: focus } : {}) },
-                  { replace: true }
-                );
-              }}
-            />
+            {/* Agent new-lead alerts: stacked floating cards (beep + mute + close) */}
+            <NewLeadAlerts />
+
 
             {/* Sticky left-hand rail host (kept mounted so portalled alerts have a home) */}
             <AlertRailHost />
