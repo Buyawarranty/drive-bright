@@ -199,17 +199,21 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
       return data;
     });
     const rows = (data as StruggleAlert[]) || [];
-    // Beep once per new unseen alert.
+    // Beep once per customer per dedupe window — never again for the same person
+    // signalling repeatedly minutes apart.
     let hasNew = false;
-    for (const a of rows) {
-      if (!seenIdsRef.current.has(a.id) && !hiddenIds.has(a.id)) {
-        hasNew = true;
-        seenIdsRef.current.add(a.id);
-      }
+    const now = Date.now();
+    for (const g of groupAlerts(rows)) {
+      if (g.ids.every((id) => hiddenIds.has(id))) continue;
+      const key = customerKey(g.primary);
+      const last = seenKeysRef.current.get(key);
+      if (last === undefined || now - last > DEDUPE_WINDOW_MS) hasNew = true;
+      seenKeysRef.current.set(key, now);
     }
     if (hasNew && !muted) playAlertBeep();
     setAlerts(rows);
   }, [muted, hiddenIds]);
+
 
   useEffect(() => {
     (async () => {
