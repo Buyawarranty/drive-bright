@@ -1,49 +1,56 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-const BATCH_SIZE = 500;
+const BATCH_SIZE = 200;
 
 export const useLeadNoteCounts = (leadIds: string[]) => {
   const [counts, setCounts] = useState<Record<string, number>>({});
   const lastFetchedKeyRef = useRef('');
 
-  const stableKey = useMemo(() => {
-    const sorted = [...leadIds].sort();
-    return sorted.length > 0 ? `${sorted.length}:${sorted[0]}:${sorted[sorted.length - 1]}` : '';
-  }, [leadIds]);
+  // Fingerprint every id, not just length/first/last — two different pages of
+  // leads can share those and previously skipped the refetch, leaving the
+  // notes column blank.
+  const stableKey = useMemo(() => [...leadIds].sort().join(','), [leadIds]);
 
   const fetchCounts = useCallback(async () => {
-    if (leadIds.length === 0) return;
+    const ids = stableKey ? stableKey.split(',') : [];
+    if (ids.length === 0) return;
     if (lastFetchedKeyRef.current === stableKey) return;
     lastFetchedKeyRef.current = stableKey;
 
     try {
-      const countMap: Record<string, number> = {};
+      let failed = false;
 
-      // Use a grouped-count RPC so we don't hit Supabase's 1000-row cap
-      // (a busy day easily produces >1000 quick notes across a page of leads,
-      // which previously silently truncated counts and hid recent notes).
-      for (let i = 0; i < leadIds.length; i += BATCH_SIZE) {
-        const batch = leadIds.slice(i, i + BATCH_SIZE);
+      // Grouped-count RPC so we don't hit Supabase's 1000-row cap, applied in
+      // small batches and merged as they land so one bad batch can't wipe the
+      // whole notes column.
+      for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+        const batch = ids.slice(i, i + BATCH_SIZE);
         const { data, error } = await supabase.rpc('get_lead_quick_note_counts', {
           p_lead_ids: batch,
         });
 
         if (error) {
           console.error('Error fetching note counts batch:', error);
+          failed = true;
           continue;
         }
 
+        const partial: Record<string, number> = {};
         (data || []).forEach((row: { lead_id: string; note_count: number }) => {
-          countMap[row.lead_id] = Number(row.note_count) || 0;
+          partial[row.lead_id] = Number(row.note_count) || 0;
         });
+        setCounts(prev => ({ ...prev, ...partial }));
       }
 
-      setCounts(countMap);
+      // Allow a retry on the next render if anything went wrong.
+      if (failed) lastFetchedKeyRef.current = '';
     } catch (err) {
       console.error('Error fetching note counts:', err);
+      lastFetchedKeyRef.current = '';
     }
   }, [stableKey]);
+
 
 
   useEffect(() => {
