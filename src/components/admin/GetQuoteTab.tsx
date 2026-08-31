@@ -2385,17 +2385,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         throw new Error('Please enter a valid customer email before sending.');
       }
 
-      // Address is compulsory on every quote.
-      const missingAddress = [
-        !customerBuildingNumber.trim() && 'house/building number',
-        !customerStreet.trim() && 'street',
-        !customerTown.trim() && 'town/city',
-        !customerPostcode.trim() && 'postcode',
-      ].filter(Boolean) as string[];
-      if (missingAddress.length > 0) {
-        throw new Error(`Customer address is required — please add the ${missingAddress.join(', ')} in Customer Address.`);
-      }
-
       if (!cleanVehicleData.regNumber) {
         throw new Error('Vehicle registration is missing. Please go back and check the vehicle details.');
       }
