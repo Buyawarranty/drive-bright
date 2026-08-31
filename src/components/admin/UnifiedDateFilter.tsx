@@ -205,6 +205,7 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
     onChange({ scope, period: 'custom', customRange: { from: newFrom, to: newTo } });
   };
 
+  const showAll = period !== 'all';
   const showLast30 = period !== '30days';
   const showToday = period !== 'today';
   const showYesterday = period !== 'yesterday';
@@ -256,6 +257,15 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
           <ChevronRight className="h-4 w-4" />
         </Button>
 
+        {!hideQuickLinks && showAll && (
+          <button
+            type="button"
+            onClick={() => onChange({ scope, period: 'all', customRange: undefined })}
+            className="text-sm font-semibold text-orange-600 hover:underline"
+          >
+            All
+          </button>
+        )}
         {!hideQuickLinks && showToday && (
           <button
             type="button"
