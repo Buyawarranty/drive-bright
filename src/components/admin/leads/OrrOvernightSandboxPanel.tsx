@@ -422,7 +422,7 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
           <table className="w-full text-[11px]">
             <thead className="bg-muted/30 text-muted-foreground">
               <tr>
-                {['#', 'Arrived', 'Lead', 'Reg', 'Assigned to', 'Why', 'Interaction', 'Assigned at', 'Lead time'].map(h => (
+                {['#', 'Agent', 'Status', 'Calls', 'Actions', 'Name', 'Phone', 'Email', 'Reg', 'Payment', 'Paid Date', 'Agent activity', 'Lead Date', 'Customer activity', 'Time to contact'].map(h => (
                   <th key={h} className="text-left font-semibold px-2 py-1.5 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -431,28 +431,50 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
               {rows.map((l, i) => (
                 <tr key={l.id} className="border-t border-border/60">
                   <td className="px-2 py-1.5 text-muted-foreground">{i + 1}</td>
-                  <td className="px-2 py-1.5 whitespace-nowrap">{fmtArrived(l.arrived)}</td>
-                  <td className="px-2 py-1.5">
-                    {l.name}
-                    {l.repeat && (
-                      <span className="ml-1 text-[9px] font-bold uppercase rounded px-1 bg-amber-100 text-amber-800 border border-amber-300">Repeat</span>
-                    )}
-                  </td>
-                  <td className="px-2 py-1.5 font-mono">{l.reg}</td>
-                  <td className="px-2 py-1.5">
+                  <td className="px-2 py-1.5 whitespace-nowrap">
                     {l.assignedTo
                       ? <span className="font-medium">{nameOf(l.assignedTo)}</span>
                       : <span className="text-muted-foreground">Unassigned</span>}
                   </td>
-                  <td className="px-2 py-1.5 text-muted-foreground">{l.why}</td>
-                  <td className="px-2 py-1.5 text-muted-foreground">No interaction yet</td>
-                  <td className="px-2 py-1.5 whitespace-nowrap">{l.assignedAt ? fmtTime(l.assignedAt) : '—'}</td>
+                  <td className="px-2 py-1.5 whitespace-nowrap">
+                    <span className="inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-semibold">
+                      {l.status}
+                    </span>
+                  </td>
+                  <td className="px-2 py-1.5 text-muted-foreground">{l.calls}</td>
+                  <td className="px-2 py-1.5">
+                    <button
+                      type="button"
+                      onClick={() => nextAgent && handOut('single', 1, nextAgent.id)}
+                      disabled={!!l.assignedTo || !nextAgent}
+                      className="inline-flex items-center gap-1 h-6 px-2 rounded border border-input bg-background text-[10px] font-semibold hover:bg-muted disabled:opacity-50"
+                    >
+                      <HandGrab className="h-3 w-3" /> Take lead
+                    </button>
+                  </td>
+                  <td className="px-2 py-1.5 whitespace-nowrap">
+                    {l.name} {l.surname}
+                    {l.repeat && (
+                      <span className="ml-1 text-[9px] font-bold uppercase rounded px-1 bg-amber-100 text-amber-800 border border-amber-300">Repeat</span>
+                    )}
+                  </td>
+                  <td className="px-2 py-1.5 whitespace-nowrap font-mono">{l.phone}</td>
+                  <td className="px-2 py-1.5 whitespace-nowrap text-muted-foreground">{l.email}</td>
+                  <td className="px-2 py-1.5 font-mono whitespace-nowrap">{l.reg}</td>
+                  <td className="px-2 py-1.5 text-muted-foreground whitespace-nowrap">{l.payment}</td>
+                  <td className="px-2 py-1.5 whitespace-nowrap">{l.paidDate ? fmtArrived(l.paidDate) : '—'}</td>
+                  <td className="px-2 py-1.5 text-muted-foreground whitespace-nowrap">
+                    {l.assignedAt ? `Assigned ${fmtTime(l.assignedAt)} · ${l.why}` : 'No interaction yet'}
+                  </td>
+                  <td className="px-2 py-1.5 whitespace-nowrap">{fmtArrived(l.arrived)}</td>
+                  <td className="px-2 py-1.5 text-muted-foreground whitespace-nowrap">No customer activity</td>
                   <td className="px-2 py-1.5 whitespace-nowrap">
                     {l.assignedAt ? fmtWait(l.arrived, l.assignedAt) : fmtWait(l.arrived, tick)}
                   </td>
                 </tr>
               ))}
             </tbody>
+
           </table>
         </div>
         <p className="px-3 py-2 text-[10px] text-muted-foreground border-t border-border">
