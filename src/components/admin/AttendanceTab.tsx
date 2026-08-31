@@ -9,6 +9,8 @@ import { Users, Wifi, WifiOff, Clock, RefreshCw, Search, AlertCircle, Phone, Act
 import { format, isSameDay } from 'date-fns';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import { DateRange } from 'react-day-picker';
+import { AttendanceLoginCharts } from '@/components/admin/AttendanceLoginCharts';
+
 
 interface AdminUserRow {
   id: string;
@@ -589,7 +591,10 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({ filterRoles }) => 
           </p>
         </CardContent>
       </Card>
+
+      <AttendanceLoginCharts employees={filteredUsers} />
     </div>
+
   );
 };
 
