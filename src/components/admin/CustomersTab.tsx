@@ -37,6 +37,8 @@ import { useQuotePaymentRoutes } from '@/hooks/useQuotePaymentRoutes';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 
 import { CustomerNotesSection } from './CustomerNotesSection';
+import { CustomerAssignmentHistoryPanel } from './customers/CustomerAssignmentHistoryPanel';
+
 import { SmartDateInput } from './SmartDateInput';
 import { StructuredNotesSection } from './StructuredNotesSection';
 import { CustomerServiceNotes } from './CustomerServiceNotes';
@@ -6631,6 +6633,11 @@ Please log in and change your password after first login.`;
                                         vehicleReg={selectedCustomer.registration_plate}
                                       />
                                       <CustomerServiceNotes customerId={selectedCustomer.id} customerType="active" />
+                                      <CustomerAssignmentHistoryPanel
+                                        email={selectedCustomer.email}
+                                        phone={(selectedCustomer as any).phone || (selectedCustomer as any).mobile}
+                                      />
+
                                     </>
                                   )}
                                 </TabsContent>
