@@ -558,7 +558,7 @@ export const ClaimsTab = ({
       <ClaimAppealDialog
         open={showAppealDialog}
         onOpenChange={setShowAppealDialog}
-        onSent={() => fetchClaims()}
+        onSent={() => { fetchClaims(); refetchAppeals(); }}
       />
 
       <AddClaimDialog
