@@ -287,6 +287,30 @@ export const AgentActiveStatusPanel: React.FC = () => {
                     </div>
 
                     <div className="pl-11 space-y-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[11px] text-muted-foreground mr-0.5">Team</span>
+                        {teams.map(t => {
+                          const currentTeamId = memberships.find(m => m.admin_user_id === s.id)?.team_id ?? null;
+                          const activeTeam = currentTeamId === t.id;
+                          const colour = TEAM_CHIP[colourKeyOf(t.name)];
+                          return (
+                            <button
+                              key={t.id}
+                              type="button"
+                              disabled={savingTeamFor === s.id}
+                              onClick={() => setTeam(s, activeTeam ? null : t.id)}
+                              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors disabled:opacity-60 ${
+                                activeTeam ? colour.on : 'bg-background text-muted-foreground border-border hover:bg-muted'
+                              }`}
+                            >
+                              <span className={`h-1.5 w-1.5 rounded-full ${colour.dot}`} />
+                              {t.name.replace(/^Formula\s+/i, '')}
+                            </button>
+                          );
+                        })}
+                        {savingTeamFor === s.id && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                      </div>
+
                       {mine.length > 0 && (
                         <div className="flex flex-wrap gap-1.5">
                           {mine.map(l => (
