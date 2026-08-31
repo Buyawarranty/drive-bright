@@ -34,7 +34,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import {
   Loader2, Search, Gavel, ExternalLink, Send, ArrowLeft, CheckCircle2, Copy, Eye, Mail,
+  ShieldCheck, Lock as LockIcon, Info,
 } from 'lucide-react';
+import brandLogo from '@/assets/buyawarranty-logo.png.asset.json';
 import {
   buildAppealEmailHtml,
   buildAppealEmailSubject,
@@ -522,7 +524,7 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
                   <span>Independent inspection is <strong>entirely the customer's choice</strong></span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Lock className="mt-0.5 h-4 w-4 shrink-0 text-[#1A2B4A]" />
+                  <LockIcon className="mt-0.5 h-4 w-4 shrink-0 text-[#1A2B4A]" />
                   <span>Handled privately and securely</span>
                 </li>
               </ul>
