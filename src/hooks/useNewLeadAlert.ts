@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useSyncExternalStore } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentAdminId, useRealAdminId } from '@/hooks/useCurrentAdminId';
 import { useViewAs } from '@/contexts/ViewAsContext';
@@ -243,6 +243,59 @@ const MAX_ALERT_AGE_MS = 12 * 60 * 60 * 1000;
 // they don't work leads and the cards were covering their claims screens.
 const LEAD_ALERT_ROLES = ['sales', 'sales_lead', 'sales_manager', 'admin', 'super_admin'];
 
+// ---------------------------------------------------------------------------
+// Test pop-up (managers only, triggered from Lead Allocation). Injects a fake
+// card into the local queue so staff can see exactly what agents see. It never
+// touches the database, never assigns a lead and disappears on dismiss.
+// ---------------------------------------------------------------------------
+let _testAlerts: NewLeadAlertData[] = [];
+const _testListeners = new Set<() => void>();
+const emitTestAlerts = () => _testListeners.forEach((l) => l());
+const subscribeTestAlerts = (cb: () => void) => {
+  _testListeners.add(cb);
+  return () => { _testListeners.delete(cb); };
+};
+const getTestAlerts = () => _testAlerts;
+
+export const triggerTestLeadAlert = () => {
+  const nowIso = new Date().toISOString();
+  const lead: NewLeadAlertData = {
+    id: `test-${Date.now()}`,
+    first_name: 'Test',
+    last_name: 'Pop-up',
+    phone: '07000 000000',
+    email: 'test.popup@example.com',
+    created_at: nowIso,
+    assigned_at: nowIso,
+    status: 'new',
+    vehicle_reg: 'TE57 POP',
+    vehicle_make: 'Ford',
+    vehicle_model: 'Focus',
+    vehicle_year: '2019',
+    mileage: '54000',
+    lead_source: 'website',
+    orr_first_call_deadline: null,
+    orr_attempt_count: null,
+    pool_status: null,
+    orr_offer_expires_at: null,
+  };
+  _testAlerts = [lead, ..._testAlerts].slice(0, 3);
+  emitTestAlerts();
+  playNewLeadBeep();
+};
+
+export const clearTestLeadAlerts = () => {
+  _testAlerts = [];
+  emitTestAlerts();
+};
+
+const removeTestAlert = (id: string) => {
+  if (!_testAlerts.some((l) => l.id === id)) return;
+  _testAlerts = _testAlerts.filter((l) => l.id !== id);
+  emitTestAlerts();
+};
+
+
 export const useNewLeadAlert = () => {
   // HARD RULE: pop-ups only ever show leads assigned to the SIGNED-IN agent.
   // `useCurrentAdminId` swaps to the impersonated agent under "View As", which
@@ -255,6 +308,7 @@ export const useNewLeadAlert = () => {
   const adminId = isImpersonating ? null : (realAdminId || viewedAdminId);
   const [alertsAllowed, setAlertsAllowed] = useState<boolean | null>(null);
   const [queue, setQueue] = useState<NewLeadAlertData[]>([]);
+  const testAlerts = useSyncExternalStore(subscribeTestAlerts, getTestAlerts, getTestAlerts);
 
 
   const [now, setNow] = useState(() => Date.now());
@@ -470,6 +524,10 @@ export const useNewLeadAlert = () => {
   }, [adminId, alertsAllowed]);
 
   const dismissLead = useCallback((leadId: string) => {
+    if (leadId.startsWith('test-')) {
+      removeTestAlert(leadId);
+      return;
+    }
     setDismissedIds((prev) => {
       const next = new Set(prev);
       next.add(leadId);
@@ -480,7 +538,7 @@ export const useNewLeadAlert = () => {
 
   // Undismissed + not currently snoozed = visible. Once snooze expires, card
   // reappears and the beep fires again.
-  const visibleQueue = queue.filter((l) => {
+  const visibleQueue = [...testAlerts, ...queue].filter((l) => {
     if (dismissedIds.has(l.id)) return false;
     const until = snoozedUntil[l.id];
     if (until && until > now) return false;

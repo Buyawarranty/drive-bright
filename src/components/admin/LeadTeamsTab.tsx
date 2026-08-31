@@ -36,7 +36,8 @@ import { ManagerOverrideAuditPanel } from './leads/ManagerOverrideAuditPanel';
 import { QueueCapacityDashboard } from './leads/QueueCapacityDashboard';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { Button } from '@/components/ui/button';
-import { Percent } from 'lucide-react';
+import { Percent, BellRing } from 'lucide-react';
+import { triggerTestLeadAlert } from '@/hooks/useNewLeadAlert';
 import { AgentLeadVisibilityPanel } from './leads/AgentLeadVisibilityPanel';
 import { PausedAgentsOverrideBar } from './leads/PausedAgentsOverrideBar';
 import { CancellationsAllocationPanel } from './leads/CancellationsAllocationPanel';
@@ -209,6 +210,24 @@ export const LeadTeamsTab = ({ onNavigateToTab }: LeadTeamsTabProps) => {
       {isManagement && <PausedAgentsOverrideBar canEdit={canEdit} />}
 
       <QuickLinksBar />
+
+      {/* Preview the agent new-lead pop-up. Local only — no lead is created,
+          assigned or notified; the card disappears when dismissed. */}
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-violet-300 bg-violet-50/60 px-3 py-2">
+        <BellRing className="h-4 w-4 text-violet-600" />
+        <span className="text-xs text-violet-800">
+          Test the agent new-lead pop-up — shows a sample card bottom-left. Nothing is saved or sent.
+        </span>
+        <Button
+          size="sm"
+          variant="outline"
+          className="ml-auto border-violet-400 text-violet-700 hover:bg-violet-100"
+          onClick={() => triggerTestLeadAlert()}
+        >
+          Test pop-up
+        </Button>
+      </div>
+
 
 
       {/* ─────────────────────────────────────────────────────────────
