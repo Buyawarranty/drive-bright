@@ -288,7 +288,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
       <div className="flex items-center justify-between px-4 py-2.5 bg-red-700">
         <div className="flex items-center gap-2 font-semibold text-sm">
           <AlertTriangle className="h-4 w-4" />
-          Failed payment — customer needs a call now ({visible.length})
+          Failed payment — customer needs a call now ({groups.length})
         </div>
         <button
           onClick={toggleMute}
@@ -312,11 +312,13 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
 
       {/* Rows */}
       <div className="divide-y divide-red-500/50">
-        {visible.map((a) => {
+        {groups.map((g) => {
+          const a = g.primary;
           const name = a.customer_name || a.customer_email || a.customer_phone || 'Customer';
           const label = SIGNAL_LABELS[a.signal_type] || a.signal_type;
           const phone = a.customer_phone || '';
           const telHref = phone ? `tel:${phone.replace(/\s/g, '')}` : null;
+
           return (
             <div
               key={a.id}
