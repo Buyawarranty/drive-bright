@@ -159,7 +159,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
       return new Set<string>();
     }
   });
-  const seenIdsRef = useRef<Set<string>>(new Set());
+  const seenKeysRef = useRef<Map<string, number>>(new Map());
 
   const persistHidden = useCallback((next: Set<string>) => {
     try {
