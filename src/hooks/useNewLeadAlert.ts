@@ -523,6 +523,10 @@ export const useNewLeadAlert = () => {
   }, [adminId, alertsAllowed]);
 
   const dismissLead = useCallback((leadId: string) => {
+    if (leadId.startsWith('test-')) {
+      removeTestAlert(leadId);
+      return;
+    }
     setDismissedIds((prev) => {
       const next = new Set(prev);
       next.add(leadId);
@@ -533,7 +537,7 @@ export const useNewLeadAlert = () => {
 
   // Undismissed + not currently snoozed = visible. Once snooze expires, card
   // reappears and the beep fires again.
-  const visibleQueue = queue.filter((l) => {
+  const visibleQueue = [...testAlerts, ...queue].filter((l) => {
     if (dismissedIds.has(l.id)) return false;
     const until = snoozedUntil[l.id];
     if (until && until > now) return false;
