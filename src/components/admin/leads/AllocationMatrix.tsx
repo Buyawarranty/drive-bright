@@ -295,6 +295,23 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
     [admins]
   );
 
+  // Team labels only — purely visual grouping, no effect on distribution.
+  const { byAgent: teamByAgent } = useAgentTeams();
+  const overflowAgentsByTeam = useMemo(() => {
+    const groups = new Map<string, { label: string; agents: typeof salesAgents }>();
+    salesAgents.forEach(a => {
+      const team = teamByAgent.get(a.id);
+      const key = team?.id ?? '__none__';
+      const label = team ? team.name.replace(/^Formula\s+/i, '') : 'No team';
+      const g = groups.get(key) ?? { label, agents: [] as typeof salesAgents };
+      g.agents.push(a);
+      groups.set(key, g);
+    });
+    return Array.from(groups.values()).sort((a, b) =>
+      a.label === 'No team' ? 1 : b.label === 'No team' ? -1 : a.label.localeCompare(b.label)
+    );
+  }, [salesAgents, teamByAgent]);
+
   const memberByAgent = useMemo(() => {
     const map = new Map<string, Member>();
     members.forEach(m => map.set(m.admin_user_id, m));
