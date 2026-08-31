@@ -73,6 +73,18 @@ export const AgentActiveStatusPanel: React.FC = () => {
   const [leave, setLeave] = useState<LeavePeriod[]>([]);
   const [leaveDraft, setLeaveDraft] = useState<Record<string, LeaveDraft>>({});
   const [savingLeaveFor, setSavingLeaveFor] = useState<string | null>(null);
+  const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
+  const [memberships, setMemberships] = useState<{ id: string; admin_user_id: string; team_id: string }[]>([]);
+  const [savingTeamFor, setSavingTeamFor] = useState<string | null>(null);
+
+  const loadTeams = useCallback(async () => {
+    const [{ data: t }, { data: m }] = await Promise.all([
+      (supabase as any).from('lead_teams').select('id, name').eq('is_active', true).order('name'),
+      (supabase as any).from('lead_team_members').select('id, admin_user_id, team_id'),
+    ]);
+    setTeams((t || []) as any);
+    setMemberships((m || []) as any);
+  }, []);
 
   const loadLeave = useCallback(async () => {
     const { data } = await (supabase as any).from('agent_leave_periods')
@@ -91,7 +103,52 @@ export const AgentActiveStatusPanel: React.FC = () => {
     setLoading(false);
   }, []);
 
-  useEffect(() => { load(); loadLeave(); }, [load, loadLeave]);
+  useEffect(() => { load(); loadLeave(); loadTeams(); }, [load, loadLeave, loadTeams]);
+
+  /**
+   * Team colour switch. Labelling / grouping only — this writes the agent's
+   * lead_team_members row and never touches the live New Leads flow,
+   * distribution caps or workstream switches.
+   */
+  const setTeam = async (agent: Staff, newTeamId: string | null) => {
+    const existing = memberships.find(m => m.admin_user_id === agent.id);
+    if ((existing?.team_id ?? null) === newTeamId) return;
+    setSavingTeamFor(agent.id);
+    let error: any = null;
+    if (newTeamId === null) {
+      if (existing) ({ error } = await (supabase as any).from('lead_team_members').delete().eq('id', existing.id));
+    } else if (existing) {
+      ({ error } = await (supabase as any)
+        .from('lead_team_members')
+        .update({
+          team_id: newTeamId,
+          previous_team_id: existing.team_id,
+          team_changed_at: new Date().toISOString(),
+          notice_seen_at: null,
+        })
+        .eq('id', existing.id));
+    } else {
+      ({ error } = await (supabase as any).from('lead_team_members').insert({
+        team_id: newTeamId,
+        admin_user_id: agent.id,
+        // Workstreams stay OFF — a manager ticks lead types in Allocation.
+        workstream_new_leads: false,
+        workstream_recontact: false,
+        workstream_renewals: false,
+        team_changed_at: new Date().toISOString(),
+        notice_seen_at: null,
+      }));
+    }
+    setSavingTeamFor(null);
+    if (error) {
+      toast.error(`Could not change team — ${error.message}`);
+      return;
+    }
+    const teamName = teams.find(t => t.id === newTeamId)?.name;
+    toast.success(newTeamId ? `${nameOf(agent)} moved to ${teamName}.` : `${nameOf(agent)} removed from their team.`);
+    loadTeams();
+  };
+
 
   const active = useMemo(() => staff.filter(s => s.is_active && !s.archived_at), [staff]);
   const departed = useMemo(() => staff.filter(s => !s.is_active || s.archived_at), [staff]);
