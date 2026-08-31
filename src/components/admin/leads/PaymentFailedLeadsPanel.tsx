@@ -38,6 +38,85 @@ const SIGNAL_LABELS: Record<string, string> = {
 const MUTE_KEY = 'payment-failed-panel-muted';
 const HIDDEN_KEY = 'payment-failed-panel-hidden-ids';
 
+// Same customer signalling repeatedly within this window is ONE alert row.
+// A fresh row (and a fresh beep) only appears once they go quiet for longer than this.
+const DEDUPE_WINDOW_MS = 30 * 60 * 1000;
+
+/** Stable identity for a customer across signals: email → phone tail-9 → name. */
+const customerKey = (a: StruggleAlert): string => {
+  const email = (a.customer_email || '').trim().toLowerCase();
+  if (email) return `e:${email}`;
+  const digits = (a.customer_phone || '').replace(/\D/g, '');
+  if (digits.length >= 9) return `p:${digits.slice(-9)}`;
+  const reg = (a.vehicle_reg || '').replace(/\s/g, '').toUpperCase();
+  if (reg) return `r:${reg}`;
+  return `n:${(a.customer_name || 'unknown').trim().toLowerCase()}`;
+};
+
+interface AlertGroup {
+  primary: StruggleAlert;
+  ids: string[];
+  repeats: number;
+  extraLabels: string[];
+  firstAt: string;
+}
+
+/**
+ * Collapse alerts so one customer never stacks up multiple pop-up rows at the
+ * same time. Signals within DEDUPE_WINDOW_MS of each other roll into the newest
+ * row; a genuinely later burst (hours apart) gets its own row again.
+ */
+const groupAlerts = (rows: StruggleAlert[]): AlertGroup[] => {
+  const byKey = new Map<string, StruggleAlert[]>();
+  for (const a of rows) {
+    const k = customerKey(a);
+    const list = byKey.get(k) || [];
+    list.push(a);
+    byKey.set(k, list);
+  }
+  const groups: AlertGroup[] = [];
+  byKey.forEach((list) => {
+    const sorted = [...list].sort(
+      (x, y) => new Date(y.created_at).getTime() - new Date(x.created_at).getTime()
+    );
+    let bucket: StruggleAlert[] = [];
+    const flush = () => {
+      if (!bucket.length) return;
+      const primary = bucket[0];
+      const extras = bucket.slice(1);
+      const labels = Array.from(
+        new Set(extras.map((e) => SIGNAL_LABELS[e.signal_type] || e.signal_type))
+      ).filter((l) => l !== (SIGNAL_LABELS[primary.signal_type] || primary.signal_type));
+      groups.push({
+        primary,
+        ids: bucket.map((b) => b.id),
+        repeats: extras.length,
+        extraLabels: labels,
+        firstAt: bucket[bucket.length - 1].created_at,
+      });
+      bucket = [];
+    };
+    for (const a of sorted) {
+      if (!bucket.length) {
+        bucket.push(a);
+        continue;
+      }
+      const prev = new Date(bucket[bucket.length - 1].created_at).getTime();
+      const cur = new Date(a.created_at).getTime();
+      if (prev - cur <= DEDUPE_WINDOW_MS) bucket.push(a);
+      else {
+        flush();
+        bucket.push(a);
+      }
+    }
+    flush();
+  });
+  return groups.sort(
+    (a, b) => new Date(b.primary.created_at).getTime() - new Date(a.primary.created_at).getTime()
+  );
+};
+
+
 // Short attention beep — synthesised at runtime.
 let _beepCtx: AudioContext | null = null;
 const playAlertBeep = () => {
