@@ -40,6 +40,21 @@ const LEAVE_TYPES = ['holiday', 'sick', 'training', 'unpaid leave', 'other'];
 
 const todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
 
+const TEAM_CHIP: Record<'red' | 'blue' | 'green' | 'slate', { on: string; dot: string }> = {
+  red: { on: 'bg-red-100 text-red-800 border-red-300', dot: 'bg-red-500' },
+  blue: { on: 'bg-blue-100 text-blue-800 border-blue-300', dot: 'bg-blue-500' },
+  green: { on: 'bg-emerald-100 text-emerald-800 border-emerald-300', dot: 'bg-emerald-500' },
+  slate: { on: 'bg-slate-100 text-slate-700 border-slate-300', dot: 'bg-slate-400' },
+};
+
+const colourKeyOf = (name: string): 'red' | 'blue' | 'green' | 'slate' => {
+  const n = name.toLowerCase();
+  if (n.includes('red')) return 'red';
+  if (n.includes('blue')) return 'blue';
+  if (n.includes('green')) return 'green';
+  return 'slate';
+};
+
 const SALES_ROLES = new Set([
   'sales', 'sales_agent', 'sales_lead', 'sales_manager', 'lead_gen', 'performance_manager',
 ]);
