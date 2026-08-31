@@ -537,7 +537,7 @@ const LeadAlertCard: React.FC<CardProps> = ({
             <a
               href={`tel:${lead.phone!.replace(/[^\d+]/g, '')}`}
               onClick={handleDial}
-              className="flex-1 inline-flex items-center justify-center gap-1 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 text-[11px] font-bold shadow-sm cursor-pointer transition-colors min-w-0"
+              className="flex-1 inline-flex items-center justify-center gap-1 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 text-[13px] font-bold shadow-sm cursor-pointer transition-colors min-w-0"
               aria-label={`Click to dial ${displayPhone} via Zoiper`}
             >
               <Phone className="h-3 w-3 shrink-0" fill="currentColor" strokeWidth={0} />
