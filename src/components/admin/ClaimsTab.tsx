@@ -37,6 +37,8 @@ import { VehicleIntelligenceExplorer } from './claims/VehicleIntelligenceExplore
 import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
 import { ClaimsAgeMileageAnalytics } from './claims/ClaimsAgeMileageAnalytics';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
+import { AppealsInboxPanel } from './claims/AppealsInboxPanel';
+import { useReturnedAppeals } from '@/hooks/useReturnedAppeals';
 
 interface ClaimSubmission {
   id: string;
@@ -99,6 +101,14 @@ export const ClaimsTab = ({
   const [activeSubTab, setActiveSubTab] = useState<'claims' | 'reminders' | 'claims-data'>('claims');
 
   const { claims: managerClaims, loading: managerLoading, refetch: refetchManager } = useClaims();
+  const {
+    appeals: returnedAppeals,
+    unreadCount: appealsUnreadCount,
+    totalCount: appealsTotalCount,
+    loading: appealsLoading,
+    markAsRead: markAppealAsRead,
+    refetch: refetchAppeals,
+  } = useReturnedAppeals();
 
   useEffect(() => { fetchClaims(); }, []);
 
@@ -314,6 +324,34 @@ export const ClaimsTab = ({
       {/* Due reminders — sticky banner across every claims sub-tab */}
       <ClaimRemindersBanner onManage={() => setActiveSubTab('reminders')} />
 
+      {/* Appeal received back — banner across every claims sub-tab */}
+      {appealsTotalCount > 0 && (
+        <div className="rounded-xl border-2 border-[#E8541A] bg-orange-50 px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#E8541A]">
+              <Gavel className="h-4 w-4 text-white" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-[#1A2B4A]">
+                {appealsTotalCount} appeal{appealsTotalCount === 1 ? '' : 's'} received back
+                {appealsUnreadCount > 0 ? ` — ${appealsUnreadCount} not yet read` : ''}
+              </p>
+              <p className="text-xs text-slate-600">Full details are in the Appeals section below.</p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            className="bg-[#E8541A] hover:bg-[#cf4915] text-white"
+            onClick={() => {
+              setActiveSubTab('claims');
+              setTimeout(() => document.getElementById('appeals-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+            }}
+          >
+            View appeals
+          </Button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex justify-between items-center flex-wrap gap-3">
         <div>
@@ -339,8 +377,16 @@ export const ClaimsTab = ({
           <Button onClick={() => setShowFilesDialog(true)} variant="outline" size="sm">
             <Paperclip className="h-4 w-4 mr-1" /> Upload file
           </Button>
-          <Button onClick={() => setShowAppealDialog(true)} variant="outline" size="sm">
+          <Button onClick={() => setShowAppealDialog(true)} variant="outline" size="sm" className="relative">
             <Gavel className="h-4 w-4 mr-1" /> Appeals
+            {appealsTotalCount > 0 && (
+              <span
+                className={`ml-2 inline-flex min-w-[1.25rem] h-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold text-white ${appealsUnreadCount > 0 ? 'bg-[#E8541A] animate-pulse' : 'bg-slate-500'}`}
+                title={`${appealsTotalCount} appeal(s) returned by customers`}
+              >
+                {appealsTotalCount}
+              </span>
+            )}
           </Button>
 
 
@@ -477,6 +523,16 @@ export const ClaimsTab = ({
           <WidgetErrorBoundary label="Customer claim updates">
             <ClaimUpdateNotifications />
           </WidgetErrorBoundary>
+          <div id="appeals-section" className="scroll-mt-4">
+            <WidgetErrorBoundary label="Appeals">
+              <AppealsInboxPanel
+                appeals={returnedAppeals}
+                loading={appealsLoading}
+                onMarkAsRead={markAppealAsRead}
+                onOpenAppealDialog={() => setShowAppealDialog(true)}
+              />
+            </WidgetErrorBoundary>
+          </div>
           <WidgetErrorBoundary label="Claims performance">
             <PerformanceKpiStrip
               avgPayout={perfKpis.avgPayout}
@@ -502,7 +558,7 @@ export const ClaimsTab = ({
       <ClaimAppealDialog
         open={showAppealDialog}
         onOpenChange={setShowAppealDialog}
-        onSent={() => fetchClaims()}
+        onSent={() => { fetchClaims(); refetchAppeals(); }}
       />
 
       <AddClaimDialog
