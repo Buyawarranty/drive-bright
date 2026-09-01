@@ -250,6 +250,12 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
 }) => {
   const { toast } = useToast();
   const { isFlagged: isMisrepFlagged, refetch: refetchMisrep } = useMisrepresentedIdentities();
+  const [sortKey, setSortKey] = useState<'submitted' | 'sla' | 'onRisk'>('submitted');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const toggleSort = (key: 'submitted' | 'sla' | 'onRisk') => {
+    if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    else { setSortKey(key); setSortDir('desc'); }
+  };
   const [stageBusyId, setStageBusyId] = useState<string | null>(null);
   const [pendingChange, setPendingChange] = useState<PendingClaimStatusChange | null>(null);
   const [reviewComments, setReviewComments] = useState<Record<string, { positive?: string; negative?: string }>>({});
