@@ -5,8 +5,7 @@ import { useViewAs } from '@/contexts/ViewAsContext';
 import { isAlertsMuted } from '@/lib/alertSoundPreference';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { fetchByIdsInBatches } from '@/utils/batchedIn';
-import { isHeavyTabBusy } from '@/lib/heavyTabBusy';
-import { withBackgroundPriority } from '@/lib/requestQueue';
+import { withPriority } from '@/lib/requestQueue';
 
 
 // Business-hours gate — pop-ups AND beeps only fire 09:00–18:00 Europe/London.
@@ -126,12 +125,19 @@ const fetchAgentAlertLeads = (adminId: string): Promise<any[]> => {
         .select(cols)
         .eq('assigned_to', adminId)
         .eq('is_paid', false);
-    const [byAssigned, byCreated] = await withBackgroundPriority(() =>
+    // A new assignment is time-sensitive UI, not a background dashboard read.
+    // Putting this behind Quotes & Orders / customer-grid requests meant the
+    // busiest agents' pop-ups were starved by the same traffic that left those
+    // pages loading. The shared cache still keeps this to one request cycle.
+    const [byAssigned, byCreated] = await withPriority(() =>
       Promise.all([
         base().order('assigned_at', { ascending: false, nullsFirst: false }).limit(50),
         base().order('created_at', { ascending: false }).limit(50),
       ]),
     );
+    if (byAssigned.error && byCreated.error) {
+      throw byCreated.error;
+    }
     const merged = new Map<string, any>();
     [byAssigned, byCreated].forEach((res) => {
       if (res.error || !res.data) return;
@@ -146,7 +152,12 @@ const fetchAgentAlertLeads = (adminId: string): Promise<any[]> => {
     return rows;
   })();
   _alertCache.set(adminId, { at: entry?.at ?? 0, rows: entry?.rows ?? [], inflight });
-  return inflight;
+  return inflight.catch((error) => {
+    // Never leave a rejected promise cached forever or turn a transport/RLS
+    // failure into a believable empty queue.
+    _alertCache.delete(adminId);
+    throw error;
+  });
 };
 
 /** Drop the shared caches so the next load hits the database (realtime push). */
@@ -191,7 +202,7 @@ const computeAgentQueue = (adminId: string): Promise<any[]> => {
       rows = offered;
       if (nonOffered.length > 0) {
         const ids = nonOffered.map((l: any) => l.id);
-        const [noteRows, callRows] = await withBackgroundPriority(() => Promise.all([
+        const [noteRows, callRows] = await withPriority(() => Promise.all([
           fetchByIdsInBatches<any>(ids, (batch) =>
             supabase.from('lead_quick_notes').select('lead_id, created_by').in('lead_id', batch).eq('created_by', adminId),
             { label: 'new lead alert notes' }),
@@ -209,7 +220,10 @@ const computeAgentQueue = (adminId: string): Promise<any[]> => {
     return rows;
   })();
   _queueCache.set(adminId, { at: entry?.at ?? 0, rows: entry?.rows ?? [], inflight });
-  return inflight;
+  return inflight.catch((error) => {
+    _queueCache.delete(adminId);
+    throw error;
+  });
 };
 
 
@@ -332,41 +346,47 @@ export const useNewLeadAlert = () => {
 
 
   const [now, setNow] = useState(() => Date.now());
-  const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => {
-    try {
-      const raw = localStorage.getItem('new-lead-alert-dismissed');
-      return new Set<string>(raw ? JSON.parse(raw) : []);
-    } catch {
-      return new Set<string>();
-    }
-  });
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [popupDismissedFor, setPopupDismissedFor] = useState<string | null>(null);
-  const [snoozedUntil, setSnoozedUntil] = useState<Record<string, number>>(() => {
-    try {
-      const raw = localStorage.getItem('new-lead-alert-snoozed');
-      return raw ? JSON.parse(raw) : {};
-    } catch {
-      return {};
+  const [snoozedUntil, setSnoozedUntil] = useState<Record<string, number>>({});
+
+  // Dismissals belong to the signed-in agent. A shared workstation previously
+  // let one agent's dismissed lead id suppress that lead after reassignment to
+  // James, Freddie or Thomas.
+  useEffect(() => {
+    if (!adminId) {
+      setDismissedIds(new Set());
+      setSnoozedUntil({});
+      return;
     }
-  });
+    try {
+      const dismissed = localStorage.getItem(`new-lead-alert-dismissed:${adminId}`);
+      const snoozed = localStorage.getItem(`new-lead-alert-snoozed:${adminId}`);
+      setDismissedIds(new Set<string>(dismissed ? JSON.parse(dismissed) : []));
+      setSnoozedUntil(snoozed ? JSON.parse(snoozed) : {});
+    } catch {
+      setDismissedIds(new Set());
+      setSnoozedUntil({});
+    }
+  }, [adminId]);
 
   const persistDismissed = useCallback((next: Set<string>) => {
     try {
       // Cap to 200 ids so localStorage stays tiny.
       const arr = Array.from(next).slice(-200);
-      localStorage.setItem('new-lead-alert-dismissed', JSON.stringify(arr));
+      if (adminId) localStorage.setItem(`new-lead-alert-dismissed:${adminId}`, JSON.stringify(arr));
     } catch {
       // ignore quota errors
     }
-  }, []);
+  }, [adminId]);
 
   const persistSnoozed = useCallback((next: Record<string, number>) => {
     try {
-      localStorage.setItem('new-lead-alert-snoozed', JSON.stringify(next));
+      if (adminId) localStorage.setItem(`new-lead-alert-snoozed:${adminId}`, JSON.stringify(next));
     } catch {
       // ignore
     }
-  }, []);
+  }, [adminId]);
 
   const snoozeLead = useCallback((leadId: string, minutes: number = 5) => {
     setSnoozedUntil((prev) => {
@@ -446,7 +466,12 @@ export const useNewLeadAlert = () => {
       setQueue([]);
       return;
     }
-    setQueue(await computeAgentQueue(adminId));
+    try {
+      setQueue(await computeAgentQueue(adminId));
+    } catch {
+      // Keep the last known queue visible and let realtime/focus/poll retry.
+      // A temporary page-load or network failure must not erase an alert.
+    }
   }, [adminId, alertsAllowed]);
 
 
@@ -458,19 +483,18 @@ export const useNewLeadAlert = () => {
   // Polling safety net. 30s, plus an immediate refetch whenever the tab
   // becomes visible again or the network comes back — timers are frozen while
   // a laptop sleeps, which is why the queue used to look "stuck".
-  // While a heavy screen (Quotes & Orders) is booting we skip the cycle so the
-  // agent's own polling can't queue in front of the screen they're waiting on.
+    // Alert reads use the urgent request lane, so they remain reliable even
+    // while a heavy screen such as Quotes & Orders is booting.
   useEffect(() => {
     load();
     // Safety-net poll only — realtime (filtered to this agent) is what actually
     // delivers new leads and it invalidates the shared cache on every push.
     // Was 30s per tab, which made this the heaviest query in the database.
     const stopPoll = setVisibleInterval(() => {
-      if (isHeavyTabBusy()) return;
       loadRef.current();
     }, 150000);
     const wake = () => {
-      if (document.visibilityState === 'visible' && !isHeavyTabBusy()) loadRef.current();
+      if (document.visibilityState === 'visible') loadRef.current();
     };
 
     document.addEventListener('visibilitychange', wake);

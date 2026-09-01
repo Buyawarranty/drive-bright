@@ -10777,6 +10777,7 @@ export type Database = {
           fake_reason_note: string | null
           first_name: string | null
           follow_up_status: string | null
+          gclid: string | null
           hidden_from_agent_ids: string[]
           id: string
           inbound_spoken_at: string | null
@@ -10897,6 +10898,7 @@ export type Database = {
           fake_reason_note?: string | null
           first_name?: string | null
           follow_up_status?: string | null
+          gclid?: string | null
           hidden_from_agent_ids?: string[]
           id?: string
           inbound_spoken_at?: string | null
@@ -11017,6 +11019,7 @@ export type Database = {
           fake_reason_note?: string | null
           first_name?: string | null
           follow_up_status?: string | null
+          gclid?: string | null
           hidden_from_agent_ids?: string[]
           id?: string
           inbound_spoken_at?: string | null
