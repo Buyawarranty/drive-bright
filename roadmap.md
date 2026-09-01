@@ -21,3 +21,5 @@
 - [x] Stripe charge.dispute.created/updated webhook tags the customer "Payment Disputed" (blocks renewal + repurchase)
 - [x] Claims action "Flag as misrepresented — do not cover" applies "Misrepresentation – Do Not Cover" across all of a customer's records
 - [x] Checkout (Stripe + Payment Assist) blocked for flagged customers with a call-us message
+- [x] Claims row action: shield icon to mark a claim as misrepresented (labels customer, excludes from renewals)
+- [x] Claims list: up/down sort arrows on Submitted, SLA and Days On Risk, default newest submitted first
