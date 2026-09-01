@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
+import { formatStoredPolicyCoverDuration } from '@/lib/policyCoverDuration';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 import { BulkEmailDialog } from '@/components/admin/BulkEmailDialog';
@@ -160,7 +161,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   // sales/sales_lead pass when their cap flag is on.
   const { canReassign: canReassignAny } = useLeadRoutingPermission();
 
-  const [segment, setSegment] = useState<SegmentId>('all_renewals');
+  const [segment, setSegment] = useState<SegmentId>('due_30');
   const [rows, setRows] = useState<PolicyRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [counts, setCounts] = useState<Record<SegmentId, number>>({} as any);
@@ -180,9 +181,9 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const [myOnly, setMyOnly] = useState(false);
   const [agentFilter, setAgentFilter] = useState<string>('all');
   type SortKey = 'due_next' | 'due_latest' | 'newest' | 'oldest' | 'name_az' | 'name_za';
-  const [sortKey, setSortKey] = useState<SortKey>('due_next');
+  const [sortKey, setSortKey] = useState<SortKey>('newest');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [datePeriod, setDatePeriod] = useState<PeriodKey>('today');
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
   const [leaderboard, setLeaderboard] = useState<Record<string, { worked: number; renewed: number }>>({});
   const [bulkAssignTo, setBulkAssignTo] = useState<string>('');
@@ -908,8 +909,21 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                   <th className="text-left p-2 w-[140px]">Agent</th>
                   {canSeeSource && <th className="text-left p-2 w-[70px]">Src</th>}
                   <th className="text-left p-2 w-[120px]">Outcome</th>
-                  <th className="text-left p-2 w-[100px]">Renews in</th>
+                  <th className="text-left p-2 w-[120px]">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-foreground"
+                      title="Sort by how soon the policy renews"
+                      onClick={() => setSortKey(sortKey === 'due_next' ? 'due_latest' : 'due_next')}
+                    >
+                      Renews in
+                      {sortKey === 'due_next' ? <ArrowUp className="h-3 w-3" />
+                        : sortKey === 'due_latest' ? <ArrowDown className="h-3 w-3" />
+                        : <ArrowUpDown className="h-3 w-3 opacity-50" />}
+                    </button>
+                  </th>
                   <th className="text-left p-2 w-[70px]">Plan</th>
+                  <th className="text-left p-2 w-[90px]">Duration</th>
                   <th className="text-center p-2 w-[90px]">Calls</th>
                   <th className="text-left p-2 w-[110px]">Last contacted</th>
                   <th className="text-left p-2 w-[240px]">Latest note</th>
@@ -919,7 +933,19 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                   <th className="text-left p-2 w-[180px]">Email</th>
                   <th className="text-left p-2 w-[90px]">Reg</th>
                   <th className="text-left p-2 w-[110px]">Date added</th>
-                  <th className="text-left p-2 w-[110px]">Expiry</th>
+                  <th className="text-left p-2 w-[120px]">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-foreground"
+                      title="Sort by expiry date"
+                      onClick={() => setSortKey(sortKey === 'due_next' ? 'due_latest' : 'due_next')}
+                    >
+                      Expiry
+                      {sortKey === 'due_next' ? <ArrowUp className="h-3 w-3" />
+                        : sortKey === 'due_latest' ? <ArrowDown className="h-3 w-3" />
+                        : <ArrowUpDown className="h-3 w-3 opacity-50" />}
+                    </button>
+                  </th>
                   <th className="text-left p-2 w-[140px]" title="Last time the customer themselves did something — asked for another quote, filled step 2, or logged into the portal.">Customer activity</th>
                 </tr>
               </thead>
@@ -998,6 +1024,9 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                       </td>
                       <td className="p-2 text-xs">
                         <Badge variant="outline" className="text-[10px]">{planLengthLabel(r)}</Badge>
+                      </td>
+                      <td className="p-2 text-xs text-muted-foreground whitespace-nowrap">
+                        {formatStoredPolicyCoverDuration(r.policy_start_date, r.policy_end_date)}
                       </td>
                       <td className="p-2">
                         <div className="flex items-center justify-center gap-1">
