@@ -53,6 +53,46 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
   }, [adminMap]);
 
   /**
+   * Single server-side search (security-definer RPC). One round trip, indexed
+   * matching over leads + abandoned carts + customers, and it is not subject to
+   * per-row RLS re-checks or the browser request queue — which is what made
+   * name searches ("darren") come back empty for sales agents.
+   */
+  const rpcSearch = React.useCallback(async (term: string): Promise<LeadData[] | null> => {
+    const { data, error } = await (supabase as any).rpc('search_import_leads', {
+      p_term: term,
+      p_limit: 25,
+    });
+    if (error) {
+      console.error('[LeadSearch] RPC search failed:', error);
+      return null;
+    }
+    const rows = (data as any[]) || [];
+    const seen = new Set<string>();
+    const out: LeadData[] = [];
+    for (const r of rows) {
+      const key = `${(r.email || '').toLowerCase()}|${(r.vehicle_reg || '').replace(/\s/g, '').toUpperCase()}`;
+      if (key !== '|' && seen.has(key)) continue;
+      seen.add(key);
+      out.push({
+        id: r.row_id,
+        first_name: r.first_name || null,
+        last_name: r.last_name || null,
+        email: r.email || null,
+        phone: r.phone || null,
+        vehicle_reg: r.vehicle_reg || null,
+        vehicle_make: r.vehicle_make || null,
+        vehicle_model: r.vehicle_model || null,
+        vehicle_year: r.vehicle_year || null,
+        mileage: r.mileage != null ? String(r.mileage) : null,
+        plan_interest: r.plan_interest || null,
+        assigned_to: r.assigned_to || null,
+      });
+    }
+    return out;
+  }, []);
+
+  /**
    * Backup of the backup: when the normal (and already-fallback) lead search
    * still fails or comes back empty for an agent, this runs the simplest
    * possible queries — one plain single-column match at a time, no `or()`
@@ -60,6 +100,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
    * the least likely thing in the app to break, so the agent can always get
    * the record and keep the customer on the phone.
    */
+
   const runEmergencySearch = React.useCallback(async () => {
     const raw = searchTerm.trim();
     if (!raw) return;
