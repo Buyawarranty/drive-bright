@@ -14245,6 +14245,25 @@ export type Database = {
         }[]
       }
       rota_sync_in_progress: { Args: never; Returns: boolean }
+      search_import_leads: {
+        Args: { p_limit?: number; p_term: string }
+        Returns: {
+          assigned_to: string
+          created_at: string
+          email: string
+          first_name: string
+          last_name: string
+          mileage: string
+          phone: string
+          plan_interest: string
+          row_id: string
+          source: string
+          vehicle_make: string
+          vehicle_model: string
+          vehicle_reg: string
+          vehicle_year: string
+        }[]
+      }
       set_agent_auto_freeze: {
         Args: { _admin_user_id: string; _enabled: boolean }
         Returns: undefined
