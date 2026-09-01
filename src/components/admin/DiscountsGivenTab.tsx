@@ -585,6 +585,21 @@ export const DiscountsGivenTab: React.FC = () => {
     return { count, discountCount, totalDiscount, avgDiscountPct, bands };
   }, [customers, currentAdminId, dateRange, recordType, pricingVersions]);
 
+  // Rows for the month × agent summary (quoted/QOP vs actual paid).
+  const monthAgentRows = useMemo(
+    () =>
+      enrichedCustomers
+        .filter(c => c.agentId)
+        .map(c => ({
+          agentId: c.agentId as string,
+          agentName: agentMap[c.agentId as string] || 'Unknown',
+          date: c.signup_date,
+          quoted: c.retailPrice,
+          paid: c.final_amount || 0,
+        })),
+    [enrichedCustomers, agentMap],
+  );
+
 
   if (loading) {
     return (
