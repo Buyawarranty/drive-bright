@@ -25,9 +25,27 @@ export type WaitingHandover = {
  * re-ringing every 12s while someone is still waiting, so a customer sat in the
  * queue can't be missed.
  */
+const MUTE_KEY = 'sandbox_handover_ring_muted';
+
 export function useSandboxHandoverAlert() {
   const [waiting, setWaiting] = useState<WaitingHandover[]>([]);
-  const [muted, setMuted] = useState(false);
+  const [muted, setMutedState] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(MUTE_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
+  const mutedRef = useRef(muted);
+  mutedRef.current = muted;
+  const setMuted = useCallback((next: boolean) => {
+    setMutedState(next);
+    try {
+      localStorage.setItem(MUTE_KEY, next ? '1' : '0');
+    } catch {
+      /* ignore */
+    }
+  }, []);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const known = useRef<Set<string>>(new Set());
   const firstLoad = useRef(true);
@@ -46,10 +64,10 @@ export function useSandboxHandoverAlert() {
     const rows = (data as WaitingHandover[]) ?? [];
     const fresh = rows.filter((r) => !known.current.has(r.id));
     rows.forEach((r) => known.current.add(r.id));
-    if (!firstLoad.current && fresh.length > 0 && !muted) playPhoneRingBurst(2);
+    if (!firstLoad.current && fresh.length > 0 && !mutedRef.current) playPhoneRingBurst(2);
     firstLoad.current = false;
     setWaiting(rows);
-  }, [muted]);
+  }, []);
 
   useEffect(() => {
     load();

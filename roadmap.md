@@ -12,3 +12,5 @@
 - [x] CRM: live-chat banner at the top of the whole dashboard during opening hours (9am-6pm Mon-Sat), visible to claims staff too
 - [x] Unsubscribe tab: sales agents' `?tab=unsubscribe` links did nothing because the dashboard only read the tab param on mount — now follows URL changes, and the Unsubscribe quick link keeps the rest of the query string
 - [x] Banners must never be cut off: top CRM banners are inset by the fixed sidebar width on desktop and the struggle/failed-payment bar wraps instead of truncating
+- [x] Chatbot pop-up permission: "Customer waiting for a specialist" ring/pop-up is now permission-gated (`tab_chatbot-popup`) — default ON for admin, super admin and claims only; anyone else needs it switched on in User Permissions
+- [x] Chatbot pop-up mute is a clear Mute/Muted toggle and now persists (localStorage), so muting really stops the ring
