@@ -257,80 +257,8 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
           <ChevronRight className="h-4 w-4" />
         </Button>
 
-        {!hideQuickLinks && showAll && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: 'all', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            All
-          </button>
-        )}
-        {!hideQuickLinks && showToday && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: 'today', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            Today
-          </button>
-        )}
-        {!hideQuickLinks && showYesterday && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: 'yesterday', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            Yesterday
-          </button>
-        )}
-        {!hideQuickLinks && showThisWeek && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: 'this_week', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            This week
-          </button>
-        )}
-        {!hideQuickLinks && showLastWeek && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: 'last_week', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            Last week
-          </button>
-        )}
-        {!hideQuickLinks && showThisMonth && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: 'this_month', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            This month
-          </button>
-        )}
-        {!hideQuickLinks && showLastMonth && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: 'last_month', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            Last month
-          </button>
-        )}
-        {!hideQuickLinks && showLast30 && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: '30days', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            Show last 30 days
-          </button>
-        )}
-
         <PopoverContent className="p-0 w-[560px] max-w-[calc(100vw-2rem)] z-50 overflow-hidden" align="end" sideOffset={6} collisionPadding={16}>
+
           <div className="flex">
             {/* Left: presets */}
             <div className="w-[180px] shrink-0 border-r bg-muted/30 max-h-[440px] overflow-y-auto py-1">
