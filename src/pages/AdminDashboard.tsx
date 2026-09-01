@@ -1360,6 +1360,8 @@ const AdminDashboardInner: React.FC<{
           👁️ Viewing dashboard as <strong>{viewAsAgent?.firstName} {viewAsAgent?.lastName}</strong> ({effectiveRole?.replace('_', ' ')}) — This is read-only simulation mode
         </div>
       )}
+      </div>
+
 
 
       <div className="flex-1 flex flex-col lg:flex-row">
