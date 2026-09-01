@@ -855,7 +855,9 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             );
 
             if (src === 'google_ad') {
-              const gclid = metadata?.gclid;
+              // Prefer the gclid stored on the lead itself (captured from the
+              // landing URL); fall back to the basket metadata.
+              const gclid = (lead as any).gclid || metadata?.gclid;
               return chip('Google', 'bg-emerald-100 text-emerald-800 border-emerald-300',
                 gclid ? ['Google Ads', `GCLID: ${gclid}`] : ['Google Ads (no GCLID captured)']);
             }
