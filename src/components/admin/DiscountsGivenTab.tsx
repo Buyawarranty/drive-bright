@@ -868,7 +868,19 @@ export const DiscountsGivenTab: React.FC = () => {
         </div>
       </div>
 
+      {/* Empty range: say so plainly instead of showing a wall of zeros */}
+      {!loading && totals.count === 0 && (
+        <Card className="border-amber-200 bg-amber-50/50">
+          <CardContent className="p-4 text-sm text-amber-800">
+            No sales fall inside the selected date range
+            {dateRange?.from ? ` (${format(dateRange.from, 'd MMM yyyy')}${dateRange.to ? ` – ${format(dateRange.to, 'd MMM yyyy')}` : ''})` : ''}
+            , so every figure below reads zero. Widen the dates or pick a month with sales.
+          </CardContent>
+        </Card>
+      )}
+
       {/* Summary Cards */}
+
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
         <Card>
           <CardContent className="p-4 text-center">
