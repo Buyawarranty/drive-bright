@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
+import { formatStoredPolicyCoverDuration } from '@/lib/policyCoverDuration';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 import { BulkEmailDialog } from '@/components/admin/BulkEmailDialog';
@@ -160,7 +161,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   // sales/sales_lead pass when their cap flag is on.
   const { canReassign: canReassignAny } = useLeadRoutingPermission();
 
-  const [segment, setSegment] = useState<SegmentId>('all_renewals');
+  const [segment, setSegment] = useState<SegmentId>('due_30');
   const [rows, setRows] = useState<PolicyRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [counts, setCounts] = useState<Record<SegmentId, number>>({} as any);
@@ -180,9 +181,9 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const [myOnly, setMyOnly] = useState(false);
   const [agentFilter, setAgentFilter] = useState<string>('all');
   type SortKey = 'due_next' | 'due_latest' | 'newest' | 'oldest' | 'name_az' | 'name_za';
-  const [sortKey, setSortKey] = useState<SortKey>('due_next');
+  const [sortKey, setSortKey] = useState<SortKey>('newest');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [datePeriod, setDatePeriod] = useState<PeriodKey>('today');
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
   const [leaderboard, setLeaderboard] = useState<Record<string, { worked: number; renewed: number }>>({});
   const [bulkAssignTo, setBulkAssignTo] = useState<string>('');
