@@ -412,7 +412,15 @@ const AdminDashboard = () => {
       return next;
     }, { replace: true });
   }, [setSearchParams]);
+  // Follow the ?tab= param whenever it changes after mount. Quick links (e.g. the
+  // Unsubscribe shortcut above the leads table) only rewrite the query string, so
+  // without this the URL changed and the screen stayed put.
+  useEffect(() => {
+    if (urlTab && urlTab !== activeTab) setActiveTab(urlTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTab]);
   // Rewrite legacy tab in URL once on mount
+
   useEffect(() => {
     if (rawUrlTab && (TAB_ALIASES[rawUrlTab] || rawUrlTab === 'overview')) {
       const canonical = TAB_ALIASES[rawUrlTab] ?? rawUrlTab;
