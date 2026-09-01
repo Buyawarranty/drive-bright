@@ -1227,6 +1227,8 @@ export const DiscountsGivenTab: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      <PriceOverridesPanel />
     </div>
   );
 };
