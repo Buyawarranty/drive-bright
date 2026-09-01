@@ -900,8 +900,9 @@ Deno.serve(async (req) => {
       onlineNow > 0
         ? " — a real person can pick this chat up within seconds, so offer that whenever the customer hesitates or wants to buy."
         : now.is_open
-          ? " — nobody is sat in live chat this second, but WE ARE OPEN: never say we are closed or give a reopen time. Say a specialist will call them straight back, ask for their phone number and capture the lead."
+          ? " — nobody is sat in live chat this second, but WE ARE OPEN: never say we are closed or give a reopen time. If they ask for a human, call connect_live_agent anyway — it rings every manager and staff member in the CRM — and also take their phone number as a backup."
           : " — nobody is sat in live chat this second, so do not promise an instant human; offer a callback or keep helping yourself."
+
     }.\nIf a message in the conversation begins with "(Warranty specialist)" a human has joined this chat — stay out of the way and only reply if the customer asks you directly.`;
 
 
