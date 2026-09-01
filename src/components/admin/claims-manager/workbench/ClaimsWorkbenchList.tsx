@@ -500,6 +500,13 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                       <ThumbsDown className="h-3.5 w-3.5" />
                     </button>
                   </ReviewNotePopover>
+                  <MisrepFlagButton
+                    claimId={c.id}
+                    email={c.email}
+                    reg={c.reg}
+                    flagged={isMisrepFlagged(c.email, c.reg)}
+                    onFlagged={async () => { await refetchMisrep(); await onUpdated(); }}
+                  />
                 </div>
 
                 {/* SLA — click to open drawer */}
