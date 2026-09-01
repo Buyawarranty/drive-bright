@@ -135,7 +135,7 @@ const timeAgo = (iso: string) => {
   return `${Math.round(hrs / 24)} days ago`;
 };
 
-export default function ChatActionQueuePanel({ rangeDays }: { rangeDays: string }) {
+export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { rangeDays: string; fromIso?: string | null; toIso?: string | null }) {
   const [rows, setRows] = useState<QueueRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -149,7 +149,8 @@ export default function ChatActionQueuePanel({ rangeDays }: { rangeDays: string 
     try {
       const since = new Date();
       if (rangeDays !== 'all') since.setDate(since.getDate() - Number(rangeDays));
-      const sinceIso = rangeDays === 'all' ? null : since.toISOString();
+      const sinceIso = fromIso ?? (rangeDays === 'all' ? null : since.toISOString());
+      const untilIso = toIso ?? null;
 
       let tq = supabase
         .from('ai_sandbox_threads')
@@ -157,6 +158,7 @@ export default function ChatActionQueuePanel({ rangeDays }: { rangeDays: string 
         .order('updated_at', { ascending: false, nullsFirst: false })
         .limit(300);
       if (sinceIso) tq = tq.gte('created_at', sinceIso);
+      if (untilIso) tq = tq.lte('created_at', untilIso);
       const { data: threadData, error: tErr } = await tq;
       if (tErr) throw tErr;
       const threads = (threadData ?? []) as ThreadRow[];
@@ -315,7 +317,7 @@ export default function ChatActionQueuePanel({ rangeDays }: { rangeDays: string 
     } finally {
       setLoading(false);
     }
-  }, [rangeDays]);
+  }, [rangeDays, fromIso, toIso]);
 
   useEffect(() => {
     void load();

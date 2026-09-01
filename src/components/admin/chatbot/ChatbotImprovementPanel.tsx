@@ -72,7 +72,7 @@ const textOf = (m: { content: string | null; parts: any }) => {
 
 const normalise = (s: string) => s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
 
-export default function ChatbotImprovementPanel({ rangeDays }: { rangeDays: string }) {
+export default function ChatbotImprovementPanel({ rangeDays, fromIso, toIso }: { rangeDays: string; fromIso?: string | null; toIso?: string | null }) {
   const [gaps, setGaps] = useState<Gap[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
@@ -83,13 +83,15 @@ export default function ChatbotImprovementPanel({ rangeDays }: { rangeDays: stri
     try {
       const since = new Date();
       if (rangeDays !== 'all') since.setDate(since.getDate() - Number(rangeDays));
-      const sinceIso = rangeDays === 'all' ? null : since.toISOString();
+      const sinceIso = fromIso ?? (rangeDays === 'all' ? null : since.toISOString());
+      const untilIso = toIso ?? null;
 
       let evQ = (supabase.from('ai_chat_events' as any) as any)
         .select('id, thread_id, event_type, topic, detail, customer_wording, knowledge_confident, created_at')
         .order('created_at', { ascending: false })
         .limit(3000);
       if (sinceIso) evQ = evQ.gte('created_at', sinceIso);
+      if (untilIso) evQ = evQ.lte('created_at', untilIso);
 
       let msgQ = supabase
         .from('ai_sandbox_messages')
@@ -169,7 +171,7 @@ export default function ChatbotImprovementPanel({ rangeDays }: { rangeDays: stri
     } finally {
       setLoading(false);
     }
-  }, [rangeDays]);
+  }, [rangeDays, fromIso, toIso]);
 
   useEffect(() => {
     void load();

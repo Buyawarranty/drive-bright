@@ -11,6 +11,8 @@ import { Bot, MessageSquare, Car, PoundSterling, PhoneCall, UserPlus, RefreshCw,
 import ChatConversationsPanel from './ChatConversationsPanel';
 import ChatActionQueuePanel from './ChatActionQueuePanel';
 import ChatbotImprovementPanel from './ChatbotImprovementPanel';
+import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
+import type { DateRange } from 'react-day-picker';
 
 type ChatEvent = {
   id: string;
@@ -29,13 +31,6 @@ type ChatEvent = {
   metadata: any;
   created_at: string;
 };
-
-const RANGES = [
-  { key: '7', label: 'Last 7 days' },
-  { key: '30', label: 'Last 30 days' },
-  { key: '90', label: 'Last 90 days' },
-  { key: 'all', label: 'All time' },
-] as const;
 
 const TYPE_LABELS: Record<string, string> = {
   customer_message: 'Customer message',
@@ -65,7 +60,12 @@ const STOP_WORDS = new Set([
 export default function ChatbotDataTab() {
   const [events, setEvents] = useState<ChatEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [range, setRange] = useState<string>('30');
+  const [period, setPeriod] = useState<PeriodKey>('today');
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
+
+  const activeRange = period === 'custom' ? customRange : periodToRange(period);
+  const fromIso = activeRange?.from ? new Date(new Date(activeRange.from).setHours(0, 0, 0, 0)).toISOString() : null;
+  const toIso = activeRange?.to ? new Date(new Date(activeRange.to).setHours(23, 59, 59, 999)).toISOString() : null;
   const [search, setSearch] = useState('');
 
   const load = async () => {
@@ -75,11 +75,8 @@ export default function ChatbotDataTab() {
       .order('created_at', { ascending: false })
       .limit(2000);
 
-    if (range !== 'all') {
-      const from = new Date();
-      from.setDate(from.getDate() - Number(range));
-      query = query.gte('created_at', from.toISOString());
-    }
+    if (fromIso) query = query.gte('created_at', fromIso);
+    if (toIso) query = query.lte('created_at', toIso);
 
     const { data, error } = await query;
     if (error) {
@@ -94,7 +91,7 @@ export default function ChatbotDataTab() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [range]);
+  }, [fromIso, toIso]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -231,16 +228,6 @@ export default function ChatbotDataTab() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {RANGES.map((r) => (
-            <Button
-              key={r.key}
-              size="sm"
-              variant={range === r.key ? 'default' : 'outline'}
-              onClick={() => setRange(r.key)}
-            >
-              {r.label}
-            </Button>
-          ))}
           <Button size="sm" variant="outline" onClick={load} disabled={loading}>
             <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} /> Refresh
           </Button>
@@ -263,6 +250,18 @@ export default function ChatbotDataTab() {
         </div>
 
       </div>
+
+      <UnifiedDateFilter
+        scope="signup"
+        availableScopes={['signup']}
+        period={period}
+        customRange={customRange}
+        onChange={(next) => {
+          setPeriod(next.period);
+          setCustomRange(next.customRange);
+        }}
+        showLabel
+      />
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
         <StatCard icon={MessageSquare} label="Conversations" value={stats.threads} />
@@ -291,16 +290,16 @@ export default function ChatbotDataTab() {
         </TabsList>
 
         <TabsContent value="queue" className="pt-4">
-          <ChatActionQueuePanel rangeDays={range} />
+          <ChatActionQueuePanel rangeDays="all" fromIso={fromIso} toIso={toIso} />
         </TabsContent>
 
         <TabsContent value="conversations" className="pt-4">
-          <ChatConversationsPanel rangeDays={range} />
+          <ChatConversationsPanel rangeDays="all" fromIso={fromIso} toIso={toIso} />
         </TabsContent>
 
 
         <TabsContent value="improve" className="pt-4">
-          <ChatbotImprovementPanel rangeDays={range} />
+          <ChatbotImprovementPanel rangeDays="all" fromIso={fromIso} toIso={toIso} />
         </TabsContent>
 
         <TabsContent value="wants" className="space-y-4 pt-4">
