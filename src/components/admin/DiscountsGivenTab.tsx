@@ -359,15 +359,29 @@ export const DiscountsGivenTab: React.FC = () => {
       });
       const normalizeAgentId = (id: string | null) => id ? (adminIdByIdentity.get(id) || id) : null;
 
-      const confirmedPayments = ((customersRes.data || []) as CustomerRecord[]).map(customer => ({
-        ...customer,
-        assigned_to: normalizeAgentId(customer.assigned_to),
-        sale_credit_admin_user_id: normalizeAgentId(customer.sale_credit_admin_user_id || null),
-        payment_confirmed_by: normalizeAgentId(customer.payment_confirmed_by),
-        quote_sent_by: normalizeAgentId(customer.quote_sent_by),
-        record_source: 'confirmed_payment' as const,
-      }));
-      const sentQuotes = ((quotesRes.data || []) as SentQuoteRecord[]).map((quote): CustomerRecord => ({
+      const salesAgentIdSet = new Set(
+        admins.filter(a => ['sales', 'sales_lead'].includes(a.role)).map(a => a.id),
+      );
+
+      const confirmedPayments = ((customersRes.data || []) as CustomerRecord[])
+        .map(customer => ({
+          ...customer,
+          assigned_to: normalizeAgentId(customer.assigned_to),
+          sale_credit_admin_user_id: normalizeAgentId(customer.sale_credit_admin_user_id || null),
+          payment_confirmed_by: normalizeAgentId(customer.payment_confirmed_by),
+          quote_sent_by: normalizeAgentId(customer.quote_sent_by),
+          record_source: 'confirmed_payment' as const,
+        }))
+        // Keep it agent-worked: an admin-created order (Quotes & Orders / Confirm
+        // External Payment) or any sale Customer Management credits to a sales agent.
+        .filter(c =>
+          (c as any).is_manual_entry === true ||
+          !!(c.sale_credit_admin_user_id && salesAgentIdSet.has(c.sale_credit_admin_user_id)) ||
+          !!(c.payment_confirmed_by && salesAgentIdSet.has(c.payment_confirmed_by)) ||
+          !!(c.quote_sent_by && salesAgentIdSet.has(c.quote_sent_by)) ||
+          !!(c.assigned_to && salesAgentIdSet.has(c.assigned_to)),
+        );
+
         id: `quote-${quote.id}`,
         name: quote.customer_name,
         email: quote.customer_email,
