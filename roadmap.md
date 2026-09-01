@@ -18,3 +18,6 @@
 - [ ] Renewals → New Leads: policies 60 days from expiry become real new leads owned by the original selling agent, else normal round robin
 - [ ] Renewal eligibility: exclude anyone ever cancelled or refunded, unresolved complaints/disputes/chargebacks, fraud flags and contact restrictions; declined claims alone must NOT block renewal
 - [ ] Renewal cadence: 60d create lead + light notice, 30d main contact, 14d reminder, 7d stronger reminder, 1-2d optional final — stop the cadence once renewed or declined
+- [x] Stripe charge.dispute.created/updated webhook tags the customer "Payment Disputed" (blocks renewal + repurchase)
+- [x] Claims action "Flag as misrepresented — do not cover" applies "Misrepresentation – Do Not Cover" across all of a customer's records
+- [x] Checkout (Stripe + Payment Assist) blocked for flagged customers with a call-us message
