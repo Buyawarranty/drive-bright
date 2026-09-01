@@ -373,13 +373,14 @@ export const DiscountsGivenTab: React.FC = () => {
           record_source: 'confirmed_payment' as const,
         }))
         // Keep it agent-worked: an admin-created order (Quotes & Orders / Confirm
-        // External Payment) or any sale Customer Management credits to a sales agent.
+        // External Payment) or any sale Customer Management shows against a staff
+        // owner. Pure self-serve website sales have no owner and stay out.
         .filter(c =>
           (c as any).is_manual_entry === true ||
-          !!(c.sale_credit_admin_user_id && salesAgentIdSet.has(c.sale_credit_admin_user_id)) ||
+          !!c.assigned_to ||
+          !!c.sale_credit_admin_user_id ||
           !!(c.payment_confirmed_by && salesAgentIdSet.has(c.payment_confirmed_by)) ||
-          !!(c.quote_sent_by && salesAgentIdSet.has(c.quote_sent_by)) ||
-          !!(c.assigned_to && salesAgentIdSet.has(c.assigned_to)),
+          !!(c.quote_sent_by && salesAgentIdSet.has(c.quote_sent_by)),
         );
 
       const sentQuotes = ((quotesRes.data || []) as SentQuoteRecord[]).map((quote): CustomerRecord => ({
