@@ -1039,10 +1039,18 @@ export const DiscountsGivenTab: React.FC = () => {
         </Card>
       )}
 
-      {/* Data Table */}
+      {/* Data Table — every individual sale, hidden until asked for */}
       <Card>
         <CardContent className="p-0">
-          <div className="relative w-full overflow-auto max-h-[600px]">
+          <button
+            type="button"
+            onClick={() => setDetailOpen(o => !o)}
+            className="flex w-full items-center gap-2 px-4 py-3 text-sm font-semibold hover:text-primary"
+          >
+            <ChevronDownIcon className={`h-4 w-4 transition-transform ${detailOpen ? '' : '-rotate-90'}`} />
+            Every sale in detail ({enrichedCustomers.length})
+          </button>
+          <div className={`relative w-full overflow-auto max-h-[600px] ${detailOpen ? '' : 'hidden'}`}>
             <Table>
               <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
