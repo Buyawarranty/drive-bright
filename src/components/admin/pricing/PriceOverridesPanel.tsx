@@ -45,7 +45,7 @@ const PERIODS = [
  * Manual price overrides audit log (Option C — audit only, nothing is blocked).
  * Managers see every agent; agents see only their own rows (enforced by RLS).
  */
-export const PriceOverridesPanel: React.FC = () => {
+export const PriceOverridesPanel: React.FC<{ agentFilter?: string | null }> = ({ agentFilter }) => {
   const [rows, setRows] = useState<OverrideRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<string>('30');
@@ -82,16 +82,39 @@ export const PriceOverridesPanel: React.FC = () => {
     return Array.from(set).sort();
   }, [rows]);
 
+  // The same save can fire several audit writes (retry, double submit, quote link +
+  // confirm). Collapse identical rows for the same agent/customer/price within 5 minutes.
+  const deduped = useMemo(() => {
+    const seen = new Map<string, OverrideRow>();
+    const out: OverrideRow[] = [];
+    rows.forEach(r => {
+      const key = [
+        r.agent_name, r.customer_email, r.vehicle_reg,
+        Math.round(r.entered_total || 0), Math.round(r.matrix_total || 0),
+        r.payment_type, r.claim_limit, r.excess_amount, r.labour_rate,
+      ].join('|');
+      const prev = seen.get(key);
+      if (prev && Math.abs(new Date(prev.created_at).getTime() - new Date(r.created_at).getTime()) < 5 * 60 * 1000) {
+        return;
+      }
+      seen.set(key, r);
+      out.push(r);
+    });
+    return out;
+  }, [rows]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return rows.filter(r => {
+    const external = (agentFilter || '').trim().toLowerCase();
+    return deduped.filter(r => {
+      if (external && (r.agent_name || '').toLowerCase() !== external) return false;
       if (agent !== 'all' && r.agent_name !== agent) return false;
       if (onlyBelowFloor && !r.below_floor) return false;
       if (!q) return true;
       return [r.customer_name, r.customer_email, r.vehicle_reg, r.agent_name]
         .some(v => (v || '').toLowerCase().includes(q));
     });
-  }, [rows, agent, onlyBelowFloor, search]);
+  }, [deduped, agent, agentFilter, onlyBelowFloor, search]);
 
   const totals = useMemo(() => {
     const belowGrid = filtered.filter(r => (r.diff_amount || 0) < 0);

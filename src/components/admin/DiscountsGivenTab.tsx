@@ -415,8 +415,9 @@ export const DiscountsGivenTab: React.FC = () => {
     return map;
   }, [adminUsers]);
 
+  // Only people who actually sell — never admins, claims, lead gen, social or temp accounts.
   const salesAgents = useMemo(
-    () => adminUsers.filter(u => !['admin', 'super_admin'].includes(u.role)),
+    () => adminUsers.filter(u => ['sales', 'sales_lead'].includes(u.role)),
     [adminUsers],
   );
 
@@ -1228,7 +1229,9 @@ export const DiscountsGivenTab: React.FC = () => {
         </CardContent>
       </Card>
 
-      <PriceOverridesPanel />
+      <PriceOverridesPanel
+        agentFilter={selectedAgent !== 'all' ? agentMap[selectedAgent] || null : null}
+      />
     </div>
   );
 };
