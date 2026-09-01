@@ -23,6 +23,8 @@ import { PendingLeadsPill } from '@/components/admin/PendingLeadsPill';
 
 import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
+import SandboxHandoverAlerts from '@/components/admin/SandboxHandoverAlerts';
+
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 import { AlertRailHost } from '@/components/admin/AlertRail';
@@ -1300,6 +1302,10 @@ const AdminDashboardInner: React.FC<{
 
                 {/* Real-time incoming CallRail call banner */}
                 <IncomingCallBanner />
+
+                {/* Ringing alert when a website chat customer asks for a human */}
+                <SandboxHandoverAlerts />
+
 
                 {/* Global missed inbound call bar */}
                 <MissedCallAlertBar
