@@ -103,23 +103,33 @@ export const MisrepFlagButton: React.FC<Props> = ({ claimId, email, reg, flagged
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label="Mark as misrepresented"
-          title={flagged
-            ? 'Misrepresentation – Do Not Cover (excluded from renewals)'
-            : 'Mark as misrepresented — do not cover'}
-          className={cn(
-            'h-7 w-7 inline-flex items-center justify-center rounded-md border transition',
-            flagged
-              ? 'bg-red-100 border-red-300 text-red-700'
-              : 'bg-card border-border text-muted-foreground hover:bg-red-50 hover:text-red-600',
-          )}
-        >
-          <ShieldAlert className="h-3.5 w-3.5" />
-        </button>
-      </PopoverTrigger>
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                aria-label="Mark as misrepresented"
+                className={cn(
+                  'h-7 w-7 inline-flex items-center justify-center rounded-md border transition',
+                  flagged
+                    ? 'bg-red-100 border-red-300 text-red-700'
+                    : 'bg-card border-border text-muted-foreground hover:bg-red-50 hover:text-red-600',
+                )}
+              >
+                <ShieldAlert className="h-3.5 w-3.5" />
+              </button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="top" align="center" className="max-w-xs">
+            <p className="text-xs leading-relaxed">
+              {flagged
+                ? 'Customer is labelled Misrepresentation – Do Not Cover. They are excluded from renewals and blocked from buying cover again.'
+                : 'Select when the customer misrepresented the vehicle’s condition (for example, a pre-existing fault). This applies Misrepresentation – Do Not Cover across all of their records, excludes them from renewals and blocks new cover.'}
+            </p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <PopoverContent className="w-80" align="start" onClick={(e) => e.stopPropagation()}>
         <div className="space-y-2">
           <div className="text-sm font-semibold text-red-800">
