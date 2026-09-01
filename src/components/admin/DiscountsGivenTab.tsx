@@ -464,18 +464,29 @@ export const DiscountsGivenTab: React.FC = () => {
   );
 
   /**
-   * A sale belongs to the agent who worked it. Back-office staff (accounts@,
-   * support@, admins) confirm external payments on an agent's behalf all the
-   * time — crediting them there silently stripped sales off the agent's row.
-   * Same resolver as the scoreboard: manager override → confirmer → quote sender
-   * → lead owner, skipping anyone who is not a sales agent.
+   * Customer Management is the source of truth for who did the deal, so the owner
+   * shown there (customers.assigned_to) takes precedence here. Order:
+   * manager override → Customer Management owner → payment confirmer (sales only)
+   * → quote sender (sales only). Back-office staff (accounts@, support@, admins)
+   * often confirm an external payment on an agent's behalf, so a non-sales id
+   * further down the chain never steals the sale.
    */
   const resolveSaleCredit = useMemo(() => {
     const salesIds = new Set(
       adminUsers.filter(u => ['sales', 'sales_lead'].includes(u.role)).map(u => u.id),
     );
-    return buildSaleCreditResolver(salesIds);
+    return (c: { sale_credit_admin_user_id?: string | null; assigned_to?: string | null; payment_confirmed_by?: string | null; quote_sent_by?: string | null } | null | undefined): string | null => {
+      if (!c) return null;
+      if (c.sale_credit_admin_user_id) return c.sale_credit_admin_user_id;
+      // Whoever Customer Management shows as the owner of the sale wins.
+      if (c.assigned_to) return c.assigned_to;
+      for (const id of [c.payment_confirmed_by, c.quote_sent_by]) {
+        if (id && salesIds.has(id)) return id;
+      }
+      return null;
+    };
   }, [adminUsers]);
+
 
   const handleQuickRange = (key: QuickRange) => {
     setQuickRange(key);
