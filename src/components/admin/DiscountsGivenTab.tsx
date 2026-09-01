@@ -298,7 +298,8 @@ export const DiscountsGivenTab: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [discountSort, setDiscountSort] = useState<'none' | 'desc' | 'asc'>('none');
   const [monthCursor, setMonthCursor] = useState<Date>(startOfMonth(new Date()));
-  const [breakdownOpen, setBreakdownOpen] = useState<boolean>(true);
+  const [breakdownOpen, setBreakdownOpen] = useState<boolean>(false);
+  const [detailOpen, setDetailOpen] = useState<boolean>(false);
   const [breakdownGroupBy, setBreakdownGroupBy] = useState<'month' | 'week' | 'day'>('month');
   const [discountCapOpen, setDiscountCapOpen] = useState<boolean>(false);
   const [paymentRoute, setPaymentRoute] = useState<'all' | 'outside' | 'in_system'>('all');
