@@ -824,6 +824,24 @@ export const useLeads = (options?: UseLeadsOptions) => {
         );
       };
 
+      // GLOBAL SEARCH: every staff member (including a plain sales agent) must be
+      // able to look up ANY lead by reg, name, email or phone — even one owned by
+      // another agent. This query is deliberately unscoped (no owner, team or date
+      // filter) and is also used as the search fallback, so a slow/empty wide
+      // fetch can never quietly narrow a search back down to the agent's own rows.
+      const fetchGlobalSearchLeads = async () => {
+        if (!serverSearchTermRef.current?.trim()) return { data: [], error: null } as any;
+        return await applyServerSearchFilter(
+          supabase
+            .from('sales_leads')
+            .select(SELECT_COLUMNS)
+            .order('created_at', { ascending: false })
+            .limit(LEADS_PAGE_SIZE)
+        );
+      };
+
+      const isSearching = !!serverSearchTermRef.current?.trim();
+
       let allSalesLeadsResult: any;
       try {
         allSalesLeadsResult = await runWideLeadsFetch();
@@ -838,7 +856,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
         // (the wide fetch just timed out), so it needs its own timeout too —
         // otherwise it can hang forever and permanently wedge isFetchingRef.
         allSalesLeadsResult = await withTimeout(
-          fetchAgentFallbackLeads(),
+          isSearching ? fetchGlobalSearchLeads() : fetchAgentFallbackLeads(),
           LEADS_FETCH_TIMEOUT_MS,
           'Fallback leads fetch timed out'
         );
@@ -847,13 +865,34 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
       let { data: allSalesLeadsData } = allSalesLeadsResult;
 
+      // While searching, always merge in the unscoped search results so matches
+      // owned by other agents appear no matter which fetch path served the page.
+      if (isSearching) {
+        try {
+          const globalMatches = await withTimeout(
+            fetchGlobalSearchLeads(),
+            LEADS_FETCH_TIMEOUT_MS,
+            'Global lead search timed out'
+          );
+          if (!globalMatches?.error && globalMatches?.data?.length) {
+            const byId = new Map<string, any>();
+            [...(allSalesLeadsData || []), ...globalMatches.data].forEach((row: any) => {
+              if (!byId.has(row.id)) byId.set(row.id, row);
+            });
+            allSalesLeadsData = Array.from(byId.values());
+          }
+        } catch (searchErr) {
+          console.warn('[Leads] Global search merge failed:', searchErr);
+        }
+      }
+
       // BLANK-SCREEN GUARD: a global/date-bounded wide fetch can legitimately
       // come back empty (heavy query trimmed by PostgREST, stale date window,
       // RLS scope). Sales / sales_lead users with the `all-leads` permission
       // used to be left staring at an empty New Leads table even though they
       // had leads assigned to them. If the wide fetch yielded nothing, top it
       // up with the agent's own recent leads.
-      if ((!allSalesLeadsData || allSalesLeadsData.length === 0) && currentAdmin?.id) {
+      if ((!allSalesLeadsData || allSalesLeadsData.length === 0) && currentAdmin?.id && !isSearching) {
         try {
           const ownLeads = await withTimeout(
             fetchAgentFallbackLeads(),
@@ -868,6 +907,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           console.warn('[Leads] Own-leads top-up failed:', ownErr);
         }
       }
+
 
 
       const explicitLeadIds = serverLeadIdsRef.current || [];
