@@ -161,6 +161,13 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
     });
   }, [allClaims, section]);
 
+  // Never leave the user staring at an empty section: if a linked-to section
+  // (e.g. ?section=appeals) has nothing in it, fall back to live/active claims.
+  useEffect(() => {
+    if (section === 'active') return;
+    if (allClaims.length > 0 && claims.length === 0) setSection('active');
+  }, [section, claims.length, allClaims.length]);
+
   useEffect(() => {
     const url = new URL(window.location.href);
     url.searchParams.delete('queue');
