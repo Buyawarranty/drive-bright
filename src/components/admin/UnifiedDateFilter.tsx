@@ -257,80 +257,8 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
           <ChevronRight className="h-4 w-4" />
         </Button>
 
-        {!hideQuickLinks && showAll && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: 'all', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            All
-          </button>
-        )}
-        {!hideQuickLinks && showToday && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: 'today', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            Today
-          </button>
-        )}
-        {!hideQuickLinks && showYesterday && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: 'yesterday', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            Yesterday
-          </button>
-        )}
-        {!hideQuickLinks && showThisWeek && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: 'this_week', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            This week
-          </button>
-        )}
-        {!hideQuickLinks && showLastWeek && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: 'last_week', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            Last week
-          </button>
-        )}
-        {!hideQuickLinks && showThisMonth && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: 'this_month', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            This month
-          </button>
-        )}
-        {!hideQuickLinks && showLastMonth && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: 'last_month', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            Last month
-          </button>
-        )}
-        {!hideQuickLinks && showLast30 && (
-          <button
-            type="button"
-            onClick={() => onChange({ scope, period: '30days', customRange: undefined })}
-            className="text-sm font-semibold text-orange-600 hover:underline"
-          >
-            Show last 30 days
-          </button>
-        )}
-
         <PopoverContent className="p-0 w-[560px] max-w-[calc(100vw-2rem)] z-50 overflow-hidden" align="end" sideOffset={6} collisionPadding={16}>
+
           <div className="flex">
             {/* Left: presets */}
             <div className="w-[180px] shrink-0 border-r bg-muted/30 max-h-[440px] overflow-y-auto py-1">
@@ -418,6 +346,38 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
           </div>
         </PopoverContent>
       </Popover>
+
+      {/* Quick links live OUTSIDE the Popover so they stay clickable for every
+          role — inside the popover subtree they could sit under the overlay. */}
+      {!hideQuickLinks && (
+        <div className="relative z-10 flex items-center gap-2 flex-wrap pointer-events-auto">
+          {[
+            showAll && { key: 'all' as PeriodKey, label: 'All' },
+            showToday && { key: 'today' as PeriodKey, label: 'Today' },
+            showYesterday && { key: 'yesterday' as PeriodKey, label: 'Yesterday' },
+            showThisWeek && { key: 'this_week' as PeriodKey, label: 'This week' },
+            showLastWeek && { key: 'last_week' as PeriodKey, label: 'Last week' },
+            showThisMonth && { key: 'this_month' as PeriodKey, label: 'This month' },
+            showLastMonth && { key: 'last_month' as PeriodKey, label: 'Last month' },
+            showLast30 && { key: '30days' as PeriodKey, label: 'Show last 30 days' },
+          ]
+            .filter(Boolean)
+            .map((link) => {
+              const l = link as { key: PeriodKey; label: string };
+              return (
+                <button
+                  key={l.key}
+                  type="button"
+                  onClick={() => onChange({ scope, period: l.key, customRange: undefined })}
+                  className="text-sm font-semibold text-orange-600 hover:underline px-1 py-0.5 rounded"
+                >
+                  {l.label}
+                </button>
+              );
+            })}
+        </div>
+      )}
     </div>
+
   );
 };
