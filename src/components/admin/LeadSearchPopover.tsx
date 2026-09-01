@@ -202,7 +202,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
     } finally {
       setRescuing(false);
     }
-  }, [searchTerm]);
+  }, [searchTerm, rpcSearch]);
 
 
   // Fetch leads when popover opens or search term changes
