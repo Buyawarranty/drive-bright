@@ -1025,6 +1025,9 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                       <td className="p-2 text-xs">
                         <Badge variant="outline" className="text-[10px]">{planLengthLabel(r)}</Badge>
                       </td>
+                      <td className="p-2 text-xs text-muted-foreground whitespace-nowrap">
+                        {formatStoredPolicyCoverDuration(r.policy_start_date, r.policy_end_date)}
+                      </td>
                       <td className="p-2">
                         <div className="flex items-center justify-center gap-1">
                           <Badge variant={callCount > 0 ? 'secondary' : 'outline'} className="text-[11px] tabular-nums min-w-[24px] justify-center">
