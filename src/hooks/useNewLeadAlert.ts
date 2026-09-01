@@ -5,7 +5,6 @@ import { useViewAs } from '@/contexts/ViewAsContext';
 import { isAlertsMuted } from '@/lib/alertSoundPreference';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { fetchByIdsInBatches } from '@/utils/batchedIn';
-import { isHeavyTabBusy } from '@/lib/heavyTabBusy';
 import { withPriority } from '@/lib/requestQueue';
 
 

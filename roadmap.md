@@ -7,4 +7,4 @@
 - [x] New Leads: fetch each sales/sales_lead agent's complete selected date range directly by owner, using the indexed created date and a date-preserving fallback so timeouts cannot reduce a month to the latest 500-row slice
 - [x] New lead pop-ups: agents missed their own brand-new leads because rows with a NULL assigned_at fell outside the 50-row window ordered by assigned_at — now read both orderings and merge
 - [x] GCLID: store the Google Click ID on each lead (sales_leads.gclid), auto-filled from the visitor's basket/customer record, backfilled for existing leads, and shown in the lead source tooltip
-- [ ] CRM reliability: diagnose and fix the shared cause of missing new-lead pop-ups and slow/non-loading tabs for James, Freddie and Thomas; verify against their live lead assignments
+- [x] CRM reliability: fix the shared request starvation behind missing new-lead pop-ups and slow/non-loading tabs for James, Freddie and Thomas; alert reads now use the urgent lane, retain the last queue on transient failure, retry during heavy-tab loads, and scope dismissals per agent
