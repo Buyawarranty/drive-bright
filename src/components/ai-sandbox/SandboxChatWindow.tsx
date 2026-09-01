@@ -924,9 +924,11 @@ export function SandboxChatWindow({
         setHoldState('failed');
         return;
       }
+      setHoldHandoverId(data.handover_id ?? null);
       setHoldSince(Date.now());
       setHoldState('on_hold');
       loadHandover();
+
     } catch {
       setHoldError('Network problem — please call us on 0330 229 5040.');
       setHoldState('failed');
