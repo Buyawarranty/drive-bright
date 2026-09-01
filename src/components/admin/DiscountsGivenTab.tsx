@@ -620,7 +620,7 @@ export const DiscountsGivenTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PriceOverridesPanel />
+
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
