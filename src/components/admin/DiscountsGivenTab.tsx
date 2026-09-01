@@ -19,6 +19,7 @@ import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { PriceOverridesPanel } from './pricing/PriceOverridesPanel';
 import { DiscountsByMonthAgentTable } from './discounts/DiscountsByMonthAgentTable';
 import { getRecordedOrderDiscount } from '@/lib/pricing/orderDiscount';
+import { buildSaleCreditResolver } from '@/lib/saleCredit';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 
@@ -35,6 +36,7 @@ interface CustomerRecord {
   labour_rate: number | null;
   assigned_to: string | null;
   sale_credit?: string | null;
+  sale_credit_admin_user_id?: string | null;
   payment_confirmed_by: string | null;
   quote_sent_by: string | null;
   purchase_source: string | null;
@@ -87,6 +89,7 @@ interface SentQuoteRecord {
 
 interface AdminUser {
   id: string;
+  is_active?: boolean | null;
   user_id: string | null;
   first_name: string | null;
   last_name: string | null;
@@ -330,7 +333,7 @@ export const DiscountsGivenTab: React.FC = () => {
         fetchAllRows(() =>
           supabase
             .from('customers')
-            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, payment_confirmed_by, quote_sent_by, purchase_source, signup_date, status, discount_code, discount_amount, original_amount, price_match_applied, sale_quoted_total, sale_discount_amount, sale_discount_pct, sale_price_basis, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
+            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, purchase_source, signup_date, status, discount_code, discount_amount, original_amount, price_match_applied, sale_quoted_total, sale_discount_amount, sale_discount_pct, sale_price_basis, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
             // Only agent-created sales from the Quotes & Orders page — never retail website (step 3) self-serve purchases
             .eq('is_manual_entry', true)
             .not('status', 'in', '("cancelled","refunded")'),
@@ -341,7 +344,8 @@ export const DiscountsGivenTab: React.FC = () => {
             .from('admin_sent_quotes')
             .select('id, customer_name, customer_email, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, vehicle_mileage, plan_name, payment_type, excess_amount, claim_limit, labour_rate, total_price, sent_by, sent_at'),
         ),
-        supabase.from('admin_users').select('id, user_id, first_name, last_name, email, role').eq('is_active', true).order('first_name'),
+        // Archived / inactive agents must stay in the map so their historic sales keep their name.
+        supabase.from('admin_users').select('id, user_id, first_name, last_name, email, role, is_active').order('first_name'),
       ]);
 
       const admins = (adminsRes.data || []) as AdminUser[];
@@ -355,6 +359,7 @@ export const DiscountsGivenTab: React.FC = () => {
       const confirmedPayments = ((customersRes.data || []) as CustomerRecord[]).map(customer => ({
         ...customer,
         assigned_to: normalizeAgentId(customer.assigned_to),
+        sale_credit_admin_user_id: normalizeAgentId(customer.sale_credit_admin_user_id || null),
         payment_confirmed_by: normalizeAgentId(customer.payment_confirmed_by),
         quote_sent_by: normalizeAgentId(customer.quote_sent_by),
         record_source: 'confirmed_payment' as const,
@@ -435,9 +440,23 @@ export const DiscountsGivenTab: React.FC = () => {
 
   // Only people who actually sell — never admins, claims, lead gen, social or temp accounts.
   const salesAgents = useMemo(
-    () => adminUsers.filter(u => ['sales', 'sales_lead'].includes(u.role)),
+    () => adminUsers.filter(u => ['sales', 'sales_lead'].includes(u.role) && u.is_active !== false),
     [adminUsers],
   );
+
+  /**
+   * A sale belongs to the agent who worked it. Back-office staff (accounts@,
+   * support@, admins) confirm external payments on an agent's behalf all the
+   * time — crediting them there silently stripped sales off the agent's row.
+   * Same resolver as the scoreboard: manager override → confirmer → quote sender
+   * → lead owner, skipping anyone who is not a sales agent.
+   */
+  const resolveSaleCredit = useMemo(() => {
+    const salesIds = new Set(
+      adminUsers.filter(u => ['sales', 'sales_lead'].includes(u.role)).map(u => u.id),
+    );
+    return buildSaleCreditResolver(salesIds);
+  }, [adminUsers]);
 
   const handleQuickRange = (key: QuickRange) => {
     setQuickRange(key);
@@ -475,7 +494,7 @@ export const DiscountsGivenTab: React.FC = () => {
         const discountPct = pctDiff !== null ? -pctDiff : null;
         const exceedsLimit = discountPct !== null && discountPct > maxDiscount;
         // Credit the agent who actually made the sale (same priority as the scoreboard)
-        const agentId = c.payment_confirmed_by || c.quote_sent_by || c.assigned_to || null;
+        const agentId = resolveSaleCredit(c) || null;
         const band = getDiscountBand(discountPct);
         const takenOutside = isOutsidePayment(c.purchase_source);
         return { ...c, agentId, retailPrice, retailSource, diff, pctDiff, normalizedPT, maxDiscount, discountPct, exceedsLimit, band, takenOutside };
@@ -516,7 +535,7 @@ export const DiscountsGivenTab: React.FC = () => {
         }
         return new Date(b.signup_date).getTime() - new Date(a.signup_date).getTime();
       });
-  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm, discountSort, paymentRoute, recordType, pricingVersions]);
+  }, [customers, dateRange, selectedAgent, canSeeAll, currentAdminId, searchTerm, discountSort, paymentRoute, recordType, pricingVersions, resolveSaleCredit]);
 
   const totals = useMemo(() => {
     let totalDiff = 0;
@@ -578,7 +597,7 @@ export const DiscountsGivenTab: React.FC = () => {
       .filter(c => !isTestRecord(c) && c.final_amount && c.final_amount >= 20)
       .filter(c => recordType !== 'confirmed_payment' || c.record_source === 'confirmed_payment')
       .forEach(c => {
-        const agentId = c.payment_confirmed_by || c.quote_sent_by || c.assigned_to || null;
+        const agentId = resolveSaleCredit(c) || null;
         if (agentId !== currentAdminId) return;
         if (dateRange?.from) {
           const d = new Date(c.signup_date);
@@ -602,7 +621,7 @@ export const DiscountsGivenTab: React.FC = () => {
 
     const avgDiscountPct = retailSum > 0 ? ((retailSum - paidSum) / retailSum) * 100 : 0;
     return { count, discountCount, totalDiscount, avgDiscountPct, bands };
-  }, [customers, currentAdminId, dateRange, recordType, pricingVersions]);
+  }, [customers, currentAdminId, dateRange, recordType, pricingVersions, resolveSaleCredit]);
 
   // Rows for the month × agent summary (quoted/QOP vs actual paid).
   const monthAgentRows = useMemo(
