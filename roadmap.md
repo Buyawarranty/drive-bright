@@ -2,3 +2,4 @@
 
 - [x] Discounts given: de-duplicate repeated manual price override rows (same agent/customer/price seconds apart)
 - [x] Discounts given: agent filter must also filter the manual price overrides table
+- [x] Discounts given: stop showing all-zero cards/bands/detail table on the 1st of a new month — land on the latest month that has sales and explain empty ranges

@@ -401,7 +401,25 @@ export const DiscountsGivenTab: React.FC = () => {
 
       setCustomers([...confirmedPayments, ...sentQuotes]);
       setAdminUsers(admins);
+
+      // Early in a new month there are simply no sales yet, which used to show a
+      // wall of zeros. Land on the most recent month that actually has sales.
+      const dates = confirmedPayments
+        .map(c => new Date(c.signup_date))
+        .filter(d => !isNaN(d.getTime()))
+        .sort((a, b) => b.getTime() - a.getTime());
+      const latest = dates[0];
+      if (latest) {
+        const thisMonth = startOfMonth(new Date());
+        const hasThisMonth = latest >= thisMonth;
+        if (!hasThisMonth) {
+          setMonthCursor(startOfMonth(latest));
+          setQuickRange('last_30');
+          setDateRange({ from: startOfMonth(latest), to: endOfMonth(latest) });
+        }
+      }
       setLoading(false);
+
     };
     fetchData();
     loadPricingVersionHistory().then(setPricingVersions);
@@ -850,7 +868,19 @@ export const DiscountsGivenTab: React.FC = () => {
         </div>
       </div>
 
+      {/* Empty range: say so plainly instead of showing a wall of zeros */}
+      {!loading && totals.count === 0 && (
+        <Card className="border-amber-200 bg-amber-50/50">
+          <CardContent className="p-4 text-sm text-amber-800">
+            No sales fall inside the selected date range
+            {dateRange?.from ? ` (${format(dateRange.from, 'd MMM yyyy')}${dateRange.to ? ` – ${format(dateRange.to, 'd MMM yyyy')}` : ''})` : ''}
+            , so every figure below reads zero. Widen the dates or pick a month with sales.
+          </CardContent>
+        </Card>
+      )}
+
       {/* Summary Cards */}
+
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
         <Card>
           <CardContent className="p-4 text-center">
