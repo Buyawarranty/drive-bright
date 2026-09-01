@@ -382,6 +382,8 @@ export const DiscountsGivenTab: React.FC = () => {
           !!(c.assigned_to && salesAgentIdSet.has(c.assigned_to)),
         );
 
+      const sentQuotes = ((quotesRes.data || []) as SentQuoteRecord[]).map((quote): CustomerRecord => ({
+
         id: `quote-${quote.id}`,
         name: quote.customer_name,
         email: quote.customer_email,
