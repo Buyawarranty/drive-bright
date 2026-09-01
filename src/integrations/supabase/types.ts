@@ -14246,6 +14246,10 @@ export type Database = {
           released_count: number
         }[]
       }
+      renewal_blocked_reason: {
+        Args: { p_customer_id: string }
+        Returns: string
+      }
       renewal_pool_get_next: {
         Args: { _agent: string }
         Returns: {
