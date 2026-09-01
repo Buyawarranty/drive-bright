@@ -170,14 +170,23 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
   };
 
   const apply = () => {
-    if (!draftRange?.from) {
+    // Read typed values synchronously. Clicking Apply while an input still has
+    // focus fires before React has committed the input's onBlur state update,
+    // which previously made a manually typed range appear to do nothing.
+    const typedFrom = tryParseInput(startText);
+    const typedTo = tryParseInput(endText);
+    const rangeToApply = typedFrom
+      ? { from: typedFrom, to: typedTo && typedTo >= typedFrom ? typedTo : typedFrom }
+      : draftRange;
+
+    if (!rangeToApply?.from) {
       onChange({ scope: draftScope, period: 'all', customRange: undefined });
     } else {
-      const preset = detectPreset(draftRange);
+      const preset = detectPreset(rangeToApply);
       onChange({
         scope: draftScope,
         period: preset,
-        customRange: preset === 'custom' ? draftRange : undefined,
+        customRange: preset === 'custom' ? rangeToApply : undefined,
       });
     }
     setOpen(false);
