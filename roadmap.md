@@ -8,3 +8,5 @@
 - [x] New lead pop-ups: agents missed their own brand-new leads because rows with a NULL assigned_at fell outside the 50-row window ordered by assigned_at — now read both orderings and merge
 - [x] GCLID: store the Google Click ID on each lead (sales_leads.gclid), auto-filled from the visitor's basket/customer record, backfilled for existing leads, and shown in the lead source tooltip
 - [x] CRM reliability: fix the shared request starvation behind missing new-lead pop-ups and slow/non-loading tabs for James, Freddie and Thomas; alert reads now use the urgent lane, retain the last queue on transient failure, retry during heavy-tab loads, and scope dismissals per agent
+- [x] Website chat "speak to a human": during opening hours the request must always ring every manager/staff member in the CRM (handover alert popup mounted in the dashboard), never answer with a reopen time
+- [x] CRM: live-chat banner at the top of the whole dashboard during opening hours (9am-6pm Mon-Sat), visible to claims staff too
