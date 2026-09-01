@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ThumbsUp, ThumbsDown, Phone, Mail, Gauge, Ban, ChevronRight, AlertCircle } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Phone, Mail, Gauge, Ban, ChevronRight, AlertCircle, ArrowUp, ArrowDown } from 'lucide-react';
 import type { Claim } from '@/types/claim';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +14,7 @@ import { useClaimQuickNotes } from '@/hooks/useClaimQuickNotes';
 import { MileageChip } from './MileageChip';
 import { computeSla, slaToneCls } from './sla';
 import { formatDaysOnRisk } from './formatters';
+import { MisrepFlagButton, useMisrepresentedIdentities } from './MisrepFlagButton';
 
 
 // Simplified admin status options for the row dropdown.
@@ -238,6 +239,29 @@ const ReviewNotePopover: React.FC<{
   );
 };
 
+const SortHeader: React.FC<{
+  label: string;
+  active: boolean;
+  dir: 'asc' | 'desc';
+  onClick: () => void;
+}> = ({ label, active, dir, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    title={active ? (dir === 'desc' ? 'Newest / highest first — click for oldest' : 'Oldest / lowest first — click for newest') : `Sort by ${label}`}
+    className={cn(
+      'inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider transition',
+      active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+    )}
+  >
+    <span>{label}</span>
+    <span className="inline-flex flex-col leading-none">
+      <ArrowUp className={cn('h-2.5 w-2.5 -mb-0.5', active && dir === 'asc' ? 'text-primary' : 'text-muted-foreground/40')} />
+      <ArrowDown className={cn('h-2.5 w-2.5', active && dir === 'desc' ? 'text-primary' : 'text-muted-foreground/40')} />
+    </span>
+  </button>
+);
+
 export const ClaimsWorkbenchList: React.FC<Props> = ({
   claims,
   selectedId,
@@ -248,6 +272,13 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
   onUpdated,
 }) => {
   const { toast } = useToast();
+  const { isFlagged: isMisrepFlagged, refetch: refetchMisrep } = useMisrepresentedIdentities();
+  const [sortKey, setSortKey] = useState<'submitted' | 'sla' | 'onRisk'>('submitted');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const toggleSort = (key: 'submitted' | 'sla' | 'onRisk') => {
+    if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    else { setSortKey(key); setSortDir('desc'); }
+  };
   const [stageBusyId, setStageBusyId] = useState<string | null>(null);
   const [pendingChange, setPendingChange] = useState<PendingClaimStatusChange | null>(null);
   const [reviewComments, setReviewComments] = useState<Record<string, { positive?: string; negative?: string }>>({});
@@ -350,6 +381,16 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
   const allSelected = claims.length > 0 && claims.every((c) => selectedIds.has(c.id));
   const someSelected = !allSelected && claims.some((c) => selectedIds.has(c.id));
 
+  const sortValue = (c: Claim): number => {
+    if (sortKey === 'submitted') return c.submittedAt ? new Date(c.submittedAt).getTime() : 0;
+    if (sortKey === 'sla') return computeSla(c).hoursRemaining;
+    return c.daysOnRisk ?? -1;
+  };
+  const sortedClaims = [...claims].sort((a, b) => {
+    const diff = sortValue(a) - sortValue(b);
+    return sortDir === 'asc' ? diff : -diff;
+  });
+
   return (
     <div className="flex-1 bg-card border border-border rounded-lg overflow-hidden flex flex-col">
       <div className="overflow-x-auto">
@@ -359,13 +400,13 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
             onCheckedChange={(v) => onToggleAll(v === true)}
             aria-label="Select all"
           />
-          <span>Submitted</span>
+          <SortHeader label="Submitted" active={sortKey === 'submitted'} dir={sortDir} onClick={() => toggleSort('submitted')} />
           <span>Actions</span>
-          <span>SLA</span>
+          <SortHeader label="SLA" active={sortKey === 'sla'} dir={sortDir} onClick={() => toggleSort('sla')} />
           <span>Status</span>
           <span>Customer</span>
           <span>Vehicle</span>
-          <span>Days On Risk</span>
+          <SortHeader label="Days On Risk" active={sortKey === 'onRisk'} dir={sortDir} onClick={() => toggleSort('onRisk')} />
           <span className="text-right">Miles driven</span>
           <span className="text-right">Customer claim</span>
           <span className="text-right">We paid</span>
@@ -373,7 +414,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           <span>Notes</span>
         </div>
         <div className="divide-y divide-border">
-          {claims.map((c) => {
+          {sortedClaims.map((c) => {
             const isSelected = selectedId === c.id;
             const isChecked = selectedIds.has(c.id);
             const currentStatusValue = deriveSimpleStatus(c);
@@ -499,6 +540,13 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                       <ThumbsDown className="h-3.5 w-3.5" />
                     </button>
                   </ReviewNotePopover>
+                  <MisrepFlagButton
+                    claimId={c.id}
+                    email={c.email}
+                    reg={c.reg}
+                    flagged={isMisrepFlagged(c.email, c.reg)}
+                    onFlagged={async () => { await refetchMisrep(); await onUpdated(); }}
+                  />
                 </div>
 
                 {/* SLA — click to open drawer */}
