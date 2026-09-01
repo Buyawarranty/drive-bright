@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { PriceOverridesPanel } from './pricing/PriceOverridesPanel';
+import { DiscountsByMonthAgentTable } from './discounts/DiscountsByMonthAgentTable';
 import { getRecordedOrderDiscount } from '@/lib/pricing/orderDiscount';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
@@ -297,7 +298,8 @@ export const DiscountsGivenTab: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [discountSort, setDiscountSort] = useState<'none' | 'desc' | 'asc'>('none');
   const [monthCursor, setMonthCursor] = useState<Date>(startOfMonth(new Date()));
-  const [breakdownOpen, setBreakdownOpen] = useState<boolean>(true);
+  const [breakdownOpen, setBreakdownOpen] = useState<boolean>(false);
+  const [detailOpen, setDetailOpen] = useState<boolean>(false);
   const [breakdownGroupBy, setBreakdownGroupBy] = useState<'month' | 'week' | 'day'>('month');
   const [discountCapOpen, setDiscountCapOpen] = useState<boolean>(false);
   const [paymentRoute, setPaymentRoute] = useState<'all' | 'outside' | 'in_system'>('all');
@@ -583,6 +585,21 @@ export const DiscountsGivenTab: React.FC = () => {
     return { count, discountCount, totalDiscount, avgDiscountPct, bands };
   }, [customers, currentAdminId, dateRange, recordType, pricingVersions]);
 
+  // Rows for the month × agent summary (quoted/QOP vs actual paid).
+  const monthAgentRows = useMemo(
+    () =>
+      enrichedCustomers
+        .filter(c => c.agentId)
+        .map(c => ({
+          agentId: c.agentId as string,
+          agentName: agentMap[c.agentId as string] || 'Unknown',
+          date: c.signup_date,
+          quoted: c.retailPrice,
+          paid: c.final_amount || 0,
+        })),
+    [enrichedCustomers, agentMap],
+  );
+
 
   if (loading) {
     return (
@@ -603,7 +620,7 @@ export const DiscountsGivenTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PriceOverridesPanel />
+
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
@@ -672,6 +689,12 @@ export const DiscountsGivenTab: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Month × agent summary — the headline view */}
+      <DiscountsByMonthAgentTable
+        rows={monthAgentRows}
+        onSelectAgent={canSeeAll ? setSelectedAgent : undefined}
+      />
 
       {/* Band legend */}
       <div className="flex flex-wrap items-center gap-3 text-xs">
@@ -1016,10 +1039,18 @@ export const DiscountsGivenTab: React.FC = () => {
         </Card>
       )}
 
-      {/* Data Table */}
+      {/* Data Table — every individual sale, hidden until asked for */}
       <Card>
         <CardContent className="p-0">
-          <div className="relative w-full overflow-auto max-h-[600px]">
+          <button
+            type="button"
+            onClick={() => setDetailOpen(o => !o)}
+            className="flex w-full items-center gap-2 px-4 py-3 text-sm font-semibold hover:text-primary"
+          >
+            <ChevronDownIcon className={`h-4 w-4 transition-transform ${detailOpen ? '' : '-rotate-90'}`} />
+            Every sale in detail ({enrichedCustomers.length})
+          </button>
+          <div className={`relative w-full overflow-auto max-h-[600px] ${detailOpen ? '' : 'hidden'}`}>
             <Table>
               <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
@@ -1196,6 +1227,8 @@ export const DiscountsGivenTab: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      <PriceOverridesPanel />
     </div>
   );
 };
