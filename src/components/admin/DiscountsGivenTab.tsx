@@ -690,6 +690,12 @@ export const DiscountsGivenTab: React.FC = () => {
         </Card>
       )}
 
+      {/* Month × agent summary — the headline view */}
+      <DiscountsByMonthAgentTable
+        rows={monthAgentRows}
+        onSelectAgent={canSeeAll ? setSelectedAgent : undefined}
+      />
+
       {/* Band legend */}
       <div className="flex flex-wrap items-center gap-3 text-xs">
         <span className="text-muted-foreground">Discount bands:</span>
