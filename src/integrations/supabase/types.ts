@@ -13581,6 +13581,11 @@ export type Database = {
         }
         Returns: Json
       }
+      create_renewal_lead_for_policy: {
+        Args: { p_actor?: string; p_force?: boolean; p_policy_id: string }
+        Returns: string
+      }
+      create_renewal_leads: { Args: { p_days?: number }; Returns: number }
       current_admin_user_id: { Args: never; Returns: string }
       current_dealer_id: { Args: never; Returns: string }
       current_policy_pdf_urls: {
