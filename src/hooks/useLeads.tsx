@@ -561,6 +561,23 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
       };
 
+      // Owner-scoped history uses created_at as its source of truth. Every row
+      // returned here is already assigned, and the New Leads UI deliberately
+      // anchors assigned/worked leads to created_at rather than a later
+      // resubmission. Keeping this as a simple range also lets Postgres use the
+      // assigned_to + created_at index instead of timing out on a wide OR.
+      const applyOwnerHistoryDateFilter = (query: any) => {
+        if (serverSearchTermRef.current?.trim() || serverCallbacksOnlyRef.current) return query;
+        // The explicit "Worked in this period" mode also includes older leads
+        // contacted during the window, so retain the wider date semantics only
+        // when the user has deliberately enabled that option.
+        if (serverIncludeContactedRef.current) return applyServerDateFilter(query);
+        const dateFilter = serverDateFilterRef.current;
+        if (dateFilter?.from) query = query.gte('created_at', dateFilter.from.toISOString());
+        if (dateFilter?.to) query = query.lte('created_at', dateFilter.to.toISOString());
+        return query;
+      };
+
       const applyCallbacksFilter = (query: any) => {
         if (!serverCallbacksOnlyRef.current) return query;
         return query.eq('is_callback', true);
@@ -659,24 +676,12 @@ export const useLeads = (options?: UseLeadsOptions) => {
         return { data: rows, error: null } as any;
       };
 
-      // Last-resort fallback so an agent never ends up with a blank list when
-      // the wide fetch is slow: their most recent leads, one small query.
-      const fetchAgentFallbackLeads = async () => {
-        if (!currentAdmin?.id) return { data: [], error: null } as any;
-        return await supabase
-          .from('sales_leads')
-          .select(SELECT_COLUMNS)
-          .eq('assigned_to', currentAdmin.id)
-          .order('created_at', { ascending: false })
-          .limit(500);
-      };
-
       const runWideLeadsFetch = () => withTimeout(
         (async () => {
           const serverAgentFilter = serverAgentFilterRef.current;
           if (serverAgentFilter && serverAgentFilter !== 'all' && serverAgentFilter !== 'unassigned') {
             return await fetchPagedLeads((from, to) =>
-              applyCallbacksFilter(applyServerSearchFilter(applyServerDateFilter(
+              applyCallbacksFilter(applyServerSearchFilter(applyOwnerHistoryDateFilter(
                 supabase
                   .from('sales_leads')
                   .select(SELECT_COLUMNS)
@@ -795,6 +800,29 @@ export const useLeads = (options?: UseLeadsOptions) => {
         LEADS_FETCH_TIMEOUT_MS,
         'Leads fetch timed out'
       );
+
+      // Last-resort fallback must preserve the selected owner and date window.
+      // The old fallback loaded only the latest 500 rows; filtering those rows
+      // to August left James with 45 even though 1,059 August lead records exist.
+      const fetchAgentFallbackLeads = async () => {
+        const requestedOwner = serverAgentFilterRef.current;
+        const ownerId = requestedOwner && requestedOwner !== 'all' && requestedOwner !== 'unassigned'
+          ? requestedOwner
+          : currentAdmin?.id;
+        if (!ownerId) return { data: [], error: null } as any;
+
+        return await fetchPagedLeads((from, to) =>
+          applyCallbacksFilter(applyServerSearchFilter(applyOwnerHistoryDateFilter(
+            supabase
+              .from('sales_leads')
+              .select(SELECT_COLUMNS)
+              .eq('assigned_to', ownerId)
+              .order('created_at', { ascending: false })
+              .order('id', { ascending: false })
+              .range(from, to)
+          )))
+        );
+      };
 
       let allSalesLeadsResult: any;
       try {
