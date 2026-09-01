@@ -239,6 +239,29 @@ const ReviewNotePopover: React.FC<{
   );
 };
 
+const SortHeader: React.FC<{
+  label: string;
+  active: boolean;
+  dir: 'asc' | 'desc';
+  onClick: () => void;
+}> = ({ label, active, dir, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    title={active ? (dir === 'desc' ? 'Newest / highest first — click for oldest' : 'Oldest / lowest first — click for newest') : `Sort by ${label}`}
+    className={cn(
+      'inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider transition',
+      active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+    )}
+  >
+    <span>{label}</span>
+    <span className="inline-flex flex-col leading-none">
+      <ArrowUp className={cn('h-2.5 w-2.5 -mb-0.5', active && dir === 'asc' ? 'text-primary' : 'text-muted-foreground/40')} />
+      <ArrowDown className={cn('h-2.5 w-2.5', active && dir === 'desc' ? 'text-primary' : 'text-muted-foreground/40')} />
+    </span>
+  </button>
+);
+
 export const ClaimsWorkbenchList: React.FC<Props> = ({
   claims,
   selectedId,
