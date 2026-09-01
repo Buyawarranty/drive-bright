@@ -14,6 +14,8 @@ import { ClaimCommunicationsPanel } from './ClaimCommunicationsPanel';
 import { ClaimEmailDialog } from './ClaimEmailDialog';
 import { ClaimStatusDropdown } from './ClaimStatusDropdown';
 import { ClaimPriorityBadge } from './ClaimPriorityBadge';
+import { ClaimMisrepresentationAction } from './ClaimMisrepresentationAction';
+
 
 interface ClaimDetailDialogProps {
   claim: any;
@@ -507,7 +509,16 @@ export const ClaimDetailDialog: React.FC<ClaimDetailDialogProps> = ({ claim, ope
             </TabsContent>
 
             <TabsContent value="actions" className="space-y-6 mt-4">
+              <ClaimMisrepresentationAction
+                claimId={claim.id}
+                claimEmail={claim.email}
+                vehicleRegistration={claim.vehicle_registration}
+                alreadyFlagged={(claim.internal_notes || '').includes('MISREPRESENTATION – DO NOT COVER')}
+                onDone={onUpdate}
+              />
+
               {/* Internal Notes */}
+
               <div>
                 <h3 className="text-lg font-semibold mb-3">Internal Notes</h3>
                 <Textarea

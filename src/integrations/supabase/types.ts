@@ -13533,6 +13533,17 @@ export type Database = {
         Args: { p_admin_user_id: string }
         Returns: boolean
       }
+      apply_customer_risk_tag: {
+        Args: {
+          p_actor?: string
+          p_email?: string
+          p_phone?: string
+          p_reason: string
+          p_reg?: string
+          p_tag_name: string
+        }
+        Returns: number
+      }
       archive_admin_user_preserve_sales: {
         Args: { p_admin_user_id: string }
         Returns: undefined
@@ -13639,6 +13650,10 @@ export type Database = {
           platinum_url: string
           terms_url: string
         }[]
+      }
+      customer_cover_block_reason: {
+        Args: { p_email?: string; p_phone?: string; p_reg?: string }
+        Returns: string
       }
       delete_admin_user_cascade: {
         Args: { p_admin_user_id: string }
@@ -13940,6 +13955,10 @@ export type Database = {
         Returns: string
       }
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
+      mark_claim_misrepresented: {
+        Args: { p_claim_id: string; p_reason?: string }
+        Returns: number
+      }
       marketing_customer_state: { Args: { _email: string }; Returns: string }
       migrate_orphan_carts_to_leads: { Args: never; Returns: Json }
       missed_call_pass: { Args: { p_call_id: string }; Returns: boolean }

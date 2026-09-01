@@ -505,6 +505,44 @@ serve(async (req) => {
       }
     }
 
+    // Card disputes / chargebacks — flag the customer so they are excluded from
+    // renewals and cannot buy cover again until a manager clears the flag.
+    if (event.type === "charge.dispute.created" || event.type === "charge.dispute.updated") {
+      const dispute = event.data.object as Stripe.Dispute;
+      try {
+        const charge = await stripe.charges.retrieve(dispute.charge as string);
+        const email =
+          charge.billing_details?.email ||
+          (charge.metadata as Record<string, string> | null)?.email ||
+          charge.receipt_email ||
+          null;
+        const reg =
+          (charge.metadata as Record<string, string> | null)?.vehicle_reg ||
+          (charge.metadata as Record<string, string> | null)?.registration_plate ||
+          null;
+        const phone = charge.billing_details?.phone || null;
+
+        logStep("Dispute received", { disputeId: dispute.id, reason: dispute.reason, email, reg });
+
+        const { data: tagged, error: tagError } = await supabaseClient.rpc("apply_customer_risk_tag", {
+          p_tag_name: "Payment Disputed",
+          p_reason: `Stripe dispute ${dispute.id} (${dispute.reason || "unknown reason"}), status ${dispute.status}, amount £${((dispute.amount || 0) / 100).toFixed(2)}`,
+          p_email: email,
+          p_reg: reg,
+          p_phone: phone,
+          p_actor: null,
+        });
+
+        if (tagError) {
+          logStep("Failed to flag disputed customer", { error: tagError.message });
+        } else {
+          logStep("Disputed customer flagged", { recordsTagged: tagged });
+        }
+      } catch (err) {
+        logStep("ERROR handling dispute", { message: err instanceof Error ? err.message : String(err) });
+      }
+    }
+
     // Handle subscription events if needed
     if (event.type === "invoice.payment_succeeded") {
       const invoice = event.data.object as Stripe.Invoice;
@@ -516,6 +554,7 @@ serve(async (req) => {
       
       // Handle subscription payment success if needed
     }
+
 
     // Return success response
     return new Response(JSON.stringify({ received: true }), {
