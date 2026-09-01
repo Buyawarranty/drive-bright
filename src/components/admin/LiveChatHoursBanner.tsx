@@ -9,7 +9,8 @@ import { useSandboxHandoverAlert } from '@/hooks/useSandboxHandoverAlert';
  * now, and how many customers are waiting for a human specialist.
  */
 export const LiveChatHoursBanner: React.FC = () => {
-  const { waiting } = useSandboxHandoverAlert();
+  // This banner only displays the queue count; it must never create audio.
+  const { waiting } = useSandboxHandoverAlert({ audioEnabled: false });
   const [open, setOpen] = React.useState(() => isTeamOpenNow());
 
   React.useEffect(() => {

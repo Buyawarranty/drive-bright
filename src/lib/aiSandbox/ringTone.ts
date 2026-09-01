@@ -10,6 +10,14 @@
 let ctx: AudioContext | null = null;
 let stopAt = 0;
 
+/** Immediately cancel both audible and already-scheduled ring bursts. */
+export function stopPhoneRing() {
+  const active = ctx;
+  ctx = null;
+  stopAt = 0;
+  if (active && active.state !== 'closed') void active.close().catch(() => undefined);
+}
+
 function audioCtx(): AudioContext | null {
   try {
     const Ctor =

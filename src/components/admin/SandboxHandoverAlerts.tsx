@@ -19,7 +19,10 @@ const since = (iso: string) => {
  */
 export const SandboxHandoverAlerts: React.FC = () => {
   const { allowed } = useChatbotPopupAccess();
-  const { waiting, muted, setMuted, dismiss, claim } = useSandboxHandoverAlert();
+  const { waiting, muted, setMuted, dismiss, claim } = useSandboxHandoverAlert({
+    enabled: allowed,
+    audioEnabled: allowed,
+  });
   const navigate = useNavigate();
   const [, force] = React.useState(0);
 
