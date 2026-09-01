@@ -723,14 +723,25 @@ Deno.serve(async (req) => {
         description:
           "Check whether the warranty specialists are available right now (opening hours plus how many specialists are actually on duty in live chat). Always call this before offering a live handover.",
         inputSchema: z.object({}),
-        execute: async () =>
-          toolResultText({ ...availability(), specialists_online_now: await specialistsOnline() }),
+        execute: async () => {
+          const state = availability();
+          const online = await specialistsOnline();
+          return toolResultText({
+            ...state,
+            specialists_online_now: online,
+            can_connect_live_now: state.is_open,
+            instruction: state.is_open
+              ? "We are OPEN. If the customer wants a human, call connect_live_agent now — it rings every manager and staff member in the CRM even when nobody shows as online. Never give a reopen time."
+              : `We are CLOSED. Take a phone number or email and call capture_lead. The team is back ${state.next_open}.`,
+          });
+        },
       }),
 
 
       connect_live_agent: tool({
         description:
-          "Hand the chat over to a human warranty specialist. Only call this after check_availability says the team is open AND the customer has said yes to being connected. The specialist receives the whole conversation.",
+          "Hand the chat over to a human warranty specialist — this rings every manager and staff member in the CRM. Call it as soon as the customer asks for a human (or says yes to being connected) while check_availability says the team is open. It does NOT need any specialist to be showing online.",
+
         inputSchema: z.object({
           reason: z
             .enum([
