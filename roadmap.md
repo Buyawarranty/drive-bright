@@ -10,3 +10,5 @@
 - [x] CRM reliability: fix the shared request starvation behind missing new-lead pop-ups and slow/non-loading tabs for James, Freddie and Thomas; alert reads now use the urgent lane, retain the last queue on transient failure, retry during heavy-tab loads, and scope dismissals per agent
 - [x] Website chat "speak to a human": during opening hours the request must always ring every manager/staff member in the CRM (handover alert popup mounted in the dashboard), never answer with a reopen time
 - [x] CRM: live-chat banner at the top of the whole dashboard during opening hours (9am-6pm Mon-Sat), visible to claims staff too
+- [x] Unsubscribe tab: sales agents' `?tab=unsubscribe` links did nothing because the dashboard only read the tab param on mount — now follows URL changes, and the Unsubscribe quick link keeps the rest of the query string
+- [x] Banners must never be cut off: top CRM banners are inset by the fixed sidebar width on desktop and the struggle/failed-payment bar wraps instead of truncating

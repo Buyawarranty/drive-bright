@@ -412,7 +412,15 @@ const AdminDashboard = () => {
       return next;
     }, { replace: true });
   }, [setSearchParams]);
+  // Follow the ?tab= param whenever it changes after mount. Quick links (e.g. the
+  // Unsubscribe shortcut above the leads table) only rewrite the query string, so
+  // without this the URL changed and the screen stayed put.
+  useEffect(() => {
+    if (urlTab && urlTab !== activeTab) setActiveTab(urlTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTab]);
   // Rewrite legacy tab in URL once on mount
+
   useEffect(() => {
     if (rawUrlTab && (TAB_ALIASES[rawUrlTab] || rawUrlTab === 'overview')) {
       const canonical = TAB_ALIASES[rawUrlTab] ?? rawUrlTab;
@@ -1275,8 +1283,12 @@ const AdminDashboardInner: React.FC<{
       </div>
       </header>
 
+      {/* Banner rail: the sidebar is fixed from 104px down, so every top banner
+          is inset by the sidebar width on desktop — nothing is ever cut off. */}
+      <div className={sidebarCollapsed ? 'lg:pl-14' : 'lg:pl-64'}>
       {/* Live chat opening-hours bar — every member of staff, claims included */}
       <LiveChatHoursBanner />
+
 
       {/* Ringing alert when a website chat customer asks for a human */}
       <SandboxHandoverAlerts />
@@ -1356,6 +1368,8 @@ const AdminDashboardInner: React.FC<{
           👁️ Viewing dashboard as <strong>{viewAsAgent?.firstName} {viewAsAgent?.lastName}</strong> ({effectiveRole?.replace('_', ' ')}) — This is read-only simulation mode
         </div>
       )}
+      </div>
+
 
 
       <div className="flex-1 flex flex-col lg:flex-row">
