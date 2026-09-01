@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { playPhoneRing, playPhoneRingBurst } from '@/lib/aiSandbox/ringTone';
+import { playPhoneRing, playPhoneRingBurst, stopPhoneRing } from '@/lib/aiSandbox/ringTone';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 
 export type WaitingHandover = {
@@ -27,7 +27,13 @@ export type WaitingHandover = {
  */
 const MUTE_KEY = 'sandbox_handover_ring_muted';
 
-export function useSandboxHandoverAlert() {
+export function useSandboxHandoverAlert({
+  enabled = true,
+  audioEnabled = true,
+}: {
+  enabled?: boolean;
+  audioEnabled?: boolean;
+} = {}) {
   const [waiting, setWaiting] = useState<WaitingHandover[]>([]);
   const [muted, setMutedState] = useState<boolean>(() => {
     try {
@@ -40,6 +46,7 @@ export function useSandboxHandoverAlert() {
   mutedRef.current = muted;
   const setMuted = useCallback((next: boolean) => {
     setMutedState(next);
+    if (next) stopPhoneRing();
     try {
       localStorage.setItem(MUTE_KEY, next ? '1' : '0');
     } catch {
@@ -64,12 +71,17 @@ export function useSandboxHandoverAlert() {
     const rows = (data as WaitingHandover[]) ?? [];
     const fresh = rows.filter((r) => !known.current.has(r.id));
     rows.forEach((r) => known.current.add(r.id));
-    if (!firstLoad.current && fresh.length > 0 && !mutedRef.current) playPhoneRingBurst(2);
+    if (!firstLoad.current && fresh.length > 0 && audioEnabled && !mutedRef.current) playPhoneRingBurst(2);
     firstLoad.current = false;
     setWaiting(rows);
-  }, []);
+  }, [audioEnabled]);
 
   useEffect(() => {
+    if (!enabled) {
+      setWaiting([]);
+      stopPhoneRing();
+      return;
+    }
     load();
     const stopInterval = setVisibleInterval(load, 15000);
     const channel = supabase
@@ -84,15 +96,24 @@ export function useSandboxHandoverAlert() {
       stopInterval();
       void supabase.removeChannel(channel);
     };
-  }, [load]);
+  }, [enabled, load]);
 
   // Keep ringing gently while someone is still waiting and un-dismissed.
   const visible = waiting.filter((w) => !dismissed.has(w.id));
   useEffect(() => {
-    if (muted || visible.length === 0) return;
+    // Read-only consumers (for example the hours banner) must neither start nor
+    // stop the shared audio context used by the actual alert component.
+    if (!audioEnabled) return;
+    if (!enabled || muted || visible.length === 0) {
+      stopPhoneRing();
+      return;
+    }
     const interval = window.setInterval(() => playPhoneRing(), 12000);
-    return () => window.clearInterval(interval);
-  }, [muted, visible.length]);
+    return () => {
+      window.clearInterval(interval);
+      stopPhoneRing();
+    };
+  }, [audioEnabled, enabled, muted, visible.length]);
 
   const dismiss = useCallback((id: string) => {
     setDismissed((prev) => new Set(prev).add(id));

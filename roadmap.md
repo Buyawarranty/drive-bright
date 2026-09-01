@@ -14,3 +14,4 @@
 - [x] Banners must never be cut off: top CRM banners are inset by the fixed sidebar width on desktop and the struggle/failed-payment bar wraps instead of truncating
 - [x] Chatbot pop-up permission: "Customer waiting for a specialist" ring/pop-up is now permission-gated (`tab_chatbot-popup`) — default ON for admin, super admin and claims only; anyone else needs it switched on in User Permissions
 - [x] Chatbot pop-up mute is a clear Mute/Muted toggle and now persists (localStorage), so muting really stops the ring
+- [x] Chatbot Data dashboard: remove the duplicate audio listener, cancel scheduled ring bursts immediately on mute, and stop all alert polling/audio when pop-up access is denied
