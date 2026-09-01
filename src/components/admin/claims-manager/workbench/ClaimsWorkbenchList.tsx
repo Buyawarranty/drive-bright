@@ -377,13 +377,13 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
             onCheckedChange={(v) => onToggleAll(v === true)}
             aria-label="Select all"
           />
-          <span>Submitted</span>
+          <SortHeader label="Submitted" active={sortKey === 'submitted'} dir={sortDir} onClick={() => toggleSort('submitted')} />
           <span>Actions</span>
-          <span>SLA</span>
+          <SortHeader label="SLA" active={sortKey === 'sla'} dir={sortDir} onClick={() => toggleSort('sla')} />
           <span>Status</span>
           <span>Customer</span>
           <span>Vehicle</span>
-          <span>Days On Risk</span>
+          <SortHeader label="Days On Risk" active={sortKey === 'onRisk'} dir={sortDir} onClick={() => toggleSort('onRisk')} />
           <span className="text-right">Miles driven</span>
           <span className="text-right">Customer claim</span>
           <span className="text-right">We paid</span>
@@ -391,7 +391,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           <span>Notes</span>
         </div>
         <div className="divide-y divide-border">
-          {claims.map((c) => {
+          {sortedClaims.map((c) => {
             const isSelected = selectedId === c.id;
             const isChecked = selectedIds.has(c.id);
             const currentStatusValue = deriveSimpleStatus(c);
