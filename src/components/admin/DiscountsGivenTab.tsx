@@ -19,7 +19,6 @@ import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { PriceOverridesPanel } from './pricing/PriceOverridesPanel';
 import { DiscountsByMonthAgentTable } from './discounts/DiscountsByMonthAgentTable';
 import { getRecordedOrderDiscount } from '@/lib/pricing/orderDiscount';
-import { buildSaleCreditResolver } from '@/lib/saleCredit';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 
