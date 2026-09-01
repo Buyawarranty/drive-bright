@@ -13,7 +13,14 @@ export const UnsubscribeQuickLink: React.FC = () => {
     <Button
       variant="outline"
       size="sm"
-      onClick={() => setSearchParams({ tab: 'unsubscribe' })}
+      onClick={() =>
+        setSearchParams((prev) => {
+          const next = new URLSearchParams(prev);
+          next.set('tab', 'unsubscribe');
+          return next;
+        })
+      }
+
       className="h-7 px-2 sm:px-2.5 text-[11px] font-medium rounded-md gap-1.5 transition-none text-red-700 hover:bg-red-50 border-red-200 bg-red-50/50"
       title="Manage unsubscribed emails"
     >
