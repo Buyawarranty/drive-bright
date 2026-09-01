@@ -58,7 +58,7 @@ const detect = (messages: Message[]) => {
  * Every customer conversation with Miles, in full, with a one-click
  * "Send as new lead" that writes the whole chat into the lead's notes.
  */
-export default function ChatConversationsPanel({ rangeDays }: { rangeDays: string }) {
+export default function ChatConversationsPanel({ rangeDays, fromIso, toIso }: { rangeDays: string; fromIso?: string | null; toIso?: string | null }) {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -75,7 +75,10 @@ export default function ChatConversationsPanel({ rangeDays }: { rangeDays: strin
       .select('id, title, source, created_at, updated_at, sales_lead_id, guest_token')
       .order('updated_at', { ascending: false, nullsFirst: false })
       .limit(300);
-    if (rangeDays !== 'all') {
+    if (fromIso || toIso) {
+      if (fromIso) query = query.gte('created_at', fromIso);
+      if (toIso) query = query.lte('created_at', toIso);
+    } else if (rangeDays !== 'all') {
       const from = new Date();
       from.setDate(from.getDate() - Number(rangeDays));
       query = query.gte('created_at', from.toISOString());
@@ -93,7 +96,7 @@ export default function ChatConversationsPanel({ rangeDays }: { rangeDays: strin
   useEffect(() => {
     void loadThreads();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rangeDays]);
+  }, [rangeDays, fromIso, toIso]);
 
   const openThread = async (thread: Thread) => {
     setSelectedId(thread.id);
