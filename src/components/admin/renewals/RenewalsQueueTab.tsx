@@ -933,7 +933,19 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                   <th className="text-left p-2 w-[180px]">Email</th>
                   <th className="text-left p-2 w-[90px]">Reg</th>
                   <th className="text-left p-2 w-[110px]">Date added</th>
-                  <th className="text-left p-2 w-[110px]">Expiry</th>
+                  <th className="text-left p-2 w-[120px]">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-foreground"
+                      title="Sort by expiry date"
+                      onClick={() => setSortKey(sortKey === 'due_next' ? 'due_latest' : 'due_next')}
+                    >
+                      Expiry
+                      {sortKey === 'due_next' ? <ArrowUp className="h-3 w-3" />
+                        : sortKey === 'due_latest' ? <ArrowDown className="h-3 w-3" />
+                        : <ArrowUpDown className="h-3 w-3 opacity-50" />}
+                    </button>
+                  </th>
                   <th className="text-left p-2 w-[140px]" title="Last time the customer themselves did something — asked for another quote, filled step 2, or logged into the portal.">Customer activity</th>
                 </tr>
               </thead>
