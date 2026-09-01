@@ -474,7 +474,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       const boundaries = getLeadFeedRangeBoundaries(dateRange);
       return { from: boundaries.from, to: boundaries.to };
     }, [dateRange]),
-    serverAgentFilter: agentFilter,
+    // Sales users' dated views must be fetched directly by owner. James had
+    // 1,059 August leads, but his all-leads permission sent him through the
+    // capped global query, where only 45 of his rows happened to be returned.
+    // Searching stays global so staff can still find any customer.
+    serverAgentFilter:
+      isSalesFeedUser && !debouncedSearchTerm.trim() && currentAdminId
+        ? currentAdminId
+        : agentFilter,
     serverSearchTerm: debouncedSearchTerm,
     serverCallbacksOnly: activeFilter === 'callbacks' && !debouncedSearchTerm.trim(),
     serverIncludeContactedInRange: includeWorkedInPeriod,
