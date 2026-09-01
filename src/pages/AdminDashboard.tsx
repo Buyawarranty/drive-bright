@@ -1274,6 +1274,14 @@ const AdminDashboardInner: React.FC<{
       </div>
       </header>
 
+      {/* Live chat opening-hours bar — every member of staff, claims included */}
+      <LiveChatHoursBanner />
+
+      {/* Ringing alert when a website chat customer asks for a human */}
+      <SandboxHandoverAlerts />
+
+
+
 
 
       {/*
