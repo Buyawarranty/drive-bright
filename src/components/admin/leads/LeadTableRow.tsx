@@ -1263,7 +1263,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           )}
           {showRecoveredBadge && (lead.abandoned_cart_id || lead.is_from_abandoned_cart) && !lead.assigned_at && !lead.step_two_completed_at && (() => {
             const meta = lead.cart_metadata as { gclid?: string; fbclid?: string; utm_source?: string } | null;
-            const isGoogle = !!meta?.gclid;
+            const isGoogle = !!meta?.gclid || !!(lead as any).gclid;
             const isFb = !!meta?.fbclid || ['facebook', 'fb', 'ig'].includes((meta?.utm_source || '').toLowerCase());
             const srcLabel = isGoogle ? 'G' : isFb ? 'FB' : 'Or';
             const srcColor = isGoogle ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : isFb ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-gray-100 text-gray-700 border-gray-300';
