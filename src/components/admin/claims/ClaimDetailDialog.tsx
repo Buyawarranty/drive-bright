@@ -14,6 +14,8 @@ import { ClaimCommunicationsPanel } from './ClaimCommunicationsPanel';
 import { ClaimEmailDialog } from './ClaimEmailDialog';
 import { ClaimStatusDropdown } from './ClaimStatusDropdown';
 import { ClaimPriorityBadge } from './ClaimPriorityBadge';
+import { ClaimMisrepresentationAction } from './ClaimMisrepresentationAction';
+
 
 interface ClaimDetailDialogProps {
   claim: any;
