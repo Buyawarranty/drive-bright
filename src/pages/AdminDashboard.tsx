@@ -1275,8 +1275,12 @@ const AdminDashboardInner: React.FC<{
       </div>
       </header>
 
+      {/* Banner rail: the sidebar is fixed from 104px down, so every top banner
+          is inset by the sidebar width on desktop — nothing is ever cut off. */}
+      <div className={sidebarCollapsed ? 'lg:pl-14' : 'lg:pl-64'}>
       {/* Live chat opening-hours bar — every member of staff, claims included */}
       <LiveChatHoursBanner />
+
 
       {/* Ringing alert when a website chat customer asks for a human */}
       <SandboxHandoverAlerts />
