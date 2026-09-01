@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
 import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { PriceOverridesPanel } from './pricing/PriceOverridesPanel';
+import { DiscountsByMonthAgentTable } from './discounts/DiscountsByMonthAgentTable';
 import { getRecordedOrderDiscount } from '@/lib/pricing/orderDiscount';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
