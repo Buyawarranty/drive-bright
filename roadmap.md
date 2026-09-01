@@ -15,3 +15,6 @@
 - [x] Chatbot pop-up permission: "Customer waiting for a specialist" ring/pop-up is now permission-gated (`tab_chatbot-popup`) — default ON for admin, super admin and claims only; anyone else needs it switched on in User Permissions
 - [x] Chatbot pop-up mute is a clear Mute/Muted toggle and now persists (localStorage), so muting really stops the ring
 - [x] Chatbot Data dashboard: remove the duplicate audio listener, cancel scheduled ring bursts immediately on mute, and stop all alert polling/audio when pop-up access is denied
+- [ ] Renewals → New Leads: policies 60 days from expiry become real new leads owned by the original selling agent, else normal round robin
+- [ ] Renewal eligibility: exclude anyone ever cancelled or refunded, unresolved complaints/disputes/chargebacks, fraud flags and contact restrictions; declined claims alone must NOT block renewal
+- [ ] Renewal cadence: 60d create lead + light notice, 30d main contact, 14d reminder, 7d stronger reminder, 1-2d optional final — stop the cadence once renewed or declined
