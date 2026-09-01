@@ -401,7 +401,25 @@ export const DiscountsGivenTab: React.FC = () => {
 
       setCustomers([...confirmedPayments, ...sentQuotes]);
       setAdminUsers(admins);
+
+      // Early in a new month there are simply no sales yet, which used to show a
+      // wall of zeros. Land on the most recent month that actually has sales.
+      const dates = confirmedPayments
+        .map(c => new Date(c.signup_date))
+        .filter(d => !isNaN(d.getTime()))
+        .sort((a, b) => b.getTime() - a.getTime());
+      const latest = dates[0];
+      if (latest) {
+        const thisMonth = startOfMonth(new Date());
+        const hasThisMonth = latest >= thisMonth;
+        if (!hasThisMonth) {
+          setMonthCursor(startOfMonth(latest));
+          setQuickRange('last_30');
+          setDateRange({ from: startOfMonth(latest), to: endOfMonth(latest) });
+        }
+      }
       setLoading(false);
+
     };
     fetchData();
     loadPricingVersionHistory().then(setPricingVersions);
