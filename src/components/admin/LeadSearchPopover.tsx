@@ -108,9 +108,19 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
     setRescueNote(null);
     setLoadError(null);
     try {
+      // Try the server-side lookup first — it is the fastest and widest search.
+      const rpcRows = await rpcSearch(raw);
+      if (rpcRows && rpcRows.length > 0) {
+        setLeads(rpcRows);
+        setRescueNote(`Backup search found ${rpcRows.length} record${rpcRows.length === 1 ? '' : 's'}.`);
+        setRescuing(false);
+        return;
+      }
+
       const compact = raw.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
       const spaced = compact.length >= 5 ? `${compact.slice(0, -3)} ${compact.slice(-3)}` : compact;
       const digits = raw.replace(/\D/g, '');
+
 
       const leadCols =
         'id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest, assigned_to';
