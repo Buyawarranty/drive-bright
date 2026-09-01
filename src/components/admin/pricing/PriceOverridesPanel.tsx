@@ -45,7 +45,7 @@ const PERIODS = [
  * Manual price overrides audit log (Option C — audit only, nothing is blocked).
  * Managers see every agent; agents see only their own rows (enforced by RLS).
  */
-export const PriceOverridesPanel: React.FC = () => {
+export const PriceOverridesPanel: React.FC<{ agentFilter?: string | null }> = ({ agentFilter }) => {
   const [rows, setRows] = useState<OverrideRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<string>('30');
