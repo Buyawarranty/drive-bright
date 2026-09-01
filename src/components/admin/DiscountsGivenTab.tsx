@@ -1229,7 +1229,9 @@ export const DiscountsGivenTab: React.FC = () => {
         </CardContent>
       </Card>
 
-      <PriceOverridesPanel />
+      <PriceOverridesPanel
+        agentFilter={selectedAgent !== 'all' ? agentMap[selectedAgent] || null : null}
+      />
     </div>
   );
 };
