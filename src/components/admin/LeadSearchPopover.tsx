@@ -228,6 +228,20 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
       try {
         const hasSearch = !!searchTerm.trim();
 
+        // Primary path for any search: one indexed server-side lookup.
+        if (hasSearch) {
+          const rpcRows = await rpcSearch(searchTerm.trim());
+          if (cancelled) return;
+          if (rpcRows && rpcRows.length > 0) {
+            setLeads(rpcRows);
+            setLoadError(null);
+            setRescueNote(null);
+            setLoading(false);
+            return;
+          }
+        }
+
+
         // When an agent searches (usually by reg) they must be able to find the
         // record even if that lead is already paid or the cart converted —
         // filtering those out is what made reg searches look broken.
