@@ -74,7 +74,7 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
   const [search, setSearch] = useState('');
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [datePeriod, setDatePeriod] = useState<PeriodKey>('today');
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [statusFilter, setStatusFilter] = useState<SimpleStatus | 'all'>('all');
@@ -160,6 +160,13 @@ export const ClaimsWorkbench: React.FC<ClaimsWorkbenchProps> = ({ showUrgencyBan
       return !['closed', 'paid', 'resolved', 'rejected', 'declined', 'cancelled', 'appealed', 'appeal'].includes(st);
     });
   }, [allClaims, section]);
+
+  // Never leave the user staring at an empty section: if a linked-to section
+  // (e.g. ?section=appeals) has nothing in it, fall back to live/active claims.
+  useEffect(() => {
+    if (section === 'active') return;
+    if (allClaims.length > 0 && claims.length === 0) setSection('active');
+  }, [section, claims.length, allClaims.length]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
