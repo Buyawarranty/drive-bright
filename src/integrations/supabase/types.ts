@@ -10584,6 +10584,51 @@ export type Database = {
           },
         ]
       }
+      renewal_milestone_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          lead_id: string | null
+          milestone_days: number
+          policy_id: string
+          renewal_year: number
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          milestone_days: number
+          policy_id: string
+          renewal_year: number
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          milestone_days?: number
+          policy_id?: string
+          renewal_year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renewal_milestone_log_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sales_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renewal_milestone_log_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "customer_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       renewal_offers: {
         Row: {
           active: boolean
@@ -14311,6 +14356,7 @@ export type Database = {
         }[]
       }
       rota_sync_in_progress: { Args: never; Returns: boolean }
+      run_renewal_milestones: { Args: never; Returns: number }
       search_import_leads: {
         Args: { p_limit?: number; p_term: string }
         Returns: {
