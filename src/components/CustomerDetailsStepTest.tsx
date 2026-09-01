@@ -341,9 +341,35 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
     }
   };
 
+  // Customers flagged for a misrepresented claim or a payment dispute cannot buy cover again.
+  const assertCoverEligible = async () => {
+    try {
+      const { data, error } = await supabase.rpc('customer_cover_block_reason', {
+        p_email: customerData.email || null,
+        p_reg: vehicleData?.regNumber || customerData.registration_plate || null,
+        p_phone: customerData.phone || null,
+      });
+      if (error) {
+        console.warn('Cover eligibility check failed, allowing checkout', error.message);
+        return true;
+      }
+      if (data) {
+        toast.error(
+          'We are unable to offer cover on this account online. Please call us on 0330 229 5040 so we can help.'
+        );
+        return false;
+      }
+    } catch (err) {
+      console.warn('Cover eligibility check error, allowing checkout', err);
+    }
+    return true;
+  };
+
   const processStripeCheckout = async () => {
+    if (!(await assertCoverEligible())) return;
     const finalPrice = discountedStripePrice;
     console.log('💳 Processing Stripe checkout with price:', finalPrice);
+
     
     const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-stripe-checkout', {
       body: {
