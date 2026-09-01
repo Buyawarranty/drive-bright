@@ -846,8 +846,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
 
     // Apply the feed age window (default: last 60 days). Skipped while searching so
-    // an agent looking up an older customer by name/phone/reg always finds them.
-    if (ageWindow === 'last_60' && !debouncedSearchTerm) {
+    // an agent looking up an older customer by name/phone/reg always finds them, and
+    // skipped whenever an explicit date range is picked — the chosen window is the
+    // authority, otherwise picking an older month silently returned nothing.
+    const hasPickedDateWindow = !!(dateRange.from || dateRange.to);
+    if (ageWindow === 'last_60' && !debouncedSearchTerm && !hasPickedDateWindow) {
       const cutoff = Date.now() - 60 * 24 * 60 * 60 * 1000;
       result = result.filter(lead => {
         const submitted = getLeadSubmissionDate(lead).getTime();
@@ -855,6 +858,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         return Math.max(submitted, activity) >= cutoff;
       });
     }
+
 
     // Apply date range filter — but skip it when actively searching, viewing reminders,
     // or viewing "Back in this period" (those rows are matched on their return activity,
