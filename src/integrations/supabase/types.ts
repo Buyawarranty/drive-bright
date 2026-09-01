@@ -10530,6 +10530,60 @@ export type Database = {
           },
         ]
       }
+      renewal_lead_links: {
+        Row: {
+          assigned_to: string | null
+          assignment_reason: string
+          attached_to_existing: boolean
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          id: string
+          lead_id: string | null
+          policy_id: string
+          renewal_year: number
+        }
+        Insert: {
+          assigned_to?: string | null
+          assignment_reason?: string
+          attached_to_existing?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          lead_id?: string | null
+          policy_id: string
+          renewal_year: number
+        }
+        Update: {
+          assigned_to?: string | null
+          assignment_reason?: string
+          attached_to_existing?: boolean
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          lead_id?: string | null
+          policy_id?: string
+          renewal_year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renewal_lead_links_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sales_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renewal_lead_links_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "customer_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       renewal_offers: {
         Row: {
           active: boolean
