@@ -909,8 +909,21 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                   <th className="text-left p-2 w-[140px]">Agent</th>
                   {canSeeSource && <th className="text-left p-2 w-[70px]">Src</th>}
                   <th className="text-left p-2 w-[120px]">Outcome</th>
-                  <th className="text-left p-2 w-[100px]">Renews in</th>
+                  <th className="text-left p-2 w-[120px]">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-foreground"
+                      title="Sort by how soon the policy renews"
+                      onClick={() => setSortKey(sortKey === 'due_next' ? 'due_latest' : 'due_next')}
+                    >
+                      Renews in
+                      {sortKey === 'due_next' ? <ArrowUp className="h-3 w-3" />
+                        : sortKey === 'due_latest' ? <ArrowDown className="h-3 w-3" />
+                        : <ArrowUpDown className="h-3 w-3 opacity-50" />}
+                    </button>
+                  </th>
                   <th className="text-left p-2 w-[70px]">Plan</th>
+                  <th className="text-left p-2 w-[90px]">Duration</th>
                   <th className="text-center p-2 w-[90px]">Calls</th>
                   <th className="text-left p-2 w-[110px]">Last contacted</th>
                   <th className="text-left p-2 w-[240px]">Latest note</th>
