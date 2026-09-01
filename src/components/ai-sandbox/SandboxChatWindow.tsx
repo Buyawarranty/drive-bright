@@ -988,7 +988,40 @@ export function SandboxChatWindow({
       {/* Compact top action row — one line, two options, out of the chat's way. */}
       {!agentMode && (
         <div className="border-b border-border bg-background px-3 py-2.5">
-          {holdState === 'on_hold' || waiting ? (
+          {holdState === 'missed' ? (
+            /* Nobody picked the chat up — stop implying someone is coming and
+               give the visitor a real next step. An urgent callback has already
+               been raised in the CRM by this point. */
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-foreground">
+                Sorry — our specialists are all tied up right now. We've flagged this as urgent so
+                someone calls you straight back.
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href="tel:03302295040"
+                  className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-primary/10"
+                >
+                  <PhoneCall className="h-4 w-4 shrink-0 text-primary" />
+                  <span className="truncate">Call 0330 229 5040</span>
+                </a>
+                <CallMeBackPanel
+                  asChip
+                  guestToken={guestToken}
+                  threadId={threadId}
+                  source={source}
+                  compact={compact}
+                  registration={detectedReg}
+                  liveAgentAvailable={false}
+                />
+              </div>
+            </div>
+          ) : holdState === 'joined' ? (
+            <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
+              <Headset className="h-3.5 w-3.5 shrink-0 text-primary" />
+              A warranty specialist has joined this chat.
+            </p>
+          ) : holdState === 'on_hold' || waiting ? (
             <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
               <span className="relative flex h-2 w-2 shrink-0">
                 <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-primary opacity-70" />
@@ -1004,6 +1037,7 @@ export function SandboxChatWindow({
               )}
             </p>
           ) : (
+
             /* Live agent only shows when the team is open AND someone is actually
                online. Otherwise the call back panel gets the full width. */
             <div className={liveAgentAvailable ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-1 gap-2'}>
