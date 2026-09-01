@@ -478,7 +478,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
       cancelled = true;
       clearTimeout(debounce);
     };
-  }, [open, searchTerm]);
+  }, [open, searchTerm, rpcSearch]);
 
   const handleSelectLead = (lead: LeadData) => {
     onSelectLead({ ...lead, owner_name: ownerNameFor(lead.assigned_to) });
