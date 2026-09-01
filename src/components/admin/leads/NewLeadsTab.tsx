@@ -272,7 +272,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   };
   
   const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view' | 'teams-overview' | 'leads-per-agent'>(getDefaultView());
-  const [activeFilter, setActiveFilter] = useState<LeadFilterType>('live');
+  const isSalesFeedUser = userRole === 'sales' || userRole === 'sales_lead';
+  const [activeFilter, setActiveFilter] = useState<LeadFilterType>(() => isSalesFeedUser ? 'all_leads' : 'live');
   // Multi-select support: extra pills the user has toggled on top of the
   // primary activeFilter. The table shows the union across activeFilter +
   // additionalFilters. Kept separate from activeFilter so the useLeads hook,
@@ -322,8 +323,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [agentFilter, setAgentFilter] = useState<string>('all');
   const [sortOption, setSortOption] = useState<SortOption>('latest_submitted');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
-  // Feed age window: agents default to the last 60 days of leads; "All" shows everything.
-  const [ageWindow, setAgeWindow] = useState<AgeWindow>('last_60');
+  // Sales users asked to land on their complete lead history. They can still
+  // narrow it with the orange date shortcuts, date picker, or age control.
+  const [ageWindow, setAgeWindow] = useState<AgeWindow>(() => isSalesFeedUser ? 'all' : 'last_60');
   const [reminderLeadIds, setReminderLeadIds] = useState<Set<string>>(new Set());
   const [reminderTimesMap, setReminderTimesMap] = useState<Record<string, string>>({});
   const [notSpokenTagId, setNotSpokenTagId] = useState<string | null>(null);
@@ -495,8 +497,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // leads themselves have had a chance to load — running it on every mount for
   // every agent was timing out and blanking the page.
   useEffect(() => {
-    setFilter('live');
-    setActiveFilter('live');
+    const defaultFilter: LeadFilterType = isSalesFeedUser ? 'all_leads' : 'live';
+    setFilter(defaultFilter as any);
+    setActiveFilter(defaultFilter);
 
     const LAST_KEY = 'baw:lastCartMigrationAt';
     const last = Number(localStorage.getItem(LAST_KEY) || 0);
@@ -507,7 +510,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       migrateFromAbandonedCarts(true).catch(() => {});
     }, 4000);
     return () => window.clearTimeout(timer);
-  }, [setFilter, migrateFromAbandonedCarts]);
+  }, [setFilter, migrateFromAbandonedCarts, isSalesFeedUser]);
 
 
   // Handle filter change (single-select code path — used when the user picks
