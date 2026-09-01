@@ -568,6 +568,10 @@ export const useLeads = (options?: UseLeadsOptions) => {
       // assigned_to + created_at index instead of timing out on a wide OR.
       const applyOwnerHistoryDateFilter = (query: any) => {
         if (serverSearchTermRef.current?.trim() || serverCallbacksOnlyRef.current) return query;
+        // The explicit "Worked in this period" mode also includes older leads
+        // contacted during the window, so retain the wider date semantics only
+        // when the user has deliberately enabled that option.
+        if (serverIncludeContactedRef.current) return applyServerDateFilter(query);
         const dateFilter = serverDateFilterRef.current;
         if (dateFilter?.from) query = query.gte('created_at', dateFilter.from.toISOString());
         if (dateFilter?.to) query = query.lte('created_at', dateFilter.to.toISOString());
