@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
 
     const accessToken = await getAccessToken();
 
-    const url = `https://googleads.googleapis.com/v21/customers/${customerId}/googleAds:searchStream`;
+    const url = `https://googleads.googleapis.com/v22/customers/${customerId}/googleAds:searchStream`;
     const query = `
       SELECT
         conversion_action.id,

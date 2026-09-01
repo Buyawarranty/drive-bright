@@ -124,7 +124,7 @@ async function uploadConversion(
   userIdentifiers: Array<Record<string, string>>,
   currencyCode: string = 'GBP',
 ) {
-  const url = `https://googleads.googleapis.com/v21/customers/${customerId}:uploadClickConversions`;
+  const url = `https://googleads.googleapis.com/v22/customers/${customerId}:uploadClickConversions`;
 
   const conversion: Record<string, unknown> = {
     [clickIdentifier.field]: clickIdentifier.value,
