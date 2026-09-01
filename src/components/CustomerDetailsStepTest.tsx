@@ -415,8 +415,10 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
   };
 
   const processPaymentAssistCheckout = async () => {
+    if (!(await assertCoverEligible())) return;
     const finalPrice = discountedPaymentAssistPrice;
     console.log('💰 Processing Payment Assist checkout with price:', finalPrice);
+
     
     const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-payment-assist-checkout', {
       body: {
