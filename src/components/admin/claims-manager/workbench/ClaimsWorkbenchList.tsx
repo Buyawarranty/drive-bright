@@ -352,6 +352,16 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
   const allSelected = claims.length > 0 && claims.every((c) => selectedIds.has(c.id));
   const someSelected = !allSelected && claims.some((c) => selectedIds.has(c.id));
 
+  const sortValue = (c: Claim): number => {
+    if (sortKey === 'submitted') return c.submittedAt ? new Date(c.submittedAt).getTime() : 0;
+    if (sortKey === 'sla') return computeSla(c).hoursRemaining;
+    return c.daysOnRisk ?? -1;
+  };
+  const sortedClaims = [...claims].sort((a, b) => {
+    const diff = sortValue(a) - sortValue(b);
+    return sortDir === 'asc' ? diff : -diff;
+  });
+
   return (
     <div className="flex-1 bg-card border border-border rounded-lg overflow-hidden flex flex-col">
       <div className="overflow-x-auto">
