@@ -346,6 +346,38 @@ export const UnifiedDateFilter: React.FC<UnifiedDateFilterProps> = ({
           </div>
         </PopoverContent>
       </Popover>
+
+      {/* Quick links live OUTSIDE the Popover so they stay clickable for every
+          role — inside the popover subtree they could sit under the overlay. */}
+      {!hideQuickLinks && (
+        <div className="relative z-10 flex items-center gap-2 flex-wrap pointer-events-auto">
+          {[
+            showAll && { key: 'all' as PeriodKey, label: 'All' },
+            showToday && { key: 'today' as PeriodKey, label: 'Today' },
+            showYesterday && { key: 'yesterday' as PeriodKey, label: 'Yesterday' },
+            showThisWeek && { key: 'this_week' as PeriodKey, label: 'This week' },
+            showLastWeek && { key: 'last_week' as PeriodKey, label: 'Last week' },
+            showThisMonth && { key: 'this_month' as PeriodKey, label: 'This month' },
+            showLastMonth && { key: 'last_month' as PeriodKey, label: 'Last month' },
+            showLast30 && { key: '30days' as PeriodKey, label: 'Show last 30 days' },
+          ]
+            .filter(Boolean)
+            .map((link) => {
+              const l = link as { key: PeriodKey; label: string };
+              return (
+                <button
+                  key={l.key}
+                  type="button"
+                  onClick={() => onChange({ scope, period: l.key, customRange: undefined })}
+                  className="text-sm font-semibold text-orange-600 hover:underline px-1 py-0.5 rounded"
+                >
+                  {l.label}
+                </button>
+              );
+            })}
+        </div>
+      )}
     </div>
+
   );
 };
