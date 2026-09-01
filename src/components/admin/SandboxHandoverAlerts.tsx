@@ -2,6 +2,7 @@ import React from 'react';
 import { PhoneCall, X, Volume2, VolumeX, Headset } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSandboxHandoverAlert } from '@/hooks/useSandboxHandoverAlert';
+import { useChatbotPopupAccess } from '@/hooks/useChatbotPopupAccess';
 import { Button } from '@/components/ui/button';
 
 
@@ -17,6 +18,7 @@ const since = (iso: string) => {
  * keeps ringing while anyone is still waiting.
  */
 export const SandboxHandoverAlerts: React.FC = () => {
+  const { allowed } = useChatbotPopupAccess();
   const { waiting, muted, setMuted, dismiss, claim } = useSandboxHandoverAlert();
   const navigate = useNavigate();
   const [, force] = React.useState(0);
@@ -27,7 +29,7 @@ export const SandboxHandoverAlerts: React.FC = () => {
     return () => window.clearInterval(t);
   }, [waiting.length]);
 
-  if (waiting.length === 0) return null;
+  if (!allowed || waiting.length === 0) return null;
 
   return (
     <div className="fixed left-2 bottom-2 z-[120] flex w-[300px] max-w-[calc(100vw-1rem)] flex-col gap-2">
@@ -43,11 +45,18 @@ export const SandboxHandoverAlerts: React.FC = () => {
             </div>
             <div className="flex items-center gap-1">
               <button
+                type="button"
+                title={muted ? 'Ring is muted — click to unmute' : 'Mute the ring'}
                 aria-label={muted ? 'Unmute ring' : 'Mute ring'}
                 onClick={() => setMuted(!muted)}
-                className="text-muted-foreground hover:text-foreground"
+                className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${
+                  muted
+                    ? 'border-muted bg-muted text-muted-foreground'
+                    : 'border-primary/30 text-primary hover:bg-primary/10'
+                }`}
               >
                 {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                {muted ? 'Muted' : 'Mute'}
               </button>
               <button
                 aria-label="Dismiss"

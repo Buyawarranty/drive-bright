@@ -100,6 +100,7 @@ const ADMIN_TABS = [
   { id: 'attendance', label: 'Attendance & Rota', description: 'Working days rota and weekend shift sign-ups' },
   { id: 'goldmine-leads', label: 'Goldmine Leads', description: 'High-intent leads flagged for priority follow-up' },
   { id: 'call-stats', label: 'Call Stats', description: 'Detailed call statistics and speed-to-dial (merged into Live Calls Data)' },
+  { id: 'chatbot-popup', label: 'Chatbot Pop-up', description: 'See the ringing "Customer waiting for a specialist" website chat pop-up (admin, super admin and claims by default)' },
   { id: 'account', label: 'Account Settings', description: 'Manage your account and password' },
 ];
 
@@ -141,6 +142,7 @@ const GRANULAR_PERMISSIONS = {
 };
 
 const CLAIMS_AGENT_PERMISSIONS: Record<string, boolean> = {
+  'tab_chatbot-popup': true,
   'tab_claims': true,
   'tab_customers': true,
   'tab_customers_view': true,
@@ -153,6 +155,7 @@ const CLAIMS_AGENT_PERMISSIONS: Record<string, boolean> = {
 };
 
 const CLAIMS_MANAGER_PERMISSIONS: Record<string, boolean> = {
+  'tab_chatbot-popup': true,
   'tab_claims': true,
   'tab_customers': true,
   'tab_customers_view': true,
