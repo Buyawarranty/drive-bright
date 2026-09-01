@@ -101,7 +101,10 @@ export function useSandboxHandoverAlert({
   // Keep ringing gently while someone is still waiting and un-dismissed.
   const visible = waiting.filter((w) => !dismissed.has(w.id));
   useEffect(() => {
-    if (!enabled || !audioEnabled || muted || visible.length === 0) {
+    // Read-only consumers (for example the hours banner) must neither start nor
+    // stop the shared audio context used by the actual alert component.
+    if (!audioEnabled) return;
+    if (!enabled || muted || visible.length === 0) {
       stopPhoneRing();
       return;
     }
