@@ -243,16 +243,17 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
 
   return (
     <div className="bg-red-600 text-white shadow-lg border-b-2 border-red-800 animate-pulse-once">
-      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <AlertTriangle className="h-5 w-5 shrink-0" />
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <div className="flex items-start gap-2 min-w-0 flex-1">
+          <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
           <div
-            className="text-sm font-medium flex items-center min-w-0"
+            className="text-sm font-medium flex flex-wrap items-center min-w-0 gap-x-1"
             title={`${who} is ${label}${device}${method}${reg}${failMsg}${phoneNumber ? ' · ' + phoneNumber : ''}`}
           >
-            <span className="truncate">
+            <span className="break-words">
               🚨 <strong>{who}</strong> is {label}{device}{method}{reg}{failMsg}
             </span>
+
             {telHref && (
               <span className="whitespace-nowrap shrink-0 opacity-90">
                 {' · '}
