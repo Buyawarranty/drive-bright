@@ -13,6 +13,13 @@ export const CHATBOT_POPUP_DEFAULT_ROLES = [
 ] as const;
 
 /**
+ * Sales never see the website chat pop-up — not by default, and not even if
+ * the permission is switched on by mistake. Handovers are a claims/management
+ * job; sales agents work leads.
+ */
+export const CHATBOT_POPUP_BLOCKED_ROLES = ['sales', 'sales_lead'] as const;
+
+/**
  * Who may see the "Customer waiting for a specialist" chatbot pop-up.
  *
  * Admin, super admin and claims staff get it by default. Everyone else (sales,
@@ -40,6 +47,10 @@ export function useChatbotPopupAccess() {
           .maybeSingle();
         if (!mounted) return;
         if (error || !data) {
+          setAllowed(false);
+          return;
+        }
+        if ((CHATBOT_POPUP_BLOCKED_ROLES as readonly string[]).includes(String(data.role))) {
           setAllowed(false);
           return;
         }

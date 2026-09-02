@@ -1,7 +1,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Gavel, CheckCircle2, Paperclip, Mail, Scale } from 'lucide-react';
+import { Gavel, CheckCircle2, Paperclip, Mail, Scale, ExternalLink } from 'lucide-react';
 import { ReturnedAppeal } from '@/hooks/useReturnedAppeals';
 
 interface AppealsInboxPanelProps {
@@ -31,15 +31,15 @@ export const AppealsInboxPanel: React.FC<AppealsInboxPanelProps> = ({
   const unreadCount = appeals.filter(a => !a.isRead).length;
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-      <header className="flex items-center justify-between flex-wrap gap-3 px-4 py-3 bg-[#1A2B4A]">
+    <section className="rounded-2xl border border-amber-200 bg-white overflow-hidden">
+      <header className="flex items-center justify-between flex-wrap gap-3 px-4 py-3 bg-amber-50 border-b border-amber-200">
         <div className="flex items-center gap-2">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#E8541A]/15">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#E8541A]/10">
             <Gavel className="h-4 w-4 text-[#E8541A]" />
           </span>
           <div>
-            <h2 className="text-base font-semibold text-white leading-tight">Appeals</h2>
-            <p className="text-[11px] text-slate-300">Appeals returned by customers, with everything they sent back</p>
+            <h2 className="text-base font-semibold text-amber-900 leading-tight">Appeals</h2>
+            <p className="text-[11px] text-amber-700">Appeals returned by customers, with everything they sent back</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -51,6 +51,12 @@ export const AppealsInboxPanel: React.FC<AppealsInboxPanelProps> = ({
               {unreadCount} new
             </Badge>
           )}
+          {/* The customer-facing appeal form — same public design as /complaints/ */}
+          <Button size="sm" variant="outline" className="bg-white" asChild>
+            <a href="/appeals/" target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-3.5 w-3.5 mr-1" /> Public appeal form
+            </a>
+          </Button>
           {onOpenAppealDialog && (
             <Button size="sm" variant="outline" className="bg-white" onClick={onOpenAppealDialog}>
               <Scale className="h-3.5 w-3.5 mr-1" /> Open appeal

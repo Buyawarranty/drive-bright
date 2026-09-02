@@ -42,14 +42,14 @@ const SIGNAL_LABELS: Record<string, string> = {
 
 // Roles allowed to see the banner. Sales agents see it too — they just can't
 // resolve it for everyone else, only hide it locally with X.
+// Claims staff are deliberately excluded: a customer stuck on checkout is a
+// sales job, not a claims one.
 const STAFF_ROLES = new Set([
   'admin',
   'super_admin',
   'sales_manager',
   'sales_lead',
   'sales',
-  'claims',
-  'claims_manager',
 ]);
 
 const MUTE_KEY = 'checkout-struggle-muted';

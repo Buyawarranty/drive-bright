@@ -2,6 +2,7 @@ import React from 'react';
 import { MessageSquare, Clock } from 'lucide-react';
 import { isTeamOpenNow, nextOpeningLabel, openingHoursLabel } from '@/lib/aiSandbox/openingHours';
 import { useSandboxHandoverAlert } from '@/hooks/useSandboxHandoverAlert';
+import { useChatbotPopupAccess } from '@/hooks/useChatbotPopupAccess';
 
 /**
  * Full-width bar across the top of the CRM telling every member of staff
@@ -9,14 +10,19 @@ import { useSandboxHandoverAlert } from '@/hooks/useSandboxHandoverAlert';
  * now, and how many customers are waiting for a human specialist.
  */
 export const LiveChatHoursBanner: React.FC = () => {
+  // Only staff with chatbot pop-up access (admin / claims by default) see the
+  // live-chat bar at all — sales agents never do.
+  const { allowed } = useChatbotPopupAccess();
   // This banner only displays the queue count; it must never create audio.
-  const { waiting } = useSandboxHandoverAlert({ audioEnabled: false });
+  const { waiting } = useSandboxHandoverAlert({ enabled: allowed, audioEnabled: false });
   const [open, setOpen] = React.useState(() => isTeamOpenNow());
 
   React.useEffect(() => {
     const t = window.setInterval(() => setOpen(isTeamOpenNow()), 60000);
     return () => window.clearInterval(t);
   }, []);
+
+  if (!allowed) return null;
 
   if (!open) {
     return (
