@@ -1989,7 +1989,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       
       const trackingData = getTrackingData();
 
-      struggleTracker.reportPaymentAttempt(monthlyProvider);
+      struggleTracker.reportPaymentAttempt('bumper');
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(isPaymentAssist ? 'create-payment-assist-checkout' : 'create-bumper-checkout', {
         body: {
           planId,
