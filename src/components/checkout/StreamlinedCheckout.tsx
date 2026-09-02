@@ -98,6 +98,12 @@ export interface StreamlinedCheckoutProps {
   onBack: () => void;
   onNext: (customerData: any) => void;
   onUpdateVehicle?: (vehicle: Partial<StreamlinedCheckoutProps['vehicleData']>) => void;
+  /**
+   * Which provider powers the monthly (pay by instalments) option.
+   * Defaults to Bumper — the live customer checkout. 'payment_assist' is used
+   * by the Payment Assist test checkout only; everything else is identical.
+   */
+  monthlyProvider?: 'bumper' | 'payment_assist';
 }
 
 const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({ 
