@@ -218,9 +218,11 @@ const Appeals = () => {
   return (
     <div className="min-h-screen bg-[#F4F6F8]">
       <SEOHead
-        title="Appeal a Claim Decision | Buy A Warranty UK"
-        description="Appeal a claim decision with Buy A Warranty. Send us new evidence and our claims manager will review your case independently of the original decision."
-        keywords="claim appeal, appeal claim decision, warranty claim review"
+        title={requestMode ? 'Warranty Appeals | Request an Appeal | Buy A Warranty UK' : 'Appeal a Claim Decision | Buy A Warranty UK'}
+        description={requestMode
+          ? 'Request an appeal of a warranty claim decision. Send us a short request and our claims team will email you a secure link to complete your appeal.'
+          : 'Appeal a claim decision with Buy A Warranty. Send us new evidence and our claims manager will review your case independently of the original decision.'}
+        keywords="warranty appeals, claim appeal, appeal claim decision, warranty claim review"
         canonical="https://buyawarranty.co.uk/appeals/"
       />
 
