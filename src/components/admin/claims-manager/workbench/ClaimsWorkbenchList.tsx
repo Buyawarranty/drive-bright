@@ -15,6 +15,8 @@ import { MileageChip } from './MileageChip';
 import { computeSla, slaToneCls } from './sla';
 import { formatDaysOnRisk } from './formatters';
 import { MisrepFlagButton, useMisrepresentedIdentities } from './MisrepFlagButton';
+import { AppealMadeTag, SendAppealEmailButton, useClaimAppealStates } from './ClaimAppealAction';
+import { ClaimAppealDialog } from '@/components/admin/claims/ClaimAppealDialog';
 
 
 // Simplified admin status options for the row dropdown.
@@ -273,6 +275,8 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
 }) => {
   const { toast } = useToast();
   const { isFlagged: isMisrepFlagged, refetch: refetchMisrep } = useMisrepresentedIdentities();
+  const { appealState, refetchAppeals } = useClaimAppealStates(claims.map((c) => c.id));
+  const [appealClaim, setAppealClaim] = useState<Claim | null>(null);
   const [sortKey, setSortKey] = useState<'submitted' | 'sla' | 'onRisk'>('submitted');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const toggleSort = (key: 'submitted' | 'sla' | 'onRisk') => {
@@ -540,6 +544,10 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                       <ThumbsDown className="h-3.5 w-3.5" />
                     </button>
                   </ReviewNotePopover>
+                  <SendAppealEmailButton
+                    hasAppeal={appealState(c.id).open}
+                    onClick={() => setAppealClaim(c)}
+                  />
                   <MisrepFlagButton
                     claimId={c.id}
                     email={c.email}
@@ -569,7 +577,8 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                 </button>
 
                 {/* Status */}
-                <div className="min-w-0 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                <div className="min-w-0 flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                  <AppealMadeTag state={appealState(c.id)} onClick={() => onSelect(c)} />
                   <Select
                     value={currentStatusValue}
                     onValueChange={(v) => { if (v !== currentStatusValue) changeStatus(c, v); }}
