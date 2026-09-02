@@ -33,6 +33,6 @@
 - [x] /appeals/: Worldpay £140 payment link shown inside the "What happens next" panel (live link when opened from a secure appeal link)
 - [x] /appeals/: appeal only needs a name plus EITHER registration or warranty number — email/phone/last name optional, email looked up from the customer record
 - [x] Appeals: instant acknowledgement email on submission, promising a proper response within 2 working days and warning inspections can take up to 3 weeks
-- [ ] Claims tab: merge the separate Appeals section into the main claims list with a big "APPEAL MADE" tag on the claim row
-- [ ] Claims row action: send the appeal-invite email (secure link) with an on-screen preview before sending
+- [x] Claims tab: merge the separate Appeals section into the main claims list with a big "APPEAL MADE" tag on the claim row
+- [x] Claims row action: send the appeal-invite email (secure link) with an on-screen preview before sending
 - [ ] Customers edit dialog: add a "Paused" status that records the pause date and shows how much cover remains if restarted
