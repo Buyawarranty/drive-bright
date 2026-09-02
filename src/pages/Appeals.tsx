@@ -517,6 +517,7 @@ const Appeals = () => {
                 <p className="mt-1.5 text-xs text-slate-500">Choosing not to have one costs nothing — our claims manager still reviews your appeal.</p>
                 {errors.independentInspection && <FieldError msg={errors.independentInspection} />}
               </div>
+              )}
 
               {/* Preferred contact method */}
               <div>
