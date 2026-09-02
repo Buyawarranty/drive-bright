@@ -2003,20 +2003,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               )}
             </>
           )}
-          {/* H button fallback when no teams exist (super admin only) */}
-          {activeView === 'leads' && isSuperAdmin && allTeams.length === 0 && (
-            <Button
-              type="button"
-              variant={superAdminHideSource ? 'default' : 'outline'}
-              size="sm"
-              onClick={toggleSuperAdminHideSource}
-              title={superAdminHideSource ? 'Source hidden in your view — click to show' : 'Hide source in your view'}
-              className="h-7 px-2 text-[11px] font-semibold gap-1.5"
-            >
-              {superAdminHideSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-              H
-            </Button>
-          )}
+          {/* H toggle moved next to Allocate Agents */}
+
         </div>
 
         
