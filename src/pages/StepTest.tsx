@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import PerformanceOptimizedSuspense from '@/components/PerformanceOptimizedSuspense';
 import { safeLocalStorageRemove, getWithTimestamp } from '@/utils/localStorage';
 
-// Lazy load the test checkout component
-const CustomerDetailsStepTest = lazy(() => import('@/components/CustomerDetailsStepTest'));
+// Test checkout = the real customer checkout, with Payment Assist as the monthly option
+const StreamlinedCheckout = lazy(() => import('@/components/checkout/StreamlinedCheckout'));
 const CarJourneyProgress = lazy(() => import('@/components/CarJourneyProgress'));
 
 interface VehicleData {
