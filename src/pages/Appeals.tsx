@@ -45,7 +45,6 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
   claimRef: () => '',
   registrationPlate: (v) => (!String(v).trim() ? 'Please enter your vehicle registration' : ''),
   decisionDate: () => '',
-  grounds: (v) => (!v ? 'Please select your grounds for appeal' : ''),
   newEvidence: (v) => {
     const s = String(v).trim();
     if (!s) return 'Please tell us why you are appealing';
