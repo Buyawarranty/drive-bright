@@ -102,7 +102,7 @@ serve(async (req: Request): Promise<Response> => {
       if (!existing) {
         await supabase.from("claim_appeals").insert({
           claim_id: claim.id,
-          reason: isRequest ? "Appeal requested by customer (awaiting full appeal form)" : grounds,
+          reason: isRequest ? "Appeal requested by customer (awaiting full appeal form)" : (grounds || "Appeal submitted online"),
           new_evidence: newEvidence,
           status: "open",
           customer_email: email.trim().toLowerCase(),
