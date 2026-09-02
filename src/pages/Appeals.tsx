@@ -404,30 +404,7 @@ const Appeals = () => {
               </div>
 
               {!requestMode && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field name="decisionDate" label="Date of the decision" type="date" value={form.decisionDate} onChange={change} error={errors.decisionDate} valid={fieldStatus.decisionDate.valid && showStatus('decisionDate')} />
-                <div>
-                  <label htmlFor="grounds" className="block text-sm font-medium text-slate-900 mb-1.5">
-                    Grounds for appeal <span className="text-[#E8541A]">*</span>
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="grounds"
-                      name="grounds"
-                      value={form.grounds}
-                      onChange={change}
-                      className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${errors.grounds ? 'border-red-400' : fieldStatus.grounds.valid && showStatus('grounds') ? 'border-green-500' : 'border-slate-300'}`}
-                    >
-                      <option value="">Select your grounds</option>
-                      {GROUNDS.map(c => <option key={c}>{c}</option>)}
-                    </select>
-                    {fieldStatus.grounds.valid && showStatus('grounds') && !errors.grounds && (
-                      <Check className="w-4 h-4 text-green-600 absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    )}
-                  </div>
-                  {errors.grounds && <FieldError msg={errors.grounds} />}
-                </div>
-              </div>
               )}
 
               {/* Why you're appealing */}
