@@ -210,11 +210,12 @@ const Appeals = () => {
   };
 
   const createInspectionLink = async () => {
-    if (!submittedToken || creatingInspectionLink) return;
+    const payToken = submittedToken || token;
+    if (!payToken || creatingInspectionLink) return;
     setCreatingInspectionLink(true);
     try {
       const { data, error } = await supabase.functions.invoke('appeal-inspection-option', {
-        body: { token: submittedToken, create: true },
+        body: { token: payToken, create: true },
       });
       if (error || !data?.inspection?.link) throw new Error(error?.message || data?.error || 'Could not create inspection link');
       setInspectionLink(data.inspection.link);
