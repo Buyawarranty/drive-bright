@@ -80,7 +80,7 @@ serve(async (req: Request): Promise<Response> => {
 
     const summary = [
       isRequest ? "APPEAL REQUESTED — customer asked for an appeal from the public Warranty appeals page. Send them the secure appeal link." : null,
-      isRequest ? null : `Grounds: ${grounds}`,
+      grounds ? `Grounds: ${grounds}` : null,
       decisionDate ? `Decision date: ${decisionDate}` : null,
       claimRef ? `Customer claim reference: ${claimRef}` : null,
       `Independent inspection: ${independentInspection || "Not stated"}`,
