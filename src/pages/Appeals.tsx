@@ -545,8 +545,22 @@ const Appeals = () => {
                           <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> We appoint one independent engineering firm — <strong className="font-medium">ACE</strong> or <strong className="font-medium">Scotia</strong> — based on availability in your area.</li>
                           <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> The £140 fee covers the engineer's inspection visit to your vehicle, wherever it is in the UK.</li>
                           <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> You accept that the engineer's decision is <strong className="font-medium">full and final</strong>.</li>
-                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> After you submit the appeal, we'll give you a secure link to pay the fee and book the inspection.</li>
+                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> Payment is taken securely by card through Worldpay.</li>
                         </ul>
+                        {token ? (
+                          <button
+                            type="button"
+                            onClick={createInspectionLink}
+                            disabled={creatingInspectionLink}
+                            className="mt-3 inline-flex items-center justify-center rounded-lg bg-[#E8541A] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#cf4712] disabled:opacity-60"
+                          >
+                            {creatingInspectionLink ? 'Opening secure payment…' : 'Pay £140 securely by card (Worldpay)'}
+                          </button>
+                        ) : (
+                          <p className="mt-3 text-xs text-amber-800/90">
+                            Your secure Worldpay payment link for the £140 fee appears as soon as you submit this appeal.
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
