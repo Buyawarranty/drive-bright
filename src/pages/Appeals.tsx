@@ -73,9 +73,35 @@ const requiredFields = new Set([
   'newEvidence', 'independentInspection', 'preferredContactMethod', 'confirmAccurate',
 ]);
 
+// Fields that only exist on the full appeal form (secure email link / customer
+// dashboard). The public page is a short "request an appeal" form only.
+const FULL_ONLY_FIELDS = new Set([
+  'claimRef', 'decisionDate', 'grounds', 'desiredOutcome', 'independentInspection',
+]);
+
 const Appeals = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token') || searchParams.get('t');
+  const [signedIn, setSignedIn] = useState(false);
+  const [accessChecked, setAccessChecked] = useState(false);
+
+  // Full appeal form is private: reachable only with a secure link we email, or
+  // from inside the signed-in customer dashboard. Everyone else gets the short
+  // request form (footer link "Warranty appeals").
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      setSignedIn(!!data.session);
+      setAccessChecked(true);
+    }).catch(() => { if (active) setAccessChecked(true); });
+    return () => { active = false; };
+  }, []);
+
+  const requestMode = !(token || signedIn);
+
   const [form, setForm] = useState<FormState>(initialForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
