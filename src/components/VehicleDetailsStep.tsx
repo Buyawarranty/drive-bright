@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ProtectedButton } from '@/components/ui/protected-button';
 import { validateVehicleEligibility } from '@/lib/vehicleValidation';
 import { isHighPerformanceModel, getHighPerformanceBlockMessage } from '@/lib/highPerformanceModels';
+import { useMotMileage } from '@/hooks/useMotMileage';
 import { trackFormSubmission, trackEvent, trackStepCompletion } from '@/utils/analytics';
 
 
@@ -59,6 +60,7 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
   const [model, setModel] = useState('');
   const [year, setYear] = useState('');
   const [vehicleType, setVehicleType] = useState('');
+  const [yearError, setYearError] = useState('');
 
   // Mileage is read from the latest MOT odometer reading — never asked up front.
   const { motMileage, motDate, isLoading: motLoading } = useMotMileage(regNumber);
