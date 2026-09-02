@@ -18,22 +18,25 @@ const initialForm = {
   phone: '',
   claimRef: '',
   registrationPlate: '',
+  warrantyNumber: '',
   decisionDate: '',
   newEvidence: '',
   desiredOutcome: '',
-  independentInspection: 'Not sure yet',
+  independentInspection: 'Not sure / speak to an expert',
   preferredContactMethod: 'Email',
   confirmAccurate: false,
 };
 
 type FormState = typeof initialForm;
 
+// We already hold the customer's details, so an appeal only needs their name plus
+// ONE identifier — the registration plate or the warranty number.
 const validators: Record<string, (v: any, f: FormState) => string> = {
-  firstName: (v) => (!String(v).trim() ? 'Please enter your first name' : ''),
-  lastName: (v) => (!String(v).trim() ? 'Please enter your last name' : ''),
+  firstName: (v) => (!String(v).trim() ? 'Please enter your name' : ''),
+  lastName: () => '',
   email: (v) => {
     const s = String(v).trim();
-    if (!s) return 'Please enter your email address';
+    if (!s) return '';
     if (!/^\S+@\S+\.\S+$/.test(s)) return 'Please enter a valid email address';
     return '';
   },
@@ -43,7 +46,14 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
     return /^[+0][\d\s()-]{8,}$/.test(s) ? '' : 'Enter a valid UK phone number';
   },
   claimRef: () => '',
-  registrationPlate: (v) => (!String(v).trim() ? 'Please enter your vehicle registration' : ''),
+  registrationPlate: (v, f) => {
+    if (String(v).trim()) return '';
+    return String(f.warrantyNumber || '').trim() ? '' : 'Enter your registration or warranty number';
+  },
+  warrantyNumber: (v, f) => {
+    if (String(v).trim()) return '';
+    return String(f.registrationPlate || '').trim() ? '' : 'Enter your registration or warranty number';
+  },
   decisionDate: () => '',
   newEvidence: (v) => {
     const s = String(v).trim();
@@ -57,7 +67,7 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
 };
 
 const requiredFields = new Set([
-  'firstName', 'lastName', 'email', 'registrationPlate',
+  'firstName', 'registrationPlate',
   'newEvidence', 'independentInspection', 'confirmAccurate',
 ]);
 
@@ -175,14 +185,17 @@ const Appeals = () => {
       toast({ title: 'Please check the form', description: 'Some required fields need attention.', variant: 'destructive' });
       return;
     }
-    if (regStatus !== 'valid') {
+    // A warranty number is an equally valid identifier, so only check the plate
+    // against customer records when the plate is the identifier being used.
+    const usingPlateOnly = !!form.registrationPlate.trim() && !form.warrantyNumber.trim();
+    if (usingPlateOnly && regStatus !== 'valid') {
       setErrors((prev) => ({
         ...prev,
         registrationPlate: regStatus === 'checking'
           ? 'Checking your registration — one moment…'
-          : "We couldn't find that registration on a customer record. Please check and try again.",
+          : "We couldn't find that registration. Please check it, or enter your warranty number instead.",
       }));
-      toast({ title: 'Registration not recognised', description: 'Please enter the vehicle registration linked to your warranty.', variant: 'destructive' });
+      toast({ title: 'Registration not recognised', description: 'Please check the registration, or enter your warranty number instead.', variant: 'destructive' });
       return;
     }
     setSubmitting(true);
@@ -210,11 +223,12 @@ const Appeals = () => {
   };
 
   const createInspectionLink = async () => {
-    if (!submittedToken || creatingInspectionLink) return;
+    const payToken = submittedToken || token;
+    if (!payToken || creatingInspectionLink) return;
     setCreatingInspectionLink(true);
     try {
       const { data, error } = await supabase.functions.invoke('appeal-inspection-option', {
-        body: { token: submittedToken, create: true },
+        body: { token: payToken, create: true },
       });
       if (error || !data?.inspection?.link) throw new Error(error?.message || data?.error || 'Could not create inspection link');
       setInspectionLink(data.inspection.link);
@@ -415,24 +429,14 @@ const Appeals = () => {
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-              {/* Names */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field name="firstName" label="First name" required value={form.firstName} onChange={change} placeholder="e.g. Sarah" error={errors.firstName} valid={fieldStatus.firstName.valid && showStatus('firstName')} />
-                <Field name="lastName" label="Last name" required value={form.lastName} onChange={change} placeholder="e.g. Hughes" error={errors.lastName} valid={fieldStatus.lastName.valid && showStatus('lastName')} />
-              </div>
+              {/* Name — we already hold the rest of your details */}
+              <Field name="firstName" label="Your name" required value={form.firstName} onChange={change} placeholder="e.g. Sarah Hughes" error={errors.firstName} valid={fieldStatus.firstName.valid && showStatus('firstName')} hint="We already hold your details — just your name is fine" />
 
-              {/* Contact */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field name="email" label="Email address" type="email" required value={form.email} onChange={change} placeholder="you@example.com" error={errors.email} valid={fieldStatus.email.valid && showStatus('email')} />
-                <Field name="phone" label="Phone number" value={form.phone} onChange={change} placeholder="07123 456789" error={errors.phone} valid={fieldStatus.phone.valid && showStatus('phone')} />
-              </div>
-
-              {/* Claim details */}
+              {/* One identifier: registration OR warranty number */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field
                   name="registrationPlate"
                   label="Vehicle registration"
-                  required
                   value={form.registrationPlate}
                   onChange={change}
                   placeholder="e.g. AB12 CDE"
@@ -444,14 +448,31 @@ const Appeals = () => {
                       ? `Found${regCustomerName ? `: ${regCustomerName}` : ''}`
                       : regStatus === 'invalid'
                         ? undefined
-                        : 'The registration linked to your warranty'
+                        : 'Registration or warranty number — either is fine'
                   }
                   inputClassName="uppercase"
                 />
-                {!requestMode && (
-                  <Field name="claimRef" label="Claim reference" value={form.claimRef} onChange={change} placeholder="Optional — if you have it" error={errors.claimRef} valid={fieldStatus.claimRef.valid && showStatus('claimRef')} />
-                )}
+                <Field
+                  name="warrantyNumber"
+                  label="Warranty number"
+                  value={form.warrantyNumber}
+                  onChange={change}
+                  placeholder="e.g. BAW-123456"
+                  error={errors.warrantyNumber}
+                  valid={fieldStatus.warrantyNumber.valid && showStatus('warrantyNumber')}
+                  hint="Use this instead if you don't have the registration to hand"
+                />
               </div>
+
+              {/* Optional contact details */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field name="email" label="Email address (optional)" type="email" value={form.email} onChange={change} placeholder="you@example.com" error={errors.email} valid={fieldStatus.email.valid && showStatus('email')} hint="Only if you'd like the reply sent somewhere else" />
+                <Field name="phone" label="Phone number (optional)" value={form.phone} onChange={change} placeholder="07123 456789" error={errors.phone} valid={fieldStatus.phone.valid && showStatus('phone')} />
+              </div>
+
+              {!requestMode && (
+                <Field name="claimRef" label="Claim reference" value={form.claimRef} onChange={change} placeholder="Optional — if you have it" error={errors.claimRef} valid={fieldStatus.claimRef.valid && showStatus('claimRef')} />
+              )}
 
               {!requestMode && (
                 <Field name="decisionDate" label="Date of the decision" type="date" value={form.decisionDate} onChange={change} error={errors.decisionDate} valid={fieldStatus.decisionDate.valid && showStatus('decisionDate')} />
@@ -514,7 +535,7 @@ const Appeals = () => {
                   Would you like an independent engineer's inspection? <span className="text-[#E8541A]">*</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {['Yes please', 'No thank you', 'Not sure yet'].map(option => {
+                  {['Yes please', 'No thank you', 'Not sure / speak to an expert'].map(option => {
                     const active = form.independentInspection === option;
                     return (
                       <label
@@ -545,8 +566,22 @@ const Appeals = () => {
                           <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> We appoint one independent engineering firm — <strong className="font-medium">ACE</strong> or <strong className="font-medium">Scotia</strong> — based on availability in your area.</li>
                           <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> The £140 fee covers the engineer's inspection visit to your vehicle, wherever it is in the UK.</li>
                           <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> You accept that the engineer's decision is <strong className="font-medium">full and final</strong>.</li>
-                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> After you submit the appeal, we'll give you a secure link to pay the fee and book the inspection.</li>
+                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> Payment is taken securely by card through Worldpay.</li>
                         </ul>
+                        {token ? (
+                          <button
+                            type="button"
+                            onClick={createInspectionLink}
+                            disabled={creatingInspectionLink}
+                            className="mt-3 inline-flex items-center justify-center rounded-lg bg-[#E8541A] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#cf4712] disabled:opacity-60"
+                          >
+                            {creatingInspectionLink ? 'Opening secure payment…' : 'Pay £140 securely by card (Worldpay)'}
+                          </button>
+                        ) : (
+                          <p className="mt-3 text-xs text-amber-800/90">
+                            Your secure Worldpay payment link for the £140 fee appears as soon as you submit this appeal.
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
