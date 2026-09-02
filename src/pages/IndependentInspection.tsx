@@ -100,7 +100,6 @@ const IndependentInspection: React.FC = () => {
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
   const paidFlag = searchParams.get('paid') === '1';
-  const sessionId = searchParams.get('session_id');
   const cancelled = searchParams.get('cancelled') === '1';
 
   const [request, setRequest] = useState<InspectionRequest | null>(null);
