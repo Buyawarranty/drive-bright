@@ -2316,6 +2316,17 @@ const CustomerDashboard = () => {
                           <p className="text-xs text-gray-500">For warranty claims and repairs</p>
                         </div>
                       </div>
+                      {/* Signed-in customers get the full appeal form (public page is request-only) */}
+                      <a
+                        href="/appeals/"
+                        className="flex items-center gap-3 p-3 border rounded-lg hover:border-orange-400 hover:bg-orange-50 transition-colors"
+                      >
+                        <Scale className="h-5 w-5 text-orange-600" />
+                        <div>
+                          <p className="font-medium">Appeal a claim decision</p>
+                          <p className="text-xs text-gray-500">Complete the full appeal form and send us new evidence</p>
+                        </div>
+                      </a>
                     </div>
                   </CardContent>
                 </Card>
