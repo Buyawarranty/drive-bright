@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ProtectedButton } from '@/components/ui/protected-button';
 import { validateVehicleEligibility } from '@/lib/vehicleValidation';
 import { isHighPerformanceModel, getHighPerformanceBlockMessage } from '@/lib/highPerformanceModels';
+import { useMotMileage } from '@/hooks/useMotMileage';
 import { trackFormSubmission, trackEvent, trackStepCompletion } from '@/utils/analytics';
 
 
@@ -61,8 +62,25 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
   const [vehicleType, setVehicleType] = useState('');
   const [yearError, setYearError] = useState('');
 
+  // Mileage is read from the latest MOT odometer reading — never asked up front.
+  const { motMileage, motDate, isLoading: motLoading } = useMotMileage(regNumber);
 
+  useEffect(() => {
+    if (motMileage && motMileage > 0) {
+      setMileage(formatMileage(String(motMileage)));
+      setMileageError(
+        motMileage > 150000 ? 'Vehicle mileage exceeds our maximum of 150,000 miles' : ''
+      );
+    }
+  }, [motMileage]);
 
+  // Clear an MOT-sourced reading when the plate changes
+  useEffect(() => {
+    if (!motLoading && motMileage === null) {
+      setMileage((prev) => (prev && !initialData?.mileage ? '' : prev));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [regNumber]);
 
   // Set vehicleFound to true if we have initial data
   useEffect(() => {
@@ -70,6 +88,7 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
       setVehicleFound(true);
     }
   }, [initialData]);
+
 
   const formatRegNumber = (value: string) => {
     const formatted = value.replace(/\s/g, '').toUpperCase();
@@ -836,33 +855,56 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
              </div>
            )}
 
-          {/* Mileage */}
+          {/* Mileage — taken from the latest MOT reading, only asked for if none exists */}
           <div className="mb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <label className="block font-semibold text-gray-700">Approximate mileage</label>
-              {mileage && !mileageError && (
-                <Check className="w-5 h-5 text-green-500" />
-              )}
-            </div>
-            
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={mileage}
-              onChange={handleMileageChange}
-              placeholder="e.g. 45,000"
-              className={`w-full px-3 py-3 border-2 rounded-[6px] text-lg focus:outline-none focus:ring-0 ${
-                mileageError 
-                  ? 'border-red-400 focus:border-red-500' 
-                  : 'border-gray-300 focus:border-blue-400'
-              }`}
-            />
-            
-            {mileageError && (
-              <p className="text-sm text-red-600 mt-1">{mileageError}</p>
-            )}
+            {motLoading && regNumber.replace(/\s/g, '').length >= 5 ? (
+              <div className="p-3 bg-gray-50 border border-gray-200 rounded-[6px] text-sm text-gray-600">
+                Checking the latest MOT mileage…
+              </div>
+            ) : motMileage && motMileage > 0 ? (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-[6px]">
+                <div className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <p className="text-sm text-green-800">
+                    Mileage from latest MOT: <span className="font-semibold">{formatMileage(String(motMileage))} miles</span>
+                    {motDate ? ` (${new Date(motDate).toLocaleDateString('en-GB')})` : ''}
+                  </p>
+                </div>
+                {mileageError && (
+                  <p className="text-sm text-red-600 mt-1">{mileageError}</p>
+                )}
+              </div>
+            ) : regNumber.replace(/\s/g, '').length >= 5 ? (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <label className="block font-semibold text-gray-700">Current mileage</label>
+                  {mileage && !mileageError && (
+                    <Check className="w-5 h-5 text-green-500" />
+                  )}
+                </div>
+                <p className="text-sm text-amber-700 mb-2">
+                  We couldn't find an MOT mileage reading for this vehicle — please enter the current mileage.
+                </p>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={mileage}
+                  onChange={handleMileageChange}
+                  placeholder="e.g. 45,000"
+                  className={`w-full px-3 py-3 border-2 rounded-[6px] text-lg focus:outline-none focus:ring-0 ${
+                    mileageError
+                      ? 'border-red-400 focus:border-red-500'
+                      : 'border-amber-300 focus:border-amber-400'
+                  }`}
+                />
+                {mileageError && (
+                  <p className="text-sm text-red-600 mt-1">{mileageError}</p>
+                )}
+              </>
+            ) : null}
           </div>
+
 
            {/* Quote Button - Always visible */}
            <div className="mb-6">
