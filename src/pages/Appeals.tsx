@@ -58,14 +58,14 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
 };
 
 const requiredFields = new Set([
-  'firstName', 'lastName', 'email', 'registrationPlate', 'grounds',
-  'newEvidence', 'independentInspection', 'preferredContactMethod', 'confirmAccurate',
+  'firstName', 'lastName', 'email', 'registrationPlate',
+  'newEvidence', 'independentInspection', 'confirmAccurate',
 ]);
 
 // Fields that only exist on the full appeal form (secure email link / customer
 // dashboard). The public page is a short "request an appeal" form only.
 const FULL_ONLY_FIELDS = new Set([
-  'claimRef', 'decisionDate', 'grounds', 'desiredOutcome', 'independentInspection',
+  'claimRef', 'decisionDate', 'desiredOutcome', 'independentInspection',
 ]);
 
 const Appeals = () => {
