@@ -20,7 +20,7 @@ interface AppealRequest {
   claimRef?: string;
   registrationPlate: string;
   decisionDate?: string;
-  grounds: string;
+  grounds?: string;
   newEvidence: string;
   desiredOutcome?: string;
   independentInspection?: string;
