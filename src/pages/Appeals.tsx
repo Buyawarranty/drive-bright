@@ -355,6 +355,32 @@ const Appeals = () => {
                   </>
                 )}
               </ul>
+
+              {/* Independent inspection payment prompt (full appeal only) */}
+              {!requestMode && submittedInspectionChoice === 'Yes please' && submittedToken && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                      <ShieldCheck className="w-5 h-5 text-amber-700" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-amber-900 text-sm">Independent engineer's inspection</h3>
+                      <p className="text-sm text-amber-800/80 mt-1 leading-relaxed">
+                        You've asked for an independent inspection. The £140 fee covers the engineer's visit to your vehicle anywhere in the UK. We'll appoint ACE or Scotia, and their decision will be full and final.
+                      </p>
+                      <button
+                        onClick={createInspectionLink}
+                        disabled={creatingInspectionLink}
+                        className="mt-3 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#E8541A] hover:bg-[#d14917] disabled:opacity-60 text-white text-sm font-medium rounded-md transition-colors"
+                      >
+                        {creatingInspectionLink ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+                        Pay £140 securely by card
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={() => { setReference(null); setSubmittedToken(null); setSubmittedInspectionChoice(null); setInspectionLink(null); setRegStatus('idle'); setRegCustomerName(null); }}
