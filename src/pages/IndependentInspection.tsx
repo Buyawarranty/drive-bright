@@ -107,6 +107,8 @@ const IndependentInspection: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  // The vehicle may be sat at a garage or at the customer's own address
+  const [locationType, setLocationType] = useState<'garage' | 'home'>('garage');
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [detailsSaved, setDetailsSaved] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<ErrorKey, string>>>({});
