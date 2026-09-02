@@ -109,6 +109,7 @@ const AddClaimEvidence = lazy(() => import("./pages/AddClaimEvidence"));
 const CancelWarranty = lazy(() => import("./pages/CancelWarranty"));
 const ContactUs = lazy(() => import("./pages/ContactUs"));
 const Complaints = lazy(() => import("./pages/Complaints"));
+const Appeals = lazy(() => import("./pages/Appeals"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogArticle = lazy(() => import("./pages/BlogArticle"));
 const AdminConversionFire = lazy(() => import("./pages/AdminConversionFire"));
@@ -330,6 +331,8 @@ const App = () => {
                     <Route path="/warranty-transfer/" element={<WarrantyTransfer />} />
                     <Route path="/contact-us/" element={<ContactUs />} />
                     <Route path="/complaints/" element={<Complaints />} />
+                    <Route path="/appeals/" element={<Appeals />} />
+                    <Route path="/appeals" element={<Appeals />} />
                     <Route path="/thewarrantyhub/" element={<Blog />} />
                     <Route path="/thewarrantyhub/:slug/" element={<BlogArticle />} />
                     <Route path="/quote/:token" element={<LiveQuotePage />} />

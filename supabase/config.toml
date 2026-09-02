@@ -329,3 +329,6 @@ verify_jwt = false
 
 [functions.worldpay-payment-status]
 verify_jwt = false
+
+[functions.submit-appeal]
+verify_jwt = false
