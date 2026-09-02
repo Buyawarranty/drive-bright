@@ -15,7 +15,8 @@ export const LiveChatHoursBanner: React.FC = () => {
   // live-chat bar at all — sales agents never do.
   const { allowed } = useChatbotPopupAccess();
   // This banner only displays the queue count; it must never create audio.
-  const { waiting } = useSandboxHandoverAlert({ enabled: allowed, audioEnabled: false });
+  const { waiting, claim } = useSandboxHandoverAlert({ enabled: allowed, audioEnabled: false });
+  const navigate = useNavigate();
   const [open, setOpen] = React.useState(() => isTeamOpenNow());
 
   React.useEffect(() => {
