@@ -647,32 +647,10 @@ const IndependentInspection: React.FC = () => {
                     </div>
                     <p className="text-xs text-slate-500">Paid directly to the independent inspection company.</p>
 
-                    {/* Trust signals */}
-                    <div className="rounded-xl border border-[#E2E8F0] bg-[#F4F6F8] p-3 space-y-2">
-                      <div className="flex items-center gap-2 text-xs text-slate-700">
-                        <Lock className="h-3.5 w-3.5 text-[#00B67A]" />
-                        <span>Secure 256-bit SSL payment</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-700">
-                        <BadgeCheck className="h-3.5 w-3.5 text-[#00B67A]" />
-                        <span>Independent, impartial engineer</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-700">
-                        <ShieldCheck className="h-3.5 w-3.5 text-[#00B67A]" />
-                        <span>FCA-regulated claims process</span>
-                      </div>
-                      <div className="flex items-center gap-2 pt-1">
-                        {['VISA', 'MASTERCARD', 'AMEX'].map((brand) => (
-                          <span
-                            key={brand}
-                            className="px-2 py-1 rounded border border-slate-200 bg-white text-[10px] font-bold tracking-wide text-slate-600"
-                          >
-                            {brand}
-                          </span>
-                        ))}
-                      </div>
-                      <TrustpilotMicroWidget className="pt-1" />
+                    <div className="rounded-xl border border-[#E2E8F0] bg-[#F4F6F8] p-3">
+                      <TrustpilotMicroWidget />
                     </div>
+
 
                     <button
                       type="button"
