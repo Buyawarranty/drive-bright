@@ -23,7 +23,6 @@ import { PendingLeadsPill } from '@/components/admin/PendingLeadsPill';
 
 import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
-import SandboxHandoverAlerts from '@/components/admin/SandboxHandoverAlerts';
 import LiveChatHoursBanner from '@/components/admin/LiveChatHoursBanner';
 
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
@@ -1289,9 +1288,6 @@ const AdminDashboardInner: React.FC<{
       {/* Live chat opening-hours bar — every member of staff, claims included */}
       <LiveChatHoursBanner />
 
-
-      {/* Ringing alert when a website chat customer asks for a human */}
-      <SandboxHandoverAlerts />
 
 
 
