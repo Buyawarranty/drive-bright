@@ -14,8 +14,6 @@ import { CLAIMS_PHONE, CLAIMS_PHONE_TEL, CLAIMS_EMAIL, WHATSAPP_URL } from '@/co
 const initialForm = {
   firstName: '',
   lastName: '',
-  email: '',
-  phone: '',
   claimRef: '',
   registrationPlate: '',
   warrantyNumber: '',
@@ -29,31 +27,17 @@ const initialForm = {
 
 type FormState = typeof initialForm;
 
-// We already hold the customer's details, so an appeal only needs their name plus
-// ONE identifier — the registration plate or the warranty number.
+// We already hold the customer's contact details (email and phone) against their
+// policy, so an appeal only needs their name plus the registration plate — the
+// claim itself is based on the vehicle, so the plate is validated against our
+// customer records before the appeal can be sent.
 const validators: Record<string, (v: any, f: FormState) => string> = {
   firstName: (v) => (!String(v).trim() ? 'Please enter your name' : ''),
   lastName: () => '',
-  email: (v) => {
-    const s = String(v).trim();
-    if (!s) return '';
-    if (!/^\S+@\S+\.\S+$/.test(s)) return 'Please enter a valid email address';
-    return '';
-  },
-  phone: (v) => {
-    const s = String(v).trim();
-    if (!s) return '';
-    return /^[+0][\d\s()-]{8,}$/.test(s) ? '' : 'Enter a valid UK phone number';
-  },
   claimRef: () => '',
-  registrationPlate: (v, f) => {
-    if (String(v).trim()) return '';
-    return String(f.warrantyNumber || '').trim() ? '' : 'Enter your registration or warranty number';
-  },
-  warrantyNumber: (v, f) => {
-    if (String(v).trim()) return '';
-    return String(f.registrationPlate || '').trim() ? '' : 'Enter your registration or warranty number';
-  },
+  registrationPlate: (v) =>
+    !String(v).trim() ? 'Please enter your vehicle registration' : '',
+  warrantyNumber: () => '',
   decisionDate: () => '',
   newEvidence: (v) => {
     const s = String(v).trim();
@@ -70,6 +54,7 @@ const requiredFields = new Set([
   'firstName', 'registrationPlate',
   'newEvidence', 'independentInspection', 'confirmAccurate',
 ]);
+
 
 // Fields that only exist on the full appeal form (secure email link / customer
 // dashboard). The public page is a short "request an appeal" form only.
