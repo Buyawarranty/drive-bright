@@ -514,7 +514,7 @@ const Appeals = () => {
                   Would you like an independent engineer's inspection? <span className="text-[#E8541A]">*</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {['Yes please', 'No thank you', 'Not sure yet'].map(option => {
+                  {['Yes please', 'No thank you', 'Not sure / speak to an expert'].map(option => {
                     const active = form.independentInspection === option;
                     return (
                       <label
