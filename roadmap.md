@@ -26,3 +26,4 @@
 - [x] Chatbot pop-up: sales and sales_lead are hard-blocked from the "customer waiting" pop-up AND the live-chat top bar, even if the permission is toggled on
 - [x] Claims staff no longer see the "stuck on checkout" struggle alert bar (sales/management only)
 - [x] Claims Appeals section restyled from dark navy to light amber/orange
+- [ ] Appeal form must use the same public design as /complaints/ (not the manager-style dialog)
