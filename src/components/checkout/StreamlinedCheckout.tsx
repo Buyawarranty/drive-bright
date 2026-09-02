@@ -115,7 +115,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   onBack, 
   onNext,
   onUpdateVehicle,
+  monthlyProvider = 'bumper',
 }) => {
+  const isPaymentAssist = monthlyProvider === 'payment_assist';
+  const monthlyProviderLabel = isPaymentAssist ? 'Payment Assist' : 'Bumper';
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
