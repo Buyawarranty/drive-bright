@@ -867,24 +867,23 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-[11px] uppercase tracking-wide text-muted-foreground">
                 <tr>
-                  <th className="px-2 py-2 text-left w-8">#</th>
-                  <th className="px-2 py-2 text-left w-8"></th>
+                  <th className="px-2 py-2 text-center w-11">#</th>
+                  <th className="px-2 py-2 text-left w-9"></th>
+                  <th className="px-2 py-2 text-left">Agent</th>
+                  <th className="px-2 py-2 text-left">Status</th>
+                  <th className="px-2 py-2 text-center">Calls</th>
+                  <th className="px-2 py-2 text-left">Actions</th>
                   <th className="px-2 py-2 text-left">Name</th>
                   <th className="px-2 py-2 text-left">Phone</th>
-                  <th className="px-2 py-2 text-left">Reg</th>
-                  <th className="px-2 py-2 text-left">Your turn</th>
-                  <th className="px-2 py-2 text-left">Status</th>
-                  <th className="px-2 py-2 text-left">Calls</th>
-                  <th className="px-2 py-2 text-left">Actions</th>
-                  <th className="px-2 py-2 text-left">Agent</th>
-                  <th className="px-2 py-2 text-left w-8">Src</th>
                   <th className="px-2 py-2 text-left">Email</th>
+                  <th className="px-2 py-2 text-left">Reg</th>
                   <th className="px-2 py-2 text-left">Payment</th>
                   <th className="px-2 py-2 text-left">Paid Date</th>
                   <th className="px-2 py-2 text-left">Agent activity</th>
                   <th className="px-2 py-2 text-left">Lead Date</th>
                   <th className="px-2 py-2 text-left">Customer activity</th>
                   <th className="px-2 py-2 text-left">Time to contact</th>
+                  <th className="px-2 py-2 text-left">Your turn</th>
                 </tr>
               </thead>
               <tbody>
@@ -907,6 +906,100 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       <td className="px-2 py-2">
                         <input type="checkbox" className="h-4 w-4 rounded border-input" readOnly />
                       </td>
+                      <td className="px-2 py-2">
+                        <div className="flex flex-col items-start gap-1">
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-900 whitespace-nowrap">
+                            <span className="h-4 w-4 rounded-full bg-emerald-600 text-white text-[9px] flex items-center justify-center">
+                              {agent.name.charAt(0)}
+                            </span>
+                            {agent.name}
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                          </span>
+                          {!expired && (
+                            <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap', theme.reserved)}>
+                              Reserved
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
+                        <Select
+                          value={lead.displayStatus}
+                          onValueChange={(value) => updateDisplayStatus(lead.id, value as LeadStatus)}
+                        >
+                          <SelectTrigger
+                            className={cn(
+                              'h-7 px-2 text-[11px] font-medium whitespace-nowrap border gap-1 w-auto min-w-[120px]',
+                              statusColors[lead.displayStatus],
+                            )}
+                          >
+                            <SelectValue>{statusLabels[lead.displayStatus]}</SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {STATUS_ORDER.map((status) => (
+                              <SelectItem key={status} value={status} className="text-xs">
+                                <span className={cn('inline-block px-2 py-0.5 rounded', statusColors[status])}>
+                                  {statusLabels[status]}
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="inline-flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            className="h-5 w-5 rounded border border-input text-xs leading-none"
+                            onClick={() => adjustDials(lead.id, -1)}
+                          >
+                            −
+                          </button>
+                          <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-sm font-semibold tabular-nums">{lead.dials}</span>
+                          <button
+                            type="button"
+                            className="h-5 w-5 rounded border border-input text-xs leading-none"
+                            onClick={() => adjustDials(lead.id, 1)}
+                          >
+                            +
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
+                          <TooltipProvider delayDuration={100}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={() => recordNoAnswer(lead.id)}
+                                  className="h-7 rounded-md border border-amber-300 px-2 text-xs font-medium text-amber-700 hover:bg-amber-50"
+                                >
+                                  No answer
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs">
+                                Couldn&apos;t connect / no answer
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <span className="h-7 w-7 rounded-md border-2 border-orange-500 flex items-center justify-center">
+                            <ChevronDown className="h-3.5 w-3.5 text-orange-600" />
+                          </span>
+                          <a href={`tel:${lead.phone}`} className="h-7 w-7 rounded-md flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
+                            <Phone className="h-3.5 w-3.5" />
+                          </a>
+                          <span className="inline-flex items-center gap-1 rounded-md border border-dashed border-border px-2 py-1 text-xs text-muted-foreground">
+                            <StickyNote className="h-3 w-3" /> Notes
+                          </span>
+                          <Mail className="h-4 w-4 text-blue-600" />
+                          <Bell className="h-4 w-4 text-muted-foreground" />
+                          <span className="inline-flex items-center gap-1 rounded-md border border-orange-300 px-2 py-1 text-xs font-medium text-orange-600">
+                            <FileText className="h-3 w-3" /> Quote
+                          </span>
+                        </div>
+                      </td>
                       <td className="px-2 py-2 font-semibold text-foreground whitespace-nowrap">
                         {lead.firstName} {lead.lastName}
                       </td>
@@ -925,10 +1018,46 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                           <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
                         </div>
                       </td>
+                      <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
+                        <CopyEmail email={lead.email} />
+                      </td>
                       <td className="px-2 py-2">
                         <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-1 text-xs font-bold text-yellow-950 font-mono">
                           {lead.vehicleReg}
                         </span>
+                      </td>
+                      <td className="px-2 py-2 text-xs text-muted-foreground">—</td>
+                      <td className="px-2 py-2 text-xs text-muted-foreground">—</td>
+                      <td className="px-2 py-2 text-xs whitespace-nowrap">
+                        {lead.dials > 0 ? (
+                          <div>
+                            <div className="font-medium text-foreground">{lead.dials} dial{lead.dials === 1 ? '' : 's'} logged</div>
+                            <div className="text-[11px] text-muted-foreground">practice · {formatAgo(lead.createdAt)}</div>
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="text-muted-foreground">No agent activity</div>
+                            <div className="text-[11px] text-muted-foreground">sys {formatAgo(lead.createdAt)}</div>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
+                        {formatLeadDate(lead.createdAt)}
+                      </td>
+                      <td className="px-2 py-2 text-xs whitespace-nowrap">
+                        <div className="text-muted-foreground">{formatAgo(lead.createdAt)}</div>
+                        <div className="text-[11px] font-medium text-foreground">Shopping page</div>
+                      </td>
+                      <td className="px-2 py-2 text-xs whitespace-nowrap">
+                        {lead.contactedAt ? (
+                          <span className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-800">
+                            {formatClock(Math.max(0, Math.round((lead.contactedAt - lead.createdAt) / 1000)))}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-muted-foreground">
+                            Not contacted
+                          </span>
+                        )}
                       </td>
                       <td className="px-2 py-2">
                         {lead.contactedAt ? (
@@ -1033,137 +1162,6 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                             />
                           </div>
                         </div>
-                        )}
-                      </td>
-                      <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
-                        <Select
-                          value={lead.displayStatus}
-                          onValueChange={(value) => updateDisplayStatus(lead.id, value as LeadStatus)}
-                        >
-                          <SelectTrigger
-                            className={cn(
-                              'h-7 px-2 text-[11px] font-medium whitespace-nowrap border gap-1 w-auto min-w-[120px]',
-                              statusColors[lead.displayStatus],
-                            )}
-                          >
-                            <SelectValue>{statusLabels[lead.displayStatus]}</SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {STATUS_ORDER.map((status) => (
-                              <SelectItem key={status} value={status} className="text-xs">
-                                <span className={cn('inline-block px-2 py-0.5 rounded', statusColors[status])}>
-                                  {statusLabels[status]}
-                                </span>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="px-2 py-2">
-                        <div className="inline-flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            className="h-5 w-5 rounded border border-input text-xs leading-none"
-                            onClick={() => adjustDials(lead.id, -1)}
-                          >
-                            −
-                          </button>
-                          <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-sm font-semibold tabular-nums">{lead.dials}</span>
-                          <button
-                            type="button"
-                            className="h-5 w-5 rounded border border-input text-xs leading-none"
-                            onClick={() => adjustDials(lead.id, 1)}
-                          >
-                            +
-                          </button>
-                        </div>
-                      </td>
-                      <td className="px-2 py-2">
-                        <div className="flex items-center gap-1.5 whitespace-nowrap">
-                          <TooltipProvider delayDuration={100}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  onClick={() => recordNoAnswer(lead.id)}
-                                  className="h-7 rounded-md border border-amber-300 px-2 text-xs font-medium text-amber-700 hover:bg-amber-50"
-                                >
-                                  No answer
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="text-xs">
-                                Couldn&apos;t connect / no answer
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          <span className="h-7 w-7 rounded-md border-2 border-orange-500 flex items-center justify-center">
-                            <ChevronDown className="h-3.5 w-3.5 text-orange-600" />
-                          </span>
-                          <a href={`tel:${lead.phone}`} className="h-7 w-7 rounded-md flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
-                            <Phone className="h-3.5 w-3.5" />
-                          </a>
-                          <span className="inline-flex items-center gap-1 rounded-md border border-dashed border-border px-2 py-1 text-xs text-muted-foreground">
-                            <StickyNote className="h-3 w-3" /> Notes
-                          </span>
-                          <Mail className="h-4 w-4 text-blue-600" />
-                          <Bell className="h-4 w-4 text-muted-foreground" />
-                          <span className="inline-flex items-center gap-1 rounded-md border border-orange-300 px-2 py-1 text-xs font-medium text-orange-600">
-                            <FileText className="h-3 w-3" /> Quote
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-2 py-2">
-                        <div className="flex flex-col items-start gap-1">
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-900 whitespace-nowrap">
-                            <span className="h-4 w-4 rounded-full bg-emerald-600 text-white text-[9px] flex items-center justify-center">
-                              {agent.name.charAt(0)}
-                            </span>
-                            {agent.name}
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                          </span>
-                          {!expired && (
-                            <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap', theme.reserved)}>
-                              Reserved
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-2 py-2 text-xs font-bold text-blue-700">F</td>
-                      <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
-                        <CopyEmail email={lead.email} />
-                      </td>
-                      <td className="px-2 py-2 text-xs text-muted-foreground">—</td>
-                      <td className="px-2 py-2 text-xs text-muted-foreground">—</td>
-                      <td className="px-2 py-2 text-xs whitespace-nowrap">
-                        {lead.dials > 0 ? (
-                          <div>
-                            <div className="font-medium text-foreground">{lead.dials} dial{lead.dials === 1 ? '' : 's'} logged</div>
-                            <div className="text-[11px] text-muted-foreground">practice · {formatAgo(lead.createdAt)}</div>
-                          </div>
-                        ) : (
-                          <div>
-                            <div className="text-muted-foreground">No agent activity</div>
-                            <div className="text-[11px] text-muted-foreground">sys {formatAgo(lead.createdAt)}</div>
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
-                        {formatLeadDate(lead.createdAt)}
-                      </td>
-                      <td className="px-2 py-2 text-xs whitespace-nowrap">
-                        <div className="text-muted-foreground">{formatAgo(lead.createdAt)}</div>
-                        <div className="text-[11px] font-medium text-foreground">Shopping page</div>
-                      </td>
-                      <td className="px-2 py-2 text-xs whitespace-nowrap">
-                        {lead.contactedAt ? (
-                          <span className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-800">
-                            {formatClock(Math.max(0, Math.round((lead.contactedAt - lead.createdAt) / 1000)))}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-muted-foreground">
-                            Not contacted
-                          </span>
                         )}
                       </td>
                     </tr>
