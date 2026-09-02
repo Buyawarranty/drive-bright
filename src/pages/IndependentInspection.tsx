@@ -189,14 +189,15 @@ const IndependentInspection: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wp3dsReturn, wp3dsRef, token]);
 
-  // Confirm payment on return from the payment page
+  // Confirm payment on return from the Worldpay payment page
   useEffect(() => {
-    if (!paidFlag || !sessionId || !token) return;
+    if (!paidFlag || !token) return;
+    const ref = searchParams.get('ref');
     (async () => {
-      await supabase.functions.invoke('confirm-inspection-payment', { body: { token, sessionId } });
+      await supabase.functions.invoke('worldpay-payment-status', { body: { token, transactionReference: ref } });
       await load();
     })();
-  }, [paidFlag, sessionId, token, load]);
+  }, [paidFlag, searchParams, token, load]);
 
   const validate = () => {
     const next: Partial<Record<ErrorKey, string>> = {};
