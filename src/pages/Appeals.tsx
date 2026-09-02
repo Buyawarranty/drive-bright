@@ -147,6 +147,11 @@ const Appeals = () => {
     if (validate) setErrors((prev) => ({ ...prev, [name]: validate(v, next) }));
   };
 
+  const activeKeys = useMemo(
+    () => Object.keys(validators).filter((k) => !(requestMode && FULL_ONLY_FIELDS.has(k))),
+    [requestMode],
+  );
+
   const fieldStatus = useMemo(() => {
     const status: Record<string, { valid: boolean; error: string }> = {};
     for (const key of Object.keys(validators)) {
@@ -162,7 +167,7 @@ const Appeals = () => {
   const validateAll = () => {
     const next: Record<string, string> = {};
     const allTouched: Record<string, boolean> = {};
-    for (const key of Object.keys(validators)) {
+    for (const key of activeKeys) {
       next[key] = validators[key]((form as any)[key], form);
       allTouched[key] = true;
     }
