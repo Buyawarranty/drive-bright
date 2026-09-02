@@ -26,30 +26,56 @@ export const LiveChatHoursBanner: React.FC = () => {
 
   if (!allowed) return null;
 
+  // Waiting customers are shown inline in the banner — there are no pop-ups.
+  const queue =
+    waiting.length > 0 ? (
+      <div className="flex flex-wrap items-center gap-2 border-b-2 border-amber-400 bg-amber-50 px-4 py-1.5 text-xs font-semibold text-amber-900">
+        <Headset className="h-3.5 w-3.5" />
+        <span>
+          {waiting.length} customer{waiting.length === 1 ? '' : 's'} waiting for a specialist
+        </span>
+        {waiting.slice(0, 3).map((w) => (
+          <button
+            key={w.id}
+            type="button"
+            onClick={async () => {
+              await claim(w.id);
+              navigate(`/ai-sandbox/${w.thread_id}`);
+            }}
+            className="rounded-full border border-amber-500 bg-white px-2 py-0.5 text-[11px] font-semibold text-amber-900 hover:bg-amber-100"
+          >
+            Take the chat{w.customer_name ? ` · ${w.customer_name}` : ''}
+            {w.registration ? ` (${w.registration})` : ''}
+          </button>
+        ))}
+      </div>
+    ) : null;
+
   if (!open) {
     return (
-      <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/60 px-4 py-1.5 text-xs text-muted-foreground">
-        <Clock className="h-3.5 w-3.5" />
-        <span>Live chat is closed — specialists are back {nextOpeningLabel()}.</span>
-        <span className="text-muted-foreground/70">Hours: {openingHoursLabel}</span>
-      </div>
+      <>
+        {queue}
+        <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/60 px-4 py-1.5 text-xs text-muted-foreground">
+          <Clock className="h-3.5 w-3.5" />
+          <span>Live chat is closed — specialists are back {nextOpeningLabel()}.</span>
+          <span className="text-muted-foreground/70">Hours: {openingHoursLabel}</span>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b-2 border-emerald-500 bg-emerald-50 px-4 py-1.5 text-xs font-semibold text-emerald-900">
-      <span className="relative flex h-2 w-2">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
-      </span>
-      <MessageSquare className="h-3.5 w-3.5" />
-      <span>Live chat now — customers can ask to speak to a real person ({openingHoursLabel}).</span>
-      {waiting.length > 0 && (
-        <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white">
-          {waiting.length} waiting for a specialist
+    <>
+      {queue}
+      <div className="flex flex-wrap items-center gap-2 border-b-2 border-emerald-500 bg-emerald-50 px-4 py-1.5 text-xs font-semibold text-emerald-900">
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
         </span>
-      )}
-    </div>
+        <MessageSquare className="h-3.5 w-3.5" />
+        <span>Live chat now — customers can ask to speak to a real person ({openingHoursLabel}).</span>
+      </div>
+    </>
   );
 };
 
