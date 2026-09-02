@@ -409,9 +409,12 @@ const Appeals = () => {
                   }
                   inputClassName="uppercase"
                 />
-                <Field name="claimRef" label="Claim reference" value={form.claimRef} onChange={change} placeholder="Optional — if you have it" error={errors.claimRef} valid={fieldStatus.claimRef.valid && showStatus('claimRef')} />
+                {!requestMode && (
+                  <Field name="claimRef" label="Claim reference" value={form.claimRef} onChange={change} placeholder="Optional — if you have it" error={errors.claimRef} valid={fieldStatus.claimRef.valid && showStatus('claimRef')} />
+                )}
               </div>
 
+              {!requestMode && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field name="decisionDate" label="Date of the decision" type="date" value={form.decisionDate} onChange={change} error={errors.decisionDate} valid={fieldStatus.decisionDate.valid && showStatus('decisionDate')} />
                 <div>
