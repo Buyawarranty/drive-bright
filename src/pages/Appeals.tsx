@@ -472,6 +472,7 @@ const Appeals = () => {
               </div>
 
               {/* Desired outcome */}
+              {!requestMode && (
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label htmlFor="desiredOutcome" className="block text-sm font-medium text-slate-900">What outcome are you hoping for?</label>
