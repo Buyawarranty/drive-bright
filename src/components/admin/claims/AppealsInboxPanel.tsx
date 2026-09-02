@@ -1,7 +1,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Gavel, CheckCircle2, Paperclip, Mail, Scale } from 'lucide-react';
+import { Gavel, CheckCircle2, Paperclip, Mail, Scale, ExternalLink } from 'lucide-react';
 import { ReturnedAppeal } from '@/hooks/useReturnedAppeals';
 
 interface AppealsInboxPanelProps {
