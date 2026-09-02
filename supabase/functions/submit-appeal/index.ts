@@ -155,7 +155,7 @@ serve(async (req: Request): Promise<Response> => {
             <tr><td style="padding:6px 0;color:#666;">Email</td><td style="padding:6px 0;">${esc(email)}</td></tr>
             <tr><td style="padding:6px 0;color:#666;">Phone</td><td style="padding:6px 0;">${esc(phone || "—")}</td></tr>
             <tr><td style="padding:6px 0;color:#666;">Registration</td><td style="padding:6px 0;"><strong>${esc(reg)}</strong></td></tr>
-            <tr><td style="padding:6px 0;color:#666;">Grounds</td><td style="padding:6px 0;">${esc(grounds || (isRequest ? "Not given yet — request only" : "—"))}</td></tr>
+            <tr><td style="padding:6px 0;color:#666;">Grounds</td><td style="padding:6px 0;">${esc(grounds || "Not given")}</td></tr>
             <tr><td style="padding:6px 0;color:#666;">Matched claim</td><td style="padding:6px 0;">${claim ? esc(claim.id) : "No matching claim found — please check"}</td></tr>
           </table>
           <div style="margin-top:18px;padding:14px;background:#fff;border-left:3px solid #E8541A;border-radius:6px;white-space:pre-wrap;font-size:14px;">${esc(summary)}</div>
