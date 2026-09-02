@@ -170,17 +170,16 @@ const Appeals = () => {
       toast({ title: 'Please check the form', description: 'Some required fields need attention.', variant: 'destructive' });
       return;
     }
-    // A warranty number is an equally valid identifier, so only check the plate
-    // against customer records when the plate is the identifier being used.
-    const usingPlateOnly = !!form.registrationPlate.trim() && !form.warrantyNumber.trim();
-    if (usingPlateOnly && regStatus !== 'valid') {
+    // The claim is based on the vehicle, so the registration must always match a
+    // customer record before an appeal can be submitted.
+    if (regStatus !== 'valid') {
       setErrors((prev) => ({
         ...prev,
         registrationPlate: regStatus === 'checking'
           ? 'Checking your registration — one moment…'
-          : "We couldn't find that registration. Please check it, or enter your warranty number instead.",
+          : "We couldn't find that registration on our records. Please check it and try again.",
       }));
-      toast({ title: 'Registration not recognised', description: 'Please check the registration, or enter your warranty number instead.', variant: 'destructive' });
+      toast({ title: 'Registration not recognised', description: `Please check the registration, or call us on ${CLAIMS_PHONE}.`, variant: 'destructive' });
       return;
     }
     setSubmitting(true);
