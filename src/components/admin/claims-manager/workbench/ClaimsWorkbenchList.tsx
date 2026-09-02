@@ -783,6 +783,20 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
         pending={pendingChange}
         onClose={() => setPendingChange(null)}
       />
+      {/* Appeal email builder — preview then send, opened from the row's gavel button */}
+      <ClaimAppealDialog
+        open={!!appealClaim}
+        onOpenChange={(o) => { if (!o) setAppealClaim(null); }}
+        claim={appealClaim ? {
+          id: appealClaim.id,
+          name: appealClaim.customerName,
+          email: appealClaim.email,
+          phone: appealClaim.phone,
+          status: appealClaim.rawStatus ?? appealClaim.status,
+          vehicle_registration: appealClaim.reg,
+        } as any : null}
+        onSent={async () => { await refetchAppeals(); await onUpdated(); }}
+      />
     </div>
   );
 };
