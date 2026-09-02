@@ -715,7 +715,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return `e.g. ${rounded.toLocaleString('en-GB')}`;
   }, [numericMotMileage, motDate]);
 
-  // Numeric suggestion (MOT + ~12k/yr since MOT, rounded to nearest 1,000), capped at 150,000
+  // Numeric suggestion (MOT + ~12k/yr since MOT, rounded to nearest 1,000).
+  // NOT capped at 150,000 — capping used to hide vehicles that are actually
+  // over the eligibility limit behind a "Use 150,000" button.
   const suggestedMileage = useMemo(() => {
     if (!numericMotMileage) return 0;
     let estimated = numericMotMileage;
@@ -726,8 +728,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         if (years > 0) estimated = numericMotMileage + years * 12000;
       }
     }
-    return Math.min(150000, Math.round(estimated / 1000) * 1000);
+    return Math.round(estimated / 1000) * 1000;
   }, [numericMotMileage, motDate]);
+
+  // Last MOT odometer reading already exceeds our 150,000-mile limit — the
+  // vehicle is not eligible for online cover whatever the customer types.
+  const motOverLimit = numericMotMileage > 150000;
 
   // MOT cross-check: soft warning when entered mileage looks lower than the last MOT.
   const [motWarningDismissed, setMotWarningDismissed] = useState(false);
@@ -737,6 +743,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   );
   const showMotWarning =
     numericMotMileage > 0 &&
+    !motOverLimit &&
     enteredMileageNumber >= 1000 &&
     enteredMileageNumber < numericMotMileage &&
     !motWarningDismissed;
@@ -963,9 +970,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const mileageValueValid = useMemo(() => {
     const n = parseInt(String(customerData.mileage || '').replace(/[^0-9]/g, '') || '0');
     if (!n || n < 1000 || n > 150000) return false;
+    if (motOverLimit) return false;
     if (n < 10000) return mileageConfirmedLow;
     return true;
-  }, [customerData.mileage, mileageConfirmedLow]);
+  }, [customerData.mileage, mileageConfirmedLow, motOverLimit]);
 
   // Check section completion status - now includes address fields
   const personalDetailsComplete = useMemo(() => {
@@ -1513,6 +1521,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         } else if (mileage > 150000) {
           error = 'Maximum 150,000 miles';
           isValid = false;
+        } else if (motOverLimit) {
+          error = `Your last MOT recorded ${numericMotMileage.toLocaleString('en-GB')} miles, which is over our 150,000-mile limit.`;
+          isValid = false;
         } else if (mileage < 10000 && !mileageConfirmedLow) {
           error = 'Please tick the box below to confirm this mileage is correct.';
           isValid = false;
@@ -1742,7 +1753,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
     // Hard block: vehicles over 150,000 miles are not eligible for cover
     const enteredMileageNum = parseInt(String(customerData.mileage || '').replace(/[^0-9]/g, '') || '0');
-    if (enteredMileageNum > 150000) {
+    if (enteredMileageNum > 150000 || motOverLimit) {
       const mileageEl = document.getElementById('mileage');
       if (mileageEl) {
         mileageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -3071,15 +3082,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 )}
 
               {/* Over 150,000 miles — warm amber information card (not an error) */}
-              {customerData.mileage && Number(customerData.mileage) > 150000 && (
+              {(motOverLimit || (customerData.mileage && Number(customerData.mileage) > 150000)) && (
                 <div className="mt-3 rounded-xl border-2 border-[#F0A500] bg-[#FFF8E5] px-4 py-4">
                   <p className="text-base font-bold text-[#7A4E00] flex items-center gap-2">
                     <Info className="w-5 h-5 flex-shrink-0" />
                     We may still be able to cover your vehicle
                   </p>
                   <p className="text-sm text-[#5C3D00] mt-2 leading-relaxed">
-                    Our online plans normally cover vehicles up to 150,000 miles. As your vehicle is above this,
-                    our team will need to check the available options with you.
+                    Our online plans cover vehicles up to 150,000 miles. {motOverLimit
+                      ? `Your last MOT recorded ${numericMotMileage.toLocaleString('en-GB')} miles, so this vehicle is above the limit and can't be bought online.`
+                      : 'As your vehicle is above this, our team will need to check the available options with you.'}
                   </p>
                   <div className="flex flex-col sm:flex-row gap-2 mt-4">
                     <button
@@ -3096,6 +3108,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       Call us now: 0330 229 5040
                     </a>
                   </div>
+                  {!motOverLimit && (
                   <button
                     type="button"
                     onClick={() => {
@@ -3111,10 +3124,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   >
                     Change mileage
                   </button>
+                  )}
                 </div>
               )}
 
-              {showValidation && !mileageValueValid && !(customerData.mileage && Number(customerData.mileage) > 150000) && (
+              {showValidation && !mileageValueValid && !motOverLimit && !(customerData.mileage && Number(customerData.mileage) > 150000) && (
                 <div className="mt-2 rounded-lg border-2 border-[#FF385C] bg-[#FF385C]/5 px-3 py-2">
                   <p className="text-[#FF385C] text-sm font-medium flex items-center gap-1.5">
                     <AlertCircle className="w-4 h-4" />

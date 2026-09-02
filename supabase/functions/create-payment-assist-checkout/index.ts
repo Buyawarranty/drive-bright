@@ -301,6 +301,31 @@ serve(async (req) => {
     // Prepare customer address
     const addressLine1 = customerData?.address_line_1 || customerData?.building_number || '';
     const postcode = customerData?.postcode || '';
+
+    // Normalise the phone number to the 11-digit UK format Payment Assist expects.
+    // PA rejects "+44...", spaces, and short/long numbers with "invalid telephone".
+    const normaliseUkPhone = (raw: string): string => {
+      let digits = String(raw || '').replace(/[^0-9+]/g, '');
+      if (digits.startsWith('+44')) digits = '0' + digits.slice(3);
+      else if (digits.startsWith('0044')) digits = '0' + digits.slice(4);
+      else if (digits.startsWith('44') && digits.length >= 12) digits = '0' + digits.slice(2);
+      digits = digits.replace(/[^0-9]/g, '');
+      if (digits.length === 10 && !digits.startsWith('0')) digits = '0' + digits;
+      return digits;
+    };
+    const telephone = normaliseUkPhone(customerData?.phone || '');
+    const validUkPhone = telephone.startsWith('07')
+      ? /^07\d{9}$/.test(telephone)   // mobiles are always 11 digits
+      : /^0\d{9,10}$/.test(telephone); // landlines 10-11 digits
+    if (!validUkPhone) {
+      logStep("Invalid telephone for Payment Assist", { provided: customerData?.phone, normalised: telephone });
+      return new Response(JSON.stringify({
+        error: 'Please enter a valid UK phone number (for example 07123 456789) to pay monthly.',
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
     
     // Build request parameters for Payment Assist API (flat structure as per docs)
     // All params must be strings for signature generation
@@ -313,7 +338,7 @@ serve(async (req) => {
       addr1: addressLine1,
       postcode: postcode,
       email: customerData?.email || '',
-      telephone: customerData?.phone || '',
+      telephone,
       success_url: successUrl,
       failure_url: failureUrl,
       reg_no: vehicleData?.regNumber || vehicleData?.registration || ''
