@@ -9,8 +9,11 @@ import { useSandboxHandoverAlert } from '@/hooks/useSandboxHandoverAlert';
  * now, and how many customers are waiting for a human specialist.
  */
 export const LiveChatHoursBanner: React.FC = () => {
+  // Only staff with chatbot pop-up access (admin / claims by default) see the
+  // live-chat bar at all — sales agents never do.
+  const { allowed } = useChatbotPopupAccess();
   // This banner only displays the queue count; it must never create audio.
-  const { waiting } = useSandboxHandoverAlert({ audioEnabled: false });
+  const { waiting } = useSandboxHandoverAlert({ enabled: allowed, audioEnabled: false });
   const [open, setOpen] = React.useState(() => isTeamOpenNow());
 
   React.useEffect(() => {
