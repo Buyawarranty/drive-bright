@@ -102,6 +102,7 @@ serve(async (req: Request): Promise<Response> => {
       .limit(1);
 
     const claim = claims?.[0] || null;
+    let requestToken: string | null = null;
 
     const summary = [
       isRequest ? "APPEAL REQUESTED — customer asked for an appeal from the public Warranty appeals page. Send them the secure appeal link." : null,
@@ -148,6 +149,7 @@ serve(async (req: Request): Promise<Response> => {
         })
         .select("id, token")
         .single();
+      requestToken = request?.token ?? null;
 
       await supabase.from("claim_update_responses").insert({
         claim_id: claim.id,
@@ -231,7 +233,7 @@ serve(async (req: Request): Promise<Response> => {
       reference,
       matchedClaim: !!claim,
       mode: isRequest ? "request" : "full",
-      token: request?.token || null,
+      token: requestToken,
     }), {
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
