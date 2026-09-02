@@ -200,7 +200,13 @@ serve(async (req: Request): Promise<Response> => {
       await send([email.trim()], isRequest ? `Your appeal request ${reference}` : `Your appeal reference ${reference}`, customerHtml);
     }
 
-    return new Response(JSON.stringify({ success: true, reference, matchedClaim: !!claim, mode: isRequest ? "request" : "full" }), {
+    return new Response(JSON.stringify({
+      success: true,
+      reference,
+      matchedClaim: !!claim,
+      mode: isRequest ? "request" : "full",
+      token: request?.token || null,
+    }), {
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (err: any) {
