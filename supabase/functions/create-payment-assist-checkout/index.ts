@@ -299,8 +299,27 @@ serve(async (req) => {
     });
     
     // Prepare customer address
-    const addressLine1 = customerData?.address_line_1 || customerData?.building_number || '';
-    const postcode = customerData?.postcode || '';
+    // Payment Assist rejects the request outright if addr1/postcode are blank, so
+    // accept every shape the checkout may send (address_line_1, street, building fields).
+    const addressLine1 = (
+      customerData?.address_line_1 ||
+      customerData?.street ||
+      [customerData?.building_number, customerData?.building_name].filter(Boolean).join(' ') ||
+      customerData?.flat_number ||
+      ''
+    ).toString().trim();
+    const postcode = (customerData?.postcode || '').toString().trim().toUpperCase();
+
+    if (!addressLine1 || !postcode) {
+      logStep("Missing address for Payment Assist", { addressLine1, postcode });
+      return new Response(JSON.stringify({
+        error: 'Please enter your full address (street and postcode) to pay monthly.',
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
+
 
     // Normalise the phone number to the 11-digit UK format Payment Assist expects.
     // PA rejects "+44...", spaces, and short/long numbers with "invalid telephone".
