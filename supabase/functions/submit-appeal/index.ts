@@ -53,7 +53,7 @@ serve(async (req: Request): Promise<Response> => {
 
     const isRequest = mode === "request";
 
-    if (!firstName || !lastName || !email || !registrationPlate || !newEvidence || (!isRequest && !grounds)) {
+    if (!firstName || !lastName || !email || !registrationPlate || !newEvidence) {
       return new Response(JSON.stringify({ success: false, error: "Missing required fields" }), {
         status: 400, headers: { "Content-Type": "application/json", ...corsHeaders },
       });
