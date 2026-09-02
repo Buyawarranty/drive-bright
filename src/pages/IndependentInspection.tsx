@@ -230,7 +230,7 @@ const IndependentInspection: React.FC = () => {
         setCheckoutUrl(data.checkout_url);
         setDetailsSaved(true);
         setSubmitting(false);
-        window.location.href = WORLDPAY_HPP_URL;
+        window.location.href = data.checkout_url;
         return;
       }
       throw new Error(data?.error || 'Could not start payment');
