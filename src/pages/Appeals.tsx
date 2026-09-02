@@ -245,9 +245,13 @@ const Appeals = () => {
               <div className="inline-flex items-center gap-2 rounded-full bg-[#FEF0E8] border border-[#E8541A]/20 px-3 py-1.5 text-xs font-medium text-[#E8541A] mb-4">
                 <Scale className="w-3.5 h-3.5" /> CLAIM APPEALS
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight text-[#1A2B4A]">Appeal a claim decision</h1>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight text-[#1A2B4A]">
+                {requestMode ? 'Request a warranty appeal' : 'Appeal a claim decision'}
+              </h1>
               <p className="text-[#5A6B82] text-base sm:text-lg max-w-2xl leading-relaxed">
-                If you believe a claim decision should be looked at again, send us your grounds and any new evidence. A claims manager reviews every appeal.
+                {requestMode
+                  ? 'Send us a short request and our claims team will email you a secure link to complete your full appeal — you can also start it from your customer dashboard.'
+                  : 'If you believe a claim decision should be looked at again, send us your grounds and any new evidence. A claims manager reviews every appeal.'}
               </p>
               <ul className="mt-5 space-y-2 text-sm text-[#1A2B4A]">
                 <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#E8541A] shrink-0" /> Acknowledged within <strong>2 working days</strong></li>
