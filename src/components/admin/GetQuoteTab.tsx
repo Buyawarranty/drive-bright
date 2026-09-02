@@ -6709,6 +6709,13 @@ Questions? Call 0330 229 5040`;
                   const undiscountedGridTotal =
                     Math.ceil(Number(basePrice.monthlyPrice || 0) * 12) || Number(basePrice.totalPrice || 0);
                   const web = getWebReferencePrice(undiscountedGridTotal);
+                  // Exactly what the customer sees on the website for this cover:
+                  // Step 3 monthly = ceil(web total / 12) over 12 payments, and
+                  // pay in full = web total minus the 10% online discount.
+                  const webMonthly = web.price > 0 ? Math.ceil(web.price / 12) : 0;
+                  const webMonthlyTotal = webMonthly * 12;
+                  const webPayInFull = Math.max(0, web.price - Math.floor(web.price * 0.1));
+
                   return (
                 <div className={cn(
                   "fixed bottom-0 z-50 px-4 lg:px-6 pb-2 pt-1",
