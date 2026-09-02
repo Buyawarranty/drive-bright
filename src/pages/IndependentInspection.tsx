@@ -20,8 +20,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Hosted Worldpay payment page (Pay by Link) for the inspection fee.
-const WORLDPAY_HPP_URL = 'https://payments.worldpay.com/app/hpp/169-0/payment/start';
+// Worldpay Hosted Payment Page link is returned by the edge function after
+// garage details are saved. The customer is redirected to that unique URL.
 
 interface InspectionRequest {
   id: string;
