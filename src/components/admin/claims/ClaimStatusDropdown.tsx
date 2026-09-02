@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { ClaimStatusEmailPreviewDialog, type PendingClaimStatusChange } from '@/components/admin/claims/ClaimStatusEmailPreviewDialog';
+import { SIMPLE_STATUSES } from '@/components/admin/claims-manager/workbench/ClaimsWorkbenchList';
 
 interface ClaimTag {
   id: string;
@@ -19,9 +20,35 @@ interface ClaimStatusDropdownProps {
   onStatusChanged?: (info: { fromStatus: string; toStatus: string; toLabel: string }) => void;
 }
 
+// Normalise legacy/raw DB statuses onto the shared option list used by the
+// active claims workbench so both surfaces offer identical choices.
+const normaliseStatus = (raw?: string | null): string => {
+  const s = (raw || '').toLowerCase().trim();
+  if (SIMPLE_STATUSES.some((o) => o.value === s)) return s;
+  if (s === 'appeal') return 'appealed';
+  if (s === 'awaiting_information' || s === 'evidence_needed' || s === 'evidence') return 'awaiting_info';
+  if (s === 'under_review' || s === 'review' || s === 'in_progress' || s === 'new') return 'in_review';
+  if (s === 'rejected' || s === 'claim_rejected') return 'declined';
+  if (s === 'claim_approved') return 'approved';
+  if (s === 'paid') return 'payment_pending';
+  if (s === 'partial' || s === 'partial_approved' || s === 'partial_approval') return 'partially_approved';
+  if (s === 'canceled') return 'cancelled';
+  if (s === 'complaint') return 'complaint_submitted';
+  if (s === 'not_customer' || s === 'no_policy') return 'not_a_customer';
+  return '';
+};
+
+// Optional tag names that pair with a status, so tag colouring stays in sync.
+const STATUS_TO_TAG_NAME: Record<string, string> = {
+  in_review: 'Under Review',
+  awaiting_info: 'Awaiting Info',
+  approved: 'Approved',
+  payment_pending: 'Paid',
+  declined: 'Rejected',
+};
+
 export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
   claimId,
-  currentTagId,
   currentStatus,
   onUpdate,
   onStatusChanged,
@@ -29,7 +56,7 @@ export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
   const { toast } = useToast();
   const [tags, setTags] = useState<ClaimTag[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedTagId, setSelectedTagId] = useState(currentTagId || '');
+  const [selected, setSelected] = useState(normaliseStatus(currentStatus));
   const [pendingChange, setPendingChange] = useState<PendingClaimStatusChange | null>(null);
 
   useEffect(() => {
@@ -37,8 +64,8 @@ export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
   }, []);
 
   useEffect(() => {
-    setSelectedTagId(currentTagId || '');
-  }, [currentTagId]);
+    setSelected(normaliseStatus(currentStatus));
+  }, [currentStatus]);
 
   const fetchTags = async () => {
     const { data, error } = await supabase
@@ -54,31 +81,36 @@ export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
     setTags(data || []);
   };
 
-  const applyTag = async (tagId: string, newStatus: string, tagName?: string) => {
+  const applyStatus = async (newStatus: string, label: string) => {
     setLoading(true);
     try {
+      const tagName = STATUS_TO_TAG_NAME[newStatus];
+      const tag = tagName ? tags.find((t) => t.name === tagName) : undefined;
+
+      const update: Record<string, unknown> = {
+        status: newStatus,
+        updated_at: new Date().toISOString(),
+      };
+      if (tag) update.tag_id = tag.id;
+
       const { error } = await supabase
         .from('claims_submissions')
-        .update({
-          tag_id: tagId,
-          status: newStatus,
-          updated_at: new Date().toISOString(),
-        })
+        .update(update)
         .eq('id', claimId);
 
       if (error) throw error;
 
-      setSelectedTagId(tagId);
+      setSelected(newStatus);
       toast({
         title: 'Status Updated',
-        description: `Claim status changed to ${tagName || newStatus}`,
+        description: `Claim status changed to ${label}`,
       });
       if (onStatusChanged && newStatus !== currentStatus) {
-        try { onStatusChanged({ fromStatus: currentStatus, toStatus: newStatus, toLabel: tagName || newStatus }); } catch {}
+        try { onStatusChanged({ fromStatus: currentStatus, toStatus: newStatus, toLabel: label }); } catch {}
       }
       onUpdate();
     } catch (error) {
-      console.error('Error updating tag:', error);
+      console.error('Error updating claim status:', error);
       toast({
         title: 'Error',
         description: 'Failed to update claim status',
@@ -89,87 +121,43 @@ export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
     }
   };
 
-  const handleTagChange = (tagId: string) => {
-    const tag = tags.find((t) => t.id === tagId);
-    const statusMap: Record<string, string> = {
-      New: 'new',
-      'In Progress': 'in_progress',
-      'Awaiting Info': 'awaiting_info',
-      'Under Review': 'in_progress',
-      Approved: 'approved',
-      Paid: 'paid',
-      Rejected: 'rejected',
-      'On Hold': 'in_progress',
-      Escalated: 'in_progress',
-      'Fake/Test': 'fake_test',
-    };
+  const handleChange = (value: string) => {
+    const option = SIMPLE_STATUSES.find((o) => o.value === value);
+    const label = option?.label || value;
 
-    const newStatus = tag ? statusMap[tag.name] || 'in_progress' : currentStatus;
-
-    // If the underlying status didn't change, just persist the tag without an email.
-    if (newStatus === currentStatus) {
-      applyTag(tagId, newStatus, tag?.name);
+    if (value === normaliseStatus(currentStatus)) {
+      applyStatus(value, label);
       return;
     }
 
-    // Otherwise open the review-before-send dialog.
     setPendingChange({
       claimId,
-      status: newStatus,
-      label: tag?.name,
+      status: value,
+      label,
       onSent: async () => {
-        await applyTag(tagId, newStatus, tag?.name);
+        await applyStatus(value, label);
       },
     });
   };
 
-  const selectedTag = tags.find(t => t.id === selectedTagId);
+  const selectedOption = SIMPLE_STATUSES.find((o) => o.value === selected);
 
   return (
     <>
-      <Select
-        value={selectedTagId}
-        onValueChange={handleTagChange}
-        disabled={loading}
-      >
+      <Select value={selected} onValueChange={handleChange} disabled={loading}>
         <SelectTrigger
-          className="w-full min-w-[200px] h-11 text-sm font-semibold border-2 shadow-sm"
-          style={{
-            backgroundColor: selectedTag?.color ? `${selectedTag.color}18` : '#FEF9C3',
-            borderColor: selectedTag?.color || undefined,
-            color: selectedTag?.color || undefined,
-          }}
+          className={`w-full min-w-[200px] h-11 text-sm font-semibold border-2 shadow-sm ${
+            selectedOption ? selectedOption.tone : 'bg-muted'
+          }`}
         >
           <SelectValue placeholder="Select status">
-            {selectedTag ? (
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-2.5 h-2.5 rounded-full"
-                  style={{ backgroundColor: selectedTag.color }}
-                />
-                <span>{selectedTag.name}</span>
-              </div>
-            ) : (
-              <span className="text-muted-foreground">Select status</span>
-            )}
+            {selectedOption ? selectedOption.label : <span className="text-muted-foreground">Select status</span>}
           </SelectValue>
         </SelectTrigger>
         <SelectContent className="bg-background border shadow-lg z-50">
-          {tags.map((tag) => (
-            <SelectItem
-              key={tag.id}
-              value={tag.id}
-              className="cursor-pointer"
-            >
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-3 h-3 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: tag.color }}
-                />
-                <span style={{ color: tag.color }} className="font-medium">
-                  {tag.name}
-                </span>
-              </div>
+          {SIMPLE_STATUSES.map((o) => (
+            <SelectItem key={o.value} value={o.value} className="cursor-pointer font-medium">
+              {o.label}
             </SelectItem>
           ))}
         </SelectContent>
