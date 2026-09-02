@@ -572,20 +572,23 @@ const IndependentInspection: React.FC = () => {
                   />
                 </div>
 
-                {/* Terms */}
+                {/* Terms — compulsory */}
                 <label
                   htmlFor="accept"
-                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
+                  className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${
                     errors.accepted
-                      ? 'border-red-500 bg-red-50/40'
+                      ? 'border-red-500 bg-red-50/60'
                       : accepted
-                        ? 'border-green-300 bg-green-50/40'
-                        : 'border-slate-200 bg-slate-50/60'
+                        ? 'border-green-400 bg-green-50/50'
+                        : 'border-[#E8541A] bg-[#FEF0E8]'
                   }`}
                 >
                   <input
                     id="accept"
                     type="checkbox"
+                    required
+                    aria-required="true"
+                    aria-invalid={Boolean(errors.accepted)}
                     checked={accepted}
                     onChange={(e) => {
                       setAccepted(e.target.checked);
@@ -597,17 +600,21 @@ const IndependentInspection: React.FC = () => {
                         });
                       }
                     }}
-                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#E8541A] focus:ring-[#E8541A]"
+                    className="mt-0.5 h-5 w-5 rounded border-slate-400 text-[#E8541A] focus:ring-[#E8541A]"
                   />
-                  <span className="text-sm text-slate-700 leading-relaxed">
-                    I understand the inspection is completed by {request.inspection_company} (assigned by Buy a Warranty), takes
-                    on average 7 to 14 working days, and I accept the engineer's findings as the full and final decision on this
-                    claim.
+                  <span className="text-sm font-bold text-[#1A2B4A] leading-relaxed">
+                    I understand the independent inspection is completed by {request.inspection_company}, takes on average 7 to
+                    14 working days, and I accept the engineer's findings as the full and final decision on this claim.{' '}
+                    <span className="text-[#E8541A]">*</span>
+                    <span className="block mt-1 text-xs font-bold text-[#E8541A]">
+                      Please confirm you accept the inspection terms — this is required
+                    </span>
                     {errors.accepted && (
-                      <span className="block mt-1 text-xs font-medium text-red-600">{errors.accepted}</span>
+                      <span className="block mt-1 text-xs font-bold text-red-600">{errors.accepted}</span>
                     )}
                   </span>
                 </label>
+
               </section>
             </div>
 
