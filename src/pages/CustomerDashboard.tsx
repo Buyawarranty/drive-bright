@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, FileText, User, Mail, Lock, MapPin, CreditCard, Eye, EyeOff, Phone, MessageSquare, Download, AlertCircle, CheckCircle, X, ArrowLeft, Search, Home, Shield } from 'lucide-react';
+import { Calendar, FileText, User, Mail, Lock, MapPin, CreditCard, Eye, EyeOff, Phone, MessageSquare, Download, AlertCircle, CheckCircle, X, ArrowLeft, Search, Home, Shield, Scale } from 'lucide-react';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { getWarrantyDurationDisplay, getPaymentTypeDisplay } from '@/lib/warrantyUtils';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
@@ -2316,6 +2316,17 @@ const CustomerDashboard = () => {
                           <p className="text-xs text-gray-500">For warranty claims and repairs</p>
                         </div>
                       </div>
+                      {/* Signed-in customers get the full appeal form (public page is request-only) */}
+                      <a
+                        href="/appeals/"
+                        className="flex items-center gap-3 p-3 border rounded-lg hover:border-orange-400 hover:bg-orange-50 transition-colors"
+                      >
+                        <Scale className="h-5 w-5 text-orange-600" />
+                        <div>
+                          <p className="font-medium">Appeal a claim decision</p>
+                          <p className="text-xs text-gray-500">Complete the full appeal form and send us new evidence</p>
+                        </div>
+                      </a>
                     </div>
                   </CardContent>
                 </Card>

@@ -27,3 +27,4 @@
 - [x] Claims staff no longer see the "stuck on checkout" struggle alert bar (sales/management only)
 - [x] Claims Appeals section restyled from dark navy to light amber/orange
 - [x] Public appeal form at /appeals/ built to the same design as /complaints/, with submit-appeal function feeding the Appeals inbox
+- [x] /appeals/ is public request-only ("Warranty appeals" in footer); full appeal form gated behind emailed secure link (?token=) or signed-in customer dashboard

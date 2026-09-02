@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Phone, Mail, Clock, CheckCircle, ArrowLeft, MessageSquare, ShieldCheck, Lock, Loader2, ClipboardList, Scale, AlertCircle, Check } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { supabase } from '@/integrations/supabase/client';
@@ -73,9 +73,35 @@ const requiredFields = new Set([
   'newEvidence', 'independentInspection', 'preferredContactMethod', 'confirmAccurate',
 ]);
 
+// Fields that only exist on the full appeal form (secure email link / customer
+// dashboard). The public page is a short "request an appeal" form only.
+const FULL_ONLY_FIELDS = new Set([
+  'claimRef', 'decisionDate', 'grounds', 'desiredOutcome', 'independentInspection',
+]);
+
 const Appeals = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token') || searchParams.get('t');
+  const [signedIn, setSignedIn] = useState(false);
+  const [accessChecked, setAccessChecked] = useState(false);
+
+  // Full appeal form is private: reachable only with a secure link we email, or
+  // from inside the signed-in customer dashboard. Everyone else gets the short
+  // request form (footer link "Warranty appeals").
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      setSignedIn(!!data.session);
+      setAccessChecked(true);
+    }).catch(() => { if (active) setAccessChecked(true); });
+    return () => { active = false; };
+  }, []);
+
+  const requestMode = !(token || signedIn);
+
   const [form, setForm] = useState<FormState>(initialForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -121,6 +147,11 @@ const Appeals = () => {
     if (validate) setErrors((prev) => ({ ...prev, [name]: validate(v, next) }));
   };
 
+  const activeKeys = useMemo(
+    () => Object.keys(validators).filter((k) => !(requestMode && FULL_ONLY_FIELDS.has(k))),
+    [requestMode],
+  );
+
   const fieldStatus = useMemo(() => {
     const status: Record<string, { valid: boolean; error: string }> = {};
     for (const key of Object.keys(validators)) {
@@ -136,7 +167,7 @@ const Appeals = () => {
   const validateAll = () => {
     const next: Record<string, string> = {};
     const allTouched: Record<string, boolean> = {};
-    for (const key of Object.keys(validators)) {
+    for (const key of activeKeys) {
       next[key] = validators[key]((form as any)[key], form);
       allTouched[key] = true;
     }
@@ -164,7 +195,9 @@ const Appeals = () => {
     }
     setSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('submit-appeal', { body: form });
+      const { data, error } = await supabase.functions.invoke('submit-appeal', {
+        body: { ...form, mode: requestMode ? 'request' : 'full', token: token || undefined },
+      });
       if (error || !data?.success) throw new Error(error?.message || data?.error || 'Submission failed');
       setReference(data.reference);
       setForm(initialForm);
@@ -185,9 +218,11 @@ const Appeals = () => {
   return (
     <div className="min-h-screen bg-[#F4F6F8]">
       <SEOHead
-        title="Appeal a Claim Decision | Buy A Warranty UK"
-        description="Appeal a claim decision with Buy A Warranty. Send us new evidence and our claims manager will review your case independently of the original decision."
-        keywords="claim appeal, appeal claim decision, warranty claim review"
+        title={requestMode ? 'Warranty Appeals | Request an Appeal | Buy A Warranty UK' : 'Appeal a Claim Decision | Buy A Warranty UK'}
+        description={requestMode
+          ? 'Request an appeal of a warranty claim decision. Send us a short request and our claims team will email you a secure link to complete your appeal.'
+          : 'Appeal a claim decision with Buy A Warranty. Send us new evidence and our claims manager will review your case independently of the original decision.'}
+        keywords="warranty appeals, claim appeal, appeal claim decision, warranty claim review"
         canonical="https://buyawarranty.co.uk/appeals/"
       />
 
@@ -210,9 +245,13 @@ const Appeals = () => {
               <div className="inline-flex items-center gap-2 rounded-full bg-[#FEF0E8] border border-[#E8541A]/20 px-3 py-1.5 text-xs font-medium text-[#E8541A] mb-4">
                 <Scale className="w-3.5 h-3.5" /> CLAIM APPEALS
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight text-[#1A2B4A]">Appeal a claim decision</h1>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight text-[#1A2B4A]">
+                {requestMode ? 'Request a warranty appeal' : 'Appeal a claim decision'}
+              </h1>
               <p className="text-[#5A6B82] text-base sm:text-lg max-w-2xl leading-relaxed">
-                If you believe a claim decision should be looked at again, send us your grounds and any new evidence. A claims manager reviews every appeal.
+                {requestMode
+                  ? 'Send us a short request and our claims team will email you a secure link to complete your full appeal — you can also start it from your customer dashboard.'
+                  : 'If you believe a claim decision should be looked at again, send us your grounds and any new evidence. A claims manager reviews every appeal.'}
               </p>
               <ul className="mt-5 space-y-2 text-sm text-[#1A2B4A]">
                 <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#E8541A] shrink-0" /> Acknowledged within <strong>2 working days</strong></li>
@@ -263,7 +302,9 @@ const Appeals = () => {
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1">Thank you!</h2>
               <p className="text-sm sm:text-base text-green-50 leading-relaxed">
-                Your appeal has been submitted to our claims team.
+                {requestMode
+                  ? 'Your appeal request has been sent to our claims team.'
+                  : 'Your appeal has been submitted to our claims team.'}
               </p>
             </div>
             <div className="px-6 sm:px-10 py-7">
@@ -277,21 +318,36 @@ const Appeals = () => {
                   <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
                   <span>A confirmation email has been sent to your inbox.</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                  <span>Our claims team will acknowledge within <strong>2 working days</strong>.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                  <span>We'll write to you with the outcome of your appeal.</span>
-                </li>
+                {requestMode ? (
+                  <>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                      <span>Our claims team will email you a <strong>secure link</strong> to complete your full appeal.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                      <span>You can also complete it from your customer dashboard.</span>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                      <span>Our claims team will acknowledge within <strong>2 working days</strong>.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                      <span>We'll write to you with the outcome of your appeal.</span>
+                    </li>
+                  </>
+                )}
               </ul>
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={() => { setReference(null); setRegStatus('idle'); setRegCustomerName(null); }}
                   className="flex-1 py-2.5 border border-[#E2E8F0] text-[#1A2B4A] hover:bg-[#F4F6F8] font-medium rounded-md text-sm"
                 >
-                  Submit another appeal
+                  {requestMode ? 'Send another request' : 'Submit another appeal'}
                 </button>
                 <button
                   onClick={() => navigate('/')}
@@ -311,10 +367,12 @@ const Appeals = () => {
               <div className="w-9 h-9 rounded-lg bg-[#E8541A]/10 flex items-center justify-center">
                 <Scale className="w-5 h-5 text-[#E8541A]" />
               </div>
-              <h2 className="text-xl font-semibold text-slate-900">Submit an appeal</h2>
+              <h2 className="text-xl font-semibold text-slate-900">{requestMode ? 'Request an appeal' : 'Submit an appeal'}</h2>
             </div>
             <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-              Please fill in the form below. All fields marked <span className="text-[#E8541A]">*</span> are required.
+              {requestMode
+                ? <>Tell us who you are and why you'd like the decision reviewed. Our claims team will then send you a secure link to the full appeal form. All fields marked <span className="text-[#E8541A]">*</span> are required.</>
+                : <>Please fill in the form below. All fields marked <span className="text-[#E8541A]">*</span> are required.</>}
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
@@ -351,9 +409,12 @@ const Appeals = () => {
                   }
                   inputClassName="uppercase"
                 />
-                <Field name="claimRef" label="Claim reference" value={form.claimRef} onChange={change} placeholder="Optional — if you have it" error={errors.claimRef} valid={fieldStatus.claimRef.valid && showStatus('claimRef')} />
+                {!requestMode && (
+                  <Field name="claimRef" label="Claim reference" value={form.claimRef} onChange={change} placeholder="Optional — if you have it" error={errors.claimRef} valid={fieldStatus.claimRef.valid && showStatus('claimRef')} />
+                )}
               </div>
 
+              {!requestMode && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field name="decisionDate" label="Date of the decision" type="date" value={form.decisionDate} onChange={change} error={errors.decisionDate} valid={fieldStatus.decisionDate.valid && showStatus('decisionDate')} />
                 <div>
@@ -378,12 +439,15 @@ const Appeals = () => {
                   {errors.grounds && <FieldError msg={errors.grounds} />}
                 </div>
               </div>
+              )}
 
               {/* Why you're appealing */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label htmlFor="newEvidence" className="block text-sm font-medium text-slate-900">
-                    Your account of the fault and why you're appealing <span className="text-[#E8541A]">*</span>
+                    {requestMode
+                      ? <>Why would you like the decision reviewed?</>
+                      : <>Your account of the fault and why you're appealing</>} <span className="text-[#E8541A]">*</span>
                   </label>
                   <span className="text-xs text-slate-500">{form.newEvidence.length}/2000</span>
                 </div>
@@ -393,9 +457,11 @@ const Appeals = () => {
                     name="newEvidence"
                     value={form.newEvidence}
                     onChange={change}
-                    rows={5}
+                    rows={requestMode ? 4 : 5}
                     maxLength={2000}
-                    placeholder="Tell us what happened, what the garage found, and any new evidence such as an engineer's report or invoice…"
+                    placeholder={requestMode
+                      ? 'A short summary is fine — you can add full details and documents on the secure form we send you…'
+                      : "Tell us what happened, what the garage found, and any new evidence such as an engineer's report or invoice…"}
                     className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${errors.newEvidence ? 'border-red-400' : fieldStatus.newEvidence.valid && showStatus('newEvidence') ? 'border-green-500' : 'border-slate-300'}`}
                   />
                   {fieldStatus.newEvidence.valid && showStatus('newEvidence') && !errors.newEvidence && (
@@ -406,6 +472,7 @@ const Appeals = () => {
               </div>
 
               {/* Desired outcome */}
+              {!requestMode && (
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label htmlFor="desiredOutcome" className="block text-sm font-medium text-slate-900">What outcome are you hoping for?</label>
@@ -422,8 +489,10 @@ const Appeals = () => {
                   className="w-full px-3 py-2.5 border border-slate-300 rounded-md text-sm bg-white text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A]"
                 />
               </div>
+              )}
 
               {/* Independent inspection */}
+              {!requestMode && (
               <div>
                 <label className="block text-sm font-medium text-slate-900 mb-2">
                   Would you like an independent engineer's inspection? <span className="text-[#E8541A]">*</span>
@@ -448,6 +517,7 @@ const Appeals = () => {
                 <p className="mt-1.5 text-xs text-slate-500">Choosing not to have one costs nothing — our claims manager still reviews your appeal.</p>
                 {errors.independentInspection && <FieldError msg={errors.independentInspection} />}
               </div>
+              )}
 
               {/* Preferred contact method */}
               <div>
@@ -498,11 +568,16 @@ const Appeals = () => {
                 disabled={submitting}
                 className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#E8541A] hover:bg-[#cf471a] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm"
               >
-                {submitting ? (<><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>) : 'Submit my appeal'}
+                {submitting
+                  ? (<><Loader2 className="w-4 h-4 animate-spin" /> {requestMode ? 'Sending…' : 'Submitting…'}</>)
+                  : requestMode ? 'Request an appeal' : 'Submit my appeal'}
               </button>
 
               <p className="text-xs text-slate-500 text-center leading-relaxed">
-                We'll acknowledge your appeal within 2 working days. Your details are handled in line with our{' '}
+                {requestMode
+                  ? "We'll respond within 2 working days with a secure link to your full appeal form. "
+                  : "We'll acknowledge your appeal within 2 working days. "}
+                Your details are handled in line with our{' '}
                 <Link to="/privacy-policy" className="text-[#1A2B4A] hover:underline">Privacy Policy</Link>.
               </p>
             </form>
@@ -513,11 +588,15 @@ const Appeals = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
               <h3 className="text-base font-semibold text-[#1A2B4A] mb-4">What happens next?</h3>
               <ol className="space-y-4">
-                {[
+                {(requestMode ? [
+                  { n: 1, t: 'We receive your request', d: 'Your request goes straight to our claims team with your vehicle details.' },
+                  { n: 2, t: 'We send you a secure link', d: 'You complete the full appeal form privately — or start it in your customer dashboard.' },
+                  { n: 3, t: 'Claims manager review', d: 'Your appeal is reviewed independently of the original decision.' },
+                ] : [
                   { n: 1, t: 'We receive your appeal', d: 'Everything you send is added to your claim file straight away.' },
                   { n: 2, t: 'Claims manager review', d: 'Your appeal is reviewed independently of the original decision.' },
                   { n: 3, t: 'Outcome', d: "We'll write to you with the outcome and the reasons behind it." },
-                ].map(s => (
+                ]).map(s => (
                   <li key={s.n} className="flex gap-3">
                     <div className="w-7 h-7 rounded-full bg-[#1A2B4A] text-white text-xs font-bold flex items-center justify-center shrink-0">{s.n}</div>
                     <div>
