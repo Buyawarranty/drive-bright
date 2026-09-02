@@ -19,22 +19,12 @@ const initialForm = {
   claimRef: '',
   registrationPlate: '',
   decisionDate: '',
-  grounds: '',
   newEvidence: '',
   desiredOutcome: '',
   independentInspection: 'Not sure yet',
   preferredContactMethod: 'Email',
   confirmAccurate: false,
 };
-
-const GROUNDS = [
-  'New evidence or a new engineer’s report',
-  'The fault was not pre-existing',
-  'Cover wording applied incorrectly',
-  'Repair costs or labour rate disputed',
-  'Information was missing when the claim was decided',
-  'Other',
-];
 
 type FormState = typeof initialForm;
 
@@ -55,7 +45,6 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
   claimRef: () => '',
   registrationPlate: (v) => (!String(v).trim() ? 'Please enter your vehicle registration' : ''),
   decisionDate: () => '',
-  grounds: (v) => (!v ? 'Please select your grounds for appeal' : ''),
   newEvidence: (v) => {
     const s = String(v).trim();
     if (!s) return 'Please tell us why you are appealing';
@@ -64,19 +53,18 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
   },
   desiredOutcome: () => '',
   independentInspection: (v) => (!v ? 'Please choose an option' : ''),
-  preferredContactMethod: (v) => (!v ? 'Please choose a contact method' : ''),
   confirmAccurate: (v) => (!v ? 'Please confirm your information is accurate' : ''),
 };
 
 const requiredFields = new Set([
-  'firstName', 'lastName', 'email', 'registrationPlate', 'grounds',
-  'newEvidence', 'independentInspection', 'preferredContactMethod', 'confirmAccurate',
+  'firstName', 'lastName', 'email', 'registrationPlate',
+  'newEvidence', 'independentInspection', 'confirmAccurate',
 ]);
 
 // Fields that only exist on the full appeal form (secure email link / customer
 // dashboard). The public page is a short "request an appeal" form only.
 const FULL_ONLY_FIELDS = new Set([
-  'claimRef', 'decisionDate', 'grounds', 'desiredOutcome', 'independentInspection',
+  'claimRef', 'decisionDate', 'desiredOutcome', 'independentInspection',
 ]);
 
 const Appeals = () => {
@@ -107,6 +95,10 @@ const Appeals = () => {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
+  const [submittedToken, setSubmittedToken] = useState<string | null>(null);
+  const [submittedInspectionChoice, setSubmittedInspectionChoice] = useState<string | null>(null);
+  const [inspectionLink, setInspectionLink] = useState<string | null>(null);
+  const [creatingInspectionLink, setCreatingInspectionLink] = useState(false);
   const [regStatus, setRegStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid' | 'error'>('idle');
   const [regCustomerName, setRegCustomerName] = useState<string | null>(null);
   const regTimer = useRef<number | null>(null);
@@ -195,11 +187,15 @@ const Appeals = () => {
     }
     setSubmitting(true);
     try {
+      const chosenInspection = form.independentInspection;
       const { data, error } = await supabase.functions.invoke('submit-appeal', {
         body: { ...form, mode: requestMode ? 'request' : 'full', token: token || undefined },
       });
       if (error || !data?.success) throw new Error(error?.message || data?.error || 'Submission failed');
       setReference(data.reference);
+      setSubmittedToken(data.token || null);
+      setSubmittedInspectionChoice(chosenInspection);
+      setInspectionLink(null);
       setForm(initialForm);
       setRegStatus('idle');
       setRegCustomerName(null);
@@ -210,6 +206,23 @@ const Appeals = () => {
       toast({ title: 'Submission failed', description: err.message || `Please try again or email ${CLAIMS_EMAIL}`, variant: 'destructive' });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const createInspectionLink = async () => {
+    if (!submittedToken || creatingInspectionLink) return;
+    setCreatingInspectionLink(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('appeal-inspection-option', {
+        body: { token: submittedToken, create: true },
+      });
+      if (error || !data?.inspection?.link) throw new Error(error?.message || data?.error || 'Could not create inspection link');
+      setInspectionLink(data.inspection.link);
+      window.location.href = data.inspection.link;
+    } catch (err: any) {
+      toast({ title: 'Could not start payment', description: err.message || 'Please call us to arrange the inspection.', variant: 'destructive' });
+    } finally {
+      setCreatingInspectionLink(false);
     }
   };
 
@@ -251,7 +264,7 @@ const Appeals = () => {
               <p className="text-[#5A6B82] text-base sm:text-lg max-w-2xl leading-relaxed">
                 {requestMode
                   ? 'Send us a short request and our claims team will email you a secure link to complete your full appeal — you can also start it from your customer dashboard.'
-                  : 'If you believe a claim decision should be looked at again, send us your grounds and any new evidence. A claims manager reviews every appeal.'}
+                  : 'If you believe a claim decision should be looked at again, send us your account and any new evidence. A claims manager reviews every appeal.'}
               </p>
               <ul className="mt-5 space-y-2 text-sm text-[#1A2B4A]">
                 <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#E8541A] shrink-0" /> Acknowledged within <strong>2 working days</strong></li>
@@ -342,9 +355,35 @@ const Appeals = () => {
                   </>
                 )}
               </ul>
+
+              {/* Independent inspection payment prompt (full appeal only) */}
+              {!requestMode && submittedInspectionChoice === 'Yes please' && submittedToken && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                      <ShieldCheck className="w-5 h-5 text-amber-700" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-amber-900 text-sm">Independent engineer's inspection</h3>
+                      <p className="text-sm text-amber-800/80 mt-1 leading-relaxed">
+                        You've asked for an independent inspection. The £140 fee covers the engineer's visit to your vehicle anywhere in the UK. We'll appoint ACE or Scotia, and their decision will be full and final.
+                      </p>
+                      <button
+                        onClick={createInspectionLink}
+                        disabled={creatingInspectionLink}
+                        className="mt-3 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#E8541A] hover:bg-[#d14917] disabled:opacity-60 text-white text-sm font-medium rounded-md transition-colors"
+                      >
+                        {creatingInspectionLink ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+                        Pay £140 securely by card
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
-                  onClick={() => { setReference(null); setRegStatus('idle'); setRegCustomerName(null); }}
+                  onClick={() => { setReference(null); setSubmittedToken(null); setSubmittedInspectionChoice(null); setInspectionLink(null); setRegStatus('idle'); setRegCustomerName(null); }}
                   className="flex-1 py-2.5 border border-[#E2E8F0] text-[#1A2B4A] hover:bg-[#F4F6F8] font-medium rounded-md text-sm"
                 >
                   {requestMode ? 'Send another request' : 'Submit another appeal'}
@@ -415,30 +454,7 @@ const Appeals = () => {
               </div>
 
               {!requestMode && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field name="decisionDate" label="Date of the decision" type="date" value={form.decisionDate} onChange={change} error={errors.decisionDate} valid={fieldStatus.decisionDate.valid && showStatus('decisionDate')} />
-                <div>
-                  <label htmlFor="grounds" className="block text-sm font-medium text-slate-900 mb-1.5">
-                    Grounds for appeal <span className="text-[#E8541A]">*</span>
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="grounds"
-                      name="grounds"
-                      value={form.grounds}
-                      onChange={change}
-                      className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${errors.grounds ? 'border-red-400' : fieldStatus.grounds.valid && showStatus('grounds') ? 'border-green-500' : 'border-slate-300'}`}
-                    >
-                      <option value="">Select your grounds</option>
-                      {GROUNDS.map(c => <option key={c}>{c}</option>)}
-                    </select>
-                    {fieldStatus.grounds.valid && showStatus('grounds') && !errors.grounds && (
-                      <Check className="w-4 h-4 text-green-600 absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    )}
-                  </div>
-                  {errors.grounds && <FieldError msg={errors.grounds} />}
-                </div>
-              </div>
               )}
 
               {/* Why you're appealing */}
@@ -516,32 +532,37 @@ const Appeals = () => {
                 </div>
                 <p className="mt-1.5 text-xs text-slate-500">Choosing not to have one costs nothing — our claims manager still reviews your appeal.</p>
                 {errors.independentInspection && <FieldError msg={errors.independentInspection} />}
+
+                {form.independentInspection === 'Yes please' && (
+                  <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                        <ShieldCheck className="w-5 h-5 text-amber-700" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-amber-900 text-sm">What happens next</h4>
+                        <ul className="mt-2 space-y-1.5 text-sm text-amber-800/90 leading-relaxed">
+                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> We appoint one independent engineering firm — <strong className="font-medium">ACE</strong> or <strong className="font-medium">Scotia</strong> — based on availability in your area.</li>
+                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> The £140 fee covers the engineer's inspection visit to your vehicle, wherever it is in the UK.</li>
+                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> You accept that the engineer's decision is <strong className="font-medium">full and final</strong>.</li>
+                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> After you submit the appeal, we'll give you a secure link to pay the fee and book the inspection.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               )}
 
-              {/* Preferred contact method */}
+              {/* Preferred contact method — appeals are handled in writing only */}
               <div>
-                <label className="block text-sm font-medium text-slate-900 mb-2">
-                  Preferred contact method <span className="text-[#E8541A]">*</span>
+                <label className="block text-sm font-medium text-slate-900 mb-1.5">
+                  How we'll respond
                 </label>
-                <div className="flex flex-wrap gap-2">
-                  {['Email', 'Phone', 'WhatsApp'].map(method => {
-                    const active = form.preferredContactMethod === method;
-                    return (
-                      <label
-                        key={method}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm cursor-pointer transition-all ${active ? 'border-[#E8541A] bg-[#FEF0E8] text-[#1A2B4A] font-medium shadow-sm' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'}`}
-                      >
-                        <input type="radio" name="preferredContactMethod" value={method} checked={active} onChange={change} className="sr-only" />
-                        <span className={`w-3.5 h-3.5 rounded-full border-2 ${active ? 'border-[#1A2B4A]' : 'border-slate-400'} flex items-center justify-center`}>
-                          {active && <span className="w-1.5 h-1.5 rounded-full bg-[#1A2B4A]" />}
-                        </span>
-                        {method}
-                      </label>
-                    );
-                  })}
-                </div>
-                {errors.preferredContactMethod && <FieldError msg={errors.preferredContactMethod} />}
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  We handle appeals in writing so we can keep a clear record. We'll respond to the email address above.
+                </p>
+                <input type="hidden" name="preferredContactMethod" value="Email" />
               </div>
 
               {/* Confirmation checkbox */}

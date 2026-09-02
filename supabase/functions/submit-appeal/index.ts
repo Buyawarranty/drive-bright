@@ -20,7 +20,7 @@ interface AppealRequest {
   claimRef?: string;
   registrationPlate: string;
   decisionDate?: string;
-  grounds: string;
+  grounds?: string;
   newEvidence: string;
   desiredOutcome?: string;
   independentInspection?: string;
@@ -53,7 +53,7 @@ serve(async (req: Request): Promise<Response> => {
 
     const isRequest = mode === "request";
 
-    if (!firstName || !lastName || !email || !registrationPlate || !newEvidence || (!isRequest && !grounds)) {
+    if (!firstName || !lastName || !email || !registrationPlate || !newEvidence) {
       return new Response(JSON.stringify({ success: false, error: "Missing required fields" }), {
         status: 400, headers: { "Content-Type": "application/json", ...corsHeaders },
       });
@@ -80,7 +80,7 @@ serve(async (req: Request): Promise<Response> => {
 
     const summary = [
       isRequest ? "APPEAL REQUESTED — customer asked for an appeal from the public Warranty appeals page. Send them the secure appeal link." : null,
-      isRequest ? null : `Grounds: ${grounds}`,
+      grounds ? `Grounds: ${grounds}` : null,
       decisionDate ? `Decision date: ${decisionDate}` : null,
       claimRef ? `Customer claim reference: ${claimRef}` : null,
       `Independent inspection: ${independentInspection || "Not stated"}`,
@@ -102,7 +102,7 @@ serve(async (req: Request): Promise<Response> => {
       if (!existing) {
         await supabase.from("claim_appeals").insert({
           claim_id: claim.id,
-          reason: isRequest ? "Appeal requested by customer (awaiting full appeal form)" : grounds,
+          reason: isRequest ? "Appeal requested by customer (awaiting full appeal form)" : (grounds || "Appeal submitted online"),
           new_evidence: newEvidence,
           status: "open",
           customer_email: email.trim().toLowerCase(),
@@ -121,7 +121,7 @@ serve(async (req: Request): Promise<Response> => {
           customer_name: customerName,
           is_responded: true,
         })
-        .select("id")
+        .select("id, token")
         .single();
 
       await supabase.from("claim_update_responses").insert({
@@ -155,7 +155,7 @@ serve(async (req: Request): Promise<Response> => {
             <tr><td style="padding:6px 0;color:#666;">Email</td><td style="padding:6px 0;">${esc(email)}</td></tr>
             <tr><td style="padding:6px 0;color:#666;">Phone</td><td style="padding:6px 0;">${esc(phone || "—")}</td></tr>
             <tr><td style="padding:6px 0;color:#666;">Registration</td><td style="padding:6px 0;"><strong>${esc(reg)}</strong></td></tr>
-            <tr><td style="padding:6px 0;color:#666;">Grounds</td><td style="padding:6px 0;">${esc(grounds || (isRequest ? "Not given yet — request only" : "—"))}</td></tr>
+            <tr><td style="padding:6px 0;color:#666;">Grounds</td><td style="padding:6px 0;">${esc(grounds || "Not given")}</td></tr>
             <tr><td style="padding:6px 0;color:#666;">Matched claim</td><td style="padding:6px 0;">${claim ? esc(claim.id) : "No matching claim found — please check"}</td></tr>
           </table>
           <div style="margin-top:18px;padding:14px;background:#fff;border-left:3px solid #E8541A;border-radius:6px;white-space:pre-wrap;font-size:14px;">${esc(summary)}</div>
@@ -200,7 +200,13 @@ serve(async (req: Request): Promise<Response> => {
       await send([email.trim()], isRequest ? `Your appeal request ${reference}` : `Your appeal reference ${reference}`, customerHtml);
     }
 
-    return new Response(JSON.stringify({ success: true, reference, matchedClaim: !!claim, mode: isRequest ? "request" : "full" }), {
+    return new Response(JSON.stringify({
+      success: true,
+      reference,
+      matchedClaim: !!claim,
+      mode: isRequest ? "request" : "full",
+      token: request?.token || null,
+    }), {
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (err: any) {

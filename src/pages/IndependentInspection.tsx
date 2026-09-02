@@ -20,8 +20,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Hosted Worldpay payment page (Pay by Link) for the inspection fee.
-const WORLDPAY_HPP_URL = 'https://payments.worldpay.com/app/hpp/169-0/payment/start';
+// Worldpay Hosted Payment Page link is returned by the edge function after
+// garage details are saved. The customer is redirected to that unique URL.
 
 interface InspectionRequest {
   id: string;
@@ -100,7 +100,6 @@ const IndependentInspection: React.FC = () => {
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
   const paidFlag = searchParams.get('paid') === '1';
-  const sessionId = searchParams.get('session_id');
   const cancelled = searchParams.get('cancelled') === '1';
 
   const [request, setRequest] = useState<InspectionRequest | null>(null);
@@ -189,14 +188,15 @@ const IndependentInspection: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wp3dsReturn, wp3dsRef, token]);
 
-  // Confirm payment on return from the payment page
+  // Confirm payment on return from the Worldpay payment page
   useEffect(() => {
-    if (!paidFlag || !sessionId || !token) return;
+    if (!paidFlag || !token) return;
+    const ref = searchParams.get('ref');
     (async () => {
-      await supabase.functions.invoke('confirm-inspection-payment', { body: { token, sessionId } });
+      await supabase.functions.invoke('worldpay-payment-status', { body: { token, transactionReference: ref } });
       await load();
     })();
-  }, [paidFlag, sessionId, token, load]);
+  }, [paidFlag, searchParams, token, load]);
 
   const validate = () => {
     const next: Partial<Record<ErrorKey, string>> = {};
@@ -229,7 +229,7 @@ const IndependentInspection: React.FC = () => {
         setCheckoutUrl(data.checkout_url);
         setDetailsSaved(true);
         setSubmitting(false);
-        window.location.href = WORLDPAY_HPP_URL;
+        window.location.href = data.checkout_url;
         return;
       }
       throw new Error(data?.error || 'Could not start payment');
@@ -677,8 +677,8 @@ const IndependentInspection: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => {
-                        if (detailsSaved) {
-                          window.location.href = WORLDPAY_HPP_URL;
+                        if (detailsSaved && checkoutUrl) {
+                          window.location.href = checkoutUrl;
                         } else {
                           submit();
                         }
