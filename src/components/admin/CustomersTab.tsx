@@ -4915,7 +4915,20 @@ Buyawarranty.co.uk`,
                         }
                       }}
                     />
-                    {/* Quick month/week navigators removed — use Custom range in the date filter above */}
+                    {/* Month-by-month quick navigator */}
+                    <QuickMonthFilter
+                      dateRange={unifiedPeriod === 'custom' ? unifiedCustomRange : (unifiedPeriod === 'this_month' ? periodToRange('this_month') : undefined)}
+                      onDateRangeChange={(range) => {
+                        setUnifiedScope('signup');
+                        setUnifiedPeriod('custom');
+                        setUnifiedCustomRange(range);
+                        setPaymentSourceDateFilter('all');
+                        setTotalSalesDateFilter('all');
+                        setDateRange(range);
+                        setRevenueDateRange(range);
+                      }}
+                    />
+
                     {canToggleHColumns && (
                       <Button
                         variant="ghost"

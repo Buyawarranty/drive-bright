@@ -1982,19 +1982,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     allowedTeamIds={hasMultiTeamAccess ? visibleTeamIdsForChips : undefined}
                   />
                 )}
-                {isSuperAdmin && (
-                  <Button
-                    type="button"
-                    variant={superAdminHideSource ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={toggleSuperAdminHideSource}
-                    title={superAdminHideSource ? 'Source hidden in your view — click to show' : 'Hide source in your view'}
-                    className="h-6 px-1.5 text-[10px] font-semibold gap-1"
-                  >
-                    {superAdminHideSource ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                    H
-                  </Button>
-                )}
+                {/* H toggle moved next to Allocate Agents */}
+
               </div>
               {teamFilter && !isLockedToOwnTeam && (
                 <span className={cn(
@@ -2014,20 +2003,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               )}
             </>
           )}
-          {/* H button fallback when no teams exist (super admin only) */}
-          {activeView === 'leads' && isSuperAdmin && allTeams.length === 0 && (
-            <Button
-              type="button"
-              variant={superAdminHideSource ? 'default' : 'outline'}
-              size="sm"
-              onClick={toggleSuperAdminHideSource}
-              title={superAdminHideSource ? 'Source hidden in your view — click to show' : 'Hide source in your view'}
-              className="h-7 px-2 text-[11px] font-semibold gap-1.5"
-            >
-              {superAdminHideSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-              H
-            </Button>
-          )}
+          {/* H toggle moved next to Allocate Agents */}
+
         </div>
 
         
@@ -2076,6 +2053,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               <Network className="h-3 w-3" /> Allocate Agents
             </Button>
           )}
+
+          {/* Hide-source (H) toggle — super admin and managers only */}
+          {(isSuperAdmin || userRole === 'admin' || userRole === 'sales_manager') && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={toggleSuperAdminHideSource}
+              title={superAdminHideSource ? 'Source hidden in your view — click to show' : 'Hide source in your view'}
+              className="h-7 px-2.5 text-[11px] font-semibold gap-1.5 rounded-md shadow-sm bg-[hsl(276,60%,28%)] text-white hover:bg-[hsl(276,60%,22%)]"
+            >
+              {superAdminHideSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+              H
+            </Button>
+          )}
+
 
           {/* Export — all columns, quick date presets, by month, custom range */}
           <LeadsFullExportMenu
