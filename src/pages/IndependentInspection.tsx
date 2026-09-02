@@ -223,6 +223,8 @@ const IndependentInspection: React.FC = () => {
         body: {
           token,
           ...form,
+          // When the vehicle is at the customer's own address there is no garage name
+          garageName: isAtGarage ? form.garageName : "Customer's own address (not a garage)",
           currentMileage: form.currentMileage.replace(/[^0-9]/g, ''),
           acceptedTerms: true,
         },
