@@ -107,6 +107,8 @@ const IndependentInspection: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  // The vehicle may be sat at a garage or at the customer's own address
+  const [locationType, setLocationType] = useState<'garage' | 'home'>('garage');
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [detailsSaved, setDetailsSaved] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<ErrorKey, string>>>({});
@@ -198,9 +200,11 @@ const IndependentInspection: React.FC = () => {
     })();
   }, [paidFlag, searchParams, token, load]);
 
+  const isAtGarage = locationType === 'garage';
+
   const validate = () => {
     const next: Partial<Record<ErrorKey, string>> = {};
-    if (!form.garageName.trim()) next.garageName = 'Please tell us the garage name';
+    if (isAtGarage && !form.garageName.trim()) next.garageName = 'Please tell us the garage name';
     if (!form.garagePhone.trim()) next.garagePhone = 'We need a phone number for the garage';
     if (!form.garageAddress.trim()) next.garageAddress = 'Please give the full garage address';
     if (!accepted) next.accepted = 'Please confirm you accept the inspection terms';
@@ -219,6 +223,8 @@ const IndependentInspection: React.FC = () => {
         body: {
           token,
           ...form,
+          // When the vehicle is at the customer's own address there is no garage name
+          garageName: isAtGarage ? form.garageName : "Customer's own address (not a garage)",
           currentMileage: form.currentMileage.replace(/[^0-9]/g, ''),
           acceptedTerms: true,
         },
@@ -242,7 +248,9 @@ const IndependentInspection: React.FC = () => {
   const isPaid = Boolean(request?.paid_at) || request?.status === 'paid';
   const fee = Number(request?.fee_amount || 140);
 
-  const detailsComplete = Boolean(form.garageName.trim() && form.garagePhone.trim() && form.garageAddress.trim());
+  const detailsComplete = Boolean(
+    (!isAtGarage || form.garageName.trim()) && form.garagePhone.trim() && form.garageAddress.trim(),
+  );
   const currentStep = useMemo(() => {
     if (isPaid) return 3;
     if (detailsComplete && accepted) return 3;
@@ -447,27 +455,58 @@ const IndependentInspection: React.FC = () => {
               <section className="bg-white rounded-2xl shadow-sm border border-[#E2E8F0] p-5 sm:p-6 space-y-4">
                 <h2 className="text-base font-bold text-[#1A2B4A]">Where is the vehicle?</h2>
 
+                {/* The vehicle can be at a garage or at the customer's own address */}
+                <div className="grid grid-cols-2 gap-3">
+                  {([
+                    { key: 'garage', label: 'At a garage' },
+                    { key: 'home', label: 'At my address' },
+                  ] as const).map((opt) => (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => {
+                        setLocationType(opt.key);
+                        setErrors((prev) => {
+                          const next = { ...prev };
+                          delete next.garageName;
+                          return next;
+                        });
+                      }}
+                      className={`rounded-xl border-2 px-3 py-2.5 text-sm font-semibold transition-colors ${
+                        locationType === opt.key
+                          ? 'border-[#E8541A] bg-[#FEF0E8] text-[#1A2B4A]'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="garageName" className="block text-sm font-medium text-[#1A2B4A] mb-1.5">
-                      Garage name *
-                    </label>
-                    <input
-                      id="garageName"
-                      value={form.garageName}
-                      onFocus={scrollFieldIntoView}
-                      onChange={(e) => setField('garageName', e.target.value)}
-                      placeholder="e.g. Smith's Autos"
-                      aria-invalid={Boolean(errors.garageName)}
-                      className={`${INPUT_BASE} ${errors.garageName ? INPUT_ERROR : INPUT_OK}`}
-                    />
-                    {errors.garageName && <p className="mt-1 text-xs font-medium text-red-600">{errors.garageName}</p>}
-                  </div>
+                  {isAtGarage && (
+                    <div>
+                      <label htmlFor="garageName" className="block text-sm font-medium text-[#1A2B4A] mb-1.5">
+                        Garage name *
+                      </label>
+                      <input
+                        id="garageName"
+                        value={form.garageName}
+                        onFocus={scrollFieldIntoView}
+                        onChange={(e) => setField('garageName', e.target.value)}
+                        placeholder="e.g. Smith's Autos"
+                        aria-invalid={Boolean(errors.garageName)}
+                        className={`${INPUT_BASE} ${errors.garageName ? INPUT_ERROR : INPUT_OK}`}
+                      />
+                      {errors.garageName && <p className="mt-1 text-xs font-medium text-red-600">{errors.garageName}</p>}
+                    </div>
+                  )}
 
                   <div>
                     <label htmlFor="garagePhone" className="block text-sm font-medium text-[#1A2B4A] mb-1.5">
-                      Garage phone *
+                      {isAtGarage ? 'Garage phone *' : 'Your contact phone *'}
                     </label>
+
                     <input
                       id="garagePhone"
                       type="tel"
@@ -514,7 +553,7 @@ const IndependentInspection: React.FC = () => {
 
                 <div>
                   <label htmlFor="garageAddress" className="block text-sm font-medium text-[#1A2B4A] mb-1.5">
-                    Garage address *
+                    {isAtGarage ? 'Garage address *' : 'Address where the vehicle is *'}
                   </label>
                   <textarea
                     id="garageAddress"
@@ -572,20 +611,23 @@ const IndependentInspection: React.FC = () => {
                   />
                 </div>
 
-                {/* Terms */}
+                {/* Terms — compulsory */}
                 <label
                   htmlFor="accept"
-                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
+                  className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${
                     errors.accepted
-                      ? 'border-red-500 bg-red-50/40'
+                      ? 'border-red-500 bg-red-50/60'
                       : accepted
-                        ? 'border-green-300 bg-green-50/40'
-                        : 'border-slate-200 bg-slate-50/60'
+                        ? 'border-green-400 bg-green-50/50'
+                        : 'border-[#E8541A] bg-[#FEF0E8]'
                   }`}
                 >
                   <input
                     id="accept"
                     type="checkbox"
+                    required
+                    aria-required="true"
+                    aria-invalid={Boolean(errors.accepted)}
                     checked={accepted}
                     onChange={(e) => {
                       setAccepted(e.target.checked);
@@ -597,17 +639,21 @@ const IndependentInspection: React.FC = () => {
                         });
                       }
                     }}
-                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#E8541A] focus:ring-[#E8541A]"
+                    className="mt-0.5 h-5 w-5 rounded border-slate-400 text-[#E8541A] focus:ring-[#E8541A]"
                   />
-                  <span className="text-sm text-slate-700 leading-relaxed">
-                    I understand the inspection is completed by {request.inspection_company} (assigned by Buy a Warranty), takes
-                    on average 7 to 14 working days, and I accept the engineer's findings as the full and final decision on this
-                    claim.
+                  <span className="text-sm font-bold text-[#1A2B4A] leading-relaxed">
+                    I understand the independent inspection is completed by {request.inspection_company}, takes on average 7 to
+                    14 working days, and I accept the engineer's findings as the full and final decision on this claim.{' '}
+                    <span className="text-[#E8541A]">*</span>
+                    <span className="block mt-1 text-xs font-bold text-[#E8541A]">
+                      Please confirm you accept the inspection terms — this is required
+                    </span>
                     {errors.accepted && (
-                      <span className="block mt-1 text-xs font-medium text-red-600">{errors.accepted}</span>
+                      <span className="block mt-1 text-xs font-bold text-red-600">{errors.accepted}</span>
                     )}
                   </span>
                 </label>
+
               </section>
             </div>
 
@@ -635,9 +681,13 @@ const IndependentInspection: React.FC = () => {
                       <span className="font-medium text-[#1A2B4A] text-right">{request.inspection_company}</span>
                     </div>
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-slate-600">Turnaround</span>
-                      <span className="font-medium text-[#1A2B4A]">7–14 working days</span>
+                      <span className="text-slate-600">Approximate turnaround</span>
+                      <span className="font-medium text-[#1A2B4A]">7–21 working days</span>
                     </div>
+                    <p className="text-xs text-slate-500">
+                      You'll be given direct contact details of the independent inspection company.
+                    </p>
+
 
                     <div className="h-px bg-[#E2E8F0]" />
 
@@ -647,32 +697,10 @@ const IndependentInspection: React.FC = () => {
                     </div>
                     <p className="text-xs text-slate-500">Paid directly to the independent inspection company.</p>
 
-                    {/* Trust signals */}
-                    <div className="rounded-xl border border-[#E2E8F0] bg-[#F4F6F8] p-3 space-y-2">
-                      <div className="flex items-center gap-2 text-xs text-slate-700">
-                        <Lock className="h-3.5 w-3.5 text-[#00B67A]" />
-                        <span>Secure 256-bit SSL payment</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-700">
-                        <BadgeCheck className="h-3.5 w-3.5 text-[#00B67A]" />
-                        <span>Independent, impartial engineer</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-700">
-                        <ShieldCheck className="h-3.5 w-3.5 text-[#00B67A]" />
-                        <span>FCA-regulated claims process</span>
-                      </div>
-                      <div className="flex items-center gap-2 pt-1">
-                        {['VISA', 'MASTERCARD', 'AMEX'].map((brand) => (
-                          <span
-                            key={brand}
-                            className="px-2 py-1 rounded border border-slate-200 bg-white text-[10px] font-bold tracking-wide text-slate-600"
-                          >
-                            {brand}
-                          </span>
-                        ))}
-                      </div>
-                      <TrustpilotMicroWidget className="pt-1" />
+                    <div className="rounded-xl border border-[#E2E8F0] bg-[#F4F6F8] p-3">
+                      <TrustpilotMicroWidget />
                     </div>
+
 
                     <button
                       type="button"

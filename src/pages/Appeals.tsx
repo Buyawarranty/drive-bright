@@ -14,8 +14,6 @@ import { CLAIMS_PHONE, CLAIMS_PHONE_TEL, CLAIMS_EMAIL, WHATSAPP_URL } from '@/co
 const initialForm = {
   firstName: '',
   lastName: '',
-  email: '',
-  phone: '',
   claimRef: '',
   registrationPlate: '',
   warrantyNumber: '',
@@ -29,31 +27,17 @@ const initialForm = {
 
 type FormState = typeof initialForm;
 
-// We already hold the customer's details, so an appeal only needs their name plus
-// ONE identifier — the registration plate or the warranty number.
+// We already hold the customer's contact details (email and phone) against their
+// policy, so an appeal only needs their name plus the registration plate — the
+// claim itself is based on the vehicle, so the plate is validated against our
+// customer records before the appeal can be sent.
 const validators: Record<string, (v: any, f: FormState) => string> = {
   firstName: (v) => (!String(v).trim() ? 'Please enter your name' : ''),
   lastName: () => '',
-  email: (v) => {
-    const s = String(v).trim();
-    if (!s) return '';
-    if (!/^\S+@\S+\.\S+$/.test(s)) return 'Please enter a valid email address';
-    return '';
-  },
-  phone: (v) => {
-    const s = String(v).trim();
-    if (!s) return '';
-    return /^[+0][\d\s()-]{8,}$/.test(s) ? '' : 'Enter a valid UK phone number';
-  },
   claimRef: () => '',
-  registrationPlate: (v, f) => {
-    if (String(v).trim()) return '';
-    return String(f.warrantyNumber || '').trim() ? '' : 'Enter your registration or warranty number';
-  },
-  warrantyNumber: (v, f) => {
-    if (String(v).trim()) return '';
-    return String(f.registrationPlate || '').trim() ? '' : 'Enter your registration or warranty number';
-  },
+  registrationPlate: (v) =>
+    !String(v).trim() ? 'Please enter your vehicle registration' : '',
+  warrantyNumber: () => '',
   decisionDate: () => '',
   newEvidence: (v) => {
     const s = String(v).trim();
@@ -70,6 +54,7 @@ const requiredFields = new Set([
   'firstName', 'registrationPlate',
   'newEvidence', 'independentInspection', 'confirmAccurate',
 ]);
+
 
 // Fields that only exist on the full appeal form (secure email link / customer
 // dashboard). The public page is a short "request an appeal" form only.
@@ -185,17 +170,16 @@ const Appeals = () => {
       toast({ title: 'Please check the form', description: 'Some required fields need attention.', variant: 'destructive' });
       return;
     }
-    // A warranty number is an equally valid identifier, so only check the plate
-    // against customer records when the plate is the identifier being used.
-    const usingPlateOnly = !!form.registrationPlate.trim() && !form.warrantyNumber.trim();
-    if (usingPlateOnly && regStatus !== 'valid') {
+    // The claim is based on the vehicle, so the registration must always match a
+    // customer record before an appeal can be submitted.
+    if (regStatus !== 'valid') {
       setErrors((prev) => ({
         ...prev,
         registrationPlate: regStatus === 'checking'
           ? 'Checking your registration — one moment…'
-          : "We couldn't find that registration. Please check it, or enter your warranty number instead.",
+          : "We couldn't find that registration on our records. Please check it and try again.",
       }));
-      toast({ title: 'Registration not recognised', description: 'Please check the registration, or enter your warranty number instead.', variant: 'destructive' });
+      toast({ title: 'Registration not recognised', description: `Please check the registration, or call us on ${CLAIMS_PHONE}.`, variant: 'destructive' });
       return;
     }
     setSubmitting(true);
@@ -432,11 +416,13 @@ const Appeals = () => {
               {/* Name — we already hold the rest of your details */}
               <Field name="firstName" label="Your name" required value={form.firstName} onChange={change} placeholder="e.g. Sarah Hughes" error={errors.firstName} valid={fieldStatus.firstName.valid && showStatus('firstName')} hint="We already hold your details — just your name is fine" />
 
-              {/* One identifier: registration OR warranty number */}
+              {/* Registration is the identifier the claim is based on, so it is
+                  required and checked against our customer records. */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field
                   name="registrationPlate"
                   label="Vehicle registration"
+                  required
                   value={form.registrationPlate}
                   onChange={change}
                   placeholder="e.g. AB12 CDE"
@@ -448,27 +434,26 @@ const Appeals = () => {
                       ? `Found${regCustomerName ? `: ${regCustomerName}` : ''}`
                       : regStatus === 'invalid'
                         ? undefined
-                        : 'Registration or warranty number — either is fine'
+                        : 'We check this against your policy — the claim is based on this vehicle'
                   }
                   inputClassName="uppercase"
                 />
                 <Field
                   name="warrantyNumber"
-                  label="Warranty number"
+                  label="Warranty number (optional)"
                   value={form.warrantyNumber}
                   onChange={change}
                   placeholder="e.g. BAW-123456"
                   error={errors.warrantyNumber}
                   valid={fieldStatus.warrantyNumber.valid && showStatus('warrantyNumber')}
-                  hint="Use this instead if you don't have the registration to hand"
+                  hint="Only if you have it to hand"
                 />
               </div>
 
-              {/* Optional contact details */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field name="email" label="Email address (optional)" type="email" value={form.email} onChange={change} placeholder="you@example.com" error={errors.email} valid={fieldStatus.email.valid && showStatus('email')} hint="Only if you'd like the reply sent somewhere else" />
-                <Field name="phone" label="Phone number (optional)" value={form.phone} onChange={change} placeholder="07123 456789" error={errors.phone} valid={fieldStatus.phone.valid && showStatus('phone')} />
-              </div>
+
+              {/* No contact details asked for — we already hold the customer's
+                  email and phone against the registration they enter above. */}
+
 
               {!requestMode && (
                 <Field name="claimRef" label="Claim reference" value={form.claimRef} onChange={change} placeholder="Optional — if you have it" error={errors.claimRef} valid={fieldStatus.claimRef.valid && showStatus('claimRef')} />

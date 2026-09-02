@@ -36,3 +36,10 @@
 - [x] Claims tab: merge the separate Appeals section into the main claims list with a big "APPEAL MADE" tag on the claim row
 - [x] Claims row action: send the appeal-invite email (secure link) with an on-screen preview before sending
 - [ ] Customers edit dialog: add a "Paused" status that records the pause date and shows how much cover remains if restarted
+
+- [ ] Appeals form: drop email/phone fields, enforce registration validation
+- [ ] Independent inspection page: allow either garage details OR home address
+- [ ] Inspection payment page: remove SSL / engineer / FCA trust row and card logos
+- [ ] Inspection page: "Approximate turnaround 7-21 working days" wording
+- [ ] Inspection page: bold + compulsory ACE acceptance checkbox (7-14 working days)
+- [ ] Step 4 Change vehicle dialog: standard square-ish modal size with padding (not full width)

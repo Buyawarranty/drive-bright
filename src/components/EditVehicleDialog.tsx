@@ -164,7 +164,9 @@ const EditVehicleDialog: React.FC<EditVehicleDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      {/* Standard, roughly square modal — never full-width on desktop */}
+      <DialogContent className="w-[calc(100%-2rem)] sm:w-full sm:max-w-[440px] max-w-[440px] p-6 sm:p-7 rounded-2xl">
+
         <DialogHeader>
           <DialogTitle>Change your vehicle</DialogTitle>
           <DialogDescription>
