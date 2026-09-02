@@ -19,22 +19,12 @@ const initialForm = {
   claimRef: '',
   registrationPlate: '',
   decisionDate: '',
-  grounds: '',
   newEvidence: '',
   desiredOutcome: '',
   independentInspection: 'Not sure yet',
   preferredContactMethod: 'Email',
   confirmAccurate: false,
 };
-
-const GROUNDS = [
-  'New evidence or a new engineer’s report',
-  'The fault was not pre-existing',
-  'Cover wording applied incorrectly',
-  'Repair costs or labour rate disputed',
-  'Information was missing when the claim was decided',
-  'Other',
-];
 
 type FormState = typeof initialForm;
 
