@@ -163,7 +163,14 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   );
   useEffect(() => {
     if (voluntaryExcess !== null && !visibleExcessOptions.some((o) => o.value === voluntaryExcess)) {
-      setVoluntaryExcess(visibleExcessOptions.find((o) => o.value === 150)?.value ?? visibleExcessOptions[0]?.value ?? 100);
+      // Landing default is £100 excess (see mem://pricing/landing-defaults-step3-and-quotes),
+      // so fall back to £100 first, then £150, then whatever remains visible.
+      setVoluntaryExcess(
+        visibleExcessOptions.find((o) => o.value === 100)?.value ??
+        visibleExcessOptions.find((o) => o.value === 150)?.value ??
+        visibleExcessOptions[0]?.value ??
+        100
+      );
     }
   }, [visibleExcessOptions, voluntaryExcess, setVoluntaryExcess]);
 
