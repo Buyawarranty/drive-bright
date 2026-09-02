@@ -37,7 +37,6 @@ import { VehicleIntelligenceExplorer } from './claims/VehicleIntelligenceExplore
 import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
 import { ClaimsAgeMileageAnalytics } from './claims/ClaimsAgeMileageAnalytics';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
-import { AppealsInboxPanel } from './claims/AppealsInboxPanel';
 import { useReturnedAppeals } from '@/hooks/useReturnedAppeals';
 
 interface ClaimSubmission {
@@ -102,11 +101,8 @@ export const ClaimsTab = ({
 
   const { claims: managerClaims, loading: managerLoading, refetch: refetchManager } = useClaims();
   const {
-    appeals: returnedAppeals,
     unreadCount: appealsUnreadCount,
     totalCount: appealsTotalCount,
-    loading: appealsLoading,
-    markAsRead: markAppealAsRead,
     refetch: refetchAppeals,
   } = useReturnedAppeals();
 
@@ -344,7 +340,6 @@ export const ClaimsTab = ({
             className="bg-[#E8541A] hover:bg-[#cf4915] text-white"
             onClick={() => {
               setActiveSubTab('claims');
-              setTimeout(() => document.getElementById('appeals-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
             }}
           >
             View appeals
@@ -523,16 +518,6 @@ export const ClaimsTab = ({
           <WidgetErrorBoundary label="Customer claim updates">
             <ClaimUpdateNotifications />
           </WidgetErrorBoundary>
-          <div id="appeals-section" className="scroll-mt-4">
-            <WidgetErrorBoundary label="Appeals">
-              <AppealsInboxPanel
-                appeals={returnedAppeals}
-                loading={appealsLoading}
-                onMarkAsRead={markAppealAsRead}
-                onOpenAppealDialog={() => setShowAppealDialog(true)}
-              />
-            </WidgetErrorBoundary>
-          </div>
           <WidgetErrorBoundary label="Claims performance">
             <PerformanceKpiStrip
               avgPayout={perfKpis.avgPayout}
