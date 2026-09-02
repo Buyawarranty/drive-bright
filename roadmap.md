@@ -28,3 +28,4 @@
 - [x] Claims Appeals section restyled from dark navy to light amber/orange
 - [x] Public appeal form at /appeals/ built to the same design as /complaints/, with submit-appeal function feeding the Appeals inbox
 - [x] /appeals/ is public request-only ("Warranty appeals" in footer); full appeal form gated behind emailed secure link (?token=) or signed-in customer dashboard
+- [ ] Appeals independent inspection: add Worldpay £140 payment link when customer chooses "Yes please", explaining ACE/Scotia selection and that payment covers the independent inspection visit
