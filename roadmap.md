@@ -42,3 +42,4 @@
 - [ ] Inspection payment page: remove SSL / engineer / FCA trust row and card logos
 - [ ] Inspection page: "Approximate turnaround 7-21 working days" wording
 - [ ] Inspection page: bold + compulsory ACE acceptance checkbox (7-14 working days)
+- [ ] Step 4 Change vehicle dialog: standard square-ish modal size with padding (not full width)
