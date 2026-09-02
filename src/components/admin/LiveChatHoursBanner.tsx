@@ -1,5 +1,6 @@
 import React from 'react';
-import { MessageSquare, Clock } from 'lucide-react';
+import { MessageSquare, Clock, Headset } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { isTeamOpenNow, nextOpeningLabel, openingHoursLabel } from '@/lib/aiSandbox/openingHours';
 import { useSandboxHandoverAlert } from '@/hooks/useSandboxHandoverAlert';
 import { useChatbotPopupAccess } from '@/hooks/useChatbotPopupAccess';
