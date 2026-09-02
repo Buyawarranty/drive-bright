@@ -2043,7 +2043,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         struggleTracker.reportPaymentFailed('bumper', 'bumper_unavailable');
         toast.error(
           errorBody?.message ||
-            "Bumper isn't responding right now. Please try again in a few minutes, or choose pay in full.",
+            `${monthlyProviderLabel} isn't responding right now. Please try again in a few minutes, or choose pay in full.`,
           {
             duration: 12000,
             action: {
