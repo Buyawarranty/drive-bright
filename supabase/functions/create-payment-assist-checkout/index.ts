@@ -314,7 +314,10 @@ serve(async (req) => {
       return digits;
     };
     const telephone = normaliseUkPhone(customerData?.phone || '');
-    if (!/^0\d{9,10}$/.test(telephone)) {
+    const validUkPhone = telephone.startsWith('07')
+      ? /^07\d{9}$/.test(telephone)   // mobiles are always 11 digits
+      : /^0\d{9,10}$/.test(telephone); // landlines 10-11 digits
+    if (!validUkPhone) {
       logStep("Invalid telephone for Payment Assist", { provided: customerData?.phone, normalised: telephone });
       return new Response(JSON.stringify({
         error: 'Please enter a valid UK phone number (for example 07123 456789) to pay monthly.',
