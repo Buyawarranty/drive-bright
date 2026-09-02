@@ -2,6 +2,7 @@ import React from 'react';
 import { MessageSquare, Clock } from 'lucide-react';
 import { isTeamOpenNow, nextOpeningLabel, openingHoursLabel } from '@/lib/aiSandbox/openingHours';
 import { useSandboxHandoverAlert } from '@/hooks/useSandboxHandoverAlert';
+import { useChatbotPopupAccess } from '@/hooks/useChatbotPopupAccess';
 
 /**
  * Full-width bar across the top of the CRM telling every member of staff
