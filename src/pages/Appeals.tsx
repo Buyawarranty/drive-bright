@@ -95,6 +95,10 @@ const Appeals = () => {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
+  const [submittedToken, setSubmittedToken] = useState<string | null>(null);
+  const [submittedInspectionChoice, setSubmittedInspectionChoice] = useState<string | null>(null);
+  const [inspectionLink, setInspectionLink] = useState<string | null>(null);
+  const [creatingInspectionLink, setCreatingInspectionLink] = useState(false);
   const [regStatus, setRegStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid' | 'error'>('idle');
   const [regCustomerName, setRegCustomerName] = useState<string | null>(null);
   const regTimer = useRef<number | null>(null);
