@@ -18,6 +18,7 @@ const initialForm = {
   phone: '',
   claimRef: '',
   registrationPlate: '',
+  warrantyNumber: '',
   decisionDate: '',
   newEvidence: '',
   desiredOutcome: '',
@@ -28,12 +29,14 @@ const initialForm = {
 
 type FormState = typeof initialForm;
 
+// We already hold the customer's details, so an appeal only needs their name plus
+// ONE identifier — the registration plate or the warranty number.
 const validators: Record<string, (v: any, f: FormState) => string> = {
-  firstName: (v) => (!String(v).trim() ? 'Please enter your first name' : ''),
-  lastName: (v) => (!String(v).trim() ? 'Please enter your last name' : ''),
+  firstName: (v) => (!String(v).trim() ? 'Please enter your name' : ''),
+  lastName: () => '',
   email: (v) => {
     const s = String(v).trim();
-    if (!s) return 'Please enter your email address';
+    if (!s) return '';
     if (!/^\S+@\S+\.\S+$/.test(s)) return 'Please enter a valid email address';
     return '';
   },
@@ -43,7 +46,14 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
     return /^[+0][\d\s()-]{8,}$/.test(s) ? '' : 'Enter a valid UK phone number';
   },
   claimRef: () => '',
-  registrationPlate: (v) => (!String(v).trim() ? 'Please enter your vehicle registration' : ''),
+  registrationPlate: (v, f) => {
+    if (String(v).trim()) return '';
+    return String(f.warrantyNumber || '').trim() ? '' : 'Enter your registration or warranty number';
+  },
+  warrantyNumber: (v, f) => {
+    if (String(v).trim()) return '';
+    return String(f.registrationPlate || '').trim() ? '' : 'Enter your registration or warranty number';
+  },
   decisionDate: () => '',
   newEvidence: (v) => {
     const s = String(v).trim();
@@ -57,7 +67,7 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
 };
 
 const requiredFields = new Set([
-  'firstName', 'lastName', 'email', 'registrationPlate',
+  'firstName', 'registrationPlate',
   'newEvidence', 'independentInspection', 'confirmAccurate',
 ]);
 
