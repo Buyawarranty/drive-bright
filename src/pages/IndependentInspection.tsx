@@ -549,7 +549,7 @@ const IndependentInspection: React.FC = () => {
 
                 <div>
                   <label htmlFor="garageAddress" className="block text-sm font-medium text-[#1A2B4A] mb-1.5">
-                    Garage address *
+                    {isAtGarage ? 'Garage address *' : 'Address where the vehicle is *'}
                   </label>
                   <textarea
                     id="garageAddress"
