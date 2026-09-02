@@ -121,7 +121,7 @@ serve(async (req: Request): Promise<Response> => {
           customer_name: customerName,
           is_responded: true,
         })
-        .select("id")
+        .select("id, token")
         .single();
 
       await supabase.from("claim_update_responses").insert({
