@@ -677,8 +677,8 @@ const IndependentInspection: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => {
-                        if (detailsSaved) {
-                          window.location.href = WORLDPAY_HPP_URL;
+                        if (detailsSaved && checkoutUrl) {
+                          window.location.href = checkoutUrl;
                         } else {
                           submit();
                         }
