@@ -53,7 +53,6 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
   },
   desiredOutcome: () => '',
   independentInspection: (v) => (!v ? 'Please choose an option' : ''),
-  preferredContactMethod: (v) => (!v ? 'Please choose a contact method' : ''),
   confirmAccurate: (v) => (!v ? 'Please confirm your information is accurate' : ''),
 };
 
