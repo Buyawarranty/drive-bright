@@ -51,6 +51,12 @@ export const AppealsInboxPanel: React.FC<AppealsInboxPanelProps> = ({
               {unreadCount} new
             </Badge>
           )}
+          {/* The customer-facing appeal form — same public design as /complaints/ */}
+          <Button size="sm" variant="outline" className="bg-white" asChild>
+            <a href="/appeals/" target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-3.5 w-3.5 mr-1" /> Public appeal form
+            </a>
+          </Button>
           {onOpenAppealDialog && (
             <Button size="sm" variant="outline" className="bg-white" onClick={onOpenAppealDialog}>
               <Scale className="h-3.5 w-3.5 mr-1" /> Open appeal
