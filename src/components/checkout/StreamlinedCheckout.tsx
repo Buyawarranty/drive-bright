@@ -98,6 +98,12 @@ export interface StreamlinedCheckoutProps {
   onBack: () => void;
   onNext: (customerData: any) => void;
   onUpdateVehicle?: (vehicle: Partial<StreamlinedCheckoutProps['vehicleData']>) => void;
+  /**
+   * Which provider powers the monthly (pay by instalments) option.
+   * Defaults to Bumper — the live customer checkout. 'payment_assist' is used
+   * by the Payment Assist test checkout only; everything else is identical.
+   */
+  monthlyProvider?: 'bumper' | 'payment_assist';
 }
 
 const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({ 
@@ -109,7 +115,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   onBack, 
   onNext,
   onUpdateVehicle,
+  monthlyProvider = 'bumper',
 }) => {
+  const isPaymentAssist = monthlyProvider === 'payment_assist';
+  const monthlyProviderLabel = isPaymentAssist ? 'Payment Assist' : 'Bumper';
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
@@ -1981,7 +1990,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       const trackingData = getTrackingData();
 
       struggleTracker.reportPaymentAttempt('bumper');
-      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-bumper-checkout', {
+      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(isPaymentAssist ? 'create-payment-assist-checkout' : 'create-bumper-checkout', {
         body: {
           planId,
           vehicleData: vehicleDataWithActualMileage,
@@ -2034,7 +2043,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         struggleTracker.reportPaymentFailed('bumper', 'bumper_unavailable');
         toast.error(
           errorBody?.message ||
-            "Bumper isn't responding right now. Please try again in a few minutes, or choose pay in full.",
+            `${monthlyProviderLabel} isn't responding right now. Please try again in a few minutes, or choose pay in full.`,
           {
             duration: 12000,
             action: {

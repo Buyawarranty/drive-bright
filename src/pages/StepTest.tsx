@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import PerformanceOptimizedSuspense from '@/components/PerformanceOptimizedSuspense';
 import { safeLocalStorageRemove, getWithTimestamp } from '@/utils/localStorage';
 
-// Lazy load the test checkout component
-const CustomerDetailsStepTest = lazy(() => import('@/components/CustomerDetailsStepTest'));
+// Test checkout = the real customer checkout, with Payment Assist as the monthly option
+const StreamlinedCheckout = lazy(() => import('@/components/checkout/StreamlinedCheckout'));
 const CarJourneyProgress = lazy(() => import('@/components/CarJourneyProgress'));
 
 interface VehicleData {
@@ -145,10 +145,17 @@ const StepTest = () => {
         />
       </PerformanceOptimizedSuspense>
 
-      {/* Test Checkout with Payment Assist */}
+      {/* Test mode marker — this page is never the live checkout */}
+      <div className="bg-purple-100 border-y border-purple-300 py-2 text-center">
+        <span className="text-xs font-bold uppercase tracking-wide text-purple-800">
+          Test mode — monthly payments run through Payment Assist
+        </span>
+      </div>
+
+      {/* The real checkout, with Payment Assist as the monthly provider */}
       <div className="bg-[#e8f4fb]">
         <PerformanceOptimizedSuspense height="60vh">
-          <CustomerDetailsStepTest
+          <StreamlinedCheckout
             vehicleData={{
               ...vehicleData,
               make: vehicleData.make || 'Unknown'
@@ -163,6 +170,7 @@ const StepTest = () => {
             }}
             onNext={handleCustomerDetailsComplete}
             onBack={handleBackToStep3}
+            monthlyProvider="payment_assist"
           />
         </PerformanceOptimizedSuspense>
       </div>
