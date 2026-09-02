@@ -635,9 +635,13 @@ const IndependentInspection: React.FC = () => {
                       <span className="font-medium text-[#1A2B4A] text-right">{request.inspection_company}</span>
                     </div>
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-slate-600">Turnaround</span>
-                      <span className="font-medium text-[#1A2B4A]">7–14 working days</span>
+                      <span className="text-slate-600">Approximate turnaround</span>
+                      <span className="font-medium text-[#1A2B4A]">7–21 working days</span>
                     </div>
+                    <p className="text-xs text-slate-500">
+                      You'll be given direct contact details of the independent inspection company.
+                    </p>
+
 
                     <div className="h-px bg-[#E2E8F0]" />
 
