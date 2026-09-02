@@ -1423,9 +1423,9 @@ const Index = () => {
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(formData));
     };
     
-    // Check if S17DRW registration - redirect to /steptest for Payment Assist testing
+    // Payment Assist test plates - redirect to /steptest
     const normalizedReg = (vehicleData?.regNumber || '').replace(/\s/g, '').toUpperCase();
-    if (normalizedReg === 'S17DRW') {
+    if (['S17DRW', 'RV19OWW'].includes(normalizedReg)) {
       saveNewPlanToLocalStorage(4);
       window.location.href = '/steptest';
       return;
