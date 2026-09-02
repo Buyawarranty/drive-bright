@@ -568,11 +568,16 @@ const Appeals = () => {
                 disabled={submitting}
                 className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#E8541A] hover:bg-[#cf471a] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm"
               >
-                {submitting ? (<><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>) : 'Submit my appeal'}
+                {submitting
+                  ? (<><Loader2 className="w-4 h-4 animate-spin" /> {requestMode ? 'Sending…' : 'Submitting…'}</>)
+                  : requestMode ? 'Request an appeal' : 'Submit my appeal'}
               </button>
 
               <p className="text-xs text-slate-500 text-center leading-relaxed">
-                We'll acknowledge your appeal within 2 working days. Your details are handled in line with our{' '}
+                {requestMode
+                  ? "We'll respond within 2 working days with a secure link to your full appeal form. "
+                  : "We'll acknowledge your appeal within 2 working days. "}
+                Your details are handled in line with our{' '}
                 <Link to="/privacy-policy" className="text-[#1A2B4A] hover:underline">Privacy Policy</Link>.
               </p>
             </form>
