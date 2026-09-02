@@ -1006,7 +1006,8 @@ const AdminDashboard = () => {
         if (!isTabAllowedForRole('lead-teams', effectiveUserRole, effectiveUserPermissions)) {
           return <AccessDenied label="Lead Allocation" />;
         }
-        return <LeadTeamsTab onNavigateToTab={handleTabChange} />;
+        return <OrrTabView onNavigateToTab={handleTabChange} />;
+
 
 
       case 'price-updates':
