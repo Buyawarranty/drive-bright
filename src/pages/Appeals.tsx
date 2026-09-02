@@ -367,10 +367,12 @@ const Appeals = () => {
               <div className="w-9 h-9 rounded-lg bg-[#E8541A]/10 flex items-center justify-center">
                 <Scale className="w-5 h-5 text-[#E8541A]" />
               </div>
-              <h2 className="text-xl font-semibold text-slate-900">Submit an appeal</h2>
+              <h2 className="text-xl font-semibold text-slate-900">{requestMode ? 'Request an appeal' : 'Submit an appeal'}</h2>
             </div>
             <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-              Please fill in the form below. All fields marked <span className="text-[#E8541A]">*</span> are required.
+              {requestMode
+                ? <>Tell us who you are and why you'd like the decision reviewed. Our claims team will then send you a secure link to the full appeal form. All fields marked <span className="text-[#E8541A]">*</span> are required.</>
+                : <>Please fill in the form below. All fields marked <span className="text-[#E8541A]">*</span> are required.</>}
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
