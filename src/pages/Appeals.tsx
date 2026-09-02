@@ -21,7 +21,7 @@ const initialForm = {
   decisionDate: '',
   newEvidence: '',
   desiredOutcome: '',
-  independentInspection: 'Not sure yet',
+  independentInspection: 'Not sure / speak to an expert',
   preferredContactMethod: 'Email',
   confirmAccurate: false,
 };
