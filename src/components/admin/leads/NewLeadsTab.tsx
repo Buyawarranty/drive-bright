@@ -2054,6 +2054,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </Button>
           )}
 
+          {/* Hide-source (H) toggle — super admin and managers only */}
+          {(isSuperAdmin || userRole === 'admin' || userRole === 'sales_manager') && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={toggleSuperAdminHideSource}
+              title={superAdminHideSource ? 'Source hidden in your view — click to show' : 'Hide source in your view'}
+              className="h-7 px-2.5 text-[11px] font-semibold gap-1.5 rounded-md shadow-sm bg-[hsl(276,60%,28%)] text-white hover:bg-[hsl(276,60%,22%)]"
+            >
+              {superAdminHideSource ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+              H
+            </Button>
+          )}
+
+
           {/* Export — all columns, quick date presets, by month, custom range */}
           <LeadsFullExportMenu
             userRole={userRole}
