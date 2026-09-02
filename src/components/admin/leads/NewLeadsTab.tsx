@@ -1982,19 +1982,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     allowedTeamIds={hasMultiTeamAccess ? visibleTeamIdsForChips : undefined}
                   />
                 )}
-                {isSuperAdmin && (
-                  <Button
-                    type="button"
-                    variant={superAdminHideSource ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={toggleSuperAdminHideSource}
-                    title={superAdminHideSource ? 'Source hidden in your view — click to show' : 'Hide source in your view'}
-                    className="h-6 px-1.5 text-[10px] font-semibold gap-1"
-                  >
-                    {superAdminHideSource ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                    H
-                  </Button>
-                )}
+                {/* H toggle moved next to Allocate Agents */}
+
               </div>
               {teamFilter && !isLockedToOwnTeam && (
                 <span className={cn(
