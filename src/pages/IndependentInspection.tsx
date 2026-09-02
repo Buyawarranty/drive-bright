@@ -202,7 +202,7 @@ const IndependentInspection: React.FC = () => {
 
   const validate = () => {
     const next: Partial<Record<ErrorKey, string>> = {};
-    if (!form.garageName.trim()) next.garageName = 'Please tell us the garage name';
+    if (isAtGarage && !form.garageName.trim()) next.garageName = 'Please tell us the garage name';
     if (!form.garagePhone.trim()) next.garagePhone = 'We need a phone number for the garage';
     if (!form.garageAddress.trim()) next.garageAddress = 'Please give the full garage address';
     if (!accepted) next.accepted = 'Please confirm you accept the inspection terms';
