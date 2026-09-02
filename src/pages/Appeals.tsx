@@ -187,11 +187,15 @@ const Appeals = () => {
     }
     setSubmitting(true);
     try {
+      const chosenInspection = form.independentInspection;
       const { data, error } = await supabase.functions.invoke('submit-appeal', {
         body: { ...form, mode: requestMode ? 'request' : 'full', token: token || undefined },
       });
       if (error || !data?.success) throw new Error(error?.message || data?.error || 'Submission failed');
       setReference(data.reference);
+      setSubmittedToken(data.token || null);
+      setSubmittedInspectionChoice(chosenInspection);
+      setInspectionLink(null);
       setForm(initialForm);
       setRegStatus('idle');
       setRegCustomerName(null);
@@ -202,6 +206,23 @@ const Appeals = () => {
       toast({ title: 'Submission failed', description: err.message || `Please try again or email ${CLAIMS_EMAIL}`, variant: 'destructive' });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const createInspectionLink = async () => {
+    if (!submittedToken || creatingInspectionLink) return;
+    setCreatingInspectionLink(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('appeal-inspection-option', {
+        body: { token: submittedToken, create: true },
+      });
+      if (error || !data?.inspection?.link) throw new Error(error?.message || data?.error || 'Could not create inspection link');
+      setInspectionLink(data.inspection.link);
+      window.location.href = data.inspection.link;
+    } catch (err: any) {
+      toast({ title: 'Could not start payment', description: err.message || 'Please call us to arrange the inspection.', variant: 'destructive' });
+    } finally {
+      setCreatingInspectionLink(false);
     }
   };
 
