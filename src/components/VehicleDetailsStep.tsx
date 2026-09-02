@@ -59,10 +59,26 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
   const [model, setModel] = useState('');
   const [year, setYear] = useState('');
   const [vehicleType, setVehicleType] = useState('');
-  const [yearError, setYearError] = useState('');
 
+  // Mileage is read from the latest MOT odometer reading — never asked up front.
+  const { motMileage, motDate, isLoading: motLoading } = useMotMileage(regNumber);
 
+  useEffect(() => {
+    if (motMileage && motMileage > 0) {
+      setMileage(formatMileage(String(motMileage)));
+      setMileageError(
+        motMileage > 150000 ? 'Vehicle mileage exceeds our maximum of 150,000 miles' : ''
+      );
+    }
+  }, [motMileage]);
 
+  // Clear an MOT-sourced reading when the plate changes
+  useEffect(() => {
+    if (!motLoading && motMileage === null) {
+      setMileage((prev) => (prev && !initialData?.mileage ? '' : prev));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [regNumber]);
 
   // Set vehicleFound to true if we have initial data
   useEffect(() => {
@@ -70,6 +86,7 @@ const VehicleDetailsStep: React.FC<VehicleDetailsStepProps> = ({ onNext, initial
       setVehicleFound(true);
     }
   }, [initialData]);
+
 
   const formatRegNumber = (value: string) => {
     const formatted = value.replace(/\s/g, '').toUpperCase();
