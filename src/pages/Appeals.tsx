@@ -318,21 +318,36 @@ const Appeals = () => {
                   <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
                   <span>A confirmation email has been sent to your inbox.</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                  <span>Our claims team will acknowledge within <strong>2 working days</strong>.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-                  <span>We'll write to you with the outcome of your appeal.</span>
-                </li>
+                {requestMode ? (
+                  <>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                      <span>Our claims team will email you a <strong>secure link</strong> to complete your full appeal.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                      <span>You can also complete it from your customer dashboard.</span>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                      <span>Our claims team will acknowledge within <strong>2 working days</strong>.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                      <span>We'll write to you with the outcome of your appeal.</span>
+                    </li>
+                  </>
+                )}
               </ul>
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={() => { setReference(null); setRegStatus('idle'); setRegCustomerName(null); }}
                   className="flex-1 py-2.5 border border-[#E2E8F0] text-[#1A2B4A] hover:bg-[#F4F6F8] font-medium rounded-md text-sm"
                 >
-                  Submit another appeal
+                  {requestMode ? 'Send another request' : 'Submit another appeal'}
                 </button>
                 <button
                   onClick={() => navigate('/')}
