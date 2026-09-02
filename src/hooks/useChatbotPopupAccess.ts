@@ -50,6 +50,10 @@ export function useChatbotPopupAccess() {
           setAllowed(false);
           return;
         }
+        if ((CHATBOT_POPUP_BLOCKED_ROLES as readonly string[]).includes(String(data.role))) {
+          setAllowed(false);
+          return;
+        }
         const perms = (data.permissions as Record<string, boolean> | null) ?? {};
         if (CHATBOT_POPUP_PERMISSION in perms) {
           setAllowed(perms[CHATBOT_POPUP_PERMISSION] === true);
