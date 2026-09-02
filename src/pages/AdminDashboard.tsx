@@ -91,8 +91,7 @@ const TestingTabContent = lazy(() => import('@/components/admin/TestingTabConten
 const NewLeadsTab = lazyWithRetry(() => import('@/components/admin/leads/NewLeadsTab').then(m => ({ default: m.NewLeadsTab })));
 const GoldenLeadsTab = lazy(() => import('@/components/admin/leads/LeadRecoveryTab').then(m => ({ default: m.LeadRecoveryTab })));
 const RetentionTab = lazy(() => import('@/components/admin/retention/RetentionTab').then(m => ({ default: m.RetentionTab })));
-const RenewalsQueueTab = lazy(() => import('@/components/admin/renewals/RenewalsQueueTab').then(m => ({ default: m.RenewalsQueueTab })));
-const RenewalsSandboxTab = lazy(() => import('@/components/admin/renewals-sandbox/RenewalsSandboxTab').then(m => ({ default: m.RenewalsSandboxTab })));
+const RenewalsUnifiedTab = lazy(() => import('@/components/admin/renewals/RenewalsUnifiedTab').then(m => ({ default: m.RenewalsUnifiedTab })));
 const SellingTipsSection = lazy(() => import('@/components/admin/SellingTipsSection').then(m => ({ default: m.SellingTipsSection })));
 const TimesheetsTab = lazy(() => import('@/components/admin/timesheets/TimesheetsTab').then(m => ({ default: m.TimesheetsTab })));
 const StaffHubTab = lazy(() => import('@/components/admin/StaffHubTab').then(m => ({ default: m.StaffHubTab })));
@@ -388,6 +387,7 @@ const AdminDashboard = () => {
     'golden-leads': 'recontact-leads',
     'goldmine-leads': 'recontact-leads',
     'retention': 'renewals',
+    'renewals-sandbox': 'renewals',
     'leads-per-agent': 'new-leads',
     'blog-writing': 'blogs-data',
     // 'overview' internal id is exposed publicly as 'live-calls-data'
@@ -1052,9 +1052,8 @@ const AdminDashboard = () => {
           />
         );
       case 'renewals':
-        return <RenewalsQueueTab userRole={effectiveUserRole} onNavigateToTab={handleTabChange} />;
       case 'renewals-sandbox':
-        return <RenewalsSandboxTab userRole={effectiveUserRole} />;
+        return <RenewalsUnifiedTab userRole={effectiveUserRole} onNavigateToTab={handleTabChange} />;
       case 'selling-tips':
         return <SellingTipsSection />;
       case 'timesheets':
