@@ -419,11 +419,11 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
           </span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-[11px]">
-            <thead className="bg-muted/30 text-muted-foreground">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/30 text-[11px] uppercase tracking-wider text-muted-foreground border-b-2 border-border">
               <tr>
                 {['#', 'Agent', 'Status', 'Calls', 'Actions', 'Name', 'Phone', 'Email', 'Reg', 'Payment', 'Paid Date', 'Agent activity', 'Lead Date', 'Customer activity', 'Time to contact'].map(h => (
-                  <th key={h} className="text-left font-semibold px-2 py-1.5 whitespace-nowrap">{h}</th>
+                  <th key={h} className="text-left font-semibold px-2 py-2 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
