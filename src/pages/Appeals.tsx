@@ -532,6 +532,25 @@ const Appeals = () => {
                 </div>
                 <p className="mt-1.5 text-xs text-slate-500">Choosing not to have one costs nothing — our claims manager still reviews your appeal.</p>
                 {errors.independentInspection && <FieldError msg={errors.independentInspection} />}
+
+                {form.independentInspection === 'Yes please' && (
+                  <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                        <ShieldCheck className="w-5 h-5 text-amber-700" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-amber-900 text-sm">What happens next</h4>
+                        <ul className="mt-2 space-y-1.5 text-sm text-amber-800/90 leading-relaxed">
+                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> We appoint one independent engineering firm — <strong className="font-medium">ACE</strong> or <strong className="font-medium">Scotia</strong> — based on availability in your area.</li>
+                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> The £140 fee covers the engineer's inspection visit to your vehicle, wherever it is in the UK.</li>
+                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> You accept that the engineer's decision is <strong className="font-medium">full and final</strong>.</li>
+                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-amber-700 mt-0.5 shrink-0" /> After you submit the appeal, we'll give you a secure link to pay the fee and book the inspection.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               )}
 
