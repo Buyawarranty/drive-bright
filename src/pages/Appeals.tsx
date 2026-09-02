@@ -195,7 +195,9 @@ const Appeals = () => {
     }
     setSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('submit-appeal', { body: form });
+      const { data, error } = await supabase.functions.invoke('submit-appeal', {
+        body: { ...form, mode: requestMode ? 'request' : 'full', token: token || undefined },
+      });
       if (error || !data?.success) throw new Error(error?.message || data?.error || 'Submission failed');
       setReference(data.reference);
       setForm(initialForm);
