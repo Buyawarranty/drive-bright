@@ -23,7 +23,6 @@ import { PendingLeadsPill } from '@/components/admin/PendingLeadsPill';
 
 import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
-import SandboxHandoverAlerts from '@/components/admin/SandboxHandoverAlerts';
 import LiveChatHoursBanner from '@/components/admin/LiveChatHoursBanner';
 
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
