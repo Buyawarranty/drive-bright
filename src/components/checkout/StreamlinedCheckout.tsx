@@ -2068,7 +2068,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       }
 
       if (checkoutError || errorBody) {
-        const errorMessage = errorBody?.message || checkoutError?.message || '';
+        const errorMessage = errorBody?.error || errorBody?.message || checkoutError?.message || '';
+        console.error('Monthly checkout failed:', { errorBody, checkoutError });
         struggleTracker.reportPaymentFailed('bumper', errorMessage);
         if (errorMessage.includes('is not available for Bumper') || errorMessage.includes('Monthly payments are not available')) {
           toast.error('Monthly payments unavailable. Please pay in full.', {
@@ -2078,10 +2079,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           setIsLoading(false);
           return;
         }
-        toast.error('Unable to process. Please try again.');
+        // Show the real reason (invalid phone, missing address, price mismatch) so the
+        // customer can fix it instead of seeing an opaque "Unable to process".
+        const friendly = /phone|address|postcode|price/i.test(errorMessage)
+          ? errorMessage
+          : 'Unable to process. Please try again.';
+        toast.error(friendly, { duration: 10000, closeButton: true });
         setIsLoading(false);
         return;
       }
+
 
 
       if (checkoutData?.url) {
