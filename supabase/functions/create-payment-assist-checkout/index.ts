@@ -335,7 +335,7 @@ serve(async (req) => {
       addr1: addressLine1,
       postcode: postcode,
       email: customerData?.email || '',
-      telephone: customerData?.phone || '',
+      telephone,
       success_url: successUrl,
       failure_url: failureUrl,
       reg_no: vehicleData?.regNumber || vehicleData?.registration || ''
