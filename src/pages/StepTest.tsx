@@ -33,7 +33,8 @@ const StepTest = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if the user has S17DRW registration
+    // Only allow the Payment Assist test plates
+    const TEST_REGS = ['S17DRW', 'RV19OWW'];
     const checkAuthorization = () => {
       try {
         const savedVehicleData = getWithTimestamp('buyawarranty_vehicleData', 30);
@@ -43,9 +44,8 @@ const StepTest = () => {
           const parsedVehicleData = JSON.parse(savedVehicleData);
           setVehicleData(parsedVehicleData);
 
-          // Check if registration matches S17DRW (case insensitive, ignore spaces)
           const normalizedReg = (parsedVehicleData.regNumber || '').replace(/\s/g, '').toUpperCase();
-          if (normalizedReg === 'S17DRW') {
+          if (TEST_REGS.includes(normalizedReg)) {
             setIsAuthorized(true);
           } else {
             console.log('⚠️ Unauthorized access to /steptest - reg:', parsedVehicleData.regNumber);
