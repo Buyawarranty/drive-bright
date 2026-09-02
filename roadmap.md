@@ -40,3 +40,4 @@
 - [ ] Appeals form: drop email/phone fields, enforce registration validation
 - [ ] Independent inspection page: allow either garage details OR home address
 - [ ] Inspection payment page: remove SSL / engineer / FCA trust row and card logos
+- [ ] Inspection page: "Approximate turnaround 7-21 working days" wording
