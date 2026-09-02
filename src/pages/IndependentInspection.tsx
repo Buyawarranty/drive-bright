@@ -447,27 +447,58 @@ const IndependentInspection: React.FC = () => {
               <section className="bg-white rounded-2xl shadow-sm border border-[#E2E8F0] p-5 sm:p-6 space-y-4">
                 <h2 className="text-base font-bold text-[#1A2B4A]">Where is the vehicle?</h2>
 
+                {/* The vehicle can be at a garage or at the customer's own address */}
+                <div className="grid grid-cols-2 gap-3">
+                  {([
+                    { key: 'garage', label: 'At a garage' },
+                    { key: 'home', label: 'At my address' },
+                  ] as const).map((opt) => (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => {
+                        setLocationType(opt.key);
+                        setErrors((prev) => {
+                          const next = { ...prev };
+                          delete next.garageName;
+                          return next;
+                        });
+                      }}
+                      className={`rounded-xl border-2 px-3 py-2.5 text-sm font-semibold transition-colors ${
+                        locationType === opt.key
+                          ? 'border-[#E8541A] bg-[#FEF0E8] text-[#1A2B4A]'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="garageName" className="block text-sm font-medium text-[#1A2B4A] mb-1.5">
-                      Garage name *
-                    </label>
-                    <input
-                      id="garageName"
-                      value={form.garageName}
-                      onFocus={scrollFieldIntoView}
-                      onChange={(e) => setField('garageName', e.target.value)}
-                      placeholder="e.g. Smith's Autos"
-                      aria-invalid={Boolean(errors.garageName)}
-                      className={`${INPUT_BASE} ${errors.garageName ? INPUT_ERROR : INPUT_OK}`}
-                    />
-                    {errors.garageName && <p className="mt-1 text-xs font-medium text-red-600">{errors.garageName}</p>}
-                  </div>
+                  {isAtGarage && (
+                    <div>
+                      <label htmlFor="garageName" className="block text-sm font-medium text-[#1A2B4A] mb-1.5">
+                        Garage name *
+                      </label>
+                      <input
+                        id="garageName"
+                        value={form.garageName}
+                        onFocus={scrollFieldIntoView}
+                        onChange={(e) => setField('garageName', e.target.value)}
+                        placeholder="e.g. Smith's Autos"
+                        aria-invalid={Boolean(errors.garageName)}
+                        className={`${INPUT_BASE} ${errors.garageName ? INPUT_ERROR : INPUT_OK}`}
+                      />
+                      {errors.garageName && <p className="mt-1 text-xs font-medium text-red-600">{errors.garageName}</p>}
+                    </div>
+                  )}
 
                   <div>
                     <label htmlFor="garagePhone" className="block text-sm font-medium text-[#1A2B4A] mb-1.5">
-                      Garage phone *
+                      {isAtGarage ? 'Garage phone *' : 'Your contact phone *'}
                     </label>
+
                     <input
                       id="garagePhone"
                       type="tel"
