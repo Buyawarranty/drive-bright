@@ -36,3 +36,6 @@
 - [x] Claims tab: merge the separate Appeals section into the main claims list with a big "APPEAL MADE" tag on the claim row
 - [x] Claims row action: send the appeal-invite email (secure link) with an on-screen preview before sending
 - [ ] Customers edit dialog: add a "Paused" status that records the pause date and shows how much cover remains if restarted
+
+- [ ] Appeals form: drop email/phone fields, enforce registration validation
+- [ ] Independent inspection page: allow either garage details OR home address
