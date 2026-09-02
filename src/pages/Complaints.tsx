@@ -204,7 +204,7 @@ const Complaints = () => {
         <div className="relative overflow-hidden bg-white border border-[#E2E8F0] rounded-2xl shadow-sm">
           <div className="relative grid md:grid-cols-[1fr_auto] items-center gap-6 p-8 sm:p-12">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-[#FEF0E8] border border-[#E8541A]/20 px-3 py-1.5 text-xs font-medium text-[#E8541A] mb-4">
+              <div className="inline-flex items-center gap-2 rounded-full bg-[#FBEDF1] border border-[#A8324A]/20 px-3 py-1.5 text-xs font-medium text-[#A8324A] mb-4">
                 <HeadphonesIcon className="w-3.5 h-3.5" /> CUSTOMER COMPLAINTS
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight text-[#1A2B4A]">We're here to help</h1>
@@ -212,15 +212,15 @@ const Complaints = () => {
                 We take every complaint seriously and aim to resolve it fairly, clearly, and as quickly as possible.
               </p>
               <ul className="mt-5 space-y-2 text-sm text-[#1A2B4A]">
-                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#E8541A] shrink-0" /> Acknowledged within <strong>2 working days</strong></li>
-                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#E8541A] shrink-0" /> Resolved within <strong>10 working days</strong></li>
-                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#E8541A] shrink-0" /> Handled privately and securely</li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#A8324A] shrink-0" /> Acknowledged within <strong>2 working days</strong></li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#A8324A] shrink-0" /> Resolved within <strong>10 working days</strong></li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#A8324A] shrink-0" /> Handled privately and securely</li>
               </ul>
             </div>
             <div className="hidden md:flex items-center justify-center">
-              <div className="relative w-44 h-44 rounded-2xl bg-[#FEF0E8] border border-[#E8541A]/15 flex items-center justify-center">
-                <ClipboardList className="w-20 h-20 text-[#E8541A]" strokeWidth={1.4} />
-                <div className="absolute -bottom-3 -right-3 w-14 h-14 rounded-xl bg-[#E8541A] flex items-center justify-center shadow-md">
+              <div className="relative w-44 h-44 rounded-2xl bg-[#FBEDF1] border border-[#A8324A]/15 flex items-center justify-center">
+                <ClipboardList className="w-20 h-20 text-[#A8324A]" strokeWidth={1.4} />
+                <div className="absolute -bottom-3 -right-3 w-14 h-14 rounded-xl bg-[#A8324A] flex items-center justify-center shadow-md">
                   <MessageSquare className="w-7 h-7 text-white" />
                 </div>
               </div>
@@ -238,8 +238,8 @@ const Complaints = () => {
             { Icon: Lock, title: 'Private & secure', desc: 'Your details are handled carefully and confidentially.' },
           ].map(({ Icon, title, desc }) => (
             <div key={title} className="flex items-start gap-3 p-4 rounded-xl hover:bg-[#F4F6F8] transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-[#FEF0E8] flex items-center justify-center shrink-0">
-                <Icon className="w-5 h-5 text-[#E8541A]" />
+              <div className="w-10 h-10 rounded-lg bg-[#FBEDF1] flex items-center justify-center shrink-0">
+                <Icon className="w-5 h-5 text-[#A8324A]" />
               </div>
               <div>
                 <p className="font-semibold text-[#1A2B4A] text-sm">{title}</p>
@@ -306,13 +306,13 @@ const Complaints = () => {
           {/* Form */}
           <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-lg bg-[#E8541A]/10 flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-[#E8541A]" />
+              <div className="w-9 h-9 rounded-lg bg-[#A8324A]/10 flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-[#A8324A]" />
               </div>
               <h2 className="text-xl font-semibold text-slate-900">Submit a complaint</h2>
             </div>
             <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-              Please fill in the form below. All fields marked <span className="text-[#E8541A]">*</span> are required.
+              Please fill in the form below. All fields marked <span className="text-[#A8324A]">*</span> are required.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
@@ -359,7 +359,7 @@ const Complaints = () => {
               {/* Category */}
               <div>
                 <label htmlFor="category" className="block text-sm font-medium text-slate-900 mb-1.5">
-                  What is your complaint about? <span className="text-[#E8541A]">*</span>
+                  What is your complaint about? <span className="text-[#A8324A]">*</span>
                 </label>
                 <div className="relative">
                   <select
@@ -383,7 +383,7 @@ const Complaints = () => {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label htmlFor="description" className="block text-sm font-medium text-slate-900">
-                    Tell us what happened <span className="text-[#E8541A]">*</span>
+                    Tell us what happened <span className="text-[#A8324A]">*</span>
                   </label>
                   <span className="text-xs text-slate-500">{form.description.length}/2000</span>
                 </div>
@@ -426,7 +426,7 @@ const Complaints = () => {
               {/* Preferred contact method */}
               <div>
                 <label className="block text-sm font-medium text-slate-900 mb-2">
-                  Preferred contact method <span className="text-[#E8541A]">*</span>
+                  Preferred contact method <span className="text-[#A8324A]">*</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {['Email', 'Phone', 'WhatsApp'].map(method => {
@@ -434,7 +434,7 @@ const Complaints = () => {
                     return (
                       <label
                         key={method}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm cursor-pointer transition-all ${active ? 'border-[#E8541A] bg-[#FEF0E8] text-[#1A2B4A] font-medium shadow-sm' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'}`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm cursor-pointer transition-all ${active ? 'border-[#A8324A] bg-[#FBEDF1] text-[#1A2B4A] font-medium shadow-sm' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'}`}
                       >
                         <input
                           type="radio"
@@ -466,7 +466,7 @@ const Complaints = () => {
                     className="mt-0.5 w-4 h-4 rounded border-slate-400 text-[#1A2B4A] focus:ring-[#1A2B4A]"
                   />
                   <span className="text-sm text-slate-700 leading-relaxed flex-1">
-                    I confirm that the information provided is accurate to the best of my knowledge. <span className="text-[#E8541A]">*</span>
+                    I confirm that the information provided is accurate to the best of my knowledge. <span className="text-[#A8324A]">*</span>
                   </span>
                   {form.confirmAccurate && <Check className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />}
                 </label>
@@ -477,7 +477,7 @@ const Complaints = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#E8541A] hover:bg-[#cf471a] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm"
+                className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#A8324A] hover:bg-[#8E2A3E] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm"
               >
                 {submitting ? (<><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>) : 'Submit complaint'}
               </button>
@@ -534,12 +534,12 @@ const Complaints = () => {
                   </div>
                 </a>
                 <a href={`mailto:${CLAIMS_EMAIL}`} className="flex items-start gap-3 group">
-                  <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center group-hover:border-[#E8541A] transition">
-                    <Mail className="w-4 h-4 text-[#E8541A]" />
+                  <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center group-hover:border-[#A8324A] transition">
+                    <Mail className="w-4 h-4 text-[#A8324A]" />
                   </div>
                   <div>
                     <p className="text-xs text-slate-500">Email</p>
-                    <p className="text-sm font-semibold text-[#E8541A] group-hover:underline break-all">{CLAIMS_EMAIL}</p>
+                    <p className="text-sm font-semibold text-[#A8324A] group-hover:underline break-all">{CLAIMS_EMAIL}</p>
                   </div>
                 </a>
               </div>
@@ -572,8 +572,8 @@ const Complaints = () => {
         <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-8 shadow-sm">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#FEF0E8] flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-6 h-6 text-[#E8541A]" />
+              <div className="w-12 h-12 rounded-xl bg-[#FBEDF1] flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-6 h-6 text-[#A8324A]" />
               </div>
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold mb-1 text-[#1A2B4A]">Still need help?</h2>
@@ -587,7 +587,7 @@ const Complaints = () => {
               <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#25D366] hover:bg-[#1da851] text-white rounded-lg text-sm font-semibold transition">
                 <MessageCircle className="w-4 h-4" /> WhatsApp us
               </a>
-              <a href={`mailto:${CLAIMS_EMAIL}`} className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#E8541A] hover:bg-[#cf471a] text-white rounded-lg text-sm font-semibold transition">
+              <a href={`mailto:${CLAIMS_EMAIL}`} className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#A8324A] hover:bg-[#8E2A3E] text-white rounded-lg text-sm font-semibold transition">
                 <Mail className="w-4 h-4" /> Email us
               </a>
             </div>
@@ -622,7 +622,7 @@ interface FieldProps {
 const Field: React.FC<FieldProps> = ({ name, label, value, onChange, placeholder, type = 'text', error, hint, required, valid, loading, inputClassName = '' }) => (
   <div>
     <label htmlFor={name} className="block text-sm font-medium text-slate-900 mb-1.5">
-      {label}{required && <span className="text-[#E8541A]"> *</span>}
+      {label}{required && <span className="text-[#A8324A]"> *</span>}
     </label>
     <div className="relative">
       <input
