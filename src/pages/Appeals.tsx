@@ -357,7 +357,7 @@ const Appeals = () => {
               </ul>
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
-                  onClick={() => { setReference(null); setRegStatus('idle'); setRegCustomerName(null); }}
+                  onClick={() => { setReference(null); setSubmittedToken(null); setSubmittedInspectionChoice(null); setInspectionLink(null); setRegStatus('idle'); setRegCustomerName(null); }}
                   className="flex-1 py-2.5 border border-[#E2E8F0] text-[#1A2B4A] hover:bg-[#F4F6F8] font-medium rounded-md text-sm"
                 >
                   {requestMode ? 'Send another request' : 'Submit another appeal'}
