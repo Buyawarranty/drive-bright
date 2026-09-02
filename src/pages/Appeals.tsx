@@ -588,11 +588,15 @@ const Appeals = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
               <h3 className="text-base font-semibold text-[#1A2B4A] mb-4">What happens next?</h3>
               <ol className="space-y-4">
-                {[
+                {(requestMode ? [
+                  { n: 1, t: 'We receive your request', d: 'Your request goes straight to our claims team with your vehicle details.' },
+                  { n: 2, t: 'We send you a secure link', d: 'You complete the full appeal form privately — or start it in your customer dashboard.' },
+                  { n: 3, t: 'Claims manager review', d: 'Your appeal is reviewed independently of the original decision.' },
+                ] : [
                   { n: 1, t: 'We receive your appeal', d: 'Everything you send is added to your claim file straight away.' },
                   { n: 2, t: 'Claims manager review', d: 'Your appeal is reviewed independently of the original decision.' },
                   { n: 3, t: 'Outcome', d: "We'll write to you with the outcome and the reasons behind it." },
-                ].map(s => (
+                ]).map(s => (
                   <li key={s.n} className="flex gap-3">
                     <div className="w-7 h-7 rounded-full bg-[#1A2B4A] text-white text-xs font-bold flex items-center justify-center shrink-0">{s.n}</div>
                     <div>
