@@ -14,11 +14,12 @@ const corsHeaders = {
 
 interface AppealRequest {
   firstName: string;
-  lastName: string;
-  email: string;
+  lastName?: string;
+  email?: string;
   phone?: string;
   claimRef?: string;
-  registrationPlate: string;
+  registrationPlate?: string;
+  warrantyNumber?: string;
   decisionDate?: string;
   grounds?: string;
   newEvidence: string;
@@ -46,32 +47,56 @@ serve(async (req: Request): Promise<Response> => {
   try {
     const body: AppealRequest = await req.json();
     const {
-      firstName, lastName, email, phone, claimRef, registrationPlate,
+      firstName, lastName, email, phone, claimRef, registrationPlate, warrantyNumber,
       decisionDate, grounds, newEvidence, desiredOutcome,
       independentInspection, preferredContactMethod, mode,
     } = body;
 
     const isRequest = mode === "request";
 
-    if (!firstName || !lastName || !email || !registrationPlate || !newEvidence) {
-      return new Response(JSON.stringify({ success: false, error: "Missing required fields" }), {
+    // We already hold the customer's record, so an appeal only needs their name,
+    // ONE identifier (registration OR warranty number) and why they're appealing.
+    const identifier = (registrationPlate || "").trim() || (warrantyNumber || "").trim();
+    if (!firstName || !identifier || !newEvidence) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: "Please give your name, your registration or warranty number, and why you're appealing",
+      }), {
         status: 400, headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const reference = generateReference();
-    const reg = registrationPlate.trim().toUpperCase();
+    const reg = (registrationPlate || "").trim().toUpperCase();
     const regNorm = reg.replace(/\s+/g, "");
-    const customerName = `${firstName} ${lastName}`.trim();
+    const warranty = (warrantyNumber || "").trim().toUpperCase();
+    const customerName = `${firstName} ${lastName || ""}`.trim();
+
+    // Look the customer up from whichever identifier they gave so we can email an
+    // immediate acknowledgement even when they didn't type their email address.
+    let customerEmail = (email || "").trim().toLowerCase();
+    try {
+      let q = supabase.from("customers").select("email, name, registration_plate, warranty_number").limit(1);
+      q = regNorm
+        ? q.ilike("registration_plate", `%${regNorm}%`)
+        : q.ilike("warranty_number", `%${warranty}%`);
+      const { data: cust } = await q.maybeSingle();
+      if (!customerEmail && cust?.email) customerEmail = String(cust.email).trim().toLowerCase();
+    } catch (e) {
+      console.error("customer lookup failed", e);
+    }
 
     // Find the most recent claim for this registration / email so the appeal
     // attaches to the right claim file and shows in the Appeals inbox.
-    const filters = [`vehicle_registration.ilike.%${regNorm}%`, `email.ilike.${email.trim()}`];
+    const filters = [
+      regNorm ? `vehicle_registration.ilike.%${regNorm}%` : null,
+      customerEmail ? `email.ilike.${customerEmail}` : null,
+    ].filter(Boolean) as string[];
     const { data: claims } = await supabase
       .from("claims_submissions")
       .select("id, claim_reason, name, vehicle_registration")
-      .or(filters.join(","))
+      .or(filters.length ? filters.join(",") : "id.is.null")
       .neq("status", "fake_test")
       .order("created_at", { ascending: false })
       .limit(1);
@@ -105,7 +130,7 @@ serve(async (req: Request): Promise<Response> => {
           reason: isRequest ? "Appeal requested by customer (awaiting full appeal form)" : (grounds || "Appeal submitted online"),
           new_evidence: newEvidence,
           status: "open",
-          customer_email: email.trim().toLowerCase(),
+          customer_email: customerEmail || null,
           sent_at: new Date().toISOString(),
         });
       }
@@ -115,8 +140,8 @@ serve(async (req: Request): Promise<Response> => {
         .from("claim_update_requests")
         .insert({
           claim_id: claim.id,
-          recipient_email: email.trim().toLowerCase(),
-          vehicle_registration: reg,
+          recipient_email: customerEmail || null,
+          vehicle_registration: reg || warranty,
           claim_reason: claim.claim_reason,
           customer_name: customerName,
           is_responded: true,
@@ -128,7 +153,7 @@ serve(async (req: Request): Promise<Response> => {
         claim_id: claim.id,
         request_id: request?.id ?? null,
         respondent_name: customerName,
-        respondent_email: email.trim().toLowerCase(),
+        respondent_email: customerEmail || null,
         status_update: isRequest ? "Appeal requested online" : "Appeal submitted online",
         notes: summary,
         is_read: false,
@@ -143,7 +168,7 @@ serve(async (req: Request): Promise<Response> => {
       <!DOCTYPE html><html><head><meta charset="utf-8"></head>
       <body style="font-family:Arial,sans-serif;line-height:1.6;color:#333;max-width:640px;margin:0 auto;padding:20px;">
         <div style="background:#1A2B4A;color:#fff;padding:20px;border-radius:8px 8px 0 0;">
-          <h1 style="margin:0;font-size:20px;">⚖️ ${isRequest ? "Appeal requested" : "Appeal submitted"} — ${esc(reg)} — ${esc(customerName)}</h1>
+          <h1 style="margin:0;font-size:20px;">⚖️ ${isRequest ? "Appeal requested" : "Appeal submitted"} — ${esc(reg || warranty)} — ${esc(customerName)}</h1>
           <p style="margin:6px 0 0;opacity:.85;font-size:13px;">Reference: <strong>${reference}</strong></p>
         </div>
         <div style="background:#f7f8fa;padding:24px;border-radius:0 0 8px 8px;">
@@ -152,9 +177,9 @@ serve(async (req: Request): Promise<Response> => {
           </div>
           <table style="width:100%;border-collapse:collapse;font-size:14px;">
             <tr><td style="padding:6px 0;color:#666;width:170px;">Name</td><td style="padding:6px 0;"><strong>${esc(customerName)}</strong></td></tr>
-            <tr><td style="padding:6px 0;color:#666;">Email</td><td style="padding:6px 0;">${esc(email)}</td></tr>
+            <tr><td style="padding:6px 0;color:#666;">Email</td><td style="padding:6px 0;">${esc(customerEmail || "—")}</td></tr>
             <tr><td style="padding:6px 0;color:#666;">Phone</td><td style="padding:6px 0;">${esc(phone || "—")}</td></tr>
-            <tr><td style="padding:6px 0;color:#666;">Registration</td><td style="padding:6px 0;"><strong>${esc(reg)}</strong></td></tr>
+            <tr><td style="padding:6px 0;color:#666;">Registration</td><td style="padding:6px 0;"><strong>${esc(reg || warranty)}</strong></td></tr>
             <tr><td style="padding:6px 0;color:#666;">Grounds</td><td style="padding:6px 0;">${esc(grounds || "Not given")}</td></tr>
             <tr><td style="padding:6px 0;color:#666;">Matched claim</td><td style="padding:6px 0;">${claim ? esc(claim.id) : "No matching claim found — please check"}</td></tr>
           </table>
@@ -179,7 +204,8 @@ serve(async (req: Request): Promise<Response> => {
               <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">${isRequest ? "Your request reference" : "Your appeal reference"}</div>
               <div style="font-size:17px;font-weight:600;color:#1A2B4A;">${reference}</div>
             </div>
-            <p style="font-size:14px;color:#444;line-height:1.65;">We'll be in touch within 2 working days.</p>
+            <p style="font-size:14px;color:#444;line-height:1.65;">This email confirms we have your ${isRequest ? "request" : "appeal"} — it's with our claims team now. We'll acknowledge it properly within <strong>2 working days</strong> and keep you updated by email at every stage.</p>
+            <p style="font-size:13px;color:#666;line-height:1.65;">If an independent engineer's inspection is arranged, please allow up to <strong>3 weeks</strong> for the visit, depending on engineer availability in your area.</p>
           </div>
           <div style="background:#f7f8fa;padding:16px 24px;text-align:center;font-size:11px;color:#999;border-top:1px solid #eee;">
             Buy a Warranty Limited · Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT<br>
@@ -197,7 +223,7 @@ serve(async (req: Request): Promise<Response> => {
         }).catch((e) => console.error("email failed", e));
 
       await send(["claims@buyawarranty.co.uk"], subject, internalHtml);
-      await send([email.trim()], isRequest ? `Your appeal request ${reference}` : `Your appeal reference ${reference}`, customerHtml);
+      if (customerEmail) await send([customerEmail], isRequest ? `Your appeal request ${reference}` : `Your appeal reference ${reference}`, customerHtml);
     }
 
     return new Response(JSON.stringify({
