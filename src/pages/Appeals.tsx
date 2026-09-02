@@ -464,11 +464,9 @@ const Appeals = () => {
                 />
               </div>
 
-              {/* Optional contact details */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field name="email" label="Email address (optional)" type="email" value={form.email} onChange={change} placeholder="you@example.com" error={errors.email} valid={fieldStatus.email.valid && showStatus('email')} hint="Only if you'd like the reply sent somewhere else" />
-                <Field name="phone" label="Phone number (optional)" value={form.phone} onChange={change} placeholder="07123 456789" error={errors.phone} valid={fieldStatus.phone.valid && showStatus('phone')} />
-              </div>
+              {/* No contact details asked for — we already hold the customer's
+                  email and phone against the registration they enter above. */}
+
 
               {!requestMode && (
                 <Field name="claimRef" label="Claim reference" value={form.claimRef} onChange={change} placeholder="Optional — if you have it" error={errors.claimRef} valid={fieldStatus.claimRef.valid && showStatus('claimRef')} />
