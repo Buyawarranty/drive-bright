@@ -429,24 +429,14 @@ const Appeals = () => {
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-              {/* Names */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field name="firstName" label="First name" required value={form.firstName} onChange={change} placeholder="e.g. Sarah" error={errors.firstName} valid={fieldStatus.firstName.valid && showStatus('firstName')} />
-                <Field name="lastName" label="Last name" required value={form.lastName} onChange={change} placeholder="e.g. Hughes" error={errors.lastName} valid={fieldStatus.lastName.valid && showStatus('lastName')} />
-              </div>
+              {/* Name — we already hold the rest of your details */}
+              <Field name="firstName" label="Your name" required value={form.firstName} onChange={change} placeholder="e.g. Sarah Hughes" error={errors.firstName} valid={fieldStatus.firstName.valid && showStatus('firstName')} hint="We already hold your details — just your name is fine" />
 
-              {/* Contact */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field name="email" label="Email address" type="email" required value={form.email} onChange={change} placeholder="you@example.com" error={errors.email} valid={fieldStatus.email.valid && showStatus('email')} />
-                <Field name="phone" label="Phone number" value={form.phone} onChange={change} placeholder="07123 456789" error={errors.phone} valid={fieldStatus.phone.valid && showStatus('phone')} />
-              </div>
-
-              {/* Claim details */}
+              {/* One identifier: registration OR warranty number */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field
                   name="registrationPlate"
                   label="Vehicle registration"
-                  required
                   value={form.registrationPlate}
                   onChange={change}
                   placeholder="e.g. AB12 CDE"
@@ -458,14 +448,31 @@ const Appeals = () => {
                       ? `Found${regCustomerName ? `: ${regCustomerName}` : ''}`
                       : regStatus === 'invalid'
                         ? undefined
-                        : 'The registration linked to your warranty'
+                        : 'Registration or warranty number — either is fine'
                   }
                   inputClassName="uppercase"
                 />
-                {!requestMode && (
-                  <Field name="claimRef" label="Claim reference" value={form.claimRef} onChange={change} placeholder="Optional — if you have it" error={errors.claimRef} valid={fieldStatus.claimRef.valid && showStatus('claimRef')} />
-                )}
+                <Field
+                  name="warrantyNumber"
+                  label="Warranty number"
+                  value={form.warrantyNumber}
+                  onChange={change}
+                  placeholder="e.g. BAW-123456"
+                  error={errors.warrantyNumber}
+                  valid={fieldStatus.warrantyNumber.valid && showStatus('warrantyNumber')}
+                  hint="Use this instead if you don't have the registration to hand"
+                />
               </div>
+
+              {/* Optional contact details */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field name="email" label="Email address (optional)" type="email" value={form.email} onChange={change} placeholder="you@example.com" error={errors.email} valid={fieldStatus.email.valid && showStatus('email')} hint="Only if you'd like the reply sent somewhere else" />
+                <Field name="phone" label="Phone number (optional)" value={form.phone} onChange={change} placeholder="07123 456789" error={errors.phone} valid={fieldStatus.phone.valid && showStatus('phone')} />
+              </div>
+
+              {!requestMode && (
+                <Field name="claimRef" label="Claim reference" value={form.claimRef} onChange={change} placeholder="Optional — if you have it" error={errors.claimRef} valid={fieldStatus.claimRef.valid && showStatus('claimRef')} />
+              )}
 
               {!requestMode && (
                 <Field name="decisionDate" label="Date of the decision" type="date" value={form.decisionDate} onChange={change} error={errors.decisionDate} valid={fieldStatus.decisionDate.valid && showStatus('decisionDate')} />
