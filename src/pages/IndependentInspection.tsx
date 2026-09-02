@@ -246,7 +246,9 @@ const IndependentInspection: React.FC = () => {
   const isPaid = Boolean(request?.paid_at) || request?.status === 'paid';
   const fee = Number(request?.fee_amount || 140);
 
-  const detailsComplete = Boolean(form.garageName.trim() && form.garagePhone.trim() && form.garageAddress.trim());
+  const detailsComplete = Boolean(
+    (!isAtGarage || form.garageName.trim()) && form.garagePhone.trim() && form.garageAddress.trim(),
+  );
   const currentStep = useMemo(() => {
     if (isPaid) return 3;
     if (detailsComplete && accepted) return 3;
