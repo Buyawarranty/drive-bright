@@ -22,6 +22,8 @@ export const LiveChatHoursBanner: React.FC = () => {
     return () => window.clearInterval(t);
   }, []);
 
+  if (!allowed) return null;
+
   if (!open) {
     return (
       <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/60 px-4 py-1.5 text-xs text-muted-foreground">
