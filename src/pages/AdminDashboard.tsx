@@ -1290,9 +1290,6 @@ const AdminDashboardInner: React.FC<{
       <LiveChatHoursBanner />
 
 
-      {/* Ringing alert when a website chat customer asks for a human */}
-      <SandboxHandoverAlerts />
-
 
 
 
