@@ -416,11 +416,13 @@ const Appeals = () => {
               {/* Name — we already hold the rest of your details */}
               <Field name="firstName" label="Your name" required value={form.firstName} onChange={change} placeholder="e.g. Sarah Hughes" error={errors.firstName} valid={fieldStatus.firstName.valid && showStatus('firstName')} hint="We already hold your details — just your name is fine" />
 
-              {/* One identifier: registration OR warranty number */}
+              {/* Registration is the identifier the claim is based on, so it is
+                  required and checked against our customer records. */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field
                   name="registrationPlate"
                   label="Vehicle registration"
+                  required
                   value={form.registrationPlate}
                   onChange={change}
                   placeholder="e.g. AB12 CDE"
@@ -432,21 +434,22 @@ const Appeals = () => {
                       ? `Found${regCustomerName ? `: ${regCustomerName}` : ''}`
                       : regStatus === 'invalid'
                         ? undefined
-                        : 'Registration or warranty number — either is fine'
+                        : 'We check this against your policy — the claim is based on this vehicle'
                   }
                   inputClassName="uppercase"
                 />
                 <Field
                   name="warrantyNumber"
-                  label="Warranty number"
+                  label="Warranty number (optional)"
                   value={form.warrantyNumber}
                   onChange={change}
                   placeholder="e.g. BAW-123456"
                   error={errors.warrantyNumber}
                   valid={fieldStatus.warrantyNumber.valid && showStatus('warrantyNumber')}
-                  hint="Use this instead if you don't have the registration to hand"
+                  hint="Only if you have it to hand"
                 />
               </div>
+
 
               {/* No contact details asked for — we already hold the customer's
                   email and phone against the registration they enter above. */}
