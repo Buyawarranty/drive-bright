@@ -485,29 +485,15 @@ const Appeals = () => {
               </div>
               )}
 
-              {/* Preferred contact method */}
+              {/* Preferred contact method — appeals are handled in writing only */}
               <div>
-                <label className="block text-sm font-medium text-slate-900 mb-2">
-                  Preferred contact method <span className="text-[#E8541A]">*</span>
+                <label className="block text-sm font-medium text-slate-900 mb-1.5">
+                  How we'll respond
                 </label>
-                <div className="flex flex-wrap gap-2">
-                  {['Email', 'Phone', 'WhatsApp'].map(method => {
-                    const active = form.preferredContactMethod === method;
-                    return (
-                      <label
-                        key={method}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm cursor-pointer transition-all ${active ? 'border-[#E8541A] bg-[#FEF0E8] text-[#1A2B4A] font-medium shadow-sm' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'}`}
-                      >
-                        <input type="radio" name="preferredContactMethod" value={method} checked={active} onChange={change} className="sr-only" />
-                        <span className={`w-3.5 h-3.5 rounded-full border-2 ${active ? 'border-[#1A2B4A]' : 'border-slate-400'} flex items-center justify-center`}>
-                          {active && <span className="w-1.5 h-1.5 rounded-full bg-[#1A2B4A]" />}
-                        </span>
-                        {method}
-                      </label>
-                    );
-                  })}
-                </div>
-                {errors.preferredContactMethod && <FieldError msg={errors.preferredContactMethod} />}
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  We handle appeals in writing so we can keep a clear record. We'll respond to the email address above.
+                </p>
+                <input type="hidden" name="preferredContactMethod" value="Email" />
               </div>
 
               {/* Confirmation checkbox */}
