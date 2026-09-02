@@ -302,7 +302,9 @@ const Appeals = () => {
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1">Thank you!</h2>
               <p className="text-sm sm:text-base text-green-50 leading-relaxed">
-                Your appeal has been submitted to our claims team.
+                {requestMode
+                  ? 'Your appeal request has been sent to our claims team.'
+                  : 'Your appeal has been submitted to our claims team.'}
               </p>
             </div>
             <div className="px-6 sm:px-10 py-7">
