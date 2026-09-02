@@ -439,12 +439,15 @@ const Appeals = () => {
                   {errors.grounds && <FieldError msg={errors.grounds} />}
                 </div>
               </div>
+              )}
 
               {/* Why you're appealing */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label htmlFor="newEvidence" className="block text-sm font-medium text-slate-900">
-                    Your account of the fault and why you're appealing <span className="text-[#E8541A]">*</span>
+                    {requestMode
+                      ? <>Why would you like the decision reviewed?</>
+                      : <>Your account of the fault and why you're appealing</>} <span className="text-[#E8541A]">*</span>
                   </label>
                   <span className="text-xs text-slate-500">{form.newEvidence.length}/2000</span>
                 </div>
@@ -454,9 +457,11 @@ const Appeals = () => {
                     name="newEvidence"
                     value={form.newEvidence}
                     onChange={change}
-                    rows={5}
+                    rows={requestMode ? 4 : 5}
                     maxLength={2000}
-                    placeholder="Tell us what happened, what the garage found, and any new evidence such as an engineer's report or invoice…"
+                    placeholder={requestMode
+                      ? 'A short summary is fine — you can add full details and documents on the secure form we send you…'
+                      : "Tell us what happened, what the garage found, and any new evidence such as an engineer's report or invoice…"}
                     className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${errors.newEvidence ? 'border-red-400' : fieldStatus.newEvidence.valid && showStatus('newEvidence') ? 'border-green-500' : 'border-slate-300'}`}
                   />
                   {fieldStatus.newEvidence.valid && showStatus('newEvidence') && !errors.newEvidence && (
