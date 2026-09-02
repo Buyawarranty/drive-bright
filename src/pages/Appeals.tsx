@@ -489,8 +489,10 @@ const Appeals = () => {
                   className="w-full px-3 py-2.5 border border-slate-300 rounded-md text-sm bg-white text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A]"
                 />
               </div>
+              )}
 
               {/* Independent inspection */}
+              {!requestMode && (
               <div>
                 <label className="block text-sm font-medium text-slate-900 mb-2">
                   Would you like an independent engineer's inspection? <span className="text-[#E8541A]">*</span>
