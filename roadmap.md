@@ -29,3 +29,10 @@
 - [x] Public appeal form at /appeals/ built to the same design as /complaints/, with submit-appeal function feeding the Appeals inbox
 - [x] /appeals/ is public request-only ("Warranty appeals" in footer); full appeal form gated behind emailed secure link (?token=) or signed-in customer dashboard
 - [x] Appeals independent inspection: add Worldpay £140 payment link when customer chooses "Yes please", explaining ACE/Scotia selection and that payment covers the independent inspection visit
+- [x] /appeals/: "Not sure yet" renamed "Not sure / speak to an expert"
+- [x] /appeals/: Worldpay £140 payment link shown inside the "What happens next" panel (live link when opened from a secure appeal link)
+- [x] /appeals/: appeal only needs a name plus EITHER registration or warranty number — email/phone/last name optional, email looked up from the customer record
+- [x] Appeals: instant acknowledgement email on submission, promising a proper response within 2 working days and warning inspections can take up to 3 weeks
+- [ ] Claims tab: merge the separate Appeals section into the main claims list with a big "APPEAL MADE" tag on the claim row
+- [ ] Claims row action: send the appeal-invite email (secure link) with an on-screen preview before sending
+- [ ] Customers edit dialog: add a "Paused" status that records the pause date and shows how much cover remains if restarted
