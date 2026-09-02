@@ -200,6 +200,8 @@ const IndependentInspection: React.FC = () => {
     })();
   }, [paidFlag, searchParams, token, load]);
 
+  const isAtGarage = locationType === 'garage';
+
   const validate = () => {
     const next: Partial<Record<ErrorKey, string>> = {};
     if (isAtGarage && !form.garageName.trim()) next.garageName = 'Please tell us the garage name';
