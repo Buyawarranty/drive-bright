@@ -23,7 +23,7 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { formatStoredPolicyCoverDuration } from '@/lib/policyCoverDuration';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
-import { BulkEmailDialog } from '@/components/admin/BulkEmailDialog';
+
 import { RenewalPoolBar } from '@/components/admin/renewals/RenewalPoolBar';
 import { useCustomerActivity } from '@/hooks/useCustomerActivity';
 import { useLeadRoutingPermission } from '@/hooks/useLeadRoutingPermission';
