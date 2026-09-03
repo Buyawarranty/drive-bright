@@ -99,6 +99,9 @@ interface PolicyRow {
   retention_outcome: string | null;
   customer_full_name: string | null;
   email: string | null;
+  payment_amount: number | null;
+  payment_currency: string | null;
+  voluntary_excess: number | null;
   customers?: {
     id: string;
     first_name: string | null;
@@ -306,6 +309,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     'policy_start_date, policy_end_date, claim_limit, tyre_cover, wear_tear, ' +
     'breakdown_recovery, vehicle_rental, europe_cover, mot_repair, ' +
     'retention_worked_at, retention_outcome, customer_full_name, email, ' +
+    'payment_amount, payment_currency, voluntary_excess, ' +
     'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, status, assigned_to, created_at )';
 
   const fetchRows = useCallback(async () => {
