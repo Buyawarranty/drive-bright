@@ -104,7 +104,7 @@ export const RenewalAssignmentFlowPanel: React.FC<{ rows: SandboxRow[]; live: bo
         if (!sellerName && rec) sellerName = agentName(rec);
         if (!rec) { skipReason = 'seller no longer on file'; continue; }
         if (rec.role !== 'sales' && rec.role !== 'sales_lead') { skipReason = `${agentName(rec)} is not in a sales role`; continue; }
-        if (rec.is_active === false || rec.archived_at) { skipReason = `${agentName(rec)} is no longer active`; continue; }
+        if (rec.is_active === false || (rec as any).archived_at) { skipReason = `${agentName(rec)} is no longer active`; continue; }
         if (!newLeadWorkers.has(c.id)) { skipReason = `${agentName(rec)} is not on New Leads`; continue; }
         if (onLeave.has(c.id)) { skipReason = `${agentName(rec)} is on leave`; continue; }
         winner = { agent: agents.find((a) => a.id === c.id) || (rec as any), via: c.via };
