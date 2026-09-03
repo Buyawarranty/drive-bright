@@ -1069,6 +1069,13 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                       <td className="p-2">
                         <div className="font-medium text-sm leading-tight flex items-center gap-1 flex-wrap">
                           <span>{name}</span>
+                          <Badge
+                            className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wide bg-primary text-primary-foreground border-primary"
+                            title="Renewal lead — generated from an existing policy coming up for renewal"
+                          >
+                            Renewal
+                          </Badge>
+
                           {(() => {
                             const regKey = (r.customers?.registration_plate || '').replace(/\s+/g, '').toUpperCase();
                             const hasClaim = (email && claimEmails.has(email)) || (regKey && claimRegs.has(regKey));
