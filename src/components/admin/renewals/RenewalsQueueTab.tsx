@@ -1074,9 +1074,13 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                     r.customers?.name || r.customer_full_name || '—';
                   const email = (r.customers?.email || r.email || '').toLowerCase();
                   const phone = r.customers?.phone || '';
-                  const callCount = email ? (callCountsByEmail[email] || 0) : 0;
-                  const assignedAuthId = r.customers?.assigned_to ?? null;
+                  // Live New Leads activity for this renewal (owner, calls, notes, status).
+                  const leadSync = email ? leadSyncByEmail[email] : undefined;
+                  const callCount = (email ? (callCountsByEmail[email] || 0) : 0) + (leadSync?.callCount || 0);
+                  const leadOwner = leadSync?.assignedAdminId ? agentByAdminId.get(leadSync.assignedAdminId) : undefined;
+                  const assignedAuthId = r.customers?.assigned_to ?? leadOwner?.user_id ?? null;
                   const assignedAgent = assignedAuthId ? agentByAuthId.get(assignedAuthId) : undefined;
+
                   const days = daysUntil(r.policy_end_date);
                   const isSelected = selectedIds.has(r.id);
                   const isUrgent = days !== null && days <= 7; // overdue or ≤7d
