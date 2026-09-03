@@ -181,7 +181,8 @@ export const RenewalAssignmentFlowPanel: React.FC<{ rows: SandboxRow[]; live: bo
                     </Badge>
                   ))}
                   {!eligibleAgents.length && (
-                    <span className="text-sm text-muted-foreground">No eligible agents — nobody is on New Leads right now.</span>}
+                    <span className="text-sm text-muted-foreground">No eligible agents — nobody is on New Leads right now.</span>
+                  )}
                   {agents.filter((a) => !eligibleAgents.includes(a)).map((a) => (
                     <Badge key={a.id} variant="secondary" className="text-xs opacity-60" title={onLeave.has(a.id) ? 'On leave' : 'Not on New Leads workstream'}>
                       {agentName(a)} ({onLeave.has(a.id) ? 'on leave' : 'not on New Leads'})
