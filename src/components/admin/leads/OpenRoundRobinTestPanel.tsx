@@ -411,19 +411,13 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
 
 
-  // Real self-service pause toggle — mirrors the real agent pause state
-  const currentAdminId = useCurrentAdminId();
-  const { agentPresences, togglePauseReceiving } = useLeadDistribution();
-  const myPresence = currentAdminId
-    ? agentPresences.find((p) => p.admin_user_id === currentAdminId)
-    : undefined;
-  const isPausedReceiving = myPresence?.is_paused_receiving ?? false;
-  const [togglingPause, setTogglingPause] = useState(false);
-  const handlePauseToggle = async () => {
-    if (togglingPause) return;
-    setTogglingPause(true);
-    await togglePauseReceiving();
-    setTogglingPause(false);
+  // Practice-only pause toggle. This is deliberately LOCAL state: this panel must
+  // never write anything, so rehearsing "focus on current leads" here does NOT
+  // change the real agent presence used by live lead distribution.
+  const [isPausedReceiving, setIsPausedReceiving] = useState(false);
+  const [togglingPause] = useState(false);
+  const handlePauseToggle = () => {
+    setIsPausedReceiving((paused) => !paused);
   };
 
   // 1s clock + automatic sweep so expired dummy leads never sit around for hours.
