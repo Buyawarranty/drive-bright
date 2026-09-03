@@ -488,12 +488,14 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       SEGMENTS.map(async (s) => {
         try {
           const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
+          const d365 = new Date(Date.now() - 365 * 86400000).toISOString();
           let q: any = (supabase.from('sales_leads') as any)
             .select('id', { count: 'exact', head: true })
-            .not('step_two_completed_at', 'is', null)
             .not('status', 'in', '(new,converted,fake_lead,archived,lost,not_interested,not_eligible)')
             .or('is_paid.is.null,is_paid.eq.false')
-            .lt('created_at', d30);
+            .lt('created_at', d30)
+            .gte('created_at', d365);
+
           q = applySegment(q, s.id);
           const { count } = await q;
           return [s.id, count || 0] as const;
