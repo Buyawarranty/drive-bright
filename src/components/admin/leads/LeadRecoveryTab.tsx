@@ -347,6 +347,26 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       .lt('created_at', d30);
   }, []);
 
+  // Leads already OWNED by the agent: shown regardless of pool eligibility
+  // (step 2 / 30-day age), so a claimed batch never partly disappears.
+  // Only genuinely dead records (terminal status, already paid) stay hidden.
+  const buildMineQuery = useCallback((ids: string[]) => {
+    const select =
+      'id, first_name, last_name, email, phone, lead_source, status, priority, priority_score, ' +
+      'plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, ' +
+      'vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status, ' +
+      'last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id, ' +
+      'created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at, ' +
+      'call_count, resubmission_count, last_resubmitted_at, is_callback, recovery_worked_at, recovery_outcome, ' +
+      'claim_count, last_claimed_at';
+    return (supabase.from('sales_leads') as any)
+      .select(select)
+      .in('assigned_to', ids)
+      .not('status', 'in', '(converted,fake_lead,archived,not_eligible)')
+      .or('is_paid.is.null,is_paid.eq.false');
+  }, []);
+
+
   const applySegment = useCallback((q: any, id: SegmentId) => {
     const now = Date.now();
     const d30 = new Date(now - 30 * 86400000).toISOString();
