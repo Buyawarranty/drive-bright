@@ -122,6 +122,9 @@ interface PolicyRow {
     status: string | null;
     assigned_to: string | null;
     created_at?: string | null;
+    labour_rate?: number | null;
+    voluntary_excess?: number | null;
+    claim_limit?: number | null;
   } | null;
 }
 
@@ -359,7 +362,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     'breakdown_recovery, vehicle_rental, europe_cover, mot_repair, ' +
     'retention_worked_at, retention_outcome, customer_full_name, email, ' +
     'payment_amount, payment_currency, voluntary_excess, ' +
-    'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, status, assigned_to, created_at )';
+    'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, status, assigned_to, created_at, labour_rate, voluntary_excess, claim_limit )';
 
   const fetchRows = useCallback(async () => {
     setLoading(true);
@@ -1266,9 +1269,11 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                                 {r.payment_type ? ` (${r.payment_type})` : ''}
                               </dd>
                               <dt className="text-muted-foreground">Excess</dt>
-                              <dd className="font-medium">{r.voluntary_excess != null ? `£${r.voluntary_excess}` : '—'}</dd>
+                              <dd className="font-medium">{(r.voluntary_excess ?? r.customers?.voluntary_excess) != null ? `£${r.voluntary_excess ?? r.customers?.voluntary_excess}` : '—'}</dd>
                               <dt className="text-muted-foreground">Claim limit</dt>
-                              <dd className="font-medium">{r.claim_limit != null ? `£${Number(r.claim_limit).toLocaleString('en-GB')}` : '—'}</dd>
+                              <dd className="font-medium">{(r.claim_limit ?? r.customers?.claim_limit) != null ? `£${Number(r.claim_limit ?? r.customers?.claim_limit).toLocaleString('en-GB')}` : '—'}</dd>
+                              <dt className="text-muted-foreground">Labour rate</dt>
+                              <dd className="font-medium">{r.customers?.labour_rate != null ? `£${r.customers.labour_rate}/hr` : '—'}</dd>
                               <dt className="text-muted-foreground">Add-ons</dt>
                               <dd className="font-medium">
                                 {([
