@@ -269,6 +269,43 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     return m;
   }, [agents]);
 
+  const agentByAdminId = useMemo(() => {
+    const m = new Map<string, Agent>();
+    for (const a of agents) m.set(a.id, a);
+    return m;
+  }, [agents]);
+
+  // ── Distribution rotation (mirrors Lead Allocation) ────────────────────────
+  // Renewal leads follow whichever rotation is selected: the standard Round
+  // Robin, or the Open Round Robin pool agents. A renewal is never left
+  // unassigned — it always lands on an agent.
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase.from('agent_distribution_caps') as any)
+        .select('admin_user_id, assignment_mode, paused, sort_order')
+        .order('sort_order', { ascending: true });
+      setCaps(((data as any[]) || []).map((c) => ({
+        adminId: c.admin_user_id,
+        mode: (c.assignment_mode || 'round_robin') as DistMode,
+        paused: !!c.paused,
+        sortOrder: c.sort_order ?? 999,
+      })));
+    })();
+  }, []);
+
+  /** Agents in the selected rotation, in turn order. */
+  const rotationAgents = useMemo(() => {
+    const ordered = caps
+      .filter((c) => c.mode === distMode && !c.paused)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((c) => agentByAdminId.get(c.adminId))
+      .filter((a): a is Agent => !!a && !!a.user_id && (a.role === 'sales' || a.role === 'sales_lead'));
+    // Fallback: if nothing is configured for this mode, use every renewals agent.
+    return ordered.length > 0 ? ordered : agents.filter((a) => a.user_id && (a.role === 'sales' || a.role === 'sales_lead'));
+  }, [caps, distMode, agentByAdminId, agents]);
+
+
+
   const applySegment = useCallback((q: any, id: SegmentId) => {
     const now = new Date();
     const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
