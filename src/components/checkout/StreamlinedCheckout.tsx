@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
 import { getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
-import { getTrackingData, getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
+import { getTrackingData, getStoredGclid, getSessionOrUrlGclid, getAttributionGclid, getTrackingSessionId } from '@/utils/gclidCapture';
 import { getUtmPayload } from '@/utils/utmCapture';
 import { getEntryPayload } from '@/utils/entryCapture';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
@@ -1395,7 +1395,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             payment_type: paymentType || '',
             step_abandoned: 4,
             ...(getSessionFbclid() ? { fbclid: getSessionFbclid() } : {}),
-            ...(getSessionGclid() ? { gclid: getSessionGclid() } : {}),
+            ...(getSessionOrUrlGclid() ? { gclid: getSessionOrUrlGclid() } : {}),
+            ...(getAttributionGclid() ? { gclid_any: getAttributionGclid() } : {}),
+            ...(getTrackingSessionId() ? { tracking_session_id: getTrackingSessionId() } : {}),
             ...(!getSessionFbclid() && getSessionFbReferrer() ? { fb_referrer: getSessionFbReferrer() } : {}),
             device_type: detectDeviceType(),
             ...getUtmPayload(),

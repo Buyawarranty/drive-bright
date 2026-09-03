@@ -2,7 +2,7 @@ import { getVehicleAge } from '@/lib/vehicleAge';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { getStoredFbclid, getSessionFbclid } from '@/utils/fbclidCapture';
-import { getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
+import { getStoredGclid, getSessionOrUrlGclid, getAttributionGclid, getTrackingSessionId } from '@/utils/gclidCapture';
 import { getUtmPayload } from '@/utils/utmCapture';
 import { getEntryPayload } from '@/utils/entryCapture';
 import { useNavigate } from 'react-router-dom';
@@ -533,7 +533,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
             boost_addon: boostAddon,
             protection_addons: selectedProtectionAddOns,
             ...(getSessionFbclid() ? { fbclid: getSessionFbclid() } : {}),
-            ...(getSessionGclid() ? { gclid: getSessionGclid() } : {}),
+            ...(getSessionOrUrlGclid() ? { gclid: getSessionOrUrlGclid() } : {}),
+            ...(getAttributionGclid() ? { gclid_any: getAttributionGclid() } : {}),
+            ...(getTrackingSessionId() ? { tracking_session_id: getTrackingSessionId() } : {}),
             ...getUtmPayload(),
             ...getEntryPayload(),
           }

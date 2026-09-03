@@ -25,7 +25,7 @@ import PerformanceOptimizedSuspense from '@/components/PerformanceOptimizedSuspe
 import { BackNavigationConfirmDialog } from '@/components/BackNavigationConfirmDialog';
 import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 
-import { captureGclid, getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
+import { captureGclid, getStoredGclid, getSessionOrUrlGclid, getAttributionGclid, getTrackingSessionId } from '@/utils/gclidCapture';
 import { captureFbclid, getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { captureMsclkid, getSessionMsclkid } from '@/utils/msclkidCapture';
 import { captureTtclid, getSessionTtclid } from '@/utils/ttclidCapture';
@@ -1497,7 +1497,9 @@ const Index = () => {
       // in localStorage doesn't reclassify a returning organic visitor as paid traffic.
       // (Long-lived getStoredGclid / getStoredFbclid are still used for conversion uploads.)
       const fbclid = getSessionFbclid();
-      const gclid = getSessionGclid();
+      const gclid = getSessionOrUrlGclid();
+      const gclidAny = getAttributionGclid();
+      const trackingSessionId = getTrackingSessionId();
       const fbReferrer = getSessionFbReferrer();
       const msclkid = getSessionMsclkid();
       const ttclid = getSessionTtclid();
@@ -1518,6 +1520,8 @@ const Index = () => {
           step_abandoned: step,
           ...(fbclid ? { fbclid } : {}),
           ...(gclid ? { gclid } : {}),
+          ...(gclidAny ? { gclid_any: gclidAny } : {}),
+          ...(trackingSessionId ? { tracking_session_id: trackingSessionId } : {}),
           ...(msclkid ? { msclkid } : {}),
           ...(ttclid ? { ttclid } : {}),
           ...(fbReferrer && !fbclid ? { fb_referrer: fbReferrer } : {}),
