@@ -78,6 +78,11 @@ const EXCLUDED_STATUSES = "('cancelled','refunded','expired','voided','deleted')
 const PAGE_SIZE = 500;
 const UNASSIGNED = '__unassigned__';
 
+/** Which rotation renewal leads flow into — mirrors Lead Allocation. */
+type DistMode = 'round_robin' | 'open_pool';
+interface CapRow { adminId: string; mode: DistMode; paused: boolean; sortOrder: number }
+
+
 interface PolicyRow {
   id: string;
   customer_id: string | null;
