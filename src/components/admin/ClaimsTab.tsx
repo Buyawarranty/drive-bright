@@ -343,6 +343,9 @@ export const ClaimsTab = ({
             className="bg-[#E8541A] hover:bg-[#cf4915] text-white"
             onClick={() => {
               setActiveSubTab('claims');
+              setTimeout(() => {
+                document.getElementById('appeals-inbox-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 150);
             }}
           >
             View appeals
