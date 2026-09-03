@@ -3033,9 +3033,20 @@ Questions? Call 0330 229 5040`;
     }
   }, [quoteIdentity]);
 
-  // Auto-generate quote link when entering step 3 (or after it was invalidated)
+  // Auto-generate quote link when entering step 3 (or after it was invalidated).
+  // Guarded by a ref: generateQuoteLink used to clear quoteLink first, which
+  // re-triggered this effect and left the button spinning on "Generating quote
+  // link..." forever while firing the edge function over and over.
+  const quoteGenInFlightRef = useRef(false);
   useEffect(() => {
-    if (step === 3 && customerEmail && customerName && vehicleData && (!quoteGenerated || !quoteLink)) {
+    if (
+      step === 3 &&
+      customerEmail &&
+      customerName &&
+      vehicleData &&
+      !quoteGenInFlightRef.current &&
+      (!quoteGenerated || !quoteLink)
+    ) {
       generateQuoteLink();
     }
   }, [step, customerEmail, customerName, vehicleData, quoteGenerated, quoteLink]);
@@ -3043,9 +3054,11 @@ Questions? Call 0330 229 5040`;
 
   const generateQuoteLink = async () => {
     if (!customerEmail || !customerName || !vehicleData) return null;
-    
+    if (quoteGenInFlightRef.current) return null;
+
+    quoteGenInFlightRef.current = true;
     setIsGeneratingQuoteLink(true);
-    setQuoteLink(null);
+
     
     const displayClaimLimit = boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit);
     const contractTotal = currentPrice.monthlyPrice * 12; // Use monthly × 12 for consistency
@@ -3104,8 +3117,10 @@ Questions? Call 0330 229 5040`;
       });
       return null;
     } finally {
+      quoteGenInFlightRef.current = false;
       setIsGeneratingQuoteLink(false);
     }
+
   };
 
   /**
