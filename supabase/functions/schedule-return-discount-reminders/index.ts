@@ -82,7 +82,38 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Suppress marketing to anyone who currently holds cover, or has unsubscribed.
+    // Customers who have bought a warranty must not receive promotional reminders.
+    const allEmails = Array.from(emailMap.keys());
+    const todayStr = now.toISOString().split('T')[0];
+
+    const { data: activeCover } = await supabase
+      .from('customer_policies')
+      .select('email, policy_end_date, status')
+      .in('email', allEmails)
+      .gte('policy_end_date', todayStr);
+
+    for (const row of activeCover || []) {
+      const status = (row.status || '').toLowerCase();
+      if (['cancelled', 'refunded', 'voided', 'expired'].includes(status)) continue;
+      if (row.email) emailMap.delete(row.email);
+    }
+
+    const { data: unsubscribed } = await supabase
+      .from('email_unsubscribes')
+      .select('email')
+      .in('email', allEmails);
+
+    for (const row of unsubscribed || []) {
+      if (row.email) emailMap.delete(row.email);
+    }
+
+    console.log(
+      `Suppressed ${allEmails.length - emailMap.size} recipients (active cover or unsubscribed)`
+    );
+
     console.log(`Sending reminders to ${emailMap.size} unique customers`);
+
 
     // Send reminders
     const results = [];
