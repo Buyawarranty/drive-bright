@@ -2,15 +2,12 @@ import React, { useCallback, useState } from 'react';
 import {
   Bell,
   Check,
-  CheckCircle2,
   ChevronDown,
-  Clock,
   Copy,
   FileText,
   Mail,
   MessageSquare,
   Phone,
-  Lock,
   Split,
   RefreshCw,
   Moon,
@@ -19,7 +16,6 @@ import {
   StickyNote,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
