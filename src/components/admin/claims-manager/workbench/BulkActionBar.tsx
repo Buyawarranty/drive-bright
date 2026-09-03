@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, X, CheckCircle2, AlertCircle, Inbox, Archive } from 'lucide-react';
+import { Loader2, X, CheckCircle2, AlertCircle, Inbox, Archive, ShieldAlert } from 'lucide-react';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { AssignMenu } from './AssignMenu';
 import { STAGE_TO_DB_STATUS, type WorkflowStage } from './statusMap';
 import { ClaimStatusEmailPreviewDialog, type PendingClaimStatusChange } from '@/components/admin/claims/ClaimStatusEmailPreviewDialog';
