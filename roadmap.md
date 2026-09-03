@@ -54,3 +54,6 @@
 - [ ] Sync renewal assignment with selected distribution mode (round robin / open round robin); never leave a renewal unassigned
 - [ ] Clear "Renewal" tag on every renewal row
 - [ ] Sync New Leads activity (notes, calls, status, owner) into the renewals row
+
+- [x] Blank "Warranty Cancellation Request - undefined" email: add field validation to submit-cancellation
+- [x] Stop 20% off marketing reminders going to customers who already hold active warranty cover (Jenny Beaumont)
