@@ -1,17 +1,10 @@
 /**
- * FINAL-STAGE APPEAL
+ * APPEAL EMAIL — simple invitation.
  * ---------------------------------------------------------------------------
- * Used after a complaint has been through the process and the outcome still
- * stands. The claims team:
- *   1. picks the customer / claim
- *   2. drafts the grounds for appeal
- *   3. chooses whether the customer has agreed to an INDEPENDENT REVIEW
- *      (optional — an appeal can be made with no inspection and nothing to pay)
- *   4. generates the customer's APPEAL FORM link, and — if a review is agreed —
- *      the inspection form + payment page (£140 paid to the inspection company)
- *   5. PREVIEWS the exact email the customer will receive
- *   6. sends the email, stores the appeal, moves the claim to "appeal" and
- *      posts a notification in the customer's profile
+ * Picks the claim, lets the claims agent personalise a short message, shows a
+ * live preview of the exact email (with the "Make an appeal" button linking to
+ * https://buyawarranty.co.uk/appeals/), then sends it on submit. Sending marks
+ * the appeal as open (claim_appeals row, claim status → appeal, audit log).
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
@@ -28,48 +21,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Loader2, Search, Gavel, ExternalLink, Send, ArrowLeft, CheckCircle2, Copy, Eye, Mail,
-  ShieldCheck, Lock as LockIcon, Info,
-} from 'lucide-react';
-import brandLogo from '@/assets/buyawarranty-logo.png.asset.json';
+import { Loader2, Send, Gavel, Eye } from 'lucide-react';
 import {
   buildAppealEmailHtml,
   buildAppealEmailSubject,
 } from '@/lib/appealEmailTemplate';
-import { Worldpay140LinkButton } from '@/components/admin/Worldpay140LinkButton';
 
-export const INDEPENDENT_REVIEWERS = [
-  {
-    id: 'either',
-    name: 'Scotia or ACE — whichever is available',
-    url: 'http://scotiavehicleinspection.com/',
-    blurb: 'Whichever independent inspector is available will be booked.',
-  },
-  {
-    id: 'scotia',
-    name: 'Scotia Vehicle Inspection',
-    url: 'http://scotiavehicleinspection.com/',
-    blurb: 'Independent engineer report, UK-wide coverage.',
-  },
-  {
-    id: 'ace',
-    name: 'ACE (ace-uk.org)',
-    url: 'https://ace-uk.org',
-    blurb: 'Independent vehicle assessment and engineer opinion.',
-  },
-] as const;
-
-const DEFAULT_APPEAL_FEE = 140;
-
-const DEFAULT_INTRO =
-  'Thank you for coming back to us. We have opened a final appeal on your claim and it will be ' +
-  'reviewed by our claims manager. Below is a summary of what we have recorded, along with the ' +
-  'form we need you to complete.';
+const DEFAULT_MESSAGE =
+  'Thank you for getting in touch about your claim. We understand you may not agree with the ' +
+  'outcome, and you have the right to appeal the decision.';
 
 interface ClaimRow {
   id: string;
@@ -95,35 +56,11 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
   onSent,
 }) => {
   const { toast } = useToast();
-  const [search, setSearch] = useState('');
-  const [searching, setSearching] = useState(false);
-  const [results, setResults] = useState<ClaimRow[]>([]);
   const [selected, setSelected] = useState<ClaimRow | null>(claim);
-
-  const [reason, setReason] = useState('');
-  const [newEvidence, setNewEvidence] = useState('');
-  const [withReview, setWithReview] = useState(true);
-  const [reviewerId, setReviewerId] = useState<string>('either');
-  const [appealFee, setAppealFee] = useState(String(DEFAULT_APPEAL_FEE));
-  const [paymentLink, setPaymentLink] = useState('');
-  const [formLink, setFormLink] = useState('');
-  const [subject, setSubject] = useState('');
-  const [intro, setIntro] = useState(DEFAULT_INTRO);
-  const [notifyCustomer, setNotifyCustomer] = useState(true);
-  const [reviewing, setReviewing] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [generatingLink, setGeneratingLink] = useState(false);
-  const [generatingForm, setGeneratingForm] = useState(false);
-
-  /** Where the appeal goes. Editable — the claim's email is only a starting point. */
   const [toEmail, setToEmail] = useState('');
-  const [testEmail, setTestEmail] = useState('');
-  const [sendingTest, setSendingTest] = useState(false);
-  /** Optional text message with the same links. */
-  const [toPhone, setToPhone] = useState('');
-  const [testPhone, setTestPhone] = useState('');
-  const [sendingSms, setSendingSms] = useState(false);
-  const [sendingTestSms, setSendingTestSms] = useState(false);
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState(DEFAULT_MESSAGE);
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     if (open) setSelected(claim);
@@ -131,269 +68,50 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
 
   useEffect(() => {
     setToEmail(selected?.email || '');
-    setToPhone(selected?.phone || '');
-  }, [selected?.id, selected?.email, selected?.phone]);
-
-  useEffect(() => {
-    if (!open) {
-      setSearch('');
-      setResults([]);
-      setReason('');
-      setNewEvidence('');
-      setWithReview(true);
-      setReviewerId('either');
-      setAppealFee(String(DEFAULT_APPEAL_FEE));
-      setPaymentLink('');
-      setFormLink('');
-      setIntro(DEFAULT_INTRO);
-      setNotifyCustomer(true);
-      setReviewing(false);
-      setGeneratingLink(false);
-      setGeneratingForm(false);
-      setTestEmail('');
-      setTestPhone('');
-    }
-  }, [open]);
-
-
-  useEffect(() => {
     setSubject(buildAppealEmailSubject(selected?.vehicle_registration));
-  }, [selected?.vehicle_registration]);
+  }, [selected?.id, selected?.email, selected?.vehicle_registration]);
 
-  const reviewer = useMemo(
-    () => INDEPENDENT_REVIEWERS.find((r) => r.id === reviewerId) || null,
-    [reviewerId]
-  );
-
-  const feeNumber = Number(String(appealFee).replace(/[^0-9.]/g, '')) || 0;
+  useEffect(() => {
+    if (!open) setMessage(DEFAULT_MESSAGE);
+  }, [open]);
 
   const emailHtml = useMemo(
     () =>
       buildAppealEmailHtml({
         customerName: selected?.name,
         registration: selected?.vehicle_registration,
-        intro,
-        grounds: reason || '—',
-        newEvidence,
-        withIndependentReview: withReview,
-        reviewerName: reviewer?.name,
-        reviewerUrl: reviewer?.url,
-        fee: feeNumber || DEFAULT_APPEAL_FEE,
-        paymentLink,
-        appealFormLink: formLink,
+        message,
       }),
-    [selected, intro, reason, newEvidence, withReview, reviewer, feeNumber, paymentLink, formLink]
+    [selected, message]
   );
 
-  /** Real payable page: inspection form + card payment to the inspection company. */
-  const generatePaymentLink = async () => {
-    if (!selected) return;
-    setGeneratingLink(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('send-inspection-request', {
-        body: {
-          claimId: selected.id,
-          recipientEmail: selected.email,
-          inspectionCompany: reviewerId === 'scotia' ? 'Scotia' : 'ACE',
-          feeAmount: feeNumber || DEFAULT_APPEAL_FEE,
-          sendEmail: false,
-        },
-      });
-      if (error) throw error;
-      if (!data?.link) throw new Error(data?.error || 'No link returned');
-      setPaymentLink(data.link);
-      toast({ title: 'Inspection payment page created' });
-    } catch (e: any) {
-      toast({ title: 'Could not create payment link', description: e.message, variant: 'destructive' });
-    } finally {
-      setGeneratingLink(false);
-    }
-  };
-
-  /** Customer-facing appeal form (their statement, invoices, photos). */
-  const generateFormLink = async () => {
-    if (!selected?.email) {
-      toast({ title: 'This claim has no email address', variant: 'destructive' });
-      return;
-    }
-    setGeneratingForm(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('create-appeal-form-link', {
-        body: { claimId: selected.id, recipientEmail: selected.email },
-      });
-      if (error) throw error;
-      if (!data?.link) throw new Error(data?.error || 'No link returned');
-      setFormLink(data.link);
-      toast({ title: 'Appeal form created', description: 'Open it to see exactly what the customer fills in.' });
-    } catch (e: any) {
-      toast({ title: 'Could not create appeal form', description: e.message, variant: 'destructive' });
-    } finally {
-      setGeneratingForm(false);
-    }
-  };
-
-  const loadClaims = async (term: string) => {
-    setSearching(true);
-    try {
-      let query = supabase
-        .from('claims_submissions')
-        .select('id, name, email, phone, status, vehicle_registration, created_at');
-
-      if (term) {
-        const like = `%${term}%`;
-        const digits = term.replace(/\D/g, '');
-        const filters = [
-          `name.ilike.${like}`,
-          `email.ilike.${like}`,
-          `vehicle_registration.ilike.${like}`,
-        ];
-        if (digits.length >= 5) filters.push(`phone.ilike.%${digits.slice(-9)}%`);
-        query = query.or(filters.join(','));
-      }
-
-      const { data, error } = await query
-        .order('created_at', { ascending: false })
-        .limit(term ? 25 : 15);
-      if (error) throw error;
-      setResults((data || []) as ClaimRow[]);
-      if (!data?.length) {
-        toast({ title: 'No claims found', description: 'Try a registration, email, name or phone number.' });
-      }
-    } catch (e: any) {
-      toast({ title: 'Search failed', description: e.message, variant: 'destructive' });
-    } finally {
-      setSearching(false);
-    }
-  };
-
-  const runSearch = () => {
-    const term = search.trim();
-    if (term.length < 2) {
-      toast({ title: 'Enter at least 2 characters', description: 'Or use "Import latest claims".' });
-      return;
-    }
-    void loadClaims(term);
-  };
-
-  /** Preview is always available once a claim is selected, even if the grounds are empty. */
-  const canPreview = !!selected;
-
   const emailLooksValid = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-  const phoneLooksValid = (value: string) => value.replace(/\D/g, '').length >= 10;
-
-  /**
-   * The email is a blank invitation — the CUSTOMER fills the form in, not us.
-   * So the only thing we insist on is a real address to send it to.
-   */
   const canSend = !!selected && emailLooksValid(toEmail);
 
-  const sendBlockedReason = !selected
-    ? 'Select a customer / claim first.'
-    : !emailLooksValid(toEmail)
-      ? 'Enter the customer\u2019s email address to send to.'
-      : '';
-
-  /** Friendly nudges only — they never block sending. */
-  const sendNotes = [
-    !formLink.trim() ? 'No appeal form link generated yet.' : '',
-    withReview && !paymentLink.trim() ? 'No inspection payment page generated yet.' : '',
-  ].filter(Boolean);
-
-  const smsText = useMemo(() => {
-    const reg = selected?.vehicle_registration ? ` (${selected.vehicle_registration})` : '';
-    const lines = [
-      `Buy a Warranty: we have opened your final claim appeal${reg}.`,
-      formLink ? `Complete your appeal form: ${formLink}` : '',
-      withReview && paymentLink
-        ? `Independent inspection \u00a3${feeNumber || DEFAULT_APPEAL_FEE} (paid to the inspection company): ${paymentLink}`
-        : '',
-      'Questions? Reply or call 0330 229 5040.',
-    ].filter(Boolean);
-    return lines.join('\n');
-  }, [selected?.vehicle_registration, formLink, withReview, paymentLink, feeNumber]);
-
-  const sendAppealEmailTo = async (address: string) => {
-    const { data, error } = await supabase.functions.invoke('send-appeal-email', {
-      body: {
-        to: address,
-        subject: subject.trim() || buildAppealEmailSubject(selected?.vehicle_registration),
-        html: emailHtml,
-        claimId: selected?.id,
-        registration: selected?.vehicle_registration,
-      },
-    });
-    if (error) throw error;
-    if (data?.error) throw new Error(data.error);
-  };
-
-  const handleSendTestEmail = async () => {
-    const address = testEmail.trim() || toEmail.trim();
-    if (!emailLooksValid(address)) {
-      toast({ title: 'Enter a valid test email address', variant: 'destructive' });
-      return;
-    }
-    setSendingTest(true);
-    try {
-      await sendAppealEmailTo(address);
-      toast({ title: 'Test email sent', description: `Sent to ${address}. Nothing was changed on the claim.` });
-    } catch (e: any) {
-      toast({ title: 'Test email failed', description: e.message, variant: 'destructive' });
-    } finally {
-      setSendingTest(false);
-    }
-  };
-
-  const sendSmsTo = async (number: string) => {
-    const { data, error } = await supabase.functions.invoke('send-clicksend-sms', {
-      body: { to: number, message: smsText },
-    });
-    if (error) throw error;
-    if (data?.error) throw new Error(data.error);
-  };
-
-  const handleSendSms = async (mode: 'customer' | 'test') => {
-    const number = (mode === 'test' ? testPhone : toPhone).trim();
-    if (!phoneLooksValid(number)) {
-      toast({ title: 'Enter a valid UK mobile number', variant: 'destructive' });
-      return;
-    }
-    mode === 'test' ? setSendingTestSms(true) : setSendingSms(true);
-    try {
-      await sendSmsTo(number);
-      toast({
-        title: mode === 'test' ? 'Test text sent' : 'Text sent to the customer',
-        description: `Sent to ${number}.`,
-      });
-    } catch (e: any) {
-      toast({ title: 'Text failed', description: e.message, variant: 'destructive' });
-    } finally {
-      mode === 'test' ? setSendingTestSms(false) : setSendingSms(false);
-    }
-  };
-
-
-
-
   const handleSend = async () => {
-    if (!selected) return;
+    if (!selected || !canSend) return;
     setSending(true);
     try {
       const { data: userRes } = await supabase.auth.getUser();
-      const fee = withReview ? feeNumber : 0;
 
-      // 1. Email the customer the appeal, the form link and (if agreed) the payment page.
-      await sendAppealEmailTo(toEmail.trim());
+      // 1. Send the appeal email.
+      const { data, error } = await supabase.functions.invoke('send-appeal-email', {
+        body: {
+          to: toEmail.trim(),
+          subject: subject.trim() || buildAppealEmailSubject(selected.vehicle_registration),
+          html: emailHtml,
+          claimId: selected.id,
+          registration: selected.vehicle_registration,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
-      // 2. Store the appeal.
+      // 2. Record the appeal as open.
       const { error: appealError } = await supabase.from('claim_appeals').insert({
         claim_id: selected.id,
-        reason: reason.trim() || 'Final appeal opened — customer to complete the appeal form.',
-        new_evidence: newEvidence.trim() || null,
-        status: 'submitted',
-        independent_reviewer: withReview ? reviewer?.name : 'No independent review (internal appeal)',
-        reviewer_url: withReview ? reviewer?.url : null,
-        appeal_fee: fee,
-        payment_link: (withReview ? paymentLink.trim() : formLink.trim()) || null,
+        reason: 'Appeal invitation sent — customer directed to the appeal form.',
+        status: 'invited',
         sent_at: new Date().toISOString(),
         customer_email: toEmail.trim(),
         customer_notified: false,
@@ -401,49 +119,12 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
       } as any);
       if (appealError) throw appealError;
 
-
-      // 3. Claim moves to the appeal stage.
+      // 3. Move the claim to the appeal stage.
       const { error: statusError } = await supabase
         .from('claims_submissions')
         .update({ status: 'appeal', updated_at: new Date().toISOString() })
         .eq('id', selected.id);
       if (statusError) throw statusError;
-
-      // 4. Portal notification.
-      let notified = false;
-      if (notifyCustomer && toEmail.trim()) {
-        const { data: customer } = await supabase
-          .from('customers')
-          .select('id')
-          .ilike('email', toEmail.trim())
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (customer?.id) {
-          const { error: notifyError } = await supabase.from('customer_notifications').insert({
-            customer_id: customer.id,
-            is_important: true,
-            created_by: userRes?.user?.id ?? null,
-            message:
-              `Your claim appeal has been opened${selected.vehicle_registration ? ` for ${selected.vehicle_registration}` : ''}. ` +
-              (formLink.trim() ? `Complete your appeal form here: ${formLink.trim()}. ` : '') +
-              (withReview
-                ? `You have asked for an independent review — the £${fee} inspection fee is paid to the independent inspection company, not to Buy a Warranty.` +
-                  (paymentLink.trim() ? ` Complete the inspection form and pay here: ${paymentLink.trim()}. ` : ' ')
-                : `You have chosen to appeal without an independent inspection, so there is nothing to pay. `) +
-              `We will post every update on this appeal here in your profile.`,
-          });
-
-          notified = !notifyError;
-          if (!notifyError) {
-            await supabase
-              .from('claim_appeals')
-              .update({ customer_notified: true })
-              .eq('claim_id', selected.id)
-              .is('customer_notified', false);
-          }
-        }
-      }
 
       await supabase.from('claim_audit_log').insert({
         claim_id: selected.id,
@@ -451,545 +132,104 @@ export const ClaimAppealDialog: React.FC<ClaimAppealDialogProps> = ({
         field: 'status',
         old_value: selected.status || null,
         new_value: 'appeal',
-        reason: reason.trim().slice(0, 500),
+        reason: 'Appeal invitation email sent.',
         actor_id: userRes?.user?.id ?? null,
       } as any);
 
       toast({
         title: 'Appeal email sent',
-        description: notified
-          ? 'Claim set to appeal and the customer has been notified in their profile.'
-          : 'Claim set to appeal. No matching customer profile found for a notification.',
+        description: 'Claim set to appeal and the customer has been emailed the appeal link.',
       });
       onSent?.();
       onOpenChange(false);
     } catch (e: any) {
-      toast({ title: 'Could not send appeal', description: e.message, variant: 'destructive' });
+      toast({ title: 'Could not send appeal email', description: e.message, variant: 'destructive' });
     } finally {
       setSending(false);
     }
-  };
-
-  const copy = (value: string, label: string) => {
-    navigator.clipboard?.writeText(value);
-    toast({ title: `${label} copied` });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-[#F4F6F8] p-0">
         {/* Brand bar */}
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#E2E8F0] bg-white px-6 py-3">
-          <img
-            src={brandLogo.url}
-            alt="Buy a Warranty"
-            className="h-7 w-auto"
-          />
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#1A2B4A] px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
-            <ShieldCheck className="h-3.5 w-3.5" /> Claims
-          </span>
-        </div>
-
-        <div className="px-6 pt-5">
-          <DialogHeader className="rounded-2xl border border-[#E2E8F0] bg-white p-6 text-left shadow-sm">
-            <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-start">
-              <div>
-                <div className="flex items-start gap-4">
-                  <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#E8541A]/25 bg-[#FEF0E8] sm:flex">
-                    <Gavel className="h-6 w-6 text-[#E8541A]" />
-                  </div>
-                  <div>
-                    <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[#E8541A]/20 bg-[#FEF0E8] px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#E8541A]">
-                      Final appeal
-                    </div>
-                    <DialogTitle className="mt-2 text-2xl font-bold text-[#1A2B4A]">
-                      {reviewing ? 'Preview the email before sending' : 'Send the customer their appeal'}
-                    </DialogTitle>
-                    <DialogDescription className="mt-1 text-[#5A6B82] leading-relaxed">
-                      {reviewing
-                        ? 'This is exactly what the customer receives. Go back to edit anything.'
-                        : 'The final stage once a complaint has not changed the outcome. Sends the customer their appeal form, and — only if they agree — an independent review with the inspection payment page.'}
-                    </DialogDescription>
-                  </div>
-                </div>
-              </div>
-
-              <ul className="space-y-3 rounded-xl border border-[#E2E8F0] bg-[#F7F9FC] p-4 text-sm text-[#1A2B4A] md:max-w-[280px]">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#E8541A]" />
-                  <span>Reviewed by our <strong>claims manager</strong></span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#E8541A]" />
-                  <span>Independent inspection is <strong>entirely the customer's choice</strong></span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <LockIcon className="mt-0.5 h-4 w-4 shrink-0 text-[#1A2B4A]" />
-                  <span>Handled privately and securely</span>
-                </li>
-              </ul>
-            </div>
+        <div className="bg-[#1e3a5f] px-6 py-4 text-white">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-white text-lg">
+              <Gavel className="h-5 w-5" /> Send appeal email
+            </DialogTitle>
+            <DialogDescription className="text-blue-100 text-sm">
+              Emails the customer a link to the appeal form. Preview the email, personalise the
+              message, then send when ready.
+            </DialogDescription>
           </DialogHeader>
-
-          <div className="mt-4 flex items-start gap-3 rounded-2xl border border-[#1A2B4A]/15 bg-[#EEF3FA] p-4">
-            <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#1A2B4A]" />
-            <p className="text-sm text-[#1A2B4A] leading-relaxed">
-              <strong>This final appeal is available after the claim has been reviewed and the complaint process completed.</strong>
-              <span className="block text-[#5A6B82]">
-                Complete the details below so the customer receives everything they need in one email.
-              </span>
-            </p>
-          </div>
         </div>
 
-
-
-        <div className="px-6 pb-2">
-        {!reviewing ? (
-          <div className="space-y-4">
-
-            {/* Customer / claim selection */}
-            <div className="space-y-2 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
-              <Label className="text-[#1A2B4A] font-semibold">Select customer / claim *</Label>
-              {selected ? (
-                <Card>
-                  <CardContent className="flex items-center justify-between gap-3 py-3">
-                    <div className="text-sm">
-                      <p className="font-semibold">{selected.name || 'Unnamed'}</p>
-                      <p className="text-muted-foreground">{selected.email || 'No email on this claim'}</p>
-                      <p className="text-muted-foreground">
-                        {selected.vehicle_registration || 'No reg'} ·{' '}
-                        <Badge variant="outline">{selected.status}</Badge>
-                      </p>
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={() => setSelected(null)}>
-                      Change
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <>
-                  <div className="flex gap-2">
-                    <Input
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && runSearch()}
-                      placeholder="Search by registration, email, name or phone"
-                    />
-                    <Button onClick={runSearch} disabled={searching} variant="outline">
-                      {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                    </Button>
-                    <Button
-                      onClick={() => void loadClaims('')}
-                      disabled={searching}
-                      variant="secondary"
-                      className="whitespace-nowrap"
-                    >
-                      Import latest claims
-                    </Button>
-                  </div>
-
-                  {results.length > 0 && (
-                    <div className="max-h-52 overflow-y-auto rounded-md border divide-y">
-                      {results.map((r) => (
-                        <button
-                          key={r.id}
-                          type="button"
-                          onClick={() => setSelected(r)}
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
-                        >
-                          <span className="font-medium">{r.name || 'Unnamed'}</span>{' '}
-                          <span className="text-muted-foreground">
-                            · {r.vehicle_registration || 'no reg'} · {r.email} · {r.status}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-
-            <div className="space-y-2 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
-              <Label className="text-[#1A2B4A] font-semibold">Grounds for appeal *</Label>
-              <Textarea
-                rows={4}
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Why the decision is being appealed — reference the policy terms, the engineer's findings and the complaint outcome."
+        <div className="px-6 py-5 space-y-5">
+          {/* Recipient */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="appeal-to">Send to</Label>
+              <Input
+                id="appeal-to"
+                type="email"
+                value={toEmail}
+                onChange={(e) => setToEmail(e.target.value)}
+                placeholder="customer@email.com"
               />
             </div>
-
-            <div className="space-y-2 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
-              <Label className="text-[#1A2B4A] font-semibold">New evidence supplied</Label>
-              <Textarea
-                rows={3}
-                value={newEvidence}
-                onChange={(e) => setNewEvidence(e.target.value)}
-                placeholder="Garage reports, invoices, photos, service history — anything not seen at the original decision."
+            <div className="space-y-1.5">
+              <Label htmlFor="appeal-subject">Subject</Label>
+              <Input
+                id="appeal-subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
               />
             </div>
-
-            {/* Appeal form the customer fills in */}
-            <div className="space-y-2 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
-              <Label className="text-[#1A2B4A] font-semibold">Customer's appeal form *</Label>
-              <p className="text-xs text-[#5A6B82] leading-relaxed">
-                A secure page where the customer gives their account of the fault and uploads
-                invoices, photos and service history. This link goes in the email.
-              </p>
-              <div className="flex gap-2">
-                <Input value={formLink} readOnly placeholder="Generate the customer's appeal form" />
-                <Button type="button" variant="outline" onClick={generateFormLink} disabled={!selected || generatingForm}>
-                  {generatingForm ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Generate'}
-                </Button>
-                {formLink && (
-                  <>
-                    <Button type="button" variant="ghost" onClick={() => window.open(formLink, '_blank')} title="Preview the form">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button type="button" variant="ghost" onClick={() => copy(formLink, 'Appeal form link')}>
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Independent review — optional */}
-            <div className="space-y-3 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
-              <label className="flex items-start gap-2 text-sm font-medium">
-                <Checkbox
-                  checked={withReview}
-                  onCheckedChange={(v) => setWithReview(v === true)}
-                  className="mt-0.5"
-                />
-                <span>
-                  The customer agrees to an independent review (Scotia / ACE)
-                  <span className="block text-xs font-normal text-muted-foreground">
-                    Leave this unticked to submit the appeal without an inspection — there is then
-                    nothing for the customer to pay and our claims manager reviews it internally.
-                  </span>
-                </span>
-              </label>
-
-              {withReview && (
-                <>
-                  <p className="text-xs text-[#5A6B82] leading-relaxed">
-                    Whichever inspector is available will be booked. The £{feeNumber} inspection fee is
-                    paid to the independent inspection company — it is not a Buy a Warranty charge and
-                    we keep none of it.
-                  </p>
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    {INDEPENDENT_REVIEWERS.map((r) => (
-                      <Card
-                        key={r.id}
-                        onClick={() => setReviewerId(r.id)}
-                        className={`cursor-pointer transition-colors ${
-                          reviewerId === r.id ? 'border-primary ring-2 ring-primary/25' : 'hover:border-muted-foreground/40'
-                        }`}
-                      >
-                        <CardContent className="py-3 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <p className="font-semibold text-sm">{r.name}</p>
-                            {reviewerId === r.id && <CheckCircle2 className="h-4 w-4 text-primary" />}
-                          </div>
-                          <p className="text-xs text-[#5A6B82] leading-relaxed">{r.blurb}</p>
-                          <a
-                            href={r.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center gap-1 text-xs text-primary underline"
-                          >
-                            Visit website <ExternalLink className="h-3 w-3" />
-                          </a>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label className="text-[#1A2B4A] font-semibold text-xs">Inspection fee (£) — payable to the inspection company</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="1"
-                        value={appealFee}
-                        onChange={(e) => setAppealFee(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-[#1A2B4A] font-semibold">Inspection payment link *</Label>
-                      <div className="flex gap-2">
-                        <Input value={paymentLink} readOnly placeholder="Generate the customer's secure payment page" />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={generatePaymentLink}
-                          disabled={!selected || generatingLink}
-                        >
-                          {generatingLink ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Generate'}
-                        </Button>
-                        {paymentLink && (
-                          <>
-                            <Button type="button" variant="ghost" onClick={() => window.open(paymentLink, '_blank')} title="Preview the page">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button type="button" variant="ghost" onClick={() => copy(paymentLink, 'Payment link')}>
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                      <p className="text-xs text-[#5A6B82] leading-relaxed">
-                        Creates a real, working page where the customer completes the inspection form
-                        and pays £{feeNumber} to the independent inspection company.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="rounded-md border border-dashed border-border bg-muted/20 p-3">
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Alternatively, generate a standalone Worldpay £140 pay-by-link that you can copy
-                      and send to the customer by email, SMS or WhatsApp.
-                    </p>
-                    <Worldpay140LinkButton
-                      label="Generate Worldpay £140 link"
-                      className="bg-background hover:bg-muted"
-                    />
-                  </div>
-
-                  <div className="rounded-md border border-dashed border-border bg-muted/20 p-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-                    <span className="text-xs text-muted-foreground">
-                      See the design the customer experiences after paying:
-                    </span>
-                    <Button
-                      type="button"
-                      variant="link"
-                      className="h-auto p-0 text-xs text-[#E8541A]"
-                      onClick={() => window.open('/inspection-payment-received', '_blank')}
-                    >
-                      <Eye className="mr-1 h-3.5 w-3.5" /> "Payment received" thank-you page
-                    </Button>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Email */}
-            <div className="space-y-3 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <Mail className="h-4 w-4" /> Email to the customer
-              </div>
-              <p className="text-xs text-[#5A6B82] leading-relaxed">
-                The email goes out blank — the customer fills the appeal form in themselves and makes
-                any payment. Nothing here needs completing by the claims team.
-              </p>
-              <div className="space-y-2">
-                <Label className="text-[#1A2B4A] font-semibold">Send to *</Label>
-                <Input
-                  type="email"
-                  value={toEmail}
-                  onChange={(e) => setToEmail(e.target.value)}
-                  placeholder="customer@email.co.uk"
-                />
-                <p className="text-xs text-[#5A6B82]">
-                  Prefilled from the claim — change it if the customer uses a different address.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[#1A2B4A] font-semibold">Subject</Label>
-                <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[#1A2B4A] font-semibold">Opening message</Label>
-                <Textarea rows={3} value={intro} onChange={(e) => setIntro(e.target.value)} />
-              </div>
-
-              <div className="rounded-md border border-dashed border-border bg-muted/20 p-3 space-y-2">
-                <Label className="text-xs font-semibold text-[#1A2B4A]">Send yourself a test email</Label>
-                <div className="flex flex-wrap gap-2">
-                  <Input
-                    type="email"
-                    value={testEmail}
-                    onChange={(e) => setTestEmail(e.target.value)}
-                    placeholder="your.name@buyawarranty.co.uk"
-                    className="flex-1 min-w-[200px] bg-background"
-                  />
-                  <Button type="button" variant="outline" onClick={handleSendTestEmail} disabled={sendingTest}>
-                    {sendingTest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
-                    Send test
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Sends the identical email to you only — the claim is not changed and the customer is
-                  not contacted.
-                </p>
-              </div>
-            </div>
-
-            {/* Text message — preview before anything is sent */}
-            <div className="space-y-3 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <Send className="h-4 w-4" /> Text message (optional)
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="text-[#1A2B4A] font-semibold">Customer's mobile</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={toPhone}
-                      onChange={(e) => setToPhone(e.target.value)}
-                      placeholder="07…"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => handleSendSms('customer')}
-                      disabled={sendingSms}
-                      className="whitespace-nowrap"
-                    >
-                      {sendingSms ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send text'}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-[#5A6B82]">Check this number carefully before sending.</p>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[#1A2B4A] font-semibold">Test number</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={testPhone}
-                      onChange={(e) => setTestPhone(e.target.value)}
-                      placeholder="Your own mobile"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => handleSendSms('test')}
-                      disabled={sendingTestSms}
-                      className="whitespace-nowrap"
-                    >
-                      {sendingTestSms ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send test'}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-[#5A6B82]">Goes to you only.</p>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1A2B4A]">Text preview</Label>
-                <pre className="whitespace-pre-wrap rounded-md border border-[#E2E8F0] bg-muted/30 p-3 text-xs text-[#1A2B4A]">
-                  {smsText}
-                </pre>
-              </div>
-            </div>
-
-            <label className="flex items-center gap-2 text-sm text-[#1A2B4A] rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
-              <Checkbox
-                checked={notifyCustomer}
-                onCheckedChange={(v) => setNotifyCustomer(v === true)}
-              />
-              Post an update notification in the customer's profile
-            </label>
           </div>
-        ) : (
-          /* ── Email preview step ── */
-          <div className="space-y-3 text-sm">
-            <div className="space-y-3 rounded-2xl border border-[#E2E8F0] bg-white p-4 text-[#1A2B4A] shadow-sm">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1A2B4A]">To</Label>
-                <Input type="email" value={toEmail} onChange={(e) => setToEmail(e.target.value)} />
-              </div>
-              <p><span className="text-muted-foreground">Subject:</span> {subject}</p>
-              <p className="text-muted-foreground">
-                {withReview
-                  ? `Independent review agreed — ${reviewer?.name} · £${feeNumber} paid to the inspection company`
-                  : 'No independent review — nothing for the customer to pay'}
-              </p>
-              <div className="flex flex-wrap gap-2 pt-1">
-                <Input
-                  type="email"
-                  value={testEmail}
-                  onChange={(e) => setTestEmail(e.target.value)}
-                  placeholder="Test address (yourself)"
-                  className="flex-1 min-w-[200px]"
-                />
-                <Button type="button" variant="outline" size="sm" onClick={handleSendTestEmail} disabled={sendingTest}>
-                  {sendingTest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
-                  Send test email
-                </Button>
-              </div>
-            </div>
-            <iframe
-              title="Appeal email preview"
-              srcDoc={emailHtml}
-              className="w-full h-[520px] rounded-2xl border border-[#E2E8F0] bg-white shadow-sm"
+
+          {/* Personal message */}
+          <div className="space-y-1.5">
+            <Label htmlFor="appeal-message">Your message (personalise before sending)</Label>
+            <Textarea
+              id="appeal-message"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              rows={4}
             />
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={() => window.open(formLink, '_blank')} disabled={!formLink}>
-                <Eye className="h-4 w-4 mr-1" /> Preview appeal form
-              </Button>
-              {withReview && (
-                <Button variant="outline" size="sm" onClick={() => window.open(paymentLink, '_blank')} disabled={!paymentLink}>
-                  <Eye className="h-4 w-4 mr-1" /> Preview payment page
-                </Button>
-              )}
-            </div>
-            <div className="space-y-1 rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-sm">
-              <Label className="text-xs font-semibold text-[#1A2B4A]">Text message preview</Label>
-              <pre className="whitespace-pre-wrap rounded-md border border-[#E2E8F0] bg-muted/30 p-3 text-xs text-[#1A2B4A]">
-                {smsText}
-              </pre>
-              <p className="text-xs text-muted-foreground">
-                Nothing is texted when you send this email — texts are sent from the previous step.
-              </p>
-            </div>
-            <p className="text-muted-foreground">
-              This is the blank invitation the customer receives — they complete the form and any
-              payment themselves. Sending will email them, store the appeal, set the claim to{' '}
-              <Badge>appeal</Badge>{' '}
-              {notifyCustomer ? 'and post an update in their profile.' : 'without a profile notification.'}
-            </p>
           </div>
-        )}
 
+          {/* Preview */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+              <Eye className="h-4 w-4" /> Email preview
+            </div>
+            <div className="rounded-md border border-gray-300 bg-white overflow-hidden">
+              <div
+                className="max-h-[420px] overflow-y-auto"
+                dangerouslySetInnerHTML={{ __html: emailHtml }}
+              />
+            </div>
+          </div>
         </div>
 
-        <DialogFooter className="gap-2 border-t border-[#E2E8F0] bg-white px-6 py-4 sm:items-center">
-
-          {reviewing ? (
-            <>
-              {(sendBlockedReason || sendNotes.length > 0) && (
-                <p className="text-xs text-muted-foreground mr-auto">
-                  {sendBlockedReason || sendNotes.join(' ')}
-                </p>
-              )}
-
-              <Button variant="outline" onClick={() => setReviewing(false)} disabled={sending}>
-                <ArrowLeft className="h-4 w-4 mr-1" /> Back to edit
-              </Button>
-              <Button onClick={handleSend} disabled={sending || !canSend} className="bg-[#E8541A] hover:bg-[#cf471a] text-white">
-                {sending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
-                Send email &amp; open appeal
-              </Button>
-            </>
-          ) : (
-            <>
-              {!canPreview && (
-                <p className="text-xs text-muted-foreground mr-auto">
-                  Select a customer / claim to preview the email.
-                </p>
-              )}
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
-              </Button>
-              <Button onClick={() => setReviewing(true)} disabled={!canPreview} className="bg-[#E8541A] hover:bg-[#cf471a] text-white">
-                <Eye className="h-4 w-4 mr-1" /> Preview email
-              </Button>
-            </>
-          )}
+        <DialogFooter className="px-6 py-4 border-t border-gray-200 bg-white">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={sending}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSend}
+            disabled={!canSend || sending}
+            className="bg-[#1e3a5f] hover:bg-[#162c48] text-white"
+          >
+            {sending ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4 mr-2" />
+            )}
+            Send appeal email
+          </Button>
         </DialogFooter>
-
       </DialogContent>
     </Dialog>
   );
