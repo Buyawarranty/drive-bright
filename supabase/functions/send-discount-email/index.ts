@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { logCustomerEmail } from '../_shared/log-email.ts';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { isMarketingSuppressed } from '../_shared/marketing-suppression.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -33,6 +35,20 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { email, discountCode, discountAmount }: DiscountEmailRequest = await req.json();
     
+    // Promo email: never send to anyone who has unsubscribed from marketing.
+    const guardClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { auth: { persistSession: false } }
+    );
+    if (await isMarketingSuppressed(guardClient, email)) {
+      logStep('Blocked: recipient unsubscribed from marketing', { email });
+      return new Response(JSON.stringify({ success: false, skipped: true, reason: 'unsubscribed' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
+
     logStep('Sending discount email', { email, discountCode, discountAmount });
 
     const resend = new Resend(resendApiKey);
