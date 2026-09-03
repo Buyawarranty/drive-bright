@@ -610,6 +610,59 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     [pagedRenewals],
   );
   const { activityByEmail: renewalActivityByEmail } = useCustomerActivity(renewalEmails);
+  // Live New Leads activity for these renewals (owner, calls, status, notes).
+  const { leadSyncByEmail, refreshLeadSync } = useRenewalLeadSync(renewalEmails);
+
+  /**
+   * Auto-assign: every renewal must sit with an agent. Anything unassigned is
+   * pushed into the selected rotation (Round Robin or Open Round Robin) in
+   * turn order, so renewal leads start flowing to agents immediately.
+   */
+  const syncUnassignedIntoRotation = useCallback(async (manual = false) => {
+    if (rotationAgents.length === 0) {
+      if (manual) toast.error('No agents in this rotation', { description: 'Switch on agents in Lead Allocation first.' });
+      return;
+    }
+    const unassigned = rows.filter((r) => r.customer_id && !r.customers?.assigned_to);
+    if (unassigned.length === 0) {
+      if (manual) toast.info('All renewals are already assigned');
+      return;
+    }
+    setSyncingAssign(true);
+    let cursor = 0;
+    let done = 0;
+    try {
+      for (const row of unassigned) {
+        const agent = rotationAgents[cursor % rotationAgents.length];
+        cursor += 1;
+        const { error } = await (supabase.from('customers') as any)
+          .update({ assigned_to: agent.user_id }).eq('id', row.customer_id);
+        if (error) continue;
+        done += 1;
+        setRows((prev) => prev.map((r) =>
+          r.id === row.id && r.customers
+            ? { ...r, customers: { ...r.customers, assigned_to: agent.user_id! } }
+            : r
+        ));
+      }
+      if (done > 0) {
+        toast.success(`${done} renewal${done === 1 ? '' : 's'} assigned`, {
+          description: distMode === 'open_pool' ? 'Open Round Robin rotation' : 'Round Robin rotation',
+        });
+      }
+    } finally {
+      setSyncingAssign(false);
+    }
+  }, [rotationAgents, rows, distMode]);
+
+  useEffect(() => {
+    if (!autoAssign || loading || rows.length === 0 || rotationAgents.length === 0) return;
+    if (!rows.some((r) => r.customer_id && !r.customers?.assigned_to)) return;
+    syncUnassignedIntoRotation(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoAssign, loading, rows, rotationAgents]);
+
+
 
 
   const markWorked = useCallback(async (row: PolicyRow, outcome?: string) => {
