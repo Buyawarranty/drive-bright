@@ -49,3 +49,8 @@
 - [x] Renewals assignment order: seller-first confirmed in DB function; preview panel added
 - [x] Sandbox mockup: RenewalAssignmentFlowPanel in Engine & settings
 - [ ] Payment Assist browser-flow verification (S17DRW / RV19OWW)
+
+## Renewals queue (Sep 2026)
+- [ ] Sync renewal assignment with selected distribution mode (round robin / open round robin); never leave a renewal unassigned
+- [ ] Clear "Renewal" tag on every renewal row
+- [ ] Sync New Leads activity (notes, calls, status, owner) into the renewals row
