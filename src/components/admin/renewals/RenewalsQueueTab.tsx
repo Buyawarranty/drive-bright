@@ -23,7 +23,7 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { formatStoredPolicyCoverDuration } from '@/lib/policyCoverDuration';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
-import { BulkEmailDialog } from '@/components/admin/BulkEmailDialog';
+
 import { RenewalPoolBar } from '@/components/admin/renewals/RenewalPoolBar';
 import { useCustomerActivity } from '@/hooks/useCustomerActivity';
 import { useLeadRoutingPermission } from '@/hooks/useLeadRoutingPermission';
@@ -99,6 +99,9 @@ interface PolicyRow {
   retention_outcome: string | null;
   customer_full_name: string | null;
   email: string | null;
+  payment_amount: number | null;
+  payment_currency: string | null;
+  voluntary_excess: number | null;
   customers?: {
     id: string;
     first_name: string | null;
@@ -306,6 +309,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     'policy_start_date, policy_end_date, claim_limit, tyre_cover, wear_tear, ' +
     'breakdown_recovery, vehicle_rental, europe_cover, mot_repair, ' +
     'retention_worked_at, retention_outcome, customer_full_name, email, ' +
+    'payment_amount, payment_currency, voluntary_excess, ' +
     'customers!fk_customer_policies_customer_id ( id, first_name, last_name, name, email, phone, registration_plate, vehicle_make, vehicle_model, status, assigned_to, created_at )';
 
   const fetchRows = useCallback(async () => {
@@ -907,46 +911,31 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                     <Checkbox checked={allSelected} onCheckedChange={toggleAllVisible} />
                   </th>
                   <th className="text-left p-2 w-[140px]">Agent</th>
-                  {canSeeSource && <th className="text-left p-2 w-[70px]">Src</th>}
-                  <th className="text-left p-2 w-[120px]">Outcome</th>
-                  <th className="text-left p-2 w-[120px]">
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-foreground"
-                      title="Sort by how soon the policy renews"
-                      onClick={() => setSortKey(sortKey === 'due_next' ? 'due_latest' : 'due_next')}
-                    >
-                      Renews in
-                      {sortKey === 'due_next' ? <ArrowUp className="h-3 w-3" />
-                        : sortKey === 'due_latest' ? <ArrowDown className="h-3 w-3" />
-                        : <ArrowUpDown className="h-3 w-3 opacity-50" />}
-                    </button>
-                  </th>
-                  <th className="text-left p-2 w-[70px]">Plan</th>
-                  <th className="text-left p-2 w-[90px]">Duration</th>
+                  <th className="text-left p-2 w-[120px]">Status</th>
                   <th className="text-center p-2 w-[90px]">Calls</th>
-                  <th className="text-left p-2 w-[110px]">Last contacted</th>
-                  <th className="text-left p-2 w-[240px]">Latest note</th>
                   <th className="text-left p-2 w-[380px]">Actions</th>
                   <th className="text-left p-2 w-[140px]">Name</th>
                   <th className="text-left p-2 w-[130px]">Phone</th>
                   <th className="text-left p-2 w-[180px]">Email</th>
                   <th className="text-left p-2 w-[90px]">Reg</th>
-                  <th className="text-left p-2 w-[110px]">Date added</th>
+                  <th className="text-left p-2 w-[110px]" title="What the customer paid for their current policy — hover for plan, duration, excess, claim limit and add-ons.">Payment</th>
+                  <th className="text-left p-2 w-[110px]" title="When the customer paid for / started their current policy.">Paid Date</th>
+                  <th className="text-left p-2 w-[110px]">Agent activity</th>
+                  <th className="text-left p-2 w-[110px]">Lead Date</th>
+                  <th className="text-left p-2 w-[140px]" title="Last time the customer themselves did something — asked for another quote, filled step 2, or logged into the portal.">Customer activity</th>
                   <th className="text-left p-2 w-[120px]">
                     <button
                       type="button"
                       className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-foreground"
-                      title="Sort by expiry date"
+                      title="Time to contact — how soon the policy renews"
                       onClick={() => setSortKey(sortKey === 'due_next' ? 'due_latest' : 'due_next')}
                     >
-                      Expiry
+                      Time to contact
                       {sortKey === 'due_next' ? <ArrowUp className="h-3 w-3" />
                         : sortKey === 'due_latest' ? <ArrowDown className="h-3 w-3" />
                         : <ArrowUpDown className="h-3 w-3 opacity-50" />}
                     </button>
                   </th>
-                  <th className="text-left p-2 w-[140px]" title="Last time the customer themselves did something — asked for another quote, filled step 2, or logged into the portal.">Customer activity</th>
                 </tr>
               </thead>
               <tbody>
@@ -1001,7 +990,6 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                           </SelectContent>
                         </Select>
                       </td>
-                      {canSeeSource && <td className="p-2">{srcBadge(segment)}</td>}
                       <td className="p-2">
                         <Select value={r.retention_outcome ?? ''} onValueChange={(v) => markWorked(r, v)}>
                           <SelectTrigger className="h-7 w-[110px] text-xs"><SelectValue placeholder="—" /></SelectTrigger>
@@ -1011,22 +999,6 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                             ))}
                           </SelectContent>
                         </Select>
-                      </td>
-                      <td className="p-2">
-                        <div className="flex items-center gap-1">
-                          {expiryBadge(days)}
-                          {isUrgent && (
-                            <Badge className="bg-[#FF385C] text-white border-[#FF385C] text-[10px] px-1.5 py-0 h-4 gap-0.5">
-                              <Zap className="h-2.5 w-2.5" /> NOW
-                            </Badge>
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-2 text-xs">
-                        <Badge variant="outline" className="text-[10px]">{planLengthLabel(r)}</Badge>
-                      </td>
-                      <td className="p-2 text-xs text-muted-foreground whitespace-nowrap">
-                        {formatStoredPolicyCoverDuration(r.policy_start_date, r.policy_end_date)}
                       </td>
                       <td className="p-2">
                         <div className="flex items-center justify-center gap-1">
@@ -1044,25 +1016,6 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                           </Button>
                         </div>
                       </td>
-                      <td className="p-2 text-xs text-muted-foreground">
-                        {r.retention_worked_at
-                          ? formatDistanceToNow(new Date(r.retention_worked_at), { addSuffix: true })
-                          : <span className="text-muted-foreground/60">Never</span>}
-                      </td>
-                      <td className="p-2 text-xs">
-                        {r.customer_id && latestNoteByCustomer[r.customer_id] ? (
-                          <div className="max-w-[230px]">
-                            <div className="line-clamp-2 text-foreground" title={latestNoteByCustomer[r.customer_id].text}>
-                              {latestNoteByCustomer[r.customer_id].text}
-                            </div>
-                            <div className="text-[10px] text-muted-foreground mt-0.5">
-                              {formatDistanceToNow(new Date(latestNoteByCustomer[r.customer_id].at), { addSuffix: true })}
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground/60">—</span>
-                        )}
-                      </td>
                       <td className="p-2">
                         <div className="flex items-center gap-1 flex-wrap">
                           {phone && (
@@ -1075,14 +1028,6 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                             <Button asChild size="icon" variant="outline" className="h-7 w-7" title="Quick email">
                               <a href={`mailto:${email}`}><Mail className="h-3 w-3" /></a>
                             </Button>
-                          )}
-                          {r.customer_id && (
-                            <div title="Send marketing email (template)">
-                              <BulkEmailDialog
-                                selectedCustomerIds={[r.customer_id]}
-                                onComplete={() => toast.success('Marketing email sent')}
-                              />
-                            </div>
                           )}
                           {onNavigateToTab && (
                             <Button size="sm" variant="default" className="h-7 px-2 text-xs gap-1"
@@ -1099,6 +1044,15 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                             </PopoverTrigger>
                             <PopoverContent className="w-72 p-3" align="start">
                               <div className="text-xs font-medium mb-2">Note for {name}</div>
+                              {r.customer_id && latestNoteByCustomer[r.customer_id] && (
+                                <div className="mb-2 rounded border bg-muted/40 p-2">
+                                  <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-0.5">Latest note</div>
+                                  <div className="text-xs text-foreground whitespace-pre-wrap">{latestNoteByCustomer[r.customer_id].text}</div>
+                                  <div className="text-[10px] text-muted-foreground mt-1">
+                                    {formatDistanceToNow(new Date(latestNoteByCustomer[r.customer_id].at), { addSuffix: true })}
+                                  </div>
+                                </div>
+                              )}
                               <Textarea rows={3} placeholder="Quick note…"
                                 value={noteDraft[r.id] || ''}
                                 onChange={(e) => setNoteDraft((p) => ({ ...p, [r.id]: e.target.value }))} />
@@ -1132,25 +1086,80 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                         <div className="text-[10px] text-muted-foreground">
                           {r.policy_number || r.warranty_number || ''}
                         </div>
-                        {r.retention_worked_at && (
-                          <div className="text-[10px] text-muted-foreground">
-                            worked {formatDistanceToNow(new Date(r.retention_worked_at), { addSuffix: true })}
-                          </div>
-                        )}
                       </td>
                       <td className="p-2 text-xs">{phone || '—'}</td>
                       <td className="p-2 text-xs truncate max-w-[180px]" title={email}>{email || '—'}</td>
                       <td className="p-2 text-xs uppercase">{r.customers?.registration_plate || '—'}</td>
+                      <td className="p-2 text-xs whitespace-nowrap">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button type="button" className="text-left underline decoration-dotted underline-offset-2 hover:text-foreground">
+                              {r.payment_amount != null
+                                ? `£${Number(r.payment_amount).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                : '—'}
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-72 p-3" align="start">
+                            <div className="text-xs font-semibold mb-2">Previous warranty</div>
+                            <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
+                              <dt className="text-muted-foreground">Plan</dt>
+                              <dd className="font-medium">{planLengthLabel(r)}</dd>
+                              <dt className="text-muted-foreground">Duration</dt>
+                              <dd className="font-medium">{formatStoredPolicyCoverDuration(r.policy_start_date, r.policy_end_date)}</dd>
+                              <dt className="text-muted-foreground">Price paid</dt>
+                              <dd className="font-medium">
+                                {r.payment_amount != null
+                                  ? `£${Number(r.payment_amount).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                  : '—'}
+                                {r.payment_type ? ` (${r.payment_type})` : ''}
+                              </dd>
+                              <dt className="text-muted-foreground">Excess</dt>
+                              <dd className="font-medium">{r.voluntary_excess != null ? `£${r.voluntary_excess}` : '—'}</dd>
+                              <dt className="text-muted-foreground">Claim limit</dt>
+                              <dd className="font-medium">{r.claim_limit != null ? `£${Number(r.claim_limit).toLocaleString('en-GB')}` : '—'}</dd>
+                              <dt className="text-muted-foreground">Add-ons</dt>
+                              <dd className="font-medium">
+                                {([
+                                  r.tyre_cover && 'Tyre',
+                                  r.wear_tear && 'Wear & tear',
+                                  r.breakdown_recovery && 'Breakdown',
+                                  r.vehicle_rental && 'Car hire',
+                                  r.europe_cover && 'European',
+                                  r.mot_repair && 'MOT repair',
+                                ].filter(Boolean) as string[]).join(', ') || 'None'}
+                              </dd>
+                            </dl>
+                          </PopoverContent>
+                        </Popover>
+                      </td>
+                      <td className="p-2 text-xs text-muted-foreground">
+                        {r.policy_start_date ? format(new Date(r.policy_start_date), 'd MMM yy') : '—'}
+                      </td>
+                      <td className="p-2 text-xs text-muted-foreground">
+                        {r.retention_worked_at
+                          ? formatDistanceToNow(new Date(r.retention_worked_at), { addSuffix: true })
+                          : <span className="text-muted-foreground/60">Never</span>}
+                      </td>
                       <td className="p-2 text-xs text-muted-foreground">
                         {r.customers?.created_at
                           ? format(new Date(r.customers.created_at), 'd MMM yy')
                           : (r.policy_start_date ? format(new Date(r.policy_start_date), 'd MMM yy') : '—')}
                       </td>
-                      <td className="p-2 text-xs text-muted-foreground">
-                        {r.policy_end_date ? format(new Date(r.policy_end_date), 'd MMM yy') : '—'}
-                      </td>
                       <td className="p-2">
                         <CustomerActivityCell activity={email ? renewalActivityByEmail[email] : undefined} />
+                      </td>
+                      <td className="p-2">
+                        <div className="flex items-center gap-1">
+                          {expiryBadge(days)}
+                          {isUrgent && (
+                            <Badge className="bg-[#FF385C] text-white border-[#FF385C] text-[10px] px-1.5 py-0 h-4 gap-0.5">
+                              <Zap className="h-2.5 w-2.5" /> NOW
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">
+                          {r.policy_end_date ? format(new Date(r.policy_end_date), 'd MMM yy') : ''}
+                        </div>
                       </td>
                     </tr>
                   );
