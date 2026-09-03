@@ -1076,14 +1076,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                               <a href={`mailto:${email}`}><Mail className="h-3 w-3" /></a>
                             </Button>
                           )}
-                          {r.customer_id && (
-                            <div title="Send marketing email (template)">
-                              <BulkEmailDialog
-                                selectedCustomerIds={[r.customer_id]}
-                                onComplete={() => toast.success('Marketing email sent')}
-                              />
-                            </div>
-                          )}
+                          
                           {onNavigateToTab && (
                             <Button size="sm" variant="default" className="h-7 px-2 text-xs gap-1"
                               onClick={() => onNavigateToTab('get-quote', sendQuotePrefill)}
