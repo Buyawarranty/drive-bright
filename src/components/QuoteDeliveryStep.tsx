@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getStoredFbclid, getStoredFbReferrer, getSessionFbclid, getSessionFbReferrer } from '@/utils/fbclidCapture';
 import { getSessionMsclkid } from '@/utils/msclkidCapture';
 import { getSessionTtclid } from '@/utils/ttclidCapture';
-import { getStoredGclid, getSessionGclid } from '@/utils/gclidCapture';
+import { getStoredGclid, getSessionOrUrlGclid, getAttributionGclid, getTrackingSessionId } from '@/utils/gclidCapture';
 import { getSessionUtms, compactUtms } from '@/utils/utmCapture';
 import { getAbVariant } from '@/utils/abVariant';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -113,7 +113,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     try {
       if (email.trim()) {
         const skipFbclid = getSessionFbclid();
-        const skipGclid = getSessionGclid();
+        const skipGclid = getSessionOrUrlGclid();
+        const skipGclidAny = getAttributionGclid();
         await supabase.functions.invoke('track-abandoned-cart', {
           body: {
             full_name: firstName.trim() || null,
@@ -127,6 +128,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             step_abandoned: 2,
             ...(skipFbclid ? { fbclid: skipFbclid } : {}),
             ...(skipGclid ? { gclid: skipGclid } : {}),
+            ...(skipGclidAny ? { gclid_any: skipGclidAny } : {}),
+            ...(getTrackingSessionId() ? { tracking_session_id: getTrackingSessionId() } : {}),
             ...((() => { const ms = getSessionMsclkid(); return ms ? { msclkid: ms } : {}; })()),
             ...((() => { const tt = getSessionTtclid(); return tt ? { ttclid: tt } : {}; })()),
           }
@@ -251,7 +254,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       // gclid/fbclid in localStorage doesn't reclassify organic visitors as paid.
       // Long-lived getStoredFbclid / getStoredGclid remain for conversion uploads only.
       const storedFbclid = getSessionFbclid();
-      const storedGclid = getSessionGclid();
+      const storedGclid = getSessionOrUrlGclid();
+      const attributionGclid = getAttributionGclid();
+      const trackingSessionId = getTrackingSessionId();
       const storedMsclkid = getSessionMsclkid();
       const storedTtclid = getSessionTtclid();
       // Pull all 5 UTMs from session (utm_source/medium/campaign/term/content).
@@ -286,7 +291,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               updated_at: new Date().toISOString(),
               ...(() => {
                 const fb = storedFbclid || getSessionFbclid();
-                const gc = storedGclid || getSessionGclid();
+                const gc = storedGclid || getSessionOrUrlGclid();
                 const ms = storedMsclkid || getSessionMsclkid();
                 const tt = storedTtclid || getSessionTtclid();
                 const fbRef = !fb ? getSessionFbReferrer() : null;
@@ -295,6 +300,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   cart_metadata: {
                     ...(fb ? { fbclid: fb } : {}),
                     ...(gc ? { gclid: gc } : {}),
+                    ...(attributionGclid ? { gclid_any: attributionGclid } : {}),
+                    ...(trackingSessionId ? { tracking_session_id: trackingSessionId } : {}),
                     ...(ms ? { msclkid: ms } : {}),
                     ...(tt ? { ttclid: tt } : {}),
                     ...utms,
@@ -336,6 +343,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   cart_metadata: {
                     ...(storedFbclid ? { fbclid: storedFbclid } : {}),
                     ...(storedGclid ? { gclid: storedGclid } : {}),
+                    ...(attributionGclid ? { gclid_any: attributionGclid } : {}),
+                    ...(trackingSessionId ? { tracking_session_id: trackingSessionId } : {}),
                     ...(storedMsclkid ? { msclkid: storedMsclkid } : {}),
                     ...(storedTtclid ? { ttclid: storedTtclid } : {}),
 
@@ -351,7 +360,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           console.error('Error creating abandoned cart, retrying via track-abandoned-cart edge function:', cartInsertError);
 
           const fallbackFbclid = getSessionFbclid();
-          const fallbackGclid = getSessionGclid();
+          const fallbackGclid = getSessionOrUrlGclid();
           const { error: fallbackTrackError } = await supabase.functions.invoke('track-abandoned-cart', {
             body: {
               full_name: firstName.trim(),
@@ -366,6 +375,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               step_abandoned: 2,
               ...(fallbackFbclid ? { fbclid: fallbackFbclid } : {}),
               ...(fallbackGclid ? { gclid: fallbackGclid } : {}),
+              ...(attributionGclid ? { gclid_any: attributionGclid } : {}),
+              ...(trackingSessionId ? { tracking_session_id: trackingSessionId } : {}),
               ...(storedMsclkid ? { msclkid: storedMsclkid } : {}),
               ...(storedTtclid ? { ttclid: storedTtclid } : {}),
             }

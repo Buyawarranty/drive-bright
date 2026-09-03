@@ -54,6 +54,10 @@ interface AbandonedCartData {
   // Facebook/Google ad attribution
   fbclid?: string;
   gclid?: string;
+  /** Widest-net gclid (may be up to 90 days old) — stored for CRM/conversion uploads only. */
+  gclid_any?: string;
+  /** Page-view session id, used to recover a lost gclid from page_views. */
+  tracking_session_id?: string;
   msclkid?: string;
   ttclid?: string;
   fb_referrer?: string;
@@ -255,6 +259,25 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // GCLID recovery: if the client lost the click id (in-app browsers can drop
+    // sessionStorage), look it up from the page_views rows for this session.
+    if (!cartData.gclid && cartData.tracking_session_id) {
+      const { data: pv } = await supabase
+        .from('page_views')
+        .select('gclid')
+        .eq('session_id', cartData.tracking_session_id)
+        .not('gclid', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      const recovered = pv?.[0]?.gclid || null;
+      if (recovered) {
+        cartData.gclid = recovered;
+        cartData.gclid_any = cartData.gclid_any || recovered;
+        console.log('🔁 Recovered gclid from page_views for session', cartData.tracking_session_id);
+      }
+    }
+    if (!cartData.gclid_any && cartData.gclid) cartData.gclid_any = cartData.gclid;
+
     // Server-side identity hydration: recover phone/name from historical records when Step 3/4 payloads omit them
     await hydrateIdentityFromHistory(supabase, cartData);
 
@@ -275,6 +298,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     // If we have a recent entry, update it instead of creating a new one
     if (existingCart && existingCart.length > 0) {
+      // Never lose previously captured click ids when a later step posts without them
+      const prevMeta = (existingCart[0] as any)?.cart_metadata;
+      if (prevMeta && typeof prevMeta === 'object') {
+        cartData.gclid = cartData.gclid || prevMeta.gclid || undefined;
+        cartData.gclid_any = cartData.gclid_any || prevMeta.gclid_any || prevMeta.gclid || undefined;
+        cartData.fbclid = cartData.fbclid || prevMeta.fbclid || undefined;
+        cartData.msclkid = cartData.msclkid || prevMeta.msclkid || undefined;
+        cartData.ttclid = cartData.ttclid || prevMeta.ttclid || undefined;
+        cartData.tracking_session_id = cartData.tracking_session_id || prevMeta.tracking_session_id || undefined;
+      }
+
       // CRITICAL SAFEGUARD: Build update payload carefully.
       // Only include phone/full_name if the new value is non-empty.
       // This prevents Step 3 (which doesn't collect phone) from wiping Step 2 data.
@@ -299,6 +333,8 @@ const handler = async (req: Request): Promise<Response> => {
           protection_addons: cartData.protection_addons,
           ...(cartData.fbclid ? { fbclid: cartData.fbclid } : {}),
           ...(cartData.gclid ? { gclid: cartData.gclid } : {}),
+          ...(cartData.gclid_any ? { gclid_any: cartData.gclid_any } : {}),
+          ...(cartData.tracking_session_id ? { tracking_session_id: cartData.tracking_session_id } : {}),
           ...(cartData.msclkid ? { msclkid: cartData.msclkid } : {}),
           ...(cartData.ttclid ? { ttclid: cartData.ttclid } : {}),
           ...(cartData.fb_referrer ? { fb_referrer: cartData.fb_referrer } : {}),
@@ -352,6 +388,8 @@ const handler = async (req: Request): Promise<Response> => {
             protection_addons: cartData.protection_addons,
             ...(cartData.fbclid ? { fbclid: cartData.fbclid } : {}),
             ...(cartData.gclid ? { gclid: cartData.gclid } : {}),
+            ...(cartData.gclid_any ? { gclid_any: cartData.gclid_any } : {}),
+            ...(cartData.tracking_session_id ? { tracking_session_id: cartData.tracking_session_id } : {}),
           ...(cartData.msclkid ? { msclkid: cartData.msclkid } : {}),
           ...(cartData.ttclid ? { ttclid: cartData.ttclid } : {}),
             ...(cartData.fb_referrer ? { fb_referrer: cartData.fb_referrer } : {}),
