@@ -147,6 +147,27 @@ serve(async (req) => {
       throw new Error("Recipient email is required");
     }
 
+    // Marketing suppression: an unsubscribe must stop EVERY marketing email
+    // type, whichever caller routed it through here.
+    if (isMarketingTemplate(templateId) || requestBody.isMarketing === true) {
+      const guardClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+        { auth: { persistSession: false } }
+      );
+      const suppressed = await isMarketingSuppressed(guardClient, recipientEmail, {
+        essential: requestBody.isEssential === true,
+      });
+      if (suppressed) {
+        logStep("Blocked: recipient unsubscribed from marketing", { recipientEmail, templateId });
+        return new Response(
+          JSON.stringify({ success: false, skipped: true, reason: 'unsubscribed' }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+        );
+      }
+    }
+
+
     const resendKey = Deno.env.get("RESEND_API_KEY");
     if (!resendKey) {
       logStep("ERROR: RESEND_API_KEY not found");
