@@ -46,6 +46,6 @@
 - [ ] Payment Assist monthly checkout fails for S17DRW: PA API rejects telephone (invalid telephone) — normalise UK phone before send
 - Renewals tab: match New Leads column order (# Agent Status Calls Actions Name Phone Email Reg Payment Paid Date Agent activity Lead Date Customer activity Time to contact); auto-surface previous warranty price/duration/excess in notes or hover
 ## Open
-- [ ] Renewals assignment order: original selling agent first (already in create_renewal_lead_for_policy), fallback round robin — verify + surface in UI
-- [ ] Sandbox mockup of renewal assignment flow using real sales agents
+- [x] Renewals assignment order: seller-first confirmed in DB function; preview panel added
+- [x] Sandbox mockup: RenewalAssignmentFlowPanel in Engine & settings
 - [ ] Payment Assist browser-flow verification (S17DRW / RV19OWW)
