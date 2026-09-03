@@ -19,6 +19,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
+import { useSandboxLiveLeads, type SandboxLiveLead } from '@/hooks/useSandboxLiveLeads';
 import { cn } from '@/lib/utils';
 import type { LeadStatus } from '@/hooks/useLeads';
 
@@ -214,7 +215,43 @@ const CopyEmail = ({ email }: { email: string }) => {
   );
 };
 
+/**
+ * Map READ-ONLY live leads into practice rows. The copy lives in local state
+ * only — taking, dialling or restatusing a row here never writes to the
+ * database and never touches the live New Leads pipeline.
+ */
+const liveLeadsToPracticeLeads = (live: SandboxLiveLead[]): PracticeLead[] =>
+  live
+    .map((l) => ({
+      id: `live-${l.id}`,
+      arrived: l.createdAt,
+      name: l.firstName || 'Customer',
+      surname: l.lastName || '',
+      phone: l.phone,
+      email: l.email,
+      reg: l.reg,
+      repeat: false,
+      status: statusLabels[(l.status as LeadStatus)] ?? 'New',
+      payment: 'Not paid',
+      paidDate: null,
+      assignedTo: null,
+      why: 'Waiting in Open Pool (practice copy of a live lead)',
+      calls: l.callCount,
+      notes: 0,
+      assignedAt: null,
+    }))
+    .sort((a, b) => a.arrived.getTime() - b.arrived.getTime());
+
 export const OrrOvernightSandboxPanel: React.FC = () => {
+  // 'practice' = made-up names. 'live' = a read-only copy of the leads we really
+  // received. Live mode NEVER writes: New Leads and agent figures stay untouched.
+  const [dataSource, setDataSource] = React.useState<'practice' | 'live'>('practice');
+  const {
+    leads: liveLeads,
+    loading: liveLoading,
+    error: liveError,
+    refresh: refreshLive,
+  } = useSandboxLiveLeads(dataSource === 'live', { window: 'overnight', limit: 40 });
   const [agents, setAgents] = React.useState<PracticeAgent[]>([
     { id: 'a1', name: 'Freddie Howard', ext: '202', on: true },
     { id: 'a2', name: 'James Reed', ext: '201', on: true },
@@ -230,6 +267,18 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
   const [morningRun, setMorningRun] = React.useState<Date | null>(null);
   const [tick, setTick] = React.useState(() => new Date());
 
+
+  // Reseed the practice pool whenever the data source or the live batch changes.
+  React.useEffect(() => {
+    if (dataSource === 'live') {
+      setLeads(liveLeadsToPracticeLeads(liveLeads));
+    } else {
+      setLeads(seedOvernightLeads(14));
+    }
+    setCursor(0);
+    setLastRun(null);
+    setMorningRun(null);
+  }, [dataSource, liveLeads]);
 
   const onAgents = agents.filter(a => a.on);
   const waiting = leads.filter(l => !l.assignedTo);
@@ -350,8 +399,10 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
                 A safe place to rehearse the overnight batch: leads that arrived from 6pm yesterday wait in the Open
-                Pool and are released one each, in arrow order, to switched-on Open Round Robin agents. Every name here
-                is made up — no customer is contacted and no agent's figures change.
+                Pool and are released one each, in arrow order, to switched-on Open Round Robin agents.
+                {dataSource === 'live'
+                  ? ' These are the real leads we received overnight, shown as a read-only copy — Open Round Robin is still off, nothing is written back, no customer is contacted and no agent\'s figures change.'
+                  : ' Every name here is made up — no customer is contacted and no agent\'s figures change.'}
               </p>
               <p className="text-xs text-muted-foreground">
                 Next agent in line: <strong className="text-foreground">{nextAgent ? nextAgent.name.split(' ')[0] : '—'}</strong>
@@ -377,9 +428,51 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
             <Split className="h-3.5 w-3.5" />
             Hand out waiting leads now
           </button>
+          <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setDataSource('practice')}
+              className={cn(
+                'px-3 py-1.5 text-xs font-semibold transition-colors',
+                dataSource === 'practice' ? 'bg-violet-600 text-white' : 'bg-background text-muted-foreground hover:bg-muted',
+              )}
+            >
+              Made-up names
+            </button>
+            <button
+              type="button"
+              onClick={() => setDataSource('live')}
+              title="Rehearse against the real overnight leads. Read-only copy — nothing is written back and New Leads is untouched."
+              className={cn(
+                'px-3 py-1.5 text-xs font-semibold border-l border-border transition-colors',
+                dataSource === 'live' ? 'bg-violet-600 text-white' : 'bg-background text-muted-foreground hover:bg-muted',
+              )}
+            >
+              Live leads (read-only)
+            </button>
+          </div>
+          {dataSource === 'live' && (
+            <>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800">
+                Live data · read-only · nothing saved
+              </span>
+              <button
+                type="button"
+                onClick={() => void refreshLive()}
+                disabled={liveLoading}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-background text-xs font-medium hover:bg-muted transition-colors disabled:opacity-60"
+              >
+                <RefreshCw className={cn('h-3.5 w-3.5', liveLoading && 'animate-spin')} />
+                Refresh live batch
+              </button>
+            </>
+          )}
           <button
             type="button"
-            onClick={() => { setLeads(seedOvernightLeads(14)); setCursor(0); setLastRun(null); }}
+            onClick={() => {
+              if (dataSource === 'live') { void refreshLive(); } else { setLeads(seedOvernightLeads(14)); }
+              setCursor(0); setLastRun(null);
+            }}
             className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-background text-xs font-medium hover:bg-muted transition-colors"
           >
             <Sunrise className="h-3.5 w-3.5" />
@@ -388,6 +481,12 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground">
             {waiting.length} waiting · {onAgents.length} agents on
           </span>
+          {dataSource === 'live' && liveError && (
+            <span className="text-xs text-destructive">{liveError}</span>
+          )}
+          {dataSource === 'live' && !liveError && !liveLoading && !leads.length && (
+            <span className="text-xs text-muted-foreground">No live leads arrived in the overnight window — try Refresh live batch later.</span>
+          )}
         </div>
       </section>
 
