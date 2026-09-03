@@ -298,6 +298,17 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
     });
   }, []);
 
+  /** Practice-only local status update so the Status dropdown matches New Leads. */
+  const updateStatus = React.useCallback((leadId: string, status: LeadStatus) => {
+    const label = statusLabels[status] ?? status;
+    setLeads(prev => prev.map(l => (l.id === leadId ? { ...l, status: label } : l)));
+  }, []);
+
+  /** Practice-only local call counter so the Calls column matches New Leads. */
+  const adjustCalls = React.useCallback((leadId: string, delta: number) => {
+    setLeads(prev => prev.map(l => (l.id === leadId ? { ...l, calls: Math.max(0, l.calls + delta) } : l)));
+  }, []);
+
   /** Morning distribution — release the whole parked overnight batch, one each. */
   const runMorningRelease = React.useCallback(() => {
     setMorningRun(new Date());
