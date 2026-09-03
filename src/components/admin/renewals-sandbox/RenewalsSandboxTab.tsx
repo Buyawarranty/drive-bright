@@ -17,6 +17,7 @@ import { useRenewalReservation } from '@/hooks/useRenewalPoolReservation';
 import { evaluateOwnership, SLA_TONE, SLA_LABEL } from './renewalOwnership';
 import { RenewalSlaConfigPanel } from './RenewalSlaConfigPanel';
 import { RenewalPoolDistributionPanel } from './RenewalPoolDistributionPanel';
+import { RenewalAssignmentFlowPanel } from './RenewalAssignmentFlowPanel';
 import { RenewalPriorityConfigPanel } from './RenewalPriorityConfigPanel';
 import { scoreRenewalPriority, sortByPriority, PRIORITY_TONE, subscribePriorityWeights } from './renewalPriority';
 import { RenewalCommissionConfigPanel } from './RenewalCommissionConfigPanel';
@@ -222,6 +223,7 @@ export const RenewalsSandboxTab: React.FC<Props> = ({ userRole }) => {
           <RenewalSlaConfigPanel />
           <RenewalPriorityConfigPanel />
           <RenewalCommissionConfigPanel />
+          <RenewalAssignmentFlowPanel rows={visible} live={live} />
           <RenewalPoolDistributionPanel rows={visible} live={live} />
         </CollapsibleContent>
       </Collapsible>
