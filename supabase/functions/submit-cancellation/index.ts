@@ -29,7 +29,25 @@ const handler = async (req: Request): Promise<Response> => {
       feedback 
     }: CancellationRequest = await req.json();
 
+    // Guard against empty/malformed submissions (these produced
+    // "Warranty Cancellation Request - undefined" emails to support).
+    if (!registrationPlate?.trim() || !fullName?.trim() || !reason?.trim()) {
+      console.warn("Rejected cancellation request with missing fields", {
+        hasReg: !!registrationPlate,
+        hasName: !!fullName,
+        hasReason: !!reason,
+      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Registration plate, name and reason are required.",
+        }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     console.log("Processing cancellation request for:", registrationPlate);
+
 
     // Check if customer is staying or cancelling
     const isStaying = reason === 'CUSTOMER_STAYING';
