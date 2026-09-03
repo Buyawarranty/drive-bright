@@ -164,6 +164,49 @@ export const getSessionGclid = (): string | null => {
 };
 
 /**
+ * Read the gclid directly from the CURRENT url (gclid / gbraid / wbraid).
+ * Needed because sessionStorage writes can silently fail in some in-app
+ * browsers (Instagram/TikTok/Gmail webviews, Safari private mode), which used
+ * to lose the gclid for the whole journey even though the URL still had it.
+ */
+export const getUrlGclid = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const p = new URLSearchParams(window.location.search);
+    return p.get('gclid') || p.get('gbraid') || p.get('wbraid') || null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Session-scoped gclid with a live-URL fallback. Safe for lead-source
+ * classification: both sources belong to the CURRENT visit.
+ */
+export const getSessionOrUrlGclid = (): string | null =>
+  getSessionGclid() || getUrlGclid();
+
+/**
+ * Best-effort gclid for CRM storage / Google Ads conversion uploads.
+ * Widest net: current visit first, then the 90-day localStorage / _gcl_aw value.
+ * NOTE: never feed this into lead-source classification — it can be up to 90
+ * days old and would reclassify organic visitors as paid.
+ */
+export const getAttributionGclid = (): string | null =>
+  getSessionOrUrlGclid() || getStoredGclid();
+
+/** Page-view tracking session id, used server-side to recover a lost gclid. */
+export const getTrackingSessionId = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    return sessionStorage.getItem('baw_session_id');
+  } catch {
+    return null;
+  }
+};
+
+
+/**
  * Get GA4 Client ID from cookies
  * Format: GA1.1.XXXXXXXXXX.XXXXXXXXXX
  */
