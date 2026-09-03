@@ -387,34 +387,47 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       setLoading(false);
     }, 12000);
     try {
-      let q = buildBaseQuery();
-      q = applySegment(q, segment);
+      const sortQuery = (q: any) =>
+        q.order('last_contacted_at', { ascending: false, nullsFirst: false })
+          .order('recovery_worked_at', { ascending: false, nullsFirst: false })
+          .order('next_action_date', { ascending: true, nullsFirst: false })
+          .order('created_at', { ascending: false })
+          .limit(PAGE_SIZE);
+
+      let fetched: any[] = [];
+
       // Sales agents can work the whole recontact pool: their own assigned
-      // leads PLUS anything unassigned that's up for grabs. The client-side
-      // collision safeguard (see filteredLeads) still hides leads another
-      // agent has actively touched in the last 48h so two agents don't
-      // double-work the same record.
+      // leads PLUS anything unassigned that's up for grabs. Leads that are
+      // already ASSIGNED to the agent are always shown, even if they'd fail
+      // the pool eligibility rules (no step 2, under 30 days old) — otherwise
+      // an agent who claimed 200 leads only sees a fraction of them.
       // NOTE: sales_leads.assigned_to historically holds EITHER admin_users.id
-      // OR auth.uid depending on which flow assigned it. Match both so agents
-      // don't lose visibility of leads they actually own.
+      // OR auth.uid depending on which flow assigned it. Match both.
       if (currentRole === 'sales' && currentUserId) {
         const ids = [currentUserId, currentAuthUserId].filter(Boolean) as string[];
-        const orClause = ids.map(id => `assigned_to.eq.${id}`).join(',') + ',assigned_to.is.null';
-        q = q.or(orClause);
+
+        let poolQ = applySegment(buildBaseQuery(), segment).is('assigned_to', null);
+        let mineQ = applySegment(buildMineQuery(ids), segment);
+
+        const [pool, mine] = await Promise.all([sortQuery(poolQ), sortQuery(mineQ)]);
+        if (pool.error) throw pool.error;
+        if (mine.error) throw mine.error;
+
+        const seen = new Set<string>();
+        for (const l of [...((mine.data as any[]) || []), ...((pool.data as any[]) || [])]) {
+          if (seen.has(l.id)) continue;
+          seen.add(l.id);
+          fetched.push(l);
+        }
+      } else {
+        let q = applySegment(buildBaseQuery(), segment);
+        const { data, error } = await sortQuery(q);
+        if (error) throw error;
+        fetched = (data as any) || [];
       }
 
-      // Sort so leads the agent is actively working (most recently touched / contacted)
-      // bubble to the top — otherwise an agent can't find "their" leads in thousands.
-      // Untouched leads fall to the bottom but remain reachable via "New to Recontact".
-      q = q.order('last_contacted_at', { ascending: false, nullsFirst: false })
-        .order('recovery_worked_at', { ascending: false, nullsFirst: false })
-        .order('next_action_date', { ascending: true, nullsFirst: false })
-        .order('created_at', { ascending: false })
-        .limit(PAGE_SIZE);
-      const { data, error } = await q;
-      if (error) throw error;
-      const fetched = (data as any) || [];
       setLeads(fetched);
+
 
       // Load tag assignments for the fetched leads so the pill strip can
       // filter by tags such as "Not spoken to".
