@@ -3038,6 +3038,7 @@ Questions? Call 0330 229 5040`;
   // re-triggered this effect and left the button spinning on "Generating quote
   // link..." forever while firing the edge function over and over.
   const quoteGenInFlightRef = useRef(false);
+  const quoteGenPromiseRef = useRef<Promise<string | null> | null>(null);
   useEffect(() => {
     if (
       step === 3 &&
@@ -3052,12 +3053,23 @@ Questions? Call 0330 229 5040`;
   }, [step, customerEmail, customerName, vehicleData, quoteGenerated, quoteLink]);
 
 
-  const generateQuoteLink = async () => {
+  const generateQuoteLink = async (): Promise<string | null> => {
     if (!customerEmail || !customerName || !vehicleData) return null;
-    if (quoteGenInFlightRef.current) return null;
+    // Already minting one? Share that result instead of returning null, so
+    // "Send quote" never fails just because the auto-generate is still running.
+    if (quoteGenInFlightRef.current && quoteGenPromiseRef.current) {
+      return quoteGenPromiseRef.current;
+    }
 
     quoteGenInFlightRef.current = true;
+    const task = runGenerateQuoteLink();
+    quoteGenPromiseRef.current = task;
+    return task;
+  };
+
+  const runGenerateQuoteLink = async (): Promise<string | null> => {
     setIsGeneratingQuoteLink(true);
+
 
     
     const displayClaimLimit = boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit);
@@ -3118,8 +3130,10 @@ Questions? Call 0330 229 5040`;
       return null;
     } finally {
       quoteGenInFlightRef.current = false;
+      quoteGenPromiseRef.current = null;
       setIsGeneratingQuoteLink(false);
     }
+
 
   };
 
