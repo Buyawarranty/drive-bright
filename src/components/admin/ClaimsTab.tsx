@@ -38,6 +38,7 @@ import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
 import { ClaimsAgeMileageAnalytics } from './claims/ClaimsAgeMileageAnalytics';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 import { useReturnedAppeals } from '@/hooks/useReturnedAppeals';
+import { AppealsInboxPanel } from '@/components/admin/claims/AppealsInboxPanel';
 
 interface ClaimSubmission {
   id: string;
@@ -101,8 +102,11 @@ export const ClaimsTab = ({
 
   const { claims: managerClaims, loading: managerLoading, refetch: refetchManager } = useClaims();
   const {
+    appeals: returnedAppeals,
+    loading: appealsLoading,
     unreadCount: appealsUnreadCount,
     totalCount: appealsTotalCount,
+    markAsRead: markAppealAsRead,
     refetch: refetchAppeals,
   } = useReturnedAppeals();
 
@@ -340,6 +344,9 @@ export const ClaimsTab = ({
             className="bg-[#E8541A] hover:bg-[#cf4915] text-white"
             onClick={() => {
               setActiveSubTab('claims');
+              setTimeout(() => {
+                document.getElementById('appeals-inbox-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 150);
             }}
           >
             View appeals
@@ -528,6 +535,16 @@ export const ClaimsTab = ({
           <WidgetErrorBoundary label="Claims workbench">
             <ClaimsWorkbench showUrgencyBanner={false} />
           </WidgetErrorBoundary>
+          <div id="appeals-inbox-section" className="scroll-mt-4">
+            <WidgetErrorBoundary label="Appeals">
+              <AppealsInboxPanel
+                appeals={returnedAppeals}
+                loading={appealsLoading}
+                onMarkAsRead={markAppealAsRead}
+                onOpenAppealDialog={() => setShowAppealDialog(true)}
+              />
+            </WidgetErrorBoundary>
+          </div>
           <div className="pt-4 border-t border-slate-200 space-y-3">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Operational overview</div>
             <WidgetErrorBoundary label="Operational overview">
