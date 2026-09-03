@@ -329,10 +329,11 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     const q = (supabase.from('sales_leads') as any).select(select);
 
     // Recontact eligibility rule:
-    //   Lead must be at least 30 days old (never surface last-month leads here —
-    //   fresh leads belong to the New Leads flow with their original agent).
-    //   AND not converted / fake / archived / already 'new'.
+    //   Lead must be between 30 days and 1 year old — fresher leads belong to
+    //   the New Leads flow, and anything over a year is too cold to recover.
+    //   Step 2 is not required (every enquiry here reached step 2 in practice).
     const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
+    const d365 = new Date(Date.now() - 365 * 86400000).toISOString();
 
     // Terminal statuses (lost, not_interested, converted, fake_lead, archived)
     // are excluded from Recontact — there's nothing left to recover. Status
@@ -340,16 +341,16 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     // claimed from the Recontact pool is reset to 'new' — those must remain
     // visible here, so we allow status='new' when last_claimed_at is set.
     return q
-      .not('step_two_completed_at', 'is', null)
       .not('status', 'in', '(converted,fake_lead,archived,lost,not_interested,not_eligible)')
       .or('status.neq.new,last_claimed_at.not.is.null')
       .or('is_paid.is.null,is_paid.eq.false')
-      .lt('created_at', d30);
+      .lt('created_at', d30)
+      .gte('created_at', d365);
   }, []);
 
-  // Leads already OWNED by the agent: shown regardless of pool eligibility
-  // (step 2 / 30-day age), so a claimed batch never partly disappears.
-  // Only genuinely dead records (terminal status, already paid) stay hidden.
+  // Leads already OWNED by the agent: shown for the same 30-day-to-1-year
+  // window, so a claimed batch never partly disappears. Only genuinely dead
+  // records (terminal status, already paid) stay hidden.
   const buildMineQuery = useCallback((ids: string[]) => {
     const select =
       'id, first_name, last_name, email, phone, lead_source, status, priority, priority_score, ' +
@@ -359,12 +360,17 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       'created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at, ' +
       'call_count, resubmission_count, last_resubmitted_at, is_callback, recovery_worked_at, recovery_outcome, ' +
       'claim_count, last_claimed_at';
+    const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
+    const d365 = new Date(Date.now() - 365 * 86400000).toISOString();
     return (supabase.from('sales_leads') as any)
       .select(select)
       .in('assigned_to', ids)
       .not('status', 'in', '(converted,fake_lead,archived,not_eligible)')
-      .or('is_paid.is.null,is_paid.eq.false');
+      .or('is_paid.is.null,is_paid.eq.false')
+      .lt('created_at', d30)
+      .gte('created_at', d365);
   }, []);
+
 
 
   const applySegment = useCallback((q: any, id: SegmentId) => {
