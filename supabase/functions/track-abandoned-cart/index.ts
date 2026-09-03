@@ -298,6 +298,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     // If we have a recent entry, update it instead of creating a new one
     if (existingCart && existingCart.length > 0) {
+      // Never lose previously captured click ids when a later step posts without them
+      const prevMeta = (existingCart[0] as any)?.cart_metadata;
+      if (prevMeta && typeof prevMeta === 'object') {
+        cartData.gclid = cartData.gclid || prevMeta.gclid || undefined;
+        cartData.gclid_any = cartData.gclid_any || prevMeta.gclid_any || prevMeta.gclid || undefined;
+        cartData.fbclid = cartData.fbclid || prevMeta.fbclid || undefined;
+        cartData.msclkid = cartData.msclkid || prevMeta.msclkid || undefined;
+        cartData.ttclid = cartData.ttclid || prevMeta.ttclid || undefined;
+        cartData.tracking_session_id = cartData.tracking_session_id || prevMeta.tracking_session_id || undefined;
+      }
+
       // CRITICAL SAFEGUARD: Build update payload carefully.
       // Only include phone/full_name if the new value is non-empty.
       // This prevents Step 3 (which doesn't collect phone) from wiping Step 2 data.
