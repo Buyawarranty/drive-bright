@@ -534,6 +534,16 @@ export const ClaimsTab = ({
           <WidgetErrorBoundary label="Claims workbench">
             <ClaimsWorkbench showUrgencyBanner={false} />
           </WidgetErrorBoundary>
+          <div id="appeals-inbox-section" className="scroll-mt-4">
+            <WidgetErrorBoundary label="Appeals">
+              <AppealsInboxPanel
+                appeals={returnedAppeals}
+                loading={appealsLoading}
+                onMarkAsRead={markAppealAsRead}
+                onOpenAppealDialog={() => setShowAppealDialog(true)}
+              />
+            </WidgetErrorBoundary>
+          </div>
           <div className="pt-4 border-t border-slate-200 space-y-3">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Operational overview</div>
             <WidgetErrorBoundary label="Operational overview">
