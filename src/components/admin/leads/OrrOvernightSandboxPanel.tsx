@@ -116,6 +116,108 @@ const fmtWait = (from: Date, to: Date) => {
   return `${Math.floor(mins / 60)}h ${mins % 60}m`;
 };
 
+/** Same colours and labels as the live New Leads table so practice matches production. */
+const statusColors: Record<LeadStatus, string> = {
+  new: 'bg-green-100 text-green-800',
+  contacted: 'bg-yellow-100 text-yellow-800',
+  follow_up: 'bg-purple-100 text-purple-800',
+  quote_sent: 'bg-indigo-100 text-indigo-800',
+  negotiating: 'bg-orange-100 text-orange-800',
+  converted: 'bg-teal-100 text-teal-800',
+  lost: 'bg-gray-100 text-gray-800',
+  not_interested: 'bg-slate-200 text-slate-700',
+  fake_lead: 'bg-red-100 text-red-800',
+  urgent_callback: 'bg-red-500 text-white',
+  no_answer: 'bg-amber-100 text-amber-800',
+  left_voicemail: 'bg-sky-100 text-sky-800',
+  wrong_number: 'bg-rose-100 text-rose-800',
+  callback_booked: 'bg-blue-100 text-blue-800',
+  bought_elsewhere: 'bg-zinc-200 text-zinc-800',
+  vehicle_sold: 'bg-stone-200 text-stone-800',
+  do_not_contact: 'bg-black text-white',
+  not_eligible: 'bg-orange-50 text-orange-800',
+  unsubscribed: 'bg-rose-200 text-rose-900',
+};
+
+const statusLabels: Record<LeadStatus, string> = {
+  new: 'Not spoken to',
+  contacted: 'Spoken to',
+  follow_up: 'Follow-up',
+  quote_sent: 'Quote sent',
+  negotiating: 'Negotiating',
+  converted: 'Converted',
+  lost: 'Lost',
+  not_interested: 'Not interested',
+  fake_lead: 'Fake / 404',
+  urgent_callback: 'Urgent call-back',
+  no_answer: 'No answer',
+  left_voicemail: 'Left voicemail',
+  wrong_number: 'Wrong number',
+  callback_booked: 'Callback booked',
+  bought_elsewhere: 'Bought elsewhere',
+  vehicle_sold: 'Vehicle sold',
+  do_not_contact: 'Do not contact',
+  not_eligible: 'Not eligible',
+  unsubscribed: 'Unsubscribed',
+};
+
+const STATUS_ORDER: LeadStatus[] = [
+  'new', 'contacted', 'follow_up', 'quote_sent', 'negotiating', 'converted', 'lost',
+  'not_interested', 'fake_lead', 'urgent_callback', 'no_answer', 'left_voicemail',
+  'wrong_number', 'callback_booked', 'bought_elsewhere', 'vehicle_sold', 'do_not_contact',
+  'not_eligible',
+];
+
+const practiceStatusToLeadStatus = (status: string): LeadStatus => {
+  const s = status.toLowerCase();
+  if (s === 'new') return 'new';
+  if (s === 'contacted') return 'contacted';
+  if (s.includes('follow')) return 'follow_up';
+  if (s.includes('quote')) return 'quote_sent';
+  return 'new';
+};
+
+/** Copyable email cell with icon + tooltip feedback. */
+const CopyEmail = ({ email }: { email: string }) => {
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      toast({ title: 'Copied', description: email, duration: 1500 });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({ title: 'Failed to copy', variant: 'destructive' });
+    }
+  }, [email, toast]);
+
+  return (
+    <TooltipProvider delayDuration={100}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={handleCopy}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary truncate max-w-[180px] transition-colors"
+            aria-label="Copy email"
+          >
+            <span className="truncate">{email}</span>
+            {copied ? (
+              <Check className="h-3 w-3 text-green-600 shrink-0" />
+            ) : (
+              <Copy className="h-3 w-3 shrink-0 opacity-60 hover:opacity-100" />
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">
+          {copied ? 'Copied' : 'Click to copy email'}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
+
 export const OrrOvernightSandboxPanel: React.FC = () => {
   const [agents, setAgents] = React.useState<PracticeAgent[]>([
     { id: 'a1', name: 'Freddie Howard', ext: '202', on: true },
