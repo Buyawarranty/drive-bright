@@ -839,19 +839,45 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
               <Label htmlFor="my-only" className="text-xs cursor-pointer">My renewals</Label>
             </div>
             {canReassignAny && (
-              <Select value={agentFilter} onValueChange={setAgentFilter}>
-                <SelectTrigger className="h-9 w-[150px] text-xs">
-                  <SelectValue placeholder="All agents" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All agents</SelectItem>
-                  <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
-                  {agents.map(a => a.user_id ? (
-                    <SelectItem key={a.id} value={a.user_id}>{agentLabel(a)}</SelectItem>
-                  ) : null)}
-                </SelectContent>
-              </Select>
+              <>
+                {/* Which rotation renewals flow into — never left unassigned. */}
+                <Select value={distMode} onValueChange={(v) => setDistMode(v as DistMode)}>
+                  <SelectTrigger className="h-9 w-[190px] text-xs" title="Rotation renewals are assigned into">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="round_robin">Round Robin</SelectItem>
+                    <SelectItem value="open_pool">Open Round Robin</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="flex items-center gap-1 text-xs">
+                  <Switch id="auto-assign" checked={autoAssign} onCheckedChange={setAutoAssign} />
+                  <Label htmlFor="auto-assign" className="text-xs cursor-pointer">Auto-assign</Label>
+                </div>
+                <Button
+                  size="sm" variant="outline" className="gap-1 shrink-0"
+                  disabled={syncingAssign}
+                  onClick={() => { syncUnassignedIntoRotation(true); refreshLeadSync(); }}
+                  title="Push unassigned renewals into the selected rotation and pull the latest New Leads activity"
+                >
+                  {syncingAssign ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                  Sync assignment
+                </Button>
+                <Select value={agentFilter} onValueChange={setAgentFilter}>
+                  <SelectTrigger className="h-9 w-[150px] text-xs">
+                    <SelectValue placeholder="All agents" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All agents</SelectItem>
+                    <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
+                    {agents.map(a => a.user_id ? (
+                      <SelectItem key={a.id} value={a.user_id}>{agentLabel(a)}</SelectItem>
+                    ) : null)}
+                  </SelectContent>
+                </Select>
+              </>
             )}
+
             <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
               <SelectTrigger className="h-9 w-[180px] text-xs" title="Sort renewals">
                 <div className="flex items-center gap-1">
