@@ -1186,6 +1186,18 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                                   </div>
                                 </div>
                               )}
+                              {leadSync?.latestNote && (
+                                <div className="mb-2 rounded border border-primary/30 bg-primary/5 p-2">
+                                  <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-0.5">Latest note from New Leads</div>
+                                  <div className="text-xs text-foreground whitespace-pre-wrap">{leadSync.latestNote.text}</div>
+                                  {leadSync.latestNote.at && (
+                                    <div className="text-[10px] text-muted-foreground mt-1">
+                                      {formatDistanceToNow(new Date(leadSync.latestNote.at), { addSuffix: true })}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
                               <Textarea rows={3} placeholder="Quick note…"
                                 value={noteDraft[r.id] || ''}
                                 onChange={(e) => setNoteDraft((p) => ({ ...p, [r.id]: e.target.value }))} />
