@@ -35,6 +35,44 @@ export const BulkActionBar: React.FC<Props> = ({ selectedIds, onClear, onDone })
   const [busy, setBusy] = useState<string | null>(null);
   const [pendingChange, setPendingChange] = useState<PendingClaimStatusChange | null>(null);
   const [queue, setQueue] = useState<{ ids: string[]; status: string; label: string } | null>(null);
+  const [misrepOpen, setMisrepOpen] = useState(false);
+  const [misrepReason, setMisrepReason] = useState('');
+
+  const runMisrep = async () => {
+    setBusy('misrep');
+    try {
+      let applied = 0;
+      const failures: string[] = [];
+      for (const id of ids) {
+        const { error } = await supabase.rpc('mark_claim_misrepresented', {
+          p_claim_id: id,
+          p_reason: misrepReason.trim() || null,
+        });
+        if (error) failures.push(id);
+        else applied += 1;
+      }
+      if (failures.length > 0) {
+        toast({
+          title: 'Some claims could not be flagged',
+          description: `Marked ${applied} of ${ids.length}. ${failures.length} failed — please retry them individually.`,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Marked as misrepresented',
+          description: `Applied Misrepresentation – Do Not Cover to ${applied} claim${applied === 1 ? '' : 's'}. Excluded from renewals and blocked from new cover.`,
+        });
+      }
+      setMisrepOpen(false);
+      setMisrepReason('');
+      await onDone();
+      onClear();
+    } catch (e: any) {
+      toast({ title: 'Bulk update failed', description: e?.message || 'Could not apply changes', variant: 'destructive' });
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const count = selectedIds.size;
   if (count === 0 && !pendingChange) return null;
