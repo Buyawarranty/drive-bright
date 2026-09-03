@@ -218,6 +218,38 @@ export const BulkActionBar: React.FC<Props> = ({ selectedIds, onClear, onDone })
         pending={pendingChange}
         onClose={() => { setPendingChange(null); setQueue(null); }}
       />
+
+      <Dialog open={misrepOpen} onOpenChange={(o) => { if (!busy) { setMisrepOpen(o); if (!o) setMisrepReason(''); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-800">Mark {count} claim{count === 1 ? '' : 's'} as misrepresented</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            This labels each customer <strong>Misrepresentation – Do Not Cover</strong> across all of their
+            records, removes them from renewal leads and campaigns, and stops them buying cover again.
+          </p>
+          <Textarea
+            value={misrepReason}
+            onChange={(e) => setMisrepReason(e.target.value)}
+            rows={4}
+            placeholder="Evidence and reason, e.g. fault present before cover started — confirmed by inspection report"
+          />
+          <DialogFooter>
+            <Button variant="ghost" size="sm" onClick={() => setMisrepOpen(false)} disabled={busy === 'misrep'}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              className="bg-red-700 hover:bg-red-800 text-white"
+              onClick={runMisrep}
+              disabled={busy === 'misrep'}
+            >
+              {busy === 'misrep' ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : null}
+              Mark {count} misrepresented
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
