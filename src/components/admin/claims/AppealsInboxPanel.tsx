@@ -1,8 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Gavel, CheckCircle2, Paperclip, Mail, Scale, ExternalLink } from 'lucide-react';
 import { ReturnedAppeal } from '@/hooks/useReturnedAppeals';
+
+/** Every appeal submitted/opened from the Claims tab, with its outcome. */
+interface SentAppeal {
+  id: string;
+  claimId: string;
+  sentAt: string | null;
+  createdAt: string;
+  status: string | null;
+  closedAt: string | null;
+  customerEmail: string | null;
+  customerName: string | null;
+  registration: string | null;
+}
+
+const outcomeLabel = (a: SentAppeal): { text: string; className: string } => {
+  if (a.closedAt) {
+    const s = (a.status || '').toLowerCase();
+    if (s.includes('upheld') || s.includes('accepted') || s.includes('approved'))
+      return { text: 'Closed — upheld', className: 'bg-emerald-100 border-emerald-300 text-emerald-800' };
+    if (s.includes('reject') || s.includes('declin') || s.includes('dismiss'))
+      return { text: 'Closed — not upheld', className: 'bg-slate-100 border-slate-300 text-slate-700' };
+    return { text: 'Closed', className: 'bg-slate-100 border-slate-300 text-slate-700' };
+  }
+  const s = (a.status || '').toLowerCase();
+  if (s === 'invited') return { text: 'Invited — awaiting customer', className: 'bg-amber-100 border-amber-300 text-amber-800' };
+  if (s === 'submitted') return { text: 'Submitted — awaiting review', className: 'bg-blue-100 border-blue-300 text-blue-800' };
+  return { text: a.status || 'Open', className: 'bg-amber-100 border-amber-300 text-amber-800' };
+};
 
 interface AppealsInboxPanelProps {
   appeals: ReturnedAppeal[];
