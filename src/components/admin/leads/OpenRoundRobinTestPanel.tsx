@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
+import { useSandboxLiveLeads } from '@/hooks/useSandboxLiveLeads';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { cn } from '@/lib/utils';
@@ -390,6 +391,16 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   const nextAgentIndexRef = useRef(0);
   const [simulatedAgentId, setSimulatedAgentId] = useState(DUMMY_AGENTS[0].id);
   const [tick, setTick] = useState(0);
+  // 'practice' = made-up TEST leads. 'live' = a READ-ONLY copy of the leads we
+  // really received, so ORR can be proven against real-world data while it is
+  // still switched off. Live mode never writes: New Leads stays untouched.
+  const [dataSource, setDataSource] = useState<'practice' | 'live'>('practice');
+  const {
+    leads: liveLeads,
+    loading: liveLoading,
+    error: liveError,
+    refresh: refreshLive,
+  } = useSandboxLiveLeads(dataSource === 'live', { window: 'recent', limit: 25 });
 
   // Manager-editable timing / frequency rules for this practice run.
   const [cadence, setCadence] = useState<OrrCadenceConfig>(DEFAULT_ORR_CADENCE);
@@ -657,6 +668,45 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
     });
   };
 
+  /**
+   * Load a read-only copy of the real leads into the practice queue. They enter
+   * as waiting leads so the rotation offers them exactly as it would live.
+   * Nothing here is written back to the database.
+   */
+  const loadLiveLeadsIntoPractice = useCallback(() => {
+    const now = Date.now();
+    const drafts: DummyLead[] = liveLeads.map((lead) => ({
+      id: `live-orr-${lead.id}`,
+      firstName: lead.firstName || 'Customer',
+      lastName: lead.lastName || '',
+      email: lead.email,
+      status: 'queued',
+      displayStatus: 'new',
+      assignedTo: null,
+      attemptCount: 0,
+      deadlineAt: now,
+      vehicleReg: lead.reg,
+      phone: lead.phone,
+      createdAt: lead.createdAt.getTime(),
+      dials: 0,
+      contactedAt: null,
+      dayDials: 0,
+      nextCallAt: null,
+      redTeamAt: null,
+      followUpDay: 0,
+      chaseComplete: false,
+      history: ['Read-only copy of a live lead — loaded for practice, nothing is written back'],
+    }));
+    setLeads(drafts);
+    nextAgentIndexRef.current = 0;
+    toast({
+      title: drafts.length ? `${drafts.length} live leads loaded (read-only)` : 'No live leads found',
+      description: drafts.length
+        ? 'The rotation will offer them exactly as it would live. Nothing is saved and New Leads is untouched.'
+        : 'No leads in the last 7 days matched. Try Refresh live leads.',
+    });
+  }, [liveLeads, toast]);
+
   const cleanup = () => {
     setLeads([]);
     nextAgentIndexRef.current = 0;
@@ -698,14 +748,54 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
                 A safe place to rehearse the 2-minute window, pass-on, agent view, phone column, click-to-dial and copy
-                button. Every name here is made up — no customer is contacted and no agent's figures change.
+                button.
+                {dataSource === 'live'
+                  ? ' Live leads mode shows a read-only copy of the leads we really received, so you can prove Open Round Robin works on real-world data while it stays switched off — nothing is written back, no customer is contacted and no agent\'s figures change.'
+                  : ' Every name here is made up — no customer is contacted and no agent\'s figures change.'}
               </p>
             </div>
           </div>
         </div>
 
         <div className="mt-5 pt-4 border-t border-border flex items-center gap-2 flex-wrap">
-          <Button size="sm" onClick={createTestLead}>
+          <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
+            <button
+              type="button"
+              onClick={() => { setDataSource('practice'); setLeads([]); nextAgentIndexRef.current = 0; }}
+              className={cn(
+                'px-3 py-1.5 text-xs font-semibold transition-colors',
+                dataSource === 'practice' ? 'bg-teal-600 text-white' : 'bg-background text-muted-foreground hover:bg-muted',
+              )}
+            >
+              Made-up names
+            </button>
+            <button
+              type="button"
+              onClick={() => { setDataSource('live'); setLeads([]); nextAgentIndexRef.current = 0; }}
+              title="Rehearse against the real leads we received. Read-only copy — nothing is written back and New Leads is untouched."
+              className={cn(
+                'px-3 py-1.5 text-xs font-semibold border-l border-border transition-colors',
+                dataSource === 'live' ? 'bg-teal-600 text-white' : 'bg-background text-muted-foreground hover:bg-muted',
+              )}
+            >
+              Live leads (read-only)
+            </button>
+          </div>
+          {dataSource === 'live' && (
+            <>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800">
+                Live data · read-only · nothing saved
+              </span>
+              <Button size="sm" variant="outline" onClick={loadLiveLeadsIntoPractice} disabled={liveLoading}>
+                <Plus className="h-3.5 w-3.5 mr-1.5" /> Load live leads ({liveLeads.length})
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => void refreshLive()} disabled={liveLoading}>
+                <RefreshCw className={cn('h-3.5 w-3.5 mr-1.5', liveLoading && 'animate-spin')} /> Refresh live leads
+              </Button>
+              {liveError && <span className="text-xs text-destructive">{liveError}</span>}
+            </>
+          )}
+          <Button size="sm" onClick={createTestLead} disabled={dataSource === 'live'} title={dataSource === 'live' ? 'Live leads mode uses the real leads — use Load live leads instead.' : undefined}>
             <Plus className="h-3.5 w-3.5 mr-1.5" /> Take this lead
           </Button>
           <Button size="sm" variant="outline" onClick={() => setTick((current) => current + 1)}>
