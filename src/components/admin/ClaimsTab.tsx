@@ -38,6 +38,7 @@ import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
 import { ClaimsAgeMileageAnalytics } from './claims/ClaimsAgeMileageAnalytics';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 import { useReturnedAppeals } from '@/hooks/useReturnedAppeals';
+import { AppealsInboxPanel } from '@/components/admin/claims/AppealsInboxPanel';
 
 interface ClaimSubmission {
   id: string;
