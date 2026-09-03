@@ -56,4 +56,6 @@
 - [ ] Sync New Leads activity (notes, calls, status, owner) into the renewals row
 
 - [x] Blank "Warranty Cancellation Request - undefined" email: add field validation to submit-cancellation
+- [x] Open Round Robin practice "overnight leads" panel restyled to match New Leads table (columns, badges, status dropdown, action buttons, phone/email/reg styling)
+- [x] Open Round Robin Team Blue practice header: "Your turn" column moved next to "Agent" column
 - [x] Stop 20% off marketing reminders going to customers who already hold active warranty cover (Jenny Beaumont)
