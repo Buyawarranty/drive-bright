@@ -26,6 +26,8 @@ import type { DateRange } from 'react-day-picker';
 
 import { RenewalPoolBar } from '@/components/admin/renewals/RenewalPoolBar';
 import { useCustomerActivity } from '@/hooks/useCustomerActivity';
+import { useRenewalLeadSync } from '@/hooks/useRenewalLeadSync';
+
 import { useLeadRoutingPermission } from '@/hooks/useLeadRoutingPermission';
 import { CustomerActivityCell } from '@/components/admin/leads/CustomerActivityCell';
 import {
@@ -77,6 +79,11 @@ const RENEWED_OUTCOMES = new Set(['renewed', 'upgraded', 'renewed_upgraded']);
 const EXCLUDED_STATUSES = "('cancelled','refunded','expired','voided','deleted')";
 const PAGE_SIZE = 500;
 const UNASSIGNED = '__unassigned__';
+
+/** Which rotation renewal leads flow into — mirrors Lead Allocation. */
+type DistMode = 'round_robin' | 'open_pool';
+interface CapRow { adminId: string; mode: DistMode; paused: boolean; sortOrder: number }
+
 
 interface PolicyRow {
   id: string;
@@ -176,6 +183,11 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const [renewals12mo, setRenewals12mo] = useState<number | null>(null);
   const [runningCron, setRunningCron] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [caps, setCaps] = useState<CapRow[]>([]);
+  const [distMode, setDistMode] = useState<DistMode>('round_robin');
+  const [autoAssign, setAutoAssign] = useState(true);
+  const [syncingAssign, setSyncingAssign] = useState(false);
+
   const [callCountsByEmail, setCallCountsByEmail] = useState<Record<string, number>>({});
   const [claimEmails, setClaimEmails] = useState<Set<string>>(new Set());
   const [claimRegs, setClaimRegs] = useState<Set<string>>(new Set());
@@ -268,6 +280,43 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     for (const a of agents) if (a.user_id) m.set(a.user_id, a);
     return m;
   }, [agents]);
+
+  const agentByAdminId = useMemo(() => {
+    const m = new Map<string, Agent>();
+    for (const a of agents) m.set(a.id, a);
+    return m;
+  }, [agents]);
+
+  // ── Distribution rotation (mirrors Lead Allocation) ────────────────────────
+  // Renewal leads follow whichever rotation is selected: the standard Round
+  // Robin, or the Open Round Robin pool agents. A renewal is never left
+  // unassigned — it always lands on an agent.
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase.from('agent_distribution_caps') as any)
+        .select('admin_user_id, assignment_mode, paused, sort_order')
+        .order('sort_order', { ascending: true });
+      setCaps(((data as any[]) || []).map((c) => ({
+        adminId: c.admin_user_id,
+        mode: (c.assignment_mode || 'round_robin') as DistMode,
+        paused: !!c.paused,
+        sortOrder: c.sort_order ?? 999,
+      })));
+    })();
+  }, []);
+
+  /** Agents in the selected rotation, in turn order. */
+  const rotationAgents = useMemo(() => {
+    const ordered = caps
+      .filter((c) => c.mode === distMode && !c.paused)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((c) => agentByAdminId.get(c.adminId))
+      .filter((a): a is Agent => !!a && !!a.user_id && (a.role === 'sales' || a.role === 'sales_lead'));
+    // Fallback: if nothing is configured for this mode, use every renewals agent.
+    return ordered.length > 0 ? ordered : agents.filter((a) => a.user_id && (a.role === 'sales' || a.role === 'sales_lead'));
+  }, [caps, distMode, agentByAdminId, agents]);
+
+
 
   const applySegment = useCallback((q: any, id: SegmentId) => {
     const now = new Date();
@@ -563,6 +612,59 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     [pagedRenewals],
   );
   const { activityByEmail: renewalActivityByEmail } = useCustomerActivity(renewalEmails);
+  // Live New Leads activity for these renewals (owner, calls, status, notes).
+  const { leadSyncByEmail, refreshLeadSync } = useRenewalLeadSync(renewalEmails);
+
+  /**
+   * Auto-assign: every renewal must sit with an agent. Anything unassigned is
+   * pushed into the selected rotation (Round Robin or Open Round Robin) in
+   * turn order, so renewal leads start flowing to agents immediately.
+   */
+  const syncUnassignedIntoRotation = useCallback(async (manual = false) => {
+    if (rotationAgents.length === 0) {
+      if (manual) toast.error('No agents in this rotation', { description: 'Switch on agents in Lead Allocation first.' });
+      return;
+    }
+    const unassigned = rows.filter((r) => r.customer_id && !r.customers?.assigned_to);
+    if (unassigned.length === 0) {
+      if (manual) toast.info('All renewals are already assigned');
+      return;
+    }
+    setSyncingAssign(true);
+    let cursor = 0;
+    let done = 0;
+    try {
+      for (const row of unassigned) {
+        const agent = rotationAgents[cursor % rotationAgents.length];
+        cursor += 1;
+        const { error } = await (supabase.from('customers') as any)
+          .update({ assigned_to: agent.user_id }).eq('id', row.customer_id);
+        if (error) continue;
+        done += 1;
+        setRows((prev) => prev.map((r) =>
+          r.id === row.id && r.customers
+            ? { ...r, customers: { ...r.customers, assigned_to: agent.user_id! } }
+            : r
+        ));
+      }
+      if (done > 0) {
+        toast.success(`${done} renewal${done === 1 ? '' : 's'} assigned`, {
+          description: distMode === 'open_pool' ? 'Open Round Robin rotation' : 'Round Robin rotation',
+        });
+      }
+    } finally {
+      setSyncingAssign(false);
+    }
+  }, [rotationAgents, rows, distMode]);
+
+  useEffect(() => {
+    if (!autoAssign || loading || rows.length === 0 || rotationAgents.length === 0) return;
+    if (!rows.some((r) => r.customer_id && !r.customers?.assigned_to)) return;
+    syncUnassignedIntoRotation(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoAssign, loading, rows, rotationAgents]);
+
+
 
 
   const markWorked = useCallback(async (row: PolicyRow, outcome?: string) => {
@@ -737,19 +839,45 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
               <Label htmlFor="my-only" className="text-xs cursor-pointer">My renewals</Label>
             </div>
             {canReassignAny && (
-              <Select value={agentFilter} onValueChange={setAgentFilter}>
-                <SelectTrigger className="h-9 w-[150px] text-xs">
-                  <SelectValue placeholder="All agents" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All agents</SelectItem>
-                  <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
-                  {agents.map(a => a.user_id ? (
-                    <SelectItem key={a.id} value={a.user_id}>{agentLabel(a)}</SelectItem>
-                  ) : null)}
-                </SelectContent>
-              </Select>
+              <>
+                {/* Which rotation renewals flow into — never left unassigned. */}
+                <Select value={distMode} onValueChange={(v) => setDistMode(v as DistMode)}>
+                  <SelectTrigger className="h-9 w-[190px] text-xs" title="Rotation renewals are assigned into">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="round_robin">Round Robin</SelectItem>
+                    <SelectItem value="open_pool">Open Round Robin</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="flex items-center gap-1 text-xs">
+                  <Switch id="auto-assign" checked={autoAssign} onCheckedChange={setAutoAssign} />
+                  <Label htmlFor="auto-assign" className="text-xs cursor-pointer">Auto-assign</Label>
+                </div>
+                <Button
+                  size="sm" variant="outline" className="gap-1 shrink-0"
+                  disabled={syncingAssign}
+                  onClick={() => { syncUnassignedIntoRotation(true); refreshLeadSync(); }}
+                  title="Push unassigned renewals into the selected rotation and pull the latest New Leads activity"
+                >
+                  {syncingAssign ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                  Sync assignment
+                </Button>
+                <Select value={agentFilter} onValueChange={setAgentFilter}>
+                  <SelectTrigger className="h-9 w-[150px] text-xs">
+                    <SelectValue placeholder="All agents" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All agents</SelectItem>
+                    <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
+                    {agents.map(a => a.user_id ? (
+                      <SelectItem key={a.id} value={a.user_id}>{agentLabel(a)}</SelectItem>
+                    ) : null)}
+                  </SelectContent>
+                </Select>
+              </>
             )}
+
             <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
               <SelectTrigger className="h-9 w-[180px] text-xs" title="Sort renewals">
                 <div className="flex items-center gap-1">
@@ -946,9 +1074,13 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                     r.customers?.name || r.customer_full_name || '—';
                   const email = (r.customers?.email || r.email || '').toLowerCase();
                   const phone = r.customers?.phone || '';
-                  const callCount = email ? (callCountsByEmail[email] || 0) : 0;
-                  const assignedAuthId = r.customers?.assigned_to ?? null;
+                  // Live New Leads activity for this renewal (owner, calls, notes, status).
+                  const leadSync = email ? leadSyncByEmail[email] : undefined;
+                  const callCount = (email ? (callCountsByEmail[email] || 0) : 0) + (leadSync?.callCount || 0);
+                  const leadOwner = leadSync?.assignedAdminId ? agentByAdminId.get(leadSync.assignedAdminId) : undefined;
+                  const assignedAuthId = r.customers?.assigned_to ?? leadOwner?.user_id ?? null;
                   const assignedAgent = assignedAuthId ? agentByAuthId.get(assignedAuthId) : undefined;
+
                   const days = daysUntil(r.policy_end_date);
                   const isSelected = selectedIds.has(r.id);
                   const isUrgent = days !== null && days <= 7; // overdue or ≤7d
@@ -971,7 +1103,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                       </td>
                       <td className="p-2">
                         <Select value={assignedAuthId ?? UNASSIGNED}
-                          onValueChange={(v) => reassignCustomer(r, v === UNASSIGNED ? null : v)}>
+                          onValueChange={(v) => reassignCustomer(r, v)}>
                           <SelectTrigger className="h-7 w-[130px] text-xs">
                             <SelectValue placeholder="Assign…">
                               {assignedAgent ? (
@@ -983,12 +1115,13 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
+                            {/* No "Unassigned" option — a renewal always belongs to an agent. */}
                             {agents.map((a) => a.user_id ? (
                               <SelectItem key={a.id} value={a.user_id}>{agentLabel(a)}</SelectItem>
                             ) : null)}
                           </SelectContent>
                         </Select>
+
                       </td>
                       <td className="p-2">
                         <Select value={r.retention_outcome ?? ''} onValueChange={(v) => markWorked(r, v)}>
@@ -1053,6 +1186,18 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                                   </div>
                                 </div>
                               )}
+                              {leadSync?.latestNote && (
+                                <div className="mb-2 rounded border border-primary/30 bg-primary/5 p-2">
+                                  <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-0.5">Latest note from New Leads</div>
+                                  <div className="text-xs text-foreground whitespace-pre-wrap">{leadSync.latestNote.text}</div>
+                                  {leadSync.latestNote.at && (
+                                    <div className="text-[10px] text-muted-foreground mt-1">
+                                      {formatDistanceToNow(new Date(leadSync.latestNote.at), { addSuffix: true })}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
                               <Textarea rows={3} placeholder="Quick note…"
                                 value={noteDraft[r.id] || ''}
                                 onChange={(e) => setNoteDraft((p) => ({ ...p, [r.id]: e.target.value }))} />
@@ -1069,6 +1214,13 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                       <td className="p-2">
                         <div className="font-medium text-sm leading-tight flex items-center gap-1 flex-wrap">
                           <span>{name}</span>
+                          <Badge
+                            className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wide bg-primary text-primary-foreground border-primary"
+                            title="Renewal lead — generated from an existing policy coming up for renewal"
+                          >
+                            Renewal
+                          </Badge>
+
                           {(() => {
                             const regKey = (r.customers?.registration_plate || '').replace(/\s+/g, '').toUpperCase();
                             const hasClaim = (email && claimEmails.has(email)) || (regKey && claimRegs.has(regKey));
@@ -1136,10 +1288,25 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                         {r.policy_start_date ? format(new Date(r.policy_start_date), 'd MMM yy') : '—'}
                       </td>
                       <td className="p-2 text-xs text-muted-foreground">
-                        {r.retention_worked_at
-                          ? formatDistanceToNow(new Date(r.retention_worked_at), { addSuffix: true })
-                          : <span className="text-muted-foreground/60">Never</span>}
+                        {(() => {
+                          // Newest of: renewal worked stamp, or the agent's activity in New Leads.
+                          const stamps = [r.retention_worked_at, leadSync?.lastActionAt].filter(Boolean) as string[];
+                          const newest = stamps.sort((a, b) => +new Date(b) - +new Date(a))[0];
+                          return (
+                            <>
+                              {newest
+                                ? formatDistanceToNow(new Date(newest), { addSuffix: true })
+                                : <span className="text-muted-foreground/60">Never</span>}
+                              {leadSync?.status && (
+                                <div className="text-[10px] capitalize text-primary mt-0.5">
+                                  {leadSync.status.replace(/_/g, ' ')}
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
                       </td>
+
                       <td className="p-2 text-xs text-muted-foreground">
                         {r.customers?.created_at
                           ? format(new Date(r.customers.created_at), 'd MMM yy')
