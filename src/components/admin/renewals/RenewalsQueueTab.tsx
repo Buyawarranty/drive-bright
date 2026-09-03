@@ -176,6 +176,11 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   const [renewals12mo, setRenewals12mo] = useState<number | null>(null);
   const [runningCron, setRunningCron] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [caps, setCaps] = useState<CapRow[]>([]);
+  const [distMode, setDistMode] = useState<DistMode>('round_robin');
+  const [autoAssign, setAutoAssign] = useState(true);
+  const [syncingAssign, setSyncingAssign] = useState(false);
+
   const [callCountsByEmail, setCallCountsByEmail] = useState<Record<string, number>>({});
   const [claimEmails, setClaimEmails] = useState<Set<string>>(new Set());
   const [claimRegs, setClaimRegs] = useState<Set<string>>(new Set());
