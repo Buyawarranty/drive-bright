@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ShieldAlert } from 'lucide-react';
+import { X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -117,7 +117,7 @@ export const MisrepFlagButton: React.FC<Props> = ({ claimId, email, reg, flagged
                     : 'bg-card border-border text-muted-foreground hover:bg-red-50 hover:text-red-600',
                 )}
               >
-                <ShieldAlert className="h-3.5 w-3.5" />
+                <X className="h-4 w-4" strokeWidth={2.5} />
               </button>
             </PopoverTrigger>
           </TooltipTrigger>
