@@ -59,6 +59,37 @@ export const AppealsInboxPanel: React.FC<AppealsInboxPanelProps> = ({
 }) => {
   const unreadCount = appeals.filter(a => !a.isRead).length;
 
+  const [sentAppeals, setSentAppeals] = useState<SentAppeal[]>([]);
+  const [sentLoading, setSentLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const { data } = await supabase
+        .from('claim_appeals')
+        .select('id, claim_id, sent_at, created_at, status, closed_at, customer_email, claims_submissions(name, vehicle_registration)')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (cancelled) return;
+      setSentAppeals(
+        (data || []).map((r: any) => ({
+          id: r.id,
+          claimId: r.claim_id,
+          sentAt: r.sent_at ?? null,
+          createdAt: r.created_at,
+          status: r.status ?? null,
+          closedAt: r.closed_at ?? null,
+          customerEmail: r.customer_email ?? null,
+          customerName: r.claims_submissions?.name ?? null,
+          registration: r.claims_submissions?.vehicle_registration ?? null,
+        }))
+      );
+      setSentLoading(false);
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, [appeals.length]);
+
   return (
     <section className="rounded-2xl border border-amber-200 bg-white overflow-hidden">
       <header className="flex items-center justify-between flex-wrap gap-3 px-4 py-3 bg-amber-50 border-b border-amber-200">
