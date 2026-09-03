@@ -431,21 +431,42 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       // OR auth.uid depending on which flow assigned it. Match both.
       if (currentRole === 'sales' && currentUserId) {
         const ids = [currentUserId, currentAuthUserId].filter(Boolean) as string[];
+        const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
+        const d90 = new Date(Date.now() - 90 * 86400000).toISOString();
 
         let poolQ = applySegment(buildBaseQuery(), segment).is('assigned_to', null);
         let mineQ = applySegment(buildMineQuery(ids), segment);
+        // Stale shared pool: leads older than 3 months that their owner has
+        // not touched in 30+ days become available to every sales agent.
+        // Ownership is untouched until someone actively claims the lead.
+        let staleQ = applySegment(buildBaseQuery(), segment)
+          .not('assigned_to', 'is', null)
+          .lt('created_at', d90)
+          .or(`last_contacted_at.is.null,last_contacted_at.lt.${d30}`)
+          .or(`recovery_worked_at.is.null,recovery_worked_at.lt.${d30}`)
+          .lt('updated_at', d30);
 
-        const [pool, mine] = await Promise.all([sortQuery(poolQ), sortQuery(mineQ)]);
+        const [pool, mine, stale] = await Promise.all([
+          sortQuery(poolQ),
+          sortQuery(mineQ),
+          sortQuery(staleQ),
+        ]);
         if (pool.error) throw pool.error;
         if (mine.error) throw mine.error;
+        if (stale.error) throw stale.error;
 
         const seen = new Set<string>();
-        for (const l of [...((mine.data as any[]) || []), ...((pool.data as any[]) || [])]) {
+        for (const l of [
+          ...((mine.data as any[]) || []),
+          ...((pool.data as any[]) || []),
+          ...((stale.data as any[]) || []),
+        ]) {
           if (seen.has(l.id)) continue;
           seen.add(l.id);
           fetched.push(l);
         }
       } else {
+
         let q = applySegment(buildBaseQuery(), segment);
         const { data, error } = await sortQuery(q);
         if (error) throw error;
