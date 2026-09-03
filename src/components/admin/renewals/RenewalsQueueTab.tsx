@@ -26,6 +26,8 @@ import type { DateRange } from 'react-day-picker';
 
 import { RenewalPoolBar } from '@/components/admin/renewals/RenewalPoolBar';
 import { useCustomerActivity } from '@/hooks/useCustomerActivity';
+import { useRenewalLeadSync } from '@/hooks/useRenewalLeadSync';
+
 import { useLeadRoutingPermission } from '@/hooks/useLeadRoutingPermission';
 import { CustomerActivityCell } from '@/components/admin/leads/CustomerActivityCell';
 import {
