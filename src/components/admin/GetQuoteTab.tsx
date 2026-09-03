@@ -3130,8 +3130,10 @@ Questions? Call 0330 229 5040`;
       return null;
     } finally {
       quoteGenInFlightRef.current = false;
+      quoteGenPromiseRef.current = null;
       setIsGeneratingQuoteLink(false);
     }
+
 
   };
 
