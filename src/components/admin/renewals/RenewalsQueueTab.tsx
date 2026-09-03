@@ -1288,10 +1288,25 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                         {r.policy_start_date ? format(new Date(r.policy_start_date), 'd MMM yy') : '—'}
                       </td>
                       <td className="p-2 text-xs text-muted-foreground">
-                        {r.retention_worked_at
-                          ? formatDistanceToNow(new Date(r.retention_worked_at), { addSuffix: true })
-                          : <span className="text-muted-foreground/60">Never</span>}
+                        {(() => {
+                          // Newest of: renewal worked stamp, or the agent's activity in New Leads.
+                          const stamps = [r.retention_worked_at, leadSync?.lastActionAt].filter(Boolean) as string[];
+                          const newest = stamps.sort((a, b) => +new Date(b) - +new Date(a))[0];
+                          return (
+                            <>
+                              {newest
+                                ? formatDistanceToNow(new Date(newest), { addSuffix: true })
+                                : <span className="text-muted-foreground/60">Never</span>}
+                              {leadSync?.status && (
+                                <div className="text-[10px] capitalize text-primary mt-0.5">
+                                  {leadSync.status.replace(/_/g, ' ')}
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
                       </td>
+
                       <td className="p-2 text-xs text-muted-foreground">
                         {r.customers?.created_at
                           ? format(new Date(r.customers.created_at), 'd MMM yy')
