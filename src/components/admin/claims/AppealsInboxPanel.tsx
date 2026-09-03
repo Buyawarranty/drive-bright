@@ -134,6 +134,60 @@ export const AppealsInboxPanel: React.FC<AppealsInboxPanelProps> = ({
           </p>
         )}
 
+        {/* Every appeal sent from the Claims tab — date, customer and outcome. */}
+        <div className="pt-2">
+          <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">
+            Appeals sent{sentAppeals.length > 0 ? ` (${sentAppeals.length})` : ''}
+          </h3>
+          {sentLoading ? (
+            <p className="text-sm text-muted-foreground">Loading appeals…</p>
+          ) : sentAppeals.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No appeals sent yet. Use the gavel button on a claim to email the customer their appeal link.
+            </p>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-slate-200">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 text-left text-[11px] uppercase tracking-wide text-slate-500">
+                    <th className="px-3 py-2 font-semibold">Date</th>
+                    <th className="px-3 py-2 font-semibold">Customer</th>
+                    <th className="px-3 py-2 font-semibold">Reg</th>
+                    <th className="px-3 py-2 font-semibold">Email</th>
+                    <th className="px-3 py-2 font-semibold">Outcome</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sentAppeals.map(sa => {
+                    const outcome = outcomeLabel(sa);
+                    return (
+                      <tr key={sa.id} className="border-t border-slate-100">
+                        <td className="px-3 py-2 whitespace-nowrap text-slate-700">
+                          {formatDate(sa.sentAt || sa.createdAt)}
+                        </td>
+                        <td className="px-3 py-2 text-slate-800">{sa.customerName || 'Unknown customer'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap font-medium text-[#1A2B4A]">
+                          {(sa.registration || '—').toUpperCase()}
+                        </td>
+                        <td className="px-3 py-2 text-slate-600">
+                          {sa.customerEmail ? (
+                            <a href={`mailto:${sa.customerEmail}`} className="hover:underline inline-flex items-center gap-1">
+                              <Mail className="h-3 w-3" /> {sa.customerEmail}
+                            </a>
+                          ) : '—'}
+                        </td>
+                        <td className="px-3 py-2">
+                          <Badge variant="outline" className={outcome.className}>{outcome.text}</Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
         {appeals.map(a => (
           <article
             key={a.id}
