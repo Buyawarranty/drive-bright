@@ -870,6 +870,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                   <th className="px-2 py-2 text-center w-11">#</th>
                   <th className="px-2 py-2 text-left w-9"></th>
                   <th className="px-2 py-2 text-left">Agent</th>
+                  <th className="px-2 py-2 text-left">Your turn</th>
                   <th className="px-2 py-2 text-left">Status</th>
                   <th className="px-2 py-2 text-center">Calls</th>
                   <th className="px-2 py-2 text-left">Actions</th>
@@ -883,7 +884,6 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                   <th className="px-2 py-2 text-left">Lead Date</th>
                   <th className="px-2 py-2 text-left">Customer activity</th>
                   <th className="px-2 py-2 text-left">Time to contact</th>
-                  <th className="px-2 py-2 text-left">Your turn</th>
                 </tr>
               </thead>
               <tbody>
