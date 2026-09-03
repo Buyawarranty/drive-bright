@@ -347,6 +347,26 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       .lt('created_at', d30);
   }, []);
 
+  // Leads already OWNED by the agent: shown regardless of pool eligibility
+  // (step 2 / 30-day age), so a claimed batch never partly disappears.
+  // Only genuinely dead records (terminal status, already paid) stay hidden.
+  const buildMineQuery = useCallback((ids: string[]) => {
+    const select =
+      'id, first_name, last_name, email, phone, lead_source, status, priority, priority_score, ' +
+      'plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, ' +
+      'vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status, ' +
+      'last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id, ' +
+      'created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at, ' +
+      'call_count, resubmission_count, last_resubmitted_at, is_callback, recovery_worked_at, recovery_outcome, ' +
+      'claim_count, last_claimed_at';
+    return (supabase.from('sales_leads') as any)
+      .select(select)
+      .in('assigned_to', ids)
+      .not('status', 'in', '(converted,fake_lead,archived,not_eligible)')
+      .or('is_paid.is.null,is_paid.eq.false');
+  }, []);
+
+
   const applySegment = useCallback((q: any, id: SegmentId) => {
     const now = Date.now();
     const d30 = new Date(now - 30 * 86400000).toISOString();
@@ -387,34 +407,47 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       setLoading(false);
     }, 12000);
     try {
-      let q = buildBaseQuery();
-      q = applySegment(q, segment);
+      const sortQuery = (q: any) =>
+        q.order('last_contacted_at', { ascending: false, nullsFirst: false })
+          .order('recovery_worked_at', { ascending: false, nullsFirst: false })
+          .order('next_action_date', { ascending: true, nullsFirst: false })
+          .order('created_at', { ascending: false })
+          .limit(PAGE_SIZE);
+
+      let fetched: any[] = [];
+
       // Sales agents can work the whole recontact pool: their own assigned
-      // leads PLUS anything unassigned that's up for grabs. The client-side
-      // collision safeguard (see filteredLeads) still hides leads another
-      // agent has actively touched in the last 48h so two agents don't
-      // double-work the same record.
+      // leads PLUS anything unassigned that's up for grabs. Leads that are
+      // already ASSIGNED to the agent are always shown, even if they'd fail
+      // the pool eligibility rules (no step 2, under 30 days old) — otherwise
+      // an agent who claimed 200 leads only sees a fraction of them.
       // NOTE: sales_leads.assigned_to historically holds EITHER admin_users.id
-      // OR auth.uid depending on which flow assigned it. Match both so agents
-      // don't lose visibility of leads they actually own.
+      // OR auth.uid depending on which flow assigned it. Match both.
       if (currentRole === 'sales' && currentUserId) {
         const ids = [currentUserId, currentAuthUserId].filter(Boolean) as string[];
-        const orClause = ids.map(id => `assigned_to.eq.${id}`).join(',') + ',assigned_to.is.null';
-        q = q.or(orClause);
+
+        let poolQ = applySegment(buildBaseQuery(), segment).is('assigned_to', null);
+        let mineQ = applySegment(buildMineQuery(ids), segment);
+
+        const [pool, mine] = await Promise.all([sortQuery(poolQ), sortQuery(mineQ)]);
+        if (pool.error) throw pool.error;
+        if (mine.error) throw mine.error;
+
+        const seen = new Set<string>();
+        for (const l of [...((mine.data as any[]) || []), ...((pool.data as any[]) || [])]) {
+          if (seen.has(l.id)) continue;
+          seen.add(l.id);
+          fetched.push(l);
+        }
+      } else {
+        let q = applySegment(buildBaseQuery(), segment);
+        const { data, error } = await sortQuery(q);
+        if (error) throw error;
+        fetched = (data as any) || [];
       }
 
-      // Sort so leads the agent is actively working (most recently touched / contacted)
-      // bubble to the top — otherwise an agent can't find "their" leads in thousands.
-      // Untouched leads fall to the bottom but remain reachable via "New to Recontact".
-      q = q.order('last_contacted_at', { ascending: false, nullsFirst: false })
-        .order('recovery_worked_at', { ascending: false, nullsFirst: false })
-        .order('next_action_date', { ascending: true, nullsFirst: false })
-        .order('created_at', { ascending: false })
-        .limit(PAGE_SIZE);
-      const { data, error } = await q;
-      if (error) throw error;
-      const fetched = (data as any) || [];
       setLeads(fetched);
+
 
       // Load tag assignments for the fetched leads so the pill strip can
       // filter by tags such as "Not spoken to".
@@ -442,7 +475,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       clearTimeout(safetyTimer);
       setLoading(false);
     }
-  }, [buildBaseQuery, applySegment, segment, currentRole, currentUserId, currentAuthUserId]);
+  }, [buildBaseQuery, buildMineQuery, applySegment, segment, currentRole, currentUserId, currentAuthUserId]);
 
   const fetchCounts = useCallback(async () => {
     const results = await Promise.all(
