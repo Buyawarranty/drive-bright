@@ -101,8 +101,11 @@ export const ClaimsTab = ({
 
   const { claims: managerClaims, loading: managerLoading, refetch: refetchManager } = useClaims();
   const {
+    appeals: returnedAppeals,
+    loading: appealsLoading,
     unreadCount: appealsUnreadCount,
     totalCount: appealsTotalCount,
+    markAsRead: markAppealAsRead,
     refetch: refetchAppeals,
   } = useReturnedAppeals();
 
