@@ -1103,7 +1103,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                       </td>
                       <td className="p-2">
                         <Select value={assignedAuthId ?? UNASSIGNED}
-                          onValueChange={(v) => reassignCustomer(r, v === UNASSIGNED ? null : v)}>
+                          onValueChange={(v) => reassignCustomer(r, v)}>
                           <SelectTrigger className="h-7 w-[130px] text-xs">
                             <SelectValue placeholder="Assign…">
                               {assignedAgent ? (
@@ -1115,12 +1115,13 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
+                            {/* No "Unassigned" option — a renewal always belongs to an agent. */}
                             {agents.map((a) => a.user_id ? (
                               <SelectItem key={a.id} value={a.user_id}>{agentLabel(a)}</SelectItem>
                             ) : null)}
                           </SelectContent>
                         </Select>
+
                       </td>
                       <td className="p-2">
                         <Select value={r.retention_outcome ?? ''} onValueChange={(v) => markWorked(r, v)}>
