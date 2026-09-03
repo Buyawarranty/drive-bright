@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, X, CheckCircle2, AlertCircle, Inbox, Archive } from 'lucide-react';
+import { Loader2, X, CheckCircle2, AlertCircle, Inbox, Archive, ShieldAlert } from 'lucide-react';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { AssignMenu } from './AssignMenu';
 import { STAGE_TO_DB_STATUS, type WorkflowStage } from './statusMap';
 import { ClaimStatusEmailPreviewDialog, type PendingClaimStatusChange } from '@/components/admin/claims/ClaimStatusEmailPreviewDialog';
@@ -32,6 +35,44 @@ export const BulkActionBar: React.FC<Props> = ({ selectedIds, onClear, onDone })
   const [busy, setBusy] = useState<string | null>(null);
   const [pendingChange, setPendingChange] = useState<PendingClaimStatusChange | null>(null);
   const [queue, setQueue] = useState<{ ids: string[]; status: string; label: string } | null>(null);
+  const [misrepOpen, setMisrepOpen] = useState(false);
+  const [misrepReason, setMisrepReason] = useState('');
+
+  const runMisrep = async () => {
+    setBusy('misrep');
+    try {
+      let applied = 0;
+      const failures: string[] = [];
+      for (const id of ids) {
+        const { error } = await supabase.rpc('mark_claim_misrepresented', {
+          p_claim_id: id,
+          p_reason: misrepReason.trim() || null,
+        });
+        if (error) failures.push(id);
+        else applied += 1;
+      }
+      if (failures.length > 0) {
+        toast({
+          title: 'Some claims could not be flagged',
+          description: `Marked ${applied} of ${ids.length}. ${failures.length} failed — please retry them individually.`,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Marked as misrepresented',
+          description: `Applied Misrepresentation – Do Not Cover to ${applied} claim${applied === 1 ? '' : 's'}. Excluded from renewals and blocked from new cover.`,
+        });
+      }
+      setMisrepOpen(false);
+      setMisrepReason('');
+      await onDone();
+      onClear();
+    } catch (e: any) {
+      toast({ title: 'Bulk update failed', description: e?.message || 'Could not apply changes', variant: 'destructive' });
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const count = selectedIds.size;
   if (count === 0 && !pendingChange) return null;
@@ -153,6 +194,17 @@ export const BulkActionBar: React.FC<Props> = ({ selectedIds, onClear, onDone })
 
           <button
             type="button"
+            disabled={!!busy}
+            onClick={() => setMisrepOpen(true)}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-red-300 bg-card text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+            title="Apply Misrepresentation – Do Not Cover to every selected claim"
+          >
+            <ShieldAlert className="h-3 w-3" />
+            Mark misrepresented
+          </button>
+
+          <button
+            type="button"
             onClick={onClear}
             className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
           >
@@ -166,6 +218,38 @@ export const BulkActionBar: React.FC<Props> = ({ selectedIds, onClear, onDone })
         pending={pendingChange}
         onClose={() => { setPendingChange(null); setQueue(null); }}
       />
+
+      <Dialog open={misrepOpen} onOpenChange={(o) => { if (!busy) { setMisrepOpen(o); if (!o) setMisrepReason(''); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-800">Mark {count} claim{count === 1 ? '' : 's'} as misrepresented</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            This labels each customer <strong>Misrepresentation – Do Not Cover</strong> across all of their
+            records, removes them from renewal leads and campaigns, and stops them buying cover again.
+          </p>
+          <Textarea
+            value={misrepReason}
+            onChange={(e) => setMisrepReason(e.target.value)}
+            rows={4}
+            placeholder="Evidence and reason, e.g. fault present before cover started — confirmed by inspection report"
+          />
+          <DialogFooter>
+            <Button variant="ghost" size="sm" onClick={() => setMisrepOpen(false)} disabled={busy === 'misrep'}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              className="bg-red-700 hover:bg-red-800 text-white"
+              onClick={runMisrep}
+              disabled={busy === 'misrep'}
+            >
+              {busy === 'misrep' ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : null}
+              Mark {count} misrepresented
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
