@@ -76,7 +76,7 @@ export const useSandboxLiveLeads = (enabled: boolean, options: Options = {}) => 
       if (queryError) throw queryError;
 
       setLeads(
-        (data ?? []).map((row: any) => ({
+        (data ?? []).map((row: Record<string, unknown>) => ({
           id: row.id as string,
           createdAt: new Date(row.created_at as string),
           firstName: (row.first_name as string) || '',
@@ -90,8 +90,8 @@ export const useSandboxLiveLeads = (enabled: boolean, options: Options = {}) => 
           callCount: Number(row.call_count ?? 0),
         })),
       );
-    } catch (e: any) {
-      setError(e?.message || 'Could not load live leads');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Could not load live leads');
       setLeads([]);
     } finally {
       setLoading(false);
