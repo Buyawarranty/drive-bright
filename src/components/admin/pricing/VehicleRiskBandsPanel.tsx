@@ -960,6 +960,10 @@ const VehicleRiskBandsPanel: React.FC = () => {
         </CardContent>
       </Card>
 
+      <PowertrainCategoryPanel config={config} update={update} />
+
+
+
       {/* Tester */}
       <Card>
         <CardHeader>
