@@ -838,6 +838,12 @@ const VehicleRiskBandsPanel: React.FC = () => {
               </div>
             </div>
 
+            <p className="mb-2 text-xs text-muted-foreground">
+              For every category below: <span className="font-medium text-foreground">price factor</span> multiplies
+              the normal grid price, <span className="font-medium text-foreground">min 1-year £</span> is the lowest
+              the 1-year price can ever fall to, and the customer is quoted whichever of the two comes out higher.
+              An <span className="font-medium text-foreground">exact £/year</span> overrides both.
+            </p>
             <div className="space-y-3">
               {config.bands.map(band => (
                 <div key={band.id} className="rounded-lg border p-3 space-y-3">
