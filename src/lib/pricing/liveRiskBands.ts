@@ -14,6 +14,7 @@
  *     the excluded vehicle matrix so there is exactly one decline path.
  */
 import {
+  bandFixedPriceForTerm,
   clampBandFactor,
   matchRiskBand,
   powertrainFactorFor,
@@ -91,4 +92,20 @@ export function getLiveRiskBandMinPrice(
   const minOneYear = Math.max(Number.isFinite(bandMin) ? bandMin : 0, categoryMin);
   if (!Number.isFinite(minOneYear) || minOneYear <= 0) return null;
   return Math.round(minOneYear * (TERM_FLOOR_RATIO[paymentPeriod] ?? 1));
+}
+
+/**
+ * PERSONALISED TIER PRICE — exact price published for this vehicle and term
+ * (e.g. £1,499 per year). Null when the vehicle is not in a personalised tier.
+ */
+export function getLiveRiskBandFixedPrice(
+  vehicleName: string | null | undefined,
+  paymentPeriod: string,
+  fuelType?: string | null
+): number | null {
+  const config = activeBands();
+  const name = String(vehicleName || '').trim();
+  if (!config || !name) return null;
+  const { band } = matchRiskBand(name, name, config, fuelType ?? undefined);
+  return bandFixedPriceForTerm(band, paymentPeriod);
 }

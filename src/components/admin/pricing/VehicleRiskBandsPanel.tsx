@@ -286,6 +286,27 @@ const VehicleRiskBandsPanel: React.FC = () => {
     update({ ...config, bands: [...config.bands, band] });
   };
 
+  /**
+   * PERSONALISED TIER — a band priced at an exact figure per year (e.g. £1,499/yr)
+   * instead of a factor and a floor. 2-year and 3-year default to the yearly
+   * price × 2 / × 3 unless the manager types their own.
+   */
+  const addPersonalisedTier = () => {
+    const band: RiskBand = {
+      id: newId('tier'),
+      name: 'Personalised tier — £1,499/yr',
+      factor: 1,
+      minOneYear: null,
+      fixedOneYear: 1499,
+      fixedTwoYear: null,
+      fixedThreeYear: null,
+      referral: false,
+      tone: 'severe',
+      note: 'Exact price per year. Ignores the grid base, the band factor and the floors.',
+    };
+    update({ ...config, bands: [...config.bands, band] });
+  };
+
   const removeBand = (id: string) => {
     if (config.assignments.some(a => a.bandId === id)) {
       toast.error('Move the vehicles out of this band first.');
@@ -587,8 +608,12 @@ const VehicleRiskBandsPanel: React.FC = () => {
                         </Badge>
                       </td>
                       <td className="p-2 text-muted-foreground">
-                        {band.blocked || band.referral ? '—' : `×${band.factor.toFixed(2)}`}
-                        {band.minOneYear ? ` · min £${band.minOneYear}` : ''}
+                        {band.blocked || band.referral
+                          ? '—'
+                          : band.fixedOneYear
+                            ? `£${band.fixedOneYear}/yr exact`
+                            : `×${band.factor.toFixed(2)}`}
+                        {!band.fixedOneYear && band.minOneYear ? ` · min £${band.minOneYear}` : ''}
                       </td>
                       {types.map(({ type, result }) => (
                         <td key={type} className="p-2">
@@ -638,6 +663,9 @@ const VehicleRiskBandsPanel: React.FC = () => {
                 <Button variant="outline" size="sm" onClick={addBand}>
                   <Plus className="h-4 w-4 mr-2" /> Add band
                 </Button>
+                <Button variant="outline" size="sm" onClick={addPersonalisedTier}>
+                  <Plus className="h-4 w-4 mr-2" /> Add personalised tier
+                </Button>
               </div>
             </div>
 
@@ -675,6 +703,47 @@ const VehicleRiskBandsPanel: React.FC = () => {
                         onChange={e =>
                           patchBand(band.id, {
                             minOneYear: e.target.value === '' ? null : Math.max(0, Number(e.target.value)),
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 rounded-md border border-dashed px-2 py-1">
+                      <Label className="text-xs whitespace-nowrap">Exact £/year</Label>
+                      <Input
+                        className="h-9 w-[110px]"
+                        type="number"
+                        placeholder="off"
+                        value={band.fixedOneYear ?? ''}
+                        disabled={band.referral || band.blocked}
+                        onChange={e =>
+                          patchBand(band.id, {
+                            fixedOneYear: e.target.value === '' ? null : Math.max(0, Number(e.target.value)),
+                          })
+                        }
+                      />
+                      <Label className="text-xs whitespace-nowrap">2-year £</Label>
+                      <Input
+                        className="h-9 w-[100px]"
+                        type="number"
+                        placeholder={band.fixedOneYear ? `${band.fixedOneYear * 2}` : 'auto'}
+                        value={band.fixedTwoYear ?? ''}
+                        disabled={band.referral || band.blocked || !band.fixedOneYear}
+                        onChange={e =>
+                          patchBand(band.id, {
+                            fixedTwoYear: e.target.value === '' ? null : Math.max(0, Number(e.target.value)),
+                          })
+                        }
+                      />
+                      <Label className="text-xs whitespace-nowrap">3-year £</Label>
+                      <Input
+                        className="h-9 w-[100px]"
+                        type="number"
+                        placeholder={band.fixedOneYear ? `${band.fixedOneYear * 3}` : 'auto'}
+                        value={band.fixedThreeYear ?? ''}
+                        disabled={band.referral || band.blocked || !band.fixedOneYear}
+                        onChange={e =>
+                          patchBand(band.id, {
+                            fixedThreeYear: e.target.value === '' ? null : Math.max(0, Number(e.target.value)),
                           })
                         }
                       />
