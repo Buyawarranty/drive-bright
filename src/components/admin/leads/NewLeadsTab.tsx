@@ -105,7 +105,10 @@ interface NewLeadsTabProps {
   onMarkAllAsRead?: () => void;
   onNavigateToTab?: (tab: string, leadData?: LeadForQuote) => void;
   userRole?: string | null;
+  /** Open Round Robin Sandbox: read real leads, block every write. */
+  sandboxMode?: boolean;
 }
+
 
 const AttendanceQuickLink: React.FC = () => {
   const [, setSearchParams] = useSearchParams();
