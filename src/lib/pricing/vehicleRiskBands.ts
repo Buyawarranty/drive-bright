@@ -597,6 +597,7 @@ export function loadRiskBandConfig(): RiskBandConfig {
           Number(parsed?.vehicleTypes?.motorbike ?? DEFAULT_VEHICLE_TYPE_FACTORS.motorbike)
         ),
       },
+      powertrains: normalizePowertrainRules(parsed?.powertrains),
       defaultBandId: String(parsed.defaultBandId || 'normal'),
       globalMinTotal:
         Number(parsed.globalMinTotal) > 0 ? Math.round(Number(parsed.globalMinTotal)) : DEFAULT_GLOBAL_MIN_TOTAL,
