@@ -449,9 +449,24 @@ export default function PriceUpdatesTab() {
       payInFullFactor: m.payInFullFactor === undefined ? undefined : Number(m.payInFullFactor),
       // Model-level absolute minimum (Aug hybrid = £399 on any warranty).
       absoluteMinTotal: Number(m.absoluteMinTotal) > 0 ? Number(m.absoluteMinTotal) : undefined,
-    };
+    } as VehicleFactorModel);
 
   }
+
+  /**
+   * Vehicle type / model-risk bands (and the electric & hybrid category prices)
+   * live inside the same vehicle_factor_model payload. Pushing prices live must
+   * never drop them, otherwise every banded vehicle silently falls back to the
+   * plain base price. Always carry the published bands (or the ones being
+   * edited) through with any model we write.
+   */
+  function withRiskBands(model: VehicleFactorModel | null): VehicleFactorModel | null {
+    const bands =
+      (model as any)?.riskBands ?? getLiveRiskBandConfig() ?? loadRiskBandConfig();
+    if (!bands) return model;
+    return { ...(model ?? ({} as VehicleFactorModel)), riskBands: bands } as VehicleFactorModel;
+  }
+
 
   async function handleSave() {
     if (!selectedId) return;
