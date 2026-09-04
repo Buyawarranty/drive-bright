@@ -25,6 +25,8 @@ import { useDataExport } from '@/hooks/useDataExport';
 import { useAuth } from '@/hooks/useAuth';
 import { QuickCancellationAdd } from './QuickCancellationAdd';
 import { MonthlyCohortRetention } from './MonthlyCohortRetention';
+import { UnifiedDateFilter, periodToRange, type DateScope, type PeriodKey } from './UnifiedDateFilter';
+import { QuickMonthFilter } from './QuickMonthFilter';
 
 
 const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_lead', 'accounts', 'accounts_manager', 'accounts_payroll']);
