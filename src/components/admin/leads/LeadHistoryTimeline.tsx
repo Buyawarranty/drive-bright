@@ -41,9 +41,39 @@ interface Props {
   className?: string;
 }
 
+/**
+ * A single history query must never be able to freeze the whole panel.
+ * Each one gets its own time limit and its own failure — whatever came back
+ * in time is shown, and the agent is told if part of it is missing.
+ */
+const QUERY_TIMEOUT_MS = 12000;
+
+const settle = async <T,>(p: PromiseLike<T>): Promise<{ data: any[] | null; failed: boolean }> => {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  try {
+    const res: any = await Promise.race([
+      p,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error('timeout')), QUERY_TIMEOUT_MS);
+      }),
+    ]);
+    if (res?.error) {
+      console.warn('[LeadHistoryTimeline] query error', res.error);
+      return { data: null, failed: true };
+    }
+    return { data: res?.data ?? [], failed: false };
+  } catch (e) {
+    console.warn('[LeadHistoryTimeline] query failed/timed out', e);
+    return { data: null, failed: true };
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+};
+
 export const LeadHistoryTimeline: React.FC<Props> = ({ leadId, className }) => {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [partial, setPartial] = useState(false);
   const [filter, setFilter] = useState<'all' | Kind>('all');
 
   const isCart = leadId.startsWith('cart_');
@@ -51,9 +81,10 @@ export const LeadHistoryTimeline: React.FC<Props> = ({ leadId, className }) => {
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
+    setPartial(false);
     try {
       const [calls, dials, notes, changes] = await Promise.all([
-        supabase
+        settle(supabase
           .from('lead_call_logs')
           .select('id, created_at, agent_id, agent_name, outcome, notes, attempt_number, call_started_at, call_ended_at, contact_made')
           .eq('lead_id', actualId)
