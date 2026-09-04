@@ -8285,6 +8285,45 @@ export type Database = {
           },
         ]
       }
+      lead_quick_notes_backup: {
+        Row: {
+          backed_up_at: string
+          backup_id: string
+          created_by: string | null
+          is_pinned: boolean | null
+          lead_id: string
+          note_created_at: string | null
+          note_id: string
+          note_text: string | null
+          note_updated_at: string | null
+          operation: string
+        }
+        Insert: {
+          backed_up_at?: string
+          backup_id?: string
+          created_by?: string | null
+          is_pinned?: boolean | null
+          lead_id: string
+          note_created_at?: string | null
+          note_id: string
+          note_text?: string | null
+          note_updated_at?: string | null
+          operation: string
+        }
+        Update: {
+          backed_up_at?: string
+          backup_id?: string
+          created_by?: string | null
+          is_pinned?: boolean | null
+          lead_id?: string
+          note_created_at?: string | null
+          note_id?: string
+          note_text?: string | null
+          note_updated_at?: string | null
+          operation?: string
+        }
+        Relationships: []
+      }
       lead_reassign_requests: {
         Row: {
           created_at: string
