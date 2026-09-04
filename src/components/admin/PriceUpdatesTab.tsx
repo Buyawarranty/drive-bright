@@ -449,7 +449,7 @@ export default function PriceUpdatesTab() {
       payInFullFactor: m.payInFullFactor === undefined ? undefined : Number(m.payInFullFactor),
       // Model-level absolute minimum (Aug hybrid = £399 on any warranty).
       absoluteMinTotal: Number(m.absoluteMinTotal) > 0 ? Number(m.absoluteMinTotal) : undefined,
-    } as VehicleFactorModel);
+    } as VehicleFactorModel;
 
   }
 
