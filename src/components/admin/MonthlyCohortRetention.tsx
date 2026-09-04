@@ -27,7 +27,11 @@ interface CohortRow {
   d30: MilestoneCell;
   d60: MilestoneCell;
   d90: MilestoneCell;
+  daysToCancel: number[];        // days between signup and cancellation
+  avgDaysToCancel: number | null;
+  medianDaysToCancel: number | null;
 }
+
 
 const JUNK_STATUSES = new Set([
   'fake lead', 'fake_lead', 'duplicate', 'converted_lead',
@@ -87,9 +91,11 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
               year: monthStart.getFullYear(),
               sold: 0, active: 0, cancelled: 0, retentionPct: 0,
               d30: emptyCell(), d60: emptyCell(), d90: emptyCell(),
+              daysToCancel: [], avgDaysToCancel: null, medianDaysToCancel: null,
             };
             buckets.set(key, bucket);
           }
+
 
           bucket.sold += 1;
           const isCancelled =
@@ -101,10 +107,12 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
             const cancelDate = cancelRaw ? new Date(cancelRaw) : null;
             if (cancelDate && !isNaN(cancelDate.getTime())) {
               const daysToCancel = (cancelDate.getTime() - signupDate.getTime()) / 86400000;
+              if (daysToCancel >= 0) bucket.daysToCancel.push(daysToCancel);
               if (daysToCancel <= 30) bucket.d30.cancelled += 1;
               if (daysToCancel <= 60) bucket.d60.cancelled += 1;
               if (daysToCancel <= 90) bucket.d90.cancelled += 1;
             }
+
           } else {
             bucket.active += 1;
           }
@@ -133,7 +141,9 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
                 year: cursor.getFullYear(),
                 sold: 0, active: 0, cancelled: 0, retentionPct: 0,
                 d30: emptyCell(), d60: emptyCell(), d90: emptyCell(),
+                daysToCancel: [], avgDaysToCancel: null, medianDaysToCancel: null,
               });
+
             }
             cursor.setMonth(cursor.getMonth() + 1);
           }
@@ -150,13 +160,23 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
                 pct: b.sold > 0 ? (retained / b.sold) * 100 : 0,
               };
             };
+            const dsorted = [...b.daysToCancel].sort((x, y) => x - y);
+            const avg = dsorted.length ? dsorted.reduce((s, v) => s + v, 0) / dsorted.length : null;
+            const med = dsorted.length
+              ? (dsorted.length % 2
+                  ? dsorted[(dsorted.length - 1) / 2]
+                  : (dsorted[dsorted.length / 2 - 1] + dsorted[dsorted.length / 2]) / 2)
+              : null;
             return {
               ...b,
               retentionPct: b.sold > 0 ? (b.active / b.sold) * 100 : 0,
               d30: finalize(b.d30),
               d60: finalize(b.d60),
               d90: finalize(b.d90),
+              avgDaysToCancel: avg,
+              medianDaysToCancel: med,
             };
+
           });
 
         setRows(result);
@@ -211,6 +231,29 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
         retention: r.sold > 0 ? Number(r.retentionPct.toFixed(1)) : null,
       })),
   [rows]);
+
+  const daysChartData = useMemo(() =>
+    rows
+      .slice()
+      .sort((a, b) => a.monthKey.localeCompare(b.monthKey))
+      .map(r => ({
+        label: `${r.monthLabel} ${String(r.year).slice(2)}`,
+        avgDays: r.avgDaysToCancel != null ? Number(r.avgDaysToCancel.toFixed(1)) : null,
+        medianDays: r.medianDaysToCancel != null ? Number(r.medianDaysToCancel.toFixed(1)) : null,
+        cancellations: r.daysToCancel.length,
+      })),
+  [rows]);
+
+  const overallDays = useMemo(() => {
+    const all = rows.flatMap(r => r.daysToCancel).sort((a, b) => a - b);
+    if (!all.length) return null;
+    const avg = all.reduce((s, v) => s + v, 0) / all.length;
+    const med = all.length % 2
+      ? all[(all.length - 1) / 2]
+      : (all[all.length / 2 - 1] + all[all.length / 2]) / 2;
+    return { avg, med, count: all.length };
+  }, [rows]);
+
 
   const toggleYear = (year: number) => {
     setCollapsed(prev => {
@@ -282,6 +325,49 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
           </div>
         </div>
       )}
+
+      {!loading && overallDays && (
+        <div className="mb-6 border rounded-lg p-3">
+          <div className="flex items-baseline justify-between mb-2 gap-3 flex-wrap">
+            <div>
+              <h3 className="text-sm font-semibold">How long before people cancel</h3>
+              <p className="text-xs text-muted-foreground">
+                Average days between buying the warranty and cancelling, for each signup month. The dotted line is the typical (median) wait, which is less affected by a few very late cancellations.
+              </p>
+            </div>
+            <div className="text-right text-xs text-muted-foreground">
+              <div><span className="font-semibold text-foreground">{overallDays.avg.toFixed(0)} days</span> average all-time</div>
+              <div><span className="font-semibold text-foreground">{overallDays.med.toFixed(0)} days</span> typical · {overallDays.count} cancellations</div>
+            </div>
+          </div>
+          <div className="h-[260px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={daysChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" allowDecimals={false} unit="d" />
+                <Tooltip
+                  contentStyle={{
+                    background: 'hsl(var(--popover))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    color: 'hsl(var(--popover-foreground))',
+                  }}
+                  formatter={(value: any, name: string) =>
+                    name === 'Cancellations' ? [value, name] : [`${value} days`, name]
+                  }
+                />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Bar dataKey="avgDays" name="Average days to cancel" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
+                <Line type="monotone" dataKey="medianDays" name="Typical days to cancel" stroke="hsl(var(--primary))" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3 }} connectNulls />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+
 
       {loading ? (
         <div className="flex items-center justify-center py-8 text-muted-foreground">
