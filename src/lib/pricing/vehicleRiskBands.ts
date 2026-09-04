@@ -71,10 +71,71 @@ export type VehicleTypeFactors = {
   motorbike: number;
 };
 
+/** Powertrain groups that can be priced as one category. */
+export type PowertrainKey = 'ev' | 'phev' | 'hev';
+
+export const POWERTRAIN_KEYS: PowertrainKey[] = ['ev', 'phev', 'hev'];
+
+export const POWERTRAIN_LABEL: Record<PowertrainKey, string> = {
+  ev: 'Electric (EV)',
+  phev: 'Plug-in hybrid (PHEV)',
+  hev: 'Full hybrid (HEV)',
+};
+
+/** A make/model kept out of its powertrain category (priced as a normal car). */
+export type PowertrainExclusion = {
+  id: string;
+  make: string;
+  /** Empty = the whole make is excluded from the category. */
+  model: string;
+};
+
+/**
+ * CATEGORY PRICE FOR A WHOLE POWERTRAIN
+ * One factor and one 1-year minimum for every EV (or PHEV / HEV) in one place,
+ * so all of them can be re-priced together. Anything in `excludes` skips the
+ * category and is priced on its model-risk band alone.
+ */
+export type PowertrainRule = {
+  enabled: boolean;
+  factor: number;
+  minOneYear: number | null;
+  excludes: PowertrainExclusion[];
+  note?: string;
+};
+
+export type PowertrainRules = Record<PowertrainKey, PowertrainRule>;
+
+export const DEFAULT_POWERTRAIN_RULES: PowertrainRules = {
+  ev: {
+    enabled: true,
+    factor: 1.2,
+    minOneYear: 599,
+    excludes: [],
+    note: 'Battery-electric vehicles — high-voltage components and specialist labour.',
+  },
+  phev: {
+    enabled: true,
+    factor: 1.15,
+    minOneYear: 549,
+    excludes: [],
+    note: 'Plug-in hybrids — two powertrains to cover.',
+  },
+  hev: {
+    enabled: true,
+    factor: 1.05,
+    minOneYear: null,
+    excludes: [],
+    note: 'Full hybrids — proven reliability, modest uplift.',
+  },
+};
+
 export type RiskBandConfig = {
   bands: RiskBand[];
   assignments: RiskBandAssignment[];
   vehicleTypes: VehicleTypeFactors;
+  /** Category pricing per powertrain (EV / PHEV / HEV), with exclusions. */
+  powertrains: PowertrainRules;
   /** Band applied when a vehicle matches nothing. */
   defaultBandId: string;
   /**
