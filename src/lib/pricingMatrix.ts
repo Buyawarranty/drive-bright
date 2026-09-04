@@ -16,7 +16,7 @@
  */
 
 import { getVehicleRuleMinPrice } from './pricing/vehicleRules';
-import { getLiveRiskBandFactor, getLiveRiskBandMinPrice } from './pricing/liveRiskBands';
+import { getLiveRiskBandFactor, getLiveRiskBandMinPrice, getLiveRiskBandFixedPrice } from './pricing/liveRiskBands';
 
 // Base pricing matrix - 3% INCREASE applied (Jun 2026), floored to whole numbers
 // Previous baseline was the May 2026 +12% matrix; all values multiplied by 1.03 and floored.
@@ -968,7 +968,14 @@ export function calculateTotalWarrantyPrice(params: {
 
   // 3. Enforce minimum BASE price floor (halved for motorbikes, +10% on the customer journey,
   //    lifted by any model-specific minimum for this vehicle)
-  const flooredBase = applyBasePriceFloor(adjustedBasePrice, paymentPeriod, voluntaryExcess, isMotorbike, surface, vehicleName);
+  const flooredBaseFromGrid = applyBasePriceFloor(adjustedBasePrice, paymentPeriod, voluntaryExcess, isMotorbike, surface, vehicleName);
+
+  // 3b. PERSONALISED TIER — a published band can set an exact price per year
+  // (e.g. £1,499/yr). That figure replaces the grid base for this vehicle, so the
+  // tier prices at exactly that amount on the default options while the labour,
+  // excess and claim-limit chips still move it.
+  const personalisedBase = getLiveRiskBandFixedPrice(vehicleName ?? make, paymentPeriod, fuelType);
+  const flooredBase = personalisedBase !== null ? personalisedBase : flooredBaseFromGrid;
 
 
 
