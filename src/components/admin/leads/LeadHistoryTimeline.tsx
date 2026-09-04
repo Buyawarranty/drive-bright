@@ -183,7 +183,7 @@ export const LeadHistoryTimeline: React.FC<Props> = ({ leadId, className }) => {
       setEntries(list);
     } catch (e) {
       console.error('[LeadHistoryTimeline]', e);
-      setEntries([]);
+      setPartial(true);
     } finally {
       setLoading(false);
     }
