@@ -134,7 +134,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   onMarkAllAsRead,
   onNavigateToTab,
   userRole,
+  sandboxMode = false,
 }) => {
+
   const { canExportTab, hasGranularPermission } = usePermissions();
   const { exportToCSV, exportToExcel } = useDataExport();
   // Resolves agent names for exports (assigned_user is only populated optimistically).
