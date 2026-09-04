@@ -4,6 +4,10 @@ import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { Card } from '@/components/ui/card';
 import { format, startOfMonth, endOfMonth, addDays } from 'date-fns';
 import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
+import {
+  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis,
+  CartesianGrid, Tooltip, Legend,
+} from 'recharts';
 
 interface MilestoneCell {
   retained: number;
