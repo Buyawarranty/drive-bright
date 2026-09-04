@@ -1,5 +1,7 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { type VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
+import { getLiveRiskBandConfig } from '@/lib/pricing/liveRiskBands';
+import { loadRiskBandConfig } from '@/lib/pricing/vehicleRiskBands';
 import { applyLivePricingVersion } from '@/lib/pricing/applyLivePricingVersion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
