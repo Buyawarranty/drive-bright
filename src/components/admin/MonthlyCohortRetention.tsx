@@ -199,6 +199,19 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
     return { sold, active, cancelled, retention: sold ? (active / sold) * 100 : 0 };
   }, [rows]);
 
+  const chartData = useMemo(() =>
+    rows
+      .slice()
+      .sort((a, b) => a.monthKey.localeCompare(b.monthKey))
+      .map(r => ({
+        label: `${r.monthLabel} ${String(r.year).slice(2)}`,
+        active: r.active,
+        cancelled: r.cancelled,
+        sold: r.sold,
+        retention: r.sold > 0 ? Number(r.retentionPct.toFixed(1)) : null,
+      })),
+  [rows]);
+
   const toggleYear = (year: number) => {
     setCollapsed(prev => {
       const next = new Set(prev);
