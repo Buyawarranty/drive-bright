@@ -41,6 +41,7 @@ import {
   normalizeFuelFilter,
   type FuelFilter,
 } from '@/lib/pricing/fuelCategory';
+import PowertrainCategoryPanel from './PowertrainCategoryPanel';
 import { getExclusionReason, isVehicleExcluded } from '@/lib/vehicleExclusions';
 import {
   loadExclusionDraft,
