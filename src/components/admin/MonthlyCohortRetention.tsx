@@ -160,13 +160,23 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
                 pct: b.sold > 0 ? (retained / b.sold) * 100 : 0,
               };
             };
+            const dsorted = [...b.daysToCancel].sort((x, y) => x - y);
+            const avg = dsorted.length ? dsorted.reduce((s, v) => s + v, 0) / dsorted.length : null;
+            const med = dsorted.length
+              ? (dsorted.length % 2
+                  ? dsorted[(dsorted.length - 1) / 2]
+                  : (dsorted[dsorted.length / 2 - 1] + dsorted[dsorted.length / 2]) / 2)
+              : null;
             return {
               ...b,
               retentionPct: b.sold > 0 ? (b.active / b.sold) * 100 : 0,
               d30: finalize(b.d30),
               d60: finalize(b.d60),
               d90: finalize(b.d90),
+              avgDaysToCancel: avg,
+              medianDaysToCancel: med,
             };
+
           });
 
         setRows(result);
