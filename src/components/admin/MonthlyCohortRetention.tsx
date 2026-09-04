@@ -91,9 +91,11 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
               year: monthStart.getFullYear(),
               sold: 0, active: 0, cancelled: 0, retentionPct: 0,
               d30: emptyCell(), d60: emptyCell(), d90: emptyCell(),
+              daysToCancel: [], avgDaysToCancel: null, medianDaysToCancel: null,
             };
             buckets.set(key, bucket);
           }
+
 
           bucket.sold += 1;
           const isCancelled =
