@@ -297,6 +297,9 @@ const VehicleRiskBandsPanel: React.FC = () => {
     });
   };
 
+  const createCategoryRef = useRef<HTMLDivElement | null>(null);
+  const createNameRef = useRef<HTMLInputElement | null>(null);
+
   const addBand = () => {
     const band: RiskBand = {
       id: newId('band'),
@@ -347,32 +350,36 @@ const VehicleRiskBandsPanel: React.FC = () => {
     toast.success(`"${name}" created — now assign makes and models to it.`);
   };
 
+  /** Does not create anything on its own — takes the manager to the create form, set to exact pricing. */
   const addPersonalisedTier = () => {
-    const band: RiskBand = {
-      id: newId('tier'),
-      name: 'Personalised tier — £1,499/yr',
-      factor: 1,
-      minOneYear: null,
-      fixedOneYear: 1499,
-      fixedTwoYear: null,
-      fixedThreeYear: null,
-      referral: false,
-      tone: 'severe',
-      note: 'Exact price per year. Ignores the grid base, the band factor and the floors.',
-    };
-    update({ ...config, bands: [...config.bands, band] });
+    setNewCategory(c => ({ ...c, mode: 'exact' }));
+    setTimeout(() => {
+      createCategoryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      createNameRef.current?.focus();
+    }, 50);
+    toast.info('Fill in the name and yearly price below, then press Create category.');
   };
 
   const removeBand = (id: string) => {
-    if (config.assignments.some(a => a.bandId === id)) {
-      toast.error('Move the vehicles out of this band first.');
-      return;
-    }
+    const band = config.bands.find(b => b.id === id);
+    if (!band) return;
     if (config.defaultBandId === id) {
-      toast.error('This is the default band — pick another default first.');
+      toast.error('This is the default category — pick another default first.');
       return;
     }
-    update({ ...config, bands: config.bands.filter(b => b.id !== id) });
+    const assigned = config.assignments.filter(a => a.bandId === id);
+    const msg = assigned.length
+      ? `Delete "${band.name}"? ${assigned.length} vehicle${assigned.length === 1 ? '' : 's'} will move back to the standard category.`
+      : `Delete "${band.name}"?`;
+    if (!window.confirm(msg)) return;
+    update({
+      ...config,
+      bands: config.bands.filter(b => b.id !== id),
+      assignments: config.assignments.map(a =>
+        a.bandId === id ? { ...a, bandId: config.defaultBandId } : a
+      ),
+    });
+    toast.success(`"${band.name}" deleted.`);
   };
 
   const addAssignment = () => {
@@ -715,18 +722,19 @@ const VehicleRiskBandsPanel: React.FC = () => {
                   <Plus className="h-4 w-4 mr-2" /> Add band
                 </Button>
                 <Button variant="outline" size="sm" onClick={addPersonalisedTier}>
-                  <Plus className="h-4 w-4 mr-2" /> Add personalised tier
+                  <Plus className="h-4 w-4 mr-2" /> Add personalised tier…
                 </Button>
               </div>
             </div>
 
             {/* CREATE A CATEGORY — name it and price it, exactly like the premium tiers */}
-            <div className="mb-4 rounded-lg border bg-muted/30 p-3">
+            <div ref={createCategoryRef} className="mb-4 rounded-lg border bg-muted/30 p-3">
               <p className="text-sm font-semibold mb-2">Create a new category</p>
               <div className="flex flex-wrap items-end gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">Category name</Label>
                   <Input
+                    ref={createNameRef}
                     className="h-9 w-[220px]"
                     placeholder="e.g. Prestige tier"
                     value={newCategory.name}
@@ -957,12 +965,12 @@ const VehicleRiskBandsPanel: React.FC = () => {
                       <Label className="text-xs">Not covered (block)</Label>
                     </div>
                     <Button
-                      variant="ghost"
-                      size="icon"
-                      className="ml-auto text-destructive"
+                      variant="outline"
+                      size="sm"
+                      className="ml-auto text-destructive border-destructive/40 hover:bg-destructive/10"
                       onClick={() => removeBand(band.id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4 mr-1.5" /> Delete
                     </Button>
                   </div>
                   <Input
