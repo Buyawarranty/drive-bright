@@ -27,7 +27,11 @@ interface CohortRow {
   d30: MilestoneCell;
   d60: MilestoneCell;
   d90: MilestoneCell;
+  daysToCancel: number[];        // days between signup and cancellation
+  avgDaysToCancel: number | null;
+  medianDaysToCancel: number | null;
 }
+
 
 const JUNK_STATUSES = new Set([
   'fake lead', 'fake_lead', 'duplicate', 'converted_lead',
