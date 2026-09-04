@@ -532,12 +532,15 @@ Deno.serve(async (req) => {
       success: true,
       total: allPending.length,
       uploaded,
+      uploadedEnhanced,
       failed,
+      skippedNoMatchData,
       withIdentifiers,
       backfilledCustomers,
       backfilledBumper,
       errors: errors.slice(0, 10), // Only first 10 errors
     };
+
 
     logStep('Upload complete', summary);
 
