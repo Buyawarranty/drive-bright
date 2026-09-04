@@ -4,6 +4,10 @@ import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { Card } from '@/components/ui/card';
 import { format, startOfMonth, endOfMonth, addDays } from 'date-fns';
 import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
+import {
+  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis,
+  CartesianGrid, Tooltip, Legend,
+} from 'recharts';
 
 interface MilestoneCell {
   retained: number;
@@ -195,6 +199,19 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
     return { sold, active, cancelled, retention: sold ? (active / sold) * 100 : 0 };
   }, [rows]);
 
+  const chartData = useMemo(() =>
+    rows
+      .slice()
+      .sort((a, b) => a.monthKey.localeCompare(b.monthKey))
+      .map(r => ({
+        label: `${r.monthLabel} ${String(r.year).slice(2)}`,
+        active: r.active,
+        cancelled: r.cancelled,
+        sold: r.sold,
+        retention: r.sold > 0 ? Number(r.retentionPct.toFixed(1)) : null,
+      })),
+  [rows]);
+
   const toggleYear = (year: number) => {
     setCollapsed(prev => {
       const next = new Set(prev);
@@ -233,6 +250,38 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
           </div>
         )}
       </div>
+
+      {!loading && chartData.length > 0 && (
+        <div className="mb-6 border rounded-lg p-3">
+          <p className="text-xs text-muted-foreground mb-2">
+            Bought that month versus how many are still with us today — the line is the % still active.
+          </p>
+          <div className="h-[280px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis yAxisId="left" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                <YAxis yAxisId="right" orientation="right" domain={[0, 100]} unit="%" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip
+                  contentStyle={{
+                    background: 'hsl(var(--popover))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    color: 'hsl(var(--popover-foreground))',
+                  }}
+                  formatter={(value: any, name: string) => (name === '% still with us' ? [`${value}%`, name] : [value, name])}
+                />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Bar yAxisId="left" dataKey="active" name="Still with us" stackId="a" fill="hsl(var(--chart-2, 142 71% 45%))" radius={[0, 0, 0, 0]} />
+                <Bar yAxisId="left" dataKey="cancelled" name="Cancelled / refunded" stackId="a" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
+                <Line yAxisId="right" type="monotone" dataKey="retention" name="% still with us" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} connectNulls />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-8 text-muted-foreground">
