@@ -305,6 +305,12 @@ export const defaultTabs: Tab[] = [
     description: 'Track page visits, traffic sources & Google Ads'
   },
   {
+    id: 'social-analytics',
+    label: 'Social Analytics',
+    icon: Eye,
+    description: 'Visits, quotes, leads and sales from Instagram, TikTok and Facebook'
+  },
+  {
     id: 'payments-pending',
     label: 'Payments Pending',
     icon: PoundSterling,
