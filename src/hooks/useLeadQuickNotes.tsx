@@ -169,10 +169,13 @@ export const useLeadQuickNotes = (leadId: string) => {
 
     const cachedNotes = quickNotesCache.get(leadId);
     const hasCachedNotes = quickNotesCache.has(leadId);
+    // Fall back to the browser mirror so the agent sees the last known notes
+    // immediately, even before (or instead of) a successful fetch.
+    const mirrored = hasCachedNotes ? null : readMirroredNotes(leadId);
 
     hasFetchedRef.current = hasCachedNotes;
     setLoading(false);
-    updateNotes(cachedNotes || []);
+    updateNotes(cachedNotes || mirrored || []);
   }, [leadId, updateNotes]);
 
   // Session validation removed — RLS policies handle authorization, and
