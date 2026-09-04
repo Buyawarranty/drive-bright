@@ -59,6 +59,36 @@ export const writePendingQueuedNotes = (notes: PendingQueuedNote[]) => {
   }
 };
 
+/**
+ * Local mirror of every note we have ever displayed for a lead.
+ * Purpose: if the database is unreachable (or a fetch stalls), the agent still
+ * sees the last known notes for that lead instead of an empty panel, and the
+ * text can be recovered from the browser.
+ */
+const NOTE_MIRROR_PREFIX = 'lead-notes-mirror:';
+
+export const readMirroredNotes = (leadId: string): QuickNote[] => {
+  if (typeof window === 'undefined' || !leadId) return [];
+  try {
+    const raw = window.localStorage.getItem(`${NOTE_MIRROR_PREFIX}${leadId}`);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return Array.isArray(parsed) ? parsed as QuickNote[] : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeMirroredNotes = (leadId: string, notes: QuickNote[]) => {
+  if (typeof window === 'undefined' || !leadId) return;
+  try {
+    const real = notes.filter(n => !String(n.id).startsWith('temp_'));
+    if (real.length === 0) return; // never overwrite a good mirror with nothing
+    window.localStorage.setItem(`${NOTE_MIRROR_PREFIX}${leadId}`, JSON.stringify(real.slice(0, 50)));
+  } catch {
+    // Ignore storage failures (quota / private mode)
+  }
+};
+
 const isAbandonedCartLeadId = (leadId: string) => leadId.startsWith('cart_');
 const getActualLeadId = (leadId: string) => isAbandonedCartLeadId(leadId) ? leadId.replace('cart_', '') : leadId;
 const NOTE_SAVE_TIMEOUT_MS = 8000;
