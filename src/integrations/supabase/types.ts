@@ -9474,6 +9474,36 @@ export type Database = {
         }
         Relationships: []
       }
+      orr_sandbox_allocations: {
+        Row: {
+          created_by: string | null
+          id: string
+          lead_id: string
+          reason: string | null
+          run_id: string | null
+          simulated_agent_id: string | null
+          simulated_at: string
+        }
+        Insert: {
+          created_by?: string | null
+          id?: string
+          lead_id: string
+          reason?: string | null
+          run_id?: string | null
+          simulated_agent_id?: string | null
+          simulated_at?: string
+        }
+        Update: {
+          created_by?: string | null
+          id?: string
+          lead_id?: string
+          reason?: string | null
+          run_id?: string | null
+          simulated_agent_id?: string | null
+          simulated_at?: string
+        }
+        Relationships: []
+      }
       overflow_recipients: {
         Row: {
           admin_user_id: string
