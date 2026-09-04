@@ -89,26 +89,28 @@ export const LeadHistoryTimeline: React.FC<Props> = ({ leadId, className }) => {
           .select('id, created_at, agent_id, agent_name, outcome, notes, attempt_number, call_started_at, call_ended_at, contact_made')
           .eq('lead_id', actualId)
           .order('created_at', { ascending: false })
-          .limit(200),
-        supabase
+          .limit(200)),
+        settle(supabase
           .from('phone_events')
           .select('id, created_at, agent_id, agent_name, event_type, selected_outcome, phone_number, source_page')
           .eq('lead_id', actualId)
           .order('created_at', { ascending: false })
-          .limit(200),
-        supabase
+          .limit(200)),
+        settle(supabase
           .from('lead_quick_notes')
           .select('id, created_at, created_by, note_text')
           .eq('lead_id', actualId)
           .order('created_at', { ascending: false })
-          .limit(200),
-        supabase
+          .limit(200)),
+        settle(supabase
           .from('sales_leads_changelog')
           .select('id, changed_at, changed_by, old_status, new_status, old_assigned_to, new_assigned_to')
           .eq('lead_id', actualId)
           .order('changed_at', { ascending: false })
-          .limit(300),
+          .limit(300)),
       ]);
+
+      if (calls.failed || dials.failed || notes.failed || changes.failed) setPartial(true);
 
       const list: Entry[] = [];
 
