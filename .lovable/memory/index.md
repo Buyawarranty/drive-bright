@@ -133,6 +133,7 @@ Updated: just now
 - [Website Sales Segments](mem://marketing/analytics-website-sales-segmentation) — Segment handling FB vs Organic tracking
 - [Step 2 Interactions](mem://marketing/analytics-step2-interaction-tracking-v2) — Form level interaction triggers
 - [Google Ads Tracking](mem://integrations/google-ads-conversion-tracking-v2) — Cron jobs and offline conversions
+- [Google Ads Enhanced Conversions](mem://integrations/google-ads-enhanced-conversions) — Sales with no gclid upload via hashed email/phone/name+postcode; orderId dedupe
 - [GA4 Standards](mem://integrations/google-analytics-ga4) — SPA page view push standards
 - [Email Blocklist System](mem://marketing/email-blocklist-system) — Opt out edge functions and hashing
 - [Newsletter Syncing](mem://marketing/newsletter-integration) — Lead recovery automated audience additions

@@ -61,8 +61,11 @@ function normalizePhone(raw: string): string | null {
 async function buildUserIdentifiers(
   email?: string | null,
   phone?: string | null,
-): Promise<Array<Record<string, string>>> {
-  const ids: Array<Record<string, string>> = [];
+  firstName?: string | null,
+  lastName?: string | null,
+  postcode?: string | null,
+): Promise<Array<Record<string, unknown>>> {
+  const ids: Array<Record<string, unknown>> = [];
   if (email) {
     const normalized = email.trim().toLowerCase();
     if (normalized.includes('@')) {
@@ -75,8 +78,23 @@ async function buildUserIdentifiers(
       ids.push({ hashedPhoneNumber: await sha256Hex(e164) });
     }
   }
+  // Name + postcode raise Google's match rate for enhanced conversions.
+  const fn = (firstName || '').trim().toLowerCase();
+  const ln = (lastName || '').trim().toLowerCase();
+  const pc = (postcode || '').replace(/\s+/g, '').toLowerCase();
+  if (fn && ln) {
+    const addressInfo: Record<string, string> = {
+      hashedFirstName: await sha256Hex(fn),
+      hashedLastName: await sha256Hex(ln),
+      countryCode: 'GB',
+    };
+    if (pc) addressInfo.postalCode = pc;
+    ids.push({ addressInfo });
+  }
   return ids;
 }
+
+
 
 // Upload a single conversion to Google Ads API
 type ClickIdentifier = {
@@ -118,26 +136,36 @@ async function uploadConversion(
   customerId: string,
   conversionActionId: string,
   developerToken: string,
-  clickIdentifier: ClickIdentifier,
+  clickIdentifier: ClickIdentifier | null,
   conversionDateTime: string,
   conversionValue: number,
-  userIdentifiers: Array<Record<string, string>>,
+  userIdentifiers: Array<Record<string, unknown>>,
+  orderId?: string | null,
   currencyCode: string = 'GBP',
 ) {
   const url = `https://googleads.googleapis.com/v22/customers/${customerId}:uploadClickConversions`;
 
   const conversion: Record<string, unknown> = {
-    [clickIdentifier.field]: clickIdentifier.value,
     conversionAction: `customers/${customerId}/conversionActions/${conversionActionId}`,
     conversionDateTime: conversionDateTime,
     conversionValue: conversionValue,
     currencyCode: currencyCode,
   };
+  if (clickIdentifier) {
+    conversion[clickIdentifier.field] = clickIdentifier.value;
+  }
+  if (orderId) {
+    // Order id lets Google de-duplicate re-uploads of the same sale.
+    conversion.orderId = orderId;
+  }
   if (userIdentifiers.length > 0) {
     // Note: userIdentifierSource is NOT a field on ClickConversion in Google Ads
     // API v21+. FIRST_PARTY is the default for enhanced conversions, so we omit it.
+    // With no click id, these hashed identifiers are the only match signal
+    // (enhanced conversions), so Google matches the sale back to the ad click.
     conversion.userIdentifiers = userIdentifiers;
   }
+
 
   const body = { conversions: [conversion], partialFailure: true };
 
@@ -304,13 +332,14 @@ Deno.serve(async (req) => {
     }
     // ──────────────────────────────────────────────────────────────────────────
 
-    // Query customers with Google click IDs that haven't been uploaded yet.
+    // Query sales that haven't been uploaded yet. Rows WITHOUT a Google click id are
+    // included too: they go up as enhanced conversions (hashed email/phone/name), so a
+    // lost gclid no longer means a missing conversion.
     // Prefer signup_date for the conversion timestamp: it represents the actual purchase/sign-up
     // moment more reliably than created_at on restored/reconciled records.
     const { data: pendingCustomers, error: customersError } = await supabase
       .from('customers')
-      .select('id, gclid, final_amount, created_at, signup_date, email, phone, status')
-      .not('gclid', 'is', null)
+      .select('id, gclid, final_amount, created_at, signup_date, email, phone, status, first_name, last_name, name, postcode, warranty_number')
       .is('google_ads_conversion_uploaded_at', null)
       .in('status', ['active', 'Active'])
       .eq('is_deleted', false)
@@ -327,8 +356,7 @@ Deno.serve(async (req) => {
     // succeeds. Use updated_at as the conversion time to avoid "conversion precedes click" errors.
     const { data: pendingBumper, error: bumperError } = await supabase
       .from('bumper_transactions')
-      .select('id, gclid, final_amount, created_at, updated_at, status')
-      .not('gclid', 'is', null)
+      .select('id, gclid, final_amount, created_at, updated_at, status, customer_data')
       .is('google_ads_conversion_uploaded_at', null)
       .eq('status', 'completed')
       .gte('updated_at', cutoffISO)
@@ -356,9 +384,19 @@ Deno.serve(async (req) => {
       ...(pendingCustomers || []).map((c) => ({ ...c, source: 'customers' as const })),
       ...(pendingBumper || []).map((b) => {
         const enrich = bumperContactByGclid.get(b.gclid as string) || { email: null, phone: null };
-        return { ...b, email: enrich.email, phone: enrich.phone, source: 'bumper_transactions' as const };
+        const cd = ((b as any).customer_data || {}) as Record<string, any>;
+        return {
+          ...b,
+          email: enrich.email || cd.email || null,
+          phone: enrich.phone || cd.phone || cd.mobile || null,
+          first_name: cd.first_name || cd.firstName || null,
+          last_name: cd.last_name || cd.lastName || null,
+          postcode: cd.postcode || null,
+          source: 'bumper_transactions' as const,
+        };
       }),
     ];
+
 
     logStep(`Found ${allPending.length} pending conversions`, {
       customers: pendingCustomers?.length || 0,
@@ -374,16 +412,15 @@ Deno.serve(async (req) => {
     }
 
     let uploaded = 0;
+    let uploadedEnhanced = 0;
     let failed = 0;
+    let skippedNoMatchData = 0;
     let withIdentifiers = 0;
     const errors: string[] = [];
 
     for (const record of allPending) {
       try {
         const clickIdentifier = getClickIdentifier(record.gclid);
-        if (!clickIdentifier) {
-          throw new Error('Missing Google click identifier');
-        }
 
         const conversionTimestamp =
           record.source === 'customers'
@@ -391,16 +428,39 @@ Deno.serve(async (req) => {
             : ((record as any).updated_at || record.created_at);
         const conversionDate = formatDateForGoogle(conversionTimestamp);
         const value = record.final_amount || 0;
+        const nameParts = String((record as any).name || '').trim().split(/\s+/);
+        const firstName = (record as any).first_name || nameParts[0] || null;
+        const lastName =
+          (record as any).last_name || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : null);
         const userIdentifiers = await buildUserIdentifiers(
           (record as any).email,
           (record as any).phone,
+          firstName,
+          lastName,
+          (record as any).postcode,
         );
         if (userIdentifiers.length > 0) withIdentifiers++;
 
+        // No click id AND no hashed identifiers means Google has nothing to match on.
+        if (!clickIdentifier && userIdentifiers.length === 0) {
+          await supabase
+            .from(record.source)
+            .update({
+              google_ads_conversion_status: 'skipped: no click id and no email/phone to match on',
+            })
+            .eq('id', record.id);
+          skippedNoMatchData++;
+          continue;
+        }
+
+        const orderId =
+          (record as any).warranty_number || `${record.source}:${record.id}`;
+
         logStep(`Uploading conversion`, {
           id: record.id,
-          clickIdType: clickIdentifier.field,
-          clickIdPrefix: clickIdentifier.value.substring(0, 12),
+          mode: clickIdentifier ? 'click' : 'enhanced',
+          clickIdType: clickIdentifier?.field || null,
+          clickIdPrefix: clickIdentifier?.value.substring(0, 12) || null,
           value,
           date: conversionDate,
           source: record.source,
@@ -416,6 +476,7 @@ Deno.serve(async (req) => {
           conversionDate,
           value,
           userIdentifiers,
+          orderId,
         );
 
         // Check for partial failures
@@ -427,13 +488,15 @@ Deno.serve(async (req) => {
             .from(record.source)
             .update({
               google_ads_conversion_uploaded_at: new Date().toISOString(),
-              google_ads_conversion_status: 'uploaded',
+              google_ads_conversion_status: clickIdentifier ? 'uploaded' : 'uploaded_enhanced',
             })
             .eq('id', record.id);
 
           uploaded++;
+          if (!clickIdentifier) uploadedEnhanced++;
           logStep(`✅ Uploaded conversion for ${record.id}`);
         } else {
+
           const errorMsg = hasError 
             ? JSON.stringify(result.partialFailureError) 
             : `HTTP ${status}: ${JSON.stringify(result)}`;
@@ -469,12 +532,15 @@ Deno.serve(async (req) => {
       success: true,
       total: allPending.length,
       uploaded,
+      uploadedEnhanced,
       failed,
+      skippedNoMatchData,
       withIdentifiers,
       backfilledCustomers,
       backfilledBumper,
       errors: errors.slice(0, 10), // Only first 10 errors
     };
+
 
     logStep('Upload complete', summary);
 
