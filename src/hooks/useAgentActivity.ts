@@ -65,55 +65,17 @@ export const useAgentActivity = (leadIds: string[]) => {
     };
 
     try {
-      for (let i = 0; i < ids.length; i += BATCH) {
-        const batch = ids.slice(i, i + BATCH);
-        const [notes, calls, changes, dials, crCalls] = await withBackgroundPriority(() => Promise.all([
-          supabase
-            .from('lead_quick_notes')
-            .select('lead_id, created_at, created_by')
-            .in('lead_id', batch)
-            .not('created_by', 'is', null)
-            .order('created_at', { ascending: false })
-            .limit(batch.length * 3),
-          supabase
-            .from('lead_call_logs')
-            .select('lead_id, created_at')
-            .in('lead_id', batch)
-            .order('created_at', { ascending: false })
-            .limit(batch.length * 3),
-          supabase
-            .from('sales_leads_changelog')
-            .select('lead_id, changed_at, changed_by, old_status, new_status')
-            .in('lead_id', batch)
-            .not('changed_by', 'is', null)
-            .order('changed_at', { ascending: false })
-            .limit(batch.length * 5),
-          // Click-to-dial from Zoiper / Dial 9 (agent actually rang the customer)
-          supabase
-            .from('phone_events')
-            .select('lead_id, created_at')
-            .in('lead_id', batch)
-            .order('created_at', { ascending: false })
-            .limit(batch.length * 3),
-          // Inbound / tracked calls matched to this lead
-          supabase
-            .from('callrail_calls')
-            .select('matched_lead_id, started_at, answered_at')
-            .in('matched_lead_id', batch)
-            .order('started_at', { ascending: false })
-            .limit(batch.length * 2),
-        ]));
-
-        (notes.data || []).forEach((r: any) => upsert(r.lead_id, r.created_at, 'note'));
-        (calls.data || []).forEach((r: any) => upsert(r.lead_id, r.created_at, 'call'));
-        (dials.data || []).forEach((r: any) => upsert(r.lead_id, r.created_at, 'dial'));
-        (crCalls.data || []).forEach((r: any) =>
-          upsert(r.matched_lead_id, r.answered_at || r.started_at, 'call')
+      // Only real lead ids (cart_ rows have no agent activity of their own)
+      const leadIds = ids.filter(id => /^[0-9a-f-]{36}$/i.test(id));
+      for (let i = 0; i < leadIds.length; i += BATCH) {
+        const batch = leadIds.slice(i, i + BATCH);
+        const { data, error } = await withBackgroundPriority(() =>
+          supabase.rpc('get_lead_agent_activity', { p_lead_ids: batch })
         );
-        (changes.data || []).forEach((r: any) => {
-          if (!r.new_status || r.old_status === r.new_status) return;
-          upsert(r.lead_id, r.changed_at, 'status');
-        });
+        if (error) throw error;
+        (data || []).forEach((r: any) =>
+          upsert(r.lead_id, r.last_at, (r.source || 'note') as AgentActivity['source'])
+        );
       }
       setActivityByLead(merged);
     } catch (e) {
