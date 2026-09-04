@@ -107,10 +107,12 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
             const cancelDate = cancelRaw ? new Date(cancelRaw) : null;
             if (cancelDate && !isNaN(cancelDate.getTime())) {
               const daysToCancel = (cancelDate.getTime() - signupDate.getTime()) / 86400000;
+              if (daysToCancel >= 0) bucket.daysToCancel.push(daysToCancel);
               if (daysToCancel <= 30) bucket.d30.cancelled += 1;
               if (daysToCancel <= 60) bucket.d60.cancelled += 1;
               if (daysToCancel <= 90) bucket.d90.cancelled += 1;
             }
+
           } else {
             bucket.active += 1;
           }
