@@ -59,3 +59,5 @@
 - [x] Open Round Robin practice "overnight leads" panel restyled to match New Leads table (columns, badges, status dropdown, action buttons, phone/email/reg styling)
 - [x] Open Round Robin Team Blue practice header: "Your turn" column moved next to "Agent" column
 - [x] Stop 20% off marketing reminders going to customers who already hold active warranty cover (Jenny Beaumont)
+- [ ] Renewals: 90-day window, feed every 2h into Renewals + New Leads
+- [ ] Open Round Robin: plan safe merge into New Leads (sandbox only, no live impact)
