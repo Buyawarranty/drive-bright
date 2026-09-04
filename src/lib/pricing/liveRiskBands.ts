@@ -16,6 +16,8 @@
 import {
   clampBandFactor,
   matchRiskBand,
+  powertrainFactorFor,
+  powertrainMinOneYearFor,
   DEFAULT_RISK_BAND_CONFIG,
   type RiskBandConfig,
 } from './vehicleRiskBands';
