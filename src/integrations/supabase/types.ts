@@ -13885,6 +13885,18 @@ export type Database = {
           sales_count: number
         }[]
       }
+      get_social_analytics: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          leads: number
+          platform: string
+          quotes_started: number
+          revenue: number
+          sales: number
+          visitors: number
+          visits: number
+        }[]
+      }
       get_team_scoreboard: {
         Args: { p_end: string; p_start: string }
         Returns: {
