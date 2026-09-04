@@ -257,6 +257,15 @@ export const LeadHistoryTimeline: React.FC<Props> = ({ leadId, className }) => {
         </Button>
       </div>
 
+      {partial && !loading && (
+        <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs text-amber-900">
+          <span>Some history couldn’t be loaded just now — notes and calls already saved are safe.</span>
+          <Button size="sm" variant="outline" className="h-6 px-2 text-xs" onClick={fetchAll}>
+            Try again
+          </Button>
+        </div>
+      )}
+
       {loading ? (
         <p className="text-xs text-muted-foreground">Loading history…</p>
       ) : shown.length === 0 ? (
