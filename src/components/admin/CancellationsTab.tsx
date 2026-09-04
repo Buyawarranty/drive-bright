@@ -25,6 +25,8 @@ import { useDataExport } from '@/hooks/useDataExport';
 import { useAuth } from '@/hooks/useAuth';
 import { QuickCancellationAdd } from './QuickCancellationAdd';
 import { MonthlyCohortRetention } from './MonthlyCohortRetention';
+import { UnifiedDateFilter, periodToRange, type DateScope, type PeriodKey } from './UnifiedDateFilter';
+import { QuickMonthFilter } from './QuickMonthFilter';
 
 
 const FULL_VIEW_ROLES = new Set(['super_admin', 'admin', 'sales_lead', 'accounts', 'accounts_manager', 'accounts_payroll']);
@@ -170,6 +172,11 @@ export const CancellationsTab: React.FC<{
   const [selectedMonth, setSelectedMonth] = useState<string>(() => String(new Date().getMonth()));
   const [selectedYear, setSelectedYear] = useState<string>(() => String(new Date().getFullYear()));
   const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Unified date selector (same control as the Customers section)
+  const [unifiedScope, setUnifiedScope] = useState<DateScope>('signup');
+  const [unifiedPeriod, setUnifiedPeriod] = useState<PeriodKey>('this_month');
+  const [unifiedCustomRange, setUnifiedCustomRange] = useState<DateRange | undefined>(undefined);
 
   // Self-load admin users when not provided via props
   useEffect(() => {
@@ -467,26 +474,32 @@ export const CancellationsTab: React.FC<{
 
 
 
-      {/* Quick Date Tabs */}
-      <div className="flex flex-wrap gap-2">
-        {([
-          { key: 'today', label: 'Today' },
-          { key: 'yesterday', label: 'Yesterday' },
-          { key: 'this_month', label: 'This Month' },
-          { key: 'last_month', label: 'Last Month' },
-          { key: 'last_7', label: 'Last 7 Days' },
-          { key: 'last_30', label: 'Last 30 Days' },
-          { key: 'all', label: 'All Time' },
-        ] as { key: QuickRange; label: string }[]).map(t => (
-          <Button
-            key={t.key}
-            size="sm"
-            variant={quickRange === t.key ? 'default' : 'outline'}
-            onClick={() => handleQuickRange(t.key)}
-          >
-            {t.label}
-          </Button>
-        ))}
+      {/* Unified date selector (same as Customers section) */}
+      <div className="bg-white rounded-lg border flex items-center gap-3 px-4 py-2.5 flex-wrap">
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Date</span>
+        <UnifiedDateFilter
+          scope={unifiedScope}
+          period={unifiedPeriod}
+          customRange={unifiedCustomRange}
+          availableScopes={['signup']}
+          onChange={({ scope, period, customRange }) => {
+            setUnifiedScope(scope);
+            setUnifiedPeriod(period);
+            setUnifiedCustomRange(customRange);
+            setQuickRange(period === 'all' ? 'all' : 'custom' as QuickRange);
+            setDateRange(period === 'all' ? undefined : (period === 'custom' ? customRange : periodToRange(period)));
+          }}
+        />
+        <QuickMonthFilter
+          dateRange={unifiedPeriod === 'custom' ? unifiedCustomRange : (unifiedPeriod === 'this_month' ? periodToRange('this_month') : undefined)}
+          onDateRangeChange={(range) => {
+            setUnifiedScope('signup');
+            setUnifiedPeriod('custom');
+            setUnifiedCustomRange(range);
+            setQuickRange('custom' as QuickRange);
+            setDateRange(range);
+          }}
+        />
       </div>
 
       {/* Summary Cards */}
