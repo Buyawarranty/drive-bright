@@ -29,6 +29,7 @@ Updated: just now
 - RLS policies must use (SELECT auth.uid()), never bare auth.uid(); no per-row queries in grids. See mem://architecture/rls-auth-uid-must-be-wrapped
 
 ## Memories
+- [EV / Hybrid Category Price](mem://pricing/powertrain-category-pricing) — One uplift + 12-month minimum per powertrain (EV, PHEV, HEV) with exclusions, on top of risk bands
 - [Website Floor = Grid Floor](mem://pricing/website-floor-same-as-grid) — Step 3/4 and checkout clamped to the shaped £399/£699/£999 floor; promos exempt
 - [SEO work visual-only](mem://constraints/seo-work-visual-only) — During SEO work: layout/wording/padding only; never touch pricing logic, APIs, integrations, or tracking tags
 - [Northern Ireland Vehicles](mem://features/northern-ireland-vehicles) — No NI API: buy online only when make+model recognised, otherwise callback; customer-typed mileage
