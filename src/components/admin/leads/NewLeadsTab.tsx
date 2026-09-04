@@ -105,7 +105,10 @@ interface NewLeadsTabProps {
   onMarkAllAsRead?: () => void;
   onNavigateToTab?: (tab: string, leadData?: LeadForQuote) => void;
   userRole?: string | null;
+  /** Open Round Robin Sandbox: read real leads, block every write. */
+  sandboxMode?: boolean;
 }
+
 
 const AttendanceQuickLink: React.FC = () => {
   const [, setSearchParams] = useSearchParams();
@@ -131,7 +134,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   onMarkAllAsRead,
   onNavigateToTab,
   userRole,
+  sandboxMode = false,
 }) => {
+
   const { canExportTab, hasGranularPermission } = usePermissions();
   const { exportToCSV, exportToExcel } = useDataExport();
   // Resolves agent names for exports (assigned_user is only populated optimistically).
@@ -451,20 +456,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     filter,
     setFilter,
     fetchLeads,
-    updateLeadStatus,
-    assignLead,
-    autoAssignLead,
-    updateLeadPriority,
-    scheduleFollowUp,
-    addTagToLead,
-    removeTagFromLead,
-    updateLeadNotes,
-    markContactedAt,
-    logActivity,
-    migrateFromAbandonedCarts,
-    deleteLeads,
-    updateCallCount
+    updateLeadStatus: liveUpdateLeadStatus,
+    assignLead: liveAssignLead,
+    autoAssignLead: liveAutoAssignLead,
+    updateLeadPriority: liveUpdateLeadPriority,
+    scheduleFollowUp: liveScheduleFollowUp,
+    addTagToLead: liveAddTagToLead,
+    removeTagFromLead: liveRemoveTagFromLead,
+    updateLeadNotes: liveUpdateLeadNotes,
+    markContactedAt: liveMarkContactedAt,
+    logActivity: liveLogActivity,
+    migrateFromAbandonedCarts: liveMigrateFromAbandonedCarts,
+    deleteLeads: liveDeleteLeads,
+    updateCallCount: liveUpdateCallCount
   } = useLeads({
+
     serverDateFilter: useMemo(() => {
       // When user explicitly clears the date filter (All Time), pass through
       // undefined so the server returns the most recent leads up to LEADS_LIST_LIMIT.
@@ -488,6 +494,36 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     serverLeadIds: reminderLeadIdsForFetch,
 
   });
+
+  // ---------------------------------------------------------------------------
+  // Open Round Robin Sandbox guard.
+  //
+  // In sandbox mode the page still READS the genuine live leads, but every
+  // mutating handler becomes a no-op, so no lead is assigned, re-statused,
+  // noted, called, deleted or counted towards anybody's figures.
+  // ---------------------------------------------------------------------------
+  const sandboxBlock = useCallback((...args: unknown[]): any => {
+    toast.info('Sandbox — nothing was changed');
+    return Promise.resolve(undefined);
+  }, []);
+
+  const updateLeadStatus = sandboxMode ? (sandboxBlock as typeof liveUpdateLeadStatus) : liveUpdateLeadStatus;
+  const assignLead = sandboxMode ? (sandboxBlock as typeof liveAssignLead) : liveAssignLead;
+  const autoAssignLead = sandboxMode ? (sandboxBlock as typeof liveAutoAssignLead) : liveAutoAssignLead;
+  const updateLeadPriority = sandboxMode ? (sandboxBlock as typeof liveUpdateLeadPriority) : liveUpdateLeadPriority;
+  const scheduleFollowUp = sandboxMode ? (sandboxBlock as typeof liveScheduleFollowUp) : liveScheduleFollowUp;
+  const addTagToLead = sandboxMode ? (sandboxBlock as typeof liveAddTagToLead) : liveAddTagToLead;
+  const removeTagFromLead = sandboxMode ? (sandboxBlock as typeof liveRemoveTagFromLead) : liveRemoveTagFromLead;
+  const updateLeadNotes = sandboxMode ? (sandboxBlock as typeof liveUpdateLeadNotes) : liveUpdateLeadNotes;
+  const markContactedAt = sandboxMode ? (sandboxBlock as typeof liveMarkContactedAt) : liveMarkContactedAt;
+  const logActivity = sandboxMode ? (sandboxBlock as typeof liveLogActivity) : liveLogActivity;
+  const deleteLeads = sandboxMode ? (sandboxBlock as typeof liveDeleteLeads) : liveDeleteLeads;
+  const updateCallCount = sandboxMode ? (sandboxBlock as typeof liveUpdateCallCount) : liveUpdateCallCount;
+  const migrateFromAbandonedCarts = sandboxMode
+    ? (sandboxBlock as typeof liveMigrateFromAbandonedCarts)
+    : liveMigrateFromAbandonedCarts;
+
+
 
   useEffect(() => {
     if (!loading || leads.length > 0) {

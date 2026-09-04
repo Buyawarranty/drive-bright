@@ -79,6 +79,7 @@ const FeatureFlagsTab = lazy(() => import('@/components/admin/FeatureFlagsTab'))
 const ApiConnectivityTest = lazy(() => import('@/components/admin/ApiConnectivityTest').then(m => ({ default: m.ApiConnectivityTest })));
 const UserPermissionsTab = lazy(() => import('@/components/admin/UserPermissionsTab').then(m => ({ default: m.UserPermissionsTab })));
 const LeadTeamsTab = lazy(() => import('@/components/admin/LeadTeamsTab').then(m => ({ default: m.LeadTeamsTab })));
+const OrrSandboxTabView = lazy(() => import('@/components/admin/leads/OrrSandboxTabView').then(m => ({ default: m.OrrSandboxTabView })));
 const OrrTabView = lazy(() => import('@/components/admin/leads/OrrTabView').then(m => ({ default: m.OrrTabView })));
 
 const DocumentMappingTab = lazy(() => import('@/components/admin/DocumentMappingTab').then(m => ({ default: m.DocumentMappingTab })));
@@ -133,7 +134,7 @@ const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes'
 const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'attendance', 'hr', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 const SALES_TABS = ['overview', 'new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 const SALES_LEAD_TABS = ['overview', 'new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
-const SALES_MANAGER_TABS = ['overview', 'concessions', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'open-round-robin', 'orr-test-lab', 'price-updates', 'vehicle-stats', 'banners-billboards', 'sms-tracking', 'user-permissions', 'unsubscribe', 'account'];
+const SALES_MANAGER_TABS = ['overview', 'concessions', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'open-round-robin', 'orr-test-lab', 'orr-sandbox', 'price-updates', 'vehicle-stats', 'banners-billboards', 'sms-tracking', 'user-permissions', 'unsubscribe', 'account'];
 const PERFORMANCE_MANAGER_TABS = SALES_MANAGER_TABS;
 
 const hasExplicitTopLevelTabPermissions = (permissions?: Record<string, boolean> | null) => {
@@ -175,7 +176,7 @@ const MANAGEMENT_ONLY_TABS = new Set<string>(['claims']);
 // Old bookmarks (?tab=call-stats) and the public slug must never be treated as
 // a different, un-permitted tab — that used to bounce agents to Quotes & Orders.
 const LIVE_CALLS_TAB_IDS = new Set(['overview', 'call-stats', 'live-calls-data']);
-const LEAD_ALLOCATION_TABS = new Set(['lead-teams', 'open-round-robin', 'orr-test-lab']);
+const LEAD_ALLOCATION_TABS = new Set(['lead-teams', 'open-round-robin', 'orr-test-lab', 'orr-sandbox']);
 const LEAD_ALLOCATION_BLOCKED_ROLES = new Set(['sales', 'sales_lead']);
 
 // Payments pending belongs to accounts: the accounts team plus management always
@@ -1012,6 +1013,11 @@ const AdminDashboard = () => {
           return <AccessDenied label="Lead Allocation" />;
         }
         return <OrrTabView onNavigateToTab={handleTabChange} />;
+      case 'orr-sandbox':
+        if (!isTabAllowedForRole('lead-teams', effectiveUserRole, effectiveUserPermissions)) {
+          return <AccessDenied label="Open Round Robin Sandbox" />;
+        }
+        return <OrrSandboxTabView onNavigateToTab={handleTabChange} userRole={effectiveUserRole} />;
 
 
 

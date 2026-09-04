@@ -364,6 +364,12 @@ export const defaultTabs: Tab[] = [
     icon: Users,
     description: 'Open Round Robin setup, go-live switch and practice lab (management only)'
   },
+  {
+    id: 'orr-sandbox',
+    label: 'Open Round Robin Sandbox',
+    icon: Users,
+    description: 'The New Leads page with real live leads, allocated by Open Round Robin — practice only'
+  },
 
   {
 
@@ -633,7 +639,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         );
       }
 
-      const baseIds = new Set(['overview', 'concessions', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'social-analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'open-round-robin', 'orr-test-lab', 'price-updates', 'sms-tracking', 'user-permissions', 'claims', 'chatbot-data', 'semrush-seo', 'unsubscribe', 'account']);
+      const baseIds = new Set(['overview', 'concessions', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'social-analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'open-round-robin', 'orr-test-lab', 'orr-sandbox', 'price-updates', 'sms-tracking', 'user-permissions', 'claims', 'chatbot-data', 'semrush-seo', 'unsubscribe', 'account']);
       return defaultTabs.filter(tab => baseIds.has(tab.id));
     }
 
