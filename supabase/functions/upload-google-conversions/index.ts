@@ -61,8 +61,11 @@ function normalizePhone(raw: string): string | null {
 async function buildUserIdentifiers(
   email?: string | null,
   phone?: string | null,
-): Promise<Array<Record<string, string>>> {
-  const ids: Array<Record<string, string>> = [];
+  firstName?: string | null,
+  lastName?: string | null,
+  postcode?: string | null,
+): Promise<Array<Record<string, unknown>>> {
+  const ids: Array<Record<string, unknown>> = [];
   if (email) {
     const normalized = email.trim().toLowerCase();
     if (normalized.includes('@')) {
@@ -75,8 +78,23 @@ async function buildUserIdentifiers(
       ids.push({ hashedPhoneNumber: await sha256Hex(e164) });
     }
   }
+  // Name + postcode raise Google's match rate for enhanced conversions.
+  const fn = (firstName || '').trim().toLowerCase();
+  const ln = (lastName || '').trim().toLowerCase();
+  const pc = (postcode || '').replace(/\s+/g, '').toLowerCase();
+  if (fn && ln) {
+    const addressInfo: Record<string, string> = {
+      hashedFirstName: await sha256Hex(fn),
+      hashedLastName: await sha256Hex(ln),
+      countryCode: 'GB',
+    };
+    if (pc) addressInfo.postalCode = pc;
+    ids.push({ addressInfo });
+  }
   return ids;
 }
+
+
 
 // Upload a single conversion to Google Ads API
 type ClickIdentifier = {
