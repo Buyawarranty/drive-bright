@@ -337,9 +337,81 @@ export const DEFAULT_RISK_BAND_CONFIG: RiskBandConfig = {
   bands: DEFAULT_RISK_BANDS,
   assignments: DEFAULT_RISK_BAND_ASSIGNMENTS,
   vehicleTypes: DEFAULT_VEHICLE_TYPE_FACTORS,
+  powertrains: DEFAULT_POWERTRAIN_RULES,
   defaultBandId: 'normal',
   globalMinTotal: DEFAULT_GLOBAL_MIN_TOTAL,
 };
+
+/** Powertrain key for a DVLA fuel string, or null when it isn't EV/PHEV/HEV. */
+export function powertrainKeyForFuel(fuelType?: string | null): PowertrainKey | null {
+  const category = normalizeFuelCategory(fuelType) as FuelCategory | null;
+  if (category === 'ev' || category === 'phev' || category === 'hev') return category;
+  return null;
+}
+
+export type PowertrainMatch = {
+  key: PowertrainKey;
+  rule: PowertrainRule;
+  /** True when this vehicle is excluded from the category. */
+  excluded: boolean;
+  /** The exclusion that matched, when excluded. */
+  exclusion: PowertrainExclusion | null;
+};
+
+/**
+ * Which powertrain category applies to this vehicle, and whether it has been
+ * excluded from it. Returns null for petrol / diesel / unknown fuel.
+ */
+export function matchPowertrain(
+  make: string | null | undefined,
+  model: string | null | undefined,
+  config: RiskBandConfig,
+  fuelType?: string | null
+): PowertrainMatch | null {
+  const key = powertrainKeyForFuel(fuelType);
+  if (!key) return null;
+  const rule = (config.powertrains || DEFAULT_POWERTRAIN_RULES)[key];
+  if (!rule || rule.enabled === false) return null;
+
+  const makeTokens = tokens(`${make || ''}`);
+  const fullTokens = tokens(`${make || ''} ${model || ''}`);
+  const exclusion =
+    (rule.excludes || []).find(x => {
+      const xMake = String(x.make || '').trim();
+      const xModel = String(x.model || '').trim();
+      if (xMake && !containsAllTokens(makeTokens, xMake) && !containsAllTokens(fullTokens, xMake)) return false;
+      if (xModel && !containsAllTokens(fullTokens, xModel)) return false;
+      return Boolean(xMake || xModel);
+    }) || null;
+
+  return { key, rule, excluded: Boolean(exclusion), exclusion };
+}
+
+/** Category factor in force for this vehicle (1 when none applies). */
+export function powertrainFactorFor(
+  make: string | null | undefined,
+  model: string | null | undefined,
+  config: RiskBandConfig,
+  fuelType?: string | null
+): number {
+  const m = matchPowertrain(make, model, config, fuelType);
+  if (!m || m.excluded) return 1;
+  const f = clampBandFactor(Number(m.rule.factor));
+  return Number.isFinite(f) && f > 0 ? f : 1;
+}
+
+/** Category 1-year minimum in force for this vehicle (null when none applies). */
+export function powertrainMinOneYearFor(
+  make: string | null | undefined,
+  model: string | null | undefined,
+  config: RiskBandConfig,
+  fuelType?: string | null
+): number | null {
+  const m = matchPowertrain(make, model, config, fuelType);
+  if (!m || m.excluded) return null;
+  const min = Number(m.rule.minOneYear);
+  return Number.isFinite(min) && min > 0 ? min : null;
+}
 
 export function clampBandFactor(value: number): number {
   if (!Number.isFinite(value)) return 1;
