@@ -14,7 +14,13 @@
  */
 
 import { normalizeVehicleText } from './modelFloorMatch';
-import { fuelFilterMatches, normalizeFuelFilter, type FuelFilter } from './fuelCategory';
+import {
+  fuelFilterMatches,
+  normalizeFuelFilter,
+  normalizeFuelCategory,
+  type FuelFilter,
+  type FuelCategory,
+} from './fuelCategory';
 
 export const RISK_BAND_MIN_FACTOR = 0.5;
 
