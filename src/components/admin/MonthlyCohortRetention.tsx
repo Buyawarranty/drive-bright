@@ -141,7 +141,9 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
                 year: cursor.getFullYear(),
                 sold: 0, active: 0, cancelled: 0, retentionPct: 0,
                 d30: emptyCell(), d60: emptyCell(), d90: emptyCell(),
+                daysToCancel: [], avgDaysToCancel: null, medianDaysToCancel: null,
               });
+
             }
             cursor.setMonth(cursor.getMonth() + 1);
           }
