@@ -104,6 +104,7 @@ const PageAnalyticsTab = lazy(() => import('@/components/admin/PageAnalyticsTab'
 const VehicleStatsTab = lazy(() => import('@/components/admin/VehicleStatsTab').then(m => ({ default: m.VehicleStatsTab })));
 const SalesScoreboardTab = lazy(() => import('@/components/admin/scoreboard/SalesScoreboardTab'));
 const OfflineCampaignsTab = lazy(() => import('@/components/admin/marketing/OfflineCampaignsTab').then(m => ({ default: m.OfflineCampaignsTab })));
+const SocialAnalyticsTab = lazy(() => import('@/components/admin/SocialAnalyticsTab').then(m => ({ default: m.SocialAnalyticsTab })));
 const MarketingAnalyticsTab = lazy(() => import('@/components/admin/MarketingAnalyticsTab').then(m => ({ default: m.MarketingAnalyticsTab })));
 const LeadBackupRecoveryTab = lazy(() => import('@/components/admin/LeadBackupRecoveryTab'));
 const DiscountsGivenTab = lazy(() => import('@/components/admin/DiscountsGivenTab'));
@@ -965,6 +966,8 @@ const AdminDashboard = () => {
         );
       case 'page-analytics':
         return <PageAnalyticsTab />;
+      case 'social-analytics':
+        return <SocialAnalyticsTab />;
       case 'google-ads':
         if (!['admin', 'super_admin', 'sales_manager', 'performance_manager', 'accounts_manager', 'lead_gen'].includes(effectiveUserRole) && effectiveUserPermissions?.['tab_google-ads'] !== true) {
           return (
