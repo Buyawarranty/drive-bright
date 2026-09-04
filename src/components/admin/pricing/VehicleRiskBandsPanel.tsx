@@ -256,7 +256,10 @@ const VehicleRiskBandsPanel: React.FC = () => {
 
   const testResult = useMemo(() => {
     const match = matchRiskBand(testMake, testModel, config, testFuel);
-    const priced = applyRiskBand(Number(testBase) || 0, match, testType, config);
+    const priced = applyRiskBand(Number(testBase) || 0, match, testType, config, testFuel, {
+      make: testMake,
+      model: testModel,
+    });
     return { match, priced };
   }, [testMake, testModel, testBase, testType, testFuel, config]);
 
