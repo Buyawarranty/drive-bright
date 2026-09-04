@@ -495,6 +495,36 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   });
 
+  // ---------------------------------------------------------------------------
+  // Open Round Robin Sandbox guard.
+  //
+  // In sandbox mode the page still READS the genuine live leads, but every
+  // mutating handler becomes a no-op, so no lead is assigned, re-statused,
+  // noted, called, deleted or counted towards anybody's figures.
+  // ---------------------------------------------------------------------------
+  const sandboxBlock = useCallback((...args: unknown[]): any => {
+    toast.info('Sandbox — nothing was changed');
+    return Promise.resolve(undefined);
+  }, []);
+
+  const updateLeadStatus = sandboxMode ? (sandboxBlock as typeof liveUpdateLeadStatus) : liveUpdateLeadStatus;
+  const assignLead = sandboxMode ? (sandboxBlock as typeof liveAssignLead) : liveAssignLead;
+  const autoAssignLead = sandboxMode ? (sandboxBlock as typeof liveAutoAssignLead) : liveAutoAssignLead;
+  const updateLeadPriority = sandboxMode ? (sandboxBlock as typeof liveUpdateLeadPriority) : liveUpdateLeadPriority;
+  const scheduleFollowUp = sandboxMode ? (sandboxBlock as typeof liveScheduleFollowUp) : liveScheduleFollowUp;
+  const addTagToLead = sandboxMode ? (sandboxBlock as typeof liveAddTagToLead) : liveAddTagToLead;
+  const removeTagFromLead = sandboxMode ? (sandboxBlock as typeof liveRemoveTagFromLead) : liveRemoveTagFromLead;
+  const updateLeadNotes = sandboxMode ? (sandboxBlock as typeof liveUpdateLeadNotes) : liveUpdateLeadNotes;
+  const markContactedAt = sandboxMode ? (sandboxBlock as typeof liveMarkContactedAt) : liveMarkContactedAt;
+  const logActivity = sandboxMode ? (sandboxBlock as typeof liveLogActivity) : liveLogActivity;
+  const deleteLeads = sandboxMode ? (sandboxBlock as typeof liveDeleteLeads) : liveDeleteLeads;
+  const updateCallCount = sandboxMode ? (sandboxBlock as typeof liveUpdateCallCount) : liveUpdateCallCount;
+  const migrateFromAbandonedCarts = sandboxMode
+    ? (sandboxBlock as typeof liveMigrateFromAbandonedCarts)
+    : liveMigrateFromAbandonedCarts;
+
+
+
   useEffect(() => {
     if (!loading || leads.length > 0) {
       setInitialLoaderExpired(false);
