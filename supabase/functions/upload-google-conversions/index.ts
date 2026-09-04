@@ -136,26 +136,36 @@ async function uploadConversion(
   customerId: string,
   conversionActionId: string,
   developerToken: string,
-  clickIdentifier: ClickIdentifier,
+  clickIdentifier: ClickIdentifier | null,
   conversionDateTime: string,
   conversionValue: number,
-  userIdentifiers: Array<Record<string, string>>,
+  userIdentifiers: Array<Record<string, unknown>>,
+  orderId?: string | null,
   currencyCode: string = 'GBP',
 ) {
   const url = `https://googleads.googleapis.com/v22/customers/${customerId}:uploadClickConversions`;
 
   const conversion: Record<string, unknown> = {
-    [clickIdentifier.field]: clickIdentifier.value,
     conversionAction: `customers/${customerId}/conversionActions/${conversionActionId}`,
     conversionDateTime: conversionDateTime,
     conversionValue: conversionValue,
     currencyCode: currencyCode,
   };
+  if (clickIdentifier) {
+    conversion[clickIdentifier.field] = clickIdentifier.value;
+  }
+  if (orderId) {
+    // Order id lets Google de-duplicate re-uploads of the same sale.
+    conversion.orderId = orderId;
+  }
   if (userIdentifiers.length > 0) {
     // Note: userIdentifierSource is NOT a field on ClickConversion in Google Ads
     // API v21+. FIRST_PARTY is the default for enhanced conversions, so we omit it.
+    // With no click id, these hashed identifiers are the only match signal
+    // (enhanced conversions), so Google matches the sale back to the ad click.
     conversion.userIdentifiers = userIdentifiers;
   }
+
 
   const body = { conversions: [conversion], partialFailure: true };
 
