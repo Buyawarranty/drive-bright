@@ -41,6 +41,7 @@ import {
   normalizeFuelFilter,
   type FuelFilter,
 } from '@/lib/pricing/fuelCategory';
+import PowertrainCategoryPanel from './PowertrainCategoryPanel';
 import { getExclusionReason, isVehicleExcluded } from '@/lib/vehicleExclusions';
 import {
   loadExclusionDraft,
@@ -255,7 +256,10 @@ const VehicleRiskBandsPanel: React.FC = () => {
 
   const testResult = useMemo(() => {
     const match = matchRiskBand(testMake, testModel, config, testFuel);
-    const priced = applyRiskBand(Number(testBase) || 0, match, testType, config);
+    const priced = applyRiskBand(Number(testBase) || 0, match, testType, config, testFuel, {
+      make: testMake,
+      model: testModel,
+    });
     return { match, priced };
   }, [testMake, testModel, testBase, testType, testFuel, config]);
 
@@ -959,6 +963,10 @@ const VehicleRiskBandsPanel: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      <PowertrainCategoryPanel config={config} update={update} />
+
+
 
       {/* Tester */}
       <Card>

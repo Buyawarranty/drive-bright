@@ -14,7 +14,13 @@
  */
 
 import { normalizeVehicleText } from './modelFloorMatch';
-import { fuelFilterMatches, normalizeFuelFilter, type FuelFilter } from './fuelCategory';
+import {
+  fuelFilterMatches,
+  normalizeFuelFilter,
+  normalizeFuelCategory,
+  type FuelFilter,
+  type FuelCategory,
+} from './fuelCategory';
 
 export const RISK_BAND_MIN_FACTOR = 0.5;
 
@@ -65,10 +71,71 @@ export type VehicleTypeFactors = {
   motorbike: number;
 };
 
+/** Powertrain groups that can be priced as one category. */
+export type PowertrainKey = 'ev' | 'phev' | 'hev';
+
+export const POWERTRAIN_KEYS: PowertrainKey[] = ['ev', 'phev', 'hev'];
+
+export const POWERTRAIN_LABEL: Record<PowertrainKey, string> = {
+  ev: 'Electric (EV)',
+  phev: 'Plug-in hybrid (PHEV)',
+  hev: 'Full hybrid (HEV)',
+};
+
+/** A make/model kept out of its powertrain category (priced as a normal car). */
+export type PowertrainExclusion = {
+  id: string;
+  make: string;
+  /** Empty = the whole make is excluded from the category. */
+  model: string;
+};
+
+/**
+ * CATEGORY PRICE FOR A WHOLE POWERTRAIN
+ * One factor and one 1-year minimum for every EV (or PHEV / HEV) in one place,
+ * so all of them can be re-priced together. Anything in `excludes` skips the
+ * category and is priced on its model-risk band alone.
+ */
+export type PowertrainRule = {
+  enabled: boolean;
+  factor: number;
+  minOneYear: number | null;
+  excludes: PowertrainExclusion[];
+  note?: string;
+};
+
+export type PowertrainRules = Record<PowertrainKey, PowertrainRule>;
+
+export const DEFAULT_POWERTRAIN_RULES: PowertrainRules = {
+  ev: {
+    enabled: true,
+    factor: 1.2,
+    minOneYear: 599,
+    excludes: [],
+    note: 'Battery-electric vehicles — high-voltage components and specialist labour.',
+  },
+  phev: {
+    enabled: true,
+    factor: 1.15,
+    minOneYear: 549,
+    excludes: [],
+    note: 'Plug-in hybrids — two powertrains to cover.',
+  },
+  hev: {
+    enabled: true,
+    factor: 1.05,
+    minOneYear: null,
+    excludes: [],
+    note: 'Full hybrids — proven reliability, modest uplift.',
+  },
+};
+
 export type RiskBandConfig = {
   bands: RiskBand[];
   assignments: RiskBandAssignment[];
   vehicleTypes: VehicleTypeFactors;
+  /** Category pricing per powertrain (EV / PHEV / HEV), with exclusions. */
+  powertrains: PowertrainRules;
   /** Band applied when a vehicle matches nothing. */
   defaultBandId: string;
   /**
@@ -270,9 +337,81 @@ export const DEFAULT_RISK_BAND_CONFIG: RiskBandConfig = {
   bands: DEFAULT_RISK_BANDS,
   assignments: DEFAULT_RISK_BAND_ASSIGNMENTS,
   vehicleTypes: DEFAULT_VEHICLE_TYPE_FACTORS,
+  powertrains: DEFAULT_POWERTRAIN_RULES,
   defaultBandId: 'normal',
   globalMinTotal: DEFAULT_GLOBAL_MIN_TOTAL,
 };
+
+/** Powertrain key for a DVLA fuel string, or null when it isn't EV/PHEV/HEV. */
+export function powertrainKeyForFuel(fuelType?: string | null): PowertrainKey | null {
+  const category = normalizeFuelCategory(fuelType) as FuelCategory | null;
+  if (category === 'ev' || category === 'phev' || category === 'hev') return category;
+  return null;
+}
+
+export type PowertrainMatch = {
+  key: PowertrainKey;
+  rule: PowertrainRule;
+  /** True when this vehicle is excluded from the category. */
+  excluded: boolean;
+  /** The exclusion that matched, when excluded. */
+  exclusion: PowertrainExclusion | null;
+};
+
+/**
+ * Which powertrain category applies to this vehicle, and whether it has been
+ * excluded from it. Returns null for petrol / diesel / unknown fuel.
+ */
+export function matchPowertrain(
+  make: string | null | undefined,
+  model: string | null | undefined,
+  config: RiskBandConfig,
+  fuelType?: string | null
+): PowertrainMatch | null {
+  const key = powertrainKeyForFuel(fuelType);
+  if (!key) return null;
+  const rule = (config.powertrains || DEFAULT_POWERTRAIN_RULES)[key];
+  if (!rule || rule.enabled === false) return null;
+
+  const makeTokens = tokens(`${make || ''}`);
+  const fullTokens = tokens(`${make || ''} ${model || ''}`);
+  const exclusion =
+    (rule.excludes || []).find(x => {
+      const xMake = String(x.make || '').trim();
+      const xModel = String(x.model || '').trim();
+      if (xMake && !containsAllTokens(makeTokens, xMake) && !containsAllTokens(fullTokens, xMake)) return false;
+      if (xModel && !containsAllTokens(fullTokens, xModel)) return false;
+      return Boolean(xMake || xModel);
+    }) || null;
+
+  return { key, rule, excluded: Boolean(exclusion), exclusion };
+}
+
+/** Category factor in force for this vehicle (1 when none applies). */
+export function powertrainFactorFor(
+  make: string | null | undefined,
+  model: string | null | undefined,
+  config: RiskBandConfig,
+  fuelType?: string | null
+): number {
+  const m = matchPowertrain(make, model, config, fuelType);
+  if (!m || m.excluded) return 1;
+  const f = clampBandFactor(Number(m.rule.factor));
+  return Number.isFinite(f) && f > 0 ? f : 1;
+}
+
+/** Category 1-year minimum in force for this vehicle (null when none applies). */
+export function powertrainMinOneYearFor(
+  make: string | null | undefined,
+  model: string | null | undefined,
+  config: RiskBandConfig,
+  fuelType?: string | null
+): number | null {
+  const m = matchPowertrain(make, model, config, fuelType);
+  if (!m || m.excluded) return null;
+  const min = Number(m.rule.minOneYear);
+  return Number.isFinite(min) && min > 0 ? min : null;
+}
 
 export function clampBandFactor(value: number): number {
   if (!Number.isFinite(value)) return 1;
@@ -363,16 +502,52 @@ export type RiskBandPriceResult = {
   band: RiskBand;
 };
 
+/** Coerce a stored powertrain block (possibly missing/legacy) to valid rules. */
+export function normalizePowertrainRules(raw: unknown): PowertrainRules {
+  const source = (raw || {}) as Partial<Record<PowertrainKey, Partial<PowertrainRule>>>;
+  const out = {} as PowertrainRules;
+  POWERTRAIN_KEYS.forEach(key => {
+    const fallback = DEFAULT_POWERTRAIN_RULES[key];
+    const r = source[key];
+    if (!r) {
+      out[key] = { ...fallback, excludes: [...fallback.excludes] };
+      return;
+    }
+    out[key] = {
+      enabled: r.enabled !== false,
+      factor: clampBandFactor(Number(r.factor ?? fallback.factor)),
+      minOneYear:
+        Number.isFinite(Number(r.minOneYear)) && Number(r.minOneYear) > 0 ? Number(r.minOneYear) : null,
+      excludes: Array.isArray(r.excludes)
+        ? r.excludes
+            .filter((x: PowertrainExclusion) => x && (String(x.make || '').trim() || String(x.model || '').trim()))
+            .map((x: PowertrainExclusion, i: number) => ({
+              id: x.id || `${key}-ex-${i}`,
+              make: String(x.make || '').trim(),
+              model: String(x.model || '').trim(),
+            }))
+        : [],
+      note: r.note || fallback.note,
+    };
+  });
+  return out;
+}
+
 /**
  * Apply a band (and the vehicle type factor) to a base price.
- * Order: base × band factor × vehicle type factor, then the band floor.
- * Motorbikes halve the floor too, matching the standing pricing rule.
+ * Order: base × band factor × powertrain category factor × vehicle type factor,
+ * then the band floor and the powertrain category floor.
+ * Motorbikes halve the floors too, matching the standing pricing rule.
  */
 export function applyRiskBand(
   basePrice: number,
   match: RiskBandMatch,
   vehicleType: 'car' | 'van' | 'motorbike',
-  config: RiskBandConfig
+  config: RiskBandConfig,
+  /** Vehicle fuel type — enables the EV / PHEV / HEV category price. */
+  fuelType?: string | null,
+  /** Make and model, used only to honour category exclusions. */
+  vehicle?: { make?: string | null; model?: string | null }
 ): RiskBandPriceResult {
   const band = match.band;
   if (band.blocked) {
@@ -391,12 +566,20 @@ export function applyRiskBand(
   }
 
   const typeFactor = config.vehicleTypes[vehicleType] ?? 1;
-  const factorUsed = clampBandFactor(band.factor) * typeFactor;
+  const powertrain = matchPowertrain(vehicle?.make, vehicle?.model, config, fuelType);
+  const powertrainFactor = powertrain && !powertrain.excluded ? clampBandFactor(Number(powertrain.rule.factor)) : 1;
+  const factorUsed = clampBandFactor(band.factor) * powertrainFactor * typeFactor;
   let price = Math.ceil(basePrice * factorUsed);
 
   let floorApplied = false;
-  if (band.minOneYear && band.minOneYear > 0) {
-    const floor = vehicleType === 'motorbike' ? Math.ceil(band.minOneYear / 2) : band.minOneYear;
+  const powertrainMin =
+    powertrain && !powertrain.excluded && Number(powertrain.rule.minOneYear) > 0
+      ? Number(powertrain.rule.minOneYear)
+      : 0;
+  const bandMin = band.minOneYear && band.minOneYear > 0 ? band.minOneYear : 0;
+  const rawFloor = Math.max(bandMin, powertrainMin);
+  if (rawFloor > 0) {
+    const floor = vehicleType === 'motorbike' ? Math.ceil(rawFloor / 2) : rawFloor;
     if (price < floor) {
       price = floor;
       floorApplied = true;
@@ -458,6 +641,7 @@ export function loadRiskBandConfig(): RiskBandConfig {
           Number(parsed?.vehicleTypes?.motorbike ?? DEFAULT_VEHICLE_TYPE_FACTORS.motorbike)
         ),
       },
+      powertrains: normalizePowertrainRules(parsed?.powertrains),
       defaultBandId: String(parsed.defaultBandId || 'normal'),
       globalMinTotal:
         Number(parsed.globalMinTotal) > 0 ? Math.round(Number(parsed.globalMinTotal)) : DEFAULT_GLOBAL_MIN_TOTAL,
