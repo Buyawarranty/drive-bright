@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Instagram, Facebook, Music2, RefreshCw, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
+import type { DateRange } from 'react-day-picker';
 
 type Row = {
   platform: string;
@@ -15,13 +17,6 @@ type Row = {
   sales: number;
   revenue: number;
 };
-
-const RANGES = [
-  { id: '7', label: 'Last 7 days', days: 7 },
-  { id: '30', label: 'Last 30 days', days: 30 },
-  { id: '90', label: 'Last 90 days', days: 90 },
-  { id: '365', label: 'Last 12 months', days: 365 },
-] as const;
 
 const PLATFORM_META: Record<string, { label: string; icon: React.ElementType; profile: string; tagged: string }> = {
   instagram: {
@@ -49,18 +44,26 @@ const gbp = (n: number) =>
   new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(n || 0);
 
 export const SocialAnalyticsTab: React.FC = () => {
-  const [rangeId, setRangeId] = useState<string>('30');
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('30days');
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState<string | null>(null);
 
-  const days = RANGES.find(r => r.id === rangeId)?.days ?? 30;
+  const activeRange = useMemo<DateRange | undefined>(
+    () => (datePeriod === 'custom' ? customRange : periodToRange(datePeriod)),
+    [datePeriod, customRange]
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const to = new Date();
-      const from = new Date(to.getTime() - days * 24 * 60 * 60 * 1000);
+      const now = new Date();
+      const to = activeRange?.to ? new Date(activeRange.to) : now;
+      to.setHours(23, 59, 59, 999);
+      const from = activeRange?.from
+        ? new Date(new Date(activeRange.from).setHours(0, 0, 0, 0))
+        : new Date('2020-01-01T00:00:00.000Z');
       const { data, error } = await (supabase as any).rpc('get_social_analytics', {
         p_from: from.toISOString(),
         p_to: new Date(to.getTime() + 60 * 1000).toISOString(),
@@ -83,7 +86,7 @@ export const SocialAnalyticsTab: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [days]);
+  }, [activeRange]);
 
   useEffect(() => {
     load();
