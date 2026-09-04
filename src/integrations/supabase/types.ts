@@ -13849,6 +13849,14 @@ export type Database = {
           version: string
         }[]
       }
+      get_lead_agent_activity: {
+        Args: { p_lead_ids: string[] }
+        Returns: {
+          last_at: string
+          lead_id: string
+          source: string
+        }[]
+      }
       get_lead_quick_note_counts: {
         Args: { p_lead_ids: string[] }
         Returns: {
