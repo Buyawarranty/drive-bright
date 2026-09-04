@@ -251,6 +251,38 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
         )}
       </div>
 
+      {!loading && chartData.length > 0 && (
+        <div className="mb-6 border rounded-lg p-3">
+          <p className="text-xs text-muted-foreground mb-2">
+            Bought that month versus how many are still with us today — the line is the % still active.
+          </p>
+          <div className="h-[280px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis yAxisId="left" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                <YAxis yAxisId="right" orientation="right" domain={[0, 100]} unit="%" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip
+                  contentStyle={{
+                    background: 'hsl(var(--popover))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    color: 'hsl(var(--popover-foreground))',
+                  }}
+                  formatter={(value: any, name: string) => (name === '% still with us' ? [`${value}%`, name] : [value, name])}
+                />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Bar yAxisId="left" dataKey="active" name="Still with us" stackId="a" fill="hsl(var(--chart-2, 142 71% 45%))" radius={[0, 0, 0, 0]} />
+                <Bar yAxisId="left" dataKey="cancelled" name="Cancelled / refunded" stackId="a" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
+                <Line yAxisId="right" type="monotone" dataKey="retention" name="% still with us" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} connectNulls />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="flex items-center justify-center py-8 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading cohort data…
