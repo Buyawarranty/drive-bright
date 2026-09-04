@@ -456,20 +456,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     filter,
     setFilter,
     fetchLeads,
-    updateLeadStatus,
-    assignLead,
-    autoAssignLead,
-    updateLeadPriority,
-    scheduleFollowUp,
-    addTagToLead,
-    removeTagFromLead,
-    updateLeadNotes,
-    markContactedAt,
-    logActivity,
-    migrateFromAbandonedCarts,
-    deleteLeads,
-    updateCallCount
+    updateLeadStatus: liveUpdateLeadStatus,
+    assignLead: liveAssignLead,
+    autoAssignLead: liveAutoAssignLead,
+    updateLeadPriority: liveUpdateLeadPriority,
+    scheduleFollowUp: liveScheduleFollowUp,
+    addTagToLead: liveAddTagToLead,
+    removeTagFromLead: liveRemoveTagFromLead,
+    updateLeadNotes: liveUpdateLeadNotes,
+    markContactedAt: liveMarkContactedAt,
+    logActivity: liveLogActivity,
+    migrateFromAbandonedCarts: liveMigrateFromAbandonedCarts,
+    deleteLeads: liveDeleteLeads,
+    updateCallCount: liveUpdateCallCount
   } = useLeads({
+
     serverDateFilter: useMemo(() => {
       // When user explicitly clears the date filter (All Time), pass through
       // undefined so the server returns the most recent leads up to LEADS_LIST_LIMIT.
