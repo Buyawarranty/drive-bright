@@ -479,7 +479,7 @@ export default function PriceUpdatesTab() {
         step3_discount_pct: discountPct,
         claim_limit_factors: currentClaimLimitFactors(),
         labour_rate_factors: currentLabourRateFactors(),
-        vehicle_factor_model: currentVehicleFactorModel(),
+        vehicle_factor_model: withRiskBands(currentVehicleFactorModel()),
       });
       toast.success('Draft saved (test only — not live)');
     } catch (e: any) {
@@ -548,7 +548,7 @@ export default function PriceUpdatesTab() {
           step3_discount_pct: websiteDiscountPct,
           claim_limit_factors: claimLimitFactors ?? null,
           labour_rate_factors: labourRateFactors ?? null,
-          vehicle_factor_model: vehicleFactors,
+          vehicle_factor_model: withRiskBands(vehicleFactors),
         });
         await publishVersion(v.id);
         applyLivePricingVersion({
@@ -557,7 +557,7 @@ export default function PriceUpdatesTab() {
           step3_discount_pct: websiteDiscountPct,
           claim_limit_factors: claimLimitFactors ?? null,
           labour_rate_factors: labourRateFactors ?? null,
-          vehicle_factor_model: vehicleFactors,
+          vehicle_factor_model: withRiskBands(vehicleFactors),
         });
         setMatrix(safeMatrix);
         toast.success(`“${draftLabel}” is now live — reload any open quote pages`);
@@ -746,7 +746,7 @@ export default function PriceUpdatesTab() {
         step3_discount_pct: publishDiscountPct,
         claim_limit_factors: factors,
         labour_rate_factors: labourFactors,
-        vehicle_factor_model: currentVehicleFactorModel(),
+        vehicle_factor_model: withRiskBands(currentVehicleFactorModel()),
       });
       await publishVersion(selectedId);
       applyLivePricingVersion({
@@ -755,7 +755,7 @@ export default function PriceUpdatesTab() {
         step3_discount_pct: publishDiscountPct,
         claim_limit_factors: factors,
         labour_rate_factors: labourFactors,
-        vehicle_factor_model: currentVehicleFactorModel(),
+        vehicle_factor_model: withRiskBands(currentVehicleFactorModel()),
       });
       toast.success('Pricing published live — reload any open quote pages');
 
