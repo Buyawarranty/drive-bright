@@ -66,7 +66,10 @@ export function getLiveRiskBandFactor(
   const band = match.band;
   if (!band || band.blocked || band.referral) return 1;
   const factor = clampBandFactor(Number(band.factor));
-  return Number.isFinite(factor) && factor > 0 ? factor : 1;
+  const bandFactor = Number.isFinite(factor) && factor > 0 ? factor : 1;
+  // Powertrain category (EV / PHEV / HEV) multiplies on top, unless the vehicle
+  // has been excluded from its category.
+  return bandFactor * powertrainFactorFor(name, name, config, fuelType ?? undefined);
 }
 
 /**
@@ -83,7 +86,9 @@ export function getLiveRiskBandMinPrice(
   if (!config || !name) return null;
   const { band } = matchRiskBand(name, name, config, fuelType ?? undefined);
   if (!band || band.blocked || band.referral) return null;
-  const minOneYear = Number(band.minOneYear);
+  const bandMin = Number(band.minOneYear);
+  const categoryMin = Number(powertrainMinOneYearFor(name, name, config, fuelType ?? undefined) ?? 0);
+  const minOneYear = Math.max(Number.isFinite(bandMin) ? bandMin : 0, categoryMin);
   if (!Number.isFinite(minOneYear) || minOneYear <= 0) return null;
   return Math.round(minOneYear * (TERM_FLOOR_RATIO[paymentPeriod] ?? 1));
 }
