@@ -41,6 +41,7 @@ type SegmentId =
   | 'due_7'
   | 'due_30'
   | 'due_60'
+  | 'due_90'
   | 'renewal_window'
   | 'upsell'
   | 'lapsed'
@@ -51,7 +52,8 @@ const SEGMENTS: { id: SegmentId; label: string; description: string }[] = [
   { id: 'due_7',          label: 'Due in 7 days',   description: 'Policies expiring in the next 7 days.' },
   { id: 'due_30',         label: 'Due in 30 days',  description: 'Policies expiring in the next 30 days.' },
   { id: 'due_60',         label: 'Due in 60 days',  description: 'Policies expiring in the next 60 days.' },
-  { id: 'renewal_window', label: 'Renewal Window',  description: 'Expires in 61–180 days — warm-up calls.' },
+  { id: 'due_90',         label: 'Due in 90 days',  description: 'Policies expiring in the next 90 days — the automatic renewal feed works to this window.' },
+  { id: 'renewal_window', label: 'Renewal Window',  description: 'Expires in 91–180 days — warm-up calls.' },
   { id: 'upsell',         label: 'Upsell',          description: 'Active policy with room to upgrade claim limit or add-ons.' },
   { id: 'lapsed',         label: 'Lapsed',          description: 'Expired 0–180 days ago, not yet renewed.' },
   { id: 'all_renewals',   label: 'All Renewals',    description: 'Every active renewal candidate including renewed customers.' },
@@ -174,7 +176,7 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
   // sales/sales_lead pass when their cap flag is on.
   const { canReassign: canReassignAny } = useLeadRoutingPermission();
 
-  const [segment, setSegment] = useState<SegmentId>('due_30');
+  const [segment, setSegment] = useState<SegmentId>('due_90');
   const [rows, setRows] = useState<PolicyRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [counts, setCounts] = useState<Record<SegmentId, number>>({} as any);
@@ -328,7 +330,8 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
     const in7   = new Date(now.getTime() + 7   * 86400000).toISOString();
     const in30  = new Date(now.getTime() + 30  * 86400000).toISOString();
     const in60  = new Date(now.getTime() + 60  * 86400000).toISOString();
-    const in61  = new Date(now.getTime() + 61  * 86400000).toISOString();
+    const in90  = new Date(now.getTime() + 90  * 86400000).toISOString();
+    const in91  = new Date(now.getTime() + 91  * 86400000).toISOString();
     const in180 = new Date(now.getTime() + 180 * 86400000).toISOString();
     const ago180 = new Date(now.getTime() - 180 * 86400000).toISOString();
     const nowIso = now.toISOString();
@@ -344,8 +347,10 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
         return q.gte('policy_end_date', nowIso).lte('policy_end_date', in30);
       case 'due_60':
         return q.gte('policy_end_date', nowIso).lte('policy_end_date', in60);
+      case 'due_90':
+        return q.gte('policy_end_date', nowIso).lte('policy_end_date', in90);
       case 'renewal_window':
-        return q.gte('policy_end_date', in61).lte('policy_end_date', in180);
+        return q.gte('policy_end_date', in91).lte('policy_end_date', in180);
       case 'upsell':
         return q.gt('policy_end_date', in180).lt('claim_limit', 2000);
       case 'lapsed':
@@ -786,13 +791,14 @@ export const RenewalsQueueTab: React.FC<{ userRole?: string | null; onNavigateTo
       due_7: 'bg-red-100 text-red-800 border-red-200',
       due_30: 'bg-amber-100 text-amber-800 border-amber-200',
       due_60: 'bg-amber-100 text-amber-800 border-amber-200',
+      due_90: 'bg-amber-100 text-amber-800 border-amber-200',
       renewal_window: 'bg-blue-100 text-blue-800 border-blue-200',
       upsell: 'bg-emerald-100 text-emerald-800 border-emerald-200',
       lapsed: 'bg-red-100 text-red-800 border-red-200',
       all_renewals: 'bg-slate-100 text-slate-800 border-slate-200',
     };
     const label: Record<SegmentId, string> = {
-      due_today: 'Today', due_7: '7d', due_30: '30d', due_60: '60d',
+      due_today: 'Today', due_7: '7d', due_30: '30d', due_60: '60d', due_90: '90d',
       renewal_window: 'Window', upsell: 'Upsell', lapsed: 'Lapsed', all_renewals: 'All',
     };
     return <Badge className={`${map[id]} text-[10px]`}>{label[id]}</Badge>;
