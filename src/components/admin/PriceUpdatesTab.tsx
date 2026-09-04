@@ -1,5 +1,7 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { type VehicleFactorModel } from '@/lib/pricing/vehicleFactorModel';
+import { getLiveRiskBandConfig } from '@/lib/pricing/liveRiskBands';
+import { loadRiskBandConfig } from '@/lib/pricing/vehicleRiskBands';
 import { applyLivePricingVersion } from '@/lib/pricing/applyLivePricingVersion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -449,9 +451,24 @@ export default function PriceUpdatesTab() {
       payInFullFactor: m.payInFullFactor === undefined ? undefined : Number(m.payInFullFactor),
       // Model-level absolute minimum (Aug hybrid = £399 on any warranty).
       absoluteMinTotal: Number(m.absoluteMinTotal) > 0 ? Number(m.absoluteMinTotal) : undefined,
-    };
+    } as VehicleFactorModel;
 
   }
+
+  /**
+   * Vehicle type / model-risk bands (and the electric & hybrid category prices)
+   * live inside the same vehicle_factor_model payload. Pushing prices live must
+   * never drop them, otherwise every banded vehicle silently falls back to the
+   * plain base price. Always carry the published bands (or the ones being
+   * edited) through with any model we write.
+   */
+  function withRiskBands(model: VehicleFactorModel | null): VehicleFactorModel | null {
+    const bands =
+      (model as any)?.riskBands ?? getLiveRiskBandConfig() ?? loadRiskBandConfig();
+    if (!bands) return model;
+    return { ...(model ?? ({} as VehicleFactorModel)), riskBands: bands } as VehicleFactorModel;
+  }
+
 
   async function handleSave() {
     if (!selectedId) return;
@@ -464,7 +481,7 @@ export default function PriceUpdatesTab() {
         step3_discount_pct: discountPct,
         claim_limit_factors: currentClaimLimitFactors(),
         labour_rate_factors: currentLabourRateFactors(),
-        vehicle_factor_model: currentVehicleFactorModel(),
+        vehicle_factor_model: withRiskBands(currentVehicleFactorModel()),
       });
       toast.success('Draft saved (test only — not live)');
     } catch (e: any) {
@@ -533,7 +550,7 @@ export default function PriceUpdatesTab() {
           step3_discount_pct: websiteDiscountPct,
           claim_limit_factors: claimLimitFactors ?? null,
           labour_rate_factors: labourRateFactors ?? null,
-          vehicle_factor_model: vehicleFactors,
+          vehicle_factor_model: withRiskBands(vehicleFactors),
         });
         await publishVersion(v.id);
         applyLivePricingVersion({
@@ -542,7 +559,7 @@ export default function PriceUpdatesTab() {
           step3_discount_pct: websiteDiscountPct,
           claim_limit_factors: claimLimitFactors ?? null,
           labour_rate_factors: labourRateFactors ?? null,
-          vehicle_factor_model: vehicleFactors,
+          vehicle_factor_model: withRiskBands(vehicleFactors),
         });
         setMatrix(safeMatrix);
         toast.success(`“${draftLabel}” is now live — reload any open quote pages`);
@@ -731,7 +748,7 @@ export default function PriceUpdatesTab() {
         step3_discount_pct: publishDiscountPct,
         claim_limit_factors: factors,
         labour_rate_factors: labourFactors,
-        vehicle_factor_model: currentVehicleFactorModel(),
+        vehicle_factor_model: withRiskBands(currentVehicleFactorModel()),
       });
       await publishVersion(selectedId);
       applyLivePricingVersion({
@@ -740,7 +757,7 @@ export default function PriceUpdatesTab() {
         step3_discount_pct: publishDiscountPct,
         claim_limit_factors: factors,
         labour_rate_factors: labourFactors,
-        vehicle_factor_model: currentVehicleFactorModel(),
+        vehicle_factor_model: withRiskBands(currentVehicleFactorModel()),
       });
       toast.success('Pricing published live — reload any open quote pages');
 
