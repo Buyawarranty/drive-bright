@@ -69,8 +69,8 @@ export const useAgentActivity = (leadIds: string[]) => {
       const leadIds = ids.filter(id => /^[0-9a-f-]{36}$/i.test(id));
       for (let i = 0; i < leadIds.length; i += BATCH) {
         const batch = leadIds.slice(i, i + BATCH);
-        const { data, error } = await withBackgroundPriority(() =>
-          supabase.rpc('get_lead_agent_activity', { p_lead_ids: batch })
+        const { data, error }: any = await withBackgroundPriority(async () =>
+          await (supabase as any).rpc('get_lead_agent_activity', { p_lead_ids: batch })
         );
         if (error) throw error;
         (data || []).forEach((r: any) =>
