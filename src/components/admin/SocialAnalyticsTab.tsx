@@ -126,16 +126,17 @@ export const SocialAnalyticsTab: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {RANGES.map(r => (
-            <Button
-              key={r.id}
-              size="sm"
-              variant={rangeId === r.id ? 'default' : 'outline'}
-              onClick={() => setRangeId(r.id)}
-            >
-              {r.label}
-            </Button>
-          ))}
+          <UnifiedDateFilter
+            scope="signup"
+            period={datePeriod}
+            customRange={customRange}
+            availableScopes={['signup']}
+            showLabel={false}
+            onChange={({ period, customRange: cr }) => {
+              setDatePeriod(period);
+              setCustomRange(cr);
+            }}
+          />
           <Button size="sm" variant="outline" onClick={load} disabled={loading}>
             <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
             Refresh
