@@ -173,6 +173,11 @@ export const CancellationsTab: React.FC<{
   const [selectedYear, setSelectedYear] = useState<string>(() => String(new Date().getFullYear()));
   const [calendarOpen, setCalendarOpen] = useState(false);
 
+  // Unified date selector (same control as the Customers section)
+  const [unifiedScope, setUnifiedScope] = useState<DateScope>('signup');
+  const [unifiedPeriod, setUnifiedPeriod] = useState<PeriodKey>('this_month');
+  const [unifiedCustomRange, setUnifiedCustomRange] = useState<DateRange | undefined>(undefined);
+
   // Self-load admin users when not provided via props
   useEffect(() => {
     if (adminUsersProp) return;
