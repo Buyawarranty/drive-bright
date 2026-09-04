@@ -31,7 +31,13 @@ const SOURCE_LABEL: Record<AgentActivity['source'], string> = {
 
 export const getAgentActivityLabel = (s: AgentActivity['source']) => SOURCE_LABEL[s];
 
-const BATCH = 60;
+/**
+ * Batches go to a single database lookup that returns the newest activity per
+ * lead. The old version pulled recent rows table-by-table with a row cap, so on
+ * a busy day a handful of chatty leads used up the cap and other leads showed
+ * "No agent activity" even though notes and calls existed.
+ */
+const BATCH = 200;
 
 export const useAgentActivity = (leadIds: string[]) => {
   const [activityByLead, setActivityByLead] = useState<Record<string, AgentActivity>>({});
