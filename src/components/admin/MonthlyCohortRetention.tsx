@@ -232,6 +232,29 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
       })),
   [rows]);
 
+  const daysChartData = useMemo(() =>
+    rows
+      .slice()
+      .sort((a, b) => a.monthKey.localeCompare(b.monthKey))
+      .map(r => ({
+        label: `${r.monthLabel} ${String(r.year).slice(2)}`,
+        avgDays: r.avgDaysToCancel != null ? Number(r.avgDaysToCancel.toFixed(1)) : null,
+        medianDays: r.medianDaysToCancel != null ? Number(r.medianDaysToCancel.toFixed(1)) : null,
+        cancellations: r.daysToCancel.length,
+      })),
+  [rows]);
+
+  const overallDays = useMemo(() => {
+    const all = rows.flatMap(r => r.daysToCancel).sort((a, b) => a - b);
+    if (!all.length) return null;
+    const avg = all.reduce((s, v) => s + v, 0) / all.length;
+    const med = all.length % 2
+      ? all[(all.length - 1) / 2]
+      : (all[all.length / 2 - 1] + all[all.length / 2]) / 2;
+    return { avg, med, count: all.length };
+  }, [rows]);
+
+
   const toggleYear = (year: number) => {
     setCollapsed(prev => {
       const next = new Set(prev);
