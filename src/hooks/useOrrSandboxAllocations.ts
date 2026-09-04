@@ -10,9 +10,14 @@ import { fairFillShares } from '@/lib/fairFillShares';
  * so no agent is assigned, notified or credited by a practice run.
  *
  * Candidate agents and their caps come from the SAME settings the live Lead
- * Allocation page owns (`agent_distribution_caps`, `lead_team_members`), so when
- * Open Round Robin goes live nothing has to be re-entered.
+ * Allocation page owns (`agent_distribution_caps`), so when Open Round Robin goes
+ * live nothing has to be re-entered.
  */
+
+// The practice table is new, so it is not in the generated Supabase types yet.
+const db = supabase as unknown as {
+  from: (table: string) => any;
+};
 
 export interface SandboxAllocation {
   leadId: string;
@@ -42,7 +47,7 @@ export const useOrrSandboxAllocations = (enabled: boolean) => {
     setError(null);
     try {
       const [{ data: rows, error: rowsError }, { data: caps }] = await Promise.all([
-        supabase
+        db
           .from('orr_sandbox_allocations')
           .select('lead_id, simulated_agent_id, simulated_at, reason')
           .order('simulated_at', { ascending: false })
@@ -55,7 +60,7 @@ export const useOrrSandboxAllocations = (enabled: boolean) => {
       if (rowsError) throw rowsError;
 
       const map: Record<string, SandboxAllocation> = {};
-      (rows ?? []).forEach((r: Record<string, unknown>) => {
+      ((rows ?? []) as Array<Record<string, unknown>>).forEach((r) => {
         map[r.lead_id as string] = {
           leadId: r.lead_id as string,
           agentId: (r.simulated_agent_id as string) ?? null,
@@ -71,12 +76,15 @@ export const useOrrSandboxAllocations = (enabled: boolean) => {
       if (ids.length) {
         const { data: users } = await supabase
           .from('admin_users')
-          .select('id, name, email, role, is_active')
+          .select('id, first_name, last_name, email, is_active')
           .in('id', ids);
         namesById = Object.fromEntries(
           ((users ?? []) as Array<Record<string, unknown>>)
             .filter(u => u.is_active !== false)
-            .map(u => [u.id as string, (u.name as string) || (u.email as string) || 'Agent']),
+            .map(u => [
+              u.id as string,
+              [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || (u.email as string) || 'Agent',
+            ]),
         );
       }
       setCandidates(
@@ -114,7 +122,7 @@ export const useOrrSandboxAllocations = (enabled: boolean) => {
         candidates.map(c => ({
           id: c.adminUserId,
           usedToday: c.usedToday,
-          remaining: Math.max(0, (c.dailyCap || 0) - c.usedToday) || (c.dailyCap ? 0 : 9999),
+          remaining: c.dailyCap > 0 ? Math.max(0, c.dailyCap - c.usedToday) : 9999,
         })),
         leadIds.length,
       );
@@ -122,9 +130,9 @@ export const useOrrSandboxAllocations = (enabled: boolean) => {
       // Expand the per-agent shares into a rotation order so the practice list
       // reads one-at-a-time, exactly like the live single-cursor round robin.
       const queue: string[] = [];
-      const remaining = { ...shares };
+      const remaining: Record<string, number> = { ...shares };
       let guard = 0;
-      while (Object.values(remaining).some(v => v > 0) && guard < leadIds.length * 4) {
+      while (Object.values(remaining).some(v => v > 0) && guard < leadIds.length + 5) {
         for (const c of candidates) {
           if ((remaining[c.adminUserId] ?? 0) > 0) {
             queue.push(c.adminUserId);
@@ -142,7 +150,7 @@ export const useOrrSandboxAllocations = (enabled: boolean) => {
         simulated_at: new Date().toISOString(),
       }));
 
-      const { error: upsertError } = await supabase
+      const { error: upsertError } = await db
         .from('orr_sandbox_allocations')
         .upsert(rows, { onConflict: 'lead_id' });
       if (upsertError) throw upsertError;
@@ -160,7 +168,7 @@ export const useOrrSandboxAllocations = (enabled: boolean) => {
   const clearAll = useCallback(async () => {
     setRunning(true);
     try {
-      await supabase.from('orr_sandbox_allocations').delete().not('lead_id', 'is', null);
+      await db.from('orr_sandbox_allocations').delete().not('lead_id', 'is', null);
       await load();
     } finally {
       setRunning(false);
