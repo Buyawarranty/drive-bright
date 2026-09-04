@@ -332,13 +332,14 @@ Deno.serve(async (req) => {
     }
     // ──────────────────────────────────────────────────────────────────────────
 
-    // Query customers with Google click IDs that haven't been uploaded yet.
+    // Query sales that haven't been uploaded yet. Rows WITHOUT a Google click id are
+    // included too: they go up as enhanced conversions (hashed email/phone/name), so a
+    // lost gclid no longer means a missing conversion.
     // Prefer signup_date for the conversion timestamp: it represents the actual purchase/sign-up
     // moment more reliably than created_at on restored/reconciled records.
     const { data: pendingCustomers, error: customersError } = await supabase
       .from('customers')
-      .select('id, gclid, final_amount, created_at, signup_date, email, phone, status')
-      .not('gclid', 'is', null)
+      .select('id, gclid, final_amount, created_at, signup_date, email, phone, status, first_name, last_name, name, postcode, warranty_number')
       .is('google_ads_conversion_uploaded_at', null)
       .in('status', ['active', 'Active'])
       .eq('is_deleted', false)
@@ -355,8 +356,7 @@ Deno.serve(async (req) => {
     // succeeds. Use updated_at as the conversion time to avoid "conversion precedes click" errors.
     const { data: pendingBumper, error: bumperError } = await supabase
       .from('bumper_transactions')
-      .select('id, gclid, final_amount, created_at, updated_at, status')
-      .not('gclid', 'is', null)
+      .select('id, gclid, final_amount, created_at, updated_at, status, customer_data')
       .is('google_ads_conversion_uploaded_at', null)
       .eq('status', 'completed')
       .gte('updated_at', cutoffISO)
@@ -384,9 +384,19 @@ Deno.serve(async (req) => {
       ...(pendingCustomers || []).map((c) => ({ ...c, source: 'customers' as const })),
       ...(pendingBumper || []).map((b) => {
         const enrich = bumperContactByGclid.get(b.gclid as string) || { email: null, phone: null };
-        return { ...b, email: enrich.email, phone: enrich.phone, source: 'bumper_transactions' as const };
+        const cd = ((b as any).customer_data || {}) as Record<string, any>;
+        return {
+          ...b,
+          email: enrich.email || cd.email || null,
+          phone: enrich.phone || cd.phone || cd.mobile || null,
+          first_name: cd.first_name || cd.firstName || null,
+          last_name: cd.last_name || cd.lastName || null,
+          postcode: cd.postcode || null,
+          source: 'bumper_transactions' as const,
+        };
       }),
     ];
+
 
     logStep(`Found ${allPending.length} pending conversions`, {
       customers: pendingCustomers?.length || 0,
