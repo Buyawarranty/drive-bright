@@ -502,16 +502,52 @@ export type RiskBandPriceResult = {
   band: RiskBand;
 };
 
+/** Coerce a stored powertrain block (possibly missing/legacy) to valid rules. */
+export function normalizePowertrainRules(raw: unknown): PowertrainRules {
+  const source = (raw || {}) as Partial<Record<PowertrainKey, Partial<PowertrainRule>>>;
+  const out = {} as PowertrainRules;
+  POWERTRAIN_KEYS.forEach(key => {
+    const fallback = DEFAULT_POWERTRAIN_RULES[key];
+    const r = source[key];
+    if (!r) {
+      out[key] = { ...fallback, excludes: [...fallback.excludes] };
+      return;
+    }
+    out[key] = {
+      enabled: r.enabled !== false,
+      factor: clampBandFactor(Number(r.factor ?? fallback.factor)),
+      minOneYear:
+        Number.isFinite(Number(r.minOneYear)) && Number(r.minOneYear) > 0 ? Number(r.minOneYear) : null,
+      excludes: Array.isArray(r.excludes)
+        ? r.excludes
+            .filter((x: PowertrainExclusion) => x && (String(x.make || '').trim() || String(x.model || '').trim()))
+            .map((x: PowertrainExclusion, i: number) => ({
+              id: x.id || `${key}-ex-${i}`,
+              make: String(x.make || '').trim(),
+              model: String(x.model || '').trim(),
+            }))
+        : [],
+      note: r.note || fallback.note,
+    };
+  });
+  return out;
+}
+
 /**
  * Apply a band (and the vehicle type factor) to a base price.
- * Order: base × band factor × vehicle type factor, then the band floor.
- * Motorbikes halve the floor too, matching the standing pricing rule.
+ * Order: base × band factor × powertrain category factor × vehicle type factor,
+ * then the band floor and the powertrain category floor.
+ * Motorbikes halve the floors too, matching the standing pricing rule.
  */
 export function applyRiskBand(
   basePrice: number,
   match: RiskBandMatch,
   vehicleType: 'car' | 'van' | 'motorbike',
-  config: RiskBandConfig
+  config: RiskBandConfig,
+  /** Vehicle fuel type — enables the EV / PHEV / HEV category price. */
+  fuelType?: string | null,
+  /** Make and model, used only to honour category exclusions. */
+  vehicle?: { make?: string | null; model?: string | null }
 ): RiskBandPriceResult {
   const band = match.band;
   if (band.blocked) {
