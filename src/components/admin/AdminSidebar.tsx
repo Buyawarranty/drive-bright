@@ -305,6 +305,12 @@ export const defaultTabs: Tab[] = [
     description: 'Track page visits, traffic sources & Google Ads'
   },
   {
+    id: 'social-analytics',
+    label: 'Social Analytics',
+    icon: Eye,
+    description: 'Visits, quotes, leads and sales from Instagram, TikTok and Facebook'
+  },
+  {
     id: 'payments-pending',
     label: 'Payments Pending',
     icon: PoundSterling,
@@ -596,7 +602,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         'agent-feedback',
         'new-leads', 'recontact-leads', 'get-quote', 'customers',
         'abandoned-carts', 'marketing-audience', 'emails',
-        'analytics', 'page-analytics', 'google-ads',
+        'analytics', 'page-analytics', 'social-analytics', 'google-ads',
         'call-tracking',
         'selling-tips', 'discount-codes', 'staff-hub', 'unsubscribe', 'account'
       ]);
@@ -627,7 +633,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         );
       }
 
-      const baseIds = new Set(['overview', 'concessions', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'open-round-robin', 'orr-test-lab', 'price-updates', 'sms-tracking', 'user-permissions', 'claims', 'chatbot-data', 'semrush-seo', 'unsubscribe', 'account']);
+      const baseIds = new Set(['overview', 'concessions', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'social-analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'open-round-robin', 'orr-test-lab', 'price-updates', 'sms-tracking', 'user-permissions', 'claims', 'chatbot-data', 'semrush-seo', 'unsubscribe', 'account']);
       return defaultTabs.filter(tab => baseIds.has(tab.id));
     }
 
