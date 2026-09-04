@@ -125,7 +125,7 @@ export const SocialAnalyticsTab: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Social analytics</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Visitors, quotes, leads and sales coming from our Instagram, TikTok and Facebook pages.
+            Organic visitors, quotes, leads and sales coming from our Instagram, TikTok and Facebook pages. Anyone who arrived by clicking a paid advert is excluded.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
