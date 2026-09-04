@@ -38,6 +38,17 @@ export type RiskBand = {
   factor: number;
   /** Optional minimum 1-year price for vehicles in this band. */
   minOneYear: number | null;
+  /**
+   * PERSONALISED TIER — an exact price per year (e.g. £1,499/yr). When set it
+   * replaces the grid base price for vehicles in this band, so the tier prices
+   * at exactly this figure at the default options and the option chips still
+   * move it. Leave null to price on the factor + floor instead.
+   */
+  fixedOneYear?: number | null;
+  /** Exact 2-year price. Blank = the yearly price × 2. */
+  fixedTwoYear?: number | null;
+  /** Exact 3-year price. Blank = the yearly price × 3. */
+  fixedThreeYear?: number | null;
   /** No automatic price — send to manual underwriting. */
   referral: boolean;
   /** Vehicles in this band are not covered at all — quote is declined politely. */
@@ -413,6 +424,34 @@ export function powertrainMinOneYearFor(
   return Number.isFinite(min) && min > 0 ? min : null;
 }
 
+/**
+ * Exact price this personalised tier sets for the term, or null when the band
+ * prices on its factor and floor. Per-term boxes win; otherwise the yearly
+ * price is multiplied by the number of years.
+ */
+export function bandFixedPriceForTerm(
+  band: RiskBand | null | undefined,
+  paymentPeriod: string
+): number | null {
+  if (!band || band.blocked || band.referral) return null;
+  const perTerm: Record<string, number | null | undefined> = {
+    '12months': band.fixedOneYear,
+    '24months': band.fixedTwoYear,
+    '36months': band.fixedThreeYear,
+  };
+  const explicit = Number(perTerm[paymentPeriod]);
+  if (Number.isFinite(explicit) && explicit > 0) return Math.round(explicit);
+  const yearly = Number(band.fixedOneYear);
+  if (!Number.isFinite(yearly) || yearly <= 0) return null;
+  const years = paymentPeriod === '24months' ? 2 : paymentPeriod === '36months' ? 3 : 1;
+  return Math.round(yearly * years);
+}
+
+/** True when the band is priced as a personalised (exact price) tier. */
+export function isPersonalisedTier(band: RiskBand | null | undefined): boolean {
+  return bandFixedPriceForTerm(band, '12months') !== null;
+}
+
 export function clampBandFactor(value: number): number {
   if (!Number.isFinite(value)) return 1;
   return Math.min(RISK_BAND_MAX_FACTOR, Math.max(RISK_BAND_MIN_FACTOR, value));
@@ -565,6 +604,20 @@ export function applyRiskBand(
     return { price: null, referral: true, blocked: false, blockMessage: null, floorApplied: false, factorUsed: 1, band };
   }
 
+  // Personalised tier: exact price, no factors and no floors below it.
+  const fixedOneYear = bandFixedPriceForTerm(band, '12months');
+  if (fixedOneYear !== null) {
+    return {
+      price: fixedOneYear,
+      referral: false,
+      blocked: false,
+      blockMessage: null,
+      floorApplied: true,
+      factorUsed: 1,
+      band,
+    };
+  }
+
   const typeFactor = config.vehicleTypes[vehicleType] ?? 1;
   const powertrain = matchPowertrain(vehicle?.make, vehicle?.model, config, fuelType);
   const powertrainFactor = powertrain && !powertrain.excluded ? clampBandFactor(Number(powertrain.rule.factor)) : 1;
@@ -610,6 +663,12 @@ export function loadRiskBandConfig(): RiskBandConfig {
       factor: clampBandFactor(Number(b.factor)),
       minOneYear:
         Number.isFinite(Number(b.minOneYear)) && Number(b.minOneYear) > 0 ? Number(b.minOneYear) : null,
+      fixedOneYear:
+        Number.isFinite(Number(b.fixedOneYear)) && Number(b.fixedOneYear) > 0 ? Number(b.fixedOneYear) : null,
+      fixedTwoYear:
+        Number.isFinite(Number(b.fixedTwoYear)) && Number(b.fixedTwoYear) > 0 ? Number(b.fixedTwoYear) : null,
+      fixedThreeYear:
+        Number.isFinite(Number(b.fixedThreeYear)) && Number(b.fixedThreeYear) > 0 ? Number(b.fixedThreeYear) : null,
       referral: b.referral === true,
       blocked: b.blocked === true,
       blockMessage: b.blocked === true ? String(b.blockMessage || DEFAULT_BLOCK_MESSAGE) : b.blockMessage || undefined,
