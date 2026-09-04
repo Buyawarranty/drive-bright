@@ -139,12 +139,18 @@ export const useLeadQuickNotes = (leadId: string) => {
       setNotes(prev => {
         const result = newNotesOrUpdater(prev);
         notesRef.current = result;
-        if (leadId) quickNotesCache.set(leadId, result);
+        if (leadId) {
+          quickNotesCache.set(leadId, result);
+          writeMirroredNotes(leadId, result);
+        }
         return result;
       });
     } else {
       notesRef.current = newNotesOrUpdater;
-      if (leadId) quickNotesCache.set(leadId, newNotesOrUpdater);
+      if (leadId) {
+        quickNotesCache.set(leadId, newNotesOrUpdater);
+        writeMirroredNotes(leadId, newNotesOrUpdater);
+      }
       setNotes(newNotesOrUpdater);
     }
   }, [leadId]);
