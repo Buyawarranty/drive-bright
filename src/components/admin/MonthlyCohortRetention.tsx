@@ -326,6 +326,49 @@ export const MonthlyCohortRetention: React.FC<Props> = ({ months }) => {
         </div>
       )}
 
+      {!loading && overallDays && (
+        <div className="mb-6 border rounded-lg p-3">
+          <div className="flex items-baseline justify-between mb-2 gap-3 flex-wrap">
+            <div>
+              <h3 className="text-sm font-semibold">How long before people cancel</h3>
+              <p className="text-xs text-muted-foreground">
+                Average days between buying the warranty and cancelling, for each signup month. The dotted line is the typical (median) wait, which is less affected by a few very late cancellations.
+              </p>
+            </div>
+            <div className="text-right text-xs text-muted-foreground">
+              <div><span className="font-semibold text-foreground">{overallDays.avg.toFixed(0)} days</span> average all-time</div>
+              <div><span className="font-semibold text-foreground">{overallDays.med.toFixed(0)} days</span> typical · {overallDays.count} cancellations</div>
+            </div>
+          </div>
+          <div className="h-[260px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={daysChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" allowDecimals={false} unit="d" />
+                <Tooltip
+                  contentStyle={{
+                    background: 'hsl(var(--popover))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    color: 'hsl(var(--popover-foreground))',
+                  }}
+                  formatter={(value: any, name: string) =>
+                    name === 'Cancellations' ? [value, name] : [`${value} days`, name]
+                  }
+                />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Bar dataKey="avgDays" name="Average days to cancel" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
+                <Line type="monotone" dataKey="medianDays" name="Typical days to cancel" stroke="hsl(var(--primary))" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3 }} connectNulls />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+
+
       {loading ? (
         <div className="flex items-center justify-center py-8 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading cohort data…
