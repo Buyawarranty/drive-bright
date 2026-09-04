@@ -50,6 +50,21 @@ import {
 } from '@/lib/pricing/liveVehicleExclusions';
 
 
+/**
+ * One-line price summary for a category, used everywhere a band is listed so a
+ * manager always sees what the label costs.
+ */
+function bandPriceLabel(band: RiskBand): string {
+  if (band.blocked) return 'Not covered';
+  if (band.referral) return 'Referral — no automatic price';
+  if (band.fixedOneYear) {
+    const two = band.fixedTwoYear ?? band.fixedOneYear * 2;
+    const three = band.fixedThreeYear ?? band.fixedOneYear * 3;
+    return `£${band.fixedOneYear}/yr exact · 2yr £${two} · 3yr £${three}`;
+  }
+  return `×${band.factor.toFixed(2)}${band.minOneYear ? ` · min £${band.minOneYear}` : ''}`;
+}
+
 const TONE_CLASS: Record<RiskBand['tone'], string> = {
   low: 'bg-emerald-100 text-emerald-800 border-emerald-200',
   normal: 'bg-muted text-foreground border-border',
@@ -86,6 +101,14 @@ const VehicleRiskBandsPanel: React.FC = () => {
   const [config, setConfig] = useState<RiskBandConfig>(() => loadRiskBandConfig());
   const [dirty, setDirty] = useState(false);
   const [filter, setFilter] = useState('');
+  const [newCategory, setNewCategory] = useState<{
+    name: string;
+    mode: 'uplift' | 'exact';
+    factor: number;
+    minOneYear: number;
+    exact: number;
+    tone: RiskBand['tone'];
+  }>({ name: '', mode: 'uplift', factor: 1.3, minOneYear: 599, exact: 1499, tone: 'high' });
   const [newEntry, setNewEntry] = useState<{ make: string; model: string; bandId: string; fuel: FuelFilter }>({
     make: '',
     model: '',
@@ -291,6 +314,39 @@ const VehicleRiskBandsPanel: React.FC = () => {
    * instead of a factor and a floor. 2-year and 3-year default to the yearly
    * price × 2 / × 3 unless the manager types their own.
    */
+  const addNewCategory = () => {
+    const name = newCategory.name.trim();
+    if (!name) {
+      toast.error('Give the category a name, e.g. "Prestige tier".');
+      return;
+    }
+    const exact = Math.max(0, Number(newCategory.exact) || 0);
+    const factor = clampBandFactor(Number(newCategory.factor) || 1);
+    const min = Math.max(0, Number(newCategory.minOneYear) || 0);
+    const band: RiskBand = {
+      id: newId('band'),
+      name,
+      factor: newCategory.mode === 'exact' ? 1 : factor,
+      minOneYear: newCategory.mode === 'exact' ? null : min || null,
+      fixedOneYear: newCategory.mode === 'exact' ? exact || null : null,
+      fixedTwoYear: null,
+      fixedThreeYear: null,
+      referral: false,
+      tone: newCategory.tone,
+      note:
+        newCategory.mode === 'exact'
+          ? 'Exact price per year — ignores the grid base, the factor and the floors.'
+          : 'Uplift on the grid base price, with its own 12-month minimum.',
+    };
+    if (newCategory.mode === 'exact' && !exact) {
+      toast.error('Enter the yearly price for this category, e.g. 1499.');
+      return;
+    }
+    update({ ...config, bands: [...config.bands, band] });
+    setNewCategory({ name: '', mode: newCategory.mode, factor: 1.3, minOneYear: 599, exact: 1499, tone: 'high' });
+    toast.success(`"${name}" created — now assign makes and models to it.`);
+  };
+
   const addPersonalisedTier = () => {
     const band: RiskBand = {
       id: newId('tier'),
@@ -608,12 +664,7 @@ const VehicleRiskBandsPanel: React.FC = () => {
                         </Badge>
                       </td>
                       <td className="p-2 text-muted-foreground">
-                        {band.blocked || band.referral
-                          ? '—'
-                          : band.fixedOneYear
-                            ? `£${band.fixedOneYear}/yr exact`
-                            : `×${band.factor.toFixed(2)}`}
-                        {!band.fixedOneYear && band.minOneYear ? ` · min £${band.minOneYear}` : ''}
+                        {bandPriceLabel(band)}
                       </td>
                       {types.map(({ type, result }) => (
                         <td key={type} className="p-2">
@@ -667,6 +718,95 @@ const VehicleRiskBandsPanel: React.FC = () => {
                   <Plus className="h-4 w-4 mr-2" /> Add personalised tier
                 </Button>
               </div>
+            </div>
+
+            {/* CREATE A CATEGORY — name it and price it, exactly like the premium tiers */}
+            <div className="mb-4 rounded-lg border bg-muted/30 p-3">
+              <p className="text-sm font-semibold mb-2">Create a new category</p>
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Category name</Label>
+                  <Input
+                    className="h-9 w-[220px]"
+                    placeholder="e.g. Prestige tier"
+                    value={newCategory.name}
+                    onChange={e => setNewCategory({ ...newCategory, name: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">How it is priced</Label>
+                  <Select
+                    value={newCategory.mode}
+                    onValueChange={v => setNewCategory({ ...newCategory, mode: v as 'uplift' | 'exact' })}
+                  >
+                    <SelectTrigger className="h-9 w-[200px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="uplift">Uplift + minimum</SelectItem>
+                      <SelectItem value="exact">Exact price per year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {newCategory.mode === 'uplift' ? (
+                  <>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Price factor</Label>
+                      <Input
+                        className="h-9 w-[100px]"
+                        type="number"
+                        step="0.01"
+                        value={newCategory.factor}
+                        onChange={e => setNewCategory({ ...newCategory, factor: Number(e.target.value) })}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Min 1-year £</Label>
+                      <Input
+                        className="h-9 w-[110px]"
+                        type="number"
+                        value={newCategory.minOneYear}
+                        onChange={e => setNewCategory({ ...newCategory, minOneYear: Number(e.target.value) })}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-1">
+                    <Label className="text-xs">Price £ per year</Label>
+                    <Input
+                      className="h-9 w-[130px]"
+                      type="number"
+                      value={newCategory.exact}
+                      onChange={e => setNewCategory({ ...newCategory, exact: Number(e.target.value) })}
+                    />
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <Label className="text-xs">Label colour</Label>
+                  <Select
+                    value={newCategory.tone}
+                    onValueChange={v => setNewCategory({ ...newCategory, tone: v as RiskBand['tone'] })}
+                  >
+                    <SelectTrigger className="h-9 w-[150px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TONE_OPTIONS.map(o => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={addNewCategory}>
+                  <Plus className="h-4 w-4 mr-2" /> Create category
+                </Button>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Works exactly like Premium / Ultra premium: name the category, set its price, then assign
+                makes and models to it below. Exact-price categories quote that figure per year.
+              </p>
             </div>
 
             <div className="space-y-3">
@@ -888,8 +1028,7 @@ const VehicleRiskBandsPanel: React.FC = () => {
                   <SelectContent>
                     {config.bands.map(b => (
                       <SelectItem key={b.id} value={b.id}>
-                        {b.name}
-                        {b.minOneYear ? ` — min £${b.minOneYear} (12mo)` : ''} · ×{b.factor.toFixed(2)}
+                        {b.name} — {bandPriceLabel(b)}
                       </SelectItem>
                     ))}
 
@@ -951,11 +1090,7 @@ const VehicleRiskBandsPanel: React.FC = () => {
                       )}
                       {band && (
                         <p className="text-xs text-muted-foreground">
-                          {band.blocked
-                            ? 'Not covered — declined politely'
-                            : band.referral
-                            ? 'Referral — no automatic price'
-                            : `×${band.factor.toFixed(2)}${band.minOneYear ? ` · min £${band.minOneYear}` : ''}`}
+                          {bandPriceLabel(band)}
                         </p>
                       )}
                       {clashes && (
@@ -972,8 +1107,7 @@ const VehicleRiskBandsPanel: React.FC = () => {
                       <SelectContent>
                         {config.bands.map(b => (
                           <SelectItem key={b.id} value={b.id}>
-                            {b.name}
-                            {b.minOneYear ? ` — min £${b.minOneYear}` : ''}
+                            {b.name} — {bandPriceLabel(b)}
                           </SelectItem>
                         ))}
 
