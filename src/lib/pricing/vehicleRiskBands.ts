@@ -566,12 +566,20 @@ export function applyRiskBand(
   }
 
   const typeFactor = config.vehicleTypes[vehicleType] ?? 1;
-  const factorUsed = clampBandFactor(band.factor) * typeFactor;
+  const powertrain = matchPowertrain(vehicle?.make, vehicle?.model, config, fuelType);
+  const powertrainFactor = powertrain && !powertrain.excluded ? clampBandFactor(Number(powertrain.rule.factor)) : 1;
+  const factorUsed = clampBandFactor(band.factor) * powertrainFactor * typeFactor;
   let price = Math.ceil(basePrice * factorUsed);
 
   let floorApplied = false;
-  if (band.minOneYear && band.minOneYear > 0) {
-    const floor = vehicleType === 'motorbike' ? Math.ceil(band.minOneYear / 2) : band.minOneYear;
+  const powertrainMin =
+    powertrain && !powertrain.excluded && Number(powertrain.rule.minOneYear) > 0
+      ? Number(powertrain.rule.minOneYear)
+      : 0;
+  const bandMin = band.minOneYear && band.minOneYear > 0 ? band.minOneYear : 0;
+  const rawFloor = Math.max(bandMin, powertrainMin);
+  if (rawFloor > 0) {
+    const floor = vehicleType === 'motorbike' ? Math.ceil(rawFloor / 2) : rawFloor;
     if (price < floor) {
       price = floor;
       floorApplied = true;
