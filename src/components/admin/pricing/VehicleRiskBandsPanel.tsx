@@ -803,10 +803,39 @@ const VehicleRiskBandsPanel: React.FC = () => {
                   <Plus className="h-4 w-4 mr-2" /> Create category
                 </Button>
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Works exactly like Premium / Ultra premium: name the category, set its price, then assign
-                makes and models to it below. Exact-price categories quote that figure per year.
-              </p>
+              <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                <p>
+                  Works exactly like Premium / Ultra premium: name the category, set its price, then assign
+                  makes and models to it below. Exact-price categories quote that figure per year.
+                </p>
+                {newCategory.mode === 'uplift' && (
+                  <>
+                    <p>
+                      <span className="font-medium text-foreground">How the two work together:</span> the price
+                      factor multiplies the normal grid price for that vehicle, then the minimum is a safety net —
+                      whichever is higher is what the customer is quoted. The factor sets the price on dearer
+                      vehicles, the minimum protects the cheap ones.
+                    </p>
+                    <p>
+                      Example on a £500 vehicle: £500 × {Number(newCategory.factor || 0).toFixed(2)} ={' '}
+                      <span className="font-medium text-foreground">
+                        £{Math.round(500 * Number(newCategory.factor || 0))}
+                      </span>
+                      , so the customer pays{' '}
+                      <span className="font-medium text-foreground">
+                        £{Math.max(Math.round(500 * Number(newCategory.factor || 0)), Number(newCategory.minOneYear || 0))}
+                      </span>{' '}
+                      {Math.round(500 * Number(newCategory.factor || 0)) >= Number(newCategory.minOneYear || 0)
+                        ? '(the factor decides here — it is above the minimum).'
+                        : `(the £${Number(newCategory.minOneYear || 0)} minimum decides here — the factor came out lower).`}
+                    </p>
+                    <p>
+                      Leave the minimum at 0 to let the factor decide every time, or set an exact price per year
+                      instead if you want one flat figure regardless of the vehicle.
+                    </p>
+                  </>
+                )}
+              </div>
             </div>
 
             <div className="space-y-3">
