@@ -24,6 +24,24 @@ import { AdminAccessLogPanel } from './AdminAccessLogPanel';
 import { useAuth } from '@/hooks/useAuth';
 import { defaultTabs as SIDEBAR_TABS } from './AdminSidebar';
 
+/**
+ * Lead types (workstreams) an agent can be switched on for. These mirror the
+ * Lead Allocation matrix exactly — same columns on lead_team_members and the
+ * same sidebar tab that gets granted/revoked with them.
+ */
+type WorkstreamKey = 'new_leads' | 'recontact' | 'renewals';
+
+const WORKSTREAM_DEFS: { key: WorkstreamKey; col: string; label: string; tabId: string; hint: string }[] = [
+  { key: 'new_leads', col: 'workstream_new_leads', label: 'New Leads', tabId: 'new-leads', hint: 'Brand-new website leads in rotation' },
+  { key: 'recontact', col: 'workstream_recontact', label: 'Recontact Leads', tabId: 'recontact-leads', hint: 'Older leads being worked again' },
+  { key: 'renewals', col: 'workstream_renewals', label: 'Renewals', tabId: 'renewals', hint: 'Customers coming up for renewal' },
+];
+
+type AgentWorkstreamFlags = Record<WorkstreamKey, boolean>;
+
+const EMPTY_WORKSTREAMS: AgentWorkstreamFlags = { new_leads: false, recontact: false, renewals: false };
+
+
 interface AdminUser {
   id: string;
   user_id: string | null;
@@ -318,6 +336,8 @@ export const UserPermissionsTab = () => {
   });
   const [teams, setTeams] = useState<Array<{ id: string; name: string; color: string | null; emoji: string | null }>>([]);
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+  const [editingWorkstreams, setEditingWorkstreams] = useState<AgentWorkstreamFlags>({ ...EMPTY_WORKSTREAMS });
+  const [inviteWorkstreams, setInviteWorkstreams] = useState<AgentWorkstreamFlags>({ ...EMPTY_WORKSTREAMS });
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [passwordUser, setPasswordUser] = useState<AdminUser | null>(null);
   const [newPassword, setNewPassword] = useState('');
@@ -662,6 +682,56 @@ export const UserPermissionsTab = () => {
     }
   };
 
+  /**
+   * Switches the agent's lead types on/off on their team row and mirrors each
+   * one to the matching sidebar tab, exactly like the Lead Allocation matrix.
+   * Requires a team — no team row means nothing to switch on.
+   */
+  const saveAgentWorkstreams = async (
+    adminUserId: string,
+    flags: AgentWorkstreamFlags,
+    currentPermissions: Record<string, boolean> | null | undefined,
+  ) => {
+    const { data: member } = await supabase
+      .from('lead_team_members')
+      .select('id')
+      .eq('admin_user_id', adminUserId)
+      .maybeSingle();
+    if (!member?.id) return;
+
+    const patch: Record<string, any> = {
+      team_changed_at: new Date().toISOString(),
+      notice_seen_at: null,
+    };
+    for (const ws of WORKSTREAM_DEFS) patch[ws.col] = flags[ws.key] === true;
+    const { error } = await supabase
+      .from('lead_team_members')
+      .update(patch as any)
+      .eq('id', member.id);
+    if (error) throw error;
+
+    // Keep sidebar tab access in step with the lead types.
+    const { data: adminRow } = await supabase
+      .from('admin_users')
+      .select('permissions')
+      .eq('id', adminUserId)
+      .maybeSingle();
+    const perms: Record<string, boolean> = { ...((adminRow?.permissions as any) || currentPermissions || {}) };
+    let changed = false;
+    for (const ws of WORKSTREAM_DEFS) {
+      const key = `tab_${ws.tabId}`;
+      const next = flags[ws.key] === true;
+      if (perms[key] !== next) {
+        perms[key] = next;
+        changed = true;
+      }
+    }
+    if (changed) {
+      await supabase.from('admin_users').update({ permissions: perms } as any).eq('id', adminUserId);
+    }
+  };
+
+
 
   const fetchCurrentAdmin = async () => {
     if (!user?.id) return;
@@ -794,6 +864,7 @@ export const UserPermissionsTab = () => {
             .maybeSingle();
           if (newAdmin?.id) {
             await assignAgentToTeam(newAdmin.id, teamId);
+            await saveAgentWorkstreams(newAdmin.id, inviteWorkstreams, inviteData.permissions);
           }
         } catch (teamErr) {
           console.warn('Could not assign team:', teamErr);
@@ -812,6 +883,7 @@ export const UserPermissionsTab = () => {
         permissions: {},
         teamId: null,
       });
+      setInviteWorkstreams({ ...EMPTY_WORKSTREAMS });
 
       fetchUsers();
     } catch (error) {
@@ -862,6 +934,7 @@ export const UserPermissionsTab = () => {
       // Persist team change
       try {
         await assignAgentToTeam(editingUser.id, editingTeamId === '__all__' ? null : editingTeamId);
+        await saveAgentWorkstreams(editingUser.id, editingWorkstreams, editingUser.permissions);
       } catch (teamErr) {
         console.warn('Team assignment failed:', teamErr);
         toast.error('Permissions saved, but team assignment failed.');
@@ -870,6 +943,7 @@ export const UserPermissionsTab = () => {
       setShowEditDialog(false);
       setEditingUser(null);
       setEditingTeamId(null);
+      setEditingWorkstreams({ ...EMPTY_WORKSTREAMS });
       fetchUsers();
     } catch (error) {
       console.error('Error updating permissions:', error);
@@ -1011,13 +1085,20 @@ export const UserPermissionsTab = () => {
     setEditingUser({ ...user, permissions: user.permissions || {} });
     setShowEditDialog(true);
     setEditingTeamId(null);
+    setEditingWorkstreams({ ...EMPTY_WORKSTREAMS });
     const { data } = await supabase
       .from('lead_team_members')
-      .select('team_id')
+      .select('team_id, workstream_new_leads, workstream_recontact, workstream_renewals')
       .eq('admin_user_id', user.id)
       .maybeSingle();
     setEditingTeamId(data?.team_id ?? null);
+    setEditingWorkstreams({
+      new_leads: (data as any)?.workstream_new_leads === true,
+      recontact: (data as any)?.workstream_recontact === true,
+      renewals: (data as any)?.workstream_renewals === true,
+    });
   };
+
 
   const generatePasswordValue = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
@@ -1666,6 +1747,34 @@ export const UserPermissionsTab = () => {
                 </p>
               </div>
 
+              <div>
+                <Label>Lead types they work</Label>
+                <div className="mt-2 space-y-2 rounded-md border p-3">
+                  {WORKSTREAM_DEFS.map(ws => (
+                    <div key={ws.key} className="flex items-start gap-2">
+                      <Checkbox
+                        id={`invite-ws-${ws.key}`}
+                        checked={inviteWorkstreams[ws.key]}
+                        disabled={!inviteData.teamId || inviteData.teamId === '__all__'}
+                        onCheckedChange={(checked) =>
+                          setInviteWorkstreams(prev => ({ ...prev, [ws.key]: checked === true }))
+                        }
+                      />
+                      <Label htmlFor={`invite-ws-${ws.key}`} className="text-sm font-normal leading-tight cursor-pointer">
+                        {ws.label}
+                        <span className="block text-xs text-muted-foreground">{ws.hint}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {(!inviteData.teamId || inviteData.teamId === '__all__')
+                    ? 'Pick a single team above first — lead types belong to a team.'
+                    : 'Leave all unticked and they start with no leads. Tick only Recontact Leads for a recontact-only agent.'}
+                </p>
+              </div>
+
+
 
               {/* Show tab permissions for all non-admin roles */}
               {!['super_admin', 'admin', 'dev_tester'].includes(inviteData.role) && (
@@ -2046,6 +2155,35 @@ export const UserPermissionsTab = () => {
                   Changes apply immediately on save and move the agent into the chosen team's lead queue.
                 </p>
               </div>
+
+              <div>
+                <Label>Lead types they work</Label>
+                <div className="mt-2 space-y-2 rounded-md border p-3">
+                  {WORKSTREAM_DEFS.map(ws => (
+                    <div key={ws.key} className="flex items-start gap-2">
+                      <Checkbox
+                        id={`edit-ws-${ws.key}`}
+                        checked={editingWorkstreams[ws.key]}
+                        disabled={!editingTeamId || editingTeamId === '__all__'}
+                        onCheckedChange={(checked) =>
+                          setEditingWorkstreams(prev => ({ ...prev, [ws.key]: checked === true }))
+                        }
+                      />
+                      <Label htmlFor={`edit-ws-${ws.key}`} className="text-sm font-normal leading-tight cursor-pointer">
+                        {ws.label}
+                        <span className="block text-xs text-muted-foreground">{ws.hint}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {(!editingTeamId || editingTeamId === '__all__')
+                    ? 'Pick a single team above first — lead types belong to a team.'
+                    : 'Leave all unticked and they get no leads. Tick only Recontact Leads for an agent who should work older leads only. Same setting as the Lead Allocation page.'}
+                </p>
+              </div>
+
+
 
               <div>
                 <Label htmlFor="editSipExt">Dial 9 / SIP Extension</Label>

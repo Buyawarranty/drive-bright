@@ -111,7 +111,7 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool, headless = false
 
   // ---- Pool count ---------------------------------------------------------
   const loadPoolCount = useCallback(async () => {
-    const { count } = await withBackgroundPriority(() => (supabase as any)
+    const { count } = await withBackgroundPriority<any>(async () => await (supabase as any)
       .from('sales_leads')
       .select('id', { count: 'exact', head: true })
       .eq('queue', 'live_open_pool')
@@ -164,7 +164,7 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool, headless = false
     setSweeping(true);
     try {
       // Load active, unpaused round-robin / open-pool agents + their caps.
-      const { data: caps } = await withBackgroundPriority(() => (supabase as any)
+      const { data: caps } = await withBackgroundPriority<any>(async () => await (supabase as any)
         .from('agent_distribution_caps')
         .select('admin_user_id, paused, assignment_mode, daily_cap')
         .eq('paused', false)
@@ -179,7 +179,7 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool, headless = false
         return new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate())).toISOString();
       })();
       const ids = agentCaps.map(c => c.admin_user_id);
-      const { data: todays } = await withBackgroundPriority(() => (supabase as any)
+      const { data: todays } = await withBackgroundPriority<any>(async () => await (supabase as any)
         .from('sales_leads')
         .select('assigned_to')
         .not('assigned_to', 'is', null)
