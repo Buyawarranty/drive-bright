@@ -8,7 +8,6 @@ import { OrrGoLiveSwitch } from './OrrGoLiveSwitch';
 import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
 import { ImportLeadToAgentPanel } from './ImportLeadToAgentPanel';
-import { OrrOvernightSandboxPanel } from './OrrOvernightSandboxPanel';
 import { useOrrLiveSettings } from '@/hooks/useOrrLiveSettings';
 
 
@@ -233,9 +232,6 @@ export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean 
                 <li>Clear the practice run whenever you like.</li>
               </ul>
             </div>
-            <WidgetErrorBoundary label="Sandbox — overnight Open Round Robin practice">
-              <OrrOvernightSandboxPanel />
-            </WidgetErrorBoundary>
             <WidgetErrorBoundary label="Sandbox — testing only">
               <OpenRoundRobinTestPanel />
             </WidgetErrorBoundary>

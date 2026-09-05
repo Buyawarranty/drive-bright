@@ -1,5 +1,4 @@
 import React from 'react';
-import { OrrSandboxPassPanel } from '@/components/admin/leads/OrrSandboxPassPanel';
 import { OrrSection } from '@/components/admin/leads/OrrSection';
 import { LiveStuckCustomersPanel } from '@/components/admin/leads/LiveStuckCustomersPanel';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
@@ -22,10 +21,6 @@ export const OrrSandboxTabView: React.FC<{
 
       <WidgetErrorBoundary label="Live customers stuck on checkout">
         <LiveStuckCustomersPanel />
-      </WidgetErrorBoundary>
-
-      <WidgetErrorBoundary label="Open Round Robin practice pass">
-        <OrrSandboxPassPanel />
       </WidgetErrorBoundary>
     </div>
   );
