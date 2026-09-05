@@ -179,9 +179,16 @@ const DUMMY_AGENTS: DummyAgent[] = [
   { id: 'dummy-freddie', name: 'Freddie', extension: '202', order: 2 },
   { id: 'dummy-thomas', name: 'Thomas', extension: '203', order: 3 },
   { id: 'dummy-greg', name: 'Greg sales@', extension: '205', order: 4 },
+  { id: 'dummy-aisha', name: 'Aisha', extension: '206', order: 5 },
+  { id: 'dummy-liam', name: 'Liam', extension: '207', order: 6 },
+  { id: 'dummy-chloe', name: 'Chloe', extension: '208', order: 7 },
+  { id: 'dummy-mo', name: 'Mo', extension: '209', order: 8 },
 ];
 
+const AGENT_COUNT_OPTIONS = [1, 2, 3, 4, 6, 8];
+
 const getAgent = (agentId: string | null) => DUMMY_AGENTS.find((agent) => agent.id === agentId) ?? DUMMY_AGENTS[0];
+
 
 
 const formatClock = (seconds: number) => {
@@ -806,10 +813,263 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
     });
   }, [liveLeads, toast]);
 
+  /**
+   * PHASE 1 — scenario walkthrough.
+   * Each scenario drops a ready-made practice list into the table below so a
+   * manager can watch one exact situation an agent meets during a shift.
+   * Nothing is written anywhere: these are made-up leads in local state only.
+   */
+  const buildLead = useCallback(
+    (over: Partial<DummyLead> & { n: number }): DummyLead => {
+      const now = Date.now();
+      const { n, ...rest } = over;
+      return {
+        id: `dummy-scenario-${now}-${n}-${Math.random().toString(36).slice(2, 7)}`,
+        firstName: 'TEST',
+        lastName: `Lead ${String(n).padStart(2, '0')}`,
+        email: `test.lead${n}@example.com`,
+        status: 'queued',
+        displayStatus: 'new',
+        assignedTo: null,
+        attemptCount: 0,
+        deadlineAt: now,
+        vehicleReg: 'TEST123',
+        phone: '07902222222',
+        createdAt: now,
+        dials: 0,
+        contactedAt: null,
+        dayDials: 0,
+        nextCallAt: null,
+        redTeamAt: null,
+        followUpDay: 0,
+        chaseComplete: false,
+        history: ['Scenario walkthrough — made-up lead, nothing saved'],
+        ...rest,
+      };
+    },
+    [],
+  );
+
+  const [activeScenario, setActiveScenario] = useState<string | null>(null);
+
+  const scenarios = useMemo(
+    () => [
+      {
+        id: 'busy-day',
+        title: 'Busy morning — everyone gets one at a time',
+        what: 'Eight agents on shift, eight enquiries land together.',
+        watch: 'Each lead sits with a different agent, nobody holds two.',
+        agents: 8,
+        build: (r: DummyAgent[], now: number) =>
+          r.map((agent, i) =>
+            buildLead({
+              n: i + 1,
+              status: 'new',
+              assignedTo: agent.id,
+              attemptCount: 1,
+              createdAt: now - i * 4000,
+              deadlineAt: now + cadence.claimWindowSeconds * 1000 - i * 4000,
+            }),
+          ),
+      },
+      {
+        id: 'window-expires',
+        title: 'Nobody calls in time — the lead moves on',
+        what: 'One lead is held with only seconds left on the first-call window.',
+        watch: 'When the clock hits zero the rotation passes it to the next free agent.',
+        agents: 4,
+        build: (r: DummyAgent[], now: number) => [
+          buildLead({
+            n: 1,
+            status: 'new',
+            assignedTo: r[0].id,
+            attemptCount: 1,
+            createdAt: now - 60000,
+            deadlineAt: now + 8000,
+          }),
+        ],
+      },
+      {
+        id: 'dial-logged',
+        title: 'Agent dials in time — the lead stays with them',
+        what: 'A dial has been logged, so the countdown stops.',
+        watch: 'It reads "Still yours" and is never offered to anyone else.',
+        agents: 4,
+        build: (r: DummyAgent[], now: number) => [
+          buildLead({
+            n: 1,
+            status: 'new',
+            assignedTo: r[0].id,
+            attemptCount: 1,
+            dials: 1,
+            dayDials: 1,
+            createdAt: now - 90000,
+            deadlineAt: now - 1000,
+          }),
+        ],
+      },
+      {
+        id: 'contacted',
+        title: 'Customer answers — the lead is won to that agent',
+        what: 'Contact made inside the window.',
+        watch: 'The row turns green: "This lead is now yours".',
+        agents: 4,
+        build: (r: DummyAgent[], now: number) => [
+          buildLead({
+            n: 1,
+            status: 'new',
+            assignedTo: r[0].id,
+            attemptCount: 1,
+            dials: 1,
+            dayDials: 1,
+            contactedAt: now - 5000,
+            createdAt: now - 120000,
+            deadlineAt: now - 60000,
+          }),
+        ],
+      },
+      {
+        id: 'all-busy',
+        title: 'Everyone on a call — the queue holds the rest',
+        what: 'Two agents on shift, both holding a lead, four more arrive.',
+        watch: 'The extras wait in the open pool, oldest first, and drop in as agents free up.',
+        agents: 2,
+        build: (r: DummyAgent[], now: number) => [
+          ...r.map((agent, i) =>
+            buildLead({
+              n: i + 1,
+              status: 'new',
+              assignedTo: agent.id,
+              attemptCount: 1,
+              dials: 1,
+              dayDials: 1,
+              createdAt: now - 300000 - i * 1000,
+              deadlineAt: now - 1000,
+            }),
+          ),
+          ...[1, 2, 3, 4].map((k) =>
+            buildLead({ n: r.length + k, createdAt: now - (5 - k) * 30000 }),
+          ),
+        ],
+      },
+      {
+        id: 'overnight',
+        title: 'Overnight backlog at 09:00',
+        what: 'Twelve enquiries came in overnight, eight agents start at 09:00.',
+        watch: 'Oldest first: eight go straight out, four wait their turn.',
+        agents: 8,
+        build: (_r: DummyAgent[], now: number) =>
+          Array.from({ length: 12 }, (_, i) =>
+            buildLead({ n: i + 1, createdAt: now - (12 - i) * 45 * 60 * 1000 }),
+          ),
+      },
+      {
+        id: 'unanswered',
+        title: 'Passed round and still nobody calls',
+        what: `A lead already offered ${cadence.maxAttempts} times with no dial.`,
+        watch: 'It stops circulating and drops out of the live list as no-contact.',
+        agents: 4,
+        build: (r: DummyAgent[], now: number) => [
+          buildLead({
+            n: 1,
+            status: 'reassigned',
+            assignedTo: r[0].id,
+            attemptCount: cadence.maxAttempts,
+            createdAt: now - 20 * 60 * 1000,
+            deadlineAt: now + 6000,
+          }),
+        ],
+      },
+      {
+        id: 'no-answer-cadence',
+        title: 'Customer does not pick up — day-one call pattern',
+        what: 'Dials logged today, next call booked for the next calling window.',
+        watch: 'The row shows which dial of the day it is and when the next one is due.',
+        agents: 4,
+        build: (r: DummyAgent[], now: number) => [
+          buildLead({
+            n: 1,
+            status: 'new',
+            assignedTo: r[0].id,
+            attemptCount: 1,
+            dials: 2,
+            dayDials: 2,
+            nextCallAt: now + 45 * 60 * 1000,
+            createdAt: now - 3 * 60 * 60 * 1000,
+            deadlineAt: now - 60000,
+          }),
+        ],
+      },
+      {
+        id: 'follow-up',
+        title: 'Seven-day follow-up chase',
+        what: 'Still no contact after day one, so the lead is chased daily.',
+        watch: 'The purple note shows the follow-up day and dials used today.',
+        agents: 4,
+        build: (r: DummyAgent[], now: number) => [
+          buildLead({
+            n: 1,
+            status: 'new',
+            assignedTo: r[1].id,
+            attemptCount: 1,
+            dials: 5,
+            dayDials: 1,
+            followUpDay: 3,
+            nextCallAt: now + 2 * 60 * 60 * 1000,
+            createdAt: now - 3 * 24 * 60 * 60 * 1000,
+            deadlineAt: now - 60000,
+          }),
+        ],
+      },
+      {
+        id: 'chase-done',
+        title: 'Chase finished with no contact',
+        what: 'All seven days used, customer never answered.',
+        watch: 'The lead is closed off for the chase and shown as finished.',
+        agents: 4,
+        build: (r: DummyAgent[], now: number) => [
+          buildLead({
+            n: 1,
+            status: 'new',
+            assignedTo: r[2].id,
+            attemptCount: 1,
+            dials: 12,
+            followUpDay: cadence.followUpDays,
+            chaseComplete: true,
+            createdAt: now - 8 * 24 * 60 * 60 * 1000,
+            deadlineAt: now - 60000,
+          }),
+        ],
+      },
+    ],
+    [buildLead, cadence],
+  );
+
+  const runScenario = useCallback(
+    (id: string) => {
+      const scenario = scenarios.find((s) => s.id === id);
+      if (!scenario) return;
+      const now = Date.now();
+      const nextRoster = DUMMY_AGENTS.slice(0, scenario.agents);
+      setAgentCount(scenario.agents);
+      rosterRef.current = nextRoster;
+      nextAgentIndexRef.current = 0;
+      setSimulatedAgentId('all');
+      setDataSource('practice');
+      setLeads(scenario.build(nextRoster, now));
+      setActiveScenario(id);
+      toast({ title: scenario.title, description: scenario.watch });
+    },
+    [scenarios, toast],
+  );
+
+
   const cleanup = () => {
     setLeads([]);
     nextAgentIndexRef.current = 0;
+    setActiveScenario(null);
     setOvernightParked(12);
+
     setMorningReleasedAt(null);
     toast({ title: 'Practice leads cleared', description: 'The practice page has been reset.' });
 
@@ -860,7 +1120,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm font-semibold text-foreground">Agents on shift</span>
             <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
-              {[1, 2, 3, 4].map((count) => (
+              {AGENT_COUNT_OPTIONS.map((count) => (
                 <button
                   key={count}
                   type="button"
@@ -884,6 +1144,52 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <li>Changing this clears the practice list so the rotation starts clean.</li>
           </ul>
         </div>
+
+        {/* PHASE 1 — every situation an agent meets, one click each */}
+        <div className="mt-4 rounded-lg border border-border bg-muted/20 p-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold text-foreground">Scenario walkthrough</span>
+            <span className="rounded-full bg-teal-100 text-teal-800 border border-teal-200 text-[11px] font-medium px-2.5 py-0.5">
+              Phase 1
+            </span>
+            {activeScenario && (
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={cleanup}>
+                <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Clear scenario
+              </Button>
+            )}
+          </div>
+          <ul className="mt-1 mb-3 text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
+            <li>Press a scenario — it sets the agents on shift and fills the list below.</li>
+            <li>Watch the list and the countdowns to see exactly what the agent sees.</li>
+            <li>Nothing is saved, nobody is called and no figures move.</li>
+          </ul>
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            {scenarios.map((scenario) => (
+              <button
+                key={scenario.id}
+                type="button"
+                onClick={() => runScenario(scenario.id)}
+                className={cn(
+                  'text-left rounded-lg border p-3 transition-colors',
+                  activeScenario === scenario.id
+                    ? 'border-teal-400 bg-teal-50/70'
+                    : 'border-border bg-background hover:bg-muted/50',
+                )}
+              >
+                <div className="text-xs font-semibold text-foreground">{scenario.title}</div>
+                <ul className="mt-1 text-[11px] text-muted-foreground list-disc pl-4 space-y-0.5">
+                  <li>{scenario.what}</li>
+                  <li>{scenario.watch}</li>
+                </ul>
+                <div className="mt-1.5 text-[10px] font-medium text-teal-700">
+                  {scenario.agents} {scenario.agents === 1 ? 'agent' : 'agents'} on shift
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+
 
 
         <div className="mt-5 pt-4 border-t border-border rounded-lg border border-amber-200 bg-amber-50/60 p-3">
