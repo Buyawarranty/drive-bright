@@ -867,7 +867,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm font-semibold text-foreground">Agents on shift</span>
             <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
-              {[1, 2, 3, 4].map((count) => (
+              {AGENT_COUNT_OPTIONS.map((count) => (
                 <button
                   key={count}
                   type="button"
