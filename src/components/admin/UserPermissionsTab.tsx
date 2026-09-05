@@ -1085,13 +1085,20 @@ export const UserPermissionsTab = () => {
     setEditingUser({ ...user, permissions: user.permissions || {} });
     setShowEditDialog(true);
     setEditingTeamId(null);
+    setEditingWorkstreams({ ...EMPTY_WORKSTREAMS });
     const { data } = await supabase
       .from('lead_team_members')
-      .select('team_id')
+      .select('team_id, workstream_new_leads, workstream_recontact, workstream_renewals')
       .eq('admin_user_id', user.id)
       .maybeSingle();
     setEditingTeamId(data?.team_id ?? null);
+    setEditingWorkstreams({
+      new_leads: (data as any)?.workstream_new_leads === true,
+      recontact: (data as any)?.workstream_recontact === true,
+      renewals: (data as any)?.workstream_renewals === true,
+    });
   };
+
 
   const generatePasswordValue = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
