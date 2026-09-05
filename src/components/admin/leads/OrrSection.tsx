@@ -24,7 +24,7 @@ import { useOrrLiveSettings } from '@/hooks/useOrrLiveSettings';
  * This component adds a section; it changes no existing Lead Allocation
  * behaviour, queries or settings beyond the ORR go-live switch it already owned.
  */
-export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }) => {
+export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean }> = ({ isManagement, sandboxTab = false }) => {
   // Live settings, shared with the Lead Allocation page and kept in step by
   // realtime — a change there shows here (and in the sandbox) without a reload.
   const { orrLive: liveOrrLive, enabledTeamIds, teamNamesById, refresh } = useOrrLiveSettings(isManagement);
