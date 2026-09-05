@@ -281,25 +281,32 @@ const isHeldLive = (lead: DummyLead, now: number) =>
  * One-at-a-time ORR engine: an agent may only ever hold ONE dummy lead.
  * Expired leads roll to the next free agent; if everyone is busy the lead waits in the queue.
  */
-const advance = (input: DummyLead[], startIndex: number, now: number, cfg: OrrCadenceConfig) => {
+const advance = (
+  input: DummyLead[],
+  startIndex: number,
+  now: number,
+  cfg: OrrCadenceConfig,
+  roster: DummyAgent[] = DUMMY_AGENTS,
+) => {
   const leads = input.map((lead) => ({ ...lead }));
-  let index = startIndex;
+  let index = roster.length ? startIndex % roster.length : 0;
   let reassigned = 0;
   let dormant = 0;
 
   const busy = new Set(leads.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string));
 
   const takeFreeAgent = (): DummyAgent | null => {
-    for (let step = 0; step < DUMMY_AGENTS.length; step += 1) {
-      const candidate = DUMMY_AGENTS[(index + step) % DUMMY_AGENTS.length];
+    for (let step = 0; step < roster.length; step += 1) {
+      const candidate = roster[(index + step) % roster.length];
       if (!busy.has(candidate.id)) {
-        index = (index + step + 1) % DUMMY_AGENTS.length;
+        index = (index + step + 1) % roster.length;
         busy.add(candidate.id);
         return candidate;
       }
     }
     return null;
   };
+
 
   // Oldest first, so waiting leads are handled before newly expired ones.
   const pending = leads
