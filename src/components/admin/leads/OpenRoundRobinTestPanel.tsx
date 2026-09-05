@@ -896,9 +896,11 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <div>
               <h4 className="text-base font-semibold text-foreground">Practice New Leads — {theme.label}</h4>
 
-              <p className="text-xs text-muted-foreground">
-                Assigned automatically in a fair rotation and reserved for one agent at a time.
-              </p>
+              <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
+                <li>Leads are assigned automatically in a fair rotation.</li>
+                <li>Only one lead is reserved for an agent at a time.</li>
+                <li>If the agent does not start a call in time, the lead passes to the next agent.</li>
+              </ul>
             </div>
           </div>
           <div className="flex items-center gap-5 text-[11px] font-medium text-muted-foreground">
