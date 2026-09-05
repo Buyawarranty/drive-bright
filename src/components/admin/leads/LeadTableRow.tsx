@@ -657,13 +657,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </TableCell>
       )}
 
-      {/* Time to contact — lead arrival → agent's first action (target 120s) */}
-      {!isLeadGenView && (
-      <TableCell>
-        <TimeToContactCell response={responseTime} />
-      </TableCell>
-      )}
-
       {/* Selection Checkbox */}
       {!isLeadGenView && (
       <TableCell onClick={(e) => e.stopPropagation()}>
@@ -840,6 +833,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             </SelectContent>
           </Select>
       </TableCell>}
+
+      {/* Time to contact — lead arrival → agent's first action (target 120s) — sandbox only */}
+      {sandboxMode && !isLeadGenView && (
+      <TableCell>
+        <TimeToContactCell response={responseTime} />
+      </TableCell>
+      )}
 
       {/* Source indicator — labelled chip (Google / Meta / Bing / TikTok / Organic) — admin/super_admin only */}
       {showSourceColumn && (
@@ -1486,6 +1486,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {!isLeadGenView && (
       <TableCell>
         <CustomerActivityCell activity={customerActivity} />
+      </TableCell>
+      )}
+
+      {/* Time to contact — lead arrival → agent's first action (target 120s) */}
+      {!isLeadGenView && !sandboxMode && (
+      <TableCell>
+        <TimeToContactCell response={responseTime} />
       </TableCell>
       )}
 
