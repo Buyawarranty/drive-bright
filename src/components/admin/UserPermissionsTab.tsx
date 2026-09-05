@@ -934,6 +934,7 @@ export const UserPermissionsTab = () => {
       // Persist team change
       try {
         await assignAgentToTeam(editingUser.id, editingTeamId === '__all__' ? null : editingTeamId);
+        await saveAgentWorkstreams(editingUser.id, editingWorkstreams, editingUser.permissions);
       } catch (teamErr) {
         console.warn('Team assignment failed:', teamErr);
         toast.error('Permissions saved, but team assignment failed.');
@@ -942,6 +943,7 @@ export const UserPermissionsTab = () => {
       setShowEditDialog(false);
       setEditingUser(null);
       setEditingTeamId(null);
+      setEditingWorkstreams({ ...EMPTY_WORKSTREAMS });
       fetchUsers();
     } catch (error) {
       console.error('Error updating permissions:', error);
