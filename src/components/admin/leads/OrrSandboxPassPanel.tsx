@@ -23,6 +23,12 @@ export const OrrSandboxPassPanel: React.FC = () => {
     [candidates],
   );
 
+  const responseInputs = React.useMemo(
+    () => leads.map(l => ({ id: l.id, created_at: l.createdAt.toISOString() })),
+    [leads],
+  );
+  const { responseByLead } = useLeadResponseTime(responseInputs);
+
   const run = async () => {
     const ids = leads.map(l => l.id);
     const { assigned } = await simulate(ids);
