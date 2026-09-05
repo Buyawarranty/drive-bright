@@ -462,10 +462,13 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
       leads.filter(
         (lead) =>
           lead.status !== 'dormant' &&
-          (simulatedAgentId === 'all' ? lead.assignedTo !== null : lead.assignedTo === simulatedAgentId),
+          (simulatedAgentId === 'all'
+            ? lead.assignedTo !== null || lead.status === 'queued'
+            : lead.assignedTo === simulatedAgentId),
       ),
     [leads, simulatedAgentId],
   );
+
 
   const queuedLeads = useMemo(() => leads.filter((lead) => lead.status === 'queued'), [leads]);
 
