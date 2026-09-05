@@ -90,6 +90,8 @@ interface LeadsTableProps {
   readOnlyLeadIds?: Set<string>;
   /** Default column to sort by on first render. Defaults to no explicit sort. */
   defaultSortKey?: ColumnSortKey;
+  /** Open Round Robin Sandbox: show Time to contact between Agent and Status. */
+  sandboxMode?: boolean;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -133,6 +135,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   currentAdminId = null,
   readOnlyLeadIds,
   defaultSortKey = null,
+  sandboxMode = false,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 

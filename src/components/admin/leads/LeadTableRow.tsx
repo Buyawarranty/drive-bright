@@ -116,6 +116,8 @@ interface LeadTableRowProps {
   responseTime?: import('@/hooks/useLeadResponseTime').LeadResponseTime;
   /** Set when this lead matches an existing customer (previous purchase). */
   repeatCustomer?: import('@/hooks/useRepeatCustomers').RepeatCustomerInfo;
+  /** Open Round Robin Sandbox: show Time to contact between Agent and Status. */
+  sandboxMode?: boolean;
 }
 
 const statusColors: Record<LeadStatus, string> = {
