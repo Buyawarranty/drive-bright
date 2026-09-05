@@ -490,10 +490,12 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
       const busy = new Set(current.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string));
 
       let offeredTo: DummyAgent | null = null;
-      for (let step = 0; step < DUMMY_AGENTS.length; step += 1) {
-        const candidate = DUMMY_AGENTS[(nextAgentIndexRef.current + step) % DUMMY_AGENTS.length];
+      const activeRoster = rosterRef.current;
+      for (let step = 0; step < activeRoster.length; step += 1) {
+        const candidate = activeRoster[(nextAgentIndexRef.current + step) % activeRoster.length];
         if (!busy.has(candidate.id)) {
-          nextAgentIndexRef.current = (nextAgentIndexRef.current + step + 1) % DUMMY_AGENTS.length;
+          nextAgentIndexRef.current = (nextAgentIndexRef.current + step + 1) % activeRoster.length;
+
           offeredTo = candidate;
           break;
         }
