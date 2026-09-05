@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronDown, FlaskConical, Rocket, TriangleAlert } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 import { OrrTeamSelectionPanel } from './OrrTeamSelectionPanel';
 import { OrrGoLiveSwitch } from './OrrGoLiveSwitch';
