@@ -593,19 +593,21 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
           <Sunrise className="h-4 w-4" />
           Morning lead distribution — 09:00 release (practice)
         </h4>
-        <p className="text-[11px] text-amber-900/90">
-          Leads that arrived after 6pm or overnight are parked until 09:00 on the next working day, then
-          released one each in rotation to the switched-on agents. Press the button to rehearse that 9am
-          release now.
-        </p>
-        <p className="text-[11px] text-amber-900/90 border-l-2 border-amber-400 pl-2">
-          <strong>Late start (e.g. 10am instead of 9am):</strong> the 09:00 overnight batch is shared only
-          between agents switched on at 09:00 — a late starter gets <strong>none of that batch, ever</strong>.
-          The leads were the pool's, never theirs, so nothing is owed. From the moment they switch on they
-          rejoin the <strong>back of the rotation</strong> and take normal turns from leads still waiting plus
-          new ones arriving — no catch-up, nobody's allocation is redone. To rehearse it: run the release with
-          an agent switched off, then switch them on and watch the next leads go to them in turn.
-        </p>
+        <ul className="text-[11px] text-amber-900/90 list-disc pl-4 space-y-0.5">
+          <li>Leads that arrive after 6pm or overnight are parked until 09:00 the next working day.</li>
+          <li>At 09:00 they are released one each, in rotation, to agents who are switched on.</li>
+          <li>Press Run the 09:00 morning release to rehearse it now.</li>
+        </ul>
+        <div className="text-[11px] text-amber-900/90 border-l-2 border-amber-400 pl-2 space-y-0.5">
+          <p className="font-semibold">Late start rule</p>
+          <ul className="list-disc pl-4 space-y-0.5">
+            <li>The 09:00 batch is only shared between agents switched on at 09:00.</li>
+            <li>A late starter gets none of that batch — the leads belonged to the pool, not to them.</li>
+            <li>From the moment they switch on they rejoin the back of the rotation.</li>
+            <li>No catch-up is given and nobody's allocation is redone.</li>
+            <li>To rehearse: run the release with an agent off, then switch them on and watch later leads go to them in turn.</li>
+          </ul>
+        </div>
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-[11px] font-semibold text-amber-900 bg-amber-200/70 border border-amber-400/60 rounded px-2 py-1">
             {waiting.length} parked overnight
