@@ -24,6 +24,24 @@ import { AdminAccessLogPanel } from './AdminAccessLogPanel';
 import { useAuth } from '@/hooks/useAuth';
 import { defaultTabs as SIDEBAR_TABS } from './AdminSidebar';
 
+/**
+ * Lead types (workstreams) an agent can be switched on for. These mirror the
+ * Lead Allocation matrix exactly — same columns on lead_team_members and the
+ * same sidebar tab that gets granted/revoked with them.
+ */
+type WorkstreamKey = 'new_leads' | 'recontact' | 'renewals';
+
+const WORKSTREAM_DEFS: { key: WorkstreamKey; col: string; label: string; tabId: string; hint: string }[] = [
+  { key: 'new_leads', col: 'workstream_new_leads', label: 'New Leads', tabId: 'new-leads', hint: 'Brand-new website leads in rotation' },
+  { key: 'recontact', col: 'workstream_recontact', label: 'Recontact Leads', tabId: 'recontact-leads', hint: 'Older leads being worked again' },
+  { key: 'renewals', col: 'workstream_renewals', label: 'Renewals', tabId: 'renewals', hint: 'Customers coming up for renewal' },
+];
+
+type AgentWorkstreamFlags = Record<WorkstreamKey, boolean>;
+
+const EMPTY_WORKSTREAMS: AgentWorkstreamFlags = { new_leads: false, recontact: false, renewals: false };
+
+
 interface AdminUser {
   id: string;
   user_id: string | null;
