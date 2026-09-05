@@ -397,13 +397,11 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
                   {autoOn ? 'On' : 'Off'}
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
-                A safe place to rehearse the overnight batch: leads that arrived from 6pm yesterday wait in the Open
-                Pool and are released one each, in arrow order, to switched-on Open Round Robin agents.
-                {dataSource === 'live'
-                  ? ' These are the real leads we received overnight, shown as a read-only copy — Open Round Robin is still off, nothing is written back, no customer is contacted and no agent\'s figures change.'
-                  : ' Every name here is made up — no customer is contacted and no agent\'s figures change.'}
-              </p>
+              <ul className="text-sm text-muted-foreground list-disc pl-4 space-y-1 leading-relaxed max-w-2xl">
+                <li>Rehearse the overnight batch safely — leads that arrived from 6pm yesterday wait in the Open Pool.</li>
+                <li>At 09:00 they are released one each, in rotation order, to switched-on Open Round Robin agents.</li>
+                <li>{dataSource === 'live' ? 'These are real overnight leads shown as a read-only copy.' : 'Every name here is made up.'} Nothing is written back and no figures change.</li>
+              </ul>
               <p className="text-xs text-muted-foreground">
                 Next agent in line: <strong className="text-foreground">{nextAgent ? nextAgent.name.split(' ')[0] : '—'}</strong>
                 {lastRun ? ` · last checked ${fmtTime(lastRun)}` : ''} · Round Robin agents are untouched · live
