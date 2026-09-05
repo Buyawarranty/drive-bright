@@ -448,7 +448,8 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           (lead) => lead.status !== 'dormant' && (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)),
         );
         if (!needsWork) return current;
-        const result = advance(current, nextAgentIndexRef.current, now, cadenceRef.current);
+        const result = advance(current, nextAgentIndexRef.current, now, cadenceRef.current, rosterRef.current);
+
         nextAgentIndexRef.current = result.index;
         return result.leads;
       });
