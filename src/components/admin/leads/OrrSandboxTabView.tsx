@@ -48,6 +48,10 @@ export const OrrSandboxTabView: React.FC<{
         </div>
       </div>
 
+      <WidgetErrorBoundary label="Live customers stuck on checkout">
+        <LiveStuckCustomersPanel />
+      </WidgetErrorBoundary>
+
       <WidgetErrorBoundary label="Open Round Robin">
         <OrrSection isManagement />
       </WidgetErrorBoundary>
