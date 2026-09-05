@@ -558,7 +558,8 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
     const now = Date.now();
 
     setLeads((current) => {
-      let index = nextAgentIndexRef.current;
+      const activeRoster = rosterRef.current;
+      let index = activeRoster.length ? nextAgentIndexRef.current % activeRoster.length : 0;
       const busy = new Set(
         current.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string),
       );
@@ -566,15 +567,16 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
       for (let i = 0; i < count; i += 1) {
         let offeredTo: DummyAgent | null = null;
-        for (let step = 0; step < DUMMY_AGENTS.length; step += 1) {
-          const candidate = DUMMY_AGENTS[(index + step) % DUMMY_AGENTS.length];
+        for (let step = 0; step < activeRoster.length; step += 1) {
+          const candidate = activeRoster[(index + step) % activeRoster.length];
           if (!busy.has(candidate.id)) {
-            index = (index + step + 1) % DUMMY_AGENTS.length;
+            index = (index + step + 1) % activeRoster.length;
             busy.add(candidate.id);
             offeredTo = candidate;
             break;
           }
         }
+
 
         const leadNumber = current.length + i + 1;
         drafts.push({
