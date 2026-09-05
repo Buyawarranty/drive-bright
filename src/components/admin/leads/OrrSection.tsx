@@ -117,7 +117,7 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
         </div>
         <OrrTeamSelectionPanel
           selectedTeamIds={selectedTeamIds}
-          onChange={setSelectedTeamIds}
+          onChange={setTeamSelectionOverride}
           disabled={orrLive === true}
         />
         <OrrGoLiveSwitch
