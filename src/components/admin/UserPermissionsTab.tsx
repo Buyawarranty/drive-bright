@@ -682,6 +682,56 @@ export const UserPermissionsTab = () => {
     }
   };
 
+  /**
+   * Switches the agent's lead types on/off on their team row and mirrors each
+   * one to the matching sidebar tab, exactly like the Lead Allocation matrix.
+   * Requires a team — no team row means nothing to switch on.
+   */
+  const saveAgentWorkstreams = async (
+    adminUserId: string,
+    flags: AgentWorkstreamFlags,
+    currentPermissions: Record<string, boolean> | null | undefined,
+  ) => {
+    const { data: member } = await supabase
+      .from('lead_team_members')
+      .select('id')
+      .eq('admin_user_id', adminUserId)
+      .maybeSingle();
+    if (!member?.id) return;
+
+    const patch: Record<string, any> = {
+      team_changed_at: new Date().toISOString(),
+      notice_seen_at: null,
+    };
+    for (const ws of WORKSTREAM_DEFS) patch[ws.col] = flags[ws.key] === true;
+    const { error } = await supabase
+      .from('lead_team_members')
+      .update(patch as any)
+      .eq('id', member.id);
+    if (error) throw error;
+
+    // Keep sidebar tab access in step with the lead types.
+    const { data: adminRow } = await supabase
+      .from('admin_users')
+      .select('permissions')
+      .eq('id', adminUserId)
+      .maybeSingle();
+    const perms: Record<string, boolean> = { ...((adminRow?.permissions as any) || currentPermissions || {}) };
+    let changed = false;
+    for (const ws of WORKSTREAM_DEFS) {
+      const key = `tab_${ws.tabId}`;
+      const next = flags[ws.key] === true;
+      if (perms[key] !== next) {
+        perms[key] = next;
+        changed = true;
+      }
+    }
+    if (changed) {
+      await supabase.from('admin_users').update({ permissions: perms } as any).eq('id', adminUserId);
+    }
+  };
+
+
 
   const fetchCurrentAdmin = async () => {
     if (!user?.id) return;
