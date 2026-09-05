@@ -1292,8 +1292,12 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                           ) : null}
 
                           <div className="text-[11px] text-muted-foreground">
-                            Lead arrived {formatClock(ageSec)} ago · Attempt {lead.attemptCount}
+                            Lead arrived {formatClock(ageSec)} ago ·{' '}
+                            {lead.attemptCount === 0
+                              ? 'not offered to anyone yet'
+                              : `Attempt ${lead.attemptCount}`}
                           </div>
+
 
                           <div className={cn('mt-1.5 h-1.5 w-full rounded-full overflow-hidden', theme.bar)}>
                             <div
