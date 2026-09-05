@@ -24,7 +24,7 @@ import { useOrrLiveSettings } from '@/hooks/useOrrLiveSettings';
  * This component adds a section; it changes no existing Lead Allocation
  * behaviour, queries or settings beyond the ORR go-live switch it already owned.
  */
-export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }) => {
+export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean }> = ({ isManagement, sandboxTab = false }) => {
   // Live settings, shared with the Lead Allocation page and kept in step by
   // realtime — a change there shows here (and in the sandbox) without a reload.
   const { orrLive: liveOrrLive, enabledTeamIds, teamNamesById, refresh } = useOrrLiveSettings(isManagement);
@@ -69,40 +69,77 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
     <div id="open-round-robin" className="space-y-4 scroll-mt-28">
 
       {/* Big, unmistakable section header — Open Round Robin is NOT live Round Robin. */}
-      <div className="rounded-xl border-2 border-violet-300 bg-gradient-to-r from-violet-50 to-background p-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-violet-900">
-                Open Round Robin
-              </h2>
-              <span
-                className={cn(
-                  'inline-flex items-center gap-1 rounded-md text-xs font-bold uppercase tracking-wide px-2.5 py-1 border',
-                  orrLive === true
-                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                    : 'bg-muted text-muted-foreground border-border',
-                )}
-              >
-                {orrLive === true ? 'Live' : 'Not live'}
-              </span>
+      {sandboxTab ? (
+        <div className="rounded-xl border-2 border-amber-400 bg-amber-50/70 p-5">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-amber-900">
+                  Sandbox
+                </h2>
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-1 rounded-md text-xs font-bold uppercase tracking-wide px-2.5 py-1 border',
+                    orrLive === true
+                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                      : 'bg-amber-200 text-amber-900 border-amber-300',
+                  )}
+                >
+                  {orrLive === true ? 'Live' : 'Sandbox — not live'}
+                </span>
+              </div>
+              {orrLive !== true && (
+                <ul className="text-sm text-amber-900/90 list-disc pl-4 space-y-1 mt-1">
+                  <li>This is a safe rehearsal space — nothing here assigns, calls or changes any lead.</li>
+                  <li>The leads shown are real, but every action is practice-only.</li>
+                  <li>What you see matches the live Lead Allocation settings, so it previews what agents will experience once Open Round Robin goes live.</li>
+                </ul>
+              )}
             </div>
-            <ul className="text-sm text-violet-800/90 list-disc pl-4 space-y-1 mt-1">
-              <li>This area is for testing only — no real leads move unless Open Round Robin is switched live.</li>
-              <li>Agents take leads from the Open Pool themselves instead of being sent one.</li>
-              <li>The normal Round Robin still runs; the Flow split decides how new leads are shared between the two.</li>
-            </ul>
-          </div>
-          <div className="shrink-0 rounded-lg bg-amber-100 border border-amber-300 px-3 py-2">
-            <p className="text-xs font-semibold text-amber-900">
-              TESTING ONLY
-            </p>
-            <p className="text-[10px] text-amber-900/80">
-              No real leads move here unless this is switched live.
-            </p>
+            {orrLive !== true && (
+              <div className="shrink-0 rounded-lg bg-amber-100 border border-amber-300 px-3 py-2">
+                <p className="text-xs font-semibold text-amber-900">TESTING ONLY</p>
+                <p className="text-[10px] text-amber-900/80">No real leads move here unless this is switched live.</p>
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-xl border-2 border-violet-300 bg-gradient-to-r from-violet-50 to-background p-5 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-violet-900">
+                  Open Round Robin
+                </h2>
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-1 rounded-md text-xs font-bold uppercase tracking-wide px-2.5 py-1 border',
+                    orrLive === true
+                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                      : 'bg-muted text-muted-foreground border-border',
+                  )}
+                >
+                  {orrLive === true ? 'Live' : 'Not live'}
+                </span>
+              </div>
+              <ul className="text-sm text-violet-800/90 list-disc pl-4 space-y-1 mt-1">
+                <li>This area is for testing only — no real leads move unless Open Round Robin is switched live.</li>
+                <li>Agents take leads from the Open Pool themselves instead of being sent one.</li>
+                <li>The normal Round Robin still runs; the Flow split decides how new leads are shared between the two.</li>
+              </ul>
+            </div>
+            <div className="shrink-0 rounded-lg bg-amber-100 border border-amber-300 px-3 py-2">
+              <p className="text-xs font-semibold text-amber-900">
+                TESTING ONLY
+              </p>
+              <p className="text-[10px] text-amber-900/80">
+                No real leads move here unless this is switched live.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 1. Setup ------------------------------------------------------- */}
       <div className="rounded-lg border border-border bg-card shadow-sm p-4 space-y-4">
