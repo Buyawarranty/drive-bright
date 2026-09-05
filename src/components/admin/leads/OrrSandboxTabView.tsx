@@ -37,6 +37,12 @@ export const OrrSandboxTabView: React.FC<{
               anybody, and no figures change — it only shows what the New Leads page would look like if Open
               Round Robin were switched on. The real settings stay on the Lead Allocation page.
             </p>
+            <p className="text-sm font-medium text-amber-900">
+              Always in step with Lead Allocation: teams, caps, who's switched on and the Flow split are read
+              live from that page, so any change you make there shows here straight away — and the very same
+              settings are the ones that start acting for real the moment you switch Open Round Robin live.
+            </p>
+
           </div>
         </div>
       </div>
