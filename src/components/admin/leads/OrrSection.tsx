@@ -87,9 +87,11 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
                 {orrLive === true ? 'Live' : 'Not live'}
               </span>
             </div>
-            <p className="text-sm font-medium text-violet-800/90">
-              Sandbox / testing area — not the live Round Robin.
-            </p>
+            <ul className="text-sm text-violet-800/90 list-disc pl-4 space-y-1 mt-1">
+              <li>This area is for testing only — no real leads move unless Open Round Robin is switched live.</li>
+              <li>Agents take leads from the Open Pool themselves instead of being sent one.</li>
+              <li>The normal Round Robin still runs; the Flow split decides how new leads are shared between the two.</li>
+            </ul>
           </div>
           <div className="shrink-0 rounded-lg bg-amber-100 border border-amber-300 px-3 py-2">
             <p className="text-xs font-semibold text-amber-900">
@@ -99,13 +101,6 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
               No real leads move here unless this is switched live.
             </p>
           </div>
-        </div>
-        <div className="mt-4 pt-4 border-t border-violet-200">
-          <p className="text-sm text-foreground/90">
-            Agents take their own leads from the Open Pool instead of being sent one.{' '}
-            <strong>Round Robin carries on exactly as it does now</strong> — how the two share new leads is set by{' '}
-            <strong>Flow</strong> in “Who gets the leads?” above.
-          </p>
         </div>
       </div>
 
