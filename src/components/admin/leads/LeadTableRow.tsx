@@ -654,6 +654,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </TableCell>
       )}
 
+      {/* Time to contact — lead arrival → agent's first action (target 120s) */}
+      {!isLeadGenView && (
+      <TableCell>
+        <TimeToContactCell response={responseTime} />
+      </TableCell>
+      )}
+
       {/* Selection Checkbox */}
       {!isLeadGenView && (
       <TableCell onClick={(e) => e.stopPropagation()}>
@@ -1479,12 +1486,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       </TableCell>
       )}
 
-      {/* Time to contact — lead arrival → agent's first action (target 120s) */}
-      {!isLeadGenView && (
-      <TableCell>
-        <TimeToContactCell response={responseTime} />
-      </TableCell>
-      )}
     </TableRow>
   );
 }, (prevProps, nextProps) => {
