@@ -52,6 +52,12 @@ export const OrrSandboxTabView: React.FC<{
         <LiveStuckCustomersPanel />
       </WidgetErrorBoundary>
 
+      {/* Real leads, filters and figures sit above the practice sections; the team
+          chooser is the shared global team filter, so both stay in step. */}
+      <OrrSandboxProvider>
+        <NewLeadsTab sandboxMode onNavigateToTab={onNavigateToTab} userRole={userRole} />
+      </OrrSandboxProvider>
+
       <WidgetErrorBoundary label="Open Round Robin">
         <OrrSection isManagement />
       </WidgetErrorBoundary>
@@ -59,10 +65,6 @@ export const OrrSandboxTabView: React.FC<{
       <WidgetErrorBoundary label="Open Round Robin practice pass">
         <OrrSandboxPassPanel />
       </WidgetErrorBoundary>
-
-      <OrrSandboxProvider>
-        <NewLeadsTab sandboxMode onNavigateToTab={onNavigateToTab} userRole={userRole} />
-      </OrrSandboxProvider>
     </div>
   );
 };
