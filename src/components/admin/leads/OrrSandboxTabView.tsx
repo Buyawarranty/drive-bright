@@ -4,6 +4,7 @@ import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
 import { OrrSandboxProvider } from '@/components/admin/leads/OrrSandboxContext';
 import { OrrSandboxPassPanel } from '@/components/admin/leads/OrrSandboxPassPanel';
 import { OrrSection } from '@/components/admin/leads/OrrSection';
+import { LiveStuckCustomersPanel } from '@/components/admin/leads/LiveStuckCustomersPanel';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 
 /**
