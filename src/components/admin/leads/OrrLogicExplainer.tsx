@@ -131,47 +131,28 @@ export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel
               <Info className="h-4 w-4 text-blue-700" />
               <span className="text-sm font-semibold text-blue-900">The current logic, step by step</span>
             </div>
-            <ol className="list-decimal pl-5 space-y-1.5 text-xs text-blue-900/90 leading-relaxed">
+            <ul className="list-disc pl-4 space-y-1.5 text-xs text-blue-900/90 leading-relaxed">
+              <li>A new enquiry is offered to the next {teamLabel} agent in the rotation.</li>
+              <li>One lead per agent at a time — never a free-for-all.</li>
+              <li>The agent has <strong>{config.claimWindowSeconds} seconds</strong> to start the first call. The lead shows as “Held for you”.</li>
+              <li>Log a dial inside the window and the lead stays with that agent until an outcome is recorded.</li>
+              <li>No dial in the window and the lead passes to the next agent in rotation.</li>
+              <li>The rotation never restarts at the top, so nobody gets two in a row while someone waits.</li>
               <li>
-                A new enquiry is offered to the next {teamLabel} agent in the rotation — one lead per agent at a time,
-                never a free-for-all.
-              </li>
-              <li>
-                That agent has <strong>{config.claimWindowSeconds} seconds</strong> to start the first call. The lead is
-                reserved and shown as “Held for you” for that whole window.
-              </li>
-              <li>
-                Log a dial inside the window and the lead <strong>stops counting down and stays with that agent</strong>{' '}
-                until they record an outcome. No dial in the window and it passes on.
-              </li>
-              <li>
-                On a pass-on the rotation continues from the next position — it never restarts at the top, so nobody gets
-                two in a row while someone waits.
-              </li>
-              <li>
-                <strong>If every agent is busy</strong> (holding a live lead, paused, or off duty) the lead is{' '}
+                <strong>If every agent is busy</strong> the lead is{' '}
                 {config.whenAllBusy === 'queue' ? (
                   <>
-                    parked in the open pool queue, oldest first, and released the moment the first agent frees up. It is
-                    never dumped on someone who is already on a call.
+                    parked in the open pool queue, oldest first, and released when the first agent frees up.
                   </>
                 ) : (
                   <>
-                    kept circulating round the rotation, re-offered every window until someone frees up and picks it up.
+                    kept circulating round the rotation until someone frees up.
                   </>
                 )}
               </li>
-              <li>
-                After <strong>{config.maxAttempts} unanswered offers</strong> the lead goes dormant instead of endlessly
-                circling.
-              </li>
-              <li>
-                Once day one’s attempts are used the lead hands over to Team Red at{' '}
-                <strong>{String(config.redTeamHandoverHour).padStart(2, '0')}:00</strong>, then gets chased for{' '}
-                <strong>{config.followUpDays} days</strong> with up to <strong>{config.followUpDailyDials} dials a day</strong>{' '}
-                while it stays uncontacted and unowned.
-              </li>
-            </ol>
+              <li>After <strong>{config.maxAttempts} unanswered offers</strong> the lead goes dormant.</li>
+              <li>At <strong>{String(config.redTeamHandoverHour).padStart(2, '0')}:00</strong> unworked day-one leads move to Team Red, then chased for <strong>{config.followUpDays} days</strong> with up to <strong>{config.followUpDailyDials} dials a day</strong>.</li>
+            </ul>
           </div>
 
           {/* Self-assign rule */}
