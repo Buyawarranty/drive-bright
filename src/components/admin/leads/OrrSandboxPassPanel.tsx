@@ -3,8 +3,10 @@ import { Play, RotateCcw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { TimeToContactCell } from '@/components/admin/leads/TimeToContactCell';
 import { useSandboxLiveLeads } from '@/hooks/useSandboxLiveLeads';
 import { useOrrSandboxAllocations } from '@/hooks/useOrrSandboxAllocations';
+import { useLeadResponseTime } from '@/hooks/useLeadResponseTime';
 
 /**
  * Practice pass over the genuine live leads.
