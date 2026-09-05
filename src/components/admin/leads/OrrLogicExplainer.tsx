@@ -164,12 +164,11 @@ export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel
                 {config.allowSelfAssign ? 'Manager permission granted' : 'Blocked by default'}
               </Badge>
             </div>
-            <p className="text-xs text-amber-900/90 leading-relaxed">
-              Whoever the rotation offers a lead to may work it, but an agent cannot take a waiting lead for themselves —
-              including leads sitting in the queue while everyone is busy. Self-claiming is blocked unless a manager
-              switches the permission on below, which keeps the rotation fair and stops the fastest clicker hoovering up
-              the pool.
-            </p>
+            <ul className="text-xs text-amber-900/90 leading-relaxed list-disc pl-4 space-y-1">
+              <li>An agent can only work a lead the rotation offers to them.</li>
+              <li>Agents cannot take a waiting lead for themselves, including leads waiting while everyone is busy.</li>
+              <li>Self-claiming is blocked unless a manager switches the permission on, keeping the rotation fair.</li>
+            </ul>
             <div className="flex items-center gap-3 pt-1">
               <Switch
                 checked={config.allowSelfAssign}
