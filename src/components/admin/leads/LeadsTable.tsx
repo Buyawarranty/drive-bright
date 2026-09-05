@@ -390,10 +390,11 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                    recontactMode={recontactMode}
                    currentAdminId={currentAdminId}
                    readOnly={isReadOnly}
-                   customerActivity={lead.email ? activityByEmail[lead.email.toLowerCase()] : undefined}
-                   responseTime={responseByLead[lead.id]}
-                   repeatCustomer={repeatByLeadId[lead.id]}
-                 />
+                    customerActivity={lead.email ? activityByEmail[lead.email.toLowerCase()] : undefined}
+                    responseTime={responseByLead[lead.id]}
+                    repeatCustomer={repeatByLeadId[lead.id]}
+                    sandboxMode={sandboxMode}
+                  />
 
 
                 
