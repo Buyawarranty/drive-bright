@@ -318,6 +318,8 @@ export const UserPermissionsTab = () => {
   });
   const [teams, setTeams] = useState<Array<{ id: string; name: string; color: string | null; emoji: string | null }>>([]);
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+  const [editingWorkstreams, setEditingWorkstreams] = useState<AgentWorkstreamFlags>({ ...EMPTY_WORKSTREAMS });
+  const [inviteWorkstreams, setInviteWorkstreams] = useState<AgentWorkstreamFlags>({ ...EMPTY_WORKSTREAMS });
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [passwordUser, setPasswordUser] = useState<AdminUser | null>(null);
   const [newPassword, setNewPassword] = useState('');
