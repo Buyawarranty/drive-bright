@@ -823,7 +823,31 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           </div>
         </div>
 
-        <div className="mt-5 pt-4 border-t border-border flex items-center gap-2 flex-wrap">
+        <div className="mt-5 pt-4 border-t border-border rounded-lg border border-amber-200 bg-amber-50/60 p-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-semibold text-amber-900">Start of day — 09:00 release</span>
+            <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900">
+              {overnightParked} waiting from overnight
+            </span>
+            <Button size="sm" onClick={releaseOvernight} disabled={overnightParked === 0 || dataSource === 'live'}>
+              <Play className="h-3.5 w-3.5 mr-1.5" /> Run the 09:00 release
+            </Button>
+            {morningReleasedAt ? (
+              <span className="text-xs text-amber-900/80">
+                Released at {morningReleasedAt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} — the day now carries on below.
+              </span>
+            ) : (
+              <span className="text-xs text-amber-900/80">Not run yet in this practice session.</span>
+            )}
+          </div>
+          <ul className="mt-2 text-xs text-amber-900/90 list-disc pl-4 space-y-0.5">
+            <li>Leads that come in overnight are parked and handed out from 09:00.</li>
+            <li>They go into the same list below, oldest first, one lead at a time.</li>
+            <li>After the release, new leads keep arriving into that same list all day.</li>
+          </ul>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-border flex items-center gap-2 flex-wrap">
           <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
             <button
               type="button"
