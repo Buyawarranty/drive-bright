@@ -29,16 +29,11 @@ export const OrrSandboxTabView: React.FC<{
                 Sandbox — not live
               </span>
             </div>
-            <p className="text-sm text-amber-900/90">
-              These are your genuine live leads. Nothing on this page assigns, calls, re-statuses or notifies
-              anybody, and no figures change — it only shows what the New Leads page would look like if Open
-              Round Robin were switched on. The real settings stay on the Lead Allocation page.
-            </p>
-            <p className="text-sm font-medium text-amber-900">
-              Always in step with Lead Allocation: teams, caps, who's switched on and the Flow split are read
-              live from that page, so any change you make there shows here straight away — and the very same
-              settings are the ones that start acting for real the moment you switch Open Round Robin live.
-            </p>
+            <ul className="text-sm text-amber-900/90 list-disc pl-4 space-y-1">
+              <li>This is a safe rehearsal space — nothing here assigns, calls or changes any lead.</li>
+              <li>The leads shown are real, but every action is practice-only.</li>
+              <li>What you see matches the live Lead Allocation settings, so it previews what agents will experience once Open Round Robin goes live.</li>
+            </ul>
 
           </div>
         </div>
