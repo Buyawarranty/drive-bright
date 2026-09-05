@@ -3,8 +3,10 @@ import { Play, RotateCcw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { TimeToContactCell } from '@/components/admin/leads/TimeToContactCell';
 import { useSandboxLiveLeads } from '@/hooks/useSandboxLiveLeads';
 import { useOrrSandboxAllocations } from '@/hooks/useOrrSandboxAllocations';
+import { useLeadResponseTime } from '@/hooks/useLeadResponseTime';
 
 /**
  * Practice pass over the genuine live leads.
@@ -20,6 +22,12 @@ export const OrrSandboxPassPanel: React.FC = () => {
     () => Object.fromEntries(candidates.map(c => [c.adminUserId, c.name])),
     [candidates],
   );
+
+  const responseInputs = React.useMemo(
+    () => leads.map(l => ({ id: l.id, created_at: l.createdAt.toISOString() })),
+    [leads],
+  );
+  const { responseByLead } = useLeadResponseTime(responseInputs);
 
   const run = async () => {
     const ids = leads.map(l => l.id);
@@ -73,6 +81,7 @@ export const OrrSandboxPassPanel: React.FC = () => {
           <thead className="text-muted-foreground">
             <tr className="text-left">
               <th className="py-1 pr-3">Lead</th>
+              <th className="py-1 pr-3">Time to contact</th>
               <th className="py-1 pr-3">Arrived</th>
               <th className="py-1 pr-3">Really assigned to</th>
               <th className="py-1">Would go to (practice)</th>
@@ -85,6 +94,9 @@ export const OrrSandboxPassPanel: React.FC = () => {
                 <tr key={l.id} className="border-t border-border/60">
                   <td className="py-1.5 pr-3 font-medium">
                     {[l.firstName, l.lastName].filter(Boolean).join(' ') || l.email || l.reg || 'Lead'}
+                  </td>
+                  <td className="py-1.5 pr-3">
+                    <TimeToContactCell response={responseByLead[l.id]} />
                   </td>
                   <td className="py-1.5 pr-3 text-muted-foreground">
                     {l.createdAt.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
@@ -107,7 +119,7 @@ export const OrrSandboxPassPanel: React.FC = () => {
             })}
             {!loading && !leads.length && (
               <tr>
-                <td colSpan={4} className="py-3 text-muted-foreground">No leads in the last 7 days.</td>
+                <td colSpan={5} className="py-3 text-muted-foreground">No leads in the last 7 days.</td>
               </tr>
             )}
           </tbody>
