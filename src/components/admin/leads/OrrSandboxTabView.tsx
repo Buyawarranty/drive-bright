@@ -1,24 +1,20 @@
 import React from 'react';
 import { TriangleAlert } from 'lucide-react';
-import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
-import { OrrSandboxProvider } from '@/components/admin/leads/OrrSandboxContext';
 import { OrrSandboxPassPanel } from '@/components/admin/leads/OrrSandboxPassPanel';
 import { OrrSection } from '@/components/admin/leads/OrrSection';
 import { LiveStuckCustomersPanel } from '@/components/admin/leads/LiveStuckCustomersPanel';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 
 /**
- * Open Round Robin Sandbox — an exact copy of the New Leads page showing the
- * genuine live leads, with allocation worked out by Open Round Robin instead of
- * the live rotation.
+ * Open Round Robin Sandbox — the Open Round Robin lead flow only.
  *
- * Read-only against real data: every mutating action inside `NewLeadsTab` is
- * neutralised by `OrrSandboxProvider`.
+ * The current New Leads round-robin table and its filters are deliberately not
+ * shown here: they belong to the live rotation, not Open Round Robin.
  */
 export const OrrSandboxTabView: React.FC<{
   onNavigateToTab?: (tab: string) => void;
   userRole?: string | null;
-}> = ({ onNavigateToTab, userRole }) => {
+}> = () => {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border-2 border-amber-400 bg-amber-50/70 p-5">
@@ -52,11 +48,6 @@ export const OrrSandboxTabView: React.FC<{
         <LiveStuckCustomersPanel />
       </WidgetErrorBoundary>
 
-      {/* Real leads, filters and figures sit above the practice sections; the team
-          chooser is the shared global team filter, so both stay in step. */}
-      <OrrSandboxProvider>
-        <NewLeadsTab sandboxMode onNavigateToTab={onNavigateToTab} userRole={userRole} />
-      </OrrSandboxProvider>
 
       <WidgetErrorBoundary label="Open Round Robin">
         <OrrSection isManagement />
