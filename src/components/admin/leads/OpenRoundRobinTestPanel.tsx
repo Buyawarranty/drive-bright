@@ -1067,7 +1067,9 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   const cleanup = () => {
     setLeads([]);
     nextAgentIndexRef.current = 0;
+    setActiveScenario(null);
     setOvernightParked(12);
+
     setMorningReleasedAt(null);
     toast({ title: 'Practice leads cleared', description: 'The practice page has been reset.' });
 
