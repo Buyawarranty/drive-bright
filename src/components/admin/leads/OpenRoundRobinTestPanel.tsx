@@ -740,13 +740,11 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                   Nothing counts
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
-                A safe place to rehearse the 2-minute window, pass-on, agent view, phone column, click-to-dial and copy
-                button.
-                {dataSource === 'live'
-                  ? ' Live leads mode shows a read-only copy of the leads we really received, so you can prove Open Round Robin works on real-world data while it stays switched off — nothing is written back, no customer is contacted and no agent\'s figures change.'
-                  : ' Every name here is made up — no customer is contacted and no agent\'s figures change.'}
-              </p>
+              <ul className="text-sm text-muted-foreground list-disc pl-4 space-y-1 leading-relaxed max-w-2xl">
+                <li>Rehearse the 2-minute first-call window, pass-on, agent view, phone column, click-to-dial and copy button.</li>
+                <li>{dataSource === 'live' ? 'Live leads mode shows a read-only copy of real leads.' : 'Every name here is made up.'}</li>
+                <li>Nothing is written back, no customer is contacted and no agent's figures change.</li>
+              </ul>
             </div>
           </div>
         </div>
