@@ -457,6 +457,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
    * button. If every agent is busy it waits instead of landing on a live call.
    */
   const createTestLead = useCallback(() => {
+
     const now = Date.now();
 
     setLeads((current) => {
@@ -515,6 +516,79 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
       return [draft, ...current];
     });
   }, [toast]);
+
+  /**
+   * Overnight leads: enquiries that arrived while nobody was on shift are parked
+   * and released into this same flow at 09:00. From then on the day continues as
+   * normal — same table, same columns, same rules.
+   */
+  const [overnightParked, setOvernightParked] = useState(12);
+  const [morningReleasedAt, setMorningReleasedAt] = useState<Date | null>(null);
+
+  const releaseOvernight = useCallback(() => {
+    const count = overnightParked;
+    if (count <= 0) return;
+    const now = Date.now();
+
+    setLeads((current) => {
+      let index = nextAgentIndexRef.current;
+      const busy = new Set(
+        current.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string),
+      );
+      const drafts: DummyLead[] = [];
+
+      for (let i = 0; i < count; i += 1) {
+        let offeredTo: DummyAgent | null = null;
+        for (let step = 0; step < DUMMY_AGENTS.length; step += 1) {
+          const candidate = DUMMY_AGENTS[(index + step) % DUMMY_AGENTS.length];
+          if (!busy.has(candidate.id)) {
+            index = (index + step + 1) % DUMMY_AGENTS.length;
+            busy.add(candidate.id);
+            offeredTo = candidate;
+            break;
+          }
+        }
+
+        const leadNumber = current.length + i + 1;
+        drafts.push({
+          id: `dummy-orr-overnight-${now}-${i}`,
+          firstName: 'TEST',
+          lastName: `Overnight ${String(i + 1).padStart(2, '0')}`,
+          email: `overnight.lead${leadNumber}@example.com`,
+          status: offeredTo ? 'new' : 'queued',
+          displayStatus: 'new',
+          assignedTo: offeredTo ? offeredTo.id : null,
+          attemptCount: offeredTo ? 1 : 0,
+          deadlineAt: offeredTo ? now + cadenceRef.current.claimWindowSeconds * 1000 : now,
+          vehicleReg: 'TEST123',
+          phone: '07902222222',
+          createdAt: now - (count - i) * 45 * 60 * 1000,
+          dials: 0,
+          contactedAt: null,
+          dayDials: 0,
+          nextCallAt: null,
+          redTeamAt: null,
+          followUpDay: 0,
+          chaseComplete: false,
+          history: offeredTo
+            ? [`Arrived overnight — released at 09:00 and offered to ${offeredTo.name}`]
+            : ['Arrived overnight — released at 09:00, waiting in the open pool queue'],
+        });
+      }
+
+      nextAgentIndexRef.current = index;
+      return [...drafts.reverse(), ...current];
+    });
+
+    setOvernightParked(0);
+    setMorningReleasedAt(new Date());
+    toast({
+      title: '09:00 release done',
+      description: `${count} overnight leads went into the same flow — one at a time, oldest first.`,
+    });
+  }, [overnightParked, toast]);
+
+
 
   /**
    * Self-claiming a waiting lead. Blocked unless a manager has switched the
@@ -749,7 +823,31 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           </div>
         </div>
 
-        <div className="mt-5 pt-4 border-t border-border flex items-center gap-2 flex-wrap">
+        <div className="mt-5 pt-4 border-t border-border rounded-lg border border-amber-200 bg-amber-50/60 p-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-semibold text-amber-900">Start of day — 09:00 release</span>
+            <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900">
+              {overnightParked} waiting from overnight
+            </span>
+            <Button size="sm" onClick={releaseOvernight} disabled={overnightParked === 0 || dataSource === 'live'}>
+              <Play className="h-3.5 w-3.5 mr-1.5" /> Run the 09:00 release
+            </Button>
+            {morningReleasedAt ? (
+              <span className="text-xs text-amber-900/80">
+                Released at {morningReleasedAt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} — the day now carries on below.
+              </span>
+            ) : (
+              <span className="text-xs text-amber-900/80">Not run yet in this practice session.</span>
+            )}
+          </div>
+          <ul className="mt-2 text-xs text-amber-900/90 list-disc pl-4 space-y-0.5">
+            <li>Leads that come in overnight are parked and handed out from 09:00.</li>
+            <li>They go into the same list below, oldest first, one lead at a time.</li>
+            <li>After the release, new leads keep arriving into that same list all day.</li>
+          </ul>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-border flex items-center gap-2 flex-wrap">
           <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
             <button
               type="button"
