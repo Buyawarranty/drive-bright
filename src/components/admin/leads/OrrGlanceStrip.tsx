@@ -2,6 +2,7 @@ import React from 'react';
 import { Phone, Users, Timer, Sunrise, Target, PhoneCall, CheckCircle2, Utensils, Repeat, CalendarDays } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
 
 /**
  * ORR "at a glance" strip — read-only snapshot of today's lead flow plus the
@@ -104,7 +105,7 @@ export const OrrGlanceStrip: React.FC<{ teamLabel?: string }> = ({ teamLabel = '
 
   React.useEffect(() => {
     load();
-    const t = setInterval(load, 60_000);
+    const t = setInterval(() => { if (document.hidden || isSecondaryCrmTab()) return; load(); }, 60_000);
     return () => clearInterval(t);
   }, [load]);
 

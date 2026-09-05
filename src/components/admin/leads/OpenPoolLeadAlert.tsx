@@ -12,6 +12,7 @@ import {
 import type { Lead } from '@/hooks/useLeads';
 import { toast } from 'sonner';
 import { playNewLeadBeep } from '@/hooks/useNewLeadAlert';
+import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
 
 
 /**
@@ -78,7 +79,7 @@ function OpenPoolLeadAlertInner() {
 
   useEffect(() => {
     loadCount();
-    const t = setInterval(loadCount, 15000);
+    const t = setInterval(() => { if (document.hidden || isSecondaryCrmTab()) return; loadCount(); }, 15000);
     return () => clearInterval(t);
   }, [loadCount]);
 

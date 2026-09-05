@@ -2,6 +2,7 @@ import React from 'react';
 import { Gauge, Bell, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
 
 /**
  * Today's performance + alerts feed — read-only.
@@ -109,7 +110,7 @@ export const OrrPerformancePanel: React.FC = () => {
 
   React.useEffect(() => {
     load();
-    const t = setInterval(load, 60_000);
+    const t = setInterval(() => { if (document.hidden || isSecondaryCrmTab()) return; load(); }, 60_000);
     return () => clearInterval(t);
   }, [load]);
 
