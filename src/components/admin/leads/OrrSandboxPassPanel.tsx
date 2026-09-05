@@ -95,6 +95,9 @@ export const OrrSandboxPassPanel: React.FC = () => {
                   <td className="py-1.5 pr-3 font-medium">
                     {[l.firstName, l.lastName].filter(Boolean).join(' ') || l.email || l.reg || 'Lead'}
                   </td>
+                  <td className="py-1.5 pr-3">
+                    <TimeToContactCell response={responseByLead[l.id]} />
+                  </td>
                   <td className="py-1.5 pr-3 text-muted-foreground">
                     {l.createdAt.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   </td>
@@ -116,7 +119,7 @@ export const OrrSandboxPassPanel: React.FC = () => {
             })}
             {!loading && !leads.length && (
               <tr>
-                <td colSpan={4} className="py-3 text-muted-foreground">No leads in the last 7 days.</td>
+                <td colSpan={5} className="py-3 text-muted-foreground">No leads in the last 7 days.</td>
               </tr>
             )}
           </tbody>
