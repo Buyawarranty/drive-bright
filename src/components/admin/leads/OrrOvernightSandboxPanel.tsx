@@ -493,9 +493,10 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
       <div className="rounded-lg border border-border bg-background p-3">
         <div className="flex items-baseline justify-between flex-wrap gap-2">
           <h4 className="text-xs font-semibold text-foreground">Agents taking leads (practice)</h4>
-          <span className="text-[11px] text-muted-foreground">
-            Switch an agent off and the rotation skips them — even while the toggle above is On.
-          </span>
+          <ul className="text-[11px] text-muted-foreground list-disc pl-4 space-y-0.5">
+            <li>Switch an agent off and the rotation skips them.</li>
+            <li>Auto-release still runs, but only for agents who are switched on.</li>
+          </ul>
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
           {perAgentCount.map(a => (
