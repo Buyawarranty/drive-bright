@@ -1026,7 +1026,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             onChange={(event) => setSimulatedAgentId(event.target.value)}
           >
             <option value="all">Whole team — everyone&rsquo;s leads</option>
-            {DUMMY_AGENTS.map((agent) => (
+            {roster.map((agent) => (
               <option key={agent.id} value={agent.id}>
                 {agent.order}. {agent.name} · ext {agent.extension}
               </option>
