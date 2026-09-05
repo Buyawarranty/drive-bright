@@ -134,11 +134,19 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
       {/* 2. Live status ------------------------------------------------- */}
       <div className="space-y-2">
         <h3 className="text-sm font-semibold text-foreground">Open Round Robin pool status</h3>
-        <p className="text-xs text-muted-foreground">
-          {orrLive === true
-            ? 'Live figures. Running a pass here updates real CRM assignments.'
-            : 'Read-only while Open Round Robin is not live — no real lead is handed out or pulled back.'}
-        </p>
+        <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
+          {orrLive === true ? (
+            <>
+              <li>Live figures — running a pass here updates real CRM assignments.</li>
+              <li>Only use this when you are ready to hand out leads for real.</li>
+            </>
+          ) : (
+            <>
+              <li>Read-only while Open Round Robin is not live.</li>
+              <li>No real lead is handed out or pulled back.</li>
+            </>
+          )}
+        </ul>
         <WidgetErrorBoundary label="Open Round Robin pool status">
           <RollingRoundRobinLivePanel
             canEdit={isManagement && orrLive === true}
