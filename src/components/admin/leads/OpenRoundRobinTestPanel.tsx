@@ -1143,6 +1143,52 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           </ul>
         </div>
 
+        {/* PHASE 1 — every situation an agent meets, one click each */}
+        <div className="mt-4 rounded-lg border border-border bg-muted/20 p-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold text-foreground">Scenario walkthrough</span>
+            <span className="rounded-full bg-teal-100 text-teal-800 border border-teal-200 text-[11px] font-medium px-2.5 py-0.5">
+              Phase 1
+            </span>
+            {activeScenario && (
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={cleanup}>
+                <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Clear scenario
+              </Button>
+            )}
+          </div>
+          <ul className="mt-1 mb-3 text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
+            <li>Press a scenario — it sets the agents on shift and fills the list below.</li>
+            <li>Watch the list and the countdowns to see exactly what the agent sees.</li>
+            <li>Nothing is saved, nobody is called and no figures move.</li>
+          </ul>
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            {scenarios.map((scenario) => (
+              <button
+                key={scenario.id}
+                type="button"
+                onClick={() => runScenario(scenario.id)}
+                className={cn(
+                  'text-left rounded-lg border p-3 transition-colors',
+                  activeScenario === scenario.id
+                    ? 'border-teal-400 bg-teal-50/70'
+                    : 'border-border bg-background hover:bg-muted/50',
+                )}
+              >
+                <div className="text-xs font-semibold text-foreground">{scenario.title}</div>
+                <ul className="mt-1 text-[11px] text-muted-foreground list-disc pl-4 space-y-0.5">
+                  <li>{scenario.what}</li>
+                  <li>{scenario.watch}</li>
+                </ul>
+                <div className="mt-1.5 text-[10px] font-medium text-teal-700">
+                  {scenario.agents} {scenario.agents === 1 ? 'agent' : 'agents'} on shift
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+
+
 
         <div className="mt-5 pt-4 border-t border-border rounded-lg border border-amber-200 bg-amber-50/60 p-3">
           <div className="flex flex-wrap items-center gap-3">
