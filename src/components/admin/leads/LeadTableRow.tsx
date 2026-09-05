@@ -116,6 +116,8 @@ interface LeadTableRowProps {
   responseTime?: import('@/hooks/useLeadResponseTime').LeadResponseTime;
   /** Set when this lead matches an existing customer (previous purchase). */
   repeatCustomer?: import('@/hooks/useRepeatCustomers').RepeatCustomerInfo;
+  /** Open Round Robin Sandbox: show Time to contact between Agent and Status. */
+  sandboxMode?: boolean;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -522,6 +524,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   customerActivity,
   responseTime,
   repeatCustomer,
+  sandboxMode = false,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -652,13 +655,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         <TableCell className="w-[44px] text-center text-xs tabular-nums text-muted-foreground font-medium">
           {rowNumber}
         </TableCell>
-      )}
-
-      {/* Time to contact — lead arrival → agent's first action (target 120s) */}
-      {!isLeadGenView && (
-      <TableCell>
-        <TimeToContactCell response={responseTime} />
-      </TableCell>
       )}
 
       {/* Selection Checkbox */}
@@ -837,6 +833,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             </SelectContent>
           </Select>
       </TableCell>}
+
+      {/* Time to contact — lead arrival → agent's first action (target 120s) — sandbox only */}
+      {sandboxMode && !isLeadGenView && (
+      <TableCell>
+        <TimeToContactCell response={responseTime} />
+      </TableCell>
+      )}
 
       {/* Source indicator — labelled chip (Google / Meta / Bing / TikTok / Organic) — admin/super_admin only */}
       {showSourceColumn && (
@@ -1483,6 +1486,13 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {!isLeadGenView && (
       <TableCell>
         <CustomerActivityCell activity={customerActivity} />
+      </TableCell>
+      )}
+
+      {/* Time to contact — lead arrival → agent's first action (target 120s) */}
+      {!isLeadGenView && !sandboxMode && (
+      <TableCell>
+        <TimeToContactCell response={responseTime} />
       </TableCell>
       )}
 

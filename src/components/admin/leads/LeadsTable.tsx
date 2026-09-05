@@ -90,6 +90,8 @@ interface LeadsTableProps {
   readOnlyLeadIds?: Set<string>;
   /** Default column to sort by on first render. Defaults to no explicit sort. */
   defaultSortKey?: ColumnSortKey;
+  /** Open Round Robin Sandbox: show Time to contact between Agent and Status. */
+  sandboxMode?: boolean;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -133,6 +135,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   currentAdminId = null,
   readOnlyLeadIds,
   defaultSortKey = null,
+  sandboxMode = false,
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
@@ -311,13 +314,13 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
           <TableHeader>
             <TableRow className="bg-muted/30 border-b-2 border-border">
               <TableHead className="w-[44px] py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">#</TableHead>
-              {!isLeadGenView && <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Time from the lead arriving to the agent's first action on it (call logged, note written, status changed). Target is 120 seconds.">Time to contact</TableHead>}
               {!isLeadGenView && (
               <TableHead className="w-[36px] py-2">
                 {/* Checkbox moved to control bar */}
               </TableHead>
               )}
               {!hideAssignedColumn && !isLeadGenView && <TableHead className="sticky left-0 bg-muted/20 z-10 w-[110px] min-w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Agent<SortIcon column="agent" /></span></TableHead>}
+              {sandboxMode && !isLeadGenView && <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Time from the lead arriving to the agent's first action on it (call logged, note written, status changed). Target is 120 seconds.">Time to contact</TableHead>}
               {showSourceColumn && <TableHead className="w-[35px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Src</TableHead>}
               {!isLeadGenView && <TableHead className="w-[95px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Status<SortIcon column="status" /></span></TableHead>}
               {/* Send Quote column header removed — action still available in the row action buttons */}
@@ -333,6 +336,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
               {!isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Lead Date<SortIcon column="lead_date" /></span></TableHead>}
               {recontactMode && !isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Date Added<SortIcon column="date_added" /></span></TableHead>}
               {!isLeadGenView && <TableHead className="w-[140px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Last time the customer themselves did something — asked for another quote, filled step 2, or logged into the portal.">Customer activity</TableHead>}
+              {!isLeadGenView && !sandboxMode && <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Time from the lead arriving to the agent's first action on it (call logged, note written, status changed). Target is 120 seconds.">Time to contact</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -386,10 +390,11 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                    recontactMode={recontactMode}
                    currentAdminId={currentAdminId}
                    readOnly={isReadOnly}
-                   customerActivity={lead.email ? activityByEmail[lead.email.toLowerCase()] : undefined}
-                   responseTime={responseByLead[lead.id]}
-                   repeatCustomer={repeatByLeadId[lead.id]}
-                 />
+                    customerActivity={lead.email ? activityByEmail[lead.email.toLowerCase()] : undefined}
+                    responseTime={responseByLead[lead.id]}
+                    repeatCustomer={repeatByLeadId[lead.id]}
+                    sandboxMode={sandboxMode}
+                  />
 
 
                 
