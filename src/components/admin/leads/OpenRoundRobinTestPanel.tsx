@@ -179,9 +179,16 @@ const DUMMY_AGENTS: DummyAgent[] = [
   { id: 'dummy-freddie', name: 'Freddie', extension: '202', order: 2 },
   { id: 'dummy-thomas', name: 'Thomas', extension: '203', order: 3 },
   { id: 'dummy-greg', name: 'Greg sales@', extension: '205', order: 4 },
+  { id: 'dummy-aisha', name: 'Aisha', extension: '206', order: 5 },
+  { id: 'dummy-liam', name: 'Liam', extension: '207', order: 6 },
+  { id: 'dummy-chloe', name: 'Chloe', extension: '208', order: 7 },
+  { id: 'dummy-mo', name: 'Mo', extension: '209', order: 8 },
 ];
 
+const AGENT_COUNT_OPTIONS = [1, 2, 3, 4, 6, 8];
+
 const getAgent = (agentId: string | null) => DUMMY_AGENTS.find((agent) => agent.id === agentId) ?? DUMMY_AGENTS[0];
+
 
 
 const formatClock = (seconds: number) => {
