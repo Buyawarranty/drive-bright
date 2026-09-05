@@ -473,8 +473,9 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   const allAgentsBusy = useMemo(() => {
     const now = Date.now();
     const busy = new Set(leads.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo));
-    return DUMMY_AGENTS.every((agent) => busy.has(agent.id));
-  }, [leads, tick]);
+    return roster.every((agent) => busy.has(agent.id));
+  }, [leads, tick, roster]);
+
 
   /**
    * A new enquiry is offered by the rotation — never handed to whoever pressed the
