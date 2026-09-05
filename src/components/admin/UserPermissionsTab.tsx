@@ -883,6 +883,7 @@ export const UserPermissionsTab = () => {
         permissions: {},
         teamId: null,
       });
+      setInviteWorkstreams({ ...EMPTY_WORKSTREAMS });
 
       fetchUsers();
     } catch (error) {
