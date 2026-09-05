@@ -397,6 +397,17 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   const [leads, setLeads] = useState<DummyLead[]>([]);
   const nextAgentIndexRef = useRef(0);
   const [simulatedAgentId, setSimulatedAgentId] = useState(DUMMY_AGENTS[0].id);
+  // How many agents are "on shift" for this rehearsal (1–4).
+  const [agentCount, setAgentCount] = useState(DUMMY_AGENTS.length);
+  const roster = useMemo(() => DUMMY_AGENTS.slice(0, agentCount), [agentCount]);
+  const rosterRef = useRef(roster);
+  useEffect(() => {
+    rosterRef.current = roster;
+    if (simulatedAgentId !== 'all' && !roster.some((a) => a.id === simulatedAgentId)) {
+      setSimulatedAgentId('all');
+    }
+  }, [roster, simulatedAgentId]);
+
   const [tick, setTick] = useState(0);
   // 'practice' = made-up TEST leads. 'live' = a READ-ONLY copy of the leads we
   // really received, so ORR can be proven against real-world data while it is
