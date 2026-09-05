@@ -1747,6 +1747,34 @@ export const UserPermissionsTab = () => {
                 </p>
               </div>
 
+              <div>
+                <Label>Lead types they work</Label>
+                <div className="mt-2 space-y-2 rounded-md border p-3">
+                  {WORKSTREAM_DEFS.map(ws => (
+                    <div key={ws.key} className="flex items-start gap-2">
+                      <Checkbox
+                        id={`invite-ws-${ws.key}`}
+                        checked={inviteWorkstreams[ws.key]}
+                        disabled={!inviteData.teamId || inviteData.teamId === '__all__'}
+                        onCheckedChange={(checked) =>
+                          setInviteWorkstreams(prev => ({ ...prev, [ws.key]: checked === true }))
+                        }
+                      />
+                      <Label htmlFor={`invite-ws-${ws.key}`} className="text-sm font-normal leading-tight cursor-pointer">
+                        {ws.label}
+                        <span className="block text-xs text-muted-foreground">{ws.hint}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {(!inviteData.teamId || inviteData.teamId === '__all__')
+                    ? 'Pick a single team above first — lead types belong to a team.'
+                    : 'Leave all unticked and they start with no leads. Tick only Recontact Leads for a recontact-only agent.'}
+                </p>
+              </div>
+
+
 
               {/* Show tab permissions for all non-admin roles */}
               {!['super_admin', 'admin', 'dev_tester'].includes(inviteData.role) && (
