@@ -87,9 +87,11 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
                 {orrLive === true ? 'Live' : 'Not live'}
               </span>
             </div>
-            <p className="text-sm font-medium text-violet-800/90">
-              Sandbox / testing area — not the live Round Robin.
-            </p>
+            <ul className="text-sm text-violet-800/90 list-disc pl-4 space-y-1 mt-1">
+              <li>This area is for testing only — no real leads move unless Open Round Robin is switched live.</li>
+              <li>Agents take leads from the Open Pool themselves instead of being sent one.</li>
+              <li>The normal Round Robin still runs; the Flow split decides how new leads are shared between the two.</li>
+            </ul>
           </div>
           <div className="shrink-0 rounded-lg bg-amber-100 border border-amber-300 px-3 py-2">
             <p className="text-xs font-semibold text-amber-900">
@@ -99,13 +101,6 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
               No real leads move here unless this is switched live.
             </p>
           </div>
-        </div>
-        <div className="mt-4 pt-4 border-t border-violet-200">
-          <p className="text-sm text-foreground/90">
-            Agents take their own leads from the Open Pool instead of being sent one.{' '}
-            <strong>Round Robin carries on exactly as it does now</strong> — how the two share new leads is set by{' '}
-            <strong>Flow</strong> in “Who gets the leads?” above.
-          </p>
         </div>
       </div>
 
@@ -139,11 +134,19 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
       {/* 2. Live status ------------------------------------------------- */}
       <div className="space-y-2">
         <h3 className="text-sm font-semibold text-foreground">Open Round Robin pool status</h3>
-        <p className="text-xs text-muted-foreground">
-          {orrLive === true
-            ? 'Live figures. Running a pass here updates real CRM assignments.'
-            : 'Read-only while Open Round Robin is not live — no real lead is handed out or pulled back.'}
-        </p>
+        <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
+          {orrLive === true ? (
+            <>
+              <li>Live figures — running a pass here updates real CRM assignments.</li>
+              <li>Only use this when you are ready to hand out leads for real.</li>
+            </>
+          ) : (
+            <>
+              <li>Read-only while Open Round Robin is not live.</li>
+              <li>No real lead is handed out or pulled back.</li>
+            </>
+          )}
+        </ul>
         <WidgetErrorBoundary label="Open Round Robin pool status">
           <RollingRoundRobinLivePanel
             canEdit={isManagement && orrLive === true}
@@ -169,10 +172,10 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
                 Not live
               </span>
             </div>
-            <p className="text-xs text-amber-900/90 mt-1">
-              Practice only. No real leads move, no customer is called, no agent is notified and nobody's
-              figures change. Every name inside is made up.
-            </p>
+            <ul className="text-xs text-amber-900/90 list-disc pl-4 mt-1 space-y-0.5">
+              <li>Practice only — no real leads move, no customer is called and no figures change.</li>
+              <li>Every name inside is made up.</li>
+            </ul>
           </div>
           <ChevronDown
             className={cn(
@@ -184,12 +187,14 @@ export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }
 
         {sandboxOpen && (
           <div className="border-t-2 border-amber-400 bg-background p-4 space-y-3">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <FlaskConical className="h-4 w-4 text-primary shrink-0" />
-              <span>
-                Add a practice lead, watch the 2-minute window, pass it on, and switch the agent preview to
-                see what each colleague would see. Clear it whenever you like.
-              </span>
+            <div className="flex items-start gap-2 text-xs text-muted-foreground">
+              <FlaskConical className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+              <ul className="list-disc pl-4 space-y-0.5">
+                <li>Add a practice lead and watch the 2-minute first-call window.</li>
+                <li>See how an unworked lead passes to the next agent.</li>
+                <li>Switch the agent preview to see the page as each colleague would see it.</li>
+                <li>Clear the practice run whenever you like.</li>
+              </ul>
             </div>
             <WidgetErrorBoundary label="Sandbox — overnight Open Round Robin practice">
               <OrrOvernightSandboxPanel />

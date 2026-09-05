@@ -40,10 +40,11 @@ export const OrrSandboxPassPanel: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-foreground">Practice pass over today's real leads</h3>
-          <p className="text-xs text-muted-foreground">
-            Uses the same teams, caps and on/off switches as the Lead Allocation page. It only records who{' '}
-            <em>would</em> get each lead.
-          </p>
+          <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
+            <li>Uses the same teams, caps and on/off switches as the Lead Allocation page.</li>
+            <li>It only records who <em>would</em> get each lead.</li>
+            <li>Nothing live changes — no calls, no notifications, no figures.</li>
+          </ul>
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" onClick={run} disabled={running || loading || !leads.length}>

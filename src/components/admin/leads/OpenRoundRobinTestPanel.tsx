@@ -740,13 +740,11 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                   Nothing counts
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
-                A safe place to rehearse the 2-minute window, pass-on, agent view, phone column, click-to-dial and copy
-                button.
-                {dataSource === 'live'
-                  ? ' Live leads mode shows a read-only copy of the leads we really received, so you can prove Open Round Robin works on real-world data while it stays switched off — nothing is written back, no customer is contacted and no agent\'s figures change.'
-                  : ' Every name here is made up — no customer is contacted and no agent\'s figures change.'}
-              </p>
+              <ul className="text-sm text-muted-foreground list-disc pl-4 space-y-1 leading-relaxed max-w-2xl">
+                <li>Rehearse the 2-minute first-call window, pass-on, agent view, phone column, click-to-dial and copy button.</li>
+                <li>{dataSource === 'live' ? 'Live leads mode shows a read-only copy of real leads.' : 'Every name here is made up.'}</li>
+                <li>Nothing is written back, no customer is contacted and no agent's figures change.</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -848,10 +846,19 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
       {allAgentsBusy && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">
-          <span className="font-semibold">Every agent is on a call.</span>{' '}
-          {cadence.whenAllBusy === 'queue'
-            ? 'New enquiries wait in the open pool queue, oldest first, and go to the first agent who frees up — never to whoever clicks fastest.'
-            : 'New enquiries keep circulating round the rotation until an agent frees up and answers the offer.'}
+          <p className="font-semibold">Every agent is on a call.</p>
+          <ul className="list-disc pl-4 space-y-0.5">
+            <li>
+              {cadence.whenAllBusy === 'queue'
+                ? 'New enquiries wait in the open pool queue, oldest first.'
+                : 'New enquiries keep circulating round the rotation.'}
+            </li>
+            <li>
+              {cadence.whenAllBusy === 'queue'
+                ? 'The first agent who frees up gets the oldest waiting lead — not whoever clicks fastest.'
+                : 'They are re-offered until an agent frees up and answers.'}
+            </li>
+          </ul>
         </div>
       )}
 
@@ -864,7 +871,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           </div>
           <div>
             <div className="text-sm font-semibold text-foreground">Agent preview</div>
-            <div className="text-xs text-muted-foreground">See the page exactly as a sales agent would.</div>
+            <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
+              <li>See the page exactly as a sales agent would.</li>
+              <li>Pick an agent from the list to switch their view.</li>
+            </ul>
           </div>
         </div>
         <div className="flex flex-col items-end gap-1">
@@ -895,9 +905,11 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <div>
               <h4 className="text-base font-semibold text-foreground">Practice New Leads — {theme.label}</h4>
 
-              <p className="text-xs text-muted-foreground">
-                Assigned automatically in a fair rotation and reserved for one agent at a time.
-              </p>
+              <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
+                <li>Leads are assigned automatically in a fair rotation.</li>
+                <li>Only one lead is reserved for an agent at a time.</li>
+                <li>If the agent does not start a call in time, the lead passes to the next agent.</li>
+              </ul>
             </div>
           </div>
           <div className="flex items-center gap-5 text-[11px] font-medium text-muted-foreground">

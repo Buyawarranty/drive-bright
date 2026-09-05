@@ -150,11 +150,11 @@ export const OrrMorningReleasePanel: React.FC = () => {
         </button>
       </div>
 
-      <p className="px-4 pt-3 text-xs text-muted-foreground max-w-3xl">
-        Enquiries that arrive after {CLOSE_HOUR}:00, before 0{OPEN_HOUR}:00 or on a non-working day are held back and
-        handed out in rotation at 0{OPEN_HOUR}:00 the next working day, so the whole batch starts fresh with the team on
-        shift.
-      </p>
+      <ul className="px-4 pt-3 text-xs text-muted-foreground max-w-3xl list-disc pl-4 space-y-1">
+        <li>Enquiries that arrive after {CLOSE_HOUR}:00, before 0{OPEN_HOUR}:00 or on a non-working day are held back.</li>
+        <li>They are handed out in rotation at 0{OPEN_HOUR}:00 the next working day.</li>
+        <li>The whole batch starts fresh with the team on shift.</li>
+      </ul>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4">
         <div className="rounded-md border border-border bg-background p-3">

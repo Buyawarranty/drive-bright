@@ -397,13 +397,11 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
                   {autoOn ? 'On' : 'Off'}
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
-                A safe place to rehearse the overnight batch: leads that arrived from 6pm yesterday wait in the Open
-                Pool and are released one each, in arrow order, to switched-on Open Round Robin agents.
-                {dataSource === 'live'
-                  ? ' These are the real leads we received overnight, shown as a read-only copy — Open Round Robin is still off, nothing is written back, no customer is contacted and no agent\'s figures change.'
-                  : ' Every name here is made up — no customer is contacted and no agent\'s figures change.'}
-              </p>
+              <ul className="text-sm text-muted-foreground list-disc pl-4 space-y-1 leading-relaxed max-w-2xl">
+                <li>Rehearse the overnight batch safely — leads that arrived from 6pm yesterday wait in the Open Pool.</li>
+                <li>At 09:00 they are released one each, in rotation order, to switched-on Open Round Robin agents.</li>
+                <li>{dataSource === 'live' ? 'These are real overnight leads shown as a read-only copy.' : 'Every name here is made up.'} Nothing is written back and no figures change.</li>
+              </ul>
               <p className="text-xs text-muted-foreground">
                 Next agent in line: <strong className="text-foreground">{nextAgent ? nextAgent.name.split(' ')[0] : '—'}</strong>
                 {lastRun ? ` · last checked ${fmtTime(lastRun)}` : ''} · Round Robin agents are untouched · live
@@ -495,9 +493,10 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
       <div className="rounded-lg border border-border bg-background p-3">
         <div className="flex items-baseline justify-between flex-wrap gap-2">
           <h4 className="text-xs font-semibold text-foreground">Agents taking leads (practice)</h4>
-          <span className="text-[11px] text-muted-foreground">
-            Switch an agent off and the rotation skips them — even while the toggle above is On.
-          </span>
+          <ul className="text-[11px] text-muted-foreground list-disc pl-4 space-y-0.5">
+            <li>Switch an agent off and the rotation skips them.</li>
+            <li>Auto-release still runs, but only for agents who are switched on.</li>
+          </ul>
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
           {perAgentCount.map(a => (
@@ -556,10 +555,11 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
           <HandGrab className="h-4 w-4" />
           Take next lead — agent view (practice)
         </h4>
-        <p className="text-[11px] text-emerald-900/90">
-          This is the Open Round Robin action itself: the agent takes the oldest waiting lead from the pool
-          rather than being sent one. Pick who you are practising as, then press Take next lead.
-        </p>
+        <ul className="text-[11px] text-emerald-900/90 list-disc pl-4 space-y-0.5">
+          <li>The agent takes the oldest waiting lead from the pool themselves.</li>
+          <li>Pick the agent you want to practise as.</li>
+          <li>Press Take next lead to see what they would see.</li>
+        </ul>
         <div className="flex flex-wrap items-center gap-2">
           <select
             value={previewAgentId}
@@ -593,19 +593,21 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
           <Sunrise className="h-4 w-4" />
           Morning lead distribution — 09:00 release (practice)
         </h4>
-        <p className="text-[11px] text-amber-900/90">
-          Leads that arrived after 6pm or overnight are parked until 09:00 on the next working day, then
-          released one each in rotation to the switched-on agents. Press the button to rehearse that 9am
-          release now.
-        </p>
-        <p className="text-[11px] text-amber-900/90 border-l-2 border-amber-400 pl-2">
-          <strong>Late start (e.g. 10am instead of 9am):</strong> the 09:00 overnight batch is shared only
-          between agents switched on at 09:00 — a late starter gets <strong>none of that batch, ever</strong>.
-          The leads were the pool's, never theirs, so nothing is owed. From the moment they switch on they
-          rejoin the <strong>back of the rotation</strong> and take normal turns from leads still waiting plus
-          new ones arriving — no catch-up, nobody's allocation is redone. To rehearse it: run the release with
-          an agent switched off, then switch them on and watch the next leads go to them in turn.
-        </p>
+        <ul className="text-[11px] text-amber-900/90 list-disc pl-4 space-y-0.5">
+          <li>Leads that arrive after 6pm or overnight are parked until 09:00 the next working day.</li>
+          <li>At 09:00 they are released one each, in rotation, to agents who are switched on.</li>
+          <li>Press Run the 09:00 morning release to rehearse it now.</li>
+        </ul>
+        <div className="text-[11px] text-amber-900/90 border-l-2 border-amber-400 pl-2 space-y-0.5">
+          <p className="font-semibold">Late start rule</p>
+          <ul className="list-disc pl-4 space-y-0.5">
+            <li>The 09:00 batch is only shared between agents switched on at 09:00.</li>
+            <li>A late starter gets none of that batch — the leads belonged to the pool, not to them.</li>
+            <li>From the moment they switch on they rejoin the back of the rotation.</li>
+            <li>No catch-up is given and nobody's allocation is redone.</li>
+            <li>To rehearse: run the release with an agent off, then switch them on and watch later leads go to them in turn.</li>
+          </ul>
+        </div>
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-[11px] font-semibold text-amber-900 bg-amber-200/70 border border-amber-400/60 rounded px-2 py-1">
             {waiting.length} parked overnight

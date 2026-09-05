@@ -78,9 +78,11 @@ export const LiveStuckCustomersPanel: React.FC = () => {
           <AlertTriangle className="h-5 w-5 text-red-600" />
           <div>
             <h3 className="text-base font-bold text-red-800">Live customers stuck on checkout</h3>
-            <p className="text-xs text-red-700/80">
-              Real website visitors from the last hour — test and sandbox traffic is filtered out. Any agent can call.
-            </p>
+            <ul className="text-xs text-red-700/80 list-disc pl-4 space-y-0.5">
+              <li>Real website visitors from the last hour.</li>
+              <li>Test and sandbox traffic is filtered out.</li>
+              <li>Any agent can call.</li>
+            </ul>
           </div>
         </div>
         <div className="flex items-center gap-2">
