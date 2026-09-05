@@ -2402,6 +2402,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     currentAdminId={currentAdminId}
                     readOnlyLeadIds={crossTeamReadOnlyIds}
                     defaultSortKey="lead_date"
+                    sandboxMode={sandboxMode}
                   />
                   
                   {/* Lightweight Footer Pagination */}
