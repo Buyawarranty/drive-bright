@@ -2,6 +2,7 @@ import React from 'react';
 import { Users, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
 
 /**
  * Agent availability & rotation — read-only view of who is on, what they are
@@ -146,7 +147,7 @@ export const OrrAgentRotationPanel: React.FC = () => {
 
   React.useEffect(() => {
     load();
-    const t = setInterval(load, 60_000);
+    const t = setInterval(() => { if (document.hidden || isSecondaryCrmTab()) return; load(); }, 60_000);
     return () => clearInterval(t);
   }, [load]);
 

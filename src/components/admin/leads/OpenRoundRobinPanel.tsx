@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
+import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
 
 
 const TEAM_BLUE_ID = '14f567b3-4ba3-4baa-acef-8d0de8e24b2d';
@@ -106,7 +107,7 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
 
   useEffect(() => {
     loadStats();
-    const t = setInterval(loadStats, 30_000);
+    const t = setInterval(() => { if (document.hidden || isSecondaryCrmTab()) return; loadStats(); }, 30_000);
     const channel = supabase
       .channel('orr-panel')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'lead_assignment_audit' }, () => loadStats())

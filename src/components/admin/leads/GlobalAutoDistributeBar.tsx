@@ -5,6 +5,8 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { fairFillShares } from '@/lib/fairFillShares';
+import { withBackgroundPriority } from '@/lib/requestQueue';
+import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
 
 
 /**
@@ -22,7 +24,9 @@ import { fairFillShares } from '@/lib/fairFillShares';
 
 const AUTO_SWEEP_KEY = 'open_pool_auto_distribute';
 const AUTO_SWEEP_INTERVAL_MS = 30_000;
-const POOL_POLL_MS = 30_000;
+const POOL_POLL_MS = 60_000;
+/** Realtime bursts (a bulk assign touches many rows) must not fire one count each. */
+const POOL_COUNT_DEBOUNCE_MS = 1500;
 const REASSIGN_WINDOW_MINUTES = 60 * 24 * 90;
 const MANAGEMENT_ROLES = new Set(['admin', 'super_admin', 'sales_manager']);
 
@@ -107,20 +111,33 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool, headless = false
 
   // ---- Pool count ---------------------------------------------------------
   const loadPoolCount = useCallback(async () => {
-    const { count } = await (supabase as any)
+    const { count } = await withBackgroundPriority(() => (supabase as any)
       .from('sales_leads')
       .select('id', { count: 'exact', head: true })
       .eq('queue', 'live_open_pool')
       .is('assigned_to', null)
       .is('owner_agent', null)
-      .eq('status', 'new');
+      .eq('status', 'new'));
     setPoolCount(count ?? 0);
   }, []);
+
+  // Debounced refresh for realtime bursts.
+  const debounceRef = useRef<number | null>(null);
+  const queuePoolCount = useCallback(() => {
+    if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
+    debounceRef.current = window.setTimeout(() => {
+      debounceRef.current = null;
+      loadPoolCount();
+    }, POOL_COUNT_DEBOUNCE_MS);
+  }, [loadPoolCount]);
 
   useEffect(() => {
     if (!isManager) return;
     loadPoolCount();
-    const t = setInterval(() => { if (document.hidden) return; loadPoolCount(); }, POOL_POLL_MS);
+    const t = setInterval(() => {
+      if (document.hidden || isSecondaryCrmTab()) return;
+      loadPoolCount();
+    }, POOL_POLL_MS);
     return () => clearInterval(t);
   }, [isManager, loadPoolCount]);
 
@@ -132,11 +149,11 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool, headless = false
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'sales_leads', filter: 'queue=eq.live_open_pool' },
-        () => loadPoolCount(),
+        () => queuePoolCount(),
       )
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [isManager, loadPoolCount]);
+  }, [isManager, queuePoolCount]);
 
   // ---- Sweep --------------------------------------------------------------
   const runSweep = useCallback(async () => {
@@ -147,11 +164,11 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool, headless = false
     setSweeping(true);
     try {
       // Load active, unpaused round-robin / open-pool agents + their caps.
-      const { data: caps } = await (supabase as any)
+      const { data: caps } = await withBackgroundPriority(() => (supabase as any)
         .from('agent_distribution_caps')
         .select('admin_user_id, paused, assignment_mode, daily_cap')
         .eq('paused', false)
-        .in('assignment_mode', ['round_robin', 'open_pool']);
+        .in('assignment_mode', ['round_robin', 'open_pool']));
 
       const agentCaps: Cap[] = (caps || []) as Cap[];
       if (agentCaps.length === 0) return;
@@ -162,12 +179,12 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool, headless = false
         return new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate())).toISOString();
       })();
       const ids = agentCaps.map(c => c.admin_user_id);
-      const { data: todays } = await (supabase as any)
+      const { data: todays } = await withBackgroundPriority(() => (supabase as any)
         .from('sales_leads')
         .select('assigned_to')
         .not('assigned_to', 'is', null)
         .gte('assigned_at', todayStart)
-        .in('assigned_to', ids);
+        .in('assigned_to', ids));
       const assignedToday: Record<string, number> = {};
       (todays || []).forEach((r: any) => {
         if (!r.assigned_to) return;
@@ -208,8 +225,13 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool, headless = false
 
   useEffect(() => {
     if (!isManager || !autoOn) return;
-    const kick = setTimeout(() => runSweep(), 1500);
-    const t = setInterval(() => { if (document.hidden) return; runSweep(); }, AUTO_SWEEP_INTERVAL_MS);
+    const kick = setTimeout(() => { if (!isSecondaryCrmTab()) runSweep(); }, 1500);
+    const t = setInterval(() => {
+      // One tab does the handing out. Four open CRM tabs used to run four
+      // sweeps against the same pool, which is what slowed every screen down.
+      if (document.hidden || isSecondaryCrmTab()) return;
+      runSweep();
+    }, AUTO_SWEEP_INTERVAL_MS);
     return () => { clearTimeout(kick); clearInterval(t); };
   }, [isManager, autoOn, runSweep]);
 
