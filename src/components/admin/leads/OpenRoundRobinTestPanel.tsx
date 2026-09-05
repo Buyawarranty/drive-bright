@@ -862,7 +862,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           </div>
           <div>
             <div className="text-sm font-semibold text-foreground">Agent preview</div>
-            <div className="text-xs text-muted-foreground">See the page exactly as a sales agent would.</div>
+            <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
+              <li>See the page exactly as a sales agent would.</li>
+              <li>Pick an agent from the list to switch their view.</li>
+            </ul>
           </div>
         </div>
         <div className="flex flex-col items-end gap-1">
