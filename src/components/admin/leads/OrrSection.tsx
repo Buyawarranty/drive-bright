@@ -23,31 +23,27 @@ import { OrrOvernightSandboxPanel } from './OrrOvernightSandboxPanel';
  * behaviour, queries or settings beyond the ORR go-live switch it already owned.
  */
 export const OrrSection: React.FC<{ isManagement: boolean }> = ({ isManagement }) => {
-  const [orrLive, setOrrLive] = React.useState<boolean | null>(null);
-  const [selectedTeamIds, setSelectedTeamIds] = React.useState<string[]>([]);
-  const [teamNamesById, setTeamNamesById] = React.useState<Record<string, string>>({});
+  // Live settings, shared with the Lead Allocation page and kept in step by
+  // realtime — a change there shows here (and in the sandbox) without a reload.
+  const { orrLive: liveOrrLive, enabledTeamIds, teamNamesById, refresh } = useOrrLiveSettings(isManagement);
+  const [orrLiveOverride, setOrrLiveOverride] = React.useState<boolean | null>(null);
+  const [teamSelectionOverride, setTeamSelectionOverride] = React.useState<string[] | null>(null);
   const [sandboxOpen, setSandboxOpen] = React.useState(true);
 
+  const orrLive = orrLiveOverride ?? liveOrrLive;
+  const selectedTeamIds = teamSelectionOverride ?? enabledTeamIds;
+
+  // Once the shared settings catch up, drop the local optimistic values.
   React.useEffect(() => {
-    if (!isManagement) return;
-    let cancelled = false;
-    (async () => {
-      const [{ data: settings }, { data: teams }] = await Promise.all([
-        supabase.from('lead_distribution_settings').select('team_id, open_round_robin_enabled'),
-        supabase.from('lead_teams').select('id, name'),
-      ]);
-      if (cancelled) return;
-      const enabledTeamIds = (settings || [])
-        .filter(r => r.open_round_robin_enabled === true && r.team_id)
-        .map(r => r.team_id as string);
-      setOrrLive(enabledTeamIds.length > 0);
-      setSelectedTeamIds(enabledTeamIds);
-      setTeamNamesById(
-        Object.fromEntries(((teams as { id: string; name: string }[]) || []).map(t => [t.id, t.name])),
-      );
-    })();
-    return () => { cancelled = true; };
-  }, [isManagement]);
+    setOrrLiveOverride(null);
+    setTeamSelectionOverride(null);
+  }, [liveOrrLive, enabledTeamIds.join(',')]);
+
+  const setOrrLive = (next: boolean | null) => {
+    setOrrLiveOverride(next);
+    refresh();
+  };
+
 
   // Arriving via the "Open Round Robin" jump pill (or a #open-round-robin link)
   // scrolls here and opens the practice lab, so "take lead" is never hidden.
