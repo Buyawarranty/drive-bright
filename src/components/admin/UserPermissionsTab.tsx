@@ -2129,6 +2129,35 @@ export const UserPermissionsTab = () => {
               </div>
 
               <div>
+                <Label>Lead types they work</Label>
+                <div className="mt-2 space-y-2 rounded-md border p-3">
+                  {WORKSTREAM_DEFS.map(ws => (
+                    <div key={ws.key} className="flex items-start gap-2">
+                      <Checkbox
+                        id={`edit-ws-${ws.key}`}
+                        checked={editingWorkstreams[ws.key]}
+                        disabled={!editingTeamId || editingTeamId === '__all__'}
+                        onCheckedChange={(checked) =>
+                          setEditingWorkstreams(prev => ({ ...prev, [ws.key]: checked === true }))
+                        }
+                      />
+                      <Label htmlFor={`edit-ws-${ws.key}`} className="text-sm font-normal leading-tight cursor-pointer">
+                        {ws.label}
+                        <span className="block text-xs text-muted-foreground">{ws.hint}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {(!editingTeamId || editingTeamId === '__all__')
+                    ? 'Pick a single team above first — lead types belong to a team.'
+                    : 'Leave all unticked and they get no leads. Tick only Recontact Leads for an agent who should work older leads only. Same setting as the Lead Allocation page.'}
+                </p>
+              </div>
+
+
+
+              <div>
                 <Label htmlFor="editSipExt">Dial 9 / SIP Extension</Label>
                 <Input
                   id="editSipExt"
