@@ -529,19 +529,18 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           : ['Created — every agent is on a call, waiting in the open pool queue'],
       };
 
-      window.setTimeout(() => {
-        toast(
-          offeredTo
-            ? {
-                title: `Offered to ${offeredTo.name}`,
-                description: `The rotation picked the next free agent — ${Math.round(cadenceRef.current.claimWindowSeconds)} seconds to make the first call.`,
-              }
-            : {
-                title: 'Everyone is busy — lead is waiting',
-                description: 'No agent is free, so the lead waits in the queue and is released to the first agent who frees up.',
-              },
-        );
-      }, 0);
+      if (offeredTo) {
+        const claimSeconds = Math.round(cadenceRef.current.claimWindowSeconds);
+        window.setTimeout(() => {
+          toast({
+            title: `Offered to ${offeredTo.name}`,
+            description: `The rotation picked the next free agent — ${claimSeconds} seconds to make the first call.`,
+          });
+        }, 0);
+      }
+      // When everyone is busy there is no pop-up: the lead simply shows as
+      // "Waiting in the open pool" in the list below, which is correct behaviour.
+
 
       return [draft, ...current];
     });
