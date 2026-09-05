@@ -524,6 +524,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   customerActivity,
   responseTime,
   repeatCustomer,
+  sandboxMode = false,
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
