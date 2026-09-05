@@ -439,7 +439,12 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   }, []);
 
   const visibleLeads = useMemo(
-    () => leads.filter((lead) => lead.assignedTo === simulatedAgentId && lead.status !== 'dormant'),
+    () =>
+      leads.filter(
+        (lead) =>
+          lead.status !== 'dormant' &&
+          (simulatedAgentId === 'all' ? lead.assignedTo !== null : lead.assignedTo === simulatedAgentId),
+      ),
     [leads, simulatedAgentId],
   );
 
@@ -972,6 +977,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
               <li>See the page exactly as a sales agent would.</li>
               <li>Pick an agent from the list to switch their view.</li>
+              <li>Choose &ldquo;Whole team&rdquo; to watch every lead in the flow at once.</li>
             </ul>
           </div>
         </div>
@@ -984,6 +990,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             value={simulatedAgentId}
             onChange={(event) => setSimulatedAgentId(event.target.value)}
           >
+            <option value="all">Whole team — everyone&rsquo;s leads</option>
             {DUMMY_AGENTS.map((agent) => (
               <option key={agent.id} value={agent.id}>
                 {agent.order}. {agent.name} · ext {agent.extension}
@@ -1054,7 +1061,9 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
         {visibleLeads.length === 0 ? (
           <div className="text-sm text-muted-foreground py-8 text-center border border-dashed border-border rounded-md bg-muted/30">
-            No practice leads for {getAgent(simulatedAgentId).name}. Click <strong>Take this lead</strong> or switch the agent preview.
+            {simulatedAgentId === 'all'
+              ? 'No practice leads yet. Click Take this lead or run the 09:00 release.'
+              : `No practice leads for ${getAgent(simulatedAgentId).name} right now — they may be with another agent. Switch to "Whole team" to see them all.`}
           </div>
         ) : (
           <div className="overflow-x-auto border border-border rounded-md">
