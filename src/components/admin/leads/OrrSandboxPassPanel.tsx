@@ -81,6 +81,7 @@ export const OrrSandboxPassPanel: React.FC = () => {
           <thead className="text-muted-foreground">
             <tr className="text-left">
               <th className="py-1 pr-3">Lead</th>
+              <th className="py-1 pr-3">Time to contact</th>
               <th className="py-1 pr-3">Arrived</th>
               <th className="py-1 pr-3">Really assigned to</th>
               <th className="py-1">Would go to (practice)</th>
