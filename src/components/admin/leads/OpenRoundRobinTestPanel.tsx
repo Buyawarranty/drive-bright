@@ -281,25 +281,32 @@ const isHeldLive = (lead: DummyLead, now: number) =>
  * One-at-a-time ORR engine: an agent may only ever hold ONE dummy lead.
  * Expired leads roll to the next free agent; if everyone is busy the lead waits in the queue.
  */
-const advance = (input: DummyLead[], startIndex: number, now: number, cfg: OrrCadenceConfig) => {
+const advance = (
+  input: DummyLead[],
+  startIndex: number,
+  now: number,
+  cfg: OrrCadenceConfig,
+  roster: DummyAgent[] = DUMMY_AGENTS,
+) => {
   const leads = input.map((lead) => ({ ...lead }));
-  let index = startIndex;
+  let index = roster.length ? startIndex % roster.length : 0;
   let reassigned = 0;
   let dormant = 0;
 
   const busy = new Set(leads.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string));
 
   const takeFreeAgent = (): DummyAgent | null => {
-    for (let step = 0; step < DUMMY_AGENTS.length; step += 1) {
-      const candidate = DUMMY_AGENTS[(index + step) % DUMMY_AGENTS.length];
+    for (let step = 0; step < roster.length; step += 1) {
+      const candidate = roster[(index + step) % roster.length];
       if (!busy.has(candidate.id)) {
-        index = (index + step + 1) % DUMMY_AGENTS.length;
+        index = (index + step + 1) % roster.length;
         busy.add(candidate.id);
         return candidate;
       }
     }
     return null;
   };
+
 
   // Oldest first, so waiting leads are handled before newly expired ones.
   const pending = leads
@@ -390,6 +397,17 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   const [leads, setLeads] = useState<DummyLead[]>([]);
   const nextAgentIndexRef = useRef(0);
   const [simulatedAgentId, setSimulatedAgentId] = useState(DUMMY_AGENTS[0].id);
+  // How many agents are "on shift" for this rehearsal (1–4).
+  const [agentCount, setAgentCount] = useState(DUMMY_AGENTS.length);
+  const roster = useMemo(() => DUMMY_AGENTS.slice(0, agentCount), [agentCount]);
+  const rosterRef = useRef(roster);
+  useEffect(() => {
+    rosterRef.current = roster;
+    if (simulatedAgentId !== 'all' && !roster.some((a) => a.id === simulatedAgentId)) {
+      setSimulatedAgentId('all');
+    }
+  }, [roster, simulatedAgentId]);
+
   const [tick, setTick] = useState(0);
   // 'practice' = made-up TEST leads. 'live' = a READ-ONLY copy of the leads we
   // really received, so ORR can be proven against real-world data while it is
@@ -430,7 +448,8 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           (lead) => lead.status !== 'dormant' && (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)),
         );
         if (!needsWork) return current;
-        const result = advance(current, nextAgentIndexRef.current, now, cadenceRef.current);
+        const result = advance(current, nextAgentIndexRef.current, now, cadenceRef.current, rosterRef.current);
+
         nextAgentIndexRef.current = result.index;
         return result.leads;
       });
@@ -454,8 +473,9 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   const allAgentsBusy = useMemo(() => {
     const now = Date.now();
     const busy = new Set(leads.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo));
-    return DUMMY_AGENTS.every((agent) => busy.has(agent.id));
-  }, [leads, tick]);
+    return roster.every((agent) => busy.has(agent.id));
+  }, [leads, tick, roster]);
+
 
   /**
    * A new enquiry is offered by the rotation — never handed to whoever pressed the
@@ -470,10 +490,12 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
       const busy = new Set(current.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string));
 
       let offeredTo: DummyAgent | null = null;
-      for (let step = 0; step < DUMMY_AGENTS.length; step += 1) {
-        const candidate = DUMMY_AGENTS[(nextAgentIndexRef.current + step) % DUMMY_AGENTS.length];
+      const activeRoster = rosterRef.current;
+      for (let step = 0; step < activeRoster.length; step += 1) {
+        const candidate = activeRoster[(nextAgentIndexRef.current + step) % activeRoster.length];
         if (!busy.has(candidate.id)) {
-          nextAgentIndexRef.current = (nextAgentIndexRef.current + step + 1) % DUMMY_AGENTS.length;
+          nextAgentIndexRef.current = (nextAgentIndexRef.current + step + 1) % activeRoster.length;
+
           offeredTo = candidate;
           break;
         }
@@ -536,7 +558,8 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
     const now = Date.now();
 
     setLeads((current) => {
-      let index = nextAgentIndexRef.current;
+      const activeRoster = rosterRef.current;
+      let index = activeRoster.length ? nextAgentIndexRef.current % activeRoster.length : 0;
       const busy = new Set(
         current.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string),
       );
@@ -544,15 +567,16 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
       for (let i = 0; i < count; i += 1) {
         let offeredTo: DummyAgent | null = null;
-        for (let step = 0; step < DUMMY_AGENTS.length; step += 1) {
-          const candidate = DUMMY_AGENTS[(index + step) % DUMMY_AGENTS.length];
+        for (let step = 0; step < activeRoster.length; step += 1) {
+          const candidate = activeRoster[(index + step) % activeRoster.length];
           if (!busy.has(candidate.id)) {
-            index = (index + step + 1) % DUMMY_AGENTS.length;
+            index = (index + step + 1) % activeRoster.length;
             busy.add(candidate.id);
             offeredTo = candidate;
             break;
           }
         }
+
 
         const leadNumber = current.length + i + 1;
         drafts.push({
@@ -830,6 +854,36 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           </div>
         </div>
 
+        <div className="mt-5 pt-4 border-t border-border rounded-lg border border-border bg-muted/30 p-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-semibold text-foreground">Agents on shift</span>
+            <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
+              {[1, 2, 3, 4].map((count) => (
+                <button
+                  key={count}
+                  type="button"
+                  onClick={() => { setAgentCount(count); setLeads([]); nextAgentIndexRef.current = 0; }}
+                  className={cn(
+                    'px-3 py-1.5 text-xs font-semibold transition-colors',
+                    agentCount === count ? 'bg-teal-600 text-white' : 'bg-background text-muted-foreground hover:bg-muted',
+                  )}
+                >
+                  {count} {count === 1 ? 'agent' : 'agents'}
+                </button>
+              ))}
+            </div>
+            <span className="text-xs text-muted-foreground">
+              On now: {roster.map((a) => a.name).join(', ')}
+            </span>
+          </div>
+          <ul className="mt-2 text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
+            <li>Change how many agents are working, then run the 09:00 release or take leads.</li>
+            <li>With one agent, every lead queues behind the one they are holding.</li>
+            <li>Changing this clears the practice list so the rotation starts clean.</li>
+          </ul>
+        </div>
+
+
         <div className="mt-5 pt-4 border-t border-border rounded-lg border border-amber-200 bg-amber-50/60 p-3">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm font-semibold text-amber-900">Start of day — 09:00 release</span>
@@ -1002,7 +1056,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             onChange={(event) => setSimulatedAgentId(event.target.value)}
           >
             <option value="all">Whole team — everyone&rsquo;s leads</option>
-            {DUMMY_AGENTS.map((agent) => (
+            {roster.map((agent) => (
               <option key={agent.id} value={agent.id}>
                 {agent.order}. {agent.name} · ext {agent.extension}
               </option>
