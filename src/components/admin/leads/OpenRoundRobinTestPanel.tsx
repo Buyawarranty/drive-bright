@@ -518,6 +518,79 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   }, [toast]);
 
   /**
+   * Overnight leads: enquiries that arrived while nobody was on shift are parked
+   * and released into this same flow at 09:00. From then on the day continues as
+   * normal — same table, same columns, same rules.
+   */
+  const [overnightParked, setOvernightParked] = useState(12);
+  const [morningReleasedAt, setMorningReleasedAt] = useState<Date | null>(null);
+
+  const releaseOvernight = useCallback(() => {
+    const count = overnightParked;
+    if (count <= 0) return;
+    const now = Date.now();
+
+    setLeads((current) => {
+      let index = nextAgentIndexRef.current;
+      const busy = new Set(
+        current.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string),
+      );
+      const drafts: DummyLead[] = [];
+
+      for (let i = 0; i < count; i += 1) {
+        let offeredTo: DummyAgent | null = null;
+        for (let step = 0; step < DUMMY_AGENTS.length; step += 1) {
+          const candidate = DUMMY_AGENTS[(index + step) % DUMMY_AGENTS.length];
+          if (!busy.has(candidate.id)) {
+            index = (index + step + 1) % DUMMY_AGENTS.length;
+            busy.add(candidate.id);
+            offeredTo = candidate;
+            break;
+          }
+        }
+
+        const leadNumber = current.length + i + 1;
+        drafts.push({
+          id: `dummy-orr-overnight-${now}-${i}`,
+          firstName: 'TEST',
+          lastName: `Overnight ${String(i + 1).padStart(2, '0')}`,
+          email: `overnight.lead${leadNumber}@example.com`,
+          status: offeredTo ? 'new' : 'queued',
+          displayStatus: 'new',
+          assignedTo: offeredTo ? offeredTo.id : null,
+          attemptCount: offeredTo ? 1 : 0,
+          deadlineAt: offeredTo ? now + cadenceRef.current.claimWindowSeconds * 1000 : now,
+          vehicleReg: 'TEST123',
+          phone: '07902222222',
+          createdAt: now - (count - i) * 45 * 60 * 1000,
+          dials: 0,
+          contactedAt: null,
+          dayDials: 0,
+          nextCallAt: null,
+          redTeamAt: null,
+          followUpDay: 0,
+          chaseComplete: false,
+          history: offeredTo
+            ? [`Arrived overnight — released at 09:00 and offered to ${offeredTo.name}`]
+            : ['Arrived overnight — released at 09:00, waiting in the open pool queue'],
+        });
+      }
+
+      nextAgentIndexRef.current = index;
+      return [...drafts.reverse(), ...current];
+    });
+
+    setOvernightParked(0);
+    setMorningReleasedAt(new Date());
+    toast({
+      title: '09:00 release done',
+      description: `${count} overnight leads went into the same flow — one at a time, oldest first.`,
+    });
+  }, [overnightParked, toast]);
+
+
+
+  /**
    * Self-claiming a waiting lead. Blocked unless a manager has switched the
    * permission on, so nobody can pull leads out of the queue for themselves.
    */
