@@ -864,6 +864,7 @@ export const UserPermissionsTab = () => {
             .maybeSingle();
           if (newAdmin?.id) {
             await assignAgentToTeam(newAdmin.id, teamId);
+            await saveAgentWorkstreams(newAdmin.id, inviteWorkstreams, inviteData.permissions);
           }
         } catch (teamErr) {
           console.warn('Could not assign team:', teamErr);
