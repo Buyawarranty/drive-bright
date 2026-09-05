@@ -783,6 +783,8 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   const cleanup = () => {
     setLeads([]);
     nextAgentIndexRef.current = 0;
+    setOvernightParked(12);
+    setMorningReleasedAt(null);
     toast({ title: 'Practice leads cleared', description: 'The practice page has been reset.' });
 
   };
@@ -836,6 +838,15 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             </span>
             <Button size="sm" onClick={releaseOvernight} disabled={overnightParked === 0 || dataSource === 'live'}>
               <Play className="h-3.5 w-3.5 mr-1.5" /> Run the 09:00 release
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => { setOvernightParked((n) => n + 12); setMorningReleasedAt(null); }}
+              disabled={dataSource === 'live'}
+              title="Park another overnight batch so you can run the 09:00 release again"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1.5" /> Park another overnight batch
             </Button>
             {morningReleasedAt ? (
               <span className="text-xs text-amber-900/80">
