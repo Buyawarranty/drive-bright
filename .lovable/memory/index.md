@@ -150,6 +150,7 @@ Updated: just now
 
 - [Admin Sidebar Tab Order](mem://admin/sidebar-tab-order) — Persist any user-directed reordering of admin side nav tabs; never reorder unprompted
 - [Reassign Preserves History](mem://admin/leads/reassign-preserves-history) — Bulk/offboarding reassign only changes assigned_to; notes, calls, statuses, reminders stay intact; never touch agents outside selected source
+- [ORR Settings Single Source](mem://admin/leads/orr-settings-single-source) — Lead Allocation owns all ORR settings; sandbox/New Leads read them via useOrrLiveSettings, never a local copy
 - [Online Sales Always Website](mem://admin/leads/online-sales-always-website) — Converted google_ad/social_ad/bing_ad/website leads are always credited to Website; only management can attach an agent
 - [Reassignment Syncs Ownership](mem://admin/leads/reassign-syncs-ownership) — Lead owner change propagates to matching customer record; manual reassign beats google_ad Website rule
 - [Per-agent Reassign Access](mem://admin/leads/per-agent-reassign-access) — can_reassign_leads + reassign_scope per agent; managers always all_teams; sales/sales_lead configurable in Staff Lead Access panel
