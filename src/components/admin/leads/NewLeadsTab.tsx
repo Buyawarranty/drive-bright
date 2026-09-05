@@ -1752,9 +1752,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   return (
     <div className="space-y-4">
       {/* MissedCallAlertBar now mounted globally in AdminDashboard so it shows on every tab */}
-      <WidgetErrorBoundary label="Live customers stuck on checkout">
-        <LiveStuckCustomersPanel />
-      </WidgetErrorBoundary>
+      {!sandboxMode && (
+        <WidgetErrorBoundary label="Live customers stuck on checkout">
+          <LiveStuckCustomersPanel />
+        </WidgetErrorBoundary>
+      )}
 
       {isAdminOrSuperAdmin || userRole === 'sales_manager' ? (
         /* Management sees every agent's figures, not a personal strip */
