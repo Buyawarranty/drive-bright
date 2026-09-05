@@ -555,10 +555,11 @@ export const OrrOvernightSandboxPanel: React.FC = () => {
           <HandGrab className="h-4 w-4" />
           Take next lead — agent view (practice)
         </h4>
-        <p className="text-[11px] text-emerald-900/90">
-          This is the Open Round Robin action itself: the agent takes the oldest waiting lead from the pool
-          rather than being sent one. Pick who you are practising as, then press Take next lead.
-        </p>
+        <ul className="text-[11px] text-emerald-900/90 list-disc pl-4 space-y-0.5">
+          <li>The agent takes the oldest waiting lead from the pool themselves.</li>
+          <li>Pick the agent you want to practise as.</li>
+          <li>Press Take next lead to see what they would see.</li>
+        </ul>
         <div className="flex flex-wrap items-center gap-2">
           <select
             value={previewAgentId}
