@@ -1218,7 +1218,16 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                           </div>
                         ) : (
                         <div className={cn('min-w-[160px] rounded-md border px-2.5 py-2', theme.holdBox)}>
-                          {expired ? (
+                          {lead.assignedTo === null ? (
+                            <>
+                              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-900 whitespace-nowrap">
+                                <Clock className="h-3 w-3 text-amber-700" /> In the queue
+                              </div>
+                              <div className="text-sm font-semibold text-amber-900">
+                                Goes to the next agent who frees up
+                              </div>
+                            </>
+                          ) : expired ? (
                             <div className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1">
                               <Clock className="h-3 w-3" /> Offered to another agent
                             </div>
@@ -1241,6 +1250,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                               </div>
                             </>
                           )}
+
 
                           {lead.chaseComplete ? (
                             <div className="mt-1.5 rounded border border-slate-300 bg-slate-50 px-2 py-1">
@@ -1282,8 +1292,12 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                           ) : null}
 
                           <div className="text-[11px] text-muted-foreground">
-                            Lead arrived {formatClock(ageSec)} ago · Attempt {lead.attemptCount}
+                            Lead arrived {formatClock(ageSec)} ago ·{' '}
+                            {lead.attemptCount === 0
+                              ? 'not offered to anyone yet'
+                              : `Attempt ${lead.attemptCount}`}
                           </div>
+
 
                           <div className={cn('mt-1.5 h-1.5 w-full rounded-full overflow-hidden', theme.bar)}>
                             <div
