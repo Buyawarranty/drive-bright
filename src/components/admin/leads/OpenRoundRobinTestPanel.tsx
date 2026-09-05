@@ -396,7 +396,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   const { toast } = useToast();
   const [leads, setLeads] = useState<DummyLead[]>([]);
   const nextAgentIndexRef = useRef(0);
-  const [simulatedAgentId, setSimulatedAgentId] = useState(DUMMY_AGENTS[0].id);
+  const [simulatedAgentId, setSimulatedAgentId] = useState<string>('all');
   // How many agents are "on shift" for this rehearsal (1–4).
   const [agentCount, setAgentCount] = useState(DUMMY_AGENTS.length);
   const roster = useMemo(() => DUMMY_AGENTS.slice(0, agentCount), [agentCount]);
