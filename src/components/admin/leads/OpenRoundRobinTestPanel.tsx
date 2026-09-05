@@ -846,10 +846,19 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
       {allAgentsBusy && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">
-          <span className="font-semibold">Every agent is on a call.</span>{' '}
-          {cadence.whenAllBusy === 'queue'
-            ? 'New enquiries wait in the open pool queue, oldest first, and go to the first agent who frees up — never to whoever clicks fastest.'
-            : 'New enquiries keep circulating round the rotation until an agent frees up and answers the offer.'}
+          <p className="font-semibold">Every agent is on a call.</p>
+          <ul className="list-disc pl-4 space-y-0.5">
+            <li>
+              {cadence.whenAllBusy === 'queue'
+                ? 'New enquiries wait in the open pool queue, oldest first.'
+                : 'New enquiries keep circulating round the rotation.'}
+            </li>
+            <li>
+              {cadence.whenAllBusy === 'queue'
+                ? 'The first agent who frees up gets the oldest waiting lead — not whoever clicks fastest.'
+                : 'They are re-offered until an agent frees up and answers.'}
+            </li>
+          </ul>
         </div>
       )}
 
