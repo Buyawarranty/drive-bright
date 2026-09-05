@@ -854,6 +854,36 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           </div>
         </div>
 
+        <div className="mt-5 pt-4 border-t border-border rounded-lg border border-border bg-muted/30 p-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-semibold text-foreground">Agents on shift</span>
+            <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
+              {[1, 2, 3, 4].map((count) => (
+                <button
+                  key={count}
+                  type="button"
+                  onClick={() => { setAgentCount(count); setLeads([]); nextAgentIndexRef.current = 0; }}
+                  className={cn(
+                    'px-3 py-1.5 text-xs font-semibold transition-colors',
+                    agentCount === count ? 'bg-teal-600 text-white' : 'bg-background text-muted-foreground hover:bg-muted',
+                  )}
+                >
+                  {count} {count === 1 ? 'agent' : 'agents'}
+                </button>
+              ))}
+            </div>
+            <span className="text-xs text-muted-foreground">
+              On now: {roster.map((a) => a.name).join(', ')}
+            </span>
+          </div>
+          <ul className="mt-2 text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
+            <li>Change how many agents are working, then run the 09:00 release or take leads.</li>
+            <li>With one agent, every lead queues behind the one they are holding.</li>
+            <li>Changing this clears the practice list so the rotation starts clean.</li>
+          </ul>
+        </div>
+
+
         <div className="mt-5 pt-4 border-t border-border rounded-lg border border-amber-200 bg-amber-50/60 p-3">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm font-semibold text-amber-900">Start of day — 09:00 release</span>
