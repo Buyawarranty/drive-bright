@@ -1894,7 +1894,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
                           <div className="text-[11px] text-muted-foreground leading-tight">
                             Lead arrived {formatClock(ageSec)} ago · Day {Math.max(1, lead.followUpDay)} of {CONTACT_DAYS} · Call{' '}
-                            {Math.min(callsAllowedOn(Date.now()), lead.dayDials + (attempted ? 1 : 1))} of {callsAllowedOn(Date.now())} today
+                            {Math.min(callsAllowedOn(Date.now()), lead.dayDials + 1)} of {callsAllowedOn(Date.now())} today
                           </div>
                           {lead.previousOutcome && (
                             <div className="text-[11px] font-medium text-foreground/80">Previous: {lead.previousOutcome}</div>
@@ -1965,36 +1965,24 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       </td>
                       <td className="px-2 py-2">
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
-                          <TooltipProvider delayDuration={100}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  onClick={() => recordNoAnswer(lead.id)}
-                                  className="h-7 rounded-md border border-amber-300 px-2 text-xs font-medium text-amber-700 hover:bg-amber-50"
-                                >
-                                  No answer
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="text-xs">
-                                Couldn&apos;t connect / no answer
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          <span className="h-7 w-7 rounded-md border-2 border-orange-500 flex items-center justify-center">
-                            <ChevronDown className="h-3.5 w-3.5 text-orange-600" />
-                          </span>
-                          <a href={`tel:${lead.phone}`} className="h-7 w-7 rounded-md flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
+                          <a href={`tel:${lead.phone}`} title="Call" className="h-7 w-7 rounded-md border border-input flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
                             <Phone className="h-3.5 w-3.5" />
                           </a>
                           <PracticeNotes
                             notes={lead.notes ?? []}
                             onAdd={(text) => addPracticeNote(lead.id, text)}
                           />
-                          <Mail className="h-4 w-4 text-blue-600" />
-                          <Bell className="h-4 w-4 text-muted-foreground" />
-                          <span className="inline-flex items-center gap-1 rounded-md border border-orange-300 px-2 py-1 text-xs font-medium text-orange-600">
+                          <span title="Email" className="h-7 w-7 rounded-md border border-input flex items-center justify-center text-blue-600">
+                            <Mail className="h-3.5 w-3.5" />
+                          </span>
+                          <span title="Reminder" className="h-7 w-7 rounded-md border border-input flex items-center justify-center text-muted-foreground">
+                            <Bell className="h-3.5 w-3.5" />
+                          </span>
+                          <span className="inline-flex h-7 items-center gap-1 rounded-md border border-orange-300 px-2 text-xs font-medium text-orange-600">
                             <FileText className="h-3 w-3" /> Quote
+                          </span>
+                          <span title="More" className="h-7 w-7 rounded-md border border-input flex items-center justify-center text-muted-foreground">
+                            <ChevronDown className="h-3.5 w-3.5" />
                           </span>
                         </div>
                       </td>
@@ -2029,13 +2017,12 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       <td className="px-2 py-2 text-xs whitespace-nowrap">
                         {lead.dials > 0 ? (
                           <div>
-                            <div className="font-medium text-foreground">{lead.dials} dial{lead.dials === 1 ? '' : 's'} logged</div>
-                            <div className="text-[11px] text-muted-foreground">practice · {formatAgo(lead.createdAt)}</div>
+                            <div className="font-medium text-foreground">{lead.dials} call attempt{lead.dials === 1 ? '' : 's'} logged</div>
+                            <div className="text-[11px] text-muted-foreground">Last activity {formatAgo(lead.createdAt)}</div>
                           </div>
                         ) : (
                           <div>
-                            <div className="text-muted-foreground">No agent activity</div>
-                            <div className="text-[11px] text-muted-foreground">sys {formatAgo(lead.createdAt)}</div>
+                            <div className="text-muted-foreground">No activity yet</div>
                           </div>
                         )}
                       </td>
@@ -2043,8 +2030,8 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                         {formatLeadDate(lead.createdAt)}
                       </td>
                       <td className="px-2 py-2 text-xs whitespace-nowrap">
-                        <div className="text-muted-foreground">{formatAgo(lead.createdAt)}</div>
-                        <div className="text-[11px] font-medium text-foreground">Shopping page</div>
+                        <div className="font-medium text-foreground">Viewed quote page</div>
+                        <div className="text-[11px] text-muted-foreground">{formatAgo(lead.createdAt)}</div>
                       </td>
                       <td className="px-2 py-2 text-xs whitespace-nowrap">
                         {(() => {
