@@ -811,8 +811,10 @@ const VehicleRiskBandsPanel: React.FC = () => {
               </div>
             </div>
             <p className="text-xs text-muted-foreground mb-3">
-              Changes are kept as you type. Press Save changes to keep them, then Push live to use the new prices on quotes.
+              Changes are kept as you type. Press <strong>Save risk bands</strong> to confirm this section,
+              then <strong>Push live</strong> to apply the new prices to quotes.
             </p>
+
 
 
             {/* CREATE A CATEGORY — name it and price it, exactly like the premium tiers */}
