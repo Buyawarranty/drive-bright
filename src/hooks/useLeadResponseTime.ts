@@ -2,7 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * "Time to contact" — how long after a lead arrived did an agent first act on it.
+ * "Time to contact" — how long after an agent could first act on a lead did
+ * they actually act on it.
+ *
+ * The clock does NOT start when the enquiry landed on the website (that can be
+ * the middle of the night). It starts at the later of:
+ *   - the lead arriving,
+ *   - the lead being handed to an agent (first assignment),
+ *   - 09:00 on the next working morning if it arrived outside 09:00–18:00.
  *
  * First action = earliest of:
  *   - lead_call_logs (Zoiper / Dial 9 logged call)
@@ -17,14 +24,49 @@ export interface LeadResponseTime {
   /** ISO timestamp of the first human action on the lead. */
   firstActionAt: string;
   source: 'call' | 'note' | 'status';
-  /** Seconds between lead arrival and the first action. */
+  /** Seconds between the clock starting and the first action. */
   seconds: number;
+  /** ISO timestamp the clock started from. */
+  clockStartedAt: string;
+  /** Why the clock started then. */
+  clockStart: 'arrival' | 'assigned' | 'office-open';
 }
 
 const SOURCE_LABEL: Record<LeadResponseTime['source'], string> = {
   call: 'First call',
   note: 'First note',
   status: 'Status change',
+};
+
+export const CLOCK_START_LABEL: Record<LeadResponseTime['clockStart'], string> = {
+  arrival: 'from the lead arriving',
+  assigned: 'from the lead being given to the agent',
+  'office-open': 'from 09:00, the lead arrived out of hours',
+};
+
+/** London wall-clock parts for a date. */
+const londonParts = (d: Date) => {
+  const p = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+  }).formatToParts(d);
+  const get = (t: string) => Number(p.find(x => x.type === t)?.value ?? 0);
+  return { hour: get('hour'), minute: get('minute') };
+};
+
+/**
+ * If the lead arrived outside office hours (before 09:00 or from 18:00),
+ * the agent's first chance to act is 09:00 the next working morning.
+ */
+export const officeOpenAfter = (arrival: Date): Date => {
+  const { hour, minute } = londonParts(arrival);
+  const minutes = hour * 60 + minute;
+  if (minutes >= 9 * 60 && minutes < 18 * 60) return arrival;
+  const shiftDays = minutes >= 18 * 60 ? 1 : 0;
+  // Roll to 09:00 London by removing the elapsed wall-clock minutes then adding 9h.
+  return new Date(arrival.getTime() - minutes * 60000 + shiftDays * 86400000 + 9 * 3600000);
 };
 
 export const getResponseSourceLabel = (s: LeadResponseTime['source']) => SOURCE_LABEL[s];
@@ -78,6 +120,7 @@ export const useLeadResponseTime = (leads: LeadInput[]) => {
     lastKeyRef.current = key;
 
     const first: Record<string, { at: string; source: LeadResponseTime['source'] }> = {};
+    const assignedAt: Record<string, string> = {};
     const consider = (leadId: string, at: string | null, source: LeadResponseTime['source']) => {
       if (!leadId || !at || !createdById[leadId]) return;
       const existing = first[leadId];
@@ -89,7 +132,7 @@ export const useLeadResponseTime = (leads: LeadInput[]) => {
     try {
       for (let i = 0; i < ids.length; i += BATCH) {
         const batch = ids.slice(i, i + BATCH);
-        const [calls, notes, changes] = await Promise.all([
+        const [calls, notes, changes, assigns] = await Promise.all([
           supabase
             .from('lead_call_logs')
             .select('lead_id, created_at')
@@ -110,6 +153,13 @@ export const useLeadResponseTime = (leads: LeadInput[]) => {
             .not('changed_by', 'is', null)
             .order('changed_at', { ascending: true })
             .limit(batch.length * 5),
+          supabase
+            .from('lead_assignment_audit')
+            .select('lead_id, created_at, assigned_to_id')
+            .in('lead_id', batch)
+            .not('assigned_to_id', 'is', null)
+            .order('created_at', { ascending: true })
+            .limit(batch.length * 5),
         ]);
 
         (calls.data || []).forEach((r: any) => consider(r.lead_id, r.created_at, 'call'));
@@ -118,16 +168,46 @@ export const useLeadResponseTime = (leads: LeadInput[]) => {
           if (!r.new_status || r.old_status === r.new_status) return;
           consider(r.lead_id, r.changed_at, 'status');
         });
+        (assigns.data || []).forEach((r: any) => {
+          if (!r.lead_id || !r.created_at) return;
+          const existing = assignedAt[r.lead_id];
+          if (!existing || new Date(r.created_at).getTime() < new Date(existing).getTime()) {
+            assignedAt[r.lead_id] = r.created_at;
+          }
+        });
       }
 
       const out: Record<string, LeadResponseTime> = {};
       Object.entries(first).forEach(([leadId, v]) => {
-        const createdAt = createdById[leadId];
-        const seconds = Math.max(
-          0,
-          Math.round((new Date(v.at).getTime() - new Date(createdAt).getTime()) / 1000)
-        );
-        out[leadId] = { firstActionAt: v.at, source: v.source, seconds };
+        const arrival = new Date(createdById[leadId]);
+        const actionMs = new Date(v.at).getTime();
+
+        // The clock starts when the agent first had a chance to act on the lead.
+        let clockStart: LeadResponseTime['clockStart'] = 'arrival';
+        let startMs = arrival.getTime();
+
+        const openMs = officeOpenAfter(arrival).getTime();
+        if (openMs > startMs) {
+          startMs = openMs;
+          clockStart = 'office-open';
+        }
+
+        const handedMs = assignedAt[leadId] ? new Date(assignedAt[leadId]).getTime() : null;
+        if (handedMs != null && handedMs > startMs && handedMs <= actionMs) {
+          startMs = handedMs;
+          clockStart = 'assigned';
+        }
+
+        // Never start the clock after the action itself.
+        if (startMs > actionMs) startMs = actionMs;
+
+        out[leadId] = {
+          firstActionAt: v.at,
+          source: v.source,
+          seconds: Math.max(0, Math.round((actionMs - startMs) / 1000)),
+          clockStartedAt: new Date(startMs).toISOString(),
+          clockStart,
+        };
       });
       setResponseByLead(out);
     } catch (e) {
