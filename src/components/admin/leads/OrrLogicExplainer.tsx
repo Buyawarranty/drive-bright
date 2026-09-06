@@ -243,8 +243,8 @@ export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel
                 onChange={(n) => set('followUpDailyDials', n)}
               />
               <NumberField
-                label="Offers before dormant"
-                hint="Unanswered offers before the lead stops circulating"
+                label="Offers before manager alert"
+                hint="Unanswered offers before a manager alert is raised"
                 value={config.maxAttempts}
                 min={1}
                 max={20}
