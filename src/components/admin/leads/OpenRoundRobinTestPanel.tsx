@@ -128,8 +128,8 @@ interface DummyLead {
   dayDials: number;
   /** When the next call attempt is due (start of the next calling window). */
   nextCallAt: number | null;
-  /** Set once the day's attempts are used up — the lead hands over to Team Red. */
-  redTeamAt: number | null;
+  /** Set once the day's attempts are used up — the lead hands over to Team Green. */
+  greenTeamAt: number | null;
   /** 0 = day one. 1–7 = the seven-day follow-up chase (max 2 dials a day). */
   followUpDay: number;
   /** True once the seven-day follow-up chase is finished with no contact. */
@@ -357,7 +357,7 @@ const advance = (
   return { leads, index, reassigned, dormant };
 };
 
-export type OrrPracticeTeam = 'blue' | 'red';
+export type OrrPracticeTeam = 'green';
 
 interface OrrTheme {
   label: string;
@@ -375,22 +375,21 @@ interface OrrTheme {
 }
 
 const ORR_SHARED_THEME: Omit<OrrTheme, 'label'> = {
-  cardBorder: 'border-l-teal-500',
-  iconWrap: 'bg-teal-100',
-  icon: 'text-teal-600',
-  chip: 'bg-teal-100 text-teal-800 border border-teal-200',
-  holdBox: 'border-teal-100 bg-teal-50/40',
-  holdLabel: 'text-teal-800',
-  holdValue: 'text-teal-900',
-  holdIcon: 'text-teal-600',
-  bar: 'bg-teal-100',
-  barFill: 'bg-teal-500',
-  reserved: 'border-teal-200 bg-teal-50/70 text-teal-700',
+  cardBorder: 'border-l-emerald-500',
+  iconWrap: 'bg-emerald-100',
+  icon: 'text-emerald-600',
+  chip: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+  holdBox: 'border-emerald-100 bg-emerald-50/40',
+  holdLabel: 'text-emerald-800',
+  holdValue: 'text-emerald-900',
+  holdIcon: 'text-emerald-600',
+  bar: 'bg-emerald-100',
+  barFill: 'bg-emerald-500',
+  reserved: 'border-emerald-200 bg-emerald-50/70 text-emerald-700',
 };
 
 const ORR_THEMES: Record<OrrPracticeTeam, OrrTheme> = {
-  blue: { label: 'Team Blue', ...ORR_SHARED_THEME },
-  red: { label: 'Team Red', ...ORR_SHARED_THEME },
+  green: { label: 'Team Green', ...ORR_SHARED_THEME },
 };
 
 
@@ -398,7 +397,7 @@ const ORR_THEMES: Record<OrrPracticeTeam, OrrTheme> = {
  * Open Round Robin — frontend-only dummy test mode.
  * This intentionally does not call Supabase, RPCs, edge functions, or live lead tables.
  */
-export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ team = 'blue' }) => {
+export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ team = 'green' }) => {
   const theme = ORR_THEMES[team];
   const { toast } = useToast();
   const [leads, setLeads] = useState<DummyLead[]>([]);
@@ -528,7 +527,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         contactedAt: null,
         dayDials: 0,
         nextCallAt: null,
-        redTeamAt: null,
+        greenTeamAt: null,
         followUpDay: 0,
         chaseComplete: false,
         history: offeredTo
@@ -605,7 +604,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           contactedAt: null,
           dayDials: 0,
           nextCallAt: null,
-          redTeamAt: null,
+          greenTeamAt: null,
           followUpDay: 0,
           chaseComplete: false,
           history: offeredTo
@@ -696,7 +695,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   /**
    * One-click “couldn’t connect / no answer”: logs the dial and applies the cadence.
    * Day one: up to 3 dials (2 if the lead arrived after midday), then handover to
-   * Team Red at 6pm. After that the lead is chased for the next seven days with a
+   * Team Green at 6pm. After that the lead is chased for the next seven days with a
    * maximum of two dials a day, for as long as it stays uncontacted and unowned.
    */
   const recordNoAnswer = (id: string) => {
@@ -727,9 +726,9 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           toastTitle = 'Follow-up finished';
           toastBody = 'Seven days of chasing are done with no contact. No further dials are scheduled.';
         } else if (!inChase) {
-          notes.push(`Day's attempts used — handing over to Team Red at ${formatTimeOfDay(atHour(now, cadence.redTeamHandoverHour))}`);
+          notes.push(`Day's attempts used — handing over to Team Green at ${formatTimeOfDay(atHour(now, cadence.greenTeamHandoverHour))}`);
           notes.push(`Seven-day follow-up starts tomorrow — up to ${cadence.followUpDailyDials} dials a day while the lead is uncontacted and unowned`);
-          toastTitle = 'Attempts used — moving to Team Red';
+          toastTitle = 'Attempts used — moving to Team Green';
           toastBody = `Day one is done. The seven-day follow-up starts tomorrow at ${formatTimeOfDay(nextDayAt)} with up to ${cadence.followUpDailyDials} dials a day.`;
         } else {
           notes.push(`Follow-up day ${lead.followUpDay} done — day ${nextDay} of ${cadence.followUpDays} resumes at ${formatTimeOfDay(nextDayAt)}`);
@@ -745,7 +744,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           followUpDay: exhausted && !chaseOver ? nextDay : lead.followUpDay,
           chaseComplete: chaseOver,
           nextCallAt: chaseOver ? null : exhausted ? nextDayAt : nextWin.at,
-          redTeamAt: !inChase && exhausted ? atHour(now, cadence.redTeamHandoverHour) : lead.redTeamAt,
+          greenTeamAt: !inChase && exhausted ? atHour(now, cadence.greenTeamHandoverHour) : lead.greenTeamAt,
           history: [...lead.history, ...notes],
         };
       }),
@@ -798,7 +797,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
       contactedAt: null,
       dayDials: 0,
       nextCallAt: null,
-      redTeamAt: null,
+      greenTeamAt: null,
       followUpDay: 0,
       chaseComplete: false,
       history: ['Read-only copy of a live lead — loaded for practice, nothing is written back'],
@@ -840,7 +839,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         contactedAt: null,
         dayDials: 0,
         nextCallAt: null,
-        redTeamAt: null,
+        greenTeamAt: null,
         followUpDay: 0,
         chaseComplete: false,
         history: ['Scenario walkthrough — made-up lead, nothing saved'],
@@ -1577,10 +1576,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                                 Dial {lead.dayDials} of {cadence.followUpDailyDials} today · chased while uncontacted and unowned
                               </div>
                             </div>
-                          ) : lead.redTeamAt ? (
+                          ) : lead.greenTeamAt ? (
                             <div className="mt-1.5 rounded border border-red-300 bg-red-50 px-2 py-1">
                               <div className="text-[11px] font-semibold text-red-800">
-                                Moving to Team Red at {formatTimeOfDay(lead.redTeamAt)}
+                                Moving to Team Green at {formatTimeOfDay(lead.greenTeamAt)}
                               </div>
                               <div className="text-[10px] text-red-700/80">
                                 Seven-day follow-up starts tomorrow · up to {cadence.followUpDailyDials} dials a day
@@ -1776,7 +1775,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <span className="font-semibold text-foreground">Day one calling plan:</span>{' '}
             {callWindows(cadence).map((w) => w.label).join(', ')}. Maximum {cadence.maxDialsFullDay} dials in a full day,
             or {cadence.maxDialsAfterMidday} if the lead arrives after midday. Once those attempts are used the lead hands
-            over to Team Red at {formatTimeOfDay(atHour(Date.now(), cadence.redTeamHandoverHour))} the same day, then is
+            over to Team Green at {formatTimeOfDay(atHour(Date.now(), cadence.greenTeamHandoverHour))} the same day, then is
             chased for {cadence.followUpDays} days with up to {cadence.followUpDailyDials} dials a day. Practice leads are
             reserved privately to one agent and wiped when you clear or reload. Change any of these figures in the section
             above.

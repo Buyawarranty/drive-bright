@@ -21,7 +21,7 @@ interface Stats {
 }
 
 /**
- * Open Round Robin — Team Blue Beta (7-attempt schedule).
+ * Open Round Robin — Team Green Beta (7-attempt schedule).
  *
  * Attempt 1: within 2 min of assignment
  * Attempt 2: 10 min after Attempt 1
@@ -127,7 +127,7 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
       toast({
         title: d.enabled === false ? 'Open Round Robin is disabled' : 'Sweep complete',
         description: d.enabled === false
-          ? 'Turn it on in lead_distribution_settings for Team Blue.'
+          ? 'Turn it on in lead_distribution_settings for Team Green.'
           : `Released ${d.released ?? 0} · Passed ${d.passed ?? 0} · Overnight ${d.assigned_overnight ?? 0}${d.note ? ` (${d.note})` : ''}`,
       });
       loadStats();
@@ -147,14 +147,14 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-base font-semibold text-foreground">
-                Open Round Robin · Team Blue test mode
+                Open Round Robin · Team Green test mode
               </h2>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-amber-500 text-white">
                 Test mode only
               </span>
             </div>
             <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-              Not switched on for real leads yet. Team Blue can rehearse it here — real enquiries
+              Not switched on for real leads yet. Team Green can rehearse it here — real enquiries
               still go out on the standard round robin. It will be turned on for live leads later.
             </p>
           </div>
@@ -204,7 +204,7 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
         <AlertTriangle className="h-4 w-4 text-amber-800 mt-0.5 shrink-0" />
         <p className="text-xs text-amber-900">
           <strong>Test mode only — no real leads are routed through Open Round Robin.</strong> Use
-          the practice panel below to rehearse the flow. Live rollout for Team Blue comes later; the
+          the practice panel below to rehearse the flow. Live rollout for Team Green comes later; the
           counters above stay at zero until then.
         </p>
       </div>
@@ -226,14 +226,14 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
           <li><strong>Attempt 7:</strong> 10:00am, 3 business days after Attempt 6</li>
         </ol>
         <p className="text-xs text-foreground/80 mt-3">
-          At each release the lead opens to eligible Team Blue agents; the first to claim gets a
+          At each release the lead opens to eligible Team Green agents; the first to claim gets a
           2-minute call window. If they don't call, it passes to the next agent (no attempt logged).
           After 7 unanswered attempts the lead becomes <strong>Dormant – No Contact</strong>.
           Weekends and UK bank holidays are excluded from business-day math. If the customer answers
           at any point, all future releases are cancelled and ownership stays with the caller.
         </p>
         <p className="text-[11px] text-muted-foreground mt-3">
-          Team Red and Team Green flows are unchanged.
+          Blue and Red teams stay on the normal round robin; Green team uses Open Round Robin when it is live.
         </p>
       </div>
 
