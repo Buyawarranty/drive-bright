@@ -2,7 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * "Time to contact" — how long after a lead arrived did an agent first act on it.
+ * "Time to contact" — how long after an agent could first act on a lead did
+ * they actually act on it.
+ *
+ * The clock does NOT start when the enquiry landed on the website (that can be
+ * the middle of the night). It starts at the later of:
+ *   - the lead arriving,
+ *   - the lead being handed to an agent (first assignment),
+ *   - 09:00 on the next working morning if it arrived outside 09:00–18:00.
  *
  * First action = earliest of:
  *   - lead_call_logs (Zoiper / Dial 9 logged call)
@@ -17,14 +24,49 @@ export interface LeadResponseTime {
   /** ISO timestamp of the first human action on the lead. */
   firstActionAt: string;
   source: 'call' | 'note' | 'status';
-  /** Seconds between lead arrival and the first action. */
+  /** Seconds between the clock starting and the first action. */
   seconds: number;
+  /** ISO timestamp the clock started from. */
+  clockStartedAt: string;
+  /** Why the clock started then. */
+  clockStart: 'arrival' | 'assigned' | 'office-open';
 }
 
 const SOURCE_LABEL: Record<LeadResponseTime['source'], string> = {
   call: 'First call',
   note: 'First note',
   status: 'Status change',
+};
+
+export const CLOCK_START_LABEL: Record<LeadResponseTime['clockStart'], string> = {
+  arrival: 'from the lead arriving',
+  assigned: 'from the lead being given to the agent',
+  'office-open': 'from 09:00, the lead arrived out of hours',
+};
+
+/** London wall-clock parts for a date. */
+const londonParts = (d: Date) => {
+  const p = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+  }).formatToParts(d);
+  const get = (t: string) => Number(p.find(x => x.type === t)?.value ?? 0);
+  return { hour: get('hour'), minute: get('minute') };
+};
+
+/**
+ * If the lead arrived outside office hours (before 09:00 or from 18:00),
+ * the agent's first chance to act is 09:00 the next working morning.
+ */
+export const officeOpenAfter = (arrival: Date): Date => {
+  const { hour, minute } = londonParts(arrival);
+  const minutes = hour * 60 + minute;
+  if (minutes >= 9 * 60 && minutes < 18 * 60) return arrival;
+  const shiftDays = minutes >= 18 * 60 ? 1 : 0;
+  // Roll to 09:00 London by removing the elapsed wall-clock minutes then adding 9h.
+  return new Date(arrival.getTime() - minutes * 60000 + shiftDays * 86400000 + 9 * 3600000);
 };
 
 export const getResponseSourceLabel = (s: LeadResponseTime['source']) => SOURCE_LABEL[s];
