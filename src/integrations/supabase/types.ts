@@ -13970,6 +13970,7 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_admin_or_sales: { Args: { _user_id: string }; Returns: boolean }
       is_agent_on_duty: { Args: { p_admin_user_id: string }; Returns: boolean }
+      is_agent_on_orr_team: { Args: { _agent: string }; Returns: boolean }
       is_agent_on_team_blue: { Args: { _agent: string }; Returns: boolean }
       is_agent_open_pool_restricted: {
         Args: { _agent_id: string }
@@ -14214,6 +14215,7 @@ export type Database = {
         }[]
       }
       orr_customer_for_lead: { Args: { _lead_id: string }; Returns: string }
+      orr_enabled_team: { Args: never; Returns: string }
       orr_expire_stale_customer_locks: { Args: never; Returns: number }
       orr_is_agent_available: { Args: { _agent_id: string }; Returns: boolean }
       orr_is_business_day: { Args: { _d: string }; Returns: boolean }
