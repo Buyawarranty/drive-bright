@@ -1857,8 +1857,22 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                             <div className="text-xs text-emerald-900/70">The lead has been assigned to you.</div>
                           </div>
                         ) : (
-                        <div className={cn('min-w-[160px] rounded-md border px-2.5 py-2', theme.holdBox)}>
-                          {lead.assignedTo === null ? (
+                        <div className={cn('min-w-[170px] max-w-[220px] rounded-md border px-2.5 py-1.5', theme.holdBox)}>
+                          {lead.chaseComplete ? (
+                            <>
+                              <div className="text-xs font-semibold text-foreground">Chase complete</div>
+                              <div className="text-[11px] text-muted-foreground">{CONTACT_DAYS} contact days completed</div>
+                            </>
+                          ) : lead.waiting ? (
+                            <>
+                              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-900 whitespace-nowrap">
+                                <Clock className="h-3 w-3 text-amber-700" /> Waiting for the next calling window
+                              </div>
+                              <div className="text-sm font-semibold text-amber-900">
+                                Back in Round Robin from {lead.eligibleAt ? formatEligible(lead.eligibleAt) : 'the next staffed window'}
+                              </div>
+                            </>
+                          ) : lead.assignedTo === null ? (
                             <>
                               <div className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-900 whitespace-nowrap">
                                 <Clock className="h-3 w-3 text-amber-700" /> In the queue
@@ -1867,76 +1881,25 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                                 Goes to the next agent who frees up
                               </div>
                             </>
-                          ) : expired ? (
-                            <div className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1">
-                              <Clock className="h-3 w-3" /> Offered to another agent
-                            </div>
-                          ) : attempted ? (
-                            <>
-                              <div className={cn('inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap', theme.holdLabel)}>
-                                <Lock className={cn('h-3 w-3', theme.holdIcon)} /> Still yours
-                              </div>
-                              <div className={cn('text-sm font-semibold', theme.holdValue)}>
-                                Dial logged — set an outcome
-                              </div>
-                            </>
                           ) : (
                             <>
                               <div className={cn('inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap', theme.holdLabel)}>
                                 <Lock className={cn('h-3 w-3', theme.holdIcon)} /> Held for you
                               </div>
                               <div className={cn('text-sm font-semibold tabular-nums', theme.holdValue)}>
-                                {formatClock(remaining)} left to call
+                                {attempted ? 'Dial logged — set an outcome' : `${formatHold(remaining)} left to call`}
                               </div>
                             </>
                           )}
 
-
-                          {lead.chaseComplete ? (
-                            <div className="mt-1.5 rounded border border-slate-300 bg-slate-50 px-2 py-1">
-                              <div className="text-[11px] font-semibold text-slate-800">
-                                Seven-day follow-up finished
-                              </div>
-                              <div className="text-[10px] text-slate-600">
-                                No contact made · {lead.dials} dials in total
-                              </div>
-                            </div>
-                          ) : lead.followUpDay > 0 ? (
-                            <div className="mt-1.5 rounded border border-purple-300 bg-purple-50 px-2 py-1">
-                              <div className="text-[11px] font-semibold text-purple-900">
-                                Follow-up day {lead.followUpDay} of {cadence.followUpDays}
-                                {lead.nextCallAt ? ` · next call ${formatTimeOfDay(lead.nextCallAt)}` : ''}
-                              </div>
-                              <div className="text-[10px] text-purple-800/80">
-                                Dial {lead.dayDials} of {cadence.followUpDailyDials} today · chased while uncontacted and unowned
-                              </div>
-                            </div>
-                          ) : lead.greenTeamAt ? (
-                            <div className="mt-1.5 rounded border border-red-300 bg-red-50 px-2 py-1">
-                              <div className="text-[11px] font-semibold text-red-800">
-                                Moving to Team Green at {formatTimeOfDay(lead.greenTeamAt)}
-                              </div>
-                              <div className="text-[10px] text-red-700/80">
-                                Seven-day follow-up starts tomorrow · up to {cadence.followUpDailyDials} dials a day
-                              </div>
-                            </div>
-                          ) : lead.nextCallAt ? (
-                            <div className="mt-1.5 rounded border border-amber-300 bg-amber-50 px-2 py-1">
-                              <div className="text-[11px] font-semibold text-amber-900">
-                                Next call due {formatTimeOfDay(lead.nextCallAt)}
-                              </div>
-                              <div className="text-[10px] text-amber-800/80">
-                                Dial {lead.dayDials} of {maxDialsForLead(lead.createdAt, cadence)} today
-                              </div>
-                            </div>
-                          ) : null}
-
-                          <div className="text-[11px] text-muted-foreground">
-                            Lead arrived {formatClock(ageSec)} ago ·{' '}
-                            {lead.attemptCount === 0
-                              ? 'not offered to anyone yet'
-                              : `Attempt ${lead.attemptCount}`}
+                          <div className="text-[11px] text-muted-foreground leading-tight">
+                            Lead arrived {formatClock(ageSec)} ago · Day {Math.max(1, lead.followUpDay)} of {CONTACT_DAYS} · Call{' '}
+                            {Math.min(callsAllowedOn(Date.now()), lead.dayDials + (attempted ? 1 : 1))} of {callsAllowedOn(Date.now())} today
                           </div>
+                          {lead.previousOutcome && (
+                            <div className="text-[11px] font-medium text-foreground/80">Previous: {lead.previousOutcome}</div>
+                          )}
+
 
 
                           <div className={cn('mt-1.5 h-1.5 w-full rounded-full overflow-hidden', theme.bar)}>
