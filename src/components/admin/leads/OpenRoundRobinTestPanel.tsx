@@ -451,9 +451,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
       const now = Date.now();
       setLeads((current) => {
         const needsWork = current.some(
-          (lead) => lead.status !== 'dormant' && (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)),
+          (lead) => lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now),
         );
         if (!needsWork) return current;
+
         const result = advance(current, nextAgentIndexRef.current, now, cadenceRef.current, rosterRef.current);
 
         nextAgentIndexRef.current = result.index;
