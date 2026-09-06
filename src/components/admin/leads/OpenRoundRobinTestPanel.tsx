@@ -417,7 +417,12 @@ const advance = (
 
   // Oldest first, so waiting leads are handled before newly expired ones.
   const pending = leads
-    .filter((lead) => isOrr(lead) && (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)))
+    .filter(
+      (lead) =>
+        isOrr(lead) &&
+        !isWorked(lead) &&
+        (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)),
+    )
     .sort((a, b) => a.createdAt - b.createdAt);
 
   for (const lead of pending) {
