@@ -101,7 +101,7 @@ serve(async (req: Request): Promise<Response> => {
       .order("created_at", { ascending: false })
       .limit(1);
 
-    const claim = claims?.[0] || null;
+    let claim = claims?.[0] || null;
     let requestToken: string | null = null;
 
     const summary = [
@@ -116,7 +116,30 @@ serve(async (req: Request): Promise<Response> => {
       desiredOutcome ? `\nDesired outcome: ${desiredOutcome}` : "",
     ].filter(Boolean).join("\n");
 
+    // No existing claim on file? Open one from the appeal itself so the appeal
+    // always shows in the Claims section instead of being lost.
+    if (!claim) {
+      const { data: created, error: createError } = await supabase
+        .from("claims_submissions")
+        .insert({
+          name: customerName || "Appeal (name not given)",
+          email: customerEmail || "no-email@buyawarranty.co.uk",
+          phone: phone || null,
+          vehicle_registration: reg || warranty || null,
+          claim_reason: grounds || "Appeal submitted online",
+          message: summary,
+          status: "appealed",
+          priority: "high",
+          internal_notes: "Created automatically from the public appeals form — no earlier claim matched this registration or email. Please check the policy details.",
+        })
+        .select("id, claim_reason, name, vehicle_registration")
+        .single();
+      if (createError) console.error("could not open claim for appeal", createError);
+      claim = created || null;
+    }
+
     if (claim) {
+
       // Open appeal on the claim (idempotent-ish: only one open appeal per claim).
       const { data: existing } = await supabase
         .from("claim_appeals")
