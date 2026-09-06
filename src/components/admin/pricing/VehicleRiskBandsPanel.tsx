@@ -124,6 +124,8 @@ const VehicleRiskBandsPanel: React.FC = () => {
   const [liveVersionLabel, setLiveVersionLabel] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [lastPublishedAt, setLastPublishedAt] = useState<string | null>(null);
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+
 
   useEffect(() => {
     fetchLivePricingVersionLabel()
@@ -427,11 +429,14 @@ const VehicleRiskBandsPanel: React.FC = () => {
 
 
 
-  const save = () => {
+  const save = (section: string) => {
     saveRiskBandConfig(config);
     setDirty(false);
-    toast.success('Risk bands saved.');
+    const now = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    setLastSavedAt(now);
+    toast.success(`${section} saved at ${now}.`);
   };
+
 
   const reset = () => {
     setConfig(DEFAULT_RISK_BAND_CONFIG);
@@ -485,20 +490,23 @@ const VehicleRiskBandsPanel: React.FC = () => {
                 <Button variant="outline" size="sm" onClick={reset}>
                   <RotateCcw className="h-4 w-4 mr-2" /> Reset
                 </Button>
-                <Button variant="outline" size="sm" onClick={save} disabled={!dirty}>
-                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save changes' : 'Saved'}
+                <Button variant="outline" size="sm" onClick={() => save('Global settings')} disabled={!dirty}>
+                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save global settings' : 'Saved'}
                 </Button>
                 <Button size="sm" onClick={pushLive} disabled={publishing}>
                   <Rocket className="h-4 w-4 mr-2" />
                   {publishing ? 'Pushing live…' : 'Push live'}
                 </Button>
+
               </div>
               <p className="text-xs text-muted-foreground text-right">
                 {liveVersionLabel
                   ? <>Live pricing version: <strong>{liveVersionLabel}</strong></>
                   : 'No pricing version is live yet'}
                 {lastPublishedAt ? ` · pushed ${lastPublishedAt}` : ''}
+                {lastSavedAt ? ` · saved ${lastSavedAt}` : ''}
               </p>
+
             </div>
 
           </div>
@@ -792,18 +800,21 @@ const VehicleRiskBandsPanel: React.FC = () => {
                   <Plus className="h-4 w-4 mr-2" /> Add personalised tier…
                 </Button>
                 <Separator orientation="vertical" className="h-6" />
-                <Button variant="outline" size="sm" onClick={save} disabled={!dirty}>
-                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save changes' : 'Saved'}
+                <Button variant="outline" size="sm" onClick={() => save('Risk bands')} disabled={!dirty}>
+                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save risk bands' : 'Saved'}
                 </Button>
                 <Button size="sm" onClick={pushLive} disabled={publishing}>
+
                   <Rocket className="h-4 w-4 mr-2" />
                   {publishing ? 'Pushing live…' : 'Push live'}
                 </Button>
               </div>
             </div>
             <p className="text-xs text-muted-foreground mb-3">
-              Changes are kept as you type. Press Save changes to keep them, then Push live to use the new prices on quotes.
+              Changes are kept as you type. Press <strong>Save risk bands</strong> to confirm this section,
+              then <strong>Push live</strong> to apply the new prices to quotes.
             </p>
+
 
 
             {/* CREATE A CATEGORY — name it and price it, exactly like the premium tiers */}
@@ -1085,10 +1096,11 @@ const VehicleRiskBandsPanel: React.FC = () => {
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <h3 className="font-semibold">Makes &amp; models in each band</h3>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={save} disabled={!dirty}>
-                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save changes' : 'Saved'}
+                <Button variant="outline" size="sm" onClick={() => save('Makes & models')} disabled={!dirty}>
+                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save makes & models' : 'Saved'}
                 </Button>
                 <Button size="sm" onClick={pushLive} disabled={publishing}>
+
                   <Rocket className="h-4 w-4 mr-2" />
                   {publishing ? 'Pushing live…' : 'Push live'}
                 </Button>
@@ -1098,8 +1110,9 @@ const VehicleRiskBandsPanel: React.FC = () => {
               One row per vehicle, one band per row. Make + model beats make-only, and a fuel-specific row beats an
               "all fuel types" row. <strong>Fuel type is only a matcher</strong> — it decides which cars a row catches,
               not what they cost. The price still comes only from the winning row's band, its factor and its floor.
-              There is no separate EV or hybrid uplift.
+              There is no separate EV or hybrid uplift. Press <strong>Save makes &amp; models</strong> to confirm this section.
             </p>
+
 
             <div className="grid gap-2 sm:grid-cols-[1fr_1fr_170px_200px_auto] items-end mb-4">
               <div className="space-y-1">
