@@ -683,6 +683,32 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   };
 
 
+  /**
+   * Practice note. Saved only in this page's memory so a manager can rehearse
+   * exactly what an agent types after a call. Nothing reaches the real lead notes.
+   */
+  const addPracticeNote = (id: string, text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    setLeads((current) =>
+      current.map((lead) => {
+        if (lead.id !== id) return lead;
+        const by =
+          simulatedAgentId !== 'all'
+            ? getAgent(simulatedAgentId).name
+            : lead.assignedTo
+              ? getAgent(lead.assignedTo).name
+              : 'Unassigned';
+        return {
+          ...lead,
+          notes: [...(lead.notes ?? []), { at: Date.now(), by, text: trimmed }],
+          history: [...lead.history, `Note added by ${by}: ${trimmed}`],
+        };
+      }),
+    );
+    toast({ title: 'Practice note added', description: 'Nothing real was changed.', duration: 1800 });
+  };
+
   const updateDisplayStatus = (id: string, status: LeadStatus) => {
     setLeads((current) =>
       current.map((lead) => {
