@@ -357,7 +357,7 @@ const advance = (
   return { leads, index, reassigned, dormant };
 };
 
-export type OrrPracticeTeam = 'blue' | 'red';
+export type OrrPracticeTeam = 'green';
 
 interface OrrTheme {
   label: string;
@@ -375,22 +375,21 @@ interface OrrTheme {
 }
 
 const ORR_SHARED_THEME: Omit<OrrTheme, 'label'> = {
-  cardBorder: 'border-l-teal-500',
-  iconWrap: 'bg-teal-100',
-  icon: 'text-teal-600',
-  chip: 'bg-teal-100 text-teal-800 border border-teal-200',
-  holdBox: 'border-teal-100 bg-teal-50/40',
-  holdLabel: 'text-teal-800',
-  holdValue: 'text-teal-900',
-  holdIcon: 'text-teal-600',
-  bar: 'bg-teal-100',
-  barFill: 'bg-teal-500',
-  reserved: 'border-teal-200 bg-teal-50/70 text-teal-700',
+  cardBorder: 'border-l-emerald-500',
+  iconWrap: 'bg-emerald-100',
+  icon: 'text-emerald-600',
+  chip: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+  holdBox: 'border-emerald-100 bg-emerald-50/40',
+  holdLabel: 'text-emerald-800',
+  holdValue: 'text-emerald-900',
+  holdIcon: 'text-emerald-600',
+  bar: 'bg-emerald-100',
+  barFill: 'bg-emerald-500',
+  reserved: 'border-emerald-200 bg-emerald-50/70 text-emerald-700',
 };
 
 const ORR_THEMES: Record<OrrPracticeTeam, OrrTheme> = {
-  blue: { label: 'Team Blue', ...ORR_SHARED_THEME },
-  red: { label: 'Team Red', ...ORR_SHARED_THEME },
+  green: { label: 'Team Green', ...ORR_SHARED_THEME },
 };
 
 
