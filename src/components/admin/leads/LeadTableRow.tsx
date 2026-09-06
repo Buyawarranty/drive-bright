@@ -835,232 +835,19 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       </TableCell>}
 
       {/* Time to contact — lead arrival → agent's first action (target 120s) — sandbox only */}
+      {sandboxMode ? (
+        <>
+      {/* Time to Lead — how long the lead has been waiting */}
+      {sandboxMode && !isLeadGenView && (
+      <TableCell>
+        <TimeToLeadCell lead={lead} />
+      </TableCell>
+      )}
       {sandboxMode && !isLeadGenView && (
       <TableCell>
         <TimeToContactCell response={responseTime} />
       </TableCell>
       )}
-
-      {/* Source indicator — labelled chip (Google / Meta / Bing / TikTok / Organic) — admin/super_admin only */}
-      {showSourceColumn && (
-        <TableCell className="text-center">
-          {(() => {
-            const src = String(lead.lead_source || '');
-            const metadata = lead.cart_metadata as { gclid?: string; fbclid?: string; msclkid?: string; ttclid?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_term?: string; utm_content?: string } | null;
-            const utmLines: string[] = [];
-            if (metadata?.utm_source)   utmLines.push(`UTM Source: ${metadata.utm_source}`);
-            if (metadata?.utm_medium)   utmLines.push(`UTM Medium: ${metadata.utm_medium}`);
-            if (metadata?.utm_campaign) utmLines.push(`UTM Campaign: ${metadata.utm_campaign}`);
-            if (metadata?.utm_term)     utmLines.push(`UTM Term: ${metadata.utm_term}`);
-            if (metadata?.utm_content)  utmLines.push(`UTM Content: ${metadata.utm_content}`);
-            const utmBlock = utmLines.length ? `\n${utmLines.join('\n')}` : '';
-
-            const chip = (label: string, cls: string, tipParts: string[]) => (
-              <span
-                className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide border cursor-help ${cls}`}
-                title={tipParts.join('\n') + utmBlock}
-              >
-                {label}
-              </span>
-            );
-
-            if (src === 'google_ad') {
-              // Prefer the gclid stored on the lead itself (captured from the
-              // landing URL); fall back to the basket metadata.
-              const gclid = (lead as any).gclid || metadata?.gclid;
-              return chip('Google', 'bg-emerald-100 text-emerald-800 border-emerald-300',
-                gclid ? ['Google Ads', `GCLID: ${gclid}`] : ['Google Ads (no GCLID captured)']);
-            }
-            if (src === 'social_ad') {
-              const fbclid = metadata?.fbclid;
-              const parts = ['Facebook / Meta Ads'];
-              if (fbclid) parts.push(`FBCLID: ${fbclid}`);
-              if (!fbclid && !metadata?.utm_source) parts.push('(no FBCLID captured)');
-              return chip('Meta', 'bg-blue-100 text-blue-800 border-blue-300', parts);
-            }
-            if (src === 'bing_ad') {
-              const msclkid = metadata?.msclkid;
-              const parts = ['Bing / Microsoft Ads'];
-              if (msclkid) parts.push(`MSCLKID: ${msclkid}`);
-              if (!msclkid && !metadata?.utm_source) parts.push('(no MSCLKID captured)');
-              return chip('Bing', 'bg-teal-100 text-teal-800 border-teal-300', parts);
-            }
-            if (src === 'tiktok_ad') {
-              const ttclid = metadata?.ttclid;
-              const parts = ['TikTok Ads'];
-              if (ttclid) parts.push(`TTCLID: ${ttclid}`);
-              if (!ttclid && !metadata?.utm_source) parts.push('(no TTCLID captured)');
-              return chip('TikTok', 'bg-zinc-200 text-zinc-900 border-zinc-400', parts);
-            }
-
-            // Organic split: ORGANIC W (came from the web) vs ORGANIC O (offline demand)
-            const origin = classifyOrganicOrigin(metadata);
-            const originCls = origin.kind === 'web'
-              ? 'bg-lime-100 text-lime-800 border-lime-300'
-              : origin.kind === 'offline'
-                ? 'bg-amber-100 text-amber-900 border-amber-300'
-                : 'bg-muted text-muted-foreground border-border';
-            return chip(
-              origin.label + (origin.estimated && origin.kind !== 'unknown' ? '*' : ''),
-              originCls,
-              origin.estimated && origin.kind !== 'unknown'
-                ? [...origin.detail, '* estimated from legacy data']
-                : origin.detail,
-            );
-          })()}
-        </TableCell>
-      )}
-
-
-
-      {/* Status */}
-      {!isLeadGenView && (
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        {isLocked ? (
-          <PaidLeadLockOverlay
-            hasPendingRequest={hasPendingAccessRequest}
-            hasApprovedAccess={hasApprovedAccess}
-            onRequestAccess={onRequestAccess || (() => {})}
-          />
-        ) : (
-          <div className="flex items-center gap-0.5">
-            <Select value={lead.status} onValueChange={(v) => onUpdateStatus(v as LeadStatus)}>
-              <SelectTrigger className={cn("h-7 px-2 text-[10px] font-medium whitespace-nowrap border-0 gap-1 w-auto min-w-[90px]", statusColors[lead.status])}>
-                <SelectValue>{statusLabels[lead.status]}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(statusLabels) as LeadStatus[])
-                  .filter((s) => !(hideNewStatus && s === 'new'))
-                  .map((s) => (
-                  <SelectItem key={s} value={s} className="text-xs">
-                    <span className={cn("inline-block px-2 py-0.5 rounded", statusColors[s])}>{statusLabels[s]}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <UnsubscribeLeadButton
-              email={lead.email}
-              customerName={lead.full_name || [lead.first_name, lead.last_name].filter(Boolean).join(' ') || null}
-              vehicleReg={lead.vehicle_reg}
-              alreadyNotInterested={lead.status === 'not_interested'}
-              onMarkNotInterested={() => onUpdateStatus('not_interested' as LeadStatus)}
-            />
-          </div>
-
-        )}
-      </TableCell>
-      )}
-
-      {/* Send Quote column removed — feature remains available via the row action button */}
-
-
-
-      {/* Call Count - Enhanced with dialog and guardrails */}
-      {!isLeadGenView && (
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        {isLocked ? (
-          <span className="text-muted-foreground text-xs">🔒</span>
-        ) : (
-        <CallCountCell
-          lead={lead}
-          onUpdateCallCount={onUpdateCallCount}
-          onUpdateStatus={onUpdateStatus}
-          onScheduleFollowUp={onScheduleFollowUp}
-          onLogActivity={onLogActivity}
-        />
-        )}
-      </TableCell>
-      )}
-
-      {/* Quick Actions */}
-      {!isLeadGenView && (
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center gap-1">
-          <Tooltip delayDuration={100}>
-            <TooltipTrigger asChild>
-              <Button 
-                variant={isExpanded ? "default" : "outline"}
-                size="icon"
-                className={cn(
-                  "h-9 w-9 transition-all duration-150",
-                  isExpanded 
-                    ? "bg-primary text-primary-foreground shadow-lg scale-105" 
-                    : "border-2 border-primary hover:border-primary hover:bg-primary hover:text-primary-foreground",
-                  isDoNotContact && !isExpanded && "opacity-40 cursor-not-allowed border-gray-300 hover:bg-transparent hover:text-muted-foreground"
-                )}
-                onClick={onToggleExpand}
-                disabled={isDoNotContact && !isExpanded}
-                aria-label={isDoNotContact && !isExpanded ? "Lead marked do not contact" : (isExpanded ? "Close" : "Click to open")}
-              >
-                <ChevronDown className={cn("h-5 w-5 transition-transform duration-180", isExpanded && "rotate-180 text-white")} strokeWidth={3.5} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">
-              {isDoNotContact && !isExpanded ? "Do not contact — change status to reactivate" : (isExpanded ? "Close" : "Click to open")}
-            </TooltipContent>
-          </Tooltip>
-
-          <div className={cn("flex items-center gap-1", isDoNotContact && "pointer-events-none opacity-40")}>
-            <ZoiperDialButton
-              phone={lead.phone || ''}
-              leadId={lead.id}
-              leadType={lead.is_from_abandoned_cart ? 'abandoned_cart' : 'sales_lead'}
-              leadSource={lead.lead_source || null}
-              onDialed={(number) => onLogActivity('call_dial', `Dialled ${number} via Zoiper`)}
-            />
-
-            <RetryCountdownBadge
-              nextActionDate={lead.next_action_date}
-              followUpStatus={lead.follow_up_status}
-            />
-
-            <OvernightBadge leadId={lead.id} />
-
-            
-            <NotesQuickActionsPopover
-              lead={lead}
-              noteCount={noteCount}
-              onOpenFullNotes={onToggleExpand}
-              onUpdateCallCount={onUpdateCallCount}
-              onScheduleFollowUp={onScheduleFollowUp}
-              onLogActivity={onLogActivity}
-              agentId={lead.assigned_to || ''}
-            />
-
-            
-            <EmailActionsButton
-              email={lead.email}
-              onAction={(a) =>
-                onLogActivity(
-                  a === 'gmail' ? 'email_open_gmail' : 'email_copy',
-                  a === 'gmail' ? 'Opened lead in Gmail' : 'Copied email address',
-                )
-              }
-            />
-            <RemindMePopover leadId={lead.id} compact onReminderSaved={(msg) => onLogActivity('reminder', msg)} />
-            
-            {onSendQuote && !lead.is_paid && (
-              <Tooltip delayDuration={100}>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="h-7 px-2 text-xs font-medium text-orange-600 border-orange-300 hover:bg-orange-50"
-                    onClick={() => { onLogActivity('quote_open', 'Opened Send Quote flow'); onSendQuote(); }}
-                  >
-                    <FileText className="h-3 w-3 mr-1" />
-                    Quote
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs">Send Quote</TooltipContent>
-              </Tooltip>
-            )}
-          </div>
-        </div>
-      </TableCell>
-      )}
-
-      {/* Name */}
       <TableCell>
         <div className="flex items-center gap-1.5">
           {suspiciousFlags.length > 0 && !isFakeLead && (
@@ -1297,8 +1084,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           })()}
         </div>
       </TableCell>
-
-      {/* Phone */}
       <TableCell onClick={(e) => e.stopPropagation()}>
         {lead.phone ? (
           <div className="flex items-center gap-1">
@@ -1338,8 +1123,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           <span className="text-muted-foreground text-xs">—</span>
         )}
       </TableCell>
-
-      {/* Email */}
       <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-0.5">
           <EmailCopyText email={lead.email} disabled={isDoNotContact} />
@@ -1366,9 +1149,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           </Tooltip>
         </div>
       </TableCell>
-
-
-      {/* Reg Plate */}
       {!isLeadGenView && (
       <TableCell>
         {lead.vehicle_reg ? (
@@ -1378,36 +1158,148 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         )}
       </TableCell>
       )}
-
-      {/* Payment Status */}
       {!isLeadGenView && (
       <TableCell onClick={(e) => e.stopPropagation()}>
-        {lead.is_paid ? (
-          <PaidCellContent
-            lead={lead}
-            displayName={displayName}
-            handleViewCustomer={handleViewCustomer}
+        {isLocked ? (
+          <PaidLeadLockOverlay
+            hasPendingRequest={hasPendingAccessRequest}
+            hasApprovedAccess={hasApprovedAccess}
+            onRequestAccess={onRequestAccess || (() => {})}
           />
         ) : (
-          <span className="text-muted-foreground text-xs">—</span>
+          <div className="flex items-center gap-0.5">
+            <Select value={lead.status} onValueChange={(v) => onUpdateStatus(v as LeadStatus)}>
+              <SelectTrigger className={cn("h-7 px-2 text-[10px] font-medium whitespace-nowrap border-0 gap-1 w-auto min-w-[90px]", statusColors[lead.status])}>
+                <SelectValue>{statusLabels[lead.status]}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(statusLabels) as LeadStatus[])
+                  .filter((s) => !(hideNewStatus && s === 'new'))
+                  .map((s) => (
+                  <SelectItem key={s} value={s} className="text-xs">
+                    <span className={cn("inline-block px-2 py-0.5 rounded", statusColors[s])}>{statusLabels[s]}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <UnsubscribeLeadButton
+              email={lead.email}
+              customerName={lead.full_name || [lead.first_name, lead.last_name].filter(Boolean).join(' ') || null}
+              vehicleReg={lead.vehicle_reg}
+              alreadyNotInterested={lead.status === 'not_interested'}
+              onMarkNotInterested={() => onUpdateStatus('not_interested' as LeadStatus)}
+            />
+          </div>
+
         )}
       </TableCell>
       )}
+      {!isLeadGenView && (
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        {isLocked ? (
+          <span className="text-muted-foreground text-xs">🔒</span>
+        ) : (
+        <CallCountCell
+          lead={lead}
+          onUpdateCallCount={onUpdateCallCount}
+          onUpdateStatus={onUpdateStatus}
+          onScheduleFollowUp={onScheduleFollowUp}
+          onLogActivity={onLogActivity}
+        />
+        )}
+      </TableCell>
+      )}
+      {!isLeadGenView && (
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-1">
+          <Tooltip delayDuration={100}>
+            <TooltipTrigger asChild>
+              <Button 
+                variant={isExpanded ? "default" : "outline"}
+                size="icon"
+                className={cn(
+                  "h-9 w-9 transition-all duration-150",
+                  isExpanded 
+                    ? "bg-primary text-primary-foreground shadow-lg scale-105" 
+                    : "border-2 border-primary hover:border-primary hover:bg-primary hover:text-primary-foreground",
+                  isDoNotContact && !isExpanded && "opacity-40 cursor-not-allowed border-gray-300 hover:bg-transparent hover:text-muted-foreground"
+                )}
+                onClick={onToggleExpand}
+                disabled={isDoNotContact && !isExpanded}
+                aria-label={isDoNotContact && !isExpanded ? "Lead marked do not contact" : (isExpanded ? "Close" : "Click to open")}
+              >
+                <ChevronDown className={cn("h-5 w-5 transition-transform duration-180", isExpanded && "rotate-180 text-white")} strokeWidth={3.5} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">
+              {isDoNotContact && !isExpanded ? "Do not contact — change status to reactivate" : (isExpanded ? "Close" : "Click to open")}
+            </TooltipContent>
+          </Tooltip>
 
-      {/* Paid Date */}
+          <div className={cn("flex items-center gap-1", isDoNotContact && "pointer-events-none opacity-40")}>
+            <ZoiperDialButton
+              phone={lead.phone || ''}
+              leadId={lead.id}
+              leadType={lead.is_from_abandoned_cart ? 'abandoned_cart' : 'sales_lead'}
+              leadSource={lead.lead_source || null}
+              onDialed={(number) => onLogActivity('call_dial', `Dialled ${number} via Zoiper`)}
+            />
+
+            <RetryCountdownBadge
+              nextActionDate={lead.next_action_date}
+              followUpStatus={lead.follow_up_status}
+            />
+
+            <OvernightBadge leadId={lead.id} />
+
+            
+            <NotesQuickActionsPopover
+              lead={lead}
+              noteCount={noteCount}
+              onOpenFullNotes={onToggleExpand}
+              onUpdateCallCount={onUpdateCallCount}
+              onScheduleFollowUp={onScheduleFollowUp}
+              onLogActivity={onLogActivity}
+              agentId={lead.assigned_to || ''}
+            />
+
+            
+            <EmailActionsButton
+              email={lead.email}
+              onAction={(a) =>
+                onLogActivity(
+                  a === 'gmail' ? 'email_open_gmail' : 'email_copy',
+                  a === 'gmail' ? 'Opened lead in Gmail' : 'Copied email address',
+                )
+              }
+            />
+            <RemindMePopover leadId={lead.id} compact onReminderSaved={(msg) => onLogActivity('reminder', msg)} />
+            
+            {onSendQuote && !lead.is_paid && (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="h-7 px-2 text-xs font-medium text-orange-600 border-orange-300 hover:bg-orange-50"
+                    onClick={() => { onLogActivity('quote_open', 'Opened Send Quote flow'); onSendQuote(); }}
+                  >
+                    <FileText className="h-3 w-3 mr-1" />
+                    Quote
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">Send Quote</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        </div>
+      </TableCell>
+      )}
       {!isLeadGenView && (
       <TableCell>
-        {lead.payment_date ? (
-          <span className="text-xs text-muted-foreground">
-            {format(new Date(lead.payment_date), 'MMM d, yyyy HH:mm')}
-          </span>
-        ) : (
-          <span className="text-muted-foreground text-xs">—</span>
-        )}
+        <CustomerActivityCell activity={customerActivity} />
       </TableCell>
       )}
-
-      {/* Agent activity — human touches only (calls, notes, status changes) */}
       {!isLeadGenView && (
       <TableCell>
         {isReserved ? (() => {
@@ -1461,9 +1353,30 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         )}
       </TableCell>
       )}
-
-
-      {/* Lead Date — original arrival time in UK time (never assignment/resubmission time) */}
+      {!isLeadGenView && (
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        {lead.is_paid ? (
+          <PaidCellContent
+            lead={lead}
+            displayName={displayName}
+            handleViewCustomer={handleViewCustomer}
+          />
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )}
+      </TableCell>
+      )}
+      {!isLeadGenView && (
+      <TableCell>
+        {lead.payment_date ? (
+          <span className="text-xs text-muted-foreground">
+            {format(new Date(lead.payment_date), 'MMM d, yyyy HH:mm')}
+          </span>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )}
+      </TableCell>
+      )}
       {!isLeadGenView && (
       <TableCell>
         <span className="text-xs text-muted-foreground" title="UK time">
@@ -1471,8 +1384,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </span>
       </TableCell>
       )}
-
-      {/* Date Added — when the lead was reclaimed from the recontact pool */}
       {recontactMode && !isLeadGenView && (
       <TableCell>
         <span className="text-xs text-muted-foreground" title="UK time">
@@ -1480,20 +1391,626 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </span>
       </TableCell>
       )}
+        </>
+      ) : (
+        <>
+      {showSourceColumn && (
+        <TableCell className="text-center">
+          {(() => {
+            const src = String(lead.lead_source || '');
+            const metadata = lead.cart_metadata as { gclid?: string; fbclid?: string; msclkid?: string; ttclid?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_term?: string; utm_content?: string } | null;
+            const utmLines: string[] = [];
+            if (metadata?.utm_source)   utmLines.push(`UTM Source: ${metadata.utm_source}`);
+            if (metadata?.utm_medium)   utmLines.push(`UTM Medium: ${metadata.utm_medium}`);
+            if (metadata?.utm_campaign) utmLines.push(`UTM Campaign: ${metadata.utm_campaign}`);
+            if (metadata?.utm_term)     utmLines.push(`UTM Term: ${metadata.utm_term}`);
+            if (metadata?.utm_content)  utmLines.push(`UTM Content: ${metadata.utm_content}`);
+            const utmBlock = utmLines.length ? `\n${utmLines.join('\n')}` : '';
 
-      {/* Customer activity — last time the CUSTOMER themselves did something
-          (asked for another quote, filled step 2, logged into the portal). */}
+            const chip = (label: string, cls: string, tipParts: string[]) => (
+              <span
+                className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide border cursor-help ${cls}`}
+                title={tipParts.join('\n') + utmBlock}
+              >
+                {label}
+              </span>
+            );
+
+            if (src === 'google_ad') {
+              // Prefer the gclid stored on the lead itself (captured from the
+              // landing URL); fall back to the basket metadata.
+              const gclid = (lead as any).gclid || metadata?.gclid;
+              return chip('Google', 'bg-emerald-100 text-emerald-800 border-emerald-300',
+                gclid ? ['Google Ads', `GCLID: ${gclid}`] : ['Google Ads (no GCLID captured)']);
+            }
+            if (src === 'social_ad') {
+              const fbclid = metadata?.fbclid;
+              const parts = ['Facebook / Meta Ads'];
+              if (fbclid) parts.push(`FBCLID: ${fbclid}`);
+              if (!fbclid && !metadata?.utm_source) parts.push('(no FBCLID captured)');
+              return chip('Meta', 'bg-blue-100 text-blue-800 border-blue-300', parts);
+            }
+            if (src === 'bing_ad') {
+              const msclkid = metadata?.msclkid;
+              const parts = ['Bing / Microsoft Ads'];
+              if (msclkid) parts.push(`MSCLKID: ${msclkid}`);
+              if (!msclkid && !metadata?.utm_source) parts.push('(no MSCLKID captured)');
+              return chip('Bing', 'bg-teal-100 text-teal-800 border-teal-300', parts);
+            }
+            if (src === 'tiktok_ad') {
+              const ttclid = metadata?.ttclid;
+              const parts = ['TikTok Ads'];
+              if (ttclid) parts.push(`TTCLID: ${ttclid}`);
+              if (!ttclid && !metadata?.utm_source) parts.push('(no TTCLID captured)');
+              return chip('TikTok', 'bg-zinc-200 text-zinc-900 border-zinc-400', parts);
+            }
+
+            // Organic split: ORGANIC W (came from the web) vs ORGANIC O (offline demand)
+            const origin = classifyOrganicOrigin(metadata);
+            const originCls = origin.kind === 'web'
+              ? 'bg-lime-100 text-lime-800 border-lime-300'
+              : origin.kind === 'offline'
+                ? 'bg-amber-100 text-amber-900 border-amber-300'
+                : 'bg-muted text-muted-foreground border-border';
+            return chip(
+              origin.label + (origin.estimated && origin.kind !== 'unknown' ? '*' : ''),
+              originCls,
+              origin.estimated && origin.kind !== 'unknown'
+                ? [...origin.detail, '* estimated from legacy data']
+                : origin.detail,
+            );
+          })()}
+        </TableCell>
+      )}
+      {!isLeadGenView && (
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        {isLocked ? (
+          <PaidLeadLockOverlay
+            hasPendingRequest={hasPendingAccessRequest}
+            hasApprovedAccess={hasApprovedAccess}
+            onRequestAccess={onRequestAccess || (() => {})}
+          />
+        ) : (
+          <div className="flex items-center gap-0.5">
+            <Select value={lead.status} onValueChange={(v) => onUpdateStatus(v as LeadStatus)}>
+              <SelectTrigger className={cn("h-7 px-2 text-[10px] font-medium whitespace-nowrap border-0 gap-1 w-auto min-w-[90px]", statusColors[lead.status])}>
+                <SelectValue>{statusLabels[lead.status]}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(statusLabels) as LeadStatus[])
+                  .filter((s) => !(hideNewStatus && s === 'new'))
+                  .map((s) => (
+                  <SelectItem key={s} value={s} className="text-xs">
+                    <span className={cn("inline-block px-2 py-0.5 rounded", statusColors[s])}>{statusLabels[s]}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <UnsubscribeLeadButton
+              email={lead.email}
+              customerName={lead.full_name || [lead.first_name, lead.last_name].filter(Boolean).join(' ') || null}
+              vehicleReg={lead.vehicle_reg}
+              alreadyNotInterested={lead.status === 'not_interested'}
+              onMarkNotInterested={() => onUpdateStatus('not_interested' as LeadStatus)}
+            />
+          </div>
+
+        )}
+      </TableCell>
+      )}
+      {!isLeadGenView && (
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        {isLocked ? (
+          <span className="text-muted-foreground text-xs">🔒</span>
+        ) : (
+        <CallCountCell
+          lead={lead}
+          onUpdateCallCount={onUpdateCallCount}
+          onUpdateStatus={onUpdateStatus}
+          onScheduleFollowUp={onScheduleFollowUp}
+          onLogActivity={onLogActivity}
+        />
+        )}
+      </TableCell>
+      )}
+      {!isLeadGenView && (
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-1">
+          <Tooltip delayDuration={100}>
+            <TooltipTrigger asChild>
+              <Button 
+                variant={isExpanded ? "default" : "outline"}
+                size="icon"
+                className={cn(
+                  "h-9 w-9 transition-all duration-150",
+                  isExpanded 
+                    ? "bg-primary text-primary-foreground shadow-lg scale-105" 
+                    : "border-2 border-primary hover:border-primary hover:bg-primary hover:text-primary-foreground",
+                  isDoNotContact && !isExpanded && "opacity-40 cursor-not-allowed border-gray-300 hover:bg-transparent hover:text-muted-foreground"
+                )}
+                onClick={onToggleExpand}
+                disabled={isDoNotContact && !isExpanded}
+                aria-label={isDoNotContact && !isExpanded ? "Lead marked do not contact" : (isExpanded ? "Close" : "Click to open")}
+              >
+                <ChevronDown className={cn("h-5 w-5 transition-transform duration-180", isExpanded && "rotate-180 text-white")} strokeWidth={3.5} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">
+              {isDoNotContact && !isExpanded ? "Do not contact — change status to reactivate" : (isExpanded ? "Close" : "Click to open")}
+            </TooltipContent>
+          </Tooltip>
+
+          <div className={cn("flex items-center gap-1", isDoNotContact && "pointer-events-none opacity-40")}>
+            <ZoiperDialButton
+              phone={lead.phone || ''}
+              leadId={lead.id}
+              leadType={lead.is_from_abandoned_cart ? 'abandoned_cart' : 'sales_lead'}
+              leadSource={lead.lead_source || null}
+              onDialed={(number) => onLogActivity('call_dial', `Dialled ${number} via Zoiper`)}
+            />
+
+            <RetryCountdownBadge
+              nextActionDate={lead.next_action_date}
+              followUpStatus={lead.follow_up_status}
+            />
+
+            <OvernightBadge leadId={lead.id} />
+
+            
+            <NotesQuickActionsPopover
+              lead={lead}
+              noteCount={noteCount}
+              onOpenFullNotes={onToggleExpand}
+              onUpdateCallCount={onUpdateCallCount}
+              onScheduleFollowUp={onScheduleFollowUp}
+              onLogActivity={onLogActivity}
+              agentId={lead.assigned_to || ''}
+            />
+
+            
+            <EmailActionsButton
+              email={lead.email}
+              onAction={(a) =>
+                onLogActivity(
+                  a === 'gmail' ? 'email_open_gmail' : 'email_copy',
+                  a === 'gmail' ? 'Opened lead in Gmail' : 'Copied email address',
+                )
+              }
+            />
+            <RemindMePopover leadId={lead.id} compact onReminderSaved={(msg) => onLogActivity('reminder', msg)} />
+            
+            {onSendQuote && !lead.is_paid && (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="h-7 px-2 text-xs font-medium text-orange-600 border-orange-300 hover:bg-orange-50"
+                    onClick={() => { onLogActivity('quote_open', 'Opened Send Quote flow'); onSendQuote(); }}
+                  >
+                    <FileText className="h-3 w-3 mr-1" />
+                    Quote
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">Send Quote</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        </div>
+      </TableCell>
+      )}
+      <TableCell>
+        <div className="flex items-center gap-1.5">
+          {suspiciousFlags.length > 0 && !isFakeLead && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 border-0 flex items-center gap-0.5 flex-shrink-0 bg-red-500 text-white cursor-help">
+                  <AlertTriangle className="h-3 w-3" />
+                  CHECK
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs max-w-[250px]">
+                <div className="font-semibold mb-1">⚠️ Suspicious lead detected:</div>
+                <ul className="list-disc pl-3 space-y-0.5">
+                  {suspiciousFlags.map((f, i) => (
+                    <li key={i}>{f.reason}</li>
+                  ))}
+                </ul>
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {isOverdue && !suspiciousFlags.length && <AlertTriangle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />}
+          {reminderTime && isPast(new Date(reminderTime)) && !isFakeLead && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-red-500 text-white border-0 flex items-center gap-0.5 flex-shrink-0">
+                  <Clock className="h-3 w-3" />
+                  OVERDUE
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                Reminder overdue — {formatDistanceToNow(new Date(reminderTime), { addSuffix: true })}
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {lead.no_callback_until && !isPast(new Date(lead.no_callback_until)) && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-sky-600 text-white border-0 flex items-center gap-0.5 flex-shrink-0 cursor-help">
+                  <Clock className="h-3 w-3" />
+                  INBOUND — HOLD
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs max-w-[240px]">
+                They called us and spoke to an agent
+                {lead.inbound_spoken_at ? ` ${formatDistanceToNow(new Date(lead.inbound_spoken_at), { addSuffix: true })}` : ''}.
+                Do not call back before {format(new Date(lead.no_callback_until), 'h:mm a')}.
+              </TooltipContent>
+            </Tooltip>
+          )}
+
+          {reminderTime && isToday(new Date(reminderTime)) && !isPast(new Date(reminderTime)) && !isFakeLead && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-amber-500 text-white border-0 flex items-center gap-0.5 flex-shrink-0">
+                  <Clock className="h-3 w-3" />
+                  DUE
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                Reminder due today at {format(new Date(reminderTime), 'h:mm a')}
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {(lead as any).save_cancellation && (
+            <SaveCancellationBadge
+              reward={(lead as any).save_reward_amount}
+              reason={(lead as any).save_reason}
+            />
+          )}
+          {(() => {
+            // Show the REPEAT CUSTOMER tag either from a matched prior policy or
+            // from the sticky-assignment tag the database stamps on arrival.
+            const tags: string[] = ((lead as any).auto_tags || []) as string[];
+            const stickyTagged = tags.includes('repeat_customer') || tags.includes('same_customer_sticky');
+            const info = repeatCustomer || (stickyTagged
+              ? { policyCount: 1, lastPurchaseAt: null, lastPlanType: null, matchedOn: 'email' as const }
+              : undefined);
+            return info ? <RepeatCustomerBadge info={info} /> : null;
+          })()}
+          {isManagement === true && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 flex-shrink-0 text-muted-foreground hover:text-foreground"
+                  onClick={(e) => { e.stopPropagation(); setEditInfoOpen(true); }}
+                  aria-label="Edit lead information"
+                >
+                  <PencilLine className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">Edit lead information</TooltipContent>
+            </Tooltip>
+          )}
+          {isManagement === true && editInfoOpen && (
+            <EditLeadInfoDialog
+              lead={lead}
+              open={editInfoOpen}
+              onOpenChange={setEditInfoOpen}
+            />
+          )}
+          {!repeatCustomer && !(((lead as any).auto_tags || []) as string[]).some(t => t === 'repeat_customer' || t === 'same_customer_sticky') && (lead as any).manual_entry && <ManualLeadBadge />}
+          {(lead.resubmission_count || 0) > 0 && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-purple-600 text-white border-0 flex items-center gap-0.5 flex-shrink-0">
+                  <RotateCw className="h-3 w-3" />x{Math.min((lead.resubmission_count || 0) + 1, 10)}{(lead.resubmission_count || 0) >= 10 ? '+' : ''}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                Submitted {(lead.resubmission_count || 0) + 1} times{lead.last_resubmitted_at ? ` — last: ${format(new Date(lead.last_resubmitted_at), 'dd/MM HH:mm')}` : ''}
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {lead.application_count > 1 && !(lead.resubmission_count || 0) && (
+            <Badge className="text-[10px] px-1.5 py-0.5 bg-orange-500 text-white border-0 flex items-center gap-0.5 flex-shrink-0">
+              <Flame className="h-3 w-3" />x{lead.application_count > 9 ? '9+' : `${lead.application_count}`}
+            </Badge>
+          )}
+          {(lead.claim_count || 0) >= 1 && (() => {
+            const n = lead.claim_count || 0;
+            // 1 = first touch (neutral slate), 2 = amber "worked once already",
+            // 3+ = red "cold — been round the block". Tooltip shows last claim date.
+            const tone = n === 1
+              ? 'bg-slate-200 text-slate-700 border-slate-300'
+              : n === 2
+                ? 'bg-amber-100 text-amber-800 border-amber-300'
+                : 'bg-red-100 text-red-800 border-red-300';
+            const label = n === 1 ? '1st touch' : n === 2 ? '2nd attempt' : `${n}th attempt`;
+            return (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className={`text-[10px] px-1.5 py-0.5 border flex items-center gap-0.5 flex-shrink-0 ${tone}`}>
+                    {label}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  Claimed from recontact pool {n} time{n === 1 ? '' : 's'}
+                  {lead.last_claimed_at ? ` — last: ${format(new Date(lead.last_claimed_at), 'dd/MM HH:mm')}` : ''}
+                </TooltipContent>
+              </Tooltip>
+            );
+          })()}
+          {recontactMode && lead.last_claimed_at && (Date.now() - new Date(lead.last_claimed_at).getTime()) < 3 * 24 * 3600 * 1000 && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-emerald-500 text-white border-0 flex items-center gap-0.5 flex-shrink-0 uppercase tracking-wide font-bold">
+                  Newly claimed
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                Claimed from recontact pool {format(new Date(lead.last_claimed_at), 'dd/MM HH:mm')} — badge lasts 3 days
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {readOnly && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge
+                  variant="outline"
+                  className="text-[10px] px-1.5 py-0.5 bg-amber-50 text-amber-800 border-amber-300 flex items-center gap-0.5 flex-shrink-0"
+                >
+                  VIEW ONLY
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs max-w-[240px]">
+                Another team's lead. You can view it but not make changes.
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {currentAdminId
+            && Array.isArray(lead.hidden_from_agent_ids)
+            && lead.hidden_from_agent_ids.includes(currentAdminId)
+            && lead.assigned_to
+            && lead.assigned_to !== currentAdminId && (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-700 border-slate-300 flex items-center gap-0.5 flex-shrink-0"
+                  >
+                    OLD LEAD · NEW OWNER
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs max-w-[240px]">
+                  You previously worked this lead. It's now owned by another agent — warm-transfer any inbound calls.
+                </TooltipContent>
+              </Tooltip>
+          )}
+          {struggleAlert && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-red-600 text-white border-0 flex items-center gap-0.5 flex-shrink-0 cursor-help animate-pulse">
+                  🚨
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs max-w-[260px]">
+                Checkout struggle: {struggleAlert.signal_type.replace(/_/g, ' ')} — {formatDistanceToNow(new Date(struggleAlert.created_at), { addSuffix: true })}
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {displayName ? (
+            <span className="font-medium text-sm truncate max-w-[100px]" title={displayName}>{displayName}</span>
+          ) : (
+            <span className="text-muted-foreground text-xs">—</span>
+          )}
+          {lead.is_from_abandoned_cart && (
+            <Badge variant="outline" className="text-[10px] px-1 py-0 bg-amber-100 text-amber-800 border-amber-300">Cart</Badge>
+          )}
+          {showRecoveredBadge && (lead.abandoned_cart_id || lead.is_from_abandoned_cart) && !lead.assigned_at && !lead.step_two_completed_at && (() => {
+            const meta = lead.cart_metadata as { gclid?: string; fbclid?: string; utm_source?: string } | null;
+            const isGoogle = !!meta?.gclid || !!(lead as any).gclid;
+            const isFb = !!meta?.fbclid || ['facebook', 'fb', 'ig'].includes((meta?.utm_source || '').toLowerCase());
+            const srcLabel = isGoogle ? 'G' : isFb ? 'FB' : 'Or';
+            const srcColor = isGoogle ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : isFb ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-gray-100 text-gray-700 border-gray-300';
+            return (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Badge className={`text-[10px] px-1 py-0 font-bold flex-shrink-0 ${srcColor}`}>
+                    R·{srcLabel}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">Recovered from abandoned cart ({isGoogle ? 'Google' : isFb ? 'Facebook' : 'Organic'})</TooltipContent>
+              </Tooltip>
+            );
+          })()}
+          {showFbBadge && (() => {
+            const metadata = lead.cart_metadata as { fbclid?: string; utm_source?: string } | null;
+            const isFacebook = metadata?.fbclid || metadata?.utm_source?.toLowerCase() === 'facebook' || metadata?.utm_source?.toLowerCase() === 'fb' || metadata?.utm_source?.toLowerCase() === 'ig';
+            return isFacebook ? (
+              <Badge variant="outline" className="text-[10px] px-1 py-0 bg-blue-100 text-blue-800 border-blue-300">📘 FB</Badge>
+            ) : null;
+          })()}
+        </div>
+      </TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        {lead.phone ? (
+          <div className="flex items-center gap-1">
+            {suspiciousFlags.some(f => f.type === 'invalid_phone') ? (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center gap-1 text-red-500 text-xs font-semibold whitespace-nowrap line-through opacity-70 cursor-help">
+                    <Phone className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span>{formatUKPhone(lead.phone)}</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  ⚠️ {suspiciousFlags.find(f => f.type === 'invalid_phone')?.reason} — Do not call
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <PhoneCopyText phone={lead.phone} leadId={lead.id} disabled={isDoNotContact} holdUntil={lead.no_callback_until} />
+            )}
+            <div className={cn("flex items-center", isDoNotContact && "pointer-events-none opacity-40")}>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50"
+                    onClick={() => window.open(`https://wa.me/${lead.phone?.replace(/\D/g, '')}`)}
+                    disabled={isDoNotContact}
+                  >
+                    <MessageSquare className="h-3 w-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">WhatsApp</TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )}
+      </TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-0.5">
+          <EmailCopyText email={lead.email} disabled={isDoNotContact} />
+          <Tooltip delayDuration={100}>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="h-6 w-6 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                onClick={() => {
+                  if (onSendQuote) {
+                    onSendQuote();
+                  } else {
+                    window.open(`mailto:${lead.email}`);
+                  }
+                  if (!lead.is_from_abandoned_cart) onLogActivity('email', 'Sent email');
+                }}
+                disabled={isDoNotContact}
+              >
+                <Send className="h-3 w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">{onSendQuote ? 'Send quote' : 'Send email'}</TooltipContent>
+          </Tooltip>
+        </div>
+      </TableCell>
+      {!isLeadGenView && (
+      <TableCell>
+        {lead.vehicle_reg ? (
+          <Badge variant="outline" className="font-mono text-xs bg-yellow-400 text-black border-yellow-500 rounded-sm">{lead.vehicle_reg}</Badge>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )}
+      </TableCell>
+      )}
+      {!isLeadGenView && (
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        {lead.is_paid ? (
+          <PaidCellContent
+            lead={lead}
+            displayName={displayName}
+            handleViewCustomer={handleViewCustomer}
+          />
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )}
+      </TableCell>
+      )}
+      {!isLeadGenView && (
+      <TableCell>
+        {lead.payment_date ? (
+          <span className="text-xs text-muted-foreground">
+            {format(new Date(lead.payment_date), 'MMM d, yyyy HH:mm')}
+          </span>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )}
+      </TableCell>
+      )}
+      {!isLeadGenView && (
+      <TableCell>
+        {isReserved ? (() => {
+          const mm = Math.floor(Math.max(0, reservedRemainingSec) / 60);
+          const ss = Math.max(0, reservedRemainingSec) % 60;
+          const label = `${mm}:${ss.toString().padStart(2, '0')}`;
+          const warn = reservedRemainingSec <= 30;
+          return (
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs font-semibold tabular-nums",
+                warn
+                  ? "border-amber-300 bg-amber-50 text-amber-800"
+                  : "border-emerald-300 bg-emerald-50 text-emerald-800"
+              )}
+              title="Reserved to you from the Open Lead Pool"
+            >
+              <Clock className="h-3 w-3" />
+              {warn ? `Releasing soon · ${label}` : `Reserved · ${label}`}
+            </span>
+          );
+        })() : (
+          <div className="flex flex-col leading-tight">
+            {agentTouchAt ? (
+              <span
+                className="text-xs text-foreground"
+                title={`Agent last touched this lead ${format(new Date(agentTouchAt), 'MMM d, yyyy HH:mm')}${agentTouchLabel ? ` — ${agentTouchLabel}` : ''}`}
+              >
+                {formatDistanceToNow(new Date(agentTouchAt), { addSuffix: true })}
+                {agentTouchLabel && (
+                  <span className="ml-1 text-[10px] text-muted-foreground">· {agentTouchLabel}</span>
+                )}
+              </span>
+            ) : (
+              <span
+                className="text-xs text-muted-foreground italic"
+                title="No agent has called, noted, or changed the status of this lead yet"
+              >
+                No agent activity
+              </span>
+            )}
+            {lead.last_activity_date && (!agentTouchAt || new Date(lead.last_activity_date).getTime() > new Date(agentTouchAt).getTime() + 60_000) && (
+              <span
+                className="text-[10px] text-muted-foreground/70"
+                title={`System/automated write at ${format(new Date(lead.last_activity_date), 'MMM d, yyyy HH:mm')} (not agent activity)`}
+              >
+                sys {formatDistanceToNow(new Date(lead.last_activity_date), { addSuffix: true })}
+              </span>
+            )}
+          </div>
+        )}
+      </TableCell>
+      )}
+      {!isLeadGenView && (
+      <TableCell>
+        <span className="text-xs text-muted-foreground" title="UK time">
+          {formatLeadDateUK(lead.created_at)}
+        </span>
+      </TableCell>
+      )}
+      {recontactMode && !isLeadGenView && (
+      <TableCell>
+        <span className="text-xs text-muted-foreground" title="UK time">
+          {lead.last_claimed_at ? formatLeadDateUK(lead.last_claimed_at) : '—'}
+        </span>
+      </TableCell>
+      )}
       {!isLeadGenView && (
       <TableCell>
         <CustomerActivityCell activity={customerActivity} />
       </TableCell>
       )}
-
-      {/* Time to contact — lead arrival → agent's first action (target 120s) */}
       {!isLeadGenView && !sandboxMode && (
       <TableCell>
         <TimeToContactCell response={responseTime} />
       </TableCell>
+      )}
+        </>
       )}
 
     </TableRow>
