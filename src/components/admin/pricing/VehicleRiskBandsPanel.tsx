@@ -429,11 +429,14 @@ const VehicleRiskBandsPanel: React.FC = () => {
 
 
 
-  const save = () => {
+  const save = (section: string) => {
     saveRiskBandConfig(config);
     setDirty(false);
-    toast.success('Risk bands saved.');
+    const now = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    setLastSavedAt(now);
+    toast.success(`${section} saved at ${now}.`);
   };
+
 
   const reset = () => {
     setConfig(DEFAULT_RISK_BAND_CONFIG);
