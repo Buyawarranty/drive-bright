@@ -1698,9 +1698,11 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
               <h4 className="text-base font-semibold text-foreground">Practice New Leads — {theme.label}</h4>
 
               <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
-                <li>Leads are assigned automatically in a fair rotation.</li>
-                <li>Only one lead is reserved for an agent at a time.</li>
-                <li>If the agent does not start a call in time, the lead passes to the next agent.</li>
+                <li>A new lead is unowned. The rotation holds it for one salesperson for the current call attempt only.</li>
+                <li>Nobody owns future attempts — if the countdown runs out with no call, it goes straight back into the pool and no attempt is counted.</li>
+                <li>No answer counts as one genuine attempt, leaves your queue and comes back at its next eligible time — the rotation decides who gets it.</li>
+                <li>Weekdays 09:00–18:00, weekends about 10:00–13:00 when staffed. At least 3 hours between attempts.</li>
+                <li>Up to 2 attempts a weekday, normally 1 at a weekend, across 7 contact days.</li>
               </ul>
             </div>
           </div>
@@ -2089,13 +2091,12 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <Clock className="h-3 w-3 text-primary" />
           </span>
           <p className="text-[11px] text-muted-foreground">
-            <span className="font-semibold text-foreground">Day one calling plan:</span>{' '}
-            {callWindows(cadence).map((w) => w.label).join(', ')}. Maximum {cadence.maxDialsFullDay} dials in a full day,
-            or {cadence.maxDialsAfterMidday} if the lead arrives after midday. Once those attempts are used the lead hands
-            over to Team Green at {formatTimeOfDay(atHour(Date.now(), cadence.greenTeamHandoverHour))} the same day, then is
-            chased for {cadence.followUpDays} days with up to {cadence.followUpDailyDials} dials a day. Practice leads are
-            reserved privately to one agent and wiped when you clear or reload. Change any of these figures in the section
-            above.
+            <span className="font-semibold text-foreground">Calling plan:</span>{' '}
+            Weekdays 09:00–18:00, weekends roughly 10:00–13:00 when staffed. Up to 2 genuine attempts a full weekday and
+            normally 1 a weekend day, always at least {MIN_GAP_HOURS} hours apart, across {CONTACT_DAYS} contact days.
+            After No answer the lead leaves your queue and returns to Open Round Robin from its next eligible time — waiting
+            leads are fed back a couple at a time, so nothing lands in one batch. Practice leads are reserved privately for
+            one call attempt and wiped when you clear or reload.
           </p>
 
 
