@@ -120,6 +120,7 @@ export const useLeadResponseTime = (leads: LeadInput[]) => {
     lastKeyRef.current = key;
 
     const first: Record<string, { at: string; source: LeadResponseTime['source'] }> = {};
+    const assignedAt: Record<string, string> = {};
     const consider = (leadId: string, at: string | null, source: LeadResponseTime['source']) => {
       if (!leadId || !at || !createdById[leadId]) return;
       const existing = first[leadId];
@@ -131,7 +132,7 @@ export const useLeadResponseTime = (leads: LeadInput[]) => {
     try {
       for (let i = 0; i < ids.length; i += BATCH) {
         const batch = ids.slice(i, i + BATCH);
-        const [calls, notes, changes] = await Promise.all([
+        const [calls, notes, changes, assigns] = await Promise.all([
           supabase
             .from('lead_call_logs')
             .select('lead_id, created_at')
@@ -152,6 +153,13 @@ export const useLeadResponseTime = (leads: LeadInput[]) => {
             .not('changed_by', 'is', null)
             .order('changed_at', { ascending: true })
             .limit(batch.length * 5),
+          supabase
+            .from('lead_assignment_audit')
+            .select('lead_id, created_at, assigned_to_id')
+            .in('lead_id', batch)
+            .not('assigned_to_id', 'is', null)
+            .order('created_at', { ascending: true })
+            .limit(batch.length * 5),
         ]);
 
         (calls.data || []).forEach((r: any) => consider(r.lead_id, r.created_at, 'call'));
@@ -160,16 +168,46 @@ export const useLeadResponseTime = (leads: LeadInput[]) => {
           if (!r.new_status || r.old_status === r.new_status) return;
           consider(r.lead_id, r.changed_at, 'status');
         });
+        (assigns.data || []).forEach((r: any) => {
+          if (!r.lead_id || !r.created_at) return;
+          const existing = assignedAt[r.lead_id];
+          if (!existing || new Date(r.created_at).getTime() < new Date(existing).getTime()) {
+            assignedAt[r.lead_id] = r.created_at;
+          }
+        });
       }
 
       const out: Record<string, LeadResponseTime> = {};
       Object.entries(first).forEach(([leadId, v]) => {
-        const createdAt = createdById[leadId];
-        const seconds = Math.max(
-          0,
-          Math.round((new Date(v.at).getTime() - new Date(createdAt).getTime()) / 1000)
-        );
-        out[leadId] = { firstActionAt: v.at, source: v.source, seconds };
+        const arrival = new Date(createdById[leadId]);
+        const actionMs = new Date(v.at).getTime();
+
+        // The clock starts when the agent first had a chance to act on the lead.
+        let clockStart: LeadResponseTime['clockStart'] = 'arrival';
+        let startMs = arrival.getTime();
+
+        const openMs = officeOpenAfter(arrival).getTime();
+        if (openMs > startMs) {
+          startMs = openMs;
+          clockStart = 'office-open';
+        }
+
+        const handedMs = assignedAt[leadId] ? new Date(assignedAt[leadId]).getTime() : null;
+        if (handedMs != null && handedMs > startMs && handedMs <= actionMs) {
+          startMs = handedMs;
+          clockStart = 'assigned';
+        }
+
+        // Never start the clock after the action itself.
+        if (startMs > actionMs) startMs = actionMs;
+
+        out[leadId] = {
+          firstActionAt: v.at,
+          source: v.source,
+          seconds: Math.max(0, Math.round((actionMs - startMs) / 1000)),
+          clockStartedAt: new Date(startMs).toISOString(),
+          clockStart,
+        };
       });
       setResponseByLead(out);
     } catch (e) {
