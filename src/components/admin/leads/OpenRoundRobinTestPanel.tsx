@@ -468,10 +468,9 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
     () =>
       leads.filter(
         (lead) =>
-          lead.status !== 'dormant' &&
-          (simulatedAgentId === 'all'
+          simulatedAgentId === 'all'
             ? lead.assignedTo !== null || lead.status === 'queued'
-            : lead.assignedTo === simulatedAgentId),
+            : lead.assignedTo === simulatedAgentId,
       ),
     [leads, simulatedAgentId],
   );
