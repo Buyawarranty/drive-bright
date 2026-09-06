@@ -504,7 +504,74 @@ const VehicleRiskBandsPanel: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* SOURCE OF TRUTH — one glance: where the price really comes from, and what each button does */}
+          <div className="rounded-lg border bg-muted/30 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm font-semibold">Where the price comes from</p>
+              <Badge
+                variant="outline"
+                className={
+                  dirty
+                    ? 'border-amber-200 bg-amber-100 text-amber-900'
+                    : 'border-emerald-200 bg-emerald-100 text-emerald-800'
+                }
+              >
+                {dirty ? 'Draft — not on quotes yet' : 'Nothing waiting to be pushed'}
+              </Badge>
+            </div>
+
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              <div className="rounded-md border bg-background p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  1 · Source of truth
+                </p>
+                <p className="mt-1 text-sm font-semibold">
+                  {liveVersionLabel ? liveVersionLabel : 'No pricing version is live yet'}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  The live pricing grid on Quotes &amp; Orders. Every quote, website and staff, starts from
+                  this figure.
+                </p>
+              </div>
+              <div className="rounded-md border bg-background p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  2 · What this page does
+                </p>
+                <p className="mt-1 text-sm font-semibold">Adjusts that price</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Bands don't hold their own price list — they raise, floor or block the live grid price for
+                  the makes and models you list.
+                </p>
+              </div>
+              <div className="rounded-md border bg-background p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  3 · What changes customer prices
+                </p>
+                <p className="mt-1 text-sm font-semibold">Push live — nothing else</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {lastPublishedAt
+                    ? `Last pushed ${lastPublishedAt}.`
+                    : 'Save keeps your work on this computer only. Until you push, no customer sees it.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-3 rounded-md border bg-background p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Which figure wins on one vehicle
+              </p>
+              <ul className="mt-1 list-disc pl-4 text-xs text-muted-foreground space-y-1">
+                <li>Excluded vehicles and the minimum price floor beat everything on this page.</li>
+                <li>One row only: make + model beats make-only, and a fuel-specific row beats "all fuel types".</li>
+                <li>That winning row's category sets the price — no other category is added on top.</li>
+                <li>Inside a category: an exact price per year overrides the factor; the minimum is only a safety net.</li>
+                <li>Fuel type just decides which cars a row catches. It never adds anything to the price.</li>
+              </ul>
+            </div>
+          </div>
+
           <Alert>
+
             <AlertDescription className="text-sm">
               A <strong>referral</strong> band produces no automatic price — the quote goes to manual
               underwriting. Motorbikes always price at the motorbike share of standard, and their band
