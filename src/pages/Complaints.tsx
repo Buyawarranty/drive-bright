@@ -444,7 +444,7 @@ const Complaints = () => {
                           onChange={change}
                           className="sr-only"
                         />
-                        <span className={`w-3.5 h-3.5 rounded-full border-2 ${active ? 'border-[#1A2B4A]' : 'border-slate-400'} flex items-center justify-center`}>
+                        <span className={`w-3.5 h-3.5 rounded-full border-2 ${active ? 'border-brand-blue-dark' : 'border-slate-400'} flex items-center justify-center`}>
                           {active && <span className="w-1.5 h-1.5 rounded-full bg-brand-blue-dark" />}
                         </span>
                         {method}
