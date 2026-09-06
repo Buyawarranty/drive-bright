@@ -8,6 +8,7 @@ import { OrrGoLiveSwitch } from './OrrGoLiveSwitch';
 import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
 import { ImportLeadToAgentPanel } from './ImportLeadToAgentPanel';
+import { OrrFallbackToRoundRobinPanel } from './OrrFallbackToRoundRobinPanel';
 import { useOrrLiveSettings } from '@/hooks/useOrrLiveSettings';
 
 
