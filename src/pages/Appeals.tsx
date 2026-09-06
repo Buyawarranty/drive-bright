@@ -593,7 +593,7 @@ const Appeals = () => {
                     name="confirmAccurate"
                     checked={form.confirmAccurate}
                     onChange={change}
-                    className="mt-0.5 w-4 h-4 rounded border-slate-400 text-brand-blue-dark focus:ring-[#334155]"
+                    className="mt-0.5 w-4 h-4 rounded border-slate-400 text-brand-blue-dark focus:ring-brand-blue-dark"
                   />
                   <span className="text-sm text-slate-700 leading-relaxed flex-1">
                     I confirm that the information provided is accurate to the best of my knowledge. <span className="text-brand-blue">*</span>
