@@ -319,24 +319,57 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                 {/* Checkbox moved to control bar */}
               </TableHead>
               )}
-              {!hideAssignedColumn && !isLeadGenView && <TableHead className="sticky left-0 bg-muted/20 z-10 w-[110px] min-w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Agent<SortIcon column="agent" /></span></TableHead>}
-              {sandboxMode && !isLeadGenView && <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Time from the lead arriving to the agent's first action on it (call logged, note written, status changed). Target is 120 seconds.">Time to contact</TableHead>}
-              {showSourceColumn && <TableHead className="w-[35px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Src</TableHead>}
-              {!isLeadGenView && <TableHead className="w-[95px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Status<SortIcon column="status" /></span></TableHead>}
-              {/* Send Quote column header removed — action still available in the row action buttons */}
-              {!isLeadGenView && <TableHead className="w-[60px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Calls</TableHead>}
-              {!isLeadGenView && <TableHead className="w-[120px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>}
-              <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</TableHead>
-              <TableHead className="w-[150px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</TableHead>
-              <TableHead className="w-[170px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Email</TableHead>
-              {!isLeadGenView && <TableHead className="w-[85px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</TableHead>}
-              {!isLeadGenView && <TableHead className="w-[80px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Payment</TableHead>}
-              {!isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Paid Date</TableHead>}
-              {!isLeadGenView && <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Last time an agent actually touched this lead (call, note, status change). Excludes automated system writes."><span className="inline-flex items-center">Agent activity<SortIcon column="activity" /></span></TableHead>}
-              {!isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Lead Date<SortIcon column="lead_date" /></span></TableHead>}
-              {recontactMode && !isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Date Added<SortIcon column="date_added" /></span></TableHead>}
-              {!isLeadGenView && <TableHead className="w-[140px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Last time the customer themselves did something — asked for another quote, filled step 2, or logged into the portal.">Customer activity</TableHead>}
-              {!isLeadGenView && !sandboxMode && <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Time from the lead arriving to the agent's first action on it (call logged, note written, status changed). Target is 120 seconds.">Time to contact</TableHead>}
+
+              {sandboxMode ? (
+                <>
+                  {/* Queue / urgency */}
+                  {!hideAssignedColumn && <TableHead className="sticky left-0 bg-muted/20 z-10 w-[110px] min-w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Agent<SortIcon column="agent" /></span></TableHead>}
+                  <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="How long the lead has been waiting since it arrived or was handed to the agent.">Time to Lead</TableHead>
+                  <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Time from the lead arriving to the agent's first action on it (call logged, note written, status changed). Target is 120 seconds.">Time to Contact</TableHead>
+
+                  {/* Customer contact details */}
+                  <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</TableHead>
+                  <TableHead className="w-[150px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</TableHead>
+                  <TableHead className="w-[170px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Email</TableHead>
+                  <TableHead className="w-[85px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</TableHead>
+
+                  {/* Working the lead */}
+                  <TableHead className="w-[95px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Status<SortIcon column="status" /></span></TableHead>
+                  <TableHead className="w-[60px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Calls</TableHead>
+                  <TableHead className="w-[120px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>
+
+                  {/* Activity / history */}
+                  <TableHead className="w-[140px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Last time the customer themselves did something — asked for another quote, filled step 2, or logged into the portal.">Customer activity</TableHead>
+                  <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Last time an agent actually touched this lead (call, note, status change). Excludes automated system writes."><span className="inline-flex items-center">Agent activity<SortIcon column="activity" /></span></TableHead>
+
+                  {/* Commercial / dates */}
+                  <TableHead className="w-[80px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Payment</TableHead>
+                  <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Paid Date</TableHead>
+                  <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Lead Date<SortIcon column="lead_date" /></span></TableHead>
+                  {recontactMode && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Date Added<SortIcon column="date_added" /></span></TableHead>}
+                </>
+              ) : (
+                <>
+                  {!hideAssignedColumn && !isLeadGenView && <TableHead className="sticky left-0 bg-muted/20 z-10 w-[110px] min-w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Agent<SortIcon column="agent" /></span></TableHead>}
+                  {showSourceColumn && <TableHead className="w-[35px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Src</TableHead>}
+                  {!isLeadGenView && <TableHead className="w-[95px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Status<SortIcon column="status" /></span></TableHead>}
+                  {/* Send Quote column header removed — action still available in the row action buttons */}
+                  {!isLeadGenView && <TableHead className="w-[60px] text-center py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Calls</TableHead>}
+                  {!isLeadGenView && <TableHead className="w-[120px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>}
+                  <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</TableHead>
+                  <TableHead className="w-[150px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</TableHead>
+                  <TableHead className="w-[170px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Email</TableHead>
+                  {!isLeadGenView && <TableHead className="w-[85px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</TableHead>}
+                  {!isLeadGenView && <TableHead className="w-[80px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Payment</TableHead>}
+                  {!isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Paid Date</TableHead>}
+                  {!isLeadGenView && <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Last time an agent actually touched this lead (call, note, status change). Excludes automated system writes."><span className="inline-flex items-center">Agent activity<SortIcon column="activity" /></span></TableHead>}
+                  {!isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Lead Date<SortIcon column="lead_date" /></span></TableHead>}
+                  {recontactMode && !isLeadGenView && <TableHead className="w-[100px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"><span className="inline-flex items-center">Date Added<SortIcon column="date_added" /></span></TableHead>}
+                  {!isLeadGenView && <TableHead className="w-[140px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Last time the customer themselves did something — asked for another quote, filled step 2, or logged into the portal.">Customer activity</TableHead>}
+                  {!isLeadGenView && <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" title="Time from the lead arriving to the agent's first action on it (call logged, note written, status changed). Target is 120 seconds.">Time to contact</TableHead>}
+                </>
+              )}
+
             </TableRow>
           </TableHeader>
           <TableBody>
