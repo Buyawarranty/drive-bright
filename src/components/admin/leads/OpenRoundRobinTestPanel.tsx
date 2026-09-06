@@ -1797,9 +1797,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                           <a href={`tel:${lead.phone}`} className="h-7 w-7 rounded-md flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
                             <Phone className="h-3.5 w-3.5" />
                           </a>
-                          <span className="inline-flex items-center gap-1 rounded-md border border-dashed border-border px-2 py-1 text-xs text-muted-foreground">
-                            <StickyNote className="h-3 w-3" /> Notes
-                          </span>
+                          <PracticeNotes
+                            notes={lead.notes ?? []}
+                            onAdd={(text) => addPracticeNote(lead.id, text)}
+                          />
                           <Mail className="h-4 w-4 text-blue-600" />
                           <Bell className="h-4 w-4 text-muted-foreground" />
                           <span className="inline-flex items-center gap-1 rounded-md border border-orange-300 px-2 py-1 text-xs font-medium text-orange-600">
