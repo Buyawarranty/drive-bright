@@ -333,10 +333,11 @@ export const ClaimsTab = ({
             </span>
             <div>
               <p className="text-sm font-semibold text-[#1A2B4A]">
-                {appealsTotalCount} appeal{appealsTotalCount === 1 ? '' : 's'} received back
-                {appealsUnreadCount > 0 ? ` — ${appealsUnreadCount} not yet read` : ''}
+                {appealsTotalCount} appeal{appealsTotalCount === 1 ? '' : 's'} back from customers
+                {appealsUnreadCount > 0 ? ` — ${appealsUnreadCount} new` : ''}
               </p>
-              <p className="text-xs text-slate-600">Full details are in the Appeals section below.</p>
+              <p className="text-xs text-slate-600">Sent in from the online appeal form. Full details are in the Appeals section below.</p>
+
             </div>
           </div>
           <Button
