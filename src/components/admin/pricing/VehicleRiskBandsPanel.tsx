@@ -124,6 +124,8 @@ const VehicleRiskBandsPanel: React.FC = () => {
   const [liveVersionLabel, setLiveVersionLabel] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [lastPublishedAt, setLastPublishedAt] = useState<string | null>(null);
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+
 
   useEffect(() => {
     fetchLivePricingVersionLabel()
