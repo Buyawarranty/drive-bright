@@ -140,6 +140,8 @@ interface DummyLead {
   managerAlerted?: boolean;
   /** Practice notes typed by whoever is rehearsing as the agent. Never saved anywhere. */
   notes?: { at: number; by: string; text: string }[];
+  /** Which system the lead arrived under. 'rr' leads have no countdown and never move on. */
+  source?: 'orr' | 'rr';
 }
 
 
@@ -351,7 +353,10 @@ const PracticeNotes = ({
 const hasAttempted = (lead: DummyLead) => lead.dials > 0;
 
 /** An agent is busy while they hold a live (not yet expired) dummy lead. */
+const isOrr = (lead: DummyLead) => (lead.source ?? 'orr') === 'orr';
+
 const isHeldLive = (lead: DummyLead, now: number) =>
+  isOrr(lead) &&
   lead.status !== 'queued' &&
   lead.assignedTo !== null &&
   (hasAttempted(lead) || lead.deadlineAt > now);
@@ -390,7 +395,7 @@ const advance = (
 
   // Oldest first, so waiting leads are handled before newly expired ones.
   const pending = leads
-    .filter((lead) => lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now))
+    .filter((lead) => isOrr(lead) && (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)))
     .sort((a, b) => a.createdAt - b.createdAt);
 
   for (const lead of pending) {
@@ -539,12 +544,14 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
   const visibleLeads = useMemo(
     () =>
-      leads.filter(
-        (lead) =>
+      leads
+        .filter((lead) =>
           simulatedAgentId === 'all'
             ? lead.assignedTo !== null || lead.status === 'queued'
             : lead.assignedTo === simulatedAgentId,
-      ),
+        )
+        // Open Round Robin leads always sit at the top — they are the ones on a clock.
+        .sort((a, b) => Number(isOrr(b)) - Number(isOrr(a))),
     [leads, simulatedAgentId],
   );
 
@@ -947,6 +954,48 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
     },
     [],
   );
+
+  /**
+   * Practice helper: drops a normal round robin lead into the same list so the
+   * agent can see how the two sit together. Round robin leads have no countdown
+   * and never move on to another agent.
+   */
+  const createRrLead = useCallback(() => {
+    const now = Date.now();
+    setLeads((current) => {
+      const activeRoster = rosterRef.current;
+      const owner =
+        simulatedAgentId !== 'all'
+          ? activeRoster.find((agent) => agent.id === simulatedAgentId) ?? activeRoster[0]
+          : activeRoster[current.filter((lead) => (lead.source ?? 'orr') === 'rr').length % activeRoster.length];
+      const leadNumber = current.length + 1;
+      const draft: DummyLead = {
+        id: `dummy-rr-${now}-${Math.random().toString(36).slice(2, 7)}`,
+        firstName: 'TEST',
+        lastName: `RR Lead ${String(leadNumber).padStart(2, '0')}`,
+        email: `test.rr${leadNumber}@example.com`,
+        status: 'new',
+        displayStatus: 'new',
+        assignedTo: owner?.id ?? null,
+        attemptCount: 1,
+        deadlineAt: now,
+        vehicleReg: 'TEST123',
+        phone: '07903333333',
+        createdAt: now,
+        dials: 0,
+        contactedAt: null,
+        dayDials: 0,
+        nextCallAt: null,
+        greenTeamAt: null,
+        followUpDay: 0,
+        chaseComplete: false,
+        source: 'rr',
+        history: ['Round robin practice lead — stays with this agent, no countdown'],
+      };
+      return [draft, ...current];
+    });
+    toast.success('Round robin practice lead added. Nothing real was changed.');
+  }, [simulatedAgentId]);
 
   const [activeScenario, setActiveScenario] = useState<string | null>(null);
 
@@ -1361,6 +1410,9 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
               {liveError && <span className="text-xs text-destructive">{liveError}</span>}
             </>
           )}
+          <Button size="sm" variant="outline" onClick={createRrLead} disabled={dataSource === 'live'} title="Adds a normal round robin lead so you can see both kinds side by side">
+            <Plus className="h-3.5 w-3.5 mr-1.5" /> Add a round robin lead
+          </Button>
           <Button size="sm" onClick={createTestLead} disabled={dataSource === 'live'} title={dataSource === 'live' ? 'Live leads mode uses the real leads — use Load live leads instead.' : undefined}>
             <Plus className="h-3.5 w-3.5 mr-1.5" /> Take this lead
           </Button>
@@ -1570,11 +1622,16 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
                   const ageSec = Math.round((now - lead.createdAt) / 1000);
                   const agent = getAgent(lead.assignedTo);
+                  const orrLead = isOrr(lead);
 
                   return (
                     <tr
                       key={lead.id}
-                      className={`border-t border-border align-middle ${expired ? 'bg-muted/40' : 'bg-background'}`}
+                      className={cn(
+                        'border-t border-border align-middle',
+                        expired ? 'bg-muted/40' : 'bg-background',
+                        orrLead && !expired && 'ring-2 ring-inset ring-primary/60 bg-primary/5',
+                      )}
                     >
                       <td className="px-2 py-2 text-muted-foreground">{rowIndex + 1}</td>
                       <td className="px-2 py-2">
@@ -1582,6 +1639,16 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       </td>
                       <td className="px-2 py-2">
                         <div className="flex flex-col items-start gap-1">
+                          <span
+                            className={cn(
+                              'inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide whitespace-nowrap',
+                              orrLead
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-border bg-muted text-muted-foreground',
+                            )}
+                          >
+                            {orrLead ? 'ORR · call first' : 'Round robin'}
+                          </span>
                           {lead.assignedTo === null ? (
                             <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-900 whitespace-nowrap">
                               <Clock className="h-3 w-3" /> Waiting in the open pool
@@ -1606,7 +1673,12 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       </td>
 
                       <td className="px-2 py-2">
-                        {lead.contactedAt ? (
+                        {!orrLead ? (
+                          <div className="min-w-[160px] rounded-md border border-border bg-muted/40 px-2.5 py-2">
+                            <div className="text-xs font-medium text-muted-foreground">No time limit</div>
+                            <div className="text-sm font-semibold text-foreground">Stays with this agent</div>
+                          </div>
+                        ) : lead.contactedAt ? (
                           <div className="min-w-[180px] rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2">
                             <div className="flex items-center gap-2">
                               <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
