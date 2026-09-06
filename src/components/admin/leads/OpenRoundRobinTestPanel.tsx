@@ -33,7 +33,7 @@ import { cn } from '@/lib/utils';
 import type { LeadStatus } from '@/hooks/useLeads';
 import { OrrLogicExplainer, DEFAULT_ORR_CADENCE, type OrrCadenceConfig } from './OrrLogicExplainer';
 
-type DummyLeadStatus = 'queued' | 'new' | 'reassigned' | 'dormant';
+type DummyLeadStatus = 'queued' | 'new' | 'reassigned';
 
 /** Same colours used in the real New Leads table so practice matches production. */
 const statusColors: Record<LeadStatus, string> = {
