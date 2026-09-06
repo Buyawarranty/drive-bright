@@ -2474,8 +2474,8 @@ export const CustomersTab = ({
           ].filter(Boolean)));
           if (leadIds.length > 0) {
             const idBatches: string[][] = [];
-            for (let i = 0; i < leadIds.length; i += 60) {
-              idBatches.push(leadIds.slice(i, i + 60));
+            for (let i = 0; i < leadIds.length; i += 200) {
+              idBatches.push(leadIds.slice(i, i + 200));
             }
             const noteFirst = (leadId: string, ts?: string | null) => {
               if (!ts) return;

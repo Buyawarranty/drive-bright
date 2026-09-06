@@ -107,45 +107,18 @@ export const useRepeatCustomers = (leads: RepeatLeadInput[]) => {
     const rows: Row[] = [];
 
     try {
-      const runs: PromiseLike<void>[] = [];
-      const push = (data: Row[] | null) => { rows.push(...(data || [])); };
+      // PERF: one indexed server-side lookup instead of dozens of parallel
+      // 25-way `phone ilike '%tail9'` / `name ilike` scans over customers.
+      // Those were the single heaviest queries in the whole CRM.
+      const { data, error } = await (supabase as any).rpc('match_repeat_customers', {
+        p_emails: emails,
+        p_regs: regs,
+        p_phone_tails: phones,
+        p_names: names,
+      });
+      if (error) throw error;
+      rows.push(...((data || []) as Row[]));
 
-      for (let i = 0; i < emails.length; i += BATCH) {
-        runs.push(
-          supabase.from('customers').select(COLS).in('email', emails.slice(i, i + BATCH)).limit(BATCH * 4)
-            .then(({ data }) => push(data as Row[] | null))
-        );
-      }
-      for (let i = 0; i < regs.length; i += BATCH) {
-        runs.push(
-          supabase.from('customers').select(COLS).in('registration_plate', regs.slice(i, i + BATCH)).limit(BATCH * 4)
-            .then(({ data }) => push(data as Row[] | null))
-        );
-      }
-      // Phone and name can't be matched with a normalized `in()` server-side, so we
-      // pull candidates with an OR of suffix / name filters in small batches.
-      for (let i = 0; i < phones.length; i += 25) {
-        const batch = phones.slice(i, i + 25);
-        const or = batch.map(p => `phone.ilike.%${p}`).join(',');
-        runs.push(
-          supabase.from('customers').select(COLS).or(or).limit(500)
-            .then(({ data }) => push(data as Row[] | null))
-        );
-      }
-      for (let i = 0; i < names.length; i += 25) {
-        const batch = names.slice(i, i + 25);
-        const or = batch
-          .map(n => leads.find(l => normName(l.first_name, l.last_name) === n))
-          .filter(Boolean)
-          .map(l => `name.ilike.%${(l!.first_name || '').trim()}%${(l!.last_name || '').trim()}%`)
-          .join(',');
-        if (!or) continue;
-        runs.push(
-          supabase.from('customers').select(COLS).or(or).limit(500)
-            .then(({ data }) => push(data as Row[] | null))
-        );
-      }
-      await Promise.all(runs);
 
       // The same customer record is returned by several of the parallel lookups
       // (email + reg + phone + name), so collapse to one row per record first —

@@ -92,7 +92,9 @@ export const responseTone = (sec: number | null | undefined): string => {
   return 'text-rose-700';
 };
 
-const BATCH = 60;
+// PERF: 200 ids per round trip (was 60) — the changelog/call/note lookups were
+// firing ~3x more queries than necessary on every leads list render.
+const BATCH = 200;
 
 interface LeadInput {
   id: string;
