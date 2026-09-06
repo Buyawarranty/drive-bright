@@ -140,6 +140,8 @@ interface DummyLead {
   managerAlerted?: boolean;
   /** Practice notes typed by whoever is rehearsing as the agent. Never saved anywhere. */
   notes?: { at: number; by: string; text: string }[];
+  /** Which system the lead arrived under. 'rr' leads have no countdown and never move on. */
+  source?: 'orr' | 'rr';
 }
 
 
@@ -351,7 +353,10 @@ const PracticeNotes = ({
 const hasAttempted = (lead: DummyLead) => lead.dials > 0;
 
 /** An agent is busy while they hold a live (not yet expired) dummy lead. */
+const isOrr = (lead: DummyLead) => (lead.source ?? 'orr') === 'orr';
+
 const isHeldLive = (lead: DummyLead, now: number) =>
+  isOrr(lead) &&
   lead.status !== 'queued' &&
   lead.assignedTo !== null &&
   (hasAttempted(lead) || lead.deadlineAt > now);
@@ -390,7 +395,7 @@ const advance = (
 
   // Oldest first, so waiting leads are handled before newly expired ones.
   const pending = leads
-    .filter((lead) => lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now))
+    .filter((lead) => isOrr(lead) && (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)))
     .sort((a, b) => a.createdAt - b.createdAt);
 
   for (const lead of pending) {
@@ -539,12 +544,14 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
   const visibleLeads = useMemo(
     () =>
-      leads.filter(
-        (lead) =>
+      leads
+        .filter((lead) =>
           simulatedAgentId === 'all'
             ? lead.assignedTo !== null || lead.status === 'queued'
             : lead.assignedTo === simulatedAgentId,
-      ),
+        )
+        // Open Round Robin leads always sit at the top — they are the ones on a clock.
+        .sort((a, b) => Number(isOrr(b)) - Number(isOrr(a))),
     [leads, simulatedAgentId],
   );
 
