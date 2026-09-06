@@ -1015,7 +1015,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         () =>
           toast({
             title: 'Passed on',
-            description: `Moved on ${result.reassigned}${result.managerAlerted ? ` · Manager alerted: ${result.managerAlerted}` : ''}. Nothing real was changed.`,
+            description: `Moved on ${result.reassigned}. Nothing real was changed.`,
           }),
         0,
       );
@@ -1186,7 +1186,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         id: 'dial-logged',
         title: 'Agent dials in time — the lead stays with them',
         what: 'A dial has been logged, so the countdown stops.',
-        watch: 'It reads "Still yours" and is never offered to anyone else.',
+        watch: 'The lead stays in the salesperson\'s queue until they record an outcome.',
         agents: 4,
         build: (r: DummyAgent[], now: number) => [
           buildLead({
