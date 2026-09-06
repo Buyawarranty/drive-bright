@@ -368,11 +368,20 @@ const hasAttempted = (lead: DummyLead) => lead.dials > 0;
 /** An agent is busy while they hold a live (not yet expired) dummy lead. */
 const isOrr = (lead: DummyLead) => (lead.source ?? 'orr') === 'orr';
 
+/**
+ * Once the agent records an outcome (anything other than "Not spoken to") the
+ * lead is worked: it stays with them but no longer blocks them from taking the
+ * next lead.
+ */
+const isWorked = (lead: DummyLead) => lead.displayStatus !== 'new';
+
 const isHeldLive = (lead: DummyLead, now: number) =>
   isOrr(lead) &&
   lead.status !== 'queued' &&
   lead.assignedTo !== null &&
+  !isWorked(lead) &&
   (hasAttempted(lead) || lead.deadlineAt > now);
+
 
 
 /**
