@@ -798,10 +798,11 @@ const VehicleRiskBandsPanel: React.FC = () => {
                   <Plus className="h-4 w-4 mr-2" /> Add personalised tier…
                 </Button>
                 <Separator orientation="vertical" className="h-6" />
-                <Button variant="outline" size="sm" onClick={save} disabled={!dirty}>
-                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save changes' : 'Saved'}
+                <Button variant="outline" size="sm" onClick={() => save('Risk bands')} disabled={!dirty}>
+                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save risk bands' : 'Saved'}
                 </Button>
                 <Button size="sm" onClick={pushLive} disabled={publishing}>
+
                   <Rocket className="h-4 w-4 mr-2" />
                   {publishing ? 'Pushing live…' : 'Push live'}
                 </Button>
