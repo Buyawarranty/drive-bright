@@ -966,7 +966,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         id: 'unanswered',
         title: 'Passed round and still nobody calls',
         what: `A lead already offered ${cadence.maxAttempts} times with no dial.`,
-        watch: 'It stops circulating and drops out of the live list as no-contact.',
+        watch: 'It keeps circulating through ORR and a manager alert is raised so a human can reassign it.',
         agents: 4,
         build: (r: DummyAgent[], now: number) => [
           buildLead({
