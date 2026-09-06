@@ -31,7 +31,7 @@ export interface OrrCadenceConfig {
   followUpDays: number;
   /** Max dials a day during the follow-up chase. */
   followUpDailyDials: number;
-  /** Unanswered attempts before the lead goes dormant. */
+  /** Unanswered attempts before a manager alert is raised. */
   maxAttempts: number;
   /** When everyone is busy: queue the lead, or keep offering it round the rotation. */
   whenAllBusy: 'queue' | 'keep_offering';
@@ -150,7 +150,7 @@ export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel
                   </>
                 )}
               </li>
-              <li>After <strong>{config.maxAttempts} unanswered offers</strong> the lead goes dormant.</li>
+              <li>After <strong>{config.maxAttempts} unanswered offers</strong> the lead keeps cycling through ORR and a manager alert is raised so a human can reassign it.</li>
               <li>At <strong>{String(config.greenTeamHandoverHour).padStart(2, '0')}:00</strong> unworked day-one leads move to Team Green, then chased for <strong>{config.followUpDays} days</strong> with up to <strong>{config.followUpDailyDials} dials a day</strong>.</li>
             </ul>
           </div>
@@ -243,8 +243,8 @@ export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel
                 onChange={(n) => set('followUpDailyDials', n)}
               />
               <NumberField
-                label="Offers before dormant"
-                hint="Unanswered offers before the lead stops circulating"
+                label="Offers before manager alert"
+                hint="Unanswered offers before a manager alert is raised"
                 value={config.maxAttempts}
                 min={1}
                 max={20}

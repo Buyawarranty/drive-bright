@@ -33,7 +33,7 @@ import { cn } from '@/lib/utils';
 import type { LeadStatus } from '@/hooks/useLeads';
 import { OrrLogicExplainer, DEFAULT_ORR_CADENCE, type OrrCadenceConfig } from './OrrLogicExplainer';
 
-type DummyLeadStatus = 'queued' | 'new' | 'reassigned' | 'dormant';
+type DummyLeadStatus = 'queued' | 'new' | 'reassigned';
 
 /** Same colours used in the real New Leads table so practice matches production. */
 const statusColors: Record<LeadStatus, string> = {
@@ -134,6 +134,8 @@ interface DummyLead {
   followUpDay: number;
   /** True once the seven-day follow-up chase is finished with no contact. */
   chaseComplete: boolean;
+  /** True once the lead has reached the max offer count and a manager has been alerted. */
+  managerAlerted?: boolean;
 }
 
 
@@ -278,7 +280,6 @@ const hasAttempted = (lead: DummyLead) => lead.dials > 0;
 
 /** An agent is busy while they hold a live (not yet expired) dummy lead. */
 const isHeldLive = (lead: DummyLead, now: number) =>
-  lead.status !== 'dormant' &&
   lead.status !== 'queued' &&
   lead.assignedTo !== null &&
   (hasAttempted(lead) || lead.deadlineAt > now);
@@ -298,7 +299,7 @@ const advance = (
   const leads = input.map((lead) => ({ ...lead }));
   let index = roster.length ? startIndex % roster.length : 0;
   let reassigned = 0;
-  let dormant = 0;
+  let managerAlerted = 0;
 
   const busy = new Set(leads.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string));
 
@@ -317,17 +318,16 @@ const advance = (
 
   // Oldest first, so waiting leads are handled before newly expired ones.
   const pending = leads
-    .filter((lead) => lead.status !== 'dormant' && (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)))
+    .filter((lead) => lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now))
     .sort((a, b) => a.createdAt - b.createdAt);
 
   for (const lead of pending) {
-    if (lead.status !== 'queued' && lead.attemptCount >= cfg.maxAttempts) {
-      lead.status = 'dormant';
-      lead.assignedTo = null;
-      lead.history = [...lead.history, `Moved to Dormant – No Contact after ${cfg.maxAttempts} unanswered attempts`];
-      dormant += 1;
-      continue;
+    if (lead.status !== 'queued' && lead.attemptCount >= cfg.maxAttempts && !lead.managerAlerted) {
+      lead.managerAlerted = true;
+      lead.history = [...lead.history, `Manager alert – ${cfg.maxAttempts} offers with no contact. Lead keeps cycling through ORR.`];
+      managerAlerted += 1;
     }
+
 
     const agent = takeFreeAgent();
     if (!agent) {
@@ -354,7 +354,7 @@ const advance = (
     reassigned += 1;
   }
 
-  return { leads, index, reassigned, dormant };
+  return { leads, index, reassigned, managerAlerted };
 };
 
 export type OrrPracticeTeam = 'green';
@@ -451,9 +451,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
       const now = Date.now();
       setLeads((current) => {
         const needsWork = current.some(
-          (lead) => lead.status !== 'dormant' && (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)),
+          (lead) => lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now),
         );
         if (!needsWork) return current;
+
         const result = advance(current, nextAgentIndexRef.current, now, cadenceRef.current, rosterRef.current);
 
         nextAgentIndexRef.current = result.index;
@@ -467,10 +468,9 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
     () =>
       leads.filter(
         (lead) =>
-          lead.status !== 'dormant' &&
-          (simulatedAgentId === 'all'
+          simulatedAgentId === 'all'
             ? lead.assignedTo !== null || lead.status === 'queued'
-            : lead.assignedTo === simulatedAgentId),
+            : lead.assignedTo === simulatedAgentId,
       ),
     [leads, simulatedAgentId],
   );
@@ -765,7 +765,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         () =>
           toast({
             title: 'Passed on',
-            description: `Moved on ${result.reassigned} · Waiting ${result.dormant}. Nothing real was changed.`,
+            description: `Moved on ${result.reassigned}${result.managerAlerted ? ` · Manager alerted: ${result.managerAlerted}` : ''}. Nothing real was changed.`,
           }),
         0,
       );
@@ -966,7 +966,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         id: 'unanswered',
         title: 'Passed round and still nobody calls',
         what: `A lead already offered ${cadence.maxAttempts} times with no dial.`,
-        watch: 'It stops circulating and drops out of the live list as no-contact.',
+        watch: 'It keeps circulating through ORR and a manager alert is raised so a human can reassign it.',
         agents: 4,
         build: (r: DummyAgent[], now: number) => [
           buildLead({
@@ -1557,7 +1557,16 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                           )}
 
 
-                          {lead.chaseComplete ? (
+                          {lead.managerAlerted ? (
+                            <div className="mt-1.5 rounded border border-destructive bg-destructive/10 px-2 py-1">
+                              <div className="text-[11px] font-semibold text-destructive flex items-center gap-1">
+                                <Bell className="h-3 w-3" /> Manager alert
+                              </div>
+                              <div className="text-[10px] text-destructive/80">
+                                {cadence.maxAttempts} offers with no contact · lead keeps cycling through ORR
+                              </div>
+                            </div>
+                          ) : lead.chaseComplete ? (
                             <div className="mt-1.5 rounded border border-slate-300 bg-slate-50 px-2 py-1">
                               <div className="text-[11px] font-semibold text-slate-800">
                                 Seven-day follow-up finished
