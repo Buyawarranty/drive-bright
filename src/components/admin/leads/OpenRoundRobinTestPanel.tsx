@@ -1775,16 +1775,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                           )}
 
 
-                          {lead.managerAlerted ? (
-                            <div className="mt-1.5 rounded border border-destructive bg-destructive/10 px-2 py-1">
-                              <div className="text-[11px] font-semibold text-destructive flex items-center gap-1">
-                                <Bell className="h-3 w-3" /> Manager alert
-                              </div>
-                              <div className="text-[10px] text-destructive/80">
-                                {cadence.maxAttempts} offers with no contact · lead keeps cycling through ORR
-                              </div>
-                            </div>
-                          ) : lead.chaseComplete ? (
+                          {lead.chaseComplete ? (
                             <div className="mt-1.5 rounded border border-slate-300 bg-slate-50 px-2 py-1">
                               <div className="text-[11px] font-semibold text-slate-800">
                                 Seven-day follow-up finished
