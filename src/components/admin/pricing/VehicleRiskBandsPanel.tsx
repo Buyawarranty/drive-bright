@@ -724,8 +724,20 @@ const VehicleRiskBandsPanel: React.FC = () => {
                 <Button variant="outline" size="sm" onClick={addPersonalisedTier}>
                   <Plus className="h-4 w-4 mr-2" /> Add personalised tier…
                 </Button>
+                <Separator orientation="vertical" className="h-6" />
+                <Button variant="outline" size="sm" onClick={save} disabled={!dirty}>
+                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save changes' : 'Saved'}
+                </Button>
+                <Button size="sm" onClick={pushLive} disabled={publishing}>
+                  <Rocket className="h-4 w-4 mr-2" />
+                  {publishing ? 'Pushing live…' : 'Push live'}
+                </Button>
               </div>
             </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Changes are kept as you type. Press Save changes to keep them, then Push live to use the new prices on quotes.
+            </p>
+
 
             {/* CREATE A CATEGORY — name it and price it, exactly like the premium tiers */}
             <div ref={createCategoryRef} className="mb-4 rounded-lg border bg-muted/30 p-3">
