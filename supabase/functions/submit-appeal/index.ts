@@ -183,6 +183,21 @@ serve(async (req: Request): Promise<Response> => {
         notes: summary,
         is_read: false,
       });
+
+      // Move the claim to the Appeal stage so the status shown in Claims matches.
+      await supabase
+        .from("claims_submissions")
+        .update({ status: "appealed", updated_at: new Date().toISOString() })
+        .eq("id", claim.id);
+
+      await supabase.from("claim_audit_log").insert({
+        claim_id: claim.id,
+        action: "appeal_submitted",
+        field: "status",
+        new_value: "appealed",
+        reason: isRequest ? "Appeal requested from the public appeals form." : "Appeal submitted from the public appeals form.",
+      }).then(({ error }) => { if (error) console.error("audit log failed", error); });
+
     }
 
     // Internal notification
