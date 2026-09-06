@@ -128,8 +128,8 @@ interface DummyLead {
   dayDials: number;
   /** When the next call attempt is due (start of the next calling window). */
   nextCallAt: number | null;
-  /** Set once the day's attempts are used up — the lead hands over to Team Red. */
-  redTeamAt: number | null;
+  /** Set once the day's attempts are used up — the lead hands over to Team Green. */
+  greenTeamAt: number | null;
   /** 0 = day one. 1–7 = the seven-day follow-up chase (max 2 dials a day). */
   followUpDay: number;
   /** True once the seven-day follow-up chase is finished with no contact. */
