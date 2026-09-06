@@ -726,7 +726,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           toastTitle = 'Follow-up finished';
           toastBody = 'Seven days of chasing are done with no contact. No further dials are scheduled.';
         } else if (!inChase) {
-          notes.push(`Day's attempts used — handing over to Team Green at ${formatTimeOfDay(atHour(now, cadence.redTeamHandoverHour))}`);
+          notes.push(`Day's attempts used — handing over to Team Green at ${formatTimeOfDay(atHour(now, cadence.greenTeamHandoverHour))}`);
           notes.push(`Seven-day follow-up starts tomorrow — up to ${cadence.followUpDailyDials} dials a day while the lead is uncontacted and unowned`);
           toastTitle = 'Attempts used — moving to Team Green';
           toastBody = `Day one is done. The seven-day follow-up starts tomorrow at ${formatTimeOfDay(nextDayAt)} with up to ${cadence.followUpDailyDials} dials a day.`;
@@ -744,7 +744,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           followUpDay: exhausted && !chaseOver ? nextDay : lead.followUpDay,
           chaseComplete: chaseOver,
           nextCallAt: chaseOver ? null : exhausted ? nextDayAt : nextWin.at,
-          greenTeamAt: !inChase && exhausted ? atHour(now, cadence.redTeamHandoverHour) : lead.greenTeamAt,
+          greenTeamAt: !inChase && exhausted ? atHour(now, cadence.greenTeamHandoverHour) : lead.greenTeamAt,
           history: [...lead.history, ...notes],
         };
       }),
@@ -1775,7 +1775,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <span className="font-semibold text-foreground">Day one calling plan:</span>{' '}
             {callWindows(cadence).map((w) => w.label).join(', ')}. Maximum {cadence.maxDialsFullDay} dials in a full day,
             or {cadence.maxDialsAfterMidday} if the lead arrives after midday. Once those attempts are used the lead hands
-            over to Team Green at {formatTimeOfDay(atHour(Date.now(), cadence.redTeamHandoverHour))} the same day, then is
+            over to Team Green at {formatTimeOfDay(atHour(Date.now(), cadence.greenTeamHandoverHour))} the same day, then is
             chased for {cadence.followUpDays} days with up to {cadence.followUpDailyDials} dials a day. Practice leads are
             reserved privately to one agent and wiped when you clear or reload. Change any of these figures in the section
             above.
