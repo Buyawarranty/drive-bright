@@ -408,7 +408,8 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   const nextAgentIndexRef = useRef(0);
   const [simulatedAgentId, setSimulatedAgentId] = useState<string>('all');
   // How many agents are "on shift" for this rehearsal (1–4).
-  const [agentCount, setAgentCount] = useState(DUMMY_AGENTS.length);
+  // Default rehearsal: two agents live, which is the everyday picture on the floor.
+  const [agentCount, setAgentCount] = useState(2);
   const roster = useMemo(() => DUMMY_AGENTS.slice(0, agentCount), [agentCount]);
   const rosterRef = useRef(roster);
   useEffect(() => {
