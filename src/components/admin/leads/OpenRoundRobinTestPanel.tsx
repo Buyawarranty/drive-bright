@@ -765,7 +765,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         () =>
           toast({
             title: 'Passed on',
-            description: `Moved on ${result.reassigned} · Waiting ${result.dormant}. Nothing real was changed.`,
+            description: `Moved on ${result.reassigned}${result.managerAlerted ? ` · Manager alerted: ${result.managerAlerted}` : ''}. Nothing real was changed.`,
           }),
         0,
       );
