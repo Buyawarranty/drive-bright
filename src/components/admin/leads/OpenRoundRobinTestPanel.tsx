@@ -464,30 +464,35 @@ const PracticeNotes = ({
   );
 };
 
-const hasAttempted = (lead: DummyLead) => lead.dials > 0;
+/** A dial was logged during the salesperson's current reservation. */
+const hasAttempted = (lead: DummyLead) => !!lead.dialedThisOffer;
 
 /** An agent is busy while they hold a live (not yet expired) dummy lead. */
 const isOrr = (lead: DummyLead) => (lead.source ?? 'orr') === 'orr';
 
 /**
- * Once the agent records an outcome (anything other than "Not spoken to") the
- * lead is worked: it stays with them but no longer blocks them from taking the
- * next lead.
+ * Once the salesperson records an outcome (anything other than "Not spoken to")
+ * the current call attempt is finished.
  */
 const isWorked = (lead: DummyLead) => lead.displayStatus !== 'new';
 
+/** The current call opportunity is temporarily reserved for this salesperson. */
 const isHeldLive = (lead: DummyLead, now: number) =>
   isOrr(lead) &&
+  !lead.waiting &&
   lead.status !== 'queued' &&
   lead.assignedTo !== null &&
   !isWorked(lead) &&
   (hasAttempted(lead) || lead.deadlineAt > now);
 
-
+/** How many waiting leads are fed back per sweep, so nothing arrives in one spike. */
+const RELEASE_PER_SWEEP = 2;
 
 /**
- * One-at-a-time ORR engine: an agent may only ever hold ONE dummy lead.
- * Expired leads roll to the next free agent; if everyone is busy the lead waits in the queue.
+ * One-at-a-time ORR engine. A salesperson holds a temporary reservation for the
+ * current attempt only. If the reservation lapses without a call the lead goes
+ * straight back into the pool and no attempt is counted; the previous
+ * salesperson gets no priority when it is offered again.
  */
 const advance = (
   input: DummyLead[],
@@ -499,7 +504,22 @@ const advance = (
   const leads = input.map((lead) => ({ ...lead }));
   let index = roster.length ? startIndex % roster.length : 0;
   let reassigned = 0;
-  let managerAlerted = 0;
+
+  // 1. Lapsed reservations release immediately — not counted as an attempt.
+  for (const lead of leads) {
+    if (
+      isOrr(lead) &&
+      !lead.waiting &&
+      lead.assignedTo !== null &&
+      !isWorked(lead) &&
+      !hasAttempted(lead) &&
+      lead.deadlineAt <= now
+    ) {
+      lead.assignedTo = null;
+      lead.status = 'queued';
+      lead.history = [...lead.history, 'Reservation ran out with no call — released back into Open Round Robin (no attempt counted)'];
+    }
+  }
 
   const busy = new Set(leads.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string));
 
@@ -515,52 +535,44 @@ const advance = (
     return null;
   };
 
+  // 2. Waiting leads whose next eligible time has come, oldest/due first,
+  //    staggered a couple at a time so nothing lands in one batch.
+  const dueBack = leads
+    .filter((lead) => isOrr(lead) && lead.waiting && !lead.chaseComplete && (lead.eligibleAt ?? 0) <= now)
+    .sort((a, b) => (a.eligibleAt ?? 0) - (b.eligibleAt ?? 0))
+    .slice(0, RELEASE_PER_SWEEP);
 
-  // Oldest first, so waiting leads are handled before newly expired ones.
+  for (const lead of dueBack) {
+    lead.waiting = false;
+    lead.status = 'queued';
+    lead.assignedTo = null;
+    lead.displayStatus = 'new';
+    lead.eligibleAt = null;
+    lead.history = [...lead.history, 'Back in Open Round Robin for its next attempt'];
+  }
+
+  // 3. Offer everything unowned to the next free salesperson.
   const pending = leads
-    .filter(
-      (lead) =>
-        isOrr(lead) &&
-        !isWorked(lead) &&
-        (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)),
-    )
+    .filter((lead) => isOrr(lead) && !lead.waiting && !isWorked(lead) && lead.status === 'queued')
     .sort((a, b) => a.createdAt - b.createdAt);
 
   for (const lead of pending) {
-    if (lead.status !== 'queued' && lead.attemptCount >= cfg.maxAttempts && !lead.managerAlerted) {
-      lead.managerAlerted = true;
-      lead.history = [...lead.history, `Manager alert – ${cfg.maxAttempts} offers with no contact. Lead keeps cycling through ORR.`];
-      managerAlerted += 1;
-    }
-
-
     const agent = takeFreeAgent();
-    if (!agent) {
-      if (lead.status !== 'queued') {
-        lead.status = 'queued';
-        lead.assignedTo = null;
-        lead.history = [
-          ...lead.history,
-          cfg.whenAllBusy === 'queue'
-            ? 'All agents busy — waiting in the open pool queue (oldest first, released as soon as someone frees up)'
-            : 'All agents busy — kept circulating round the rotation until someone frees up',
-        ];
-      }
-      continue;
-    }
+    if (!agent) continue;
 
-    const attempt = lead.status === 'queued' && lead.attemptCount === 0 ? 1 : lead.attemptCount + 1;
-    lead.status = attempt === 1 ? 'new' : 'reassigned';
+    lead.status = lead.dials === 0 ? 'new' : 'reassigned';
     lead.displayStatus = 'new';
     lead.assignedTo = agent.id;
-    lead.attemptCount = attempt;
+    lead.dialedThisOffer = false;
+    lead.followUpDay = Math.max(1, lead.followUpDay);
     lead.deadlineAt = now + cfg.claimWindowSeconds * 1000;
-    lead.history = [...lead.history, `Attempt ${attempt} assigned to ${agent.name}`];
+    lead.history = [...lead.history, `Held for ${agent.name} for this call attempt`];
     reassigned += 1;
   }
 
-  return { leads, index, reassigned, managerAlerted };
+  return { leads, index, reassigned, managerAlerted: 0 };
 };
+
 
 export type OrrPracticeTeam = 'green';
 
