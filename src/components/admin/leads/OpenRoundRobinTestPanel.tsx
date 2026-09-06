@@ -235,6 +235,84 @@ const formatHMS = (seconds: number) => {
   return `${secs}s`;
 };
 
+/** Reservation countdown wording — "1m 23sec", "42sec". */
+const formatHold = (seconds: number) => {
+  const total = Math.max(0, Math.round(seconds));
+  const mins = Math.floor(total / 60);
+  const secs = total % 60;
+  return mins > 0 ? `${mins}m ${String(secs).padStart(2, '0')}sec` : `${secs}sec`;
+};
+
+/* ------------------------------------------------------------------
+ * Staffed calling windows
+ * Weekdays 09:00–18:00, weekends an ad-hoc 10:00–13:00 window.
+ * Genuine attempts must sit at least 3 hours apart; up to 2 a weekday,
+ * normally 1 on a weekend day.
+ * ------------------------------------------------------------------ */
+const MIN_GAP_HOURS = 3;
+const CONTACT_DAYS = 7;
+
+const isWeekendDay = (ms: number) => {
+  const d = new Date(ms).getDay();
+  return d === 0 || d === 6;
+};
+
+const windowFor = (ms: number): [number, number] => (isWeekendDay(ms) ? [10, 13] : [9, 18]);
+
+/** Calls allowed on the contact day that `ms` falls in. */
+const callsAllowedOn = (ms: number) => (isWeekendDay(ms) ? 1 : 2);
+
+/** The first staffed moment at or after `from`. */
+const nextStaffedTime = (from: number) => {
+  let cursor = from;
+  for (let i = 0; i < 14; i += 1) {
+    const [open, close] = windowFor(cursor);
+    const openAt = new Date(cursor);
+    openAt.setHours(open, 0, 0, 0);
+    const closeAt = new Date(cursor);
+    closeAt.setHours(close, 0, 0, 0);
+    if (cursor < openAt.getTime()) return openAt.getTime();
+    if (cursor < closeAt.getTime()) return cursor;
+    const next = new Date(cursor);
+    next.setDate(next.getDate() + 1);
+    next.setHours(0, 0, 0, 0);
+    cursor = next.getTime();
+  }
+  return from;
+};
+
+/** Start of the next staffed window strictly after the day `ms` sits in. */
+const nextDayStaffedTime = (ms: number) => {
+  const next = new Date(ms);
+  next.setDate(next.getDate() + 1);
+  next.setHours(0, 0, 0, 0);
+  return nextStaffedTime(next.getTime());
+};
+
+/**
+ * When a lead may return to Open Round Robin after a genuine attempt:
+ * the real attempt time plus the minimum gap, never squeezed in after
+ * the day's closing time.
+ */
+const nextEligibleAfterAttempt = (attemptAt: number) => {
+  const earliest = attemptAt + MIN_GAP_HOURS * 3600 * 1000;
+  const [, close] = windowFor(attemptAt);
+  const closeAt = new Date(attemptAt);
+  closeAt.setHours(close, 0, 0, 0);
+  if (earliest >= closeAt.getTime()) return nextDayStaffedTime(attemptAt);
+  return nextStaffedTime(earliest);
+};
+
+/** "today at 15:20", "Mon at 09:00" — salesperson-friendly. */
+const formatEligible = (ms: number) => {
+  const now = new Date();
+  const then = new Date(ms);
+  const sameDay = now.toDateString() === then.toDateString();
+  const time = formatTimeOfDay(ms);
+  if (sameDay) return `today at ${time}`;
+  return `${then.toLocaleDateString('en-GB', { weekday: 'short' })} at ${time}`;
+};
+
 
 const formatTimeOfDay = (ms: number) =>
   new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
