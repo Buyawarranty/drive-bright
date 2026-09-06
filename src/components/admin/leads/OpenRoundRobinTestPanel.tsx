@@ -925,6 +925,11 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   };
 
   const updateDisplayStatus = (id: string, status: LeadStatus) => {
+    // "No answer" is a genuine call attempt, so it runs the chase rules.
+    if (status === 'no_answer') {
+      recordNoAnswer(id);
+      return;
+    }
     setLeads((current) =>
       current.map((lead) => {
         if (lead.id !== id) return lead;
@@ -932,71 +937,69 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           ...lead,
           displayStatus: status,
           contactedAt: status === 'new' ? null : (lead.contactedAt ?? Date.now()),
-          history: [...lead.history, `Status changed to ${statusLabels[status]}`],
+          history: [...lead.history, `${statusLabels[status]} recorded`],
         };
       }),
     );
   };
 
   /**
-   * One-click “couldn’t connect / no answer”: logs the dial and applies the cadence.
-   * Day one: up to 3 dials (2 if the lead arrived after midday), then handover to
-   * Team Green at 6pm. After that the lead is chased for the next seven days with a
-   * maximum of two dials a day, for as long as it stays uncontacted and unowned.
+   * A real outbound call that did not reach the customer.
+   *
+   * It counts as one genuine attempt, leaves the salesperson's active queue and
+   * waits for its next eligible staffed window (at least 3 hours after the
+   * actual attempt). Normal Round Robin then decides who gets it next — the
+   * previous salesperson gets no priority.
    */
   const recordNoAnswer = (id: string) => {
-    let toastTitle = 'No answer recorded';
+    let toastTitle = '✓ No answer logged';
     let toastBody = '';
     setLeads((current) =>
       current.map((lead) => {
         if (lead.id !== id) return lead;
         const now = Date.now();
         const dials = lead.dials + 1;
-        const dayDials = lead.dayDials + 1;
-        const inChase = lead.followUpDay > 0;
-        const maxDials = inChase ? cadence.followUpDailyDials : maxDialsForLead(lead.createdAt, cadence);
-        const exhausted = dayDials >= maxDials;
-        const nextWin = nextCallWindow(now + 60_000, cadence);
-        const nextDay = lead.followUpDay + 1;
-        const chaseOver = exhausted && nextDay > cadence.followUpDays;
-        const nextDayAt = atHour(now, callWindows(cadence)[0].startH, 1);
+        const day = Math.max(1, lead.followUpDay);
+        const allowance = callsAllowedOn(now);
+        const callsToday = Math.min(allowance, lead.dayDials + 1);
+        const dayDone = callsToday >= allowance;
+        const nextDay = day + 1;
+        const chaseOver = dayDone && nextDay > CONTACT_DAYS;
+        const eligibleAt = dayDone ? nextDayStaffedTime(now) : nextEligibleAfterAttempt(now);
 
-        const notes: string[] = [
-          `No answer — dial ${dayDials} of ${maxDials} today (${dials} total)${inChase ? ` · follow-up day ${lead.followUpDay} of ${cadence.followUpDays}` : ''}`,
-        ];
-        if (!exhausted) {
-          notes.push(`Next attempt due ${nextWin.label} at ${formatTimeOfDay(nextWin.at)}`);
-          toastBody = `Dial logged. Next attempt due ${nextWin.label} at ${formatTimeOfDay(nextWin.at)}.`;
-        } else if (chaseOver) {
-          notes.push(`Seven-day follow-up finished with no contact — no further dials scheduled`);
-          toastTitle = 'Follow-up finished';
-          toastBody = 'Seven days of chasing are done with no contact. No further dials are scheduled.';
-        } else if (!inChase) {
-          notes.push(`Day's attempts used — handing over to Team Green at ${formatTimeOfDay(atHour(now, cadence.greenTeamHandoverHour))}`);
-          notes.push(`Seven-day follow-up starts tomorrow — up to ${cadence.followUpDailyDials} dials a day while the lead is uncontacted and unowned`);
-          toastTitle = 'Attempts used — moving to Team Green';
-          toastBody = `Day one is done. The seven-day follow-up starts tomorrow at ${formatTimeOfDay(nextDayAt)} with up to ${cadence.followUpDailyDials} dials a day.`;
-        } else {
-          notes.push(`Follow-up day ${lead.followUpDay} done — day ${nextDay} of ${cadence.followUpDays} resumes at ${formatTimeOfDay(nextDayAt)}`);
-          toastTitle = `Follow-up day ${lead.followUpDay} done`;
-          toastBody = `Both dials used. Day ${nextDay} of ${cadence.followUpDays} resumes at ${formatTimeOfDay(nextDayAt)}.`;
-        }
+        toastBody = chaseOver
+          ? `Contact day ${day} of ${CONTACT_DAYS} · call ${callsToday} of ${allowance} complete. Chase complete — ${CONTACT_DAYS} contact days done.`
+          : `Day ${day} of ${CONTACT_DAYS} · Call ${callsToday} of ${allowance} complete. Back in Round Robin from ${formatEligible(eligibleAt)}.`;
+        if (chaseOver) toastTitle = 'Chase complete';
 
         return {
           ...lead,
           dials,
-          dayDials: exhausted ? 0 : dayDials,
+          dayDials: dayDone ? 0 : callsToday,
+          followUpDay: dayDone && !chaseOver ? nextDay : day,
           displayStatus: 'no_answer',
-          followUpDay: exhausted && !chaseOver ? nextDay : lead.followUpDay,
+          previousOutcome: 'No answer',
+          waiting: !chaseOver,
+          assignedTo: null,
+          status: 'queued',
+          dialedThisOffer: false,
           chaseComplete: chaseOver,
-          nextCallAt: chaseOver ? null : exhausted ? nextDayAt : nextWin.at,
-          greenTeamAt: !inChase && exhausted ? atHour(now, cadence.greenTeamHandoverHour) : lead.greenTeamAt,
-          history: [...lead.history, ...notes],
+          eligibleAt: chaseOver ? null : eligibleAt,
+          nextCallAt: chaseOver ? null : eligibleAt,
+          greenTeamAt: null,
+          history: [
+            ...lead.history,
+            `No answer logged — day ${day} of ${CONTACT_DAYS}, call ${callsToday} of ${allowance} (${dials} attempts in total)`,
+            chaseOver
+              ? `Chase complete — ${CONTACT_DAYS} contact days done`
+              : `Back in Round Robin from ${formatEligible(eligibleAt)}`,
+          ],
         };
       }),
     );
     toast({ title: toastTitle, description: toastBody });
   };
+
 
 
 
