@@ -136,6 +136,8 @@ interface DummyLead {
   chaseComplete: boolean;
   /** True once the lead has reached the max offer count and a manager has been alerted. */
   managerAlerted?: boolean;
+  /** Practice notes typed by whoever is rehearsing as the agent. Never saved anywhere. */
+  notes?: { at: number; by: string; text: string }[];
 }
 
 
