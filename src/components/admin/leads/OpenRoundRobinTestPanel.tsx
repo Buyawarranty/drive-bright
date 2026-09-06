@@ -354,7 +354,7 @@ const advance = (
     reassigned += 1;
   }
 
-  return { leads, index, reassigned, dormant };
+  return { leads, index, reassigned, managerAlerted };
 };
 
 export type OrrPracticeTeam = 'green';
