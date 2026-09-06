@@ -14342,6 +14342,14 @@ export type Database = {
         Returns: boolean
       }
       orr_rollover_uncalled_queues: { Args: never; Returns: Json }
+      orr_rr_waiting_count: {
+        Args: { _idle_minutes?: number }
+        Returns: number
+      }
+      orr_send_rr_leads_to_pool: {
+        Args: { _idle_minutes?: number; _max_leads?: number }
+        Returns: number
+      }
       orr_sweep_attempt_one_expiries: { Args: never; Returns: Json }
       orr_sweep_expired_offers: { Args: never; Returns: number }
       orr_sweep_retry_expiries: { Args: never; Returns: Json }
