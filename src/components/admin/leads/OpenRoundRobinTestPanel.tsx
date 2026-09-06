@@ -688,7 +688,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         .filter((lead) =>
           simulatedAgentId === 'all'
             ? lead.assignedTo !== null || lead.status === 'queued'
-            : lead.assignedTo === simulatedAgentId,
+            : lead.assignedTo === simulatedAgentId && !lead.waiting,
         )
         // Open Round Robin leads always sit at the top — they are the ones on a clock.
         .sort((a, b) => Number(isOrr(b)) - Number(isOrr(a))),
@@ -891,6 +891,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         return {
           ...lead,
           dials,
+          dialedThisOffer: delta > 0 ? true : lead.dialedThisOffer,
           history: [...lead.history, `Manual dial counter ${delta > 0 ? '+1' : '-1'} (no outcome recorded)`],
         };
       }),
@@ -1810,7 +1811,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                                 : 'border-border bg-muted text-muted-foreground',
                             )}
                           >
-                            {orrLead ? 'ORR · call first' : 'Round robin'}
+                            {orrLead ? 'Open Round Robin' : 'Round robin'}
                           </span>
                           {lead.assignedTo === null ? (
                             <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-900 whitespace-nowrap">
