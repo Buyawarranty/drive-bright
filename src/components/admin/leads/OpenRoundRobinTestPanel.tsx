@@ -135,7 +135,7 @@ interface DummyLead {
   /** True once the seven-day follow-up chase is finished with no contact. */
   chaseComplete: boolean;
   /** True once the lead has reached the max offer count and a manager has been alerted. */
-  managerAlerted: boolean;
+  managerAlerted?: boolean;
 }
 
 
