@@ -1110,8 +1110,9 @@ const VehicleRiskBandsPanel: React.FC = () => {
               One row per vehicle, one band per row. Make + model beats make-only, and a fuel-specific row beats an
               "all fuel types" row. <strong>Fuel type is only a matcher</strong> — it decides which cars a row catches,
               not what they cost. The price still comes only from the winning row's band, its factor and its floor.
-              There is no separate EV or hybrid uplift.
+              There is no separate EV or hybrid uplift. Press <strong>Save makes &amp; models</strong> to confirm this section.
             </p>
+
 
             <div className="grid gap-2 sm:grid-cols-[1fr_1fr_170px_200px_auto] items-end mb-4">
               <div className="space-y-1">
