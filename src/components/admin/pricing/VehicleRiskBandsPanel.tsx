@@ -490,13 +490,14 @@ const VehicleRiskBandsPanel: React.FC = () => {
                 <Button variant="outline" size="sm" onClick={reset}>
                   <RotateCcw className="h-4 w-4 mr-2" /> Reset
                 </Button>
-                <Button variant="outline" size="sm" onClick={save} disabled={!dirty}>
-                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save changes' : 'Saved'}
+                <Button variant="outline" size="sm" onClick={() => save('Global settings')} disabled={!dirty}>
+                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save global settings' : 'Saved'}
                 </Button>
                 <Button size="sm" onClick={pushLive} disabled={publishing}>
                   <Rocket className="h-4 w-4 mr-2" />
                   {publishing ? 'Pushing live…' : 'Push live'}
                 </Button>
+
               </div>
               <p className="text-xs text-muted-foreground text-right">
                 {liveVersionLabel
