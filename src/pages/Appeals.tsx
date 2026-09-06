@@ -227,7 +227,7 @@ const Appeals = () => {
   const showStatus = (name: string) => touched[name] || !!(form as any)[name];
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9]">
+    <div className="min-h-screen bg-brand-gray-bg">
       <SEOHead
         title={requestMode ? 'Warranty Appeals | Request an Appeal | Buy A Warranty UK' : 'Appeal a Claim Decision | Buy A Warranty UK'}
         description={requestMode
@@ -241,7 +241,7 @@ const Appeals = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-[13px] font-medium text-[#64748B] hover:text-[#334155] transition-colors"
+          className="inline-flex items-center gap-2 text-[13px] font-medium text-slate-500 hover:text-brand-blue-dark transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Help Centre
@@ -250,30 +250,30 @@ const Appeals = () => {
 
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-        <div className="relative overflow-hidden bg-white border border-[#E2E8F0] rounded-2xl shadow-sm">
+        <div className="relative overflow-hidden bg-white border border-slate-200 rounded-2xl shadow-sm">
           <div className="relative grid md:grid-cols-[1fr_auto] items-center gap-6 p-8 sm:p-12">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-[#E6F4F3] border border-[#0D7A7A]/20 px-3 py-1.5 text-xs font-medium text-[#0D7A7A] mb-4">
+              <div className="inline-flex items-center gap-2 rounded-full bg-brand-blue/10 border border-brand-blue/20 px-3 py-1.5 text-xs font-medium text-brand-blue mb-4">
                 <Scale className="w-3.5 h-3.5" /> CLAIM APPEALS
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight text-[#334155]">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight text-brand-blue-dark">
                 {requestMode ? 'Request a warranty appeal' : 'Appeal a claim decision'}
               </h1>
-              <p className="text-[#64748B] text-base sm:text-lg max-w-2xl leading-relaxed">
+              <p className="text-slate-500 text-base sm:text-lg max-w-2xl leading-relaxed">
                 {requestMode
                   ? 'Send us a short request and our claims team will email you a secure link to complete your full appeal — you can also start it from your customer dashboard.'
                   : 'If you believe a claim decision should be looked at again, send us your account and any new evidence. A claims manager reviews every appeal.'}
               </p>
-              <ul className="mt-5 space-y-2 text-sm text-[#334155]">
-                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#0D7A7A] shrink-0" /> Acknowledged within <strong>2 working days</strong></li>
-                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#0D7A7A] shrink-0" /> Reviewed independently of the original decision</li>
-                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#0D7A7A] shrink-0" /> Handled privately and securely</li>
+              <ul className="mt-5 space-y-2 text-sm text-brand-blue-dark">
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-brand-blue shrink-0" /> Acknowledged within <strong>2 working days</strong></li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-brand-blue shrink-0" /> Reviewed independently of the original decision</li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-brand-blue shrink-0" /> Handled privately and securely</li>
               </ul>
             </div>
             <div className="hidden md:flex items-center justify-center">
-              <div className="relative w-44 h-44 rounded-2xl bg-[#E6F4F3] border border-[#0D7A7A]/15 flex items-center justify-center">
-                <ClipboardList className="w-20 h-20 text-[#0D7A7A]" strokeWidth={1.4} />
-                <div className="absolute -bottom-3 -right-3 w-14 h-14 rounded-xl bg-[#0D7A7A] flex items-center justify-center shadow-md">
+              <div className="relative w-44 h-44 rounded-2xl bg-brand-blue/10 border border-brand-blue/15 flex items-center justify-center">
+                <ClipboardList className="w-20 h-20 text-brand-blue" strokeWidth={1.4} />
+                <div className="absolute -bottom-3 -right-3 w-14 h-14 rounded-xl bg-brand-blue flex items-center justify-center shadow-md">
                   <Scale className="w-7 h-7 text-white" />
                 </div>
               </div>
@@ -284,19 +284,19 @@ const Appeals = () => {
 
       {/* Trust cards */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white rounded-2xl border border-[#E2E8F0] p-2 sm:p-2 shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white rounded-2xl border border-slate-200 p-2 sm:p-2 shadow-sm">
           {[
             { Icon: ShieldCheck, title: 'A fresh pair of eyes', desc: 'Your appeal is reviewed independently of the original decision.' },
             { Icon: Clock, title: 'Clear timescales', desc: "We'll keep you updated at every stage of the appeal." },
             { Icon: Lock, title: 'Private & secure', desc: 'Your details are handled carefully and confidentially.' },
           ].map(({ Icon, title, desc }) => (
-            <div key={title} className="flex items-start gap-3 p-4 rounded-xl hover:bg-[#F1F5F9] transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-[#E6F4F3] flex items-center justify-center shrink-0">
-                <Icon className="w-5 h-5 text-[#0D7A7A]" />
+            <div key={title} className="flex items-start gap-3 p-4 rounded-xl hover:bg-brand-gray-bg transition-colors">
+              <div className="w-10 h-10 rounded-lg bg-brand-blue/10 flex items-center justify-center shrink-0">
+                <Icon className="w-5 h-5 text-brand-blue" />
               </div>
               <div>
-                <p className="font-semibold text-[#334155] text-sm">{title}</p>
-                <p className="text-xs text-[#64748B] mt-0.5 leading-relaxed">{desc}</p>
+                <p className="font-semibold text-brand-blue-dark text-sm">{title}</p>
+                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{desc}</p>
               </div>
             </div>
           ))}
@@ -306,7 +306,7 @@ const Appeals = () => {
       {/* Main grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {reference ? (
-          <section className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-[#E2E8F0] overflow-hidden">
+          <section className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="bg-gradient-to-br from-green-500 to-emerald-600 px-6 sm:px-10 py-8 text-center">
               <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-3 shadow-md">
                 <CheckCircle className="w-9 h-9 text-green-600" />
@@ -320,11 +320,11 @@ const Appeals = () => {
             </div>
             <div className="px-6 sm:px-10 py-7">
               <div className="text-center mb-5">
-                <div className="inline-block text-xs sm:text-sm bg-[#F1F5F9] rounded-md px-3 py-1.5 text-[#334155]">
+                <div className="inline-block text-xs sm:text-sm bg-brand-gray-bg rounded-md px-3 py-1.5 text-brand-blue-dark">
                   Reference: <span className="font-semibold">{reference}</span>
                 </div>
               </div>
-              <ul className="space-y-2.5 mb-6 text-sm text-[#334155]">
+              <ul className="space-y-2.5 mb-6 text-sm text-brand-blue-dark">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
                   <span>A confirmation email has been sent to your inbox.</span>
@@ -356,20 +356,20 @@ const Appeals = () => {
 
               {/* Independent inspection payment prompt (full appeal only) */}
               {!requestMode && submittedInspectionChoice === 'Yes please' && submittedToken && (
-                <div className="rounded-xl border border-teal-200 bg-teal-50 p-4 mb-6">
+                <div className="rounded-xl border border-brand-blue/20 bg-brand-blue/10 p-4 mb-6">
                   <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-teal-100 flex items-center justify-center shrink-0">
-                      <ShieldCheck className="w-5 h-5 text-teal-700" />
+                    <div className="w-9 h-9 rounded-lg bg-brand-blue/20 flex items-center justify-center shrink-0">
+                      <ShieldCheck className="w-5 h-5 text-brand-blue" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-teal-900 text-sm">Independent engineer's inspection</h3>
-                      <p className="text-sm text-teal-800/80 mt-1 leading-relaxed">
+                      <h3 className="font-semibold text-brand-blue-dark text-sm">Independent engineer's inspection</h3>
+                      <p className="text-sm text-brand-blue-dark/80 mt-1 leading-relaxed">
                         You've asked for an independent inspection. The £140 fee covers the engineer's visit to your vehicle anywhere in the UK. We'll appoint ACE or Scotia, and their decision will be full and final.
                       </p>
                       <button
                         onClick={createInspectionLink}
                         disabled={creatingInspectionLink}
-                        className="mt-3 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0D7A7A] hover:bg-[#0A6262] disabled:opacity-60 text-white text-sm font-medium rounded-md transition-colors"
+                        className="mt-3 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-blue hover:bg-brand-blue-dark disabled:opacity-60 text-white text-sm font-medium rounded-md transition-colors"
                       >
                         {creatingInspectionLink ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
                         Pay £140 securely by card
@@ -382,13 +382,13 @@ const Appeals = () => {
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={() => { setReference(null); setSubmittedToken(null); setSubmittedInspectionChoice(null); setInspectionLink(null); setRegStatus('idle'); setRegCustomerName(null); }}
-                  className="flex-1 py-2.5 border border-[#E2E8F0] text-[#334155] hover:bg-[#F1F5F9] font-medium rounded-md text-sm"
+                  className="flex-1 py-2.5 border border-slate-200 text-brand-blue-dark hover:bg-brand-gray-bg font-medium rounded-md text-sm"
                 >
                   {requestMode ? 'Send another request' : 'Submit another appeal'}
                 </button>
                 <button
                   onClick={() => navigate('/')}
-                  className="flex-1 py-2.5 bg-[#334155] hover:bg-[#1E293B] text-white font-medium rounded-md text-sm"
+                  className="flex-1 py-2.5 bg-brand-blue-dark hover:bg-brand-blue-dark text-white font-medium rounded-md text-sm"
                 >
                   Back to home
                 </button>
@@ -401,15 +401,15 @@ const Appeals = () => {
           {/* Form */}
           <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-lg bg-[#0D7A7A]/10 flex items-center justify-center">
-                <Scale className="w-5 h-5 text-[#0D7A7A]" />
+              <div className="w-9 h-9 rounded-lg bg-brand-blue/10 flex items-center justify-center">
+                <Scale className="w-5 h-5 text-brand-blue" />
               </div>
               <h2 className="text-xl font-semibold text-slate-900">{requestMode ? 'Request an appeal' : 'Submit an appeal'}</h2>
             </div>
             <p className="text-sm text-slate-600 mb-6 leading-relaxed">
               {requestMode
-                ? <>Tell us who you are and why you'd like the decision reviewed. Our claims team will then send you a secure link to the full appeal form. All fields marked <span className="text-[#0D7A7A]">*</span> are required.</>
-                : <>Please fill in the form below. All fields marked <span className="text-[#0D7A7A]">*</span> are required.</>}
+                ? <>Tell us who you are and why you'd like the decision reviewed. Our claims team will then send you a secure link to the full appeal form. All fields marked <span className="text-brand-blue">*</span> are required.</>
+                : <>Please fill in the form below. All fields marked <span className="text-brand-blue">*</span> are required.</>}
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
@@ -469,7 +469,7 @@ const Appeals = () => {
                   <label htmlFor="newEvidence" className="block text-sm font-medium text-slate-900">
                     {requestMode
                       ? <>Why would you like the decision reviewed?</>
-                      : <>Your account of the fault and why you're appealing</>} <span className="text-[#0D7A7A]">*</span>
+                      : <>Your account of the fault and why you're appealing</>} <span className="text-brand-blue">*</span>
                   </label>
                   <span className="text-xs text-slate-500">{form.newEvidence.length}/2000</span>
                 </div>
@@ -484,7 +484,7 @@ const Appeals = () => {
                     placeholder={requestMode
                       ? 'A short summary is fine — you can add full details and documents on the secure form we send you…'
                       : "Tell us what happened, what the garage found, and any new evidence such as an engineer's report or invoice…"}
-                    className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#334155]/30 focus:border-[#334155] ${errors.newEvidence ? 'border-red-400' : fieldStatus.newEvidence.valid && showStatus('newEvidence') ? 'border-green-500' : 'border-slate-300'}`}
+                    className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-brand-blue-dark/30 focus:border-brand-blue-dark ${errors.newEvidence ? 'border-red-400' : fieldStatus.newEvidence.valid && showStatus('newEvidence') ? 'border-green-500' : 'border-slate-300'}`}
                   />
                   {fieldStatus.newEvidence.valid && showStatus('newEvidence') && !errors.newEvidence && (
                     <Check className="w-4 h-4 text-green-600 absolute right-3 top-3 pointer-events-none" />
@@ -508,7 +508,7 @@ const Appeals = () => {
                   rows={3}
                   maxLength={1000}
                   placeholder="Optional — for example, the repair authorised or the invoice reconsidered…"
-                  className="w-full px-3 py-2.5 border border-slate-300 rounded-md text-sm bg-white text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#334155]/30 focus:border-[#334155]"
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-md text-sm bg-white text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-brand-blue-dark/30 focus:border-brand-blue-dark"
                 />
               </div>
               )}
@@ -517,7 +517,7 @@ const Appeals = () => {
               {!requestMode && (
               <div>
                 <label className="block text-sm font-medium text-slate-900 mb-2">
-                  Would you like an independent engineer's inspection? <span className="text-[#0D7A7A]">*</span>
+                  Would you like an independent engineer's inspection? <span className="text-brand-blue">*</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {['Yes please', 'No thank you', 'Not sure / speak to an expert'].map(option => {
@@ -525,11 +525,11 @@ const Appeals = () => {
                     return (
                       <label
                         key={option}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm cursor-pointer transition-all ${active ? 'border-[#0D7A7A] bg-[#E6F4F3] text-[#334155] font-medium shadow-sm' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'}`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm cursor-pointer transition-all ${active ? 'border-brand-blue bg-brand-blue/10 text-brand-blue-dark font-medium shadow-sm' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'}`}
                       >
                         <input type="radio" name="independentInspection" value={option} checked={active} onChange={change} className="sr-only" />
                         <span className={`w-3.5 h-3.5 rounded-full border-2 ${active ? 'border-[#334155]' : 'border-slate-400'} flex items-center justify-center`}>
-                          {active && <span className="w-1.5 h-1.5 rounded-full bg-[#334155]" />}
+                          {active && <span className="w-1.5 h-1.5 rounded-full bg-brand-blue-dark" />}
                         </span>
                         {option}
                       </label>
@@ -540,30 +540,30 @@ const Appeals = () => {
                 {errors.independentInspection && <FieldError msg={errors.independentInspection} />}
 
                 {form.independentInspection === 'Yes please' && (
-                  <div className="mt-4 rounded-xl border border-teal-200 bg-teal-50 p-4">
+                  <div className="mt-4 rounded-xl border border-brand-blue/20 bg-brand-blue/10 p-4">
                     <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-teal-100 flex items-center justify-center shrink-0">
-                        <ShieldCheck className="w-5 h-5 text-teal-700" />
+                      <div className="w-9 h-9 rounded-lg bg-brand-blue/20 flex items-center justify-center shrink-0">
+                        <ShieldCheck className="w-5 h-5 text-brand-blue" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-teal-900 text-sm">What happens next</h4>
-                        <ul className="mt-2 space-y-1.5 text-sm text-teal-800/90 leading-relaxed">
-                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-teal-700 mt-0.5 shrink-0" /> We appoint one independent engineering firm — <strong className="font-medium">ACE</strong> or <strong className="font-medium">Scotia</strong> — based on availability in your area.</li>
-                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-teal-700 mt-0.5 shrink-0" /> The £140 fee covers the engineer's inspection visit to your vehicle, wherever it is in the UK.</li>
-                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-teal-700 mt-0.5 shrink-0" /> You accept that the engineer's decision is <strong className="font-medium">full and final</strong>.</li>
-                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-teal-700 mt-0.5 shrink-0" /> Payment is taken securely by card through Worldpay.</li>
+                        <h4 className="font-semibold text-brand-blue-dark text-sm">What happens next</h4>
+                        <ul className="mt-2 space-y-1.5 text-sm text-brand-blue-dark/90 leading-relaxed">
+                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-brand-blue mt-0.5 shrink-0" /> We appoint one independent engineering firm — <strong className="font-medium">ACE</strong> or <strong className="font-medium">Scotia</strong> — based on availability in your area.</li>
+                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-brand-blue mt-0.5 shrink-0" /> The £140 fee covers the engineer's inspection visit to your vehicle, wherever it is in the UK.</li>
+                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-brand-blue mt-0.5 shrink-0" /> You accept that the engineer's decision is <strong className="font-medium">full and final</strong>.</li>
+                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-brand-blue mt-0.5 shrink-0" /> Payment is taken securely by card through Worldpay.</li>
                         </ul>
                         {token ? (
                           <button
                             type="button"
                             onClick={createInspectionLink}
                             disabled={creatingInspectionLink}
-                            className="mt-3 inline-flex items-center justify-center rounded-lg bg-[#0D7A7A] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#0A6262] disabled:opacity-60"
+                            className="mt-3 inline-flex items-center justify-center rounded-lg bg-brand-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-blue-dark disabled:opacity-60"
                           >
                             {creatingInspectionLink ? 'Opening secure payment…' : 'Pay £140 securely by card (Worldpay)'}
                           </button>
                         ) : (
-                          <p className="mt-3 text-xs text-teal-800/90">
+                          <p className="mt-3 text-xs text-brand-blue-dark/90">
                             Your secure Worldpay payment link for the £140 fee appears as soon as you submit this appeal.
                           </p>
                         )}
@@ -593,10 +593,10 @@ const Appeals = () => {
                     name="confirmAccurate"
                     checked={form.confirmAccurate}
                     onChange={change}
-                    className="mt-0.5 w-4 h-4 rounded border-slate-400 text-[#334155] focus:ring-[#334155]"
+                    className="mt-0.5 w-4 h-4 rounded border-slate-400 text-brand-blue-dark focus:ring-[#334155]"
                   />
                   <span className="text-sm text-slate-700 leading-relaxed flex-1">
-                    I confirm that the information provided is accurate to the best of my knowledge. <span className="text-[#0D7A7A]">*</span>
+                    I confirm that the information provided is accurate to the best of my knowledge. <span className="text-brand-blue">*</span>
                   </span>
                   {form.confirmAccurate && <Check className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />}
                 </label>
@@ -607,7 +607,7 @@ const Appeals = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#0D7A7A] hover:bg-[#0A6262] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm"
+                className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-brand-blue hover:bg-brand-blue-dark disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm"
               >
                 {submitting
                   ? (<><Loader2 className="w-4 h-4 animate-spin" /> {requestMode ? 'Sending…' : 'Submitting…'}</>)
@@ -619,7 +619,7 @@ const Appeals = () => {
                   ? "We'll respond within 2 working days with a secure link to your full appeal form. "
                   : "We'll acknowledge your appeal within 2 working days. "}
                 Your details are handled in line with our{' '}
-                <Link to="/privacy-policy" className="text-[#334155] hover:underline">Privacy Policy</Link>.
+                <Link to="/privacy-policy" className="text-brand-blue-dark hover:underline">Privacy Policy</Link>.
               </p>
             </form>
           </section>
@@ -627,7 +627,7 @@ const Appeals = () => {
           {/* Side panels */}
           <aside className="space-y-5">
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <h3 className="text-base font-semibold text-[#334155] mb-4">What happens next?</h3>
+              <h3 className="text-base font-semibold text-brand-blue-dark mb-4">What happens next?</h3>
               <ol className="space-y-4">
                 {(requestMode ? [
                   { n: 1, t: 'We receive your request', d: 'Your request goes straight to our claims team with your vehicle details.' },
@@ -639,7 +639,7 @@ const Appeals = () => {
                   { n: 3, t: 'Outcome', d: "We'll write to you with the outcome and the reasons behind it." },
                 ]).map(s => (
                   <li key={s.n} className="flex gap-3">
-                    <div className="w-7 h-7 rounded-full bg-[#334155] text-white text-xs font-bold flex items-center justify-center shrink-0">{s.n}</div>
+                    <div className="w-7 h-7 rounded-full bg-brand-blue-dark text-white text-xs font-bold flex items-center justify-center shrink-0">{s.n}</div>
                     <div>
                       <p className="text-sm font-semibold text-slate-900">{s.t}</p>
                       <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">{s.d}</p>
@@ -649,36 +649,36 @@ const Appeals = () => {
               </ol>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-[#E2E8F0] p-6">
-              <h3 className="text-base font-semibold text-[#334155] mb-1">Need help with your appeal?</h3>
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <h3 className="text-base font-semibold text-brand-blue-dark mb-1">Need help with your appeal?</h3>
               <p className="text-xs text-slate-600 mb-4">Our claims team is here to support you.</p>
               <div className="space-y-3">
                 <a href={CLAIMS_PHONE_TEL} className="flex items-start gap-3 group">
-                  <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center group-hover:border-[#334155] transition">
-                    <Phone className="w-4 h-4 text-[#334155]" />
+                  <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center group-hover:border-brand-blue-dark transition">
+                    <Phone className="w-4 h-4 text-brand-blue-dark" />
                   </div>
                   <div>
                     <p className="text-xs text-slate-500">Claims line</p>
-                    <p className="text-sm font-semibold text-[#334155] group-hover:underline">{CLAIMS_PHONE}</p>
+                    <p className="text-sm font-semibold text-brand-blue-dark group-hover:underline">{CLAIMS_PHONE}</p>
                     <p className="text-xs text-slate-500">Mon–Fri, 9am–5pm</p>
                   </div>
                 </a>
                 <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 group">
-                  <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center group-hover:border-[#334155] transition">
-                    <MessageSquare className="w-4 h-4 text-[#334155]" />
+                  <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center group-hover:border-brand-blue-dark transition">
+                    <MessageSquare className="w-4 h-4 text-brand-blue-dark" />
                   </div>
                   <div>
                     <p className="text-xs text-slate-500">WhatsApp</p>
-                    <p className="text-sm font-semibold text-[#334155] group-hover:underline">Message our team</p>
+                    <p className="text-sm font-semibold text-brand-blue-dark group-hover:underline">Message our team</p>
                   </div>
                 </a>
                 <a href={`mailto:${CLAIMS_EMAIL}`} className="flex items-start gap-3 group">
-                  <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center group-hover:border-[#334155] transition">
-                    <Mail className="w-4 h-4 text-[#334155]" />
+                  <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center group-hover:border-brand-blue-dark transition">
+                    <Mail className="w-4 h-4 text-brand-blue-dark" />
                   </div>
                   <div>
                     <p className="text-xs text-slate-500">Email</p>
-                    <p className="text-sm font-semibold text-[#334155] group-hover:underline break-all">{CLAIMS_EMAIL}</p>
+                    <p className="text-sm font-semibold text-brand-blue-dark group-hover:underline break-all">{CLAIMS_EMAIL}</p>
                   </div>
                 </a>
               </div>
@@ -711,7 +711,7 @@ interface FieldProps {
 const Field: React.FC<FieldProps> = ({ name, label, value, onChange, placeholder, type = 'text', error, hint, required, valid, loading, inputClassName = '' }) => (
   <div>
     <label htmlFor={name} className="block text-sm font-medium text-slate-900 mb-1.5">
-      {label}{required && <span className="text-[#0D7A7A]"> *</span>}
+      {label}{required && <span className="text-brand-blue"> *</span>}
     </label>
     <div className="relative">
       <input
@@ -723,7 +723,7 @@ const Field: React.FC<FieldProps> = ({ name, label, value, onChange, placeholder
         placeholder={placeholder}
         aria-invalid={!!error}
         aria-describedby={error ? `${name}-error` : hint ? `${name}-hint` : undefined}
-        className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#334155]/30 focus:border-[#334155] ${error ? 'border-red-400' : valid ? 'border-green-500' : 'border-slate-300'} ${inputClassName}`}
+        className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-blue-dark/30 focus:border-brand-blue-dark ${error ? 'border-red-400' : valid ? 'border-green-500' : 'border-slate-300'} ${inputClassName}`}
       />
       {loading ? (
         <Loader2 className="w-4 h-4 text-slate-400 animate-spin absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
