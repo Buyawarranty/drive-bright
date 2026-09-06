@@ -25,8 +25,8 @@ export interface OrrCadenceConfig {
   maxDialsFullDay: number;
   /** Max dials when the lead arrives after midday. */
   maxDialsAfterMidday: number;
-  /** Hour the lead hands over to Team Red once the day's attempts are used. */
-  redTeamHandoverHour: number;
+  /** Hour the lead hands over to Team Green once the day's attempts are used. */
+  greenTeamHandoverHour: number;
   /** Days the lead is chased after day one. */
   followUpDays: number;
   /** Max dials a day during the follow-up chase. */
@@ -49,7 +49,7 @@ export const DEFAULT_ORR_CADENCE: OrrCadenceConfig = {
   eveningEnd: 18,
   maxDialsFullDay: 3,
   maxDialsAfterMidday: 2,
-  redTeamHandoverHour: 18,
+  greenTeamHandoverHour: 18,
   followUpDays: 7,
   followUpDailyDials: 2,
   maxAttempts: 7,
@@ -95,7 +95,7 @@ interface Props {
   teamLabel?: string;
 }
 
-export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel = 'Team Blue' }) => {
+export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel = 'Team Green' }) => {
   const [open, setOpen] = useState(false);
   const set = <K extends keyof OrrCadenceConfig>(key: K, value: OrrCadenceConfig[K]) =>
     onChange({ ...config, [key]: value });
@@ -151,7 +151,7 @@ export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel
                 )}
               </li>
               <li>After <strong>{config.maxAttempts} unanswered offers</strong> the lead goes dormant.</li>
-              <li>At <strong>{String(config.redTeamHandoverHour).padStart(2, '0')}:00</strong> unworked day-one leads move to Team Red, then chased for <strong>{config.followUpDays} days</strong> with up to <strong>{config.followUpDailyDials} dials a day</strong>.</li>
+              <li>At <strong>{String(config.greenTeamHandoverHour).padStart(2, '0')}:00</strong> unworked day-one leads move to Team Green, then chased for <strong>{config.followUpDays} days</strong> with up to <strong>{config.followUpDailyDials} dials a day</strong>.</li>
             </ul>
           </div>
 
@@ -209,10 +209,10 @@ export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel
               <NumberField label="End-of-day window starts" value={config.eveningStart} onChange={(n) => set('eveningStart', n)} />
               <NumberField label="End-of-day window ends" value={config.eveningEnd} onChange={(n) => set('eveningEnd', n)} />
               <NumberField
-                label="Team Red handover hour"
-                hint="When the day's unworked lead moves to Team Red"
-                value={config.redTeamHandoverHour}
-                onChange={(n) => set('redTeamHandoverHour', n)}
+                label="Team Green handover hour"
+                hint="When the day's unworked lead moves to Team Green"
+                value={config.greenTeamHandoverHour}
+                onChange={(n) => set('greenTeamHandoverHour', n)}
               />
               <NumberField
                 label="Max dials — lead before midday"
