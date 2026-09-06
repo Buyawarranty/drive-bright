@@ -14315,10 +14315,12 @@ export type Database = {
         }[]
       }
       orr_pick_weekend_agent: { Args: { _d: string }; Returns: string }
-      orr_pool_waiting_count: {
-        Args: { _idle_minutes?: number }
-        Returns: number
-      }
+      orr_pool_waiting_count:
+        | { Args: { _idle_minutes?: number }; Returns: number }
+        | {
+            Args: { _idle_minutes?: number; _within_minutes?: number }
+            Returns: number
+          }
       orr_queue_dashboard_snapshot: { Args: never; Returns: Json }
       orr_reassign_callback: {
         Args: {
@@ -14333,23 +14335,50 @@ export type Database = {
         Args: { _agent_id: string; _phone_normalized: string; _reason: string }
         Returns: boolean
       }
-      orr_release_pool_to_round_robin: {
-        Args: { _idle_minutes?: number; _max_leads?: number; _team_id?: string }
-        Returns: number
-      }
+      orr_release_pool_to_round_robin:
+        | {
+            Args: {
+              _idle_minutes?: number
+              _max_leads?: number
+              _team_id?: string
+            }
+            Returns: number
+          }
+        | {
+            Args: {
+              _idle_minutes?: number
+              _max_leads?: number
+              _newest_first?: boolean
+              _team_id?: string
+              _within_minutes?: number
+            }
+            Returns: number
+          }
       orr_release_retry_hold: {
         Args: { _lead_id: string; _reason: string }
         Returns: boolean
       }
       orr_rollover_uncalled_queues: { Args: never; Returns: Json }
-      orr_rr_waiting_count: {
-        Args: { _idle_minutes?: number }
-        Returns: number
-      }
-      orr_send_rr_leads_to_pool: {
-        Args: { _idle_minutes?: number; _max_leads?: number }
-        Returns: number
-      }
+      orr_rr_waiting_count:
+        | { Args: { _idle_minutes?: number }; Returns: number }
+        | {
+            Args: { _idle_minutes?: number; _within_minutes?: number }
+            Returns: number
+          }
+      orr_send_rr_leads_to_pool:
+        | {
+            Args: { _idle_minutes?: number; _max_leads?: number }
+            Returns: number
+          }
+        | {
+            Args: {
+              _idle_minutes?: number
+              _max_leads?: number
+              _newest_first?: boolean
+              _within_minutes?: number
+            }
+            Returns: number
+          }
       orr_sweep_attempt_one_expiries: { Args: never; Returns: Json }
       orr_sweep_expired_offers: { Args: never; Returns: number }
       orr_sweep_retry_expiries: { Args: never; Returns: Json }
