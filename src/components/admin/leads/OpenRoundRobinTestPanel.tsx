@@ -280,7 +280,6 @@ const hasAttempted = (lead: DummyLead) => lead.dials > 0;
 
 /** An agent is busy while they hold a live (not yet expired) dummy lead. */
 const isHeldLive = (lead: DummyLead, now: number) =>
-  lead.status !== 'dormant' &&
   lead.status !== 'queued' &&
   lead.assignedTo !== null &&
   (hasAttempted(lead) || lead.deadlineAt > now);
@@ -300,7 +299,7 @@ const advance = (
   const leads = input.map((lead) => ({ ...lead }));
   let index = roster.length ? startIndex % roster.length : 0;
   let reassigned = 0;
-  let dormant = 0;
+  let managerAlerted = 0;
 
   const busy = new Set(leads.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string));
 
@@ -319,17 +318,16 @@ const advance = (
 
   // Oldest first, so waiting leads are handled before newly expired ones.
   const pending = leads
-    .filter((lead) => lead.status !== 'dormant' && (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)))
+    .filter((lead) => lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now))
     .sort((a, b) => a.createdAt - b.createdAt);
 
   for (const lead of pending) {
-    if (lead.status !== 'queued' && lead.attemptCount >= cfg.maxAttempts) {
-      lead.status = 'dormant';
-      lead.assignedTo = null;
-      lead.history = [...lead.history, `Moved to Dormant – No Contact after ${cfg.maxAttempts} unanswered attempts`];
-      dormant += 1;
-      continue;
+    if (lead.status !== 'queued' && lead.attemptCount >= cfg.maxAttempts && !lead.managerAlerted) {
+      lead.managerAlerted = true;
+      lead.history = [...lead.history, `Manager alert – ${cfg.maxAttempts} offers with no contact. Lead keeps cycling through ORR.`];
+      managerAlerted += 1;
     }
+
 
     const agent = takeFreeAgent();
     if (!agent) {
