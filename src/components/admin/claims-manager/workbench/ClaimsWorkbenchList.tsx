@@ -652,8 +652,24 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                     {initials(c.customerName)}
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
                       <span className="font-medium text-foreground truncate">{c.customerName}</span>
+                      {appealState(c.id).open && (
+                        <span
+                          title={appealState(c.id).returned
+                            ? 'This customer has sent their appeal back with details and evidence.'
+                            : 'An appeal has been submitted for this customer.'}
+                          className={cn(
+                            'inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-wide whitespace-nowrap',
+                            appealState(c.id).returned
+                              ? 'bg-[#E8541A] border-[#E8541A] text-white'
+                              : 'bg-amber-100 border-amber-300 text-amber-800',
+                          )}
+                        >
+                          <Gavel className="h-2.5 w-2.5" />
+                          {appealState(c.id).returned ? 'Appeal back' : 'Appeal'}
+                        </span>
+                      )}
                       {showRepeatBadge && (
                         <span
                           className="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200 text-[9px] font-semibold whitespace-nowrap"
@@ -663,6 +679,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                         </span>
                       )}
                     </div>
+
                     {policyNo && (
                       <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{policyNo}</div>
                     )}
