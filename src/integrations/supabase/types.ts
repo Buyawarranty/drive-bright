@@ -9399,6 +9399,33 @@ export type Database = {
         }
         Relationships: []
       }
+      orr_manager_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          alert_type: string
+          created_at: string
+          id: string
+          lead_id: string
+          message: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          alert_type?: string
+          created_at?: string
+          id?: string
+          lead_id: string
+          message: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          alert_type?: string
+          created_at?: string
+          id?: string
+          lead_id?: string
+          message?: string
+        }
+        Relationships: []
+      }
       orr_manager_overrides: {
         Row: {
           allowed_extra_call: boolean
@@ -10984,6 +11011,7 @@ export type Database = {
           orr_first_call_notified_at: string | null
           orr_last_attempt_at: string | null
           orr_locked_until: string | null
+          orr_manager_alerted_at: string | null
           orr_next_release_at: string | null
           orr_offer_expires_at: string | null
           orr_offer_passed_by: string[]
@@ -11105,6 +11133,7 @@ export type Database = {
           orr_first_call_notified_at?: string | null
           orr_last_attempt_at?: string | null
           orr_locked_until?: string | null
+          orr_manager_alerted_at?: string | null
           orr_next_release_at?: string | null
           orr_offer_expires_at?: string | null
           orr_offer_passed_by?: string[]
@@ -11226,6 +11255,7 @@ export type Database = {
           orr_first_call_notified_at?: string | null
           orr_last_attempt_at?: string | null
           orr_locked_until?: string | null
+          orr_manager_alerted_at?: string | null
           orr_next_release_at?: string | null
           orr_offer_expires_at?: string | null
           orr_offer_passed_by?: string[]
