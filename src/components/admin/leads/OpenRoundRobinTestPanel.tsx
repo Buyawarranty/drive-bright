@@ -102,7 +102,9 @@ const STATUS_ORDER: LeadStatus[] = [
   'vehicle_sold',
   'do_not_contact',
   'not_eligible',
+  'unsubscribed',
 ];
+
 
 interface DummyAgent {
   id: string;
