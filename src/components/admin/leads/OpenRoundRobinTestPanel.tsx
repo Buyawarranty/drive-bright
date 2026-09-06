@@ -139,8 +139,14 @@ interface DummyLead {
   followUpDay: number;
   /** True once the seven-day follow-up chase is finished with no contact. */
   chaseComplete: boolean;
-  /** True once the lead has reached the max offer count and a manager has been alerted. */
-  managerAlerted?: boolean;
+  /** True while the lead waits for its next eligible calling window. */
+  waiting?: boolean;
+  /** Last recorded outcome, shown to the next salesperson as context. */
+  previousOutcome?: string;
+  /** A dial was logged during the current reservation. */
+  dialedThisOffer?: boolean;
+  /** When the lead may re-enter Open Round Robin (staffed window aware). */
+  eligibleAt?: number | null;
   /** Practice notes typed by whoever is rehearsing as the agent. Never saved anywhere. */
   notes?: { at: number; by: string; text: string }[];
   /** Which system the lead arrived under. 'rr' leads have no countdown and never move on. */
