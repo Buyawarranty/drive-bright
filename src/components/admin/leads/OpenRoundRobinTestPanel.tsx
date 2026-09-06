@@ -1976,11 +1976,34 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                         <div className="text-[11px] font-medium text-foreground">Shopping page</div>
                       </td>
                       <td className="px-2 py-2 text-xs whitespace-nowrap">
-                        {lead.contactedAt ? (
-                          <span className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-800">
-                            {formatClock(Math.max(0, Math.round((lead.contactedAt - lead.createdAt) / 1000)))}
-                          </span>
-                        ) : (
+                        {lead.contactedAt ? (() => {
+                          // The clock starts when the agent was actually given the
+                          // lead (the offer), not when the enquiry arrived — a lead
+                          // can sit overnight before anyone can act on it.
+                          const offeredAt = lead.assignedTo
+                            ? (orrLead
+                                ? lead.deadlineAt - cadence.claimWindowSeconds * 1000
+                                : lead.deadlineAt)
+                            : lead.createdAt;
+                          const startedAt = Math.min(
+                            lead.contactedAt,
+                            Math.max(lead.createdAt, offeredAt)
+                          );
+                          const fromOffer = startedAt > lead.createdAt;
+                          return (
+                            <span
+                              className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-800"
+                              title={
+                                fromOffer
+                                  ? `Timed from the lead being given to the agent at ${new Date(startedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+                                  : 'Timed from the lead arriving'
+                              }
+                            >
+                              {formatClock(Math.max(0, Math.round((lead.contactedAt - startedAt) / 1000)))}
+                              {fromOffer ? ' · from handover' : ''}
+                            </span>
+                          );
+                        })() : (
                           <span className="inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-muted-foreground">
                             Not contacted
                           </span>
