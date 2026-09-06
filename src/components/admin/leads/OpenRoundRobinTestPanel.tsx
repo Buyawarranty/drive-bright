@@ -24,6 +24,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { useSandboxLiveLeads } from '@/hooks/useSandboxLiveLeads';
@@ -136,6 +138,8 @@ interface DummyLead {
   chaseComplete: boolean;
   /** True once the lead has reached the max offer count and a manager has been alerted. */
   managerAlerted?: boolean;
+  /** Practice notes typed by whoever is rehearsing as the agent. Never saved anywhere. */
+  notes?: { at: number; by: string; text: string }[];
 }
 
 
@@ -276,6 +280,74 @@ const CopyEmail = ({ email }: { email: string }) => {
  * was made, so it stays with them until they record an outcome. It is only
  * offered elsewhere if the window runs out with no dial at all.
  */
+/** Notes button for a practice lead — read the notes so far and type a new one. */
+const PracticeNotes = ({
+  notes,
+  onAdd,
+}: {
+  notes: { at: number; by: string; text: string }[];
+  onAdd: (text: string) => void;
+}) => {
+  const [draft, setDraft] = useState('');
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            'inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs transition-colors',
+            notes.length
+              ? 'border-primary/40 bg-primary/10 text-primary font-medium'
+              : 'border-dashed border-border text-muted-foreground hover:bg-muted',
+          )}
+        >
+          <StickyNote className="h-3 w-3" /> Notes{notes.length ? ` (${notes.length})` : ''}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-80 space-y-2">
+        <div className="text-xs font-semibold text-foreground">Practice notes</div>
+        {notes.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No notes yet. Type what you would write after the call.</p>
+        ) : (
+          <ul className="max-h-40 space-y-1.5 overflow-y-auto">
+            {notes
+              .slice()
+              .reverse()
+              .map((note) => (
+                <li key={note.at} className="rounded-md border border-border bg-muted/40 p-2">
+                  <div className="text-[10px] font-medium text-muted-foreground">
+                    {note.by} · {formatTimeOfDay(note.at)}
+                  </div>
+                  <div className="text-xs text-foreground whitespace-pre-wrap">{note.text}</div>
+                </li>
+              ))}
+          </ul>
+        )}
+        <Textarea
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          placeholder="e.g. Spoke to customer, wants a quote for a 2019 Golf"
+          className="min-h-[64px] text-xs"
+        />
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[10px] text-muted-foreground">Practice only — nothing is saved.</span>
+          <Button
+            size="sm"
+            className="h-7 text-xs"
+            disabled={!draft.trim()}
+            onClick={() => {
+              onAdd(draft);
+              setDraft('');
+            }}
+          >
+            Add note
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 const hasAttempted = (lead: DummyLead) => lead.dials > 0;
 
 /** An agent is busy while they hold a live (not yet expired) dummy lead. */
@@ -404,7 +476,8 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   const nextAgentIndexRef = useRef(0);
   const [simulatedAgentId, setSimulatedAgentId] = useState<string>('all');
   // How many agents are "on shift" for this rehearsal (1–4).
-  const [agentCount, setAgentCount] = useState(DUMMY_AGENTS.length);
+  // Default rehearsal: two agents live, which is the everyday picture on the floor.
+  const [agentCount, setAgentCount] = useState(2);
   const roster = useMemo(() => DUMMY_AGENTS.slice(0, agentCount), [agentCount]);
   const rosterRef = useRef(roster);
   useEffect(() => {
@@ -677,6 +750,32 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
     );
   };
 
+
+  /**
+   * Practice note. Saved only in this page's memory so a manager can rehearse
+   * exactly what an agent types after a call. Nothing reaches the real lead notes.
+   */
+  const addPracticeNote = (id: string, text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    setLeads((current) =>
+      current.map((lead) => {
+        if (lead.id !== id) return lead;
+        const by =
+          simulatedAgentId !== 'all'
+            ? getAgent(simulatedAgentId).name
+            : lead.assignedTo
+              ? getAgent(lead.assignedTo).name
+              : 'Unassigned';
+        return {
+          ...lead,
+          notes: [...(lead.notes ?? []), { at: Date.now(), by, text: trimmed }],
+          history: [...lead.history, `Note added by ${by}: ${trimmed}`],
+        };
+      }),
+    );
+    toast({ title: 'Practice note added', description: 'Nothing real was changed.', duration: 1800 });
+  };
 
   const updateDisplayStatus = (id: string, status: LeadStatus) => {
     setLeads((current) =>
@@ -1698,9 +1797,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                           <a href={`tel:${lead.phone}`} className="h-7 w-7 rounded-md flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
                             <Phone className="h-3.5 w-3.5" />
                           </a>
-                          <span className="inline-flex items-center gap-1 rounded-md border border-dashed border-border px-2 py-1 text-xs text-muted-foreground">
-                            <StickyNote className="h-3 w-3" /> Notes
-                          </span>
+                          <PracticeNotes
+                            notes={lead.notes ?? []}
+                            onAdd={(text) => addPracticeNote(lead.id, text)}
+                          />
                           <Mail className="h-4 w-4 text-blue-600" />
                           <Bell className="h-4 w-4 text-muted-foreground" />
                           <span className="inline-flex items-center gap-1 rounded-md border border-orange-300 px-2 py-1 text-xs font-medium text-orange-600">
