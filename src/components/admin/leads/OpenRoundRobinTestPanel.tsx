@@ -139,8 +139,14 @@ interface DummyLead {
   followUpDay: number;
   /** True once the seven-day follow-up chase is finished with no contact. */
   chaseComplete: boolean;
-  /** True once the lead has reached the max offer count and a manager has been alerted. */
-  managerAlerted?: boolean;
+  /** True while the lead waits for its next eligible calling window. */
+  waiting?: boolean;
+  /** Last recorded outcome, shown to the next salesperson as context. */
+  previousOutcome?: string;
+  /** A dial was logged during the current reservation. */
+  dialedThisOffer?: boolean;
+  /** When the lead may re-enter Open Round Robin (staffed window aware). */
+  eligibleAt?: number | null;
   /** Practice notes typed by whoever is rehearsing as the agent. Never saved anywhere. */
   notes?: { at: number; by: string; text: string }[];
   /** Which system the lead arrived under. 'rr' leads have no countdown and never move on. */
@@ -233,6 +239,84 @@ const formatHMS = (seconds: number) => {
   if (hours > 0) return `${hours}h ${pad(minutes)}m ${pad(secs)}s`;
   if (minutes > 0) return `${minutes}m ${pad(secs)}s`;
   return `${secs}s`;
+};
+
+/** Reservation countdown wording — "1m 23sec", "42sec". */
+const formatHold = (seconds: number) => {
+  const total = Math.max(0, Math.round(seconds));
+  const mins = Math.floor(total / 60);
+  const secs = total % 60;
+  return mins > 0 ? `${mins}m ${String(secs).padStart(2, '0')}sec` : `${secs}sec`;
+};
+
+/* ------------------------------------------------------------------
+ * Staffed calling windows
+ * Weekdays 09:00–18:00, weekends an ad-hoc 10:00–13:00 window.
+ * Genuine attempts must sit at least 3 hours apart; up to 2 a weekday,
+ * normally 1 on a weekend day.
+ * ------------------------------------------------------------------ */
+const MIN_GAP_HOURS = 3;
+const CONTACT_DAYS = 7;
+
+const isWeekendDay = (ms: number) => {
+  const d = new Date(ms).getDay();
+  return d === 0 || d === 6;
+};
+
+const windowFor = (ms: number): [number, number] => (isWeekendDay(ms) ? [10, 13] : [9, 18]);
+
+/** Calls allowed on the contact day that `ms` falls in. */
+const callsAllowedOn = (ms: number) => (isWeekendDay(ms) ? 1 : 2);
+
+/** The first staffed moment at or after `from`. */
+const nextStaffedTime = (from: number) => {
+  let cursor = from;
+  for (let i = 0; i < 14; i += 1) {
+    const [open, close] = windowFor(cursor);
+    const openAt = new Date(cursor);
+    openAt.setHours(open, 0, 0, 0);
+    const closeAt = new Date(cursor);
+    closeAt.setHours(close, 0, 0, 0);
+    if (cursor < openAt.getTime()) return openAt.getTime();
+    if (cursor < closeAt.getTime()) return cursor;
+    const next = new Date(cursor);
+    next.setDate(next.getDate() + 1);
+    next.setHours(0, 0, 0, 0);
+    cursor = next.getTime();
+  }
+  return from;
+};
+
+/** Start of the next staffed window strictly after the day `ms` sits in. */
+const nextDayStaffedTime = (ms: number) => {
+  const next = new Date(ms);
+  next.setDate(next.getDate() + 1);
+  next.setHours(0, 0, 0, 0);
+  return nextStaffedTime(next.getTime());
+};
+
+/**
+ * When a lead may return to Open Round Robin after a genuine attempt:
+ * the real attempt time plus the minimum gap, never squeezed in after
+ * the day's closing time.
+ */
+const nextEligibleAfterAttempt = (attemptAt: number) => {
+  const earliest = attemptAt + MIN_GAP_HOURS * 3600 * 1000;
+  const [, close] = windowFor(attemptAt);
+  const closeAt = new Date(attemptAt);
+  closeAt.setHours(close, 0, 0, 0);
+  if (earliest >= closeAt.getTime()) return nextDayStaffedTime(attemptAt);
+  return nextStaffedTime(earliest);
+};
+
+/** "today at 15:20", "Mon at 09:00" — salesperson-friendly. */
+const formatEligible = (ms: number) => {
+  const now = new Date();
+  const then = new Date(ms);
+  const sameDay = now.toDateString() === then.toDateString();
+  const time = formatTimeOfDay(ms);
+  if (sameDay) return `today at ${time}`;
+  return `${then.toLocaleDateString('en-GB', { weekday: 'short' })} at ${time}`;
 };
 
 
@@ -380,30 +464,35 @@ const PracticeNotes = ({
   );
 };
 
-const hasAttempted = (lead: DummyLead) => lead.dials > 0;
+/** A dial was logged during the salesperson's current reservation. */
+const hasAttempted = (lead: DummyLead) => !!lead.dialedThisOffer;
 
 /** An agent is busy while they hold a live (not yet expired) dummy lead. */
 const isOrr = (lead: DummyLead) => (lead.source ?? 'orr') === 'orr';
 
 /**
- * Once the agent records an outcome (anything other than "Not spoken to") the
- * lead is worked: it stays with them but no longer blocks them from taking the
- * next lead.
+ * Once the salesperson records an outcome (anything other than "Not spoken to")
+ * the current call attempt is finished.
  */
 const isWorked = (lead: DummyLead) => lead.displayStatus !== 'new';
 
+/** The current call opportunity is temporarily reserved for this salesperson. */
 const isHeldLive = (lead: DummyLead, now: number) =>
   isOrr(lead) &&
+  !lead.waiting &&
   lead.status !== 'queued' &&
   lead.assignedTo !== null &&
   !isWorked(lead) &&
   (hasAttempted(lead) || lead.deadlineAt > now);
 
-
+/** How many waiting leads are fed back per sweep, so nothing arrives in one spike. */
+const RELEASE_PER_SWEEP = 2;
 
 /**
- * One-at-a-time ORR engine: an agent may only ever hold ONE dummy lead.
- * Expired leads roll to the next free agent; if everyone is busy the lead waits in the queue.
+ * One-at-a-time ORR engine. A salesperson holds a temporary reservation for the
+ * current attempt only. If the reservation lapses without a call the lead goes
+ * straight back into the pool and no attempt is counted; the previous
+ * salesperson gets no priority when it is offered again.
  */
 const advance = (
   input: DummyLead[],
@@ -415,7 +504,22 @@ const advance = (
   const leads = input.map((lead) => ({ ...lead }));
   let index = roster.length ? startIndex % roster.length : 0;
   let reassigned = 0;
-  let managerAlerted = 0;
+
+  // 1. Lapsed reservations release immediately — not counted as an attempt.
+  for (const lead of leads) {
+    if (
+      isOrr(lead) &&
+      !lead.waiting &&
+      lead.assignedTo !== null &&
+      !isWorked(lead) &&
+      !hasAttempted(lead) &&
+      lead.deadlineAt <= now
+    ) {
+      lead.assignedTo = null;
+      lead.status = 'queued';
+      lead.history = [...lead.history, 'Reservation ran out with no call — released back into Open Round Robin (no attempt counted)'];
+    }
+  }
 
   const busy = new Set(leads.filter((lead) => isHeldLive(lead, now)).map((lead) => lead.assignedTo as string));
 
@@ -431,52 +535,44 @@ const advance = (
     return null;
   };
 
+  // 2. Waiting leads whose next eligible time has come, oldest/due first,
+  //    staggered a couple at a time so nothing lands in one batch.
+  const dueBack = leads
+    .filter((lead) => isOrr(lead) && lead.waiting && !lead.chaseComplete && (lead.eligibleAt ?? 0) <= now)
+    .sort((a, b) => (a.eligibleAt ?? 0) - (b.eligibleAt ?? 0))
+    .slice(0, RELEASE_PER_SWEEP);
 
-  // Oldest first, so waiting leads are handled before newly expired ones.
+  for (const lead of dueBack) {
+    lead.waiting = false;
+    lead.status = 'queued';
+    lead.assignedTo = null;
+    lead.displayStatus = 'new';
+    lead.eligibleAt = null;
+    lead.history = [...lead.history, 'Back in Open Round Robin for its next attempt'];
+  }
+
+  // 3. Offer everything unowned to the next free salesperson.
   const pending = leads
-    .filter(
-      (lead) =>
-        isOrr(lead) &&
-        !isWorked(lead) &&
-        (lead.status === 'queued' || (!hasAttempted(lead) && lead.deadlineAt <= now)),
-    )
+    .filter((lead) => isOrr(lead) && !lead.waiting && !isWorked(lead) && lead.status === 'queued')
     .sort((a, b) => a.createdAt - b.createdAt);
 
   for (const lead of pending) {
-    if (lead.status !== 'queued' && lead.attemptCount >= cfg.maxAttempts && !lead.managerAlerted) {
-      lead.managerAlerted = true;
-      lead.history = [...lead.history, `Manager alert – ${cfg.maxAttempts} offers with no contact. Lead keeps cycling through ORR.`];
-      managerAlerted += 1;
-    }
-
-
     const agent = takeFreeAgent();
-    if (!agent) {
-      if (lead.status !== 'queued') {
-        lead.status = 'queued';
-        lead.assignedTo = null;
-        lead.history = [
-          ...lead.history,
-          cfg.whenAllBusy === 'queue'
-            ? 'All agents busy — waiting in the open pool queue (oldest first, released as soon as someone frees up)'
-            : 'All agents busy — kept circulating round the rotation until someone frees up',
-        ];
-      }
-      continue;
-    }
+    if (!agent) continue;
 
-    const attempt = lead.status === 'queued' && lead.attemptCount === 0 ? 1 : lead.attemptCount + 1;
-    lead.status = attempt === 1 ? 'new' : 'reassigned';
+    lead.status = lead.dials === 0 ? 'new' : 'reassigned';
     lead.displayStatus = 'new';
     lead.assignedTo = agent.id;
-    lead.attemptCount = attempt;
+    lead.dialedThisOffer = false;
+    lead.followUpDay = Math.max(1, lead.followUpDay);
     lead.deadlineAt = now + cfg.claimWindowSeconds * 1000;
-    lead.history = [...lead.history, `Attempt ${attempt} assigned to ${agent.name}`];
+    lead.history = [...lead.history, `Held for ${agent.name} for this call attempt`];
     reassigned += 1;
   }
 
-  return { leads, index, reassigned, managerAlerted };
+  return { leads, index, reassigned, managerAlerted: 0 };
 };
+
 
 export type OrrPracticeTeam = 'green';
 
@@ -592,7 +688,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         .filter((lead) =>
           simulatedAgentId === 'all'
             ? lead.assignedTo !== null || lead.status === 'queued'
-            : lead.assignedTo === simulatedAgentId,
+            : lead.assignedTo === simulatedAgentId && !lead.waiting,
         )
         // Open Round Robin leads always sit at the top — they are the ones on a clock.
         .sort((a, b) => Number(isOrr(b)) - Number(isOrr(a))),
@@ -795,6 +891,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         return {
           ...lead,
           dials,
+          dialedThisOffer: delta > 0 ? true : lead.dialedThisOffer,
           history: [...lead.history, `Manual dial counter ${delta > 0 ? '+1' : '-1'} (no outcome recorded)`],
         };
       }),
@@ -829,6 +926,11 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   };
 
   const updateDisplayStatus = (id: string, status: LeadStatus) => {
+    // "No answer" is a genuine call attempt, so it runs the chase rules.
+    if (status === 'no_answer') {
+      recordNoAnswer(id);
+      return;
+    }
     setLeads((current) =>
       current.map((lead) => {
         if (lead.id !== id) return lead;
@@ -836,71 +938,69 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           ...lead,
           displayStatus: status,
           contactedAt: status === 'new' ? null : (lead.contactedAt ?? Date.now()),
-          history: [...lead.history, `Status changed to ${statusLabels[status]}`],
+          history: [...lead.history, `${statusLabels[status]} recorded`],
         };
       }),
     );
   };
 
   /**
-   * One-click “couldn’t connect / no answer”: logs the dial and applies the cadence.
-   * Day one: up to 3 dials (2 if the lead arrived after midday), then handover to
-   * Team Green at 6pm. After that the lead is chased for the next seven days with a
-   * maximum of two dials a day, for as long as it stays uncontacted and unowned.
+   * A real outbound call that did not reach the customer.
+   *
+   * It counts as one genuine attempt, leaves the salesperson's active queue and
+   * waits for its next eligible staffed window (at least 3 hours after the
+   * actual attempt). Normal Round Robin then decides who gets it next — the
+   * previous salesperson gets no priority.
    */
   const recordNoAnswer = (id: string) => {
-    let toastTitle = 'No answer recorded';
+    let toastTitle = '✓ No answer logged';
     let toastBody = '';
     setLeads((current) =>
       current.map((lead) => {
         if (lead.id !== id) return lead;
         const now = Date.now();
         const dials = lead.dials + 1;
-        const dayDials = lead.dayDials + 1;
-        const inChase = lead.followUpDay > 0;
-        const maxDials = inChase ? cadence.followUpDailyDials : maxDialsForLead(lead.createdAt, cadence);
-        const exhausted = dayDials >= maxDials;
-        const nextWin = nextCallWindow(now + 60_000, cadence);
-        const nextDay = lead.followUpDay + 1;
-        const chaseOver = exhausted && nextDay > cadence.followUpDays;
-        const nextDayAt = atHour(now, callWindows(cadence)[0].startH, 1);
+        const day = Math.max(1, lead.followUpDay);
+        const allowance = callsAllowedOn(now);
+        const callsToday = Math.min(allowance, lead.dayDials + 1);
+        const dayDone = callsToday >= allowance;
+        const nextDay = day + 1;
+        const chaseOver = dayDone && nextDay > CONTACT_DAYS;
+        const eligibleAt = dayDone ? nextDayStaffedTime(now) : nextEligibleAfterAttempt(now);
 
-        const notes: string[] = [
-          `No answer — dial ${dayDials} of ${maxDials} today (${dials} total)${inChase ? ` · follow-up day ${lead.followUpDay} of ${cadence.followUpDays}` : ''}`,
-        ];
-        if (!exhausted) {
-          notes.push(`Next attempt due ${nextWin.label} at ${formatTimeOfDay(nextWin.at)}`);
-          toastBody = `Dial logged. Next attempt due ${nextWin.label} at ${formatTimeOfDay(nextWin.at)}.`;
-        } else if (chaseOver) {
-          notes.push(`Seven-day follow-up finished with no contact — no further dials scheduled`);
-          toastTitle = 'Follow-up finished';
-          toastBody = 'Seven days of chasing are done with no contact. No further dials are scheduled.';
-        } else if (!inChase) {
-          notes.push(`Day's attempts used — handing over to Team Green at ${formatTimeOfDay(atHour(now, cadence.greenTeamHandoverHour))}`);
-          notes.push(`Seven-day follow-up starts tomorrow — up to ${cadence.followUpDailyDials} dials a day while the lead is uncontacted and unowned`);
-          toastTitle = 'Attempts used — moving to Team Green';
-          toastBody = `Day one is done. The seven-day follow-up starts tomorrow at ${formatTimeOfDay(nextDayAt)} with up to ${cadence.followUpDailyDials} dials a day.`;
-        } else {
-          notes.push(`Follow-up day ${lead.followUpDay} done — day ${nextDay} of ${cadence.followUpDays} resumes at ${formatTimeOfDay(nextDayAt)}`);
-          toastTitle = `Follow-up day ${lead.followUpDay} done`;
-          toastBody = `Both dials used. Day ${nextDay} of ${cadence.followUpDays} resumes at ${formatTimeOfDay(nextDayAt)}.`;
-        }
+        toastBody = chaseOver
+          ? `Contact day ${day} of ${CONTACT_DAYS} · call ${callsToday} of ${allowance} complete. Chase complete — ${CONTACT_DAYS} contact days done.`
+          : `Day ${day} of ${CONTACT_DAYS} · Call ${callsToday} of ${allowance} complete. Back in Round Robin from ${formatEligible(eligibleAt)}.`;
+        if (chaseOver) toastTitle = 'Chase complete';
 
         return {
           ...lead,
           dials,
-          dayDials: exhausted ? 0 : dayDials,
+          dayDials: dayDone ? 0 : callsToday,
+          followUpDay: dayDone && !chaseOver ? nextDay : day,
           displayStatus: 'no_answer',
-          followUpDay: exhausted && !chaseOver ? nextDay : lead.followUpDay,
+          previousOutcome: 'No answer',
+          waiting: !chaseOver,
+          assignedTo: null,
+          status: 'queued',
+          dialedThisOffer: false,
           chaseComplete: chaseOver,
-          nextCallAt: chaseOver ? null : exhausted ? nextDayAt : nextWin.at,
-          greenTeamAt: !inChase && exhausted ? atHour(now, cadence.greenTeamHandoverHour) : lead.greenTeamAt,
-          history: [...lead.history, ...notes],
+          eligibleAt: chaseOver ? null : eligibleAt,
+          nextCallAt: chaseOver ? null : eligibleAt,
+          greenTeamAt: null,
+          history: [
+            ...lead.history,
+            `No answer logged — day ${day} of ${CONTACT_DAYS}, call ${callsToday} of ${allowance} (${dials} attempts in total)`,
+            chaseOver
+              ? `Chase complete — ${CONTACT_DAYS} contact days done`
+              : `Back in Round Robin from ${formatEligible(eligibleAt)}`,
+          ],
         };
       }),
     );
     toast({ title: toastTitle, description: toastBody });
   };
+
 
 
 
@@ -915,7 +1015,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         () =>
           toast({
             title: 'Passed on',
-            description: `Moved on ${result.reassigned}${result.managerAlerted ? ` · Manager alerted: ${result.managerAlerted}` : ''}. Nothing real was changed.`,
+            description: `Moved on ${result.reassigned}. Nothing real was changed.`,
           }),
         0,
       );
@@ -1086,7 +1186,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         id: 'dial-logged',
         title: 'Agent dials in time — the lead stays with them',
         what: 'A dial has been logged, so the countdown stops.',
-        watch: 'It reads "Still yours" and is never offered to anyone else.',
+        watch: 'The lead stays in the salesperson\'s queue until they record an outcome.',
         agents: 4,
         build: (r: DummyAgent[], now: number) => [
           buildLead({
@@ -1598,9 +1698,11 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
               <h4 className="text-base font-semibold text-foreground">Practice New Leads — {theme.label}</h4>
 
               <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
-                <li>Leads are assigned automatically in a fair rotation.</li>
-                <li>Only one lead is reserved for an agent at a time.</li>
-                <li>If the agent does not start a call in time, the lead passes to the next agent.</li>
+                <li>A new lead is unowned. The rotation holds it for one salesperson for the current call attempt only.</li>
+                <li>Nobody owns future attempts — if the countdown runs out with no call, it goes straight back into the pool and no attempt is counted.</li>
+                <li>No answer counts as one genuine attempt, leaves your queue and comes back at its next eligible time — the rotation decides who gets it.</li>
+                <li>Weekdays 09:00–18:00, weekends about 10:00–13:00 when staffed. At least 3 hours between attempts.</li>
+                <li>Up to 2 attempts a weekday, normally 1 at a weekend, across 7 contact days.</li>
               </ul>
             </div>
           </div>
@@ -1711,7 +1813,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                                 : 'border-border bg-muted text-muted-foreground',
                             )}
                           >
-                            {orrLead ? 'ORR · call first' : 'Round robin'}
+                            {orrLead ? 'Open Round Robin' : 'Round robin'}
                           </span>
                           {lead.assignedTo === null ? (
                             <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-900 whitespace-nowrap">
@@ -1757,8 +1859,22 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                             <div className="text-xs text-emerald-900/70">The lead has been assigned to you.</div>
                           </div>
                         ) : (
-                        <div className={cn('min-w-[160px] rounded-md border px-2.5 py-2', theme.holdBox)}>
-                          {lead.assignedTo === null ? (
+                        <div className={cn('min-w-[170px] max-w-[220px] rounded-md border px-2.5 py-1.5', theme.holdBox)}>
+                          {lead.chaseComplete ? (
+                            <>
+                              <div className="text-xs font-semibold text-foreground">Chase complete</div>
+                              <div className="text-[11px] text-muted-foreground">{CONTACT_DAYS} contact days completed</div>
+                            </>
+                          ) : lead.waiting ? (
+                            <>
+                              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-900 whitespace-nowrap">
+                                <Clock className="h-3 w-3 text-amber-700" /> Waiting for the next calling window
+                              </div>
+                              <div className="text-sm font-semibold text-amber-900">
+                                Back in Round Robin from {lead.eligibleAt ? formatEligible(lead.eligibleAt) : 'the next staffed window'}
+                              </div>
+                            </>
+                          ) : lead.assignedTo === null ? (
                             <>
                               <div className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-900 whitespace-nowrap">
                                 <Clock className="h-3 w-3 text-amber-700" /> In the queue
@@ -1767,76 +1883,25 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                                 Goes to the next agent who frees up
                               </div>
                             </>
-                          ) : expired ? (
-                            <div className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1">
-                              <Clock className="h-3 w-3" /> Offered to another agent
-                            </div>
-                          ) : attempted ? (
-                            <>
-                              <div className={cn('inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap', theme.holdLabel)}>
-                                <Lock className={cn('h-3 w-3', theme.holdIcon)} /> Still yours
-                              </div>
-                              <div className={cn('text-sm font-semibold', theme.holdValue)}>
-                                Dial logged — set an outcome
-                              </div>
-                            </>
                           ) : (
                             <>
                               <div className={cn('inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap', theme.holdLabel)}>
                                 <Lock className={cn('h-3 w-3', theme.holdIcon)} /> Held for you
                               </div>
                               <div className={cn('text-sm font-semibold tabular-nums', theme.holdValue)}>
-                                {formatClock(remaining)} left to call
+                                {attempted ? 'Dial logged — set an outcome' : `${formatHold(remaining)} left to call`}
                               </div>
                             </>
                           )}
 
-
-                          {lead.chaseComplete ? (
-                            <div className="mt-1.5 rounded border border-slate-300 bg-slate-50 px-2 py-1">
-                              <div className="text-[11px] font-semibold text-slate-800">
-                                Seven-day follow-up finished
-                              </div>
-                              <div className="text-[10px] text-slate-600">
-                                No contact made · {lead.dials} dials in total
-                              </div>
-                            </div>
-                          ) : lead.followUpDay > 0 ? (
-                            <div className="mt-1.5 rounded border border-purple-300 bg-purple-50 px-2 py-1">
-                              <div className="text-[11px] font-semibold text-purple-900">
-                                Follow-up day {lead.followUpDay} of {cadence.followUpDays}
-                                {lead.nextCallAt ? ` · next call ${formatTimeOfDay(lead.nextCallAt)}` : ''}
-                              </div>
-                              <div className="text-[10px] text-purple-800/80">
-                                Dial {lead.dayDials} of {cadence.followUpDailyDials} today · chased while uncontacted and unowned
-                              </div>
-                            </div>
-                          ) : lead.greenTeamAt ? (
-                            <div className="mt-1.5 rounded border border-red-300 bg-red-50 px-2 py-1">
-                              <div className="text-[11px] font-semibold text-red-800">
-                                Moving to Team Green at {formatTimeOfDay(lead.greenTeamAt)}
-                              </div>
-                              <div className="text-[10px] text-red-700/80">
-                                Seven-day follow-up starts tomorrow · up to {cadence.followUpDailyDials} dials a day
-                              </div>
-                            </div>
-                          ) : lead.nextCallAt ? (
-                            <div className="mt-1.5 rounded border border-amber-300 bg-amber-50 px-2 py-1">
-                              <div className="text-[11px] font-semibold text-amber-900">
-                                Next call due {formatTimeOfDay(lead.nextCallAt)}
-                              </div>
-                              <div className="text-[10px] text-amber-800/80">
-                                Dial {lead.dayDials} of {maxDialsForLead(lead.createdAt, cadence)} today
-                              </div>
-                            </div>
-                          ) : null}
-
-                          <div className="text-[11px] text-muted-foreground">
-                            Lead arrived {formatClock(ageSec)} ago ·{' '}
-                            {lead.attemptCount === 0
-                              ? 'not offered to anyone yet'
-                              : `Attempt ${lead.attemptCount}`}
+                          <div className="text-[11px] text-muted-foreground leading-tight">
+                            Lead arrived {formatClock(ageSec)} ago · Day {Math.max(1, lead.followUpDay)} of {CONTACT_DAYS} · Call{' '}
+                            {Math.min(callsAllowedOn(Date.now()), lead.dayDials + 1)} of {callsAllowedOn(Date.now())} today
                           </div>
+                          {lead.previousOutcome && (
+                            <div className="text-[11px] font-medium text-foreground/80">Previous: {lead.previousOutcome}</div>
+                          )}
+
 
 
                           <div className={cn('mt-1.5 h-1.5 w-full rounded-full overflow-hidden', theme.bar)}>
@@ -1902,36 +1967,24 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       </td>
                       <td className="px-2 py-2">
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
-                          <TooltipProvider delayDuration={100}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  onClick={() => recordNoAnswer(lead.id)}
-                                  className="h-7 rounded-md border border-amber-300 px-2 text-xs font-medium text-amber-700 hover:bg-amber-50"
-                                >
-                                  No answer
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="text-xs">
-                                Couldn&apos;t connect / no answer
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          <span className="h-7 w-7 rounded-md border-2 border-orange-500 flex items-center justify-center">
-                            <ChevronDown className="h-3.5 w-3.5 text-orange-600" />
-                          </span>
-                          <a href={`tel:${lead.phone}`} className="h-7 w-7 rounded-md flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
+                          <a href={`tel:${lead.phone}`} title="Call" className="h-7 w-7 rounded-md border border-input flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
                             <Phone className="h-3.5 w-3.5" />
                           </a>
                           <PracticeNotes
                             notes={lead.notes ?? []}
                             onAdd={(text) => addPracticeNote(lead.id, text)}
                           />
-                          <Mail className="h-4 w-4 text-blue-600" />
-                          <Bell className="h-4 w-4 text-muted-foreground" />
-                          <span className="inline-flex items-center gap-1 rounded-md border border-orange-300 px-2 py-1 text-xs font-medium text-orange-600">
+                          <span title="Email" className="h-7 w-7 rounded-md border border-input flex items-center justify-center text-blue-600">
+                            <Mail className="h-3.5 w-3.5" />
+                          </span>
+                          <span title="Reminder" className="h-7 w-7 rounded-md border border-input flex items-center justify-center text-muted-foreground">
+                            <Bell className="h-3.5 w-3.5" />
+                          </span>
+                          <span className="inline-flex h-7 items-center gap-1 rounded-md border border-orange-300 px-2 text-xs font-medium text-orange-600">
                             <FileText className="h-3 w-3" /> Quote
+                          </span>
+                          <span title="More" className="h-7 w-7 rounded-md border border-input flex items-center justify-center text-muted-foreground">
+                            <ChevronDown className="h-3.5 w-3.5" />
                           </span>
                         </div>
                       </td>
@@ -1966,13 +2019,12 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       <td className="px-2 py-2 text-xs whitespace-nowrap">
                         {lead.dials > 0 ? (
                           <div>
-                            <div className="font-medium text-foreground">{lead.dials} dial{lead.dials === 1 ? '' : 's'} logged</div>
-                            <div className="text-[11px] text-muted-foreground">practice · {formatAgo(lead.createdAt)}</div>
+                            <div className="font-medium text-foreground">{lead.dials} call attempt{lead.dials === 1 ? '' : 's'} logged</div>
+                            <div className="text-[11px] text-muted-foreground">Last activity {formatAgo(lead.createdAt)}</div>
                           </div>
                         ) : (
                           <div>
-                            <div className="text-muted-foreground">No agent activity</div>
-                            <div className="text-[11px] text-muted-foreground">sys {formatAgo(lead.createdAt)}</div>
+                            <div className="text-muted-foreground">No activity yet</div>
                           </div>
                         )}
                       </td>
@@ -1980,8 +2032,8 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                         {formatLeadDate(lead.createdAt)}
                       </td>
                       <td className="px-2 py-2 text-xs whitespace-nowrap">
-                        <div className="text-muted-foreground">{formatAgo(lead.createdAt)}</div>
-                        <div className="text-[11px] font-medium text-foreground">Shopping page</div>
+                        <div className="font-medium text-foreground">Viewed quote page</div>
+                        <div className="text-[11px] text-muted-foreground">{formatAgo(lead.createdAt)}</div>
                       </td>
                       <td className="px-2 py-2 text-xs whitespace-nowrap">
                         {(() => {
@@ -2039,13 +2091,12 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <Clock className="h-3 w-3 text-primary" />
           </span>
           <p className="text-[11px] text-muted-foreground">
-            <span className="font-semibold text-foreground">Day one calling plan:</span>{' '}
-            {callWindows(cadence).map((w) => w.label).join(', ')}. Maximum {cadence.maxDialsFullDay} dials in a full day,
-            or {cadence.maxDialsAfterMidday} if the lead arrives after midday. Once those attempts are used the lead hands
-            over to Team Green at {formatTimeOfDay(atHour(Date.now(), cadence.greenTeamHandoverHour))} the same day, then is
-            chased for {cadence.followUpDays} days with up to {cadence.followUpDailyDials} dials a day. Practice leads are
-            reserved privately to one agent and wiped when you clear or reload. Change any of these figures in the section
-            above.
+            <span className="font-semibold text-foreground">Calling plan:</span>{' '}
+            Weekdays 09:00–18:00, weekends roughly 10:00–13:00 when staffed. Up to 2 genuine attempts a full weekday and
+            normally 1 a weekend day, always at least {MIN_GAP_HOURS} hours apart, across {CONTACT_DAYS} contact days.
+            After No answer the lead leaves your queue and returns to Open Round Robin from its next eligible time — waiting
+            leads are fed back a couple at a time, so nothing lands in one batch. Practice leads are reserved privately for
+            one call attempt and wiped when you clear or reload.
           </p>
 
 
