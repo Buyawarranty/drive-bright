@@ -167,6 +167,10 @@ export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean 
         description="Find any existing lead by reg plate, name, email or phone, pick the agent, and it goes to them through the normal lead flow. Round Robin above is untouched."
       />
 
+      {/* Fallback: hand waiting ORR leads to the normal rotation --------- */}
+      <OrrFallbackToRoundRobinPanel isManagement={isManagement} />
+
+
 
       {/* 2. Live status ------------------------------------------------- */}
       <div className="space-y-2">
