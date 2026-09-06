@@ -103,7 +103,7 @@ const WebsiteFooter = () => {
                 <li><a href="/privacy/" className="hover:text-[#eb4b00] transition-colors">Privacy Policy</a></li>
                 <li><a href="/terms/" className="hover:text-[#eb4b00] transition-colors">Terms & Conditions</a></li>
                 <li><a href="/cookies/" className="hover:text-[#eb4b00] transition-colors">Cookie Policy</a></li>
-                <li><a href="/complaints/" className="hover:text-[#eb4b00] transition-colors">Complaints Procedure</a></li>
+                <li><a href="/complaints/" className="hover:text-[#eb4b00] transition-colors">Make a complaint</a></li>
                 <li><a href="/appeals/" className="hover:text-[#eb4b00] transition-colors">Make an Appeal</a></li>
                 <li><a href="/thewarrantyhub/" className="hover:text-[#eb4b00] transition-colors">Warranty Hub</a></li>
                 <li><a href="/used-car-warranty-uk/" className="hover:text-[#eb4b00] transition-colors">Used Car Warranty UK</a></li>

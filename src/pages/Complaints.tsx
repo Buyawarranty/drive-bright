@@ -180,7 +180,7 @@ const Complaints = () => {
   const showStatus = (name: string) => touched[name] || !!(form as any)[name];
 
   return (
-    <div className="min-h-screen bg-[#F4F6F8]">
+    <div className="min-h-screen bg-brand-gray-bg">
       <SEOHead
         title="Complaints Procedure | Buy A Warranty UK"
         description="Submit a complaint to Buy A Warranty. We acknowledge complaints within 2 working days and aim to resolve within 10 working days."
@@ -192,7 +192,7 @@ const Complaints = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-[13px] font-medium text-[#5A6B82] hover:text-[#1A2B4A] transition-colors"
+          className="inline-flex items-center gap-2 text-[13px] font-medium text-slate-500 hover:text-brand-blue-dark transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Help Centre
@@ -201,26 +201,26 @@ const Complaints = () => {
 
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-        <div className="relative overflow-hidden bg-white border border-[#E2E8F0] rounded-2xl shadow-sm">
+        <div className="relative overflow-hidden bg-white border border-slate-200 rounded-2xl shadow-sm">
           <div className="relative grid md:grid-cols-[1fr_auto] items-center gap-6 p-8 sm:p-12">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-[#FBEDF1] border border-[#A8324A]/20 px-3 py-1.5 text-xs font-medium text-[#A8324A] mb-4">
+              <div className="inline-flex items-center gap-2 rounded-full bg-brand-orange-lighter border border-brand-orange/20 px-3 py-1.5 text-xs font-medium text-brand-orange mb-4">
                 <HeadphonesIcon className="w-3.5 h-3.5" /> CUSTOMER COMPLAINTS
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight text-[#1A2B4A]">We're here to help</h1>
-              <p className="text-[#5A6B82] text-base sm:text-lg max-w-2xl leading-relaxed">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight text-brand-blue-dark">We're here to help</h1>
+              <p className="text-slate-500 text-base sm:text-lg max-w-2xl leading-relaxed">
                 We take every complaint seriously and aim to resolve it fairly, clearly, and as quickly as possible.
               </p>
-              <ul className="mt-5 space-y-2 text-sm text-[#1A2B4A]">
-                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#A8324A] shrink-0" /> Acknowledged within <strong>2 working days</strong></li>
-                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#A8324A] shrink-0" /> Resolved within <strong>10 working days</strong></li>
-                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#A8324A] shrink-0" /> Handled privately and securely</li>
+              <ul className="mt-5 space-y-2 text-sm text-brand-blue-dark">
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-brand-orange shrink-0" /> Acknowledged within <strong>2 working days</strong></li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-brand-orange shrink-0" /> Resolved within <strong>10 working days</strong></li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-brand-orange shrink-0" /> Handled privately and securely</li>
               </ul>
             </div>
             <div className="hidden md:flex items-center justify-center">
-              <div className="relative w-44 h-44 rounded-2xl bg-[#FBEDF1] border border-[#A8324A]/15 flex items-center justify-center">
-                <ClipboardList className="w-20 h-20 text-[#A8324A]" strokeWidth={1.4} />
-                <div className="absolute -bottom-3 -right-3 w-14 h-14 rounded-xl bg-[#A8324A] flex items-center justify-center shadow-md">
+              <div className="relative w-44 h-44 rounded-2xl bg-brand-orange-lighter border border-brand-orange/15 flex items-center justify-center">
+                <ClipboardList className="w-20 h-20 text-brand-orange" strokeWidth={1.4} />
+                <div className="absolute -bottom-3 -right-3 w-14 h-14 rounded-xl bg-brand-orange flex items-center justify-center shadow-md">
                   <MessageSquare className="w-7 h-7 text-white" />
                 </div>
               </div>
@@ -231,19 +231,19 @@ const Complaints = () => {
 
       {/* Trust cards */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white rounded-2xl border border-[#E2E8F0] p-2 sm:p-2 shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white rounded-2xl border border-slate-200 p-2 sm:p-2 shadow-sm">
           {[
             { Icon: ShieldCheck, title: "We're on your side", desc: 'Our team is here to listen and help put things right.' },
             { Icon: Clock, title: 'Clear response times', desc: "We'll keep you informed at every stage." },
             { Icon: Lock, title: 'Private & secure', desc: 'Your details are handled carefully and confidentially.' },
           ].map(({ Icon, title, desc }) => (
-            <div key={title} className="flex items-start gap-3 p-4 rounded-xl hover:bg-[#F4F6F8] transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-[#FBEDF1] flex items-center justify-center shrink-0">
-                <Icon className="w-5 h-5 text-[#A8324A]" />
+            <div key={title} className="flex items-start gap-3 p-4 rounded-xl hover:bg-brand-gray-bg transition-colors">
+              <div className="w-10 h-10 rounded-lg bg-brand-orange-lighter flex items-center justify-center shrink-0">
+                <Icon className="w-5 h-5 text-brand-orange" />
               </div>
               <div>
-                <p className="font-semibold text-[#1A2B4A] text-sm">{title}</p>
-                <p className="text-xs text-[#5A6B82] mt-0.5 leading-relaxed">{desc}</p>
+                <p className="font-semibold text-brand-blue-dark text-sm">{title}</p>
+                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{desc}</p>
               </div>
             </div>
           ))}
@@ -254,7 +254,7 @@ const Complaints = () => {
       {/* Main grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {reference ? (
-          <section className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-[#E2E8F0] overflow-hidden">
+          <section className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="bg-gradient-to-br from-green-500 to-emerald-600 px-6 sm:px-10 py-8 text-center">
               <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-3 shadow-md">
                 <CheckCircle className="w-9 h-9 text-green-600" />
@@ -266,11 +266,11 @@ const Complaints = () => {
             </div>
             <div className="px-6 sm:px-10 py-7">
               <div className="text-center mb-5">
-                <div className="inline-block text-xs sm:text-sm bg-[#F4F6F8] rounded-md px-3 py-1.5 text-[#1A2B4A]">
+                <div className="inline-block text-xs sm:text-sm bg-brand-gray-bg rounded-md px-3 py-1.5 text-brand-blue-dark">
                   Reference: <span className="font-semibold">{reference}</span>
                 </div>
               </div>
-              <ul className="space-y-2.5 mb-6 text-sm text-[#1A2B4A]">
+              <ul className="space-y-2.5 mb-6 text-sm text-brand-blue-dark">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
                   <span>A confirmation email has been sent to your inbox.</span>
@@ -287,13 +287,13 @@ const Complaints = () => {
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={() => { setReference(null); setRegStatus('idle'); setRegCustomerName(null); }}
-                  className="flex-1 py-2.5 border border-[#E2E8F0] text-[#1A2B4A] hover:bg-[#F4F6F8] font-medium rounded-md text-sm"
+                  className="flex-1 py-2.5 border border-slate-200 text-brand-blue-dark hover:bg-brand-gray-bg font-medium rounded-md text-sm"
                 >
                   Submit another complaint
                 </button>
                 <button
                   onClick={() => navigate('/')}
-                  className="flex-1 py-2.5 bg-[#1A2B4A] hover:bg-[#152340] text-white font-medium rounded-md text-sm"
+                  className="flex-1 py-2.5 bg-brand-blue-dark hover:bg-brand-blue text-white font-medium rounded-md text-sm"
                 >
                   Back to home
                 </button>
@@ -306,13 +306,13 @@ const Complaints = () => {
           {/* Form */}
           <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-lg bg-[#A8324A]/10 flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-[#A8324A]" />
+              <div className="w-9 h-9 rounded-lg bg-brand-orange/10 flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-brand-orange" />
               </div>
               <h2 className="text-xl font-semibold text-slate-900">Submit a complaint</h2>
             </div>
             <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-              Please fill in the form below. All fields marked <span className="text-[#A8324A]">*</span> are required.
+              Please fill in the form below. All fields marked <span className="text-brand-orange">*</span> are required.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
@@ -359,7 +359,7 @@ const Complaints = () => {
               {/* Category */}
               <div>
                 <label htmlFor="category" className="block text-sm font-medium text-slate-900 mb-1.5">
-                  What is your complaint about? <span className="text-[#A8324A]">*</span>
+                  What is your complaint about? <span className="text-brand-orange">*</span>
                 </label>
                 <div className="relative">
                   <select
@@ -367,7 +367,7 @@ const Complaints = () => {
                     name="category"
                     value={form.category}
                     onChange={change}
-                    className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${errors.category ? 'border-red-400' : fieldStatus.category.valid && showStatus('category') ? 'border-green-500' : 'border-slate-300'}`}
+                    className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-blue-dark/30 focus:border-brand-blue-dark ${errors.category ? 'border-red-400' : fieldStatus.category.valid && showStatus('category') ? 'border-green-500' : 'border-slate-300'}`}
                   >
                     <option value="">Select a category</option>
                     {CATEGORIES.map(c => <option key={c}>{c}</option>)}
@@ -383,7 +383,7 @@ const Complaints = () => {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label htmlFor="description" className="block text-sm font-medium text-slate-900">
-                    Tell us what happened <span className="text-[#A8324A]">*</span>
+                    Tell us what happened <span className="text-brand-orange">*</span>
                   </label>
                   <span className="text-xs text-slate-500">{form.description.length}/2000</span>
                 </div>
@@ -396,7 +396,7 @@ const Complaints = () => {
                     rows={4}
                     maxLength={2000}
                     placeholder="Please describe the issue clearly, including relevant dates and any previous correspondence…"
-                    className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${errors.description ? 'border-red-400' : fieldStatus.description.valid && showStatus('description') ? 'border-green-500' : 'border-slate-300'}`}
+                    className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-brand-blue-dark/30 focus:border-brand-blue-dark ${errors.description ? 'border-red-400' : fieldStatus.description.valid && showStatus('description') ? 'border-green-500' : 'border-slate-300'}`}
                   />
                   {fieldStatus.description.valid && showStatus('description') && !errors.description && (
                     <Check className="w-4 h-4 text-green-600 absolute right-3 top-3 pointer-events-none" />
@@ -419,14 +419,14 @@ const Complaints = () => {
                   rows={3}
                   maxLength={1000}
                   placeholder="Optional — let us know what outcome you're hoping for…"
-                  className="w-full px-3 py-2.5 border border-slate-300 rounded-md text-sm bg-white text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A]"
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-md text-sm bg-white text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-brand-blue-dark/30 focus:border-brand-blue-dark"
                 />
               </div>
 
               {/* Preferred contact method */}
               <div>
                 <label className="block text-sm font-medium text-slate-900 mb-2">
-                  Preferred contact method <span className="text-[#A8324A]">*</span>
+                  Preferred contact method <span className="text-brand-orange">*</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {['Email', 'Phone', 'WhatsApp'].map(method => {
@@ -434,7 +434,7 @@ const Complaints = () => {
                     return (
                       <label
                         key={method}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm cursor-pointer transition-all ${active ? 'border-[#A8324A] bg-[#FBEDF1] text-[#1A2B4A] font-medium shadow-sm' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'}`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm cursor-pointer transition-all ${active ? 'border-brand-orange bg-brand-orange-lighter text-brand-blue-dark font-medium shadow-sm' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'}`}
                       >
                         <input
                           type="radio"
@@ -444,8 +444,8 @@ const Complaints = () => {
                           onChange={change}
                           className="sr-only"
                         />
-                        <span className={`w-3.5 h-3.5 rounded-full border-2 ${active ? 'border-[#1A2B4A]' : 'border-slate-400'} flex items-center justify-center`}>
-                          {active && <span className="w-1.5 h-1.5 rounded-full bg-[#1A2B4A]" />}
+                        <span className={`w-3.5 h-3.5 rounded-full border-2 ${active ? 'border-brand-blue-dark' : 'border-slate-400'} flex items-center justify-center`}>
+                          {active && <span className="w-1.5 h-1.5 rounded-full bg-brand-blue-dark" />}
                         </span>
                         {method}
                       </label>
@@ -463,10 +463,10 @@ const Complaints = () => {
                     name="confirmAccurate"
                     checked={form.confirmAccurate}
                     onChange={change}
-                    className="mt-0.5 w-4 h-4 rounded border-slate-400 text-[#1A2B4A] focus:ring-[#1A2B4A]"
+                    className="mt-0.5 w-4 h-4 rounded border-slate-400 text-brand-blue-dark focus:ring-brand-blue-dark"
                   />
                   <span className="text-sm text-slate-700 leading-relaxed flex-1">
-                    I confirm that the information provided is accurate to the best of my knowledge. <span className="text-[#A8324A]">*</span>
+                    I confirm that the information provided is accurate to the best of my knowledge. <span className="text-brand-orange">*</span>
                   </span>
                   {form.confirmAccurate && <Check className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />}
                 </label>
@@ -477,14 +477,14 @@ const Complaints = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#A8324A] hover:bg-[#8E2A3E] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm"
+                className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-brand-orange hover:bg-brand-orange-light disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm"
               >
                 {submitting ? (<><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>) : 'Submit complaint'}
               </button>
 
               <p className="text-xs text-slate-500 text-center leading-relaxed">
                 We'll acknowledge your complaint within 2 working days. Your details are handled in line with our{' '}
-                <Link to="/privacy-policy" className="text-[#1A2B4A] hover:underline">Privacy Policy</Link>.
+                <Link to="/privacy-policy" className="text-brand-blue-dark hover:underline">Privacy Policy</Link>.
               </p>
             </form>
           </section>
@@ -492,7 +492,7 @@ const Complaints = () => {
           {/* Side panels */}
           <aside className="space-y-5">
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <h3 className="text-base font-semibold text-[#1A2B4A] mb-4">What happens next?</h3>
+              <h3 className="text-base font-semibold text-brand-blue-dark mb-4">What happens next?</h3>
               <ol className="space-y-4">
                 {[
                   { n: 1, t: 'Acknowledgement', d: "We'll confirm we've received your complaint within 2 working days." },
@@ -500,7 +500,7 @@ const Complaints = () => {
                   { n: 3, t: 'Resolution', d: "We'll aim to resolve your complaint within 10 working days." },
                 ].map(s => (
                   <li key={s.n} className="flex gap-3">
-                    <div className="w-7 h-7 rounded-full bg-[#1A2B4A] text-white text-xs font-bold flex items-center justify-center shrink-0">{s.n}</div>
+                    <div className="w-7 h-7 rounded-full bg-brand-blue-dark text-white text-xs font-bold flex items-center justify-center shrink-0">{s.n}</div>
                     <div>
                       <p className="text-sm font-semibold text-slate-900">{s.t}</p>
                       <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">{s.d}</p>
@@ -510,17 +510,17 @@ const Complaints = () => {
               </ol>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-[#E2E8F0] p-6">
-              <h3 className="text-base font-semibold text-[#1A2B4A] mb-1">Need help before you submit?</h3>
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <h3 className="text-base font-semibold text-brand-blue-dark mb-1">Need help before you submit?</h3>
               <p className="text-xs text-slate-600 mb-4">Our claims team is here to support you.</p>
               <div className="space-y-3">
                 <a href={CLAIMS_PHONE_TEL} className="flex items-start gap-3 group">
-                  <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center group-hover:border-[#1A2B4A] transition">
-                    <Phone className="w-4 h-4 text-[#1A2B4A]" />
+                  <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center group-hover:border-brand-blue-dark transition">
+                    <Phone className="w-4 h-4 text-brand-blue-dark" />
                   </div>
                   <div>
                     <p className="text-xs text-slate-500">Claims line</p>
-                    <p className="text-sm font-semibold text-[#1A2B4A] group-hover:underline">{CLAIMS_PHONE}</p>
+                    <p className="text-sm font-semibold text-brand-blue-dark group-hover:underline">{CLAIMS_PHONE}</p>
                     <p className="text-xs text-slate-500">Mon–Fri, 9am–5pm</p>
                   </div>
                 </a>
@@ -534,19 +534,19 @@ const Complaints = () => {
                   </div>
                 </a>
                 <a href={`mailto:${CLAIMS_EMAIL}`} className="flex items-start gap-3 group">
-                  <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center group-hover:border-[#A8324A] transition">
-                    <Mail className="w-4 h-4 text-[#A8324A]" />
+                  <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center group-hover:border-brand-orange transition">
+                    <Mail className="w-4 h-4 text-brand-orange" />
                   </div>
                   <div>
                     <p className="text-xs text-slate-500">Email</p>
-                    <p className="text-sm font-semibold text-[#A8324A] group-hover:underline break-all">{CLAIMS_EMAIL}</p>
+                    <p className="text-sm font-semibold text-brand-orange group-hover:underline break-all">{CLAIMS_EMAIL}</p>
                   </div>
                 </a>
               </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <h3 className="text-base font-semibold text-[#1A2B4A] mb-3">Before you submit</h3>
+              <h3 className="text-base font-semibold text-brand-blue-dark mb-3">Before you submit</h3>
               <ul className="space-y-2">
                 {[
                   'Have your warranty reference number ready',
@@ -569,25 +569,25 @@ const Complaints = () => {
 
       {/* Support CTA banner */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 sm:p-8 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#FBEDF1] flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-6 h-6 text-[#A8324A]" />
+              <div className="w-12 h-12 rounded-xl bg-brand-orange-lighter flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-6 h-6 text-brand-orange" />
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold mb-1 text-[#1A2B4A]">Still need help?</h2>
-                <p className="text-[#5A6B82] text-sm">Our team is here to support you every step of the way.</p>
+                <h2 className="text-xl sm:text-2xl font-bold mb-1 text-brand-blue-dark">Still need help?</h2>
+                <p className="text-slate-500 text-sm">Our team is here to support you every step of the way.</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <a href={CLAIMS_PHONE_TEL} className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1A2B4A] text-white rounded-lg text-sm font-semibold hover:bg-[#152340] transition">
+              <a href={CLAIMS_PHONE_TEL} className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-blue-dark text-white rounded-lg text-sm font-semibold hover:bg-brand-blue transition">
                 <Phone className="w-4 h-4" /> Call {CLAIMS_PHONE}
               </a>
               <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#25D366] hover:bg-[#1da851] text-white rounded-lg text-sm font-semibold transition">
                 <MessageCircle className="w-4 h-4" /> WhatsApp us
               </a>
-              <a href={`mailto:${CLAIMS_EMAIL}`} className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#A8324A] hover:bg-[#8E2A3E] text-white rounded-lg text-sm font-semibold transition">
+              <a href={`mailto:${CLAIMS_EMAIL}`} className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-orange hover:bg-brand-orange-light text-white rounded-lg text-sm font-semibold transition">
                 <Mail className="w-4 h-4" /> Email us
               </a>
             </div>
@@ -622,7 +622,7 @@ interface FieldProps {
 const Field: React.FC<FieldProps> = ({ name, label, value, onChange, placeholder, type = 'text', error, hint, required, valid, loading, inputClassName = '' }) => (
   <div>
     <label htmlFor={name} className="block text-sm font-medium text-slate-900 mb-1.5">
-      {label}{required && <span className="text-[#A8324A]"> *</span>}
+      {label}{required && <span className="text-brand-orange"> *</span>}
     </label>
     <div className="relative">
       <input
@@ -634,7 +634,7 @@ const Field: React.FC<FieldProps> = ({ name, label, value, onChange, placeholder
         placeholder={placeholder}
         aria-invalid={!!error}
         aria-describedby={error ? `${name}-error` : hint ? `${name}-hint` : undefined}
-        className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1A2B4A]/30 focus:border-[#1A2B4A] ${error ? 'border-red-400' : valid ? 'border-green-500' : 'border-slate-300'} ${inputClassName}`}
+        className={`w-full px-3 py-2.5 pr-10 border rounded-md text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-blue-dark/30 focus:border-brand-blue-dark ${error ? 'border-red-400' : valid ? 'border-green-500' : 'border-slate-300'} ${inputClassName}`}
       />
       {loading ? (
         <Loader2 className="w-4 h-4 text-slate-400 animate-spin absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />

@@ -51,7 +51,7 @@ const AudiPPCFooter: React.FC = () => {
               <li><a href="/privacy/" className="hover:text-[#eb4b00] transition-colors">Privacy Policy</a></li>
               <li><a href="/terms/" className="hover:text-[#eb4b00] transition-colors">Terms &amp; Conditions</a></li>
               <li><a href="/cookies/" className="hover:text-[#eb4b00] transition-colors">Cookie Policy</a></li>
-              <li><a href="/complaints/" className="hover:text-[#eb4b00] transition-colors">Complaints Procedure</a></li>
+              <li><a href="/complaints/" className="hover:text-[#eb4b00] transition-colors">Make a complaint</a></li>
               <li><a href="/cancellation-policy/" className="hover:text-[#eb4b00] transition-colors">Cancellation Policy</a></li>
             </ul>
           </div>
