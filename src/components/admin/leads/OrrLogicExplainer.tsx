@@ -31,7 +31,7 @@ export interface OrrCadenceConfig {
   followUpDays: number;
   /** Max dials a day during the follow-up chase. */
   followUpDailyDials: number;
-  /** Unanswered attempts before the lead goes dormant. */
+  /** Unanswered attempts before a manager alert is raised. */
   maxAttempts: number;
   /** When everyone is busy: queue the lead, or keep offering it round the rotation. */
   whenAllBusy: 'queue' | 'keep_offering';
