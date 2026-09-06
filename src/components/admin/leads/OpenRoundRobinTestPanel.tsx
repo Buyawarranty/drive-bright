@@ -4,6 +4,7 @@ import {
   Check,
   CheckCircle2,
   ChevronDown,
+  ChevronRight,
   Clock,
   Copy,
   FileText,
@@ -994,10 +995,12 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
       };
       return [draft, ...current];
     });
-    toast.success('Round robin practice lead added. Nothing real was changed.');
+    toast({ title: 'Round robin practice lead added. Nothing real was changed.' });
   }, [simulatedAgentId]);
 
   const [activeScenario, setActiveScenario] = useState<string | null>(null);
+  // Scenario walkthrough starts closed; press the header to open it.
+  const [scenariosOpen, setScenariosOpen] = useState(false);
 
   const scenarios = useMemo(
     () => [
