@@ -102,7 +102,9 @@ const STATUS_ORDER: LeadStatus[] = [
   'vehicle_sold',
   'do_not_contact',
   'not_eligible',
+  'unsubscribed',
 ];
+
 
 interface DummyAgent {
   id: string;
@@ -218,6 +220,21 @@ const formatClock = (seconds: number) => {
   }
   return `${secs}s`;
 };
+
+/** Full duration with seconds — "1h 05m 12s", "12m 04s", "45s". */
+const formatHMS = (seconds: number) => {
+  const total = Math.max(0, Math.round(seconds));
+  const days = Math.floor(total / 86400);
+  const hours = Math.floor((total % 86400) / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  if (days > 0) return `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(secs)}s`;
+  if (hours > 0) return `${hours}h ${pad(minutes)}m ${pad(secs)}s`;
+  if (minutes > 0) return `${minutes}m ${pad(secs)}s`;
+  return `${secs}s`;
+};
+
 
 const formatTimeOfDay = (ms: number) =>
   new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -1967,7 +1984,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                         <div className="text-[11px] font-medium text-foreground">Shopping page</div>
                       </td>
                       <td className="px-2 py-2 text-xs whitespace-nowrap">
-                        {lead.contactedAt ? (() => {
+                        {(() => {
                           // The clock starts when the agent was actually given the
                           // lead (the offer), not when the enquiry arrived — a lead
                           // can sit overnight before anyone can act on it.
@@ -1976,30 +1993,38 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                                 ? lead.deadlineAt - cadence.claimWindowSeconds * 1000
                                 : lead.deadlineAt)
                             : lead.createdAt;
+                          const endAt = lead.contactedAt ?? now;
                           const startedAt = Math.min(
-                            lead.contactedAt,
+                            endAt,
                             Math.max(lead.createdAt, offeredAt)
                           );
                           const fromOffer = startedAt > lead.createdAt;
-                          return (
+                          const elapsed = Math.max(0, Math.round((endAt - startedAt) / 1000));
+                          const title = fromOffer
+                            ? `Timed from the lead being given to the agent at ${new Date(startedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+                            : 'Timed from the lead arriving';
+                          return lead.contactedAt ? (
                             <span
-                              className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-800"
-                              title={
-                                fromOffer
-                                  ? `Timed from the lead being given to the agent at ${new Date(startedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
-                                  : 'Timed from the lead arriving'
-                              }
+                              className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-800 tabular-nums"
+                              title={title}
                             >
-                              {formatClock(Math.max(0, Math.round((lead.contactedAt - startedAt) / 1000)))}
+                              {formatHMS(elapsed)}
                               {fromOffer ? ' · from handover' : ''}
                             </span>
+                          ) : (
+                            <div className="flex flex-col leading-tight">
+                              <span
+                                className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 font-semibold text-amber-900 tabular-nums w-fit"
+                                title={`${title} — still running, no contact yet`}
+                              >
+                                {formatHMS(elapsed)}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground mt-0.5">still running</span>
+                            </div>
                           );
-                        })() : (
-                          <span className="inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-muted-foreground">
-                            Not contacted
-                          </span>
-                        )}
+                        })()}
                       </td>
+
                     </tr>
                   );
                 })}
