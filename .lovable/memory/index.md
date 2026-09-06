@@ -29,6 +29,7 @@ Updated: just now
 - RLS policies must use (SELECT auth.uid()), never bare auth.uid(); no per-row queries in grids. See mem://architecture/rls-auth-uid-must-be-wrapped
 
 ## Memories
+- [ORR Column Parity](mem://admin/leads/orr-column-parity-time-to-lead) — RR and ORR share identical columns; ORR only adds the Time to Lead countdown column
 - [ORR Reservation & Chase Rules](mem://admin/leads/orr-reservation-and-chase-rules) — Held-for-you reservations, No answer = 1 attempt, 7 contact days, 3h gaps, staggered release
 - [EV / Hybrid Category Price](mem://pricing/powertrain-category-pricing) — One uplift + 12-month minimum per powertrain (EV, PHEV, HEV) with exclusions, on top of risk bands
 - [Website Floor = Grid Floor](mem://pricing/website-floor-same-as-grid) — Step 3/4 and checkout clamped to the shaped £399/£699/£999 floor; promos exempt
