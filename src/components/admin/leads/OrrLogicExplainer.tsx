@@ -150,7 +150,7 @@ export const OrrLogicExplainer: React.FC<Props> = ({ config, onChange, teamLabel
                   </>
                 )}
               </li>
-              <li>After <strong>{config.maxAttempts} unanswered offers</strong> the lead goes dormant.</li>
+              <li>After <strong>{config.maxAttempts} unanswered offers</strong> the lead keeps cycling through ORR and a manager alert is raised so a human can reassign it.</li>
               <li>At <strong>{String(config.greenTeamHandoverHour).padStart(2, '0')}:00</strong> unworked day-one leads move to Team Green, then chased for <strong>{config.followUpDays} days</strong> with up to <strong>{config.followUpDailyDials} dials a day</strong>.</li>
             </ul>
           </div>
