@@ -504,7 +504,9 @@ const VehicleRiskBandsPanel: React.FC = () => {
                   ? <>Live pricing version: <strong>{liveVersionLabel}</strong></>
                   : 'No pricing version is live yet'}
                 {lastPublishedAt ? ` · pushed ${lastPublishedAt}` : ''}
+                {lastSavedAt ? ` · saved ${lastSavedAt}` : ''}
               </p>
+
             </div>
 
           </div>
