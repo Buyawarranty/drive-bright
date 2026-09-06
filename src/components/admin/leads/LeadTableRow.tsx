@@ -27,6 +27,8 @@ import { OvernightBadge } from './OvernightBadge';
 import { QuoteSentCell } from './QuoteSentCell';
 import { CustomerActivityCell } from './CustomerActivityCell';
 import { TimeToContactCell } from './TimeToContactCell';
+import { TimeToLeadCell } from './TimeToLeadCell';
+
 import { UnsubscribeLeadButton } from './UnsubscribeLeadButton';
 import { RepeatCustomerBadge } from './RepeatCustomerBadge';
 import { ManualLeadBadge } from './ManualLeadBadge';
