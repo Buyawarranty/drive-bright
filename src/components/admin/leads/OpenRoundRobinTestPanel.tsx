@@ -280,6 +280,74 @@ const CopyEmail = ({ email }: { email: string }) => {
  * was made, so it stays with them until they record an outcome. It is only
  * offered elsewhere if the window runs out with no dial at all.
  */
+/** Notes button for a practice lead — read the notes so far and type a new one. */
+const PracticeNotes = ({
+  notes,
+  onAdd,
+}: {
+  notes: { at: number; by: string; text: string }[];
+  onAdd: (text: string) => void;
+}) => {
+  const [draft, setDraft] = useState('');
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            'inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs transition-colors',
+            notes.length
+              ? 'border-primary/40 bg-primary/10 text-primary font-medium'
+              : 'border-dashed border-border text-muted-foreground hover:bg-muted',
+          )}
+        >
+          <StickyNote className="h-3 w-3" /> Notes{notes.length ? ` (${notes.length})` : ''}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-80 space-y-2">
+        <div className="text-xs font-semibold text-foreground">Practice notes</div>
+        {notes.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No notes yet. Type what you would write after the call.</p>
+        ) : (
+          <ul className="max-h-40 space-y-1.5 overflow-y-auto">
+            {notes
+              .slice()
+              .reverse()
+              .map((note) => (
+                <li key={note.at} className="rounded-md border border-border bg-muted/40 p-2">
+                  <div className="text-[10px] font-medium text-muted-foreground">
+                    {note.by} · {formatTimeOfDay(note.at)}
+                  </div>
+                  <div className="text-xs text-foreground whitespace-pre-wrap">{note.text}</div>
+                </li>
+              ))}
+          </ul>
+        )}
+        <Textarea
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          placeholder="e.g. Spoke to customer, wants a quote for a 2019 Golf"
+          className="min-h-[64px] text-xs"
+        />
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[10px] text-muted-foreground">Practice only — nothing is saved.</span>
+          <Button
+            size="sm"
+            className="h-7 text-xs"
+            disabled={!draft.trim()}
+            onClick={() => {
+              onAdd(draft);
+              setDraft('');
+            }}
+          >
+            Add note
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 const hasAttempted = (lead: DummyLead) => lead.dials > 0;
 
 /** An agent is busy while they hold a live (not yet expired) dummy lead. */
