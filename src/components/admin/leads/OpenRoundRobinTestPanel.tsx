@@ -219,6 +219,21 @@ const formatClock = (seconds: number) => {
   return `${secs}s`;
 };
 
+/** Full duration with seconds — "1h 05m 12s", "12m 04s", "45s". */
+const formatHMS = (seconds: number) => {
+  const total = Math.max(0, Math.round(seconds));
+  const days = Math.floor(total / 86400);
+  const hours = Math.floor((total % 86400) / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  if (days > 0) return `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(secs)}s`;
+  if (hours > 0) return `${hours}h ${pad(minutes)}m ${pad(secs)}s`;
+  if (minutes > 0) return `${minutes}m ${pad(secs)}s`;
+  return `${secs}s`;
+};
+
+
 const formatTimeOfDay = (ms: number) =>
   new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
 
