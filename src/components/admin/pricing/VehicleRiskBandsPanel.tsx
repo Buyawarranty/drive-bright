@@ -1092,10 +1092,11 @@ const VehicleRiskBandsPanel: React.FC = () => {
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <h3 className="font-semibold">Makes &amp; models in each band</h3>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={save} disabled={!dirty}>
-                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save changes' : 'Saved'}
+                <Button variant="outline" size="sm" onClick={() => save('Makes & models')} disabled={!dirty}>
+                  <Save className="h-4 w-4 mr-2" /> {dirty ? 'Save makes & models' : 'Saved'}
                 </Button>
                 <Button size="sm" onClick={pushLive} disabled={publishing}>
+
                   <Rocket className="h-4 w-4 mr-2" />
                   {publishing ? 'Pushing live…' : 'Push live'}
                 </Button>
