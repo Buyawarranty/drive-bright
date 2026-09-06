@@ -8,6 +8,7 @@ import { OrrGoLiveSwitch } from './OrrGoLiveSwitch';
 import { RollingRoundRobinLivePanel } from './RollingRoundRobinLivePanel';
 import { OpenRoundRobinTestPanel } from './OpenRoundRobinTestPanel';
 import { ImportLeadToAgentPanel } from './ImportLeadToAgentPanel';
+import { OrrFallbackToRoundRobinPanel } from './OrrFallbackToRoundRobinPanel';
 import { useOrrLiveSettings } from '@/hooks/useOrrLiveSettings';
 
 
@@ -165,6 +166,10 @@ export const OrrSection: React.FC<{ isManagement: boolean; sandboxTab?: boolean 
         title="Import a lead and send it to an agent"
         description="Find any existing lead by reg plate, name, email or phone, pick the agent, and it goes to them through the normal lead flow. Round Robin above is untouched."
       />
+
+      {/* Fallback: hand waiting ORR leads to the normal rotation --------- */}
+      <OrrFallbackToRoundRobinPanel isManagement={isManagement} />
+
 
 
       {/* 2. Live status ------------------------------------------------- */}
