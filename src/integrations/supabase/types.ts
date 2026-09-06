@@ -14315,6 +14315,10 @@ export type Database = {
         }[]
       }
       orr_pick_weekend_agent: { Args: { _d: string }; Returns: string }
+      orr_pool_waiting_count: {
+        Args: { _idle_minutes?: number }
+        Returns: number
+      }
       orr_queue_dashboard_snapshot: { Args: never; Returns: Json }
       orr_reassign_callback: {
         Args: {
@@ -14328,6 +14332,10 @@ export type Database = {
       orr_release_customer_lock: {
         Args: { _agent_id: string; _phone_normalized: string; _reason: string }
         Returns: boolean
+      }
+      orr_release_pool_to_round_robin: {
+        Args: { _idle_minutes?: number; _max_leads?: number; _team_id?: string }
+        Returns: number
       }
       orr_release_retry_hold: {
         Args: { _lead_id: string; _reason: string }
