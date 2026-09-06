@@ -397,7 +397,7 @@ const ORR_THEMES: Record<OrrPracticeTeam, OrrTheme> = {
  * Open Round Robin — frontend-only dummy test mode.
  * This intentionally does not call Supabase, RPCs, edge functions, or live lead tables.
  */
-export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ team = 'blue' }) => {
+export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ team = 'green' }) => {
   const theme = ORR_THEMES[team];
   const { toast } = useToast();
   const [leads, setLeads] = useState<DummyLead[]>([]);

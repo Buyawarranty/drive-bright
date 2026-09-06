@@ -233,7 +233,7 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
           at any point, all future releases are cancelled and ownership stays with the caller.
         </p>
         <p className="text-[11px] text-muted-foreground mt-3">
-          Team Red and Team Green flows are unchanged.
+          Blue and Red teams stay on the normal round robin; Green team uses Open Round Robin when it is live.
         </p>
       </div>
 
