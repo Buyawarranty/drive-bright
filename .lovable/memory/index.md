@@ -31,7 +31,9 @@ Updated: just now
 ## Memories
 - [ORR Column Parity](mem://admin/leads/orr-column-parity-time-to-lead) — RR and ORR share identical columns; ORR only adds the Time to Lead countdown column; distribution rule is a separate functional difference
 - [ORR Has Distribution Rule](mem://admin/leads/orr-has-distribution-rule) — ORR uses its own distribution rule (furthest behind → longest waiting → caps-page order); RR does not
+- [ORR Merged Flow](mem://admin/leads/orr-merged-flow-both-lead-types) — ORR New Leads section is one list with both ORR and RR lead rows together
 - [ORR Reservation & Chase Rules](mem://admin/leads/orr-reservation-and-chase-rules) — Held-for-you reservations, No answer = 1 attempt, 7 contact days, 3h gaps, staggered release
+
 
 - [EV / Hybrid Category Price](mem://pricing/powertrain-category-pricing) — One uplift + 12-month minimum per powertrain (EV, PHEV, HEV) with exclusions, on top of risk bands
 - [Website Floor = Grid Floor](mem://pricing/website-floor-same-as-grid) — Step 3/4 and checkout clamped to the shaped £399/£699/£999 floor; promos exempt
