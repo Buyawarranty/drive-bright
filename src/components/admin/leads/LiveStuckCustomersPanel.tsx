@@ -45,7 +45,7 @@ export const LiveStuckCustomersPanel: React.FC = () => {
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
 
   const load = useCallback(async () => {
-    const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { data } = await supabase
       .from('checkout_struggle_alerts')
       .select('id, signal_type, status, created_at, customer_name, customer_email, customer_phone, vehicle_reg, device_type, payment_method, plan_name, amount')
