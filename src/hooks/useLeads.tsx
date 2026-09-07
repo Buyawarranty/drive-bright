@@ -321,6 +321,10 @@ export const useLeads = (options?: UseLeadsOptions) => {
   salesUsersRef.current = salesUsers;
   const leadsRef = useRef<Lead[]>([]);
   leadsRef.current = leads;
+  // Sticky choice of which duplicate row represents an email address. Without
+  // this the "canonical" row could change between refreshes (any note or edit
+  // bumps updated_at), so a lead appeared to vanish and come back.
+  const canonicalRowByEmailRef = useRef<Map<string, string>>(new Map());
   const authLoadingRef = useRef(authLoading);
   authLoadingRef.current = authLoading;
   const userRef = useRef(user);
