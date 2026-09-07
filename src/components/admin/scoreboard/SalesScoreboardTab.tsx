@@ -5,6 +5,8 @@ import { RefreshCw, Trophy, User, BarChart3, ChevronLeft, ChevronRight, GitCompa
 import { SpeedToDialPanel } from './SpeedToDialPanel';
 import { DailySalesChartPanel } from './DailySalesChartPanel';
 import { TeamTargetBoard } from './TeamTargetBoard';
+import { CompanyTargetBanner } from './CompanyTargetBanner';
+
 import { useScoreboardData, TimePeriod } from '@/hooks/useScoreboardData';
 import { ScoreboardRankingTable } from './ScoreboardRankingTable';
 import { ScoreboardAgentProfile } from './ScoreboardAgentProfile';
