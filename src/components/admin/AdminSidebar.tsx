@@ -392,6 +392,12 @@ export const defaultTabs: Tab[] = [
     description: 'Manage admin user access and permissions'
   },
   {
+    id: 'staff-system-reports',
+    label: 'Staff System Reports',
+    icon: Gauge,
+    description: 'How the dashboard performs on each staff member\u2019s own computer'
+  },
+  {
     id: 'document-mapping',
     label: 'Document Mapping',
     icon: FolderOpen,
