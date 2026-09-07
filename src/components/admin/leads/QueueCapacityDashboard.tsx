@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -80,14 +82,18 @@ export function QueueCapacityDashboard({ showHeading = false }: { showHeading?: 
     setSnap(data as any);
   };
 
-  // Poll every 10s + auto-tick to keep timers accurate
+  // Poll every 10s + auto-tick to keep timers accurate.
+  // PERF: skip the poll entirely when this CRM tab is in the background or is a
+  // duplicate tab — this panel used to keep querying the database for every
+  // manager who left the Lead teams screen open, slowing agents down.
   useEffect(() => {
     load();
-    const poll = setInterval(load, 10000);
+    const poll = setInterval(() => { if (document.hidden || isSecondaryCrmTab()) return; load(); }, 10000);
     const tick = setInterval(() => setSnap(s => (s ? { ...s } : s)), 1000);
     return () => { clearInterval(poll); clearInterval(tick); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   return (
     <div className="space-y-4">
