@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import React, { useState, useEffect, useMemo } from 'react';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 import { AdminNotification } from '@/hooks/useAdminNotifications';
@@ -100,6 +101,7 @@ export const ClaimsTab = ({
   const [rangeExportOpen, setRangeExportOpen] = useState(false);
   const [rangeExportFrom, setRangeExportFrom] = useState('');
   const [rangeExportTo, setRangeExportTo] = useState('');
+  const navigate = useNavigate();
   const [claims, setClaims] = useState<ClaimSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
@@ -348,18 +350,30 @@ export const ClaimsTab = ({
 
             </div>
           </div>
-          <Button
-            size="sm"
-            className="bg-[#E8541A] hover:bg-[#cf4915] text-white"
-            onClick={() => {
-              setActiveSubTab('claims');
-              setTimeout(() => {
-                document.getElementById('appeals-inbox-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }, 150);
-            }}
-          >
-            View appeals
-          </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            {appealsTotalCount === 1 && returnedAppeals[0]?.claimId && (
+              <Button
+                size="sm"
+                className="bg-[#E8541A] hover:bg-[#cf4915] text-white"
+                onClick={() => navigate(`/admin/claims/${returnedAppeals[0].claimId}`)}
+              >
+                Open customer's claim
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant={appealsTotalCount === 1 ? 'outline' : 'default'}
+              className={appealsTotalCount === 1 ? 'bg-white' : 'bg-[#E8541A] hover:bg-[#cf4915] text-white'}
+              onClick={() => {
+                setActiveSubTab('claims');
+                setTimeout(() => {
+                  document.getElementById('appeals-inbox-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 150);
+              }}
+            >
+              View appeals
+            </Button>
+          </div>
         </div>
       )}
 
