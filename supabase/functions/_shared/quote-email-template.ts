@@ -139,7 +139,10 @@ export function renderBrandedQuoteEmail(data: BrandedQuoteTemplateData): string 
 
   const supabaseUrl = (typeof Deno !== 'undefined' ? Deno.env.get('SUPABASE_URL') : '') || 'https://mzlpuxzwyrcyrgrongeb.supabase.co';
   const unsubscribeHref = customerEmailRaw
-    ? `${supabaseUrl}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(customerEmailRaw)}&token=${encodeURIComponent(btoa(customerEmailRaw + '_baw_unsub_2024'))}`
+    // Must be trimmed + lower-cased: the unsubscribe function normalises the
+    // address before checking the token, so a capitalised address here produced
+    // a token it rejected as an invalid link.
+    ? `${supabaseUrl}/functions/v1/handle-email-unsubscribe?email=${encodeURIComponent(customerEmailRaw.trim().toLowerCase())}&token=${encodeURIComponent(btoa(customerEmailRaw.trim().toLowerCase() + '_baw_unsub_2024'))}`
     : 'https://buyawarranty.co.uk/contact';
 
   const attachmentsLine = data.attachmentsNote
