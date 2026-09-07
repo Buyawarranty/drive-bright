@@ -69,6 +69,8 @@ import { BaseFloorNotice } from '@/components/admin/pricing/BaseFloorNotice';
 import { priceFromPricingModel } from './pricing/modelQuoteEngine';
 
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
+import { resolveHighestQuotedTotal, discountGiven } from '@/lib/pricing/quotedTotalLookup';
+
 
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
 import { useFeatureEnabled } from '@/hooks/useFeatureFlags';
