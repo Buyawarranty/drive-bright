@@ -9,6 +9,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { isTestStruggle } from '@/lib/checkoutStruggleTest';
+import { getContactCadence } from '@/lib/checkoutContactCadence';
+
 
 interface StruggleAlert {
   id: string;
