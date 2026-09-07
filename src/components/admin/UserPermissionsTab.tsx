@@ -2572,6 +2572,14 @@ export const UserPermissionsTab = () => {
                       )}
                       <Button
                         size="sm"
+                        variant="outline"
+                        onClick={() => setHistoryFor({ id: user.id, name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email })}
+                        title="See who switched this login on or off, and when"
+                      >
+                        <History className="h-4 w-4 mr-1" /> On/off history
+                      </Button>
+                      <Button
+                        size="sm"
                         variant="secondary"
                         onClick={() => handleResendInvite(user.id, user.email)}
                         title="Resend Invite"
