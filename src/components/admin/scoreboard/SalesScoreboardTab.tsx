@@ -179,6 +179,11 @@ export const SalesScoreboardTab: React.FC = () => {
         </div>
       </div>
 
+      {/* Full team target — managers, admins and super admins only */}
+      {isManagement && <CompanyTargetBanner monthDate={dateRange?.from ?? undefined} />}
+
+
+
       {/* Toolbar: period, month navigator, date range, team filter */}
       <div className="rounded-xl border bg-card/60 p-3 md:p-4 space-y-3">
         <div className="flex flex-wrap items-center gap-3">
