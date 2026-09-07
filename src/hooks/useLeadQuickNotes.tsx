@@ -443,20 +443,24 @@ export const useLeadQuickNotes = (leadId: string) => {
 
             if (updateError) throw updateError;
           } else {
-            const { error: insertError } = await withTimeout<any>(
-              supabase
-                .from('lead_quick_notes')
-                .insert({
-                  lead_id: queuedLeadId,
-                  note_text: queuedNote.noteText.trim(),
-                  created_by: adminUser.id
-                }),
-              NOTE_SAVE_TIMEOUT_MS,
-              'Queued note save timed out'
-            );
+            const alreadySaved = await findRecentDuplicateNote(queuedLeadId, queuedNote.noteText.trim());
+            if (!alreadySaved) {
+              const { error: insertError } = await withTimeout<any>(
+                supabase
+                  .from('lead_quick_notes')
+                  .insert({
+                    lead_id: queuedLeadId,
+                    note_text: queuedNote.noteText.trim(),
+                    created_by: adminUser.id
+                  }),
+                NOTE_SAVE_TIMEOUT_MS,
+                'Queued note save timed out'
+              );
 
-            if (insertError) throw insertError;
+              if (insertError) throw insertError;
+            }
           }
+
 
           flushedLeadIds.add(queuedLeadId);
           touchLeadActivity(queuedLeadId);
