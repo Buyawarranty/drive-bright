@@ -35,8 +35,21 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
   firstName: (v) => (!String(v).trim() ? 'Please enter your name' : ''),
   lastName: () => '',
   claimRef: () => '',
-  registrationPlate: (v) =>
-    !String(v).trim() ? 'Please enter your vehicle registration' : '',
+  registrationPlate: (v) => {
+    const s = String(v).replace(/\s+/g, '').toUpperCase();
+    if (!s) return 'Please enter your vehicle registration';
+    if (!/^[A-Z0-9]{2,8}$/.test(s)) return 'Please use letters and numbers only, e.g. AB12 CDE';
+    const ukFormats = [
+      /^[A-Z]{2}[0-9]{2}[A-Z]{3}$/,      // AB12 CDE
+      /^[A-Z][0-9]{1,3}[A-Z]{3}$/,       // A123 BCD
+      /^[A-Z]{3}[0-9]{1,3}[A-Z]$/,       // ABC 123D
+      /^[A-Z]{1,3}[0-9]{1,4}$/,          // ABC 1234
+      /^[0-9]{1,4}[A-Z]{1,3}$/,          // 1234 AB
+ețin    ];
+    if (!ukFormats.some((r) => r.test(s))) return "That doesn't look like a UK registration — please check it";
+    return '';
+  },
+
   warrantyNumber: () => '',
   decisionDate: () => '',
   newEvidence: (v) => {
