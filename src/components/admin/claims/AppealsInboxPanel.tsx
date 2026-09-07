@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Gavel, CheckCircle2, Paperclip, Mail, Scale, ExternalLink } from 'lucide-react';
 import { ReturnedAppeal } from '@/hooks/useReturnedAppeals';
+import { useNavigate } from 'react-router-dom';
 
 /** Every appeal submitted/opened from the Claims tab, with its outcome. */
 interface SentAppeal {
@@ -57,6 +58,7 @@ export const AppealsInboxPanel: React.FC<AppealsInboxPanelProps> = ({
   onMarkAsRead,
   onOpenAppealDialog,
 }) => {
+  const navigate = useNavigate();
   const unreadCount = appeals.filter(a => !a.isRead).length;
 
   const [sentAppeals, setSentAppeals] = useState<SentAppeal[]>([]);
@@ -161,7 +163,12 @@ export const AppealsInboxPanel: React.FC<AppealsInboxPanelProps> = ({
                   {sentAppeals.map(sa => {
                     const outcome = outcomeLabel(sa);
                     return (
-                      <tr key={sa.id} className="border-t border-slate-100">
+                      <tr
+                        key={sa.id}
+                        onClick={() => sa.claimId && navigate(`/admin/claims/${sa.claimId}`)}
+                        className="border-t border-slate-100 cursor-pointer hover:bg-amber-50/60"
+                        title="Open this customer's claim"
+                      >
                         <td className="px-3 py-2 whitespace-nowrap text-slate-700">
                           {formatDate(sa.sentAt || sa.createdAt)}
                         </td>
@@ -210,11 +217,22 @@ export const AppealsInboxPanel: React.FC<AppealsInboxPanelProps> = ({
                   {a.appealSentAt ? ` · appeal sent ${formatDate(a.appealSentAt)}` : ''}
                 </p>
               </div>
-              {!a.isRead && (
-                <Button size="sm" variant="outline" onClick={() => onMarkAsRead(a.id)}>
-                  <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Mark as read
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                {a.claimId && (
+                  <Button
+                    size="sm"
+                    className="bg-[#E8541A] hover:bg-[#cf4915] text-white"
+                    onClick={() => navigate(`/admin/claims/${a.claimId}`)}
+                  >
+                    Open claim
+                  </Button>
+                )}
+                {!a.isRead && (
+                  <Button size="sm" variant="outline" onClick={() => onMarkAsRead(a.id)}>
+                    <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Mark as read
+                  </Button>
+                )}
+              </div>
             </div>
 
             <dl className="mt-3 grid gap-2 sm:grid-cols-2 text-sm">

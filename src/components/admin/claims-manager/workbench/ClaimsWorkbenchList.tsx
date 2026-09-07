@@ -104,7 +104,7 @@ const formatSubmittedAt = (iso?: string | null) => {
 
 // Columns: checkbox | SUBMITTED | ACTIONS | SLA | STATUS | CUSTOMER | VEHICLE | DAYS ON RISK | MILES SINCE ACTIVE | CLAIMED | PAID | SAVING/LOSS | NOTES
 const COLS =
-  'grid grid-cols-[24px_132px_170px_120px_minmax(150px,0.7fr)_minmax(220px,1.3fr)_minmax(180px,1fr)_110px_130px_100px_100px_120px_minmax(200px,1.4fr)] gap-3 min-w-[1900px]';
+  'grid grid-cols-[24px_36px_132px_170px_120px_minmax(150px,0.7fr)_minmax(220px,1.3fr)_minmax(180px,1fr)_110px_130px_100px_100px_120px_minmax(200px,1.4fr)] gap-3 min-w-[1940px]';
 
 const EditableAmount: React.FC<{
   value: number | null | undefined;
@@ -404,6 +404,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
             onCheckedChange={(v) => onToggleAll(v === true)}
             aria-label="Select all"
           />
+          <span className="text-right">#</span>
           <SortHeader label="Submitted" active={sortKey === 'submitted'} dir={sortDir} onClick={() => toggleSort('submitted')} />
           <span>Actions</span>
           <SortHeader label="SLA" active={sortKey === 'sla'} dir={sortDir} onClick={() => toggleSort('sla')} />
@@ -418,7 +419,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           <span>Notes</span>
         </div>
         <div className="divide-y divide-border">
-          {sortedClaims.map((c) => {
+          {sortedClaims.map((c, rowIndex) => {
             const isSelected = selectedId === c.id;
             const isChecked = selectedIds.has(c.id);
             const currentStatusValue = deriveSimpleStatus(c);
@@ -459,6 +460,11 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                     onCheckedChange={() => onToggleOne(c.id)}
                     aria-label={`Select claim ${c.id}`}
                   />
+                </div>
+
+                {/* Row number */}
+                <div className="text-[11px] font-semibold text-muted-foreground tabular-nums text-right">
+                  {rowIndex + 1}
                 </div>
 
                 {/* Submitted */}
