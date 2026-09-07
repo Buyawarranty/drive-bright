@@ -822,6 +822,18 @@ export const UserPermissionsTab = () => {
       if (error) throw error;
       const synced = await syncMissingTabsForAllUsers((data || []) as AdminUser[]);
       setUsers(synced);
+
+      // Archived staff are kept in a separate list so they can always be brought back.
+      const { data: archived, error: archivedError } = await supabase
+        .from('admin_users')
+        .select('*')
+        .not('archived_at', 'is', null)
+        .order('archived_at', { ascending: false });
+      if (archivedError) {
+        console.warn('Could not load archived staff:', archivedError);
+      } else {
+        setArchivedUsers((archived || []) as AdminUser[]);
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
       setLoadError('Failed to load admin users. This is usually caused by database permissions for the logged-in role.');
@@ -830,6 +842,42 @@ export const UserPermissionsTab = () => {
       setLoading(false);
     }
   };
+
+  const handleRestoreUser = async (userId: string) => {
+    const target = archivedUsers.find(u => u.id === userId);
+    const displayName = target
+      ? `${target.first_name || ''} ${target.last_name || ''}`.trim() || target.email
+      : 'this user';
+
+    if (!confirm(
+      `Restore ${displayName}?\n\n` +
+      `• Their login is switched back on straight away\n` +
+      `• Their previous role and section access come back\n` +
+      `• You can then change the role, tabs and team as normal\n\n` +
+      `Team, schedule and lead distribution settings may need setting again.`
+    )) return;
+
+    try {
+      const { data: restored, error } = await supabase
+        .from('admin_users')
+        .update({ archived_at: null, is_active: true })
+        .eq('id', userId)
+        .select('id');
+
+      if (error) throw error;
+      if (!restored || restored.length === 0) {
+        throw new Error('No rows updated — your account does not have permission to restore this user.');
+      }
+
+      await tagAccessChange(userId, true, 'Restored from archive (User permissions)');
+      toast.success(`${displayName} restored — you can now edit their role and permissions`);
+      fetchUsers();
+    } catch (error) {
+      console.error('Error restoring user:', error);
+      toast.error('Failed to restore user');
+    }
+  };
+
 
   const fetchPermissions = async () => {
     try {
