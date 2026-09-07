@@ -27,6 +27,7 @@ Updated: just now
 
 - ORR never parks or gates live leads: out-of-hours holds only apply when Open Round Robin is switched on. See mem://constraints/orr-never-blocks-live-leads
 - RLS policies must use (SELECT auth.uid()), never bare auth.uid(); no per-row queries in grids. See mem://architecture/rls-auth-uid-must-be-wrapped
+- Alert pop-ups play ONE two-tone beep per session then stay permanently silent; guard every sound with consumeAlertSound(). See mem://admin/alerts-single-opening-beep
 
 ## Memories
 - [ORR Column Parity](mem://admin/leads/orr-column-parity-time-to-lead) — RR and ORR share identical columns; ORR only adds the Time to Lead countdown column; distribution rule is a separate functional difference

@@ -5,6 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { dialWithZoiper } from '@/utils/zoiperDial';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
+import { consumeAlertSound } from '@/lib/alertSoundBudget';
 
 interface MissedCall {
   id: string;
@@ -458,6 +459,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
   useEffect(() => {
     const active = hasActionable && !muted;
     const playBeep = () => {
+      if (!consumeAlertSound()) return;
       try {
         if (!audioCtxRef.current) {
           const Ctx = (window.AudioContext || (window as any).webkitAudioContext);

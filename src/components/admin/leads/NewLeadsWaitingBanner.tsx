@@ -4,6 +4,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useAgentTeams } from '@/hooks/useAgentTeams';
 import { useSharkTankCounts, useSharkTankSettings } from '@/hooks/useSharkTank';
 import { isAlertsMuted } from '@/lib/alertSoundPreference';
+import { consumeAlertSound } from '@/lib/alertSoundBudget';
 
 interface Props {
   activeTab: string;
@@ -39,7 +40,7 @@ export function NewLeadsWaitingBanner({ activeTab, onGo }: Props) {
     if (!eligible || !enabled || onNewLeadsTab) return;
     if (available > beepedForRef.current && available > dismissedAt) {
       beepedForRef.current = available;
-      if (!isAlertsMuted()) {
+      if (!isAlertsMuted() && consumeAlertSound()) {
         try {
           const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
           if (AC) {

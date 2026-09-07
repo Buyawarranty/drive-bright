@@ -1,3 +1,4 @@
+import { consumeAlertSound } from '@/lib/alertSoundBudget';
 // Helpers for the admin reminder system: browser notifications + audio ping.
 // Kept lightweight and side-effect free until explicitly invoked.
 
@@ -45,6 +46,7 @@ const getCtx = (): AudioContext | null => {
 };
 
 export const playReminderChime = () => {
+  if (!consumeAlertSound()) return;
   // Respect the shared "mute all alerts" preference.
   // Lazy import to keep this file free of framework deps.
   try {

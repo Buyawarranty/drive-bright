@@ -4,6 +4,7 @@ import { AlertTriangle, Phone, Mail, Hand, X, Copy, Volume2, VolumeX } from 'luc
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { withBackgroundPriority } from '@/lib/requestQueue';
+import { consumeAlertSound } from '@/lib/alertSoundBudget';
 
 interface StruggleAlert {
   id: string;
@@ -120,6 +121,7 @@ const groupAlerts = (rows: StruggleAlert[]): AlertGroup[] => {
 // Short attention beep — synthesised at runtime.
 let _beepCtx: AudioContext | null = null;
 const playAlertBeep = () => {
+  if (!consumeAlertSound()) return;
   try {
     const Ctor = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext | undefined;
     if (!Ctor) return;

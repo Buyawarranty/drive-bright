@@ -1,3 +1,4 @@
+import { consumeAlertSound } from '@/lib/alertSoundBudget';
 /**
  * UK-style telephone ring tone, generated with the Web Audio API so no audio
  * asset is needed. Used to alert management / staff that a sandbox chat
@@ -52,6 +53,7 @@ function burst(ac: AudioContext, at: number, duration: number, volume: number) {
 
 /** Play one double-burst ring (~1s). Safe to call repeatedly. */
 export function playPhoneRing(volume = 0.16) {
+  if (!consumeAlertSound()) return;
   const ac = audioCtx();
   if (!ac) return;
   const now = ac.currentTime;
@@ -63,6 +65,7 @@ export function playPhoneRing(volume = 0.16) {
 
 /** Ring for a few cycles so it is hard to miss. */
 export function playPhoneRingBurst(cycles = 3, volume = 0.16) {
+  if (!consumeAlertSound()) return;
   const ac = audioCtx();
   if (!ac) return;
   const now = ac.currentTime;

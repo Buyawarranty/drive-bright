@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { isAlertsMuted } from '@/lib/alertSoundPreference';
 import { AssignOpenPoolToAgentsDialog } from './AssignOpenPoolToAgentsDialog';
 import {
+import { consumeAlertSound } from '@/lib/alertSoundBudget';
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -240,7 +241,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         );
         // Soft beep — best-effort, silently ignored if blocked by autoplay policy
         // or when the shared "mute all alerts" preference is active.
-        if (!isAlertsMuted()) {
+        if (!isAlertsMuted() && consumeAlertSound()) {
           try {
             const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
             if (AC) {

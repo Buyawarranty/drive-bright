@@ -10,9 +10,11 @@ import {
 } from '@/hooks/useClaimReminders';
 import { isAlertsMuted, muteAlertsFor, unmuteAlerts, subscribeAlertsMuted } from '@/lib/alertSoundPreference';
 import { ReminderAssigneeSelect, useAssigneeName } from './ReminderAssigneeSelect';
+import { consumeAlertSound } from '@/lib/alertSoundBudget';
 
 /** Short, gentle two-tone chime. */
 const playChime = () => {
+  if (!consumeAlertSound()) return;
   try {
     const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
     if (!Ctx) return;
