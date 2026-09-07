@@ -197,10 +197,6 @@ export const LiveStuckCustomersPanel: React.FC = () => {
               </li>
             );
           })}
-
-              </li>
-            );
-          })}
         </ul>
       )}
     </div>
