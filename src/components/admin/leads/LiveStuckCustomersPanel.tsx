@@ -116,6 +116,12 @@ export const LiveStuckCustomersPanel: React.FC = () => {
         <ul className="divide-y divide-red-200">
           {live.map((r) => {
             const tel = r.customer_phone ? `tel:${r.customer_phone.replace(/\s/g, '')}` : null;
+            const cadence = getContactCadence(r.created_at);
+            const mailto = r.customer_email
+              ? `mailto:${r.customer_email}?subject=${encodeURIComponent('Need any help finishing your warranty purchase?')}&body=${encodeURIComponent(
+                  'Hi,\n\nWe noticed you were part-way through your warranty purchase. Need any help completing it? We are here if you have any questions.\n\nBuy A Warranty',
+                )}`
+              : null;
             return (
               <li key={r.id} className="px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
                 <div className="min-w-0">
@@ -123,6 +129,11 @@ export const LiveStuckCustomersPanel: React.FC = () => {
                     {r.customer_name || r.customer_email || r.customer_phone || 'Customer'}
                     <span className="ml-2 font-medium text-red-700">
                       {SIGNAL_LABELS[r.signal_type] || r.signal_type}
+                    </span>
+                    <span
+                      className={`ml-2 align-middle text-[11px] font-semibold border rounded-full px-2 py-0.5 ${cadence.chipClass}`}
+                    >
+                      {cadence.label}
                     </span>
                   </div>
                   <div className="text-xs text-gray-600 truncate">
@@ -138,19 +149,38 @@ export const LiveStuckCustomersPanel: React.FC = () => {
                       .filter(Boolean)
                       .join(' · ')}
                   </div>
+                  <div className="text-xs text-gray-700">{cadence.action}</div>
                   {r.customer_email && (
                     <div className="text-xs text-gray-500 truncate">{r.customer_email}</div>
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                  {mailto && !cadence.canCall && (
+                    <a
+                      href={mailto}
+                      className="inline-flex items-center gap-1.5 bg-white text-amber-900 border border-amber-300 text-sm font-semibold px-3 py-1.5 rounded hover:bg-amber-50"
+                    >
+                      <Mail className="h-3.5 w-3.5" /> Send nudge
+                    </a>
+                  )}
                   {tel ? (
                     <>
-                      <a
-                        href={tel}
-                        className="inline-flex items-center gap-1.5 bg-red-600 text-white text-sm font-bold px-3 py-1.5 rounded hover:bg-red-700"
-                      >
-                        <Phone className="h-3.5 w-3.5" /> Call now
-                      </a>
+                      {cadence.canCall ? (
+                        <a
+                          href={tel}
+                          className="inline-flex items-center gap-1.5 bg-red-600 text-white text-sm font-bold px-3 py-1.5 rounded hover:bg-red-700"
+                        >
+                          <Phone className="h-3.5 w-3.5" /> Call now
+                        </a>
+                      ) : (
+                        <span
+                          className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-500 border border-gray-300 text-sm font-semibold px-3 py-1.5 rounded cursor-not-allowed"
+                          title={cadence.action}
+                        >
+                          <Phone className="h-3.5 w-3.5" />
+                          {cadence.stage === 'lead' ? 'No more calls' : 'Too early to call'}
+                        </span>
+                      )}
                       <button
                         onClick={() => navigator.clipboard.writeText((r.customer_phone || '').replace(/\s/g, '')).catch(() => {})}
                         className="p-1.5 rounded border border-red-300 bg-white hover:bg-red-100"
@@ -164,6 +194,10 @@ export const LiveStuckCustomersPanel: React.FC = () => {
                     <span className="text-xs text-gray-500">No phone captured</span>
                   )}
                 </div>
+              </li>
+            );
+          })}
+
               </li>
             );
           })}
