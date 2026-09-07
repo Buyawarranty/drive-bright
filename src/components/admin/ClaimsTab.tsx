@@ -117,8 +117,6 @@ export const ClaimsTab = ({
   const [rangeExportTo, setRangeExportTo] = useState('');
   const navigate = useNavigate();
   const [appealsNoticeClosedAt, setAppealsNoticeClosedAt] = useState<number>(0);
-  const appealsSignature = `${appealsTotalCount}:${appealsUnreadCount}`;
-  const appealsNoticeHidden = appealsNoticeClosedAt > 0 || appealsNoticeSnoozed(appealsSignature);
   const [claims, setClaims] = useState<ClaimSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
@@ -136,6 +134,10 @@ export const ClaimsTab = ({
     markAsRead: markAppealAsRead,
     refetch: refetchAppeals,
   } = useReturnedAppeals();
+
+  const appealsSignature = `${appealsTotalCount}:${appealsUnreadCount}`;
+  const appealsNoticeHidden = appealsNoticeClosedAt > 0 || appealsNoticeSnoozed(appealsSignature);
+
 
   useEffect(() => { fetchClaims(); }, []);
 
