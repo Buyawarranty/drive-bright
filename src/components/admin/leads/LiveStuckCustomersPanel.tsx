@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertTriangle, Phone, RefreshCw, Copy, Mail } from 'lucide-react';
+import { AlertTriangle, Phone, RefreshCw, Copy, Mail, X } from 'lucide-react';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { isTestStruggle } from '@/lib/checkoutStruggleTest';
 import { CADENCE_BULLETS, getContactCadence } from '@/lib/checkoutContactCadence';
+
+const DISMISS_KEY = 'live-stuck-customers-panel-dismissed';
 
 
 interface StuckRow {
