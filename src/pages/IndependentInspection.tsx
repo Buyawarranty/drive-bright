@@ -20,8 +20,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Worldpay Hosted Payment Page link is returned by the edge function after
-// garage details are saved. The customer is redirected to that unique URL.
+// A Stripe Checkout link is returned by the edge function after garage details
+// are saved. The customer is redirected to that secure Stripe payment page.
 
 interface InspectionRequest {
   id: string;
@@ -214,7 +214,7 @@ const IndependentInspection: React.FC = () => {
       });
       if (fnError) throw new Error(fnError.message);
       if (data?.checkout_url) {
-        // Details saved — send the customer to the secure Worldpay payment page.
+        // Details saved — send the customer to the secure Stripe payment page.
         setCheckoutUrl(data.checkout_url);
         setDetailsSaved(true);
         setSubmitting(false);
@@ -706,8 +706,8 @@ const IndependentInspection: React.FC = () => {
                     </button>
                     <p className="text-xs text-center text-slate-500">
                       {detailsSaved
-                        ? 'Your details are saved. You\u2019ll be taken to Worldpay\u2019s secure payment page.'
-                        : 'You\u2019ll be taken to Worldpay\u2019s secure payment page to enter your card details.'}
+                        ? 'Your details are saved. You\u2019ll be taken to Stripe\u2019s secure payment page.'
+                        : 'You\u2019ll be taken to Stripe\u2019s secure payment page to enter your card details.'}
                     </p>
                   </div>
                 </div>
