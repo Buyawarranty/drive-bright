@@ -13,8 +13,10 @@ import { Input } from '@/components/ui/input';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Power, ShieldOff, ArrowRightLeft, Database, CalendarOff, X } from 'lucide-react';
+import { Loader2, Power, ShieldOff, ArrowRightLeft, Database, CalendarOff, X, History } from 'lucide-react';
 import { toast } from 'sonner';
+import StaffAccessHistoryDialog from '@/components/admin/StaffAccessHistoryDialog';
+import { tagAccessChange } from '@/lib/adminAccessLog';
 
 type Staff = {
   id: string;
