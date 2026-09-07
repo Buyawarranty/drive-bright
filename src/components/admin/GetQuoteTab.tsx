@@ -3317,9 +3317,16 @@ Questions? Call 0330 229 5040`;
     const warning = await checkExistingPolicy();
     setExistingPolicyWarning(warning);
     
-    // Pre-fill payment amount from quote
-    // Use monthly × 12 to match the Total displayed across Step 2/Step 3 (pricing-sync constraint)
-    setPaymentAmount((currentPrice.monthlyPrice * 12).toString());
+    // Pre-fill payment amount from the price actually quoted to the customer.
+    // If the agent pushed / overrode the quoted total (quotedPriceOverride) that
+    // figure is the one on the customer's quote link, so it must win — otherwise
+    // the confirm box prefills the grid figure and the sale email, the CRM sold
+    // price and the discount no longer reconcile.
+    const prefillQuoted = quotedPriceOverride !== ''
+      ? Math.round(parseFloat(quotedPriceOverride) || 0)
+      : Math.round(currentPrice.monthlyPrice * 12);
+    setPaymentAmount(prefillQuoted ? prefillQuoted.toString() : '');
+
     // Reset warranty start date to today
     setWarrantyStartDate(new Date());
     // Reset to details step when opening
