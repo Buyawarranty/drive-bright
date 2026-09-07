@@ -65,6 +65,17 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
     to: new Date(),
   });
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  // Back-office staff (support@, accounts@, admins) often confirm a payment on an
+  // agent's behalf — they must never take the sale, so credit falls through to the
+  // sales agent who actually worked the deal.
+  const [salesAgentIds, setSalesAgentIds] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    let cancelled = false;
+    fetchSalesCreditAgentIds().then(ids => {
+      if (!cancelled) setSalesAgentIds(ids);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   const handleChange = (range: DateRange | undefined) => {
     setSelectedDay(null);
