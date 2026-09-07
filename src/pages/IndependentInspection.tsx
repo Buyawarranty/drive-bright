@@ -169,36 +169,19 @@ const IndependentInspection: React.FC = () => {
     load();
   }, [load]);
 
-  // Return from an in-page Worldpay 3-D Secure challenge
-  const wp3dsReturn = searchParams.get('wp3ds') === '1';
-  const wp3dsRef = searchParams.get('ref');
-  useEffect(() => {
-    if (!wp3dsReturn || !token) return;
-    // If we're inside the bank's challenge iframe, tell the parent and stop.
-    if (window.self !== window.top) {
-      window.parent.postMessage('wp3ds-done', window.location.origin);
-      return;
-    }
-    if (wp3dsRef) {
-      (async () => {
-        await supabase.functions.invoke('worldpay-payment-status', {
-          body: { token, transactionReference: wp3dsRef },
-        });
-        await load();
-      })();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wp3dsReturn, wp3dsRef, token]);
-
-  // Confirm payment on return from the Worldpay payment page
+  // Confirm payment on return from the Stripe checkout page
   useEffect(() => {
     if (!paidFlag || !token) return;
-    const ref = searchParams.get('ref');
+    const sessionId = searchParams.get('session_id');
     (async () => {
-      await supabase.functions.invoke('worldpay-payment-status', { body: { token, transactionReference: ref } });
+      if (sessionId) {
+        await supabase.functions.invoke('confirm-inspection-payment', { body: { token, sessionId } });
+      }
       await load();
     })();
   }, [paidFlag, searchParams, token, load]);
+
+
 
   const isAtGarage = locationType === 'garage';
 
