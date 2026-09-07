@@ -45,7 +45,7 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
       /^[A-Z]{3}[0-9]{1,3}[A-Z]$/,       // ABC 123D
       /^[A-Z]{1,3}[0-9]{1,4}$/,          // ABC 1234
       /^[0-9]{1,4}[A-Z]{1,3}$/,          // 1234 AB
-ețin    ];
+];
     if (!ukFormats.some((r) => r.test(s))) return "That doesn't look like a UK registration — please check it";
     return '';
   },
