@@ -19,6 +19,7 @@ import { getAddOnInfo, normalizePaymentType, calculateAddOnPrice } from '@/lib/a
 import MobileNavigation from '@/components/MobileNavigation';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
+import { getPaymentPreference, setPaymentPreference } from '@/lib/checkoutPaymentPreference';
 import { redirectToStripeWithBackGuard } from '@/lib/stripeBackGuard';
 import { detectDeviceType } from '@/utils/deviceDetection';
 import { useCheckoutStruggleTracker } from '@/hooks/useCheckoutStruggleTracker';
@@ -181,7 +182,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   });
 
   // Payment toggle state
-  const [selectedPayment, setSelectedPayment] = useState<'monthly' | 'full' | null>('monthly');
+  const [selectedPayment, setSelectedPayment] = useState<'monthly' | 'full' | null>(() => getPaymentPreference() || 'monthly');
   const [declarationChecked, setDeclarationChecked] = useState(true);
   const [declarationError, setDeclarationError] = useState(false);
   const [termsDocUrl, setTermsDocUrl] = useState('');
@@ -209,7 +210,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     };
     fetchDocs();
   }, []);
-  const selectedPaymentRef = React.useRef<'monthly' | 'full' | null>('monthly');
+  const selectedPaymentRef = React.useRef<'monthly' | 'full' | null>(getPaymentPreference() || 'monthly');
+
+  // Keep the shared step 3 / step 4 preference in sync with the toggle here.
+  useEffect(() => {
+    if (selectedPayment) setPaymentPreference(selectedPayment);
+  }, [selectedPayment]);
   
   // Section states for collapsible accordion
   const [detailsOpen, setDetailsOpen] = useState(true);
@@ -1264,8 +1270,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               setPostcodeInput(parsed.addressData.postcode || '');
             }
             // Restore payment type if available
-            if (parsed.paymentType) {
-              const restoredPayment = parsed.paymentType === 'full' ? 'full' : 'monthly';
+            if (parsed.paymentMethod === 'full' || parsed.paymentMethod === 'monthly') {
+              const restoredPayment = parsed.paymentMethod;
               setSelectedPayment(restoredPayment);
               selectedPaymentRef.current = restoredPayment;
             }
@@ -2118,6 +2124,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           addressData,
           planId,
           paymentType,
+          paymentMethod: selectedPaymentRef.current || selectedPayment,
           appliedDiscountCodes,
           timestamp: Date.now()
         }));
@@ -2273,6 +2280,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           customerData,
           planId,
           paymentType,
+          paymentMethod: selectedPaymentRef.current || selectedPayment,
           appliedDiscountCodes,
           timestamp: Date.now()
         }));

@@ -8,6 +8,7 @@ import { getMarketingSavings, type PaymentPeriod } from '@/lib/pricingMatrix';
 
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
+import { getPaymentPreference, setPaymentPreference } from '@/lib/checkoutPaymentPreference';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
 
@@ -137,7 +138,12 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
     !!selectedLabourRate &&
     voluntaryExcess !== null;
 
-  const [stickyPayment, setStickyPayment] = useState<'monthly' | 'full'>('monthly');
+  // Remembered so step 4 opens on the same option the customer picked here.
+  const [stickyPayment, setStickyPayment] = useState<'monthly' | 'full'>(() => getPaymentPreference() || 'monthly');
+  const handleStickyPaymentChange = (payment: 'monthly' | 'full') => {
+    setStickyPayment(payment);
+    setPaymentPreference(payment);
+  };
 
   // Mirror any promo applied on Step 4 so prices stay consistent across steps.
   const appliedPromos = useAppliedPromos();
@@ -509,7 +515,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
       {/* Sticky checkout footer (shared with step 4) */}
       <MobileStickyFooter
         selectedPayment={stickyPayment}
-        onPaymentChange={setStickyPayment}
+        onPaymentChange={handleStickyPaymentChange}
         monthlyPrice={discountedMonthlyPrice}
         fullPrice={Math.max(0, discountedMonthlyPrice * 12 - marketingSavings)}
         paymentType={paymentType || '24months'}
