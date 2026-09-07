@@ -630,9 +630,13 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   useEffect(() => {
     rosterRef.current = roster;
     if (simulatedAgentId !== 'all' && !roster.some((a) => a.id === simulatedAgentId)) {
-      setSimulatedAgentId('all');
+      setSimulatedAgentId(isManagerView ? 'all' : roster[0]?.id ?? 'all');
     }
-  }, [roster, simulatedAgentId]);
+    if (!isManagerView && simulatedAgentId === 'all' && roster[0]) {
+      setSimulatedAgentId(roster[0].id);
+    }
+  }, [roster, simulatedAgentId, isManagerView]);
+
 
   const [tick, setTick] = useState(0);
   // 'practice' = made-up TEST leads. 'live' = a READ-ONLY copy of the leads we
