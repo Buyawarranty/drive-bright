@@ -319,6 +319,8 @@ const loginUrlForRole = (role?: string | null) =>
 export const UserPermissionsTab = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [archivedUsers, setArchivedUsers] = useState<AdminUser[]>([]);
+  const [showArchived, setShowArchived] = useState(false);
   const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
