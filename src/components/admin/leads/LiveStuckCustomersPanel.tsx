@@ -81,10 +81,12 @@ export const LiveStuckCustomersPanel: React.FC = () => {
           <div>
             <h3 className="text-base font-bold text-red-800">Live customers stuck on checkout</h3>
             <ul className="text-xs text-red-700/80 list-disc pl-4 space-y-0.5">
-              <li>Real website visitors from the last hour.</li>
-              <li>Test and sandbox traffic is filtered out.</li>
-              <li>Any agent can call.</li>
+              <li>Real website visitors from the last 24 hours. Test and sandbox traffic is filtered out.</li>
+              {CADENCE_BULLETS.map((b) => (
+                <li key={b}>{b}</li>
+              ))}
             </ul>
+
           </div>
         </div>
         <div className="flex items-center gap-2">
