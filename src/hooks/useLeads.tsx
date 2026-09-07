@@ -321,6 +321,10 @@ export const useLeads = (options?: UseLeadsOptions) => {
   salesUsersRef.current = salesUsers;
   const leadsRef = useRef<Lead[]>([]);
   leadsRef.current = leads;
+  // Sticky choice of which duplicate row represents an email address. Without
+  // this the "canonical" row could change between refreshes (any note or edit
+  // bumps updated_at), so a lead appeared to vanish and come back.
+  const canonicalRowByEmailRef = useRef<Map<string, string>>(new Map());
   const authLoadingRef = useRef(authLoading);
   authLoadingRef.current = authLoading;
   const userRef = useRef(user);
@@ -842,6 +846,12 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
       const isSearching = !!serverSearchTermRef.current?.trim();
 
+      // True when this refresh could only load a narrower slice than usual
+      // (wide query timed out / came back empty). In that case we must NOT drop
+      // rows that are already on screen — that is what made leads vanish and
+      // then reappear on the next successful refresh.
+      let usedNarrowFallback = false;
+
       let allSalesLeadsResult: any;
       try {
         allSalesLeadsResult = await runWideLeadsFetch();
@@ -851,6 +861,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
         // `all-leads` permission) falls back to their own recent leads rather
         // than rendering a completely blank New Leads screen.
         if (!currentAdmin?.id) throw wideErr;
+        usedNarrowFallback = true;
         console.warn('[Leads] Wide fetch failed, falling back to recent assigned leads:', wideErr);
         // This fallback runs precisely when the connection is already struggling
         // (the wide fetch just timed out), so it needs its own timeout too —
@@ -902,6 +913,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           if (!ownLeads?.error && ownLeads?.data?.length) {
             console.warn('[Leads] Wide fetch returned 0 rows — showing own assigned leads instead');
             allSalesLeadsData = ownLeads.data;
+            usedNarrowFallback = true;
           }
         } catch (ownErr) {
           console.warn('[Leads] Own-leads top-up failed:', ownErr);
@@ -990,7 +1002,15 @@ export const useLeads = (options?: UseLeadsOptions) => {
         if (email) {
           if (!seenEmails.has(email)) {
             seenEmails.add(email);
-            deduplicatedLeads.push(pickCanonical(emailGroups[email]));
+            const group = emailGroups[email];
+            // Keep showing the same row for this customer as last time, as long
+            // as it is still in the group — otherwise the visible row can swap
+            // to a duplicate on every refresh (looks like it disappeared).
+            const stickyId = canonicalRowByEmailRef.current.get(email);
+            const sticky = stickyId ? group.find((row: any) => row.id === stickyId) : undefined;
+            const chosen = sticky || pickCanonical(group);
+            canonicalRowByEmailRef.current.set(email, chosen.id);
+            deduplicatedLeads.push(chosen);
           }
         } else {
           deduplicatedLeads.push(lead);
@@ -1075,11 +1095,14 @@ export const useLeads = (options?: UseLeadsOptions) => {
         return;
       }
 
-      if (recentOptimisticUpdatesRef.current.size > 0) {
+      if (recentOptimisticUpdatesRef.current.size > 0 || usedNarrowFallback) {
         setLeads(prev => {
           const protectedLeads = new Map<string, Lead>();
           prev.forEach(lead => {
-            if (recentOptimisticUpdatesRef.current.has(lead.id)) {
+            // Rows just changed on screen are always protected. When this
+            // refresh only managed a narrow slice, protect every row already
+            // shown so nothing silently drops out of the list.
+            if (usedNarrowFallback || recentOptimisticUpdatesRef.current.has(lead.id)) {
               protectedLeads.set(lead.id, lead);
             }
           });
@@ -1088,9 +1111,11 @@ export const useLeads = (options?: UseLeadsOptions) => {
             protectedLeads.has(lead.id) ? protectedLeads.get(lead.id)! : lead
           );
 
+          const mergedIds = new Set(merged.map(l => l.id));
           protectedLeads.forEach((lead, id) => {
-            if (!merged.find(l => l.id === id)) {
+            if (!mergedIds.has(id)) {
               merged.push(lead);
+              mergedIds.add(id);
             }
           });
 
