@@ -6,6 +6,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+
+// The functions gateway serves responses as text/plain, so we redirect to a real
+// branded page on the website instead of returning HTML from here.
+const SITE = "https://buyawarranty.co.uk";
+function redirectTo(state: string, email?: string): Response {
+  const params = new URLSearchParams({ state });
+  if (email) params.set("email", email);
+  return new Response(null, {
+    status: 303,
+    headers: { ...corsHeaders, location: `${SITE}/email-preferences/?${params.toString()}`, "cache-control": "no-store" },
+  });
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -15,13 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
   const choice = url.searchParams.get("choice");
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return new Response(
-      renderPage(
-        "Invalid Request",
-        "We couldn't read your email address from the link. Please email <a href='mailto:support@buyawarranty.co.uk' style='color:#FF7A00;'>support@buyawarranty.co.uk</a> and we'll re-subscribe you manually."
-      ),
-      { status: 400, headers: { "content-type": "text/html; charset=utf-8", "content-disposition": "inline", "x-content-type-options": "nosniff", "cache-control": "no-store" } }
-    );
+    return redirectTo("missing-email");
   }
 
   try {
@@ -62,51 +69,14 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Re-subscribed ${email} at frequency=${targetFrequency}`);
 
     if (targetFrequency === "essentials") {
-      return new Response(
-        renderPage(
-          "You're on the essentials list",
-          `Thanks - we'll only send <strong>${email}</strong> the important stuff (renewal reminders and the occasional claims tip).<br><br>About 3-4 emails a year. No promotions, no newsletters.`
-        ),
-        { status: 200, headers: { "content-type": "text/html; charset=utf-8", "content-disposition": "inline", "x-content-type-options": "nosniff", "cache-control": "no-store" } }
-      );
+      return redirectTo("essentials", email);
     }
 
-    const essentialsUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/handle-email-resubscribe?email=${encodeURIComponent(email)}&choice=essentials`;
-    return new Response(
-      renderPage(
-        "Welcome back!",
-        `<strong>${email}</strong> is back on the list.<br><br>You'll now receive our exclusive renewal discounts, free cover upgrades and members-only offers.<br><br>Prefer fewer emails? <a href="${essentialsUrl}" style="color:#FF7A00;">Just send me the essentials</a> instead.`
-      ),
-      { status: 200, headers: { "content-type": "text/html; charset=utf-8", "content-disposition": "inline", "x-content-type-options": "nosniff", "cache-control": "no-store" } }
-    );
+    return redirectTo("resubscribed", email);
   } catch (error) {
     console.error("Resubscribe error:", error);
-    return new Response(
-      renderPage("Error", "Something went wrong. Please contact support@buyawarranty.co.uk and we'll re-subscribe you manually."),
-      { status: 500, headers: { "content-type": "text/html; charset=utf-8", "content-disposition": "inline", "x-content-type-options": "nosniff", "cache-control": "no-store" } }
-    );
+    return redirectTo("error", email);
   }
 };
-
-function renderPage(title: string, message: string): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title} - Buy A Warranty</title>
-</head>
-<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background-color:#f6f9fc;display:flex;justify-content:center;align-items:center;min-height:100vh;">
-  <div style="max-width:500px;margin:40px auto;background:#ffffff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.08);padding:48px;text-align:center;">
-    <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" width="180" alt="Buy A Warranty" style="margin-bottom:32px;" />
-    <h1 style="color:#1a1a1a;font-size:24px;font-weight:700;margin:0 0 16px 0;">${title}</h1>
-    <p style="color:#484848;font-size:16px;line-height:24px;margin:0;">${message}</p>
-    <div style="margin-top:32px;">
-      <a href="https://buyawarranty.co.uk" style="background-color:#FF7A00;border-radius:6px;color:#fff;font-size:16px;font-weight:bold;text-decoration:none;padding:12px 24px;display:inline-block;">Back to website</a>
-    </div>
-  </div>
-</body>
-</html>`;
-}
 
 serve(handler);
