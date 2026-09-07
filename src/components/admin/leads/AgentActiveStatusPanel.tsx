@@ -442,6 +442,15 @@ export const AgentActiveStatusPanel: React.FC = () => {
                     <Button size="sm" variant="outline" className="h-7 text-xs" onClick={scrollToOffboarding}>
                       <ArrowRightLeft className="h-3 w-3 mr-1" /> Redistribute leads
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2 text-[11px] text-muted-foreground"
+                      onClick={() => setHistoryFor({ id: s.id, name: nameOf(s) })}
+                      title="See who switched this login on or off, and when"
+                    >
+                      <History className="h-3.5 w-3.5 mr-1" /> History
+                    </Button>
                     {!s.archived_at && (
                       savingId === s.id
                         ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
