@@ -12,6 +12,7 @@ import { DateRangeFilter } from './DateRangeFilter';
 import { CostEfficiencyPanel } from './scoreboard/CostEfficiencyPanel';
 import { CoverOptionsMixPanel } from './analytics/CoverOptionsMixPanel';
 import { DailyRevenueTrendPanel } from './analytics/DailyRevenueTrendPanel';
+import { DailyAgentRevenuePanel } from './analytics/DailyAgentRevenuePanel';
 import { SalesByHourPanel } from './analytics/SalesByHourPanel';
 import { SalesByWeekdayPanel } from './analytics/SalesByWeekdayPanel';
 import { AgentSalesVsLeadsPanel } from './analytics/AgentSalesVsLeadsPanel';
@@ -95,6 +96,7 @@ const isTestOrder = (name: string, email: string): boolean => {
 const ANALYTICS_QUICK_LINKS = [
   { id: 'revenue-monthly', label: 'Revenue & AOV', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
   { id: 'revenue-daily', label: 'Daily revenue', className: 'bg-teal-300/50 text-teal-900 border-teal-200/50 hover:bg-teal-400/50' },
+  { id: 'revenue-daily-agent', label: 'Daily revenue by agent', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
   { id: 'time-of-sale', label: 'Time of sale (24h)', className: 'bg-cyan-300/50 text-cyan-900 border-cyan-200/50 hover:bg-cyan-400/50' },
   { id: 'best-selling-days', label: 'Best selling days', className: 'bg-indigo-300/50 text-indigo-900 border-indigo-200/50 hover:bg-indigo-400/50' },
   { id: 'agent-sales-vs-leads', label: 'Agent sales vs leads', className: 'bg-amber-300/50 text-amber-900 border-amber-200/50 hover:bg-amber-400/50' },
@@ -1397,6 +1399,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         <AnalyticsSectionHeading id="revenue-daily" title="Daily revenue trend" description="Day-by-day revenue, AOV and sales count within a 30-day window." accent="border-teal-500/60" />
 
         <DailyRevenueTrendPanel customers={customers} sourceFilter={sourceFilter} />
+
+        <AnalyticsSectionHeading id="revenue-daily-agent" title="Daily revenue by agent" description="Day-by-day revenue split by the agent who closed each sale, with a per-agent table." accent="border-violet-500/60" />
+
+        <DailyAgentRevenuePanel customers={customers} sourceFilter={sourceFilter} adminUsers={adminUsers} />
 
         <AnalyticsSectionHeading id="time-of-sale" title="Time of sale (24 hour tracker)" description="Hour-by-hour view of when sales land across all 24 hours, split by online versus agent-entered, plus a weekday/hour heatmap." accent="border-cyan-500/60" />
 
