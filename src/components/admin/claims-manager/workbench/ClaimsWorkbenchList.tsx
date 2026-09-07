@@ -419,7 +419,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
           <span>Notes</span>
         </div>
         <div className="divide-y divide-border">
-          {sortedClaims.map((c) => {
+          {sortedClaims.map((c, rowIndex) => {
             const isSelected = selectedId === c.id;
             const isChecked = selectedIds.has(c.id);
             const currentStatusValue = deriveSimpleStatus(c);
@@ -460,6 +460,11 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                     onCheckedChange={() => onToggleOne(c.id)}
                     aria-label={`Select claim ${c.id}`}
                   />
+                </div>
+
+                {/* Row number */}
+                <div className="text-[11px] font-semibold text-muted-foreground tabular-nums text-right">
+                  {rowIndex + 1}
                 </div>
 
                 {/* Submitted */}
