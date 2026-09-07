@@ -319,6 +319,8 @@ const loginUrlForRole = (role?: string | null) =>
 export const UserPermissionsTab = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [archivedUsers, setArchivedUsers] = useState<AdminUser[]>([]);
+  const [showArchived, setShowArchived] = useState(false);
   const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -820,6 +822,18 @@ export const UserPermissionsTab = () => {
       if (error) throw error;
       const synced = await syncMissingTabsForAllUsers((data || []) as AdminUser[]);
       setUsers(synced);
+
+      // Archived staff are kept in a separate list so they can always be brought back.
+      const { data: archived, error: archivedError } = await supabase
+        .from('admin_users')
+        .select('*')
+        .not('archived_at', 'is', null)
+        .order('archived_at', { ascending: false });
+      if (archivedError) {
+        console.warn('Could not load archived staff:', archivedError);
+      } else {
+        setArchivedUsers((archived || []) as AdminUser[]);
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
       setLoadError('Failed to load admin users. This is usually caused by database permissions for the logged-in role.');
@@ -828,6 +842,42 @@ export const UserPermissionsTab = () => {
       setLoading(false);
     }
   };
+
+  const handleRestoreUser = async (userId: string) => {
+    const target = archivedUsers.find(u => u.id === userId);
+    const displayName = target
+      ? `${target.first_name || ''} ${target.last_name || ''}`.trim() || target.email
+      : 'this user';
+
+    if (!confirm(
+      `Restore ${displayName}?\n\n` +
+      `• Their login is switched back on straight away\n` +
+      `• Their previous role and section access come back\n` +
+      `• You can then change the role, tabs and team as normal\n\n` +
+      `Team, schedule and lead distribution settings may need setting again.`
+    )) return;
+
+    try {
+      const { data: restored, error } = await supabase
+        .from('admin_users')
+        .update({ archived_at: null, is_active: true })
+        .eq('id', userId)
+        .select('id');
+
+      if (error) throw error;
+      if (!restored || restored.length === 0) {
+        throw new Error('No rows updated — your account does not have permission to restore this user.');
+      }
+
+      await tagAccessChange(userId, true, 'Restored from archive (User permissions)');
+      toast.success(`${displayName} restored — you can now edit their role and permissions`);
+      fetchUsers();
+    } catch (error) {
+      console.error('Error restoring user:', error);
+      toast.error('Failed to restore user');
+    }
+  };
+
 
   const fetchPermissions = async () => {
     try {
@@ -846,10 +896,21 @@ export const UserPermissionsTab = () => {
 
   const handleInviteUser = async () => {
     try {
+      // An archived login with the same email blocks a fresh invite — offer to restore instead.
+      const existingArchived = archivedUsers.find(
+        u => (u.email || '').trim().toLowerCase() === inviteData.email.trim().toLowerCase()
+      );
+      if (existingArchived) {
+        toast.error('That email already has an archived staff login. Restore it from "Archived staff" below instead of inviting again.');
+        setShowArchived(true);
+        return;
+      }
+
       const { teamId, ...invitePayload } = inviteData;
       const { data, error } = await supabase.functions.invoke('invite-admin-user', {
         body: invitePayload
       });
+
 
       if (error) throw error;
 
@@ -2689,6 +2750,66 @@ export const UserPermissionsTab = () => {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Archived staff — always restorable */}
+      <Card className="border-slate-300 bg-slate-50/60">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center justify-between gap-2 text-base">
+            <span className="flex items-center gap-2">
+              <RotateCcw className="h-4 w-4" />
+              Archived staff
+              <Badge variant="outline" className="text-xs">{archivedUsers.length}</Badge>
+            </span>
+            <Button variant="outline" size="sm" onClick={() => setShowArchived(v => !v)}>
+              {showArchived ? 'Hide' : 'Show'}
+            </Button>
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Deleted or archived logins are kept here with their history. Restore one at any time to switch it
+            back on and edit its role and section access — you never need to re-invite them.
+          </p>
+        </CardHeader>
+        {showArchived && (
+          <CardContent>
+            {archivedUsers.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No archived staff.</p>
+            ) : (
+              <div className="space-y-2">
+                {archivedUsers.map(u => (
+                  <div
+                    key={u.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-background px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {`${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {u.email} · {u.role}
+                        {u.archived_at ? ` · archived ${new Date(u.archived_at).toLocaleDateString('en-GB')}` : ''}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" onClick={() => setHistoryFor({
+                        id: u.id,
+                        name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email,
+                      })}>
+                        <History className="h-3.5 w-3.5 mr-1" />
+                        On/off history
+                      </Button>
+                      <Button size="sm" onClick={() => handleRestoreUser(u.id)}>
+                        <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                        Restore
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        )}
+      </Card>
+
       {/* Super Admin Only: User Credentials Overview */}
       {currentAdminUser?.role === 'super_admin' && (
         <Card className="border-amber-200 bg-amber-50/50">
