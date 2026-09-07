@@ -44,6 +44,8 @@ import { installAdminStallGuard } from '@/lib/adminStallGuard';
 const AdminUiEventLogPanel = lazy(() => import('@/components/admin/AdminUiEventLogPanel'));
 const PaymentsPendingTab = lazy(() => import('@/components/admin/PaymentsPendingTab'));
 const SalesStaffPerformancePanel = lazy(() => import('@/components/admin/SalesStaffPerformancePanel'));
+const StaffSystemReportsTab = lazy(() => import('@/components/admin/StaffSystemReportsTab'));
+import { SystemCheckInButton } from '@/components/admin/feedback/SystemCheckInForm';
 
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
 import { DiscountAuthBanner } from '@/components/admin/DiscountAuthBanner';
