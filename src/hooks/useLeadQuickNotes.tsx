@@ -522,17 +522,24 @@ export const useLeadQuickNotes = (leadId: string) => {
         fetchNotes(true).catch(e => console.warn('[addNote] Background refetch error:', e));
         return { id: `cart_note_${actualId}`, note_text: updatedNotes };
       } else {
-        const { data, error } = await supabase
-          .from('lead_quick_notes')
-          .insert({
-            lead_id: leadId,
-            note_text: noteText.trim(),
-            created_by: adminUser.id
-          })
-          .select()
-          .maybeSingle();
+        // If the same note is already on the lead from moments ago, reuse it
+        // instead of writing a second copy.
+        const existing = await findRecentDuplicateNote(leadId, noteText.trim());
+
+        const { data, error } = existing
+          ? { data: existing, error: null }
+          : await supabase
+              .from('lead_quick_notes')
+              .insert({
+                lead_id: leadId,
+                note_text: noteText.trim(),
+                created_by: adminUser.id
+              })
+              .select()
+              .maybeSingle();
 
         if (error) throw error;
+
 
         // CRITICAL: Update local state immediately with the new note
         // This ensures the note appears instantly without waiting for refetch
