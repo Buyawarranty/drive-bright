@@ -199,6 +199,7 @@ export const AgentActiveStatusPanel: React.FC = () => {
       toast.error(`Could not update ${nameOf(agent)} — ${error.message}`);
       return;
     }
+    await tagAccessChange(agent.id, on, 'Agents on/off (Lead teams)');
     setStaff(prev => prev.map(s => (s.id === agent.id ? { ...s, is_active: on } : s)));
     toast.success(
       on
@@ -298,6 +299,15 @@ export const AgentActiveStatusPanel: React.FC = () => {
                       ) : (
                         <Badge variant="outline" className="text-[10px] border-emerald-500/40 text-emerald-600">On</Badge>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-[11px] text-muted-foreground"
+                        onClick={() => setHistoryFor({ id: s.id, name: nameOf(s) })}
+                        title="See who switched this login on or off, and when"
+                      >
+                        <History className="h-3.5 w-3.5 mr-1" /> History
+                      </Button>
                       {savingId === s.id
                         ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                         : <Switch checked onCheckedChange={() => setPending(s)} />}
