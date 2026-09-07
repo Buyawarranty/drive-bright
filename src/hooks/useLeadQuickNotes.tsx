@@ -93,6 +93,40 @@ const isAbandonedCartLeadId = (leadId: string) => leadId.startsWith('cart_');
 const getActualLeadId = (leadId: string) => isAbandonedCartLeadId(leadId) ? leadId.replace('cart_', '') : leadId;
 const NOTE_SAVE_TIMEOUT_MS = 8000;
 
+/**
+ * Duplicate guard.
+ *
+ * The same note text can reach the database from several places at once: the
+ * Save button, the auto-save on closing the panel, the tab-hidden / page-hide
+ * handlers, and the offline queue replay (which runs both in this hook and on
+ * every notes panel that mounts). When one of those is slow the agent presses
+ * Save again, so the note used to land 10+ times on the lead.
+ *
+ * Before inserting we look for an identical note on the same lead written in
+ * the last few minutes. If one exists we treat the save as already done.
+ */
+const DUPLICATE_WINDOW_MS = 5 * 60 * 1000;
+
+const findRecentDuplicateNote = async (leadId: string, noteText: string) => {
+  try {
+    const since = new Date(Date.now() - DUPLICATE_WINDOW_MS).toISOString();
+    const { data } = await supabase
+      .from('lead_quick_notes')
+      .select('*')
+      .eq('lead_id', leadId)
+      .eq('note_text', noteText)
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return data || null;
+  } catch {
+    return null;
+  }
+};
+
+
+
 // Bump the lead's last_activity_date so the "Activity" column reflects
 // note additions/edits. Fire-and-forget — errors logged, never thrown.
 const touchLeadActivity = (leadId: string) => {
