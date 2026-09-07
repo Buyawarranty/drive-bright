@@ -36,6 +36,7 @@ import { PerformanceKpiStrip } from './claims-manager/PerformanceKpiStrip';
 import { VehicleIntelligenceExplorer } from './claims/VehicleIntelligenceExplorer';
 import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
 import { ClaimsAgeMileageAnalytics } from './claims/ClaimsAgeMileageAnalytics';
+import { ClaimsIntelligencePanel } from './claims/ClaimsIntelligencePanel';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 import { useReturnedAppeals } from '@/hooks/useReturnedAppeals';
 import { AppealsInboxPanel } from '@/components/admin/claims/AppealsInboxPanel';
