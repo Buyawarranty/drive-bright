@@ -12,6 +12,7 @@ import { DateRangeFilter } from './DateRangeFilter';
 import { CostEfficiencyPanel } from './scoreboard/CostEfficiencyPanel';
 import { CoverOptionsMixPanel } from './analytics/CoverOptionsMixPanel';
 import { DailyRevenueTrendPanel } from './analytics/DailyRevenueTrendPanel';
+import { DailyAgentRevenuePanel } from './analytics/DailyAgentRevenuePanel';
 import { SalesByHourPanel } from './analytics/SalesByHourPanel';
 import { SalesByWeekdayPanel } from './analytics/SalesByWeekdayPanel';
 import { AgentSalesVsLeadsPanel } from './analytics/AgentSalesVsLeadsPanel';
@@ -1397,6 +1398,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         <AnalyticsSectionHeading id="revenue-daily" title="Daily revenue trend" description="Day-by-day revenue, AOV and sales count within a 30-day window." accent="border-teal-500/60" />
 
         <DailyRevenueTrendPanel customers={customers} sourceFilter={sourceFilter} />
+
+        <AnalyticsSectionHeading id="revenue-daily-agent" title="Daily revenue by agent" description="Day-by-day revenue split by the agent who closed each sale, with a per-agent table." accent="border-violet-500/60" />
+
+        <DailyAgentRevenuePanel customers={customers} sourceFilter={sourceFilter} adminUsers={adminUsers} />
 
         <AnalyticsSectionHeading id="time-of-sale" title="Time of sale (24 hour tracker)" description="Hour-by-hour view of when sales land across all 24 hours, split by online versus agent-entered, plus a weekday/hour heatmap." accent="border-cyan-500/60" />
 
