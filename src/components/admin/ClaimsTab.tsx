@@ -2,6 +2,17 @@ import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 
 const APPEALS_NOTICE_KEY = 'claims-appeals-notice-dismissed';
+/** Closing the appeals notice only quietens it for the working day, and any new
+ *  appeal brings it straight back — an open appeal can never be hidden for good. */
+const appealsNoticeSnoozed = (signature: string) => {
+  try {
+    const raw = localStorage.getItem(APPEALS_NOTICE_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw) as { at?: number; signature?: string };
+    if (saved.signature !== signature) return false;
+    return typeof saved.at === 'number' && Date.now() - saved.at < 12 * 60 * 60 * 1000;
+  } catch { return false; }
+};
 import React, { useState, useEffect, useMemo } from 'react';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 import { AdminNotification } from '@/hooks/useAdminNotifications';
@@ -105,9 +116,7 @@ export const ClaimsTab = ({
   const [rangeExportFrom, setRangeExportFrom] = useState('');
   const [rangeExportTo, setRangeExportTo] = useState('');
   const navigate = useNavigate();
-  const [appealsNoticeHidden, setAppealsNoticeHidden] = useState<boolean>(() => {
-    try { return localStorage.getItem(APPEALS_NOTICE_KEY) === '1'; } catch { return false; }
-  });
+  const [appealsNoticeClosedAt, setAppealsNoticeClosedAt] = useState<number>(0);
   const [claims, setClaims] = useState<ClaimSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
@@ -125,6 +134,10 @@ export const ClaimsTab = ({
     markAsRead: markAppealAsRead,
     refetch: refetchAppeals,
   } = useReturnedAppeals();
+
+  const appealsSignature = `${appealsTotalCount}:${appealsUnreadCount}`;
+  const appealsNoticeHidden = appealsNoticeClosedAt > 0 || appealsNoticeSnoozed(appealsSignature);
+
 
   useEffect(() => { fetchClaims(); }, []);
 
@@ -370,8 +383,10 @@ export const ClaimsTab = ({
             aria-label="Close appeals notice"
             className="ml-auto text-slate-400 hover:text-slate-700"
             onClick={() => {
-              setAppealsNoticeHidden(true);
-              try { localStorage.setItem(APPEALS_NOTICE_KEY, '1'); } catch { /* ignore */ }
+              setAppealsNoticeClosedAt(Date.now());
+              try {
+                localStorage.setItem(APPEALS_NOTICE_KEY, JSON.stringify({ at: Date.now(), signature: appealsSignature }));
+              } catch { /* ignore */ }
             }}
           >
             <X className="h-3.5 w-3.5" />
