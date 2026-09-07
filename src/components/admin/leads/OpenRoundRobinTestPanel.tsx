@@ -1660,12 +1660,25 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <User className="h-5 w-5 text-muted-foreground" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-foreground">Agent preview</div>
+            <div className="text-sm font-semibold text-foreground">
+              {isManagerView ? 'Agent preview' : 'Your practice list'}
+            </div>
             <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
-              <li>See the page exactly as a sales agent would.</li>
-              <li>Pick an agent from the list to switch their view.</li>
-              <li>Choose &ldquo;Whole team&rdquo; to watch every lead in the flow at once.</li>
+              {isManagerView ? (
+                <>
+                  <li>See the page exactly as a sales agent would.</li>
+                  <li>Pick an agent from the list to switch their view.</li>
+                  <li>Choose &ldquo;Whole team&rdquo; to watch every lead in the flow at once.</li>
+                </>
+              ) : (
+                <>
+                  <li>You only see the leads that have come to you.</li>
+                  <li>Pick your name so the practice list matches your seat.</li>
+                  <li>Nothing here is real — no customer is contacted.</li>
+                </>
+              )}
             </ul>
+
           </div>
         </div>
         <div className="flex flex-col items-end gap-1">
