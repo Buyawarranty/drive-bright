@@ -117,6 +117,8 @@ export const ClaimsTab = ({
   const [rangeExportTo, setRangeExportTo] = useState('');
   const navigate = useNavigate();
   const [appealsNoticeClosedAt, setAppealsNoticeClosedAt] = useState<number>(0);
+  const appealsSignature = `${appealsTotalCount}:${appealsUnreadCount}`;
+  const appealsNoticeHidden = appealsNoticeClosedAt > 0 || appealsNoticeSnoozed(appealsSignature);
   const [claims, setClaims] = useState<ClaimSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
@@ -379,8 +381,10 @@ export const ClaimsTab = ({
             aria-label="Close appeals notice"
             className="ml-auto text-slate-400 hover:text-slate-700"
             onClick={() => {
-              setAppealsNoticeHidden(true);
-              try { localStorage.setItem(APPEALS_NOTICE_KEY, '1'); } catch { /* ignore */ }
+              setAppealsNoticeClosedAt(Date.now());
+              try {
+                localStorage.setItem(APPEALS_NOTICE_KEY, JSON.stringify({ at: Date.now(), signature: appealsSignature }));
+              } catch { /* ignore */ }
             }}
           >
             <X className="h-3.5 w-3.5" />
