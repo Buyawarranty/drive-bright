@@ -620,6 +620,8 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   const [leads, setLeads] = useState<DummyLead[]>([]);
   const nextAgentIndexRef = useRef(0);
   const [simulatedAgentId, setSimulatedAgentId] = useState<string>('all');
+  const [roleView, setRoleView] = useState<'manager' | 'agent'>('manager');
+  const isManagerView = roleView === 'manager';
   // How many agents are "on shift" for this rehearsal (1–4).
   // Default rehearsal: two agents live, which is the everyday picture on the floor.
   const [agentCount, setAgentCount] = useState(2);
@@ -628,9 +630,13 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   useEffect(() => {
     rosterRef.current = roster;
     if (simulatedAgentId !== 'all' && !roster.some((a) => a.id === simulatedAgentId)) {
-      setSimulatedAgentId('all');
+      setSimulatedAgentId(isManagerView ? 'all' : roster[0]?.id ?? 'all');
     }
-  }, [roster, simulatedAgentId]);
+    if (!isManagerView && simulatedAgentId === 'all' && roster[0]) {
+      setSimulatedAgentId(roster[0].id);
+    }
+  }, [roster, simulatedAgentId, isManagerView]);
+
 
   const [tick, setTick] = useState(0);
   // 'practice' = made-up TEST leads. 'live' = a READ-ONLY copy of the leads we
@@ -1377,6 +1383,49 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
   return (
     <div className="space-y-4">
+      {/* Who is practising — manager/super admin view vs sales agent view */}
+      <div className="rounded-xl border border-border bg-card shadow-sm p-3 flex flex-wrap items-center gap-3">
+        <span className="text-sm font-semibold text-foreground">Practice as</span>
+        <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
+          <button
+            type="button"
+            onClick={() => { setRoleView('manager'); setSimulatedAgentId('all'); }}
+            className={cn(
+              'px-3 py-1.5 text-xs font-semibold transition-colors',
+              isManagerView ? 'bg-teal-600 text-white' : 'bg-background text-muted-foreground hover:bg-muted',
+            )}
+          >
+            Manager / super admin
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setRoleView('agent');
+              setSimulatedAgentId((current) => (current === 'all' ? (roster[0]?.id ?? 'all') : current));
+            }}
+            className={cn(
+              'px-3 py-1.5 text-xs font-semibold border-l border-border transition-colors',
+              !isManagerView ? 'bg-teal-600 text-white' : 'bg-background text-muted-foreground hover:bg-muted',
+            )}
+          >
+            Sales agent
+          </button>
+        </div>
+        <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
+          {isManagerView ? (
+            <>
+              <li>Full setup: agents on shift, scenarios, the 09:00 release and the timing rules.</li>
+              <li>You can watch the whole team or look through any one agent&rsquo;s eyes.</li>
+            </>
+          ) : (
+            <>
+              <li>Exactly what a sales agent sees — only their own leads and buttons.</li>
+              <li>Setup, scenarios and timing rules are hidden.</li>
+            </>
+          )}
+        </ul>
+      </div>
+
       {/* Header card */}
       <section className="rounded-xl border border-border bg-card shadow-sm p-5">
         <div className="flex items-start justify-between flex-wrap gap-4">
@@ -1394,14 +1443,18 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                 </span>
 
                 <span className="rounded-full bg-muted text-muted-foreground text-[11px] font-medium px-2.5 py-0.5">
-                  Managers only
+                  {isManagerView ? 'Manager & super admin view' : 'Sales agent view'}
                 </span>
                 <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-[11px] font-medium px-2.5 py-0.5">
                   Nothing counts
                 </span>
               </div>
               <ul className="text-sm text-muted-foreground list-disc pl-4 space-y-1 leading-relaxed max-w-2xl">
-                <li>Rehearse the 2-minute first-call window, pass-on, agent view, phone column, click-to-dial and copy button.</li>
+                <li>
+                  {isManagerView
+                    ? 'Set the shift up, run a scenario and watch the 2-minute first-call window, pass-on, phone column, click-to-dial and copy button.'
+                    : 'Practise your own leads: answer inside the 2-minute window, call, copy the number and let one pass on.'}
+                </li>
                 <li>{dataSource === 'live' ? 'Live leads mode shows a read-only copy of real leads.' : 'Every name here is made up.'}</li>
                 <li>Nothing is written back, no customer is contacted and no agent's figures change.</li>
               </ul>
@@ -1409,6 +1462,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           </div>
         </div>
 
+        {isManagerView && (
         <div className="mt-5 pt-4 border-t border-border rounded-lg border border-border bg-muted/30 p-3">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm font-semibold text-foreground">Agents on shift</span>
@@ -1437,8 +1491,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <li>Changing this clears the practice list so the rotation starts clean.</li>
           </ul>
         </div>
+        )}
 
         {/* PHASE 1 — every situation an agent meets, one click each */}
+        {isManagerView && (
         <div className="mt-4 rounded-lg border border-border bg-muted/20 p-3">
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -1498,11 +1554,13 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             </>
           )}
         </div>
+        )}
 
 
 
 
 
+        {isManagerView && (
         <div className="mt-5 pt-4 border-t border-border rounded-lg border border-amber-200 bg-amber-50/60 p-3">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm font-semibold text-amber-900">Start of day — 09:00 release</span>
@@ -1535,8 +1593,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <li>After the release, new leads keep arriving into that same list all day.</li>
           </ul>
         </div>
+        )}
 
         <div className="mt-4 pt-4 border-t border-border flex items-center gap-2 flex-wrap">
+          {isManagerView && (<>
           <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
             <button
               type="button"
@@ -1580,6 +1640,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           <Button size="sm" onClick={createTestLead} disabled={dataSource === 'live'} title={dataSource === 'live' ? 'Live leads mode uses the real leads — use Load live leads instead.' : undefined}>
             <Plus className="h-3.5 w-3.5 mr-1.5" /> Take this lead
           </Button>
+          </>)}
           <Button size="sm" variant="outline" onClick={() => setTick((current) => current + 1)}>
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh queue
           </Button>
@@ -1619,6 +1680,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             {isPausedReceiving ? <Play className="h-3.5 w-3.5 fill-current" /> : <Pause className="h-3.5 w-3.5 fill-current" />}
             {isPausedReceiving ? 'Ready for new leads' : 'Focus on current leads'}
           </Button>
+          {isManagerView && (
           <Button
             size="sm"
             variant="ghost"
@@ -1628,11 +1690,12 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           >
             <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Clear practice leads
           </Button>
+          )}
         </div>
       </section>
 
       {/* Rules, timings and editable variables */}
-      <OrrLogicExplainer config={cadence} onChange={setCadence} teamLabel={theme.label} />
+      {isManagerView && <OrrLogicExplainer config={cadence} onChange={setCadence} teamLabel={theme.label} />}
 
       {allAgentsBusy && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">
@@ -1660,24 +1723,37 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <User className="h-5 w-5 text-muted-foreground" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-foreground">Agent preview</div>
+            <div className="text-sm font-semibold text-foreground">
+              {isManagerView ? 'Agent preview' : 'Your practice list'}
+            </div>
             <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
-              <li>See the page exactly as a sales agent would.</li>
-              <li>Pick an agent from the list to switch their view.</li>
-              <li>Choose &ldquo;Whole team&rdquo; to watch every lead in the flow at once.</li>
+              {isManagerView ? (
+                <>
+                  <li>See the page exactly as a sales agent would.</li>
+                  <li>Pick an agent from the list to switch their view.</li>
+                  <li>Choose &ldquo;Whole team&rdquo; to watch every lead in the flow at once.</li>
+                </>
+              ) : (
+                <>
+                  <li>You only see the leads that have come to you.</li>
+                  <li>Pick your name so the practice list matches your seat.</li>
+                  <li>Nothing here is real — no customer is contacted.</li>
+                </>
+              )}
             </ul>
+
           </div>
         </div>
         <div className="flex flex-col items-end gap-1">
           <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
-            Viewing as sales agent
+            {isManagerView ? 'Viewing as sales agent' : 'You are practising as'}
           </span>
           <select
             className="h-9 w-64 rounded-lg border border-input bg-muted/40 px-3 text-sm font-medium"
             value={simulatedAgentId}
             onChange={(event) => setSimulatedAgentId(event.target.value)}
           >
-            <option value="all">Whole team — everyone&rsquo;s leads</option>
+            {isManagerView && <option value="all">Whole team — everyone&rsquo;s leads</option>}
             {roster.map((agent) => (
               <option key={agent.id} value={agent.id}>
                 {agent.order}. {agent.name} · ext {agent.extension}
@@ -1685,6 +1761,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             ))}
           </select>
         </div>
+
       </div>
 
       {/* Leads */}
