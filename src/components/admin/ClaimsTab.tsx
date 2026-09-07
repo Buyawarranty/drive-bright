@@ -66,6 +66,13 @@ interface ClaimsTabProps {
   userRole?: string | null;
 }
 
+const CLAIMS_INTELLIGENCE_ROLES = [
+  'super_admin',
+  'admin',
+  'sales_manager',
+  'claims_manager',
+];
+
 const MANAGER_EXPORT_ROLES = [
   'super_admin',
   'admin',
