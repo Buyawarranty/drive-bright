@@ -3317,9 +3317,16 @@ Questions? Call 0330 229 5040`;
     const warning = await checkExistingPolicy();
     setExistingPolicyWarning(warning);
     
-    // Pre-fill payment amount from quote
-    // Use monthly × 12 to match the Total displayed across Step 2/Step 3 (pricing-sync constraint)
-    setPaymentAmount((currentPrice.monthlyPrice * 12).toString());
+    // Pre-fill payment amount from the price actually quoted to the customer.
+    // If the agent pushed / overrode the quoted total (quotedPriceOverride) that
+    // figure is the one on the customer's quote link, so it must win — otherwise
+    // the confirm box prefills the grid figure and the sale email, the CRM sold
+    // price and the discount no longer reconcile.
+    const prefillQuoted = quotedPriceOverride !== ''
+      ? Math.round(parseFloat(quotedPriceOverride) || 0)
+      : Math.round(currentPrice.monthlyPrice * 12);
+    setPaymentAmount(prefillQuoted ? prefillQuoted.toString() : '');
+
     // Reset warranty start date to today
     setWarrantyStartDate(new Date());
     // Reset to details step when opening
@@ -3497,6 +3504,16 @@ Questions? Call 0330 229 5040`;
 
     // Price validation - allow override, just show warning in UI (no blocking)
     const confirmedAmount = parseFloat(paymentAmount);
+    // Price actually quoted to the customer (pushed price wins) and the discount
+    // given away — frozen here so the CRM and the sale email agree.
+    const quotedTotalAtSale = quotedPriceOverride !== ''
+      ? Math.round(parseFloat(quotedPriceOverride) || 0)
+      : Math.round(currentPrice.monthlyPrice * 12);
+    const discountGivenAtSale = Math.max(
+      0,
+      Math.round(((quotedTotalAtSale || 0) - (Number.isFinite(confirmedAmount) ? confirmedAmount : 0)) * 100) / 100,
+    );
+
     // Audit-only: record who typed a custom price and how it compares to the grid.
     auditPriceOverride('confirm_payment', Number.isFinite(confirmedAmount) ? confirmedAmount : undefined);
 
@@ -3637,6 +3654,19 @@ Questions? Call 0330 229 5040`;
         claim_limit: displayClaimLimit,
         labour_rate: labourRate,
         final_amount: confirmedAmount,
+        // Freeze the price actually quoted plus the discount given, so the
+        // Customers tab, Discounts given and the sale notification email all
+        // reconcile against the same point-of-sale figures instead of
+        // re-deriving an estimate from today's grid.
+        original_amount: quotedTotalAtSale,
+        discount_amount: discountGivenAtSale,
+        sale_quoted_total: quotedTotalAtSale,
+        sale_discount_amount: discountGivenAtSale,
+        sale_discount_pct: quotedTotalAtSale > 0
+          ? Math.round((discountGivenAtSale / quotedTotalAtSale) * 1000) / 10
+          : 0,
+        sale_price_basis: 'agent_quote',
+
         is_manual_entry: true,
         // Awaits management verification before flipping to true
         payment_verified: false,
