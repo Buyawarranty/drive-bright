@@ -1503,6 +1503,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
 
 
+        {isManagerView && (
         <div className="mt-5 pt-4 border-t border-border rounded-lg border border-amber-200 bg-amber-50/60 p-3">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm font-semibold text-amber-900">Start of day — 09:00 release</span>
@@ -1535,8 +1536,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <li>After the release, new leads keep arriving into that same list all day.</li>
           </ul>
         </div>
+        )}
 
         <div className="mt-4 pt-4 border-t border-border flex items-center gap-2 flex-wrap">
+          {isManagerView && (<>
           <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
             <button
               type="button"
@@ -1580,6 +1583,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           <Button size="sm" onClick={createTestLead} disabled={dataSource === 'live'} title={dataSource === 'live' ? 'Live leads mode uses the real leads — use Load live leads instead.' : undefined}>
             <Plus className="h-3.5 w-3.5 mr-1.5" /> Take this lead
           </Button>
+          </>)}
           <Button size="sm" variant="outline" onClick={() => setTick((current) => current + 1)}>
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh queue
           </Button>
@@ -1619,6 +1623,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             {isPausedReceiving ? <Play className="h-3.5 w-3.5 fill-current" /> : <Pause className="h-3.5 w-3.5 fill-current" />}
             {isPausedReceiving ? 'Ready for new leads' : 'Focus on current leads'}
           </Button>
+          {isManagerView && (
           <Button
             size="sm"
             variant="ghost"
@@ -1628,11 +1633,12 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           >
             <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Clear practice leads
           </Button>
+          )}
         </div>
       </section>
 
       {/* Rules, timings and editable variables */}
-      <OrrLogicExplainer config={cadence} onChange={setCadence} teamLabel={theme.label} />
+      {isManagerView && <OrrLogicExplainer config={cadence} onChange={setCadence} teamLabel={theme.label} />}
 
       {allAgentsBusy && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">
