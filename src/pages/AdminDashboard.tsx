@@ -792,6 +792,20 @@ const AdminDashboard = () => {
   };
 
 
+  if (accountDeactivated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="text-center max-w-sm">
+          <p className="text-gray-900 font-semibold mb-2">Your login has been switched off</p>
+          <p className="text-gray-600 text-sm">
+            Your staff account is currently deactivated, so no data can be shown. Please ask a manager to
+            switch it back on.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Access check couldn't complete (slow or failing connection) — offer a retry
   // instead of an endless spinner.
   if (!hasAdminAccess && accessCheckStalled) {
