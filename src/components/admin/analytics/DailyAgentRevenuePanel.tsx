@@ -191,7 +191,7 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
         dayCount: days.length,
       },
     };
-  }, [customers, sourceFilter, dateRange, adminUsers]);
+  }, [customers, sourceFilter, dateRange, adminUsers, salesAgentIds]);
 
   const dayView = useMemo(() => {
     if (!selectedDay) return null;
