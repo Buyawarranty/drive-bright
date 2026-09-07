@@ -548,6 +548,7 @@ const AdminDashboard = () => {
   const hasCheckedAccessRef = React.useRef(false);
   const accessAttemptsRef = React.useRef(0);
   const [accessCheckStalled, setAccessCheckStalled] = useState(false);
+  const [accountDeactivated, setAccountDeactivated] = useState(false);
   // True while we're showing the shell from cached (last-known) access and the
   // server verification hasn't come back yet.
   const [accessFromCache, setAccessFromCache] = useState(false);
@@ -742,10 +743,17 @@ const AdminDashboard = () => {
 
       // Permissions load in the background — the shell is already usable.
       const permissionsResult = await withTimeout(
-        supabase.from('admin_users').select('id, permissions').eq('user_id', currentUser.id).maybeSingle(),
+        supabase.from('admin_users').select('id, permissions, is_active').eq('user_id', currentUser.id).maybeSingle(),
         12000
       );
       const adminUserData = permissionsResult?.data ?? null;
+
+      // A switched-off staff account can't read any data, which used to paint a
+      // blank dashboard. Say so plainly instead.
+      if (adminUserData && (adminUserData as any).is_active === false) {
+        setAccountDeactivated(true);
+        return;
+      }
 
       if (adminUserData?.id) {
         setAdminUserId(adminUserData.id);
@@ -783,6 +791,20 @@ const AdminDashboard = () => {
     }
   };
 
+
+  if (accountDeactivated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="text-center max-w-sm">
+          <p className="text-gray-900 font-semibold mb-2">Your login has been switched off</p>
+          <p className="text-gray-600 text-sm">
+            Your staff account is currently deactivated, so no data can be shown. Please ask a manager to
+            switch it back on.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Access check couldn't complete (slow or failing connection) — offer a retry
   // instead of an endless spinner.
