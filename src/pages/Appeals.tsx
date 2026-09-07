@@ -469,7 +469,7 @@ const Appeals = () => {
 
 
               {!requestMode && (
-                <Field name="claimRef" label="Claim reference" value={form.claimRef} onChange={change} placeholder="Optional — if you have it" error={errors.claimRef} valid={fieldStatus.claimRef.valid && showStatus('claimRef')} />
+                <Field name="claimRef" label="Claim reference (optional)" value={form.claimRef} onChange={change} placeholder="If you have it" error={errors.claimRef} valid={fieldStatus.claimRef.valid && showStatus('claimRef')} />
               )}
 
               {!requestMode && (
