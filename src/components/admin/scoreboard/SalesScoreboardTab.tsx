@@ -5,6 +5,8 @@ import { RefreshCw, Trophy, User, BarChart3, ChevronLeft, ChevronRight, GitCompa
 import { SpeedToDialPanel } from './SpeedToDialPanel';
 import { DailySalesChartPanel } from './DailySalesChartPanel';
 import { TeamTargetBoard } from './TeamTargetBoard';
+import { CompanyTargetBanner } from './CompanyTargetBanner';
+
 import { useScoreboardData, TimePeriod } from '@/hooks/useScoreboardData';
 import { ScoreboardRankingTable } from './ScoreboardRankingTable';
 import { ScoreboardAgentProfile } from './ScoreboardAgentProfile';
@@ -178,6 +180,11 @@ export const SalesScoreboardTab: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {/* Full team target — managers, admins and super admins only */}
+      {isManagement && <CompanyTargetBanner monthDate={dateRange?.from ?? undefined} />}
+
+
 
       {/* Toolbar: period, month navigator, date range, team filter */}
       <div className="rounded-xl border bg-card/60 p-3 md:p-4 space-y-3">
