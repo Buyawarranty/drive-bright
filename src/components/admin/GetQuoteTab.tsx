@@ -3504,15 +3504,19 @@ Questions? Call 0330 229 5040`;
 
     // Price validation - allow override, just show warning in UI (no blocking)
     const confirmedAmount = parseFloat(paymentAmount);
-    // Price actually quoted to the customer (pushed price wins) and the discount
-    // given away — frozen here so the CRM and the sale email agree.
-    const quotedTotalAtSale = quotedPriceOverride !== ''
-      ? Math.round(parseFloat(quotedPriceOverride) || 0)
-      : Math.round(currentPrice.monthlyPrice * 12);
+    // Pre-discount list price for this sale = the grid total. The discount is
+    // everything given away from that list price, whether it came from a pushed
+    // quote or from typing a lower figure in the confirm box, so the CRM, the
+    // "discount given" report and the sale email all agree.
+    const quotedTotalAtSale = Math.max(
+      Math.round(currentPrice.monthlyPrice * 12),
+      quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : 0,
+    );
     const discountGivenAtSale = Math.max(
       0,
       Math.round(((quotedTotalAtSale || 0) - (Number.isFinite(confirmedAmount) ? confirmedAmount : 0)) * 100) / 100,
     );
+
 
     // Audit-only: record who typed a custom price and how it compares to the grid.
     auditPriceOverride('confirm_payment', Number.isFinite(confirmedAmount) ? confirmedAmount : undefined);
