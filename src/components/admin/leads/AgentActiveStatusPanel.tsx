@@ -86,6 +86,7 @@ export const AgentActiveStatusPanel: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [pending, setPending] = useState<Staff | null>(null);
+  const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
   const [leadCounts, setLeadCounts] = useState<Record<string, number>>({});
   const [leave, setLeave] = useState<LeavePeriod[]>([]);
   const [leaveDraft, setLeaveDraft] = useState<Record<string, LeaveDraft>>({});
