@@ -485,6 +485,13 @@ export const AgentActiveStatusPanel: React.FC = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <StaffAccessHistoryDialog
+          open={!!historyFor}
+          onOpenChange={(o) => { if (!o) setHistoryFor(null); }}
+          adminUserId={historyFor?.id ?? null}
+          staffName={historyFor?.name ?? ''}
+        />
       </CardContent>
     </Card>
   );
