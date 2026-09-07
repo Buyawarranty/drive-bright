@@ -913,6 +913,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
           if (!ownLeads?.error && ownLeads?.data?.length) {
             console.warn('[Leads] Wide fetch returned 0 rows — showing own assigned leads instead');
             allSalesLeadsData = ownLeads.data;
+            usedNarrowFallback = true;
           }
         } catch (ownErr) {
           console.warn('[Leads] Own-leads top-up failed:', ownErr);
