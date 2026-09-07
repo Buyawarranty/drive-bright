@@ -6,6 +6,8 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
+
 
 /**
  * Live rolling round-robin hand-out.
