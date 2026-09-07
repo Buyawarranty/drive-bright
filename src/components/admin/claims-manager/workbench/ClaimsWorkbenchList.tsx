@@ -404,6 +404,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
             onCheckedChange={(v) => onToggleAll(v === true)}
             aria-label="Select all"
           />
+          <span className="text-right">#</span>
           <SortHeader label="Submitted" active={sortKey === 'submitted'} dir={sortDir} onClick={() => toggleSort('submitted')} />
           <span>Actions</span>
           <SortHeader label="SLA" active={sortKey === 'sla'} dir={sortDir} onClick={() => toggleSort('sla')} />
