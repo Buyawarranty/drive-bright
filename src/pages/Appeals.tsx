@@ -549,7 +549,6 @@ const Appeals = () => {
                     );
                   })}
                 </div>
-                <p className="mt-1.5 text-xs text-slate-500">Choosing not to have one costs nothing — our claims manager still reviews your appeal.</p>
                 {errors.independentInspection && <FieldError msg={errors.independentInspection} />}
 
                 {form.independentInspection === 'Yes please' && (
@@ -558,28 +557,52 @@ const Appeals = () => {
                       <div className="w-9 h-9 rounded-lg bg-brand-blue/20 flex items-center justify-center shrink-0">
                         <ShieldCheck className="w-5 h-5 text-brand-blue" />
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <h4 className="font-semibold text-brand-blue-dark text-sm">What happens next</h4>
                         <ul className="mt-2 space-y-1.5 text-sm text-brand-blue-dark/90 leading-relaxed">
                           <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-brand-blue mt-0.5 shrink-0" /> We appoint one independent engineering firm — <strong className="font-medium">ACE</strong> or <strong className="font-medium">Scotia</strong> — based on availability in your area.</li>
                           <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-brand-blue mt-0.5 shrink-0" /> The £140 fee covers the engineer's inspection visit to your vehicle, wherever it is in the UK.</li>
                           <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-brand-blue mt-0.5 shrink-0" /> You accept that the engineer's decision is <strong className="font-medium">full and final</strong>.</li>
                           <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-brand-blue mt-0.5 shrink-0" /> Payment is taken securely by card through Stripe.</li>
+                          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-brand-blue mt-0.5 shrink-0" /> Your secure Stripe payment link for the £140 fee appears as soon as you submit this appeal.</li>
                         </ul>
-                        {token ? (
+                        {token && (
                           <button
                             type="button"
                             onClick={createInspectionLink}
                             disabled={creatingInspectionLink}
                             className="mt-3 inline-flex items-center justify-center rounded-lg bg-brand-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-blue-dark disabled:opacity-60"
                           >
-                            {creatingInspectionLink ? 'Opening secure payment…' : 'Pay £140 securely by card (Stripe)'}
+                            {creatingInspectionLink ? 'Opening secure payment…' : <><Lock className="w-4 h-4 mr-1.5" /> Pay £140 securely by card (Stripe)</>}
                           </button>
-                        ) : (
-                          <p className="mt-3 text-xs text-brand-blue-dark/90">
-                            Your secure Stripe payment link for the £140 fee appears as soon as you submit this appeal.
-                          </p>
                         )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {form.independentInspection === 'Not sure / speak to an expert' && (
+                  <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/60 p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                        <MessageSquare className="w-5 h-5 text-amber-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-slate-900 text-sm">Speak to an expert first</h4>
+                        <p className="mt-1 text-sm text-slate-700 leading-relaxed">
+                          Choosing not to have one costs nothing — our claims manager still reviews your appeal.
+                        </p>
+                        <div className="mt-4 grid gap-3">
+                          <a href={CLAIMS_PHONE_TEL} className="flex items-center gap-2 text-sm text-brand-blue-dark hover:underline">
+                            <Phone className="w-4 h-4 shrink-0" /> <span>Claims line: <strong className="font-medium">{CLAIMS_PHONE}</strong></span>
+                          </a>
+                          <a href={`mailto:${CLAIMS_EMAIL}`} className="flex items-center gap-2 text-sm text-brand-blue-dark hover:underline">
+                            <Mail className="w-4 h-4 shrink-0" /> <span>Email: <strong className="font-medium">{CLAIMS_EMAIL}</strong></span>
+                          </a>
+                          <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-brand-blue-dark hover:underline">
+                            <MessageSquare className="w-4 h-4 shrink-0" /> <span>Message us on WhatsApp</span>
+                          </a>
+                        </div>
                       </div>
                     </div>
                   </div>
