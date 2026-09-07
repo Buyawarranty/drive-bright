@@ -91,8 +91,9 @@ export const LiveStuckCustomersPanel: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-red-800 bg-red-100 border border-red-200 rounded px-2 py-1">
-            {live.length} live
+            {live.filter((r) => getContactCadence(r.created_at).canCall).length} ready to call · {live.length} live
           </span>
+
           <button
             onClick={load}
             className="inline-flex items-center gap-1.5 text-xs font-medium text-red-800 border border-red-300 bg-white rounded px-2 py-1 hover:bg-red-100"
