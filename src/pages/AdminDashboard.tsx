@@ -1017,6 +1017,20 @@ const AdminDashboard = () => {
         return <ClickFraudTab />;
       case 'user-permissions':
         return <UserPermissionsTab />;
+      case 'staff-system-reports': {
+        const canSee =
+          ['super_admin', 'admin', 'performance_manager', 'sales_manager', 'dev_tester'].includes(effectiveUserRole || '') ||
+          (effectiveUserPermissions || []).includes('tab_staff-system-reports');
+        if (!canSee) {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-muted-foreground mt-1">You don't have access to this section.</p>
+            </div>
+          );
+        }
+        return <StaffSystemReportsTab />;
+      }
       case 'lead-teams':
         if (
           !isTabAllowedForRole('lead-teams', effectiveUserRole, effectiveUserPermissions)
