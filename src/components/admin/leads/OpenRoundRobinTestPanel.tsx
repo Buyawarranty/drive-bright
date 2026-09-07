@@ -1409,6 +1409,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           </div>
         </div>
 
+        {isManagerView && (
         <div className="mt-5 pt-4 border-t border-border rounded-lg border border-border bg-muted/30 p-3">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm font-semibold text-foreground">Agents on shift</span>
@@ -1437,8 +1438,10 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             <li>Changing this clears the practice list so the rotation starts clean.</li>
           </ul>
         </div>
+        )}
 
         {/* PHASE 1 — every situation an agent meets, one click each */}
+        {isManagerView && (
         <div className="mt-4 rounded-lg border border-border bg-muted/20 p-3">
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -1498,6 +1501,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             </>
           )}
         </div>
+        )}
 
 
 
