@@ -1020,7 +1020,7 @@ const AdminDashboard = () => {
       case 'staff-system-reports': {
         const canSee =
           ['super_admin', 'admin', 'performance_manager', 'sales_manager', 'dev_tester'].includes(effectiveUserRole || '') ||
-          (effectiveUserPermissions || []).includes('tab_staff-system-reports');
+          effectiveUserPermissions?.['tab_staff-system-reports'] === true;
         if (!canSee) {
           return (
             <div className="p-6">
