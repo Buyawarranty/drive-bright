@@ -1,6 +1,21 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
+
+// The Supabase functions gateway serves function responses as text/plain, which
+// made HTML returned from here show up as raw markup in some browsers. So we do
+// the work and redirect the customer to a real branded page on the website.
+const SITE = "https://buyawarranty.co.uk";
+function redirectTo(state: string, email?: string, token?: string): Response {
+  const params = new URLSearchParams({ state });
+  if (email) params.set("email", email);
+  if (token) params.set("token", token);
+  return new Response(null, {
+    status: 303,
+    headers: { location: `${SITE}/email-preferences/?${params.toString()}`, "cache-control": "no-store" },
+  });
+}
+
 const handler = async (req: Request): Promise<Response> => {
   const url = new URL(req.url);
   const email = url.searchParams.get("email")?.trim().toLowerCase();
