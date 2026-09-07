@@ -45,6 +45,9 @@ export const LiveStuckCustomersPanel: React.FC = () => {
   const [rows, setRows] = useState<StuckRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
+  const [dismissed, setDismissed] = useState<boolean>(() => {
+    try { return localStorage.getItem(DISMISS_KEY) === '1'; } catch { return false; }
+  });
 
   const load = useCallback(async () => {
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
