@@ -35,6 +35,11 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { cn } from '@/lib/utils';
 import type { LeadStatus } from '@/hooks/useLeads';
 import { OrrLogicExplainer, DEFAULT_ORR_CADENCE, type OrrCadenceConfig } from './OrrLogicExplainer';
+import {
+  OrrSandboxLeadsChrome,
+  type SandboxChromeLead,
+  type SandboxStatusChip,
+} from './OrrSandboxLeadsChrome';
 
 type DummyLeadStatus = 'queued' | 'new' | 'reassigned';
 
