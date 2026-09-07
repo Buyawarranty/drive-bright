@@ -1670,14 +1670,14 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         </div>
         <div className="flex flex-col items-end gap-1">
           <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
-            Viewing as sales agent
+            {isManagerView ? 'Viewing as sales agent' : 'You are practising as'}
           </span>
           <select
             className="h-9 w-64 rounded-lg border border-input bg-muted/40 px-3 text-sm font-medium"
             value={simulatedAgentId}
             onChange={(event) => setSimulatedAgentId(event.target.value)}
           >
-            <option value="all">Whole team — everyone&rsquo;s leads</option>
+            {isManagerView && <option value="all">Whole team — everyone&rsquo;s leads</option>}
             {roster.map((agent) => (
               <option key={agent.id} value={agent.id}>
                 {agent.order}. {agent.name} · ext {agent.extension}
@@ -1685,6 +1685,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
             ))}
           </select>
         </div>
+
       </div>
 
       {/* Leads */}
