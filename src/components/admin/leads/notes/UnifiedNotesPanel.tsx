@@ -285,11 +285,17 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   useEffect(() => {
     const pendingQueueItem = readPendingQueuedNotes().find(note => note.leadId === leadId);
     if (!pendingQueueItem) return;
+    // Several notes panels can be mounted at once (one per lead row). Only the
+    // first one to see a queued note replays it, otherwise the same note is
+    // written to the lead several times over.
+    if (replayedQueuedNoteIds.has(pendingQueueItem.id)) return;
+    replayedQueuedNoteIds.add(pendingQueueItem.id);
 
     pendingDraftIdRef.current = pendingQueueItem.id;
     setQuickNoteValue(prev => prev || pendingQueueItem.noteText);
     void commitNote(pendingQueueItem.noteText, { silent: true });
   }, [leadId, commitNote]);
+
 
   // Safety reset: if isSaving is stuck for >10s, auto-reset
   useEffect(() => {
