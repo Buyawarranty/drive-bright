@@ -427,7 +427,7 @@ const Appeals = () => {
 
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               {/* Name — we already hold the rest of your details */}
-              <Field name="firstName" label="Your name" required value={form.firstName} onChange={change} placeholder="e.g. Sarah Hughes" error={errors.firstName} valid={fieldStatus.firstName.valid && showStatus('firstName')} hint="We already hold your details — just your name is fine" />
+              <Field name="firstName" label="Your name" required value={form.firstName} onChange={change} placeholder="e.g. Sarah" error={errors.firstName} valid={fieldStatus.firstName.valid && showStatus('firstName')} hint="We already hold your details — just your first name is fine" />
 
               {/* Registration is the identifier the claim is based on, so it is
                   required and checked against our customer records. */}
