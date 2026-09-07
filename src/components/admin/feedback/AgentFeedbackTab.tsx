@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { SystemCheckInCard } from '@/components/admin/feedback/SystemCheckInForm';
 
 interface Attachment {
   path: string;
@@ -316,6 +317,8 @@ export const AgentFeedbackTab: React.FC<{ userRole: string | null }> = ({ userRo
           Log technical issues, customer feedback, and lead timestamp problems for the management team to review.
         </p>
       </div>
+
+      <SystemCheckInCard />
 
       {/* Submit form */}
       <Card>
