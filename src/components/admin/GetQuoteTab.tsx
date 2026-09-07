@@ -3644,6 +3644,19 @@ Questions? Call 0330 229 5040`;
         claim_limit: displayClaimLimit,
         labour_rate: labourRate,
         final_amount: confirmedAmount,
+        // Freeze the price actually quoted plus the discount given, so the
+        // Customers tab, Discounts given and the sale notification email all
+        // reconcile against the same point-of-sale figures instead of
+        // re-deriving an estimate from today's grid.
+        original_amount: quotedTotalAtSale,
+        discount_amount: discountGivenAtSale,
+        sale_quoted_total: quotedTotalAtSale,
+        sale_discount_amount: discountGivenAtSale,
+        sale_discount_pct: quotedTotalAtSale > 0
+          ? Math.round((discountGivenAtSale / quotedTotalAtSale) * 1000) / 10
+          : 0,
+        sale_price_basis: 'agent_quote',
+
         is_manual_entry: true,
         // Awaits management verification before flipping to true
         payment_verified: false,
