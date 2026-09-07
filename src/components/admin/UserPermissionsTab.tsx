@@ -2739,6 +2739,66 @@ export const UserPermissionsTab = () => {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Archived staff — always restorable */}
+      <Card className="border-slate-300 bg-slate-50/60">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center justify-between gap-2 text-base">
+            <span className="flex items-center gap-2">
+              <RotateCcw className="h-4 w-4" />
+              Archived staff
+              <Badge variant="outline" className="text-xs">{archivedUsers.length}</Badge>
+            </span>
+            <Button variant="outline" size="sm" onClick={() => setShowArchived(v => !v)}>
+              {showArchived ? 'Hide' : 'Show'}
+            </Button>
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Deleted or archived logins are kept here with their history. Restore one at any time to switch it
+            back on and edit its role and section access — you never need to re-invite them.
+          </p>
+        </CardHeader>
+        {showArchived && (
+          <CardContent>
+            {archivedUsers.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No archived staff.</p>
+            ) : (
+              <div className="space-y-2">
+                {archivedUsers.map(u => (
+                  <div
+                    key={u.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-background px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {`${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {u.email} · {u.role}
+                        {u.archived_at ? ` · archived ${new Date(u.archived_at).toLocaleDateString('en-GB')}` : ''}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" onClick={() => setHistoryFor({
+                        id: u.id,
+                        name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email,
+                      })}>
+                        <History className="h-3.5 w-3.5 mr-1" />
+                        On/off history
+                      </Button>
+                      <Button size="sm" onClick={() => handleRestoreUser(u.id)}>
+                        <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                        Restore
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        )}
+      </Card>
+
       {/* Super Admin Only: User Credentials Overview */}
       {currentAdminUser?.role === 'super_admin' && (
         <Card className="border-amber-200 bg-amber-50/50">
