@@ -8,6 +8,7 @@ import { getMarketingSavings, type PaymentPeriod } from '@/lib/pricingMatrix';
 
 import trustpilotStars from '@/assets/trustpilot-5-stars.png';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
+import { payInFullTotal } from '@/lib/pricing/payInFull';
 import { getPaymentPreference, setPaymentPreference } from '@/lib/checkoutPaymentPreference';
 import WhatsCoveredAccordion from './WhatsCoveredAccordion';
 import WhatsNotCoveredAccordion from './WhatsNotCoveredAccordion';
