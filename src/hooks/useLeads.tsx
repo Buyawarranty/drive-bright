@@ -1095,11 +1095,14 @@ export const useLeads = (options?: UseLeadsOptions) => {
         return;
       }
 
-      if (recentOptimisticUpdatesRef.current.size > 0) {
+      if (recentOptimisticUpdatesRef.current.size > 0 || usedNarrowFallback) {
         setLeads(prev => {
           const protectedLeads = new Map<string, Lead>();
           prev.forEach(lead => {
-            if (recentOptimisticUpdatesRef.current.has(lead.id)) {
+            // Rows just changed on screen are always protected. When this
+            // refresh only managed a narrow slice, protect every row already
+            // shown so nothing silently drops out of the list.
+            if (usedNarrowFallback || recentOptimisticUpdatesRef.current.has(lead.id)) {
               protectedLeads.set(lead.id, lead);
             }
           });
@@ -1108,9 +1111,11 @@ export const useLeads = (options?: UseLeadsOptions) => {
             protectedLeads.has(lead.id) ? protectedLeads.get(lead.id)! : lead
           );
 
+          const mergedIds = new Set(merged.map(l => l.id));
           protectedLeads.forEach((lead, id) => {
-            if (!merged.find(l => l.id === id)) {
+            if (!mergedIds.has(id)) {
               merged.push(lead);
+              mergedIds.add(id);
             }
           });
 
