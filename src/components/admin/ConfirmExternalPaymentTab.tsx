@@ -849,31 +849,14 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
         // customer was FIRST quoted, not against a grid price recalculated at
         // confirmation time (config tweaks like labour rate can quietly shrink it).
         // So take the highest quoted total logged for this reg in the last 14 days.
-        let effectiveQuoted = Math.round(quotedTotal * 100) / 100;
-        try {
-          const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
-          // Plates are logged inconsistently ("R20 PTT" vs "R20PTT"), so match on
-          // every spacing variant AND re-check normalised equality in code. A
-          // spacing mismatch used to silently hide the original quote, which made
-          // genuine discounts show as "No discount given".
-          const normReg = (v: string) => (v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-          const target = normReg(editableRegNumber);
-          const spaced = target.length > 3 ? `${target.slice(0, target.length - 3)} ${target.slice(-3)}` : target;
-          const variants = Array.from(new Set([editableRegNumber.trim(), target, spaced].filter(Boolean)));
-          const { data: priorQuotes } = await supabase
-            .from('price_override_audit')
-            .select('matrix_total, created_at, vehicle_reg')
-            .or(variants.map(v => `vehicle_reg.ilike.${v}`).join(','))
-            .gte('created_at', since)
-            .order('created_at', { ascending: true })
-            .limit(50);
-          const highestPrior = (priorQuotes || [])
-            .filter((r: any) => normReg(r.vehicle_reg) === target)
-            .reduce((max, r: any) => Math.max(max, Number(r.matrix_total) || 0), 0);
-          if (highestPrior > effectiveQuoted) effectiveQuoted = Math.round(highestPrior * 100) / 100;
-        } catch {
-          /* fall back to the grid price shown at confirmation */
-        }
+        // Every quote on record for this plate (price logs and quotes emailed to
+        // the customer), whatever spacing the plate was saved with. The highest
+        // one wins, so a real discount is never saved as zero.
+        let effectiveQuoted = await resolveHighestQuotedTotal(
+          editableRegNumber,
+          Math.round(quotedTotal * 100) / 100
+        );
+
 
         // Validation: the recorded quote can never sit below the Quotes & Orders
         // grid price for these exact options, so a low figure can't quietly zero
