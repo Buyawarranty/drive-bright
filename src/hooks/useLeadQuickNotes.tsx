@@ -552,11 +552,14 @@ export const useLeadQuickNotes = (leadId: string) => {
           }
         };
         updateNotes(prev => {
-          const withoutOptimistic = prev.filter(n => n.id !== optimisticNote.id);
+          const withoutOptimistic = prev.filter(
+            n => n.id !== optimisticNote.id && n.id !== newNote.id
+          );
           const pinned = withoutOptimistic.filter(n => n.is_pinned);
           const unpinned = withoutOptimistic.filter(n => !n.is_pinned);
           return [...pinned, newNote, ...unpinned];
         });
+
 
         touchLeadActivity(leadId);
 
