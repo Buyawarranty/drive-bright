@@ -184,13 +184,17 @@ export function RollingRoundRobinLivePanel({ canEdit, readOnly = false }: { canE
 
   useEffect(() => {
     if (!auto || !allowWrites) return;
-    const kick = setTimeout(() => runPass(true), 1200);
-    const t = setInterval(() => runPass(true), AUTO_INTERVAL_MS);
+    // PERF: a background or duplicate CRM tab must not keep running hand-out
+    // passes — only the tab the manager is actually looking at does the work.
+    const guarded = () => { if (document.hidden || isSecondaryCrmTab()) return; runPass(true); };
+    const kick = setTimeout(guarded, 1200);
+    const t = setInterval(guarded, AUTO_INTERVAL_MS);
     return () => {
       clearTimeout(kick);
       clearInterval(t);
     };
   }, [auto, allowWrites, runPass]);
+
 
   const perAgent = useMemo(() => {
     const map: Record<string, { open: number; overdue: number }> = {};
