@@ -4,6 +4,8 @@ import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 import { getNetPayableFloor } from '@/lib/pricing/netFloor';
 import { getSoldVsReference } from '@/lib/pricing/soldVsReference';
+import { resolveHighestQuotedTotal } from '@/lib/pricing/quotedTotalLookup';
+
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
