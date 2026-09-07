@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { buildSaleCreditResolver, fetchSalesCreditAgentIds } from '@/lib/saleCredit';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -64,6 +65,17 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
     to: new Date(),
   });
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  // Back-office staff (support@, accounts@, admins) often confirm a payment on an
+  // agent's behalf — they must never take the sale, so credit falls through to the
+  // sales agent who actually worked the deal.
+  const [salesAgentIds, setSalesAgentIds] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    let cancelled = false;
+    fetchSalesCreditAgentIds().then(ids => {
+      if (!cancelled) setSalesAgentIds(ids);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   const handleChange = (range: DateRange | undefined) => {
     setSelectedDay(null);
@@ -92,6 +104,7 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
   };
 
   const { data, agents, rows, totals } = useMemo(() => {
+    const resolveSaleCredit = buildSaleCreditResolver(salesAgentIds);
     const from = startOfDay(dateRange?.from || subDays(new Date(), 13));
     const to = startOfDay(dateRange?.to || dateRange?.from || new Date());
 
@@ -113,13 +126,7 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
       const key = format(new Date(c.signup_date), 'yyyy-MM-dd');
       if (!dayKeys.has(key)) return;
 
-      const agentId =
-        c.sale_credit_admin_user_id ||
-        c.payment_confirmed_by ||
-        c.quote_sent_by ||
-        c.payment_collected_by ||
-        c.assigned_to ||
-        'website';
+      const agentId = resolveSaleCredit(c) || 'website';
 
       const amount = Number(c.final_amount) || 0;
       const dayMap = grid.get(key)!;
@@ -184,7 +191,7 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
         dayCount: days.length,
       },
     };
-  }, [customers, sourceFilter, dateRange, adminUsers]);
+  }, [customers, sourceFilter, dateRange, adminUsers, salesAgentIds]);
 
   const dayView = useMemo(() => {
     if (!selectedDay) return null;
