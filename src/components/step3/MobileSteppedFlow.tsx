@@ -176,9 +176,11 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   const years = paymentType === '36months' ? 3 : paymentType === '24months' ? 2 : 1;
   const oneYearMonthly = calculateMonthlyPrice('12months');
   const selectedMonthly = currentMonthlyPrice;
+  // Multi-year saving is marketing copy only — it must never reduce the payable total.
   const marketingSavings = years > 1
     ? Math.max(0, (oneYearMonthly * years - selectedMonthly) * 12)
     : 0;
+  void marketingSavings;
   const paymentsCount = 12;
 
   return (
@@ -517,7 +519,7 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         selectedPayment={stickyPayment}
         onPaymentChange={handleStickyPaymentChange}
         monthlyPrice={discountedMonthlyPrice}
-        fullPrice={Math.max(0, discountedMonthlyPrice * 12 - marketingSavings)}
+        fullPrice={Math.floor(discountedMonthlyPrice * 12 * 0.9)}
         paymentType={paymentType || '24months'}
         isLoading={isLoading}
         isFormValid={canAdvance}
