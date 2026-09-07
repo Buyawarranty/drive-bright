@@ -35,6 +35,11 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { cn } from '@/lib/utils';
 import type { LeadStatus } from '@/hooks/useLeads';
 import { OrrLogicExplainer, DEFAULT_ORR_CADENCE, type OrrCadenceConfig } from './OrrLogicExplainer';
+import {
+  OrrSandboxLeadsChrome,
+  type SandboxChromeLead,
+  type SandboxStatusChip,
+} from './OrrSandboxLeadsChrome';
 
 type DummyLeadStatus = 'queued' | 'new' | 'reassigned';
 
@@ -688,18 +693,63 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
     return () => window.clearInterval(clock);
   }, []);
 
-  const visibleLeads = useMemo(
+  // Same toolbar controls as the live New Leads page, working on practice leads only.
+  const [chromeSearch, setChromeSearch] = useState('');
+  const [chromeStatusChip, setChromeStatusChip] = useState<SandboxStatusChip>('all');
+  const [chromeSort, setChromeSort] = useState<'newest' | 'oldest'>('newest');
+
+  const rosterLeads = useMemo(
     () =>
-      leads
-        .filter((lead) =>
-          simulatedAgentId === 'all'
-            ? lead.assignedTo !== null || lead.status === 'queued'
-            : lead.assignedTo === simulatedAgentId && !lead.waiting,
-        )
-        // Open Round Robin leads always sit at the top — they are the ones on a clock.
-        .sort((a, b) => Number(isOrr(b)) - Number(isOrr(a))),
+      leads.filter((lead) =>
+        simulatedAgentId === 'all'
+          ? lead.assignedTo !== null || lead.status === 'queued'
+          : lead.assignedTo === simulatedAgentId && !lead.waiting,
+      ),
     [leads, simulatedAgentId],
   );
+
+  const chromeLeads = useMemo<SandboxChromeLead[]>(
+    () =>
+      rosterLeads.map((lead) => ({
+        id: lead.id,
+        firstName: lead.firstName,
+        lastName: lead.lastName,
+        email: lead.email,
+        phone: lead.phone,
+        vehicleReg: lead.vehicleReg,
+        displayStatus: lead.displayStatus,
+        createdAt: lead.createdAt,
+      })),
+    [rosterLeads],
+  );
+
+  const liveHeldCount = useMemo(() => {
+    const now = Date.now();
+    return rosterLeads.filter((lead) => isHeldLive(lead, now)).length;
+  }, [rosterLeads, tick]);
+
+  const visibleLeads = useMemo(() => {
+    const term = chromeSearch.trim().toLowerCase();
+    const now = Date.now();
+    return rosterLeads
+      .filter((lead) => {
+        if (chromeStatusChip === 'live') return isHeldLive(lead, now);
+        if (chromeStatusChip !== 'all' && lead.displayStatus !== chromeStatusChip) return false;
+        if (!term) return true;
+        return [
+          `${lead.firstName} ${lead.lastName}`,
+          lead.email,
+          lead.phone,
+          lead.vehicleReg,
+        ].some((field) => (field ?? '').toLowerCase().includes(term));
+      })
+      // Open Round Robin leads always sit at the top — they are the ones on a clock.
+      .sort((a, b) => {
+        const orr = Number(isOrr(b)) - Number(isOrr(a));
+        if (orr !== 0) return orr;
+        return chromeSort === 'newest' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt;
+      });
+  }, [rosterLeads, chromeSearch, chromeStatusChip, chromeSort, tick]);
 
 
   const queuedLeads = useMemo(() => leads.filter((lead) => lead.status === 'queued'), [leads]);
@@ -1425,6 +1475,30 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
           )}
         </ul>
       </div>
+
+      {/* Same page furniture as New Leads, driven by the practice leads only */}
+      <OrrSandboxLeadsChrome
+        leads={chromeLeads}
+        liveHeldCount={liveHeldCount}
+        agents={roster.map((agent) => ({ id: agent.id, name: agent.name }))}
+        teamLabel={theme.label}
+        isManagerView={isManagerView}
+        search={chromeSearch}
+        onSearchChange={setChromeSearch}
+        statusChip={chromeStatusChip}
+        onStatusChipChange={setChromeStatusChip}
+        agentFilter={simulatedAgentId}
+        onAgentFilterChange={setSimulatedAgentId}
+        sort={chromeSort}
+        onSortChange={setChromeSort}
+        onClearFilters={() => {
+          setChromeSearch('');
+          setChromeStatusChip('all');
+          setChromeSort('newest');
+          if (isManagerView) setSimulatedAgentId('all');
+        }}
+        agentName={roster.find((agent) => agent.id === simulatedAgentId)?.name}
+      />
 
       {/* Header card */}
       <section className="rounded-xl border border-border bg-card shadow-sm p-5">
