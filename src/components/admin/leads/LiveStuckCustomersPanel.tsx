@@ -116,6 +116,14 @@ export const LiveStuckCustomersPanel: React.FC = () => {
           {updatedAt && (
             <span className="text-[11px] text-red-700/70">updated {updatedAt.toLocaleTimeString()}</span>
           )}
+          <button
+            onClick={closePanel}
+            className="inline-flex items-center justify-center text-red-800 border border-red-300 bg-white rounded p-1.5 hover:bg-red-100"
+            title="Close panel"
+            aria-label="Close live stuck customers panel"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
 
