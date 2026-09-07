@@ -548,6 +548,7 @@ const AdminDashboard = () => {
   const hasCheckedAccessRef = React.useRef(false);
   const accessAttemptsRef = React.useRef(0);
   const [accessCheckStalled, setAccessCheckStalled] = useState(false);
+  const [accountDeactivated, setAccountDeactivated] = useState(false);
   // True while we're showing the shell from cached (last-known) access and the
   // server verification hasn't come back yet.
   const [accessFromCache, setAccessFromCache] = useState(false);
@@ -742,10 +743,17 @@ const AdminDashboard = () => {
 
       // Permissions load in the background — the shell is already usable.
       const permissionsResult = await withTimeout(
-        supabase.from('admin_users').select('id, permissions').eq('user_id', currentUser.id).maybeSingle(),
+        supabase.from('admin_users').select('id, permissions, is_active').eq('user_id', currentUser.id).maybeSingle(),
         12000
       );
       const adminUserData = permissionsResult?.data ?? null;
+
+      // A switched-off staff account can't read any data, which used to paint a
+      // blank dashboard. Say so plainly instead.
+      if (adminUserData && (adminUserData as any).is_active === false) {
+        setAccountDeactivated(true);
+        return;
+      }
 
       if (adminUserData?.id) {
         setAdminUserId(adminUserData.id);
