@@ -125,13 +125,7 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
       const key = format(new Date(c.signup_date), 'yyyy-MM-dd');
       if (!dayKeys.has(key)) return;
 
-      const agentId =
-        c.sale_credit_admin_user_id ||
-        c.payment_confirmed_by ||
-        c.quote_sent_by ||
-        c.payment_collected_by ||
-        c.assigned_to ||
-        'website';
+      const agentId = resolveSaleCredit(c) || 'website';
 
       const amount = Number(c.final_amount) || 0;
       const dayMap = grid.get(key)!;
