@@ -1,4 +1,7 @@
 import { useNavigate } from 'react-router-dom';
+import { X } from 'lucide-react';
+
+const APPEALS_NOTICE_KEY = 'claims-appeals-notice-dismissed';
 import React, { useState, useEffect, useMemo } from 'react';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 import { AdminNotification } from '@/hooks/useAdminNotifications';
@@ -102,6 +105,9 @@ export const ClaimsTab = ({
   const [rangeExportFrom, setRangeExportFrom] = useState('');
   const [rangeExportTo, setRangeExportTo] = useState('');
   const navigate = useNavigate();
+  const [appealsNoticeHidden, setAppealsNoticeHidden] = useState<boolean>(() => {
+    try { return localStorage.getItem(APPEALS_NOTICE_KEY) === '1'; } catch { return false; }
+  });
   const [claims, setClaims] = useState<ClaimSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
@@ -334,46 +340,42 @@ export const ClaimsTab = ({
       {/* Due reminders — sticky banner across every claims sub-tab */}
       <ClaimRemindersBanner onManage={() => setActiveSubTab('reminders')} />
 
-      {/* Appeal received back — banner across every claims sub-tab */}
-      {appealsTotalCount > 0 && (
-        <div className="rounded-xl border-2 border-[#E8541A] bg-orange-50 px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#E8541A]">
-              <Gavel className="h-4 w-4 text-white" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-[#1A2B4A]">
-                {appealsTotalCount} appeal{appealsTotalCount === 1 ? '' : 's'} back from customers
-                {appealsUnreadCount > 0 ? ` — ${appealsUnreadCount} new` : ''}
-              </p>
-              <p className="text-xs text-slate-600">Sent in from the online appeal form. Full details are in the Appeals section below.</p>
-
-            </div>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {appealsTotalCount === 1 && returnedAppeals[0]?.claimId && (
-              <Button
-                size="sm"
-                className="bg-[#E8541A] hover:bg-[#cf4915] text-white"
-                onClick={() => navigate(`/admin/claims/${returnedAppeals[0].claimId}`)}
-              >
-                Open customer's claim
-              </Button>
-            )}
-            <Button
-              size="sm"
-              variant={appealsTotalCount === 1 ? 'outline' : 'default'}
-              className={appealsTotalCount === 1 ? 'bg-white' : 'bg-[#E8541A] hover:bg-[#cf4915] text-white'}
-              onClick={() => {
-                setActiveSubTab('claims');
-                setTimeout(() => {
-                  document.getElementById('appeals-inbox-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 150);
-              }}
-            >
-              View appeals
-            </Button>
-          </div>
+      {/* Appeal received back — small, closable notification line */}
+      {appealsTotalCount > 0 && !appealsNoticeHidden && (
+        <div className="rounded-lg border border-[#E8541A]/40 bg-orange-50/70 px-3 py-1.5 flex items-center gap-2 text-xs">
+          <Gavel className="h-3.5 w-3.5 text-[#E8541A] shrink-0" />
+          <span className="font-medium text-[#1A2B4A]">
+            {appealsTotalCount} appeal{appealsTotalCount === 1 ? '' : 's'} back from customers
+            {appealsUnreadCount > 0 ? ` — ${appealsUnreadCount} new` : ''}
+          </span>
+          <button
+            type="button"
+            className="text-[#E8541A] font-semibold underline hover:no-underline"
+            onClick={() => {
+              const claimId = returnedAppeals[0]?.claimId;
+              if (claimId) {
+                navigate(`/admin/claims/${claimId}`);
+                return;
+              }
+              setActiveSubTab('claims');
+              setTimeout(() => {
+                document.getElementById('appeals-inbox-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 150);
+            }}
+          >
+            View appeal{appealsTotalCount === 1 ? '' : 's'}
+          </button>
+          <button
+            type="button"
+            aria-label="Close appeals notice"
+            className="ml-auto text-slate-400 hover:text-slate-700"
+            onClick={() => {
+              setAppealsNoticeHidden(true);
+              try { localStorage.setItem(APPEALS_NOTICE_KEY, '1'); } catch { /* ignore */ }
+            }}
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
         </div>
       )}
 
