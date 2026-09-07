@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { isAlertsMuted } from '@/lib/alertSoundPreference';
+import { consumeAlertSound } from '@/lib/alertSoundBudget';
 
 const ROLES_REQUIRED = ['sales', 'sales_lead', 'sales_manager', 'lead_gen', 'claims_agent', 'claims_manager'];
 
@@ -60,6 +61,7 @@ export const WorkingWeekReminderBanner = ({ userRole }: { userRole: string | nul
   // Beep when the pop-up appears (respects the global mute preference).
   useEffect(() => {
     if (!open || isAlertsMuted()) return;
+    if (!consumeAlertSound()) return;
     try {
       const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
       if (!Ctx) return;

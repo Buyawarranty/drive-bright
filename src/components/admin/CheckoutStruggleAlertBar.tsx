@@ -10,6 +10,7 @@ import {
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { isTestStruggle } from '@/lib/checkoutStruggleTest';
 import { getContactCadence } from '@/lib/checkoutContactCadence';
+import { consumeAlertSound } from '@/lib/alertSoundBudget';
 
 
 interface StruggleAlert {
@@ -60,6 +61,7 @@ const HIDDEN_KEY = 'checkout-struggle-hidden-ids';
 // Short attention beep — synthesised at runtime so no audio asset is shipped.
 let _beepCtx: AudioContext | null = null;
 const playStruggleBeep = () => {
+  if (!consumeAlertSound()) return;
   try {
     const Ctor = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext | undefined;
     if (!Ctor) return;
