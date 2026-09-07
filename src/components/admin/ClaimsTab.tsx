@@ -97,6 +97,7 @@ export const ClaimsTab = ({
   const canExportClaims =
     MANAGER_EXPORT_ROLES.includes(userRole || '') ||
     (user?.email || '').toLowerCase().startsWith('accounts@');
+  const canViewClaimsIntelligence = CLAIMS_INTELLIGENCE_ROLES.includes(userRole || '');
   const [rangeExportOpen, setRangeExportOpen] = useState(false);
   const [rangeExportFrom, setRangeExportFrom] = useState('');
   const [rangeExportTo, setRangeExportTo] = useState('');
