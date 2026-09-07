@@ -276,10 +276,8 @@ const IndependentInspection: React.FC = () => {
     </footer>
   );
 
-  // Rendered inside the bank's 3DS iframe — parent page handles completion.
-  if (wp3dsReturn && window.self !== window.top) {
-    return null;
-  }
+
+
 
   if (loading) {
     return (
