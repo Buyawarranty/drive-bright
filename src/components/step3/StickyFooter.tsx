@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowRight, Lock, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { payInFullSaving, payInFullTotal, twelvePaymentTotal } from '@/lib/pricing/payInFull';
 
 interface StickyFooterProps {
   monthlyPrice: number;
@@ -34,9 +35,9 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
     }
   }, [monthlyPrice, prevPrice]);
 
-  const payInFull = monthlyPrice * 12;
-  const stripeSavings = Math.floor(payInFull * 0.10);
-  const payInFullDiscounted = payInFull - stripeSavings;
+  const payInFull = twelvePaymentTotal(monthlyPrice);
+  const stripeSavings = payInFullSaving(monthlyPrice);
+  const payInFullDiscounted = payInFullTotal(monthlyPrice);
   const pencePerDay = Math.round((monthlyPrice * 12) / 365);
   const dayLabel = pencePerDay >= 100 ? `£${(pencePerDay / 100).toFixed(2)}` : `${pencePerDay}p`;
 
