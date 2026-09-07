@@ -13,7 +13,8 @@ export type AccessChangeSource =
   | 'Staff list (User permissions)'
   | 'Agents on/off (Lead teams)'
   | 'Offboarding panel'
-  | 'Temporary logins panel';
+  | 'Temporary logins panel'
+  | 'Restored from archive (User permissions)';
 
 export type AccessEvent = {
   id: string;
