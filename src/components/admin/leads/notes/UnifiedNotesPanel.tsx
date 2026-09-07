@@ -30,6 +30,10 @@ import { Clock } from 'lucide-react';
 
 const NOTE_DRAFT_STORAGE_KEY_PREFIX = 'lead-quick-note-draft:';
 
+/** Queued notes already replayed in this browser session — see the replay effect. */
+const replayedQueuedNoteIds = new Set<string>();
+
+
 /**
  * Reservation countdown badge shown inside the Quick Log Outcome header.
  * Defaults visually to 2:00 when a reservation exists so agents always see
