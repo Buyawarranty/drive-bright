@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertTriangle, Phone, RefreshCw, Copy, Mail } from 'lucide-react';
+import { AlertTriangle, Phone, RefreshCw, Copy, Mail, X } from 'lucide-react';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { isTestStruggle } from '@/lib/checkoutStruggleTest';
 import { CADENCE_BULLETS, getContactCadence } from '@/lib/checkoutContactCadence';
+
+const DISMISS_KEY = 'live-stuck-customers-panel-dismissed';
 
 
 interface StuckRow {
@@ -43,6 +45,9 @@ export const LiveStuckCustomersPanel: React.FC = () => {
   const [rows, setRows] = useState<StuckRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
+  const [dismissed, setDismissed] = useState<boolean>(() => {
+    try { return localStorage.getItem(DISMISS_KEY) === '1'; } catch { return false; }
+  });
 
   const load = useCallback(async () => {
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -59,6 +64,7 @@ export const LiveStuckCustomersPanel: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (dismissed) return;
     load();
     const channel = supabase
       .channel('live-stuck-customers')
@@ -69,7 +75,14 @@ export const LiveStuckCustomersPanel: React.FC = () => {
       supabase.removeChannel(channel);
       stop();
     };
-  }, [load]);
+  }, [load, dismissed]);
+
+  const closePanel = () => {
+    setDismissed(true);
+    try { localStorage.setItem(DISMISS_KEY, '1'); } catch { /* ignore */ }
+  };
+
+  if (dismissed) return null;
 
   const live = useMemo(() => rows.filter((r) => !isTestRow(r)), [rows]);
 
@@ -103,6 +116,14 @@ export const LiveStuckCustomersPanel: React.FC = () => {
           {updatedAt && (
             <span className="text-[11px] text-red-700/70">updated {updatedAt.toLocaleTimeString()}</span>
           )}
+          <button
+            onClick={closePanel}
+            className="inline-flex items-center justify-center text-red-800 border border-red-300 bg-white rounded p-1.5 hover:bg-red-100"
+            title="Close panel"
+            aria-label="Close live stuck customers panel"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
 
