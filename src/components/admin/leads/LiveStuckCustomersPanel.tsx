@@ -64,6 +64,7 @@ export const LiveStuckCustomersPanel: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (dismissed) return;
     load();
     const channel = supabase
       .channel('live-stuck-customers')
@@ -74,7 +75,14 @@ export const LiveStuckCustomersPanel: React.FC = () => {
       supabase.removeChannel(channel);
       stop();
     };
-  }, [load]);
+  }, [load, dismissed]);
+
+  const closePanel = () => {
+    setDismissed(true);
+    try { localStorage.setItem(DISMISS_KEY, '1'); } catch { /* ignore */ }
+  };
+
+  if (dismissed) return null;
 
   const live = useMemo(() => rows.filter((r) => !isTestRow(r)), [rows]);
 
