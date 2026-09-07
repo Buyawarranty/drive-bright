@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -86,120 +87,50 @@ serve(async (req: Request) => {
 
     if (updateError) throw new Error(updateError.message);
 
-    const username = Deno.env.get("WORLDPAY_USERNAME");
-    const password = Deno.env.get("WORLDPAY_PASSWORD");
-    const entityRef = Deno.env.get("WORLDPAY_ENTITY_REF");
-    const env = (Deno.env.get("WORLDPAY_ENV") || "sandbox").toLowerCase();
-    if (!username || !password || !entityRef) {
-      throw new Error("Worldpay credentials not configured");
-    }
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
+    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-    const primary = env === "live"
-      ? "https://access.worldpay.com"
-      : "https://try.access.worldpay.com";
-    const secondary = env === "live"
-      ? "https://try.access.worldpay.com"
-      : "https://access.worldpay.com";
-
-    const transactionReference = `BAW-INSP-${crypto.randomUUID()}`;
     const site = Deno.env.get("SITE_URL") || "https://buyawarranty.co.uk";
     const fee = Number(reqRow.fee_amount) > 0 ? Number(reqRow.fee_amount) : 140;
     const reg = (reqRow.vehicle_registration || "").toUpperCase();
 
-    const wpBody: Record<string, unknown> = {
-      transactionReference,
-      merchant: { entity: entityRef },
-      narrative: { line1: "Buy A Warranty".slice(0, 24) },
-      value: { currency: "GBP", amount: Math.round(fee * 100) },
-      description: `Independent inspection${reg ? ` – ${reg}` : ""}`.slice(0, 128),
-      resultURLs: {
-        successURL: `${site}/independent-inspection/${reqRow.token}?paid=1&ref=${encodeURIComponent(transactionReference)}`,
-        pendingURL: `${site}/independent-inspection/${reqRow.token}?paid=1&ref=${encodeURIComponent(transactionReference)}`,
-        failureURL: `${site}/independent-inspection/${reqRow.token}?status=failed`,
-        errorURL: `${site}/independent-inspection/${reqRow.token}?status=error`,
-        cancelURL: `${site}/independent-inspection/${reqRow.token}?cancelled=1`,
-        expiryURL: `${site}/independent-inspection/${reqRow.token}?status=expired`,
-      },
-    };
+    log("Creating Stripe Checkout session", { fee, reg });
 
-    const encodedCredentials = btoa(`${username}:${password}`);
-    const authValues = [`Basic ${encodedCredentials}`, encodedCredentials];
-    const hppContentType = "application/vnd.worldpay.payment_pages-v1.hal+json";
-
-    const candidates = [`${primary}/payment_pages`, `${secondary}/payment_pages`];
-
-    log("Calling Worldpay", { candidates, transactionReference, fee });
-
-    let wpRes: Response | null = null;
-    let wpText = "";
-    let wpJson: any = {};
-    let lastError = "";
-
-    for (const url of Array.from(new Set(candidates))) {
-      for (const authValue of authValues) {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: {
-            Authorization: authValue,
-            "Content-Type": hppContentType,
-            Accept: hppContentType,
-            "WP-CorrelationId": transactionReference,
-            "User-Agent": "BuyAWarranty-Inspection/1.0",
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      customer_email: reqRow.customer_email || undefined,
+      line_items: [
+        {
+          price_data: {
+            currency: "gbp",
+            unit_amount: Math.round(fee * 100),
+            product_data: {
+              name: `Independent inspection${reg ? ` \u2013 ${reg}` : ""}`,
+              description: "Independent inspection fee for a warranty claim appeal",
+            },
           },
-          body: JSON.stringify(wpBody),
-        });
-        const text = await res.text();
-        if (res.ok) {
-          wpRes = res;
-          wpText = text;
-          try { wpJson = JSON.parse(text); } catch { /* ignore */ }
-          break;
-        }
-        log("Worldpay attempt failed", { url, status: res.status, authStyle: authValue.startsWith("Basic ") ? "basic-prefix" : "encoded-only", body: text.slice(0, 500) });
-        lastError = `${res.status} ${text.slice(0, 300)}`;
-      }
-      if (wpRes) break;
-    }
-
-    if (!wpRes) {
-      const denied = /accessDenied|Access to the requested resource has been denied|Invalid authentication/i.test(lastError);
-      return new Response(JSON.stringify({
-        error: denied
-          ? "Worldpay Hosted Payment Pages access is denied for the saved merchant credentials"
-          : "Worldpay request failed",
-        details: denied
-          ? "Worldpay accepted the request format but denied access to /payment_pages. Enable Hosted Payment Pages / Pay by Link for this merchant entity, or update WORLDPAY_USERNAME, WORLDPAY_PASSWORD and WORLDPAY_ENTITY_REF to credentials with HPP access."
-          : lastError || "no endpoint reachable",
-      }), {
-        status: 502,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const paymentUrl: string | undefined = wpJson?.url
-      || wpJson?._links?.["payment_pages:url"]?.href;
-
-    if (!paymentUrl) {
-      log("No payment URL in response", wpJson);
-      return new Response(JSON.stringify({ error: "Worldpay returned no payment URL", details: wpJson }), {
-        status: 502,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    await supabase.from("worldpay_transactions").insert({
-      customer_id: null,
-      flow: "ecom",
-      environment: env === "live" ? "live" : "sandbox",
-      amount_pence: Math.round(fee * 100),
-      currency: "GBP",
-      description: `Independent inspection fee (${reqRow.vehicle_registration || "vehicle"})`,
-      customer_email: reqRow.customer_email ?? null,
-      worldpay_link_id: transactionReference,
-      worldpay_link_url: paymentUrl,
-      status: "pending",
-      raw_response: wpJson,
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        purpose: "claim_inspection",
+        inspection_request_id: reqRow.id,
+        inspection_token: reqRow.token,
+        vehicle_registration: reg,
+      },
+      success_url: `${site}/independent-inspection/${reqRow.token}?paid=1&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${site}/independent-inspection/${reqRow.token}?cancelled=1`,
     });
+
+    const paymentUrl = session.url;
+    if (!paymentUrl) throw new Error("Stripe returned no checkout URL");
+
+    await supabase
+      .from("claim_inspection_requests")
+      .update({ stripe_session_id: session.id })
+      .eq("id", reqRow.id);
 
     return new Response(JSON.stringify({ success: true, checkout_url: paymentUrl }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
