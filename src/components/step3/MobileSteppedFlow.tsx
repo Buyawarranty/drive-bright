@@ -517,9 +517,8 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
         selectedPayment={stickyPayment}
         onPaymentChange={handleStickyPaymentChange}
         monthlyPrice={discountedMonthlyPrice}
-        {/* Pay in full = 10% off the 12-payment total (same rule as step 4).
-            It must NEVER subtract the multi-year marketing saving, which produced
-            impossible totals like £360 on a £84/mo 2-year quote. */}
+        // Pay in full = 10% off the 12-payment total (same rule as step 4). Never
+        // subtract the multi-year marketing saving — that gave impossible totals (£360).
         fullPrice={Math.floor(discountedMonthlyPrice * 12 * 0.9)}
         paymentType={paymentType || '24months'}
         isLoading={isLoading}
