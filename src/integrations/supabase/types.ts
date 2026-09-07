@@ -12142,6 +12142,84 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_system_reports: {
+        Row: {
+          admin_email: string | null
+          admin_name: string | null
+          admin_user_id: string | null
+          browser: string | null
+          browser_version: string | null
+          connection_type: string | null
+          cpu_cores: number | null
+          created_at: string
+          description: string | null
+          device_memory_gb: number | null
+          device_type: string | null
+          downlink_mbps: number | null
+          id: string
+          load_bucket: string | null
+          os: string | null
+          page_load_ms: number | null
+          problem_type: string | null
+          role: string | null
+          route: string | null
+          screen: string | null
+          screen_size: string | null
+          speed_rating: number
+          user_agent: string | null
+        }
+        Insert: {
+          admin_email?: string | null
+          admin_name?: string | null
+          admin_user_id?: string | null
+          browser?: string | null
+          browser_version?: string | null
+          connection_type?: string | null
+          cpu_cores?: number | null
+          created_at?: string
+          description?: string | null
+          device_memory_gb?: number | null
+          device_type?: string | null
+          downlink_mbps?: number | null
+          id?: string
+          load_bucket?: string | null
+          os?: string | null
+          page_load_ms?: number | null
+          problem_type?: string | null
+          role?: string | null
+          route?: string | null
+          screen?: string | null
+          screen_size?: string | null
+          speed_rating?: number
+          user_agent?: string | null
+        }
+        Update: {
+          admin_email?: string | null
+          admin_name?: string | null
+          admin_user_id?: string | null
+          browser?: string | null
+          browser_version?: string | null
+          connection_type?: string | null
+          cpu_cores?: number | null
+          created_at?: string
+          description?: string | null
+          device_memory_gb?: number | null
+          device_type?: string | null
+          downlink_mbps?: number | null
+          id?: string
+          load_bucket?: string | null
+          os?: string | null
+          page_load_ms?: number | null
+          problem_type?: string | null
+          role?: string | null
+          route?: string | null
+          screen?: string | null
+          screen_size?: string | null
+          speed_rating?: number
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       staff_timesheets: {
         Row: {
           admin_user_id: string | null
