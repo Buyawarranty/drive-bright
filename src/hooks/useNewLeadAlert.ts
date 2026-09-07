@@ -6,6 +6,7 @@ import { isAlertsMuted } from '@/lib/alertSoundPreference';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { fetchByIdsInBatches } from '@/utils/batchedIn';
 import { withPriority } from '@/lib/requestQueue';
+import { consumeAlertSound } from '@/lib/alertSoundBudget';
 
 
 // Business-hours gate — pop-ups AND beeps only fire 09:00–18:00 Europe/London.
@@ -53,6 +54,7 @@ const isAssignedDuringWorkHours = (iso: string | null): boolean => {
 // Short attention beep — synthesised at runtime so we don't ship an audio asset.
 let _audioCtx: AudioContext | null = null;
 export const playNewLeadBeep = () => {
+  if (!consumeAlertSound()) return;
   if (isAlertsMuted()) return;
   if (!isBeepBusinessHours()) return;
   try {
