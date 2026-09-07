@@ -896,10 +896,21 @@ export const UserPermissionsTab = () => {
 
   const handleInviteUser = async () => {
     try {
+      // An archived login with the same email blocks a fresh invite — offer to restore instead.
+      const existingArchived = archivedUsers.find(
+        u => (u.email || '').trim().toLowerCase() === inviteData.email.trim().toLowerCase()
+      );
+      if (existingArchived) {
+        toast.error('That email already has an archived staff login. Restore it from "Archived staff" below instead of inviting again.');
+        setShowArchived(true);
+        return;
+      }
+
       const { teamId, ...invitePayload } = inviteData;
       const { data, error } = await supabase.functions.invoke('invite-admin-user', {
         body: invitePayload
       });
+
 
       if (error) throw error;
 
