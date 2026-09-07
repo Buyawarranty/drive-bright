@@ -994,7 +994,15 @@ export const useLeads = (options?: UseLeadsOptions) => {
         if (email) {
           if (!seenEmails.has(email)) {
             seenEmails.add(email);
-            deduplicatedLeads.push(pickCanonical(emailGroups[email]));
+            const group = emailGroups[email];
+            // Keep showing the same row for this customer as last time, as long
+            // as it is still in the group — otherwise the visible row can swap
+            // to a duplicate on every refresh (looks like it disappeared).
+            const stickyId = canonicalRowByEmailRef.current.get(email);
+            const sticky = stickyId ? group.find((row: any) => row.id === stickyId) : undefined;
+            const chosen = sticky || pickCanonical(group);
+            canonicalRowByEmailRef.current.set(email, chosen.id);
+            deduplicatedLeads.push(chosen);
           }
         } else {
           deduplicatedLeads.push(lead);
