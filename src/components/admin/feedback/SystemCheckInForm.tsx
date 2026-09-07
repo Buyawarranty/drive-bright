@@ -88,13 +88,13 @@ export const SystemCheckInFormBody: React.FC<{ onSubmitted?: () => void }> = ({ 
     if (!session?.user?.id) return;
     supabase
       .from('admin_users')
-      .select('id, name, email, role')
+      .select('id, first_name, last_name, email, role')
       .eq('user_id', session.user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (!data) return;
         setAdminUserId(data.id);
-        setAdminName(data.name || data.email);
+        setAdminName([data.first_name, data.last_name].filter(Boolean).join(' ') || data.email);
         setAdminRole(data.role);
       });
   }, [session?.user?.id]);
