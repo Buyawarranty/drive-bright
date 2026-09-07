@@ -258,6 +258,10 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
           >
             <span className="break-words">
               🚨 <strong>{who}</strong> is {label}{device}{method}{reg}{failMsg}
+              <span className="ml-2 text-xs font-semibold bg-white/20 rounded px-1.5 py-0.5 whitespace-nowrap">
+                {getContactCadence(top.created_at).minutes}m ago · call window open
+              </span>
+
             </span>
 
             {telHref && (
