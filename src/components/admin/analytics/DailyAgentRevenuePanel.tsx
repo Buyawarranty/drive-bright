@@ -104,6 +104,7 @@ export const DailyAgentRevenuePanel: React.FC<Props> = ({ customers, sourceFilte
   };
 
   const { data, agents, rows, totals } = useMemo(() => {
+    const resolveSaleCredit = buildSaleCreditResolver(salesAgentIds);
     const from = startOfDay(dateRange?.from || subDays(new Date(), 13));
     const to = startOfDay(dateRange?.to || dateRange?.from || new Date());
 
