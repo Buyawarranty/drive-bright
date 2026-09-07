@@ -129,7 +129,7 @@ const EmailPreferences: React.FC = () => {
       <SEOHead
         title="Email preferences | Buy A Warranty"
         description="Manage the marketing emails you receive from Buy A Warranty, or unsubscribe completely."
-        noIndex
+        noindex
       />
       <main className="flex-1 flex items-center justify-center px-4 py-16">
         <div className="w-full max-w-xl bg-card border-2 border-border rounded-xl shadow-lg p-8 sm:p-12 text-center">
