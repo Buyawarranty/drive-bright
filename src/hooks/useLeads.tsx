@@ -846,6 +846,12 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
       const isSearching = !!serverSearchTermRef.current?.trim();
 
+      // True when this refresh could only load a narrower slice than usual
+      // (wide query timed out / came back empty). In that case we must NOT drop
+      // rows that are already on screen — that is what made leads vanish and
+      // then reappear on the next successful refresh.
+      let usedNarrowFallback = false;
+
       let allSalesLeadsResult: any;
       try {
         allSalesLeadsResult = await runWideLeadsFetch();
