@@ -13,8 +13,10 @@ import { Input } from '@/components/ui/input';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Power, ShieldOff, ArrowRightLeft, Database, CalendarOff, X } from 'lucide-react';
+import { Loader2, Power, ShieldOff, ArrowRightLeft, Database, CalendarOff, X, History } from 'lucide-react';
 import { toast } from 'sonner';
+import StaffAccessHistoryDialog from '@/components/admin/StaffAccessHistoryDialog';
+import { tagAccessChange } from '@/lib/adminAccessLog';
 
 type Staff = {
   id: string;
@@ -84,6 +86,7 @@ export const AgentActiveStatusPanel: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [pending, setPending] = useState<Staff | null>(null);
+  const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
   const [leadCounts, setLeadCounts] = useState<Record<string, number>>({});
   const [leave, setLeave] = useState<LeavePeriod[]>([]);
   const [leaveDraft, setLeaveDraft] = useState<Record<string, LeaveDraft>>({});
@@ -197,6 +200,7 @@ export const AgentActiveStatusPanel: React.FC = () => {
       toast.error(`Could not update ${nameOf(agent)} — ${error.message}`);
       return;
     }
+    await tagAccessChange(agent.id, on, 'Agents on/off (Lead teams)');
     setStaff(prev => prev.map(s => (s.id === agent.id ? { ...s, is_active: on } : s)));
     toast.success(
       on
@@ -296,6 +300,15 @@ export const AgentActiveStatusPanel: React.FC = () => {
                       ) : (
                         <Badge variant="outline" className="text-[10px] border-emerald-500/40 text-emerald-600">On</Badge>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-[11px] text-muted-foreground"
+                        onClick={() => setHistoryFor({ id: s.id, name: nameOf(s) })}
+                        title="See who switched this login on or off, and when"
+                      >
+                        <History className="h-3.5 w-3.5 mr-1" /> History
+                      </Button>
                       {savingId === s.id
                         ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                         : <Switch checked onCheckedChange={() => setPending(s)} />}
@@ -429,6 +442,15 @@ export const AgentActiveStatusPanel: React.FC = () => {
                     <Button size="sm" variant="outline" className="h-7 text-xs" onClick={scrollToOffboarding}>
                       <ArrowRightLeft className="h-3 w-3 mr-1" /> Redistribute leads
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2 text-[11px] text-muted-foreground"
+                      onClick={() => setHistoryFor({ id: s.id, name: nameOf(s) })}
+                      title="See who switched this login on or off, and when"
+                    >
+                      <History className="h-3.5 w-3.5 mr-1" /> History
+                    </Button>
                     {!s.archived_at && (
                       savingId === s.id
                         ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -463,6 +485,13 @@ export const AgentActiveStatusPanel: React.FC = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <StaffAccessHistoryDialog
+          open={!!historyFor}
+          onOpenChange={(o) => { if (!o) setHistoryFor(null); }}
+          adminUserId={historyFor?.id ?? null}
+          staffName={historyFor?.name ?? ''}
+        />
       </CardContent>
     </Card>
   );

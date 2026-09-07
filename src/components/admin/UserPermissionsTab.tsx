@@ -15,7 +15,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { toast } from 'sonner';
-import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube, ChevronDown, ChevronRight, FileText, Pencil, LogIn, ExternalLink, Info, PauseCircle, PlayCircle, X } from 'lucide-react';
+import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube, ChevronDown, ChevronRight, FileText, Pencil, LogIn, ExternalLink, Info, PauseCircle, PlayCircle, X, History } from 'lucide-react';
+import StaffAccessHistoryDialog from './StaffAccessHistoryDialog';
+import { tagAccessChange } from '@/lib/adminAccessLog';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
 import { ViewAsStaffButton } from './ViewAsStaffButton';
 
@@ -317,6 +319,7 @@ const loginUrlForRole = (role?: string | null) =>
 export const UserPermissionsTab = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -1021,7 +1024,9 @@ export const UserPermissionsTab = () => {
         .eq('id', userId);
 
       if (error) throw error;
-      
+
+      await tagAccessChange(userId, !isActive, 'Staff list (User permissions)');
+
       toast.success(`User ${!isActive ? 'reactivated' : 'deactivated (temporarily blocked)'} successfully`);
       fetchUsers();
     } catch (error) {
@@ -2572,6 +2577,14 @@ export const UserPermissionsTab = () => {
                       )}
                       <Button
                         size="sm"
+                        variant="outline"
+                        onClick={() => setHistoryFor({ id: user.id, name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email })}
+                        title="See who switched this login on or off, and when"
+                      >
+                        <History className="h-4 w-4 mr-1" /> On/off history
+                      </Button>
+                      <Button
+                        size="sm"
                         variant="secondary"
                         onClick={() => handleResendInvite(user.id, user.email)}
                         title="Resend Invite"
@@ -2813,6 +2826,13 @@ export const UserPermissionsTab = () => {
 
       {/* Access log — start & end dates */}
       <AdminAccessLogPanel />
+
+      <StaffAccessHistoryDialog
+        open={!!historyFor}
+        onOpenChange={(o) => { if (!o) setHistoryFor(null); }}
+        adminUserId={historyFor?.id ?? null}
+        staffName={historyFor?.name ?? ''}
+      />
     </div>
   );
 };
