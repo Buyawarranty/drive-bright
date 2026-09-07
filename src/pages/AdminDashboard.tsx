@@ -44,6 +44,8 @@ import { installAdminStallGuard } from '@/lib/adminStallGuard';
 const AdminUiEventLogPanel = lazy(() => import('@/components/admin/AdminUiEventLogPanel'));
 const PaymentsPendingTab = lazy(() => import('@/components/admin/PaymentsPendingTab'));
 const SalesStaffPerformancePanel = lazy(() => import('@/components/admin/SalesStaffPerformancePanel'));
+const StaffSystemReportsTab = lazy(() => import('@/components/admin/StaffSystemReportsTab'));
+import { SystemCheckInButton } from '@/components/admin/feedback/SystemCheckInForm';
 
 import { WorkingWeekReminderBanner } from '@/components/admin/timesheets/WorkingWeekReminderBanner';
 import { DiscountAuthBanner } from '@/components/admin/DiscountAuthBanner';
@@ -1015,6 +1017,20 @@ const AdminDashboard = () => {
         return <ClickFraudTab />;
       case 'user-permissions':
         return <UserPermissionsTab />;
+      case 'staff-system-reports': {
+        const canSee =
+          ['super_admin', 'admin', 'performance_manager', 'sales_manager', 'dev_tester'].includes(effectiveUserRole || '') ||
+          effectiveUserPermissions?.['tab_staff-system-reports'] === true;
+        if (!canSee) {
+          return (
+            <div className="p-6">
+              <h2 className="text-xl font-semibold">Access denied</h2>
+              <p className="text-muted-foreground mt-1">You don't have access to this section.</p>
+            </div>
+          );
+        }
+        return <StaffSystemReportsTab />;
+      }
       case 'lead-teams':
         if (
           !isTabAllowedForRole('lead-teams', effectiveUserRole, effectiveUserPermissions)
@@ -1278,6 +1294,8 @@ const AdminDashboardInner: React.FC<{
 
               
               <GlobalQuickReminderButton />
+              <SystemCheckInButton />
+
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
 
                 <SheetTrigger asChild>
