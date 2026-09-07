@@ -35,8 +35,21 @@ const validators: Record<string, (v: any, f: FormState) => string> = {
   firstName: (v) => (!String(v).trim() ? 'Please enter your name' : ''),
   lastName: () => '',
   claimRef: () => '',
-  registrationPlate: (v) =>
-    !String(v).trim() ? 'Please enter your vehicle registration' : '',
+  registrationPlate: (v) => {
+    const s = String(v).replace(/\s+/g, '').toUpperCase();
+    if (!s) return 'Please enter your vehicle registration';
+    if (!/^[A-Z0-9]{2,8}$/.test(s)) return 'Please use letters and numbers only, e.g. AB12 CDE';
+    const ukFormats = [
+      /^[A-Z]{2}[0-9]{2}[A-Z]{3}$/,      // AB12 CDE
+      /^[A-Z][0-9]{1,3}[A-Z]{3}$/,       // A123 BCD
+      /^[A-Z]{3}[0-9]{1,3}[A-Z]$/,       // ABC 123D
+      /^[A-Z]{1,3}[0-9]{1,4}$/,          // ABC 1234
+      /^[0-9]{1,4}[A-Z]{1,3}$/,          // 1234 AB
+];
+    if (!ukFormats.some((r) => r.test(s))) return "That doesn't look like a UK registration — please check it";
+    return '';
+  },
+
   warrantyNumber: () => '',
   decisionDate: () => '',
   newEvidence: (v) => {
@@ -414,7 +427,7 @@ const Appeals = () => {
 
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               {/* Name — we already hold the rest of your details */}
-              <Field name="firstName" label="Your name" required value={form.firstName} onChange={change} placeholder="e.g. Sarah Hughes" error={errors.firstName} valid={fieldStatus.firstName.valid && showStatus('firstName')} hint="We already hold your details — just your name is fine" />
+              <Field name="firstName" label="Your name" required value={form.firstName} onChange={change} placeholder="e.g. Sarah" error={errors.firstName} valid={fieldStatus.firstName.valid && showStatus('firstName')} hint="We already hold your details — just your first name is fine" />
 
               {/* Registration is the identifier the claim is based on, so it is
                   required and checked against our customer records. */}
@@ -456,7 +469,7 @@ const Appeals = () => {
 
 
               {!requestMode && (
-                <Field name="claimRef" label="Claim reference" value={form.claimRef} onChange={change} placeholder="Optional — if you have it" error={errors.claimRef} valid={fieldStatus.claimRef.valid && showStatus('claimRef')} />
+                <Field name="claimRef" label="Claim reference (optional)" value={form.claimRef} onChange={change} placeholder="If you have it" error={errors.claimRef} valid={fieldStatus.claimRef.valid && showStatus('claimRef')} />
               )}
 
               {!requestMode && (
