@@ -620,6 +620,8 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
   const [leads, setLeads] = useState<DummyLead[]>([]);
   const nextAgentIndexRef = useRef(0);
   const [simulatedAgentId, setSimulatedAgentId] = useState<string>('all');
+  const [roleView, setRoleView] = useState<'manager' | 'agent'>('manager');
+  const isManagerView = roleView === 'manager';
   // How many agents are "on shift" for this rehearsal (1–4).
   // Default rehearsal: two agents live, which is the everyday picture on the floor.
   const [agentCount, setAgentCount] = useState(2);
@@ -1377,6 +1379,49 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
 
   return (
     <div className="space-y-4">
+      {/* Who is practising — manager/super admin view vs sales agent view */}
+      <div className="rounded-xl border border-border bg-card shadow-sm p-3 flex flex-wrap items-center gap-3">
+        <span className="text-sm font-semibold text-foreground">Practice as</span>
+        <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
+          <button
+            type="button"
+            onClick={() => { setRoleView('manager'); setSimulatedAgentId('all'); }}
+            className={cn(
+              'px-3 py-1.5 text-xs font-semibold transition-colors',
+              isManagerView ? 'bg-teal-600 text-white' : 'bg-background text-muted-foreground hover:bg-muted',
+            )}
+          >
+            Manager / super admin
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setRoleView('agent');
+              setSimulatedAgentId((current) => (current === 'all' ? (roster[0]?.id ?? 'all') : current));
+            }}
+            className={cn(
+              'px-3 py-1.5 text-xs font-semibold border-l border-border transition-colors',
+              !isManagerView ? 'bg-teal-600 text-white' : 'bg-background text-muted-foreground hover:bg-muted',
+            )}
+          >
+            Sales agent
+          </button>
+        </div>
+        <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-0.5">
+          {isManagerView ? (
+            <>
+              <li>Full setup: agents on shift, scenarios, the 09:00 release and the timing rules.</li>
+              <li>You can watch the whole team or look through any one agent&rsquo;s eyes.</li>
+            </>
+          ) : (
+            <>
+              <li>Exactly what a sales agent sees — only their own leads and buttons.</li>
+              <li>Setup, scenarios and timing rules are hidden.</li>
+            </>
+          )}
+        </ul>
+      </div>
+
       {/* Header card */}
       <section className="rounded-xl border border-border bg-card shadow-sm p-5">
         <div className="flex items-start justify-between flex-wrap gap-4">
@@ -1394,14 +1439,18 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                 </span>
 
                 <span className="rounded-full bg-muted text-muted-foreground text-[11px] font-medium px-2.5 py-0.5">
-                  Managers only
+                  {isManagerView ? 'Manager & super admin view' : 'Sales agent view'}
                 </span>
                 <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-[11px] font-medium px-2.5 py-0.5">
                   Nothing counts
                 </span>
               </div>
               <ul className="text-sm text-muted-foreground list-disc pl-4 space-y-1 leading-relaxed max-w-2xl">
-                <li>Rehearse the 2-minute first-call window, pass-on, agent view, phone column, click-to-dial and copy button.</li>
+                <li>
+                  {isManagerView
+                    ? 'Set the shift up, run a scenario and watch the 2-minute first-call window, pass-on, phone column, click-to-dial and copy button.'
+                    : 'Practise your own leads: answer inside the 2-minute window, call, copy the number and let one pass on.'}
+                </li>
                 <li>{dataSource === 'live' ? 'Live leads mode shows a read-only copy of real leads.' : 'Every name here is made up.'}</li>
                 <li>Nothing is written back, no customer is contacted and no agent's figures change.</li>
               </ul>
