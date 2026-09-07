@@ -93,6 +93,40 @@ const isAbandonedCartLeadId = (leadId: string) => leadId.startsWith('cart_');
 const getActualLeadId = (leadId: string) => isAbandonedCartLeadId(leadId) ? leadId.replace('cart_', '') : leadId;
 const NOTE_SAVE_TIMEOUT_MS = 8000;
 
+/**
+ * Duplicate guard.
+ *
+ * The same note text can reach the database from several places at once: the
+ * Save button, the auto-save on closing the panel, the tab-hidden / page-hide
+ * handlers, and the offline queue replay (which runs both in this hook and on
+ * every notes panel that mounts). When one of those is slow the agent presses
+ * Save again, so the note used to land 10+ times on the lead.
+ *
+ * Before inserting we look for an identical note on the same lead written in
+ * the last few minutes. If one exists we treat the save as already done.
+ */
+const DUPLICATE_WINDOW_MS = 5 * 60 * 1000;
+
+const findRecentDuplicateNote = async (leadId: string, noteText: string) => {
+  try {
+    const since = new Date(Date.now() - DUPLICATE_WINDOW_MS).toISOString();
+    const { data } = await supabase
+      .from('lead_quick_notes')
+      .select('*')
+      .eq('lead_id', leadId)
+      .eq('note_text', noteText)
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return data || null;
+  } catch {
+    return null;
+  }
+};
+
+
+
 // Bump the lead's last_activity_date so the "Activity" column reflects
 // note additions/edits. Fire-and-forget — errors logged, never thrown.
 const touchLeadActivity = (leadId: string) => {
@@ -409,20 +443,24 @@ export const useLeadQuickNotes = (leadId: string) => {
 
             if (updateError) throw updateError;
           } else {
-            const { error: insertError } = await withTimeout<any>(
-              supabase
-                .from('lead_quick_notes')
-                .insert({
-                  lead_id: queuedLeadId,
-                  note_text: queuedNote.noteText.trim(),
-                  created_by: adminUser.id
-                }),
-              NOTE_SAVE_TIMEOUT_MS,
-              'Queued note save timed out'
-            );
+            const alreadySaved = await findRecentDuplicateNote(queuedLeadId, queuedNote.noteText.trim());
+            if (!alreadySaved) {
+              const { error: insertError } = await withTimeout<any>(
+                supabase
+                  .from('lead_quick_notes')
+                  .insert({
+                    lead_id: queuedLeadId,
+                    note_text: queuedNote.noteText.trim(),
+                    created_by: adminUser.id
+                  }),
+                NOTE_SAVE_TIMEOUT_MS,
+                'Queued note save timed out'
+              );
 
-            if (insertError) throw insertError;
+              if (insertError) throw insertError;
+            }
           }
+
 
           flushedLeadIds.add(queuedLeadId);
           touchLeadActivity(queuedLeadId);
@@ -484,17 +522,24 @@ export const useLeadQuickNotes = (leadId: string) => {
         fetchNotes(true).catch(e => console.warn('[addNote] Background refetch error:', e));
         return { id: `cart_note_${actualId}`, note_text: updatedNotes };
       } else {
-        const { data, error } = await supabase
-          .from('lead_quick_notes')
-          .insert({
-            lead_id: leadId,
-            note_text: noteText.trim(),
-            created_by: adminUser.id
-          })
-          .select()
-          .maybeSingle();
+        // If the same note is already on the lead from moments ago, reuse it
+        // instead of writing a second copy.
+        const existing = await findRecentDuplicateNote(leadId, noteText.trim());
+
+        const { data, error } = existing
+          ? { data: existing, error: null }
+          : await supabase
+              .from('lead_quick_notes')
+              .insert({
+                lead_id: leadId,
+                note_text: noteText.trim(),
+                created_by: adminUser.id
+              })
+              .select()
+              .maybeSingle();
 
         if (error) throw error;
+
 
         // CRITICAL: Update local state immediately with the new note
         // This ensures the note appears instantly without waiting for refetch
@@ -507,11 +552,14 @@ export const useLeadQuickNotes = (leadId: string) => {
           }
         };
         updateNotes(prev => {
-          const withoutOptimistic = prev.filter(n => n.id !== optimisticNote.id);
+          const withoutOptimistic = prev.filter(
+            n => n.id !== optimisticNote.id && n.id !== newNote.id
+          );
           const pinned = withoutOptimistic.filter(n => n.is_pinned);
           const unpinned = withoutOptimistic.filter(n => !n.is_pinned);
           return [...pinned, newNote, ...unpinned];
         });
+
 
         touchLeadActivity(leadId);
 

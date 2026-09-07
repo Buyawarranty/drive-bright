@@ -30,6 +30,10 @@ import { Clock } from 'lucide-react';
 
 const NOTE_DRAFT_STORAGE_KEY_PREFIX = 'lead-quick-note-draft:';
 
+/** Queued notes already replayed in this browser session — see the replay effect. */
+const replayedQueuedNoteIds = new Set<string>();
+
+
 /**
  * Reservation countdown badge shown inside the Quick Log Outcome header.
  * Defaults visually to 2:00 when a reservation exists so agents always see
@@ -285,11 +289,17 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   useEffect(() => {
     const pendingQueueItem = readPendingQueuedNotes().find(note => note.leadId === leadId);
     if (!pendingQueueItem) return;
+    // Several notes panels can be mounted at once (one per lead row). Only the
+    // first one to see a queued note replays it, otherwise the same note is
+    // written to the lead several times over.
+    if (replayedQueuedNoteIds.has(pendingQueueItem.id)) return;
+    replayedQueuedNoteIds.add(pendingQueueItem.id);
 
     pendingDraftIdRef.current = pendingQueueItem.id;
     setQuickNoteValue(prev => prev || pendingQueueItem.noteText);
     void commitNote(pendingQueueItem.noteText, { silent: true });
   }, [leadId, commitNote]);
+
 
   // Safety reset: if isSaving is stuck for >10s, auto-reset
   useEffect(() => {
