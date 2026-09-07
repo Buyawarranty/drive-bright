@@ -861,6 +861,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
         // `all-leads` permission) falls back to their own recent leads rather
         // than rendering a completely blank New Leads screen.
         if (!currentAdmin?.id) throw wideErr;
+        usedNarrowFallback = true;
         console.warn('[Leads] Wide fetch failed, falling back to recent assigned leads:', wideErr);
         // This fallback runs precisely when the connection is already struggling
         // (the wide fetch just timed out), so it needs its own timeout too —
