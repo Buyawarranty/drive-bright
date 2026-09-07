@@ -9,6 +9,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { isTestStruggle } from '@/lib/checkoutStruggleTest';
+import { getContactCadence } from '@/lib/checkoutContactCadence';
+
 
 interface StruggleAlert {
   id: string;
@@ -120,11 +122,15 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
       .from('checkout_struggle_alerts')
       .select('*')
       .eq('status', 'active')
-      .gte('created_at', new Date(Date.now() - 30 * 60 * 1000).toISOString()) // last 30 min
+      .gte('created_at', new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()) // last 2 hours
       .order('created_at', { ascending: false })
       .limit(20);
-    // Internal test / sandbox traffic must never show as a live stuck customer.
-    const list = ((data as StruggleAlert[]) || []).filter((a) => !isTestStruggle(a));
+    // Internal test / sandbox traffic must never show as a live stuck customer,
+    // and we only interrupt the team once the calling window opens (30–60 min).
+    const list = ((data as StruggleAlert[]) || []).filter(
+      (a) => !isTestStruggle(a) && getContactCadence(a.created_at).shouldAlert,
+    );
+
     // Beep once per new alert id we haven't seen before this session.
     let hasNew = false;
     for (const a of list) {
@@ -252,6 +258,10 @@ export const CheckoutStruggleAlertBar: React.FC<Props> = ({ userRole }) => {
           >
             <span className="break-words">
               🚨 <strong>{who}</strong> is {label}{device}{method}{reg}{failMsg}
+              <span className="ml-2 text-xs font-semibold bg-white/20 rounded px-1.5 py-0.5 whitespace-nowrap">
+                {getContactCadence(top.created_at).minutes}m ago · call window open
+              </span>
+
             </span>
 
             {telHref && (
