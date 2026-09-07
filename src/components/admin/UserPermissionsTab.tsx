@@ -1024,7 +1024,9 @@ export const UserPermissionsTab = () => {
         .eq('id', userId);
 
       if (error) throw error;
-      
+
+      await tagAccessChange(userId, !isActive, 'Staff list (User permissions)');
+
       toast.success(`User ${!isActive ? 'reactivated' : 'deactivated (temporarily blocked)'} successfully`);
       fetchUsers();
     } catch (error) {
@@ -2824,6 +2826,13 @@ export const UserPermissionsTab = () => {
 
       {/* Access log — start & end dates */}
       <AdminAccessLogPanel />
+
+      <StaffAccessHistoryDialog
+        open={!!historyFor}
+        onOpenChange={(o) => { if (!o) setHistoryFor(null); }}
+        adminUserId={historyFor?.id ?? null}
+        staffName={historyFor?.name ?? ''}
+      />
     </div>
   );
 };
