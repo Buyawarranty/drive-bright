@@ -14080,6 +14080,25 @@ export type Database = {
         Returns: number
       }
       marketing_customer_state: { Args: { _email: string }; Returns: string }
+      match_repeat_customers: {
+        Args: {
+          p_emails?: string[]
+          p_names?: string[]
+          p_phone_tails?: string[]
+          p_regs?: string[]
+        }
+        Returns: {
+          email: string
+          id: string
+          name: string
+          phone: string
+          plan_type: string
+          registration_plate: string
+          signup_date: string
+          status: string
+          warranty_number: string
+        }[]
+      }
       migrate_orphan_carts_to_leads: { Args: never; Returns: Json }
       missed_call_pass: { Args: { p_call_id: string }; Returns: boolean }
       missed_call_rotate_offers: { Args: never; Returns: number }
