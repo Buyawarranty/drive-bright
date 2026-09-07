@@ -1278,6 +1278,8 @@ const AdminDashboardInner: React.FC<{
 
               
               <GlobalQuickReminderButton />
+              <SystemCheckInButton />
+
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
 
                 <SheetTrigger asChild>
