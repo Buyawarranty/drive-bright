@@ -3508,14 +3508,21 @@ Questions? Call 0330 229 5040`;
     // everything given away from that list price, whether it came from a pushed
     // quote or from typing a lower figure in the confirm box, so the CRM, the
     // "discount given" report and the sale email all agree.
-    const quotedTotalAtSale = Math.max(
+    const quotedOnScreen = Math.max(
       Math.round(currentPrice.monthlyPrice * 12),
       quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : 0,
     );
-    const discountGivenAtSale = Math.max(
-      0,
-      Math.round(((quotedTotalAtSale || 0) - (Number.isFinite(confirmedAmount) ? confirmedAmount : 0)) * 100) / 100,
+    // Also check every quote already on record for this plate, so a discount is
+    // never saved as zero just because the on-screen price has since changed.
+    const quotedTotalAtSale = await resolveHighestQuotedTotal(
+      (editableRegNumber || vehicleData.regNumber || ''),
+      quotedOnScreen,
     );
+    const discountGivenAtSale = discountGiven(
+      quotedTotalAtSale,
+      Number.isFinite(confirmedAmount) ? confirmedAmount : 0,
+    );
+
 
 
     // Audit-only: record who typed a custom price and how it compares to the grid.
