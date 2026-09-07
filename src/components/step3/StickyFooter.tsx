@@ -34,9 +34,9 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
     }
   }, [monthlyPrice, prevPrice]);
 
-  const payInFull = monthlyPrice * 12;
-  const stripeSavings = Math.floor(payInFull * 0.10);
-  const payInFullDiscounted = payInFull - stripeSavings;
+  const payInFull = twelvePaymentTotal(monthlyPrice);
+  const stripeSavings = payInFullSaving(monthlyPrice);
+  const payInFullDiscounted = payInFullTotal(monthlyPrice);
   const pencePerDay = Math.round((monthlyPrice * 12) / 365);
   const dayLabel = pencePerDay >= 100 ? `£${(pencePerDay / 100).toFixed(2)}` : `${pencePerDay}p`;
 
