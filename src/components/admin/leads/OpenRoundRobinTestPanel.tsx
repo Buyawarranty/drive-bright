@@ -1476,6 +1476,30 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
         </ul>
       </div>
 
+      {/* Same page furniture as New Leads, driven by the practice leads only */}
+      <OrrSandboxLeadsChrome
+        leads={chromeLeads}
+        liveHeldCount={liveHeldCount}
+        agents={roster.map((agent) => ({ id: agent.id, name: agent.name }))}
+        teamLabel={theme.label}
+        isManagerView={isManagerView}
+        search={chromeSearch}
+        onSearchChange={setChromeSearch}
+        statusChip={chromeStatusChip}
+        onStatusChipChange={setChromeStatusChip}
+        agentFilter={simulatedAgentId}
+        onAgentFilterChange={setSimulatedAgentId}
+        sort={chromeSort}
+        onSortChange={setChromeSort}
+        onClearFilters={() => {
+          setChromeSearch('');
+          setChromeStatusChip('all');
+          setChromeSort('newest');
+          if (isManagerView) setSimulatedAgentId('all');
+        }}
+        agentName={roster.find((agent) => agent.id === simulatedAgentId)?.name}
+      />
+
       {/* Header card */}
       <section className="rounded-xl border border-border bg-card shadow-sm p-5">
         <div className="flex items-start justify-between flex-wrap gap-4">
