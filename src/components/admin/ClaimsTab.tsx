@@ -1,4 +1,7 @@
 import { useNavigate } from 'react-router-dom';
+import { X } from 'lucide-react';
+
+const APPEALS_NOTICE_KEY = 'claims-appeals-notice-dismissed';
 import React, { useState, useEffect, useMemo } from 'react';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 import { AdminNotification } from '@/hooks/useAdminNotifications';
@@ -102,6 +105,9 @@ export const ClaimsTab = ({
   const [rangeExportFrom, setRangeExportFrom] = useState('');
   const [rangeExportTo, setRangeExportTo] = useState('');
   const navigate = useNavigate();
+  const [appealsNoticeHidden, setAppealsNoticeHidden] = useState<boolean>(() => {
+    try { return localStorage.getItem(APPEALS_NOTICE_KEY) === '1'; } catch { return false; }
+  });
   const [claims, setClaims] = useState<ClaimSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
