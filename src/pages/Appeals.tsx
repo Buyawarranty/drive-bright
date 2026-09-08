@@ -212,6 +212,10 @@ const Appeals = () => {
       setTouched({});
       setErrors({});
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      // They asked for an independent inspection — take them straight to payment.
+      if (!requestMode && chosenInspection === 'Yes please' && data.token) {
+        createInspectionLink(data.token);
+      }
     } catch (err: any) {
       toast({ title: 'Submission failed', description: err.message || `Please try again or email ${CLAIMS_EMAIL}`, variant: 'destructive' });
     } finally {
@@ -219,8 +223,8 @@ const Appeals = () => {
     }
   };
 
-  const createInspectionLink = async () => {
-    const payToken = submittedToken || token;
+  const createInspectionLink = async (overrideToken?: string) => {
+    const payToken = overrideToken || submittedToken || token;
     if (!payToken || creatingInspectionLink) return;
     setCreatingInspectionLink(true);
     try {
@@ -236,6 +240,7 @@ const Appeals = () => {
       setCreatingInspectionLink(false);
     }
   };
+
 
   const showStatus = (name: string) => touched[name] || !!(form as any)[name];
 
