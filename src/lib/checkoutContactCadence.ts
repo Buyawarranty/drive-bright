@@ -14,7 +14,7 @@
 export type ContactStage = 'settle' | 'nudge' | 'call' | 'retry' | 'lead';
 
 export const SETTLE_MINUTES = 15;
-export const NUDGE_MINUTES = 30;
+export const NUDGE_MINUTES = 15;
 export const CALL_MINUTES = 60;
 export const STOP_MINUTES = 24 * 60;
 
@@ -111,8 +111,7 @@ export const getContactCadence = (createdAt: string): CadenceInfo => {
 /** Plain-English cadence, shown to agents above the live list. */
 export const CADENCE_BULLETS: string[] = [
   'First 15 minutes: leave them alone — they are still buying.',
-  '15–30 minutes: a short helpful text or email, no call.',
-  '30–60 minutes: one call, highest value and intent first.',
+  '15–60 minutes: one call, highest value and intent first.',
   'No answer: wait 3–4 hours or the next business day before trying again.',
   'After 24 hours: stop calling and work it as a normal lead.',
 ];
