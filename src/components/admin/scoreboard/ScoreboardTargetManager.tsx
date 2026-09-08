@@ -172,7 +172,7 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
           Monthly revenue targets — {format(monthStart, 'MMMM yyyy')}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Set each agent's revenue target (£) for the month. Default is £35,000. Progress shows in the Target column of the leaderboard.
+          Set each agent's revenue target (£) for the month. Default is £35,000. The figures below are this month only, matching Team progress — the leaderboard above can be set to other periods.
         </p>
         <div className="flex gap-2 mt-2">
           <Button size="sm" variant="outline" onClick={setAllToDefault}>
