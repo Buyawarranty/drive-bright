@@ -99,6 +99,23 @@ serve(async (req) => {
       throw new Error("Sales agent assignment is required before confirming payment");
     }
 
+    // A confirmed sale can ONLY be credited to a sales agent. Back-office
+    // logins (accounts@, support@, info@) and managers often confirm on an
+    // agent's behalf — they must never take the sale.
+    {
+      const { data: assignee } = await supabase
+        .from('admin_users')
+        .select('id, role, email')
+        .eq('id', assigneeId)
+        .maybeSingle();
+      const role = assignee?.role || null;
+      if (role !== 'sales' && role !== 'sales_lead') {
+        throw new Error(
+          "This sale must be credited to a sales agent. Admin, accounts, support and manager logins cannot hold a sale — select the sales agent who converted it.",
+        );
+      }
+    }
+
     // Check for existing customer by email AND registration plate
     const incomingReg = (vehicleReg || '').toUpperCase().replace(/\s/g, '');
     const { data: existingCustomer } = await supabase
