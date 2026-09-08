@@ -18,6 +18,7 @@ import {
 import { AlertTriangle, Download, Gauge, Monitor, RefreshCw, Users } from 'lucide-react';
 import { describeEnvironment } from '@/lib/systemEnvironment';
 import { LOAD_OPTIONS, PROBLEM_OPTIONS, RATING_LABELS } from '@/components/admin/feedback/SystemCheckInForm';
+import { DailyCrmSurveyResults } from '@/components/admin/feedback/DailyCrmSurveyResults';
 
 /**
  * Staff System Reports — what sales staff say about how the dashboard performs
@@ -100,6 +101,7 @@ export const StaffSystemReportsTab: React.FC = () => {
       const { data, error } = await (supabase as any)
         .from('staff_system_reports')
         .select('*')
+        .eq('report_kind', 'speed_check')
         .gte('created_at', since)
         .order('created_at', { ascending: false })
         .limit(2000);
@@ -289,6 +291,13 @@ export const StaffSystemReportsTab: React.FC = () => {
             Export
           </Button>
         </div>
+      </div>
+
+      <DailyCrmSurveyResults days={RANGES.find((r) => r.id === rangeId)?.days ?? 30} />
+
+      <div className="border-t pt-6">
+        <h3 className="text-lg font-semibold">Ad-hoc speed reports</h3>
+        <p className="text-sm text-muted-foreground">Sent any time via the "Report speed" button.</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
