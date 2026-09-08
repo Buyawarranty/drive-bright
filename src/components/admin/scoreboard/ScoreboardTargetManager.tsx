@@ -20,9 +20,31 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
   const [existingIds, setExistingIds] = useState<Record<string, string>>({});
   const [savingAll, setSavingAll] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
+  // Month-to-date figures, taken from the same source as the Team progress board so
+  // the two panels can never disagree (the leaderboard above can be filtered to
+  // other periods such as the last 30 days).
+  const [monthStats, setMonthStats] = useState<Record<string, { revenue: number; sales: number }>>({});
 
   const monthStart = startOfMonth(new Date());
   const monthEnd = endOfMonth(new Date());
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase.rpc('get_team_scoreboard', {
+        p_start: monthStart.toISOString(),
+        p_end: monthEnd.toISOString(),
+      });
+      if (cancelled || error) return;
+      const map: Record<string, { revenue: number; sales: number }> = {};
+      ((data || []) as any[]).forEach(r => {
+        map[r.admin_user_id] = { revenue: Number(r.revenue) || 0, sales: Number(r.sales_count) || 0 };
+      });
+      setMonthStats(map);
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monthStart.getTime()]);
 
   const fetchTargets = React.useCallback(async () => {
       const agentIds = agents.map(a => a.id);
@@ -150,7 +172,7 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
           Monthly revenue targets — {format(monthStart, 'MMMM yyyy')}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Set each agent's revenue target (£) for the month. Default is £35,000. Progress shows in the Target column of the leaderboard.
+          Set each agent's revenue target (£) for the month. Default is £35,000. The figures below are this month only, matching Team progress — the leaderboard above can be set to other periods.
         </p>
         <div className="flex gap-2 mt-2">
           <Button size="sm" variant="outline" onClick={setAllToDefault}>
@@ -172,7 +194,7 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
               <div className="min-w-0 flex-1">
                 <p className="font-medium truncate">{agent.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {gbp(agent.revenue)} revenue so far · {agent.salesCount} sales
+                  {gbp(monthStats[agent.id]?.revenue ?? 0)} this month · {monthStats[agent.id]?.sales ?? 0} sales
                 </p>
               </div>
               <div className="flex items-center gap-2">
