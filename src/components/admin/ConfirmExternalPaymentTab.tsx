@@ -292,17 +292,33 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
         
         if (currentAdmin) {
           setCurrentAdminUserId(currentAdmin.id);
-          setAssigneeId(currentAdmin.id); // Default to self
         }
       }
-      
+
+      // Only sales agents can be credited with a sale: accounts@/support@/info@
+      // and managers confirm on an agent's behalf and must pick that agent.
       const { data } = await supabase
         .from('admin_users')
-        .select('id, first_name, last_name, email')
+        .select('id, first_name, last_name, email, role')
+        .in('role', ['sales', 'sales_lead'])
         .eq('is_active', true)
         .order('first_name');
-      
-      if (data) setAdminUsers(data);
+
+      if (data) {
+        setAdminUsers(data);
+        // Default to self only when the signed-in user is a sales agent.
+        const { data: { user: me } } = await supabase.auth.getUser();
+        if (me) {
+          const { data: mine } = await supabase
+            .from('admin_users')
+            .select('id, role')
+            .eq('user_id', me.id)
+            .maybeSingle();
+          if (mine && (mine.role === 'sales' || mine.role === 'sales_lead')) {
+            setAssigneeId(mine.id);
+          }
+        }
+      }
     };
     fetchAdminUsers();
   }, []);

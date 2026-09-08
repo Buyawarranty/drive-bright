@@ -70,6 +70,7 @@ import { priceFromPricingModel } from './pricing/modelQuoteEngine';
 
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 import { resolveHighestQuotedTotal, discountGiven } from '@/lib/pricing/quotedTotalLookup';
+import { fetchSalesAgentOptions, resolveSaleCreditAgentId, type SalesAgentOption } from '@/lib/saleCreditAssignment';
 
 
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
@@ -674,6 +675,22 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [newEmailInput, setNewEmailInput] = useState('');
   
   // Confirm External Payment state
+  // A confirmed sale always belongs to a sales agent — back-office logins
+  // (accounts@/support@/info@/managers) confirm on their behalf and must never
+  // take the sale themselves.
+  const [salesAgentOptions, setSalesAgentOptions] = useState<SalesAgentOption[]>([]);
+  const [saleCreditAgentId, setSaleCreditAgentId] = useState<string>('');
+  useEffect(() => {
+    let cancelled = false;
+    fetchSalesAgentOptions()
+      .then((list) => { if (!cancelled) setSalesAgentOptions(list); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+  const iAmSalesAgent = !!currentAdminId && salesAgentOptions.some((a) => a.id === currentAdminId);
+  useEffect(() => {
+    if (iAmSalesAgent && currentAdminId) setSaleCreditAgentId(currentAdminId);
+  }, [iAmSalesAgent, currentAdminId]);
   const [isConfirmingPaid, setIsConfirmingPaid] = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState<{ show: boolean; record?: any }>({ show: false });
   const [showConfirmPaymentDialog, setShowConfirmPaymentDialog] = useState(false);
@@ -3577,6 +3594,25 @@ Questions? Call 0330 229 5040`;
         }
       }
 
+      // Who the sale belongs to. Only a sales agent can hold a sale: whoever
+      // pressed confirm (accounts@/support@/info@/a manager) is recorded in the
+      // audit note only. Direct website sales never come through here.
+      const creditedAgentId = await resolveSaleCreditAgentId([
+        saleCreditAgentId || null,
+        adminUserRecordId,
+        quoteSentByUserId,
+        selectedLeadOwnerId,
+      ]);
+      if (!creditedAgentId) {
+        setIsConfirmingPaid(false);
+        toast({
+          title: 'Choose the sales agent',
+          description: 'Every confirmed sale must be recorded against a sales agent — pick who converted this sale in "Sale credited to".',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       // === ATOMIC TRANSACTION START ===
       
       // 1. Find the existing customer record for THIS ORDER.
@@ -3685,11 +3721,13 @@ Questions? Call 0330 229 5040`;
         payment_verified: false,
         breakdown_recovery: getAutoIncludedAddOns(paymentType).includes('breakdown'),
         vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
-        // Assign customer to the confirming sales agent
-        assigned_to: adminUserRecordId,
+        // The sale belongs to the sales agent who converted it, never to the
+        // admin/accounts/support login that pressed confirm.
+        assigned_to: creditedAgentId,
         // Sales agent attribution for commission tracking
         quote_sent_by: quoteSentByUserId,
-        payment_confirmed_by: adminUserRecordId,
+        payment_confirmed_by: creditedAgentId,
+        sale_credit_admin_user_id: creditedAgentId,
         // CRITICAL: Save the selected payment source from the dropdown
         purchase_source: paymentSource || 'external',
         // Persist notes to customer record so they appear in Customer Management Notes column
@@ -3831,7 +3869,7 @@ Questions? Call 0330 229 5040`;
         seasonal_bonus_months: selectedBonusMonths,
         // Sales agent attribution for commission tracking
         quote_sent_by: quoteSentByUserId,
-        payment_confirmed_by: adminUserRecordId,
+        payment_confirmed_by: creditedAgentId,
       };
       
       // Include address in policy if provided
@@ -8486,6 +8524,34 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                       </select>
                     </div>
 
+                    {/* Sale credited to — a sale ALWAYS belongs to a sales agent.
+                        Back office (accounts@/support@/info@) confirming on an
+                        agent's behalf must pick that agent. */}
+                    <div className="space-y-1.5">
+                      <Label htmlFor="sale-credit-agent" className="text-xs font-medium text-gray-600">
+                        Sale credited to (sales agent) *
+                      </Label>
+                      <select
+                        id="sale-credit-agent"
+                        value={saleCreditAgentId}
+                        onChange={(e) => setSaleCreditAgentId(e.target.value)}
+                        disabled={iAmSalesAgent}
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors text-sm disabled:opacity-70"
+                      >
+                        <option value="">Select the sales agent...</option>
+                        {salesAgentOptions.map((agent) => (
+                          <option key={agent.id} value={agent.id}>
+                            {agent.name}{agent.id === currentAdminId ? ' (You)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-[11px] text-gray-500">
+                        {iAmSalesAgent
+                          ? 'This sale is recorded in your name.'
+                          : 'Confirming on an agent’s behalf — the sale is recorded in their name, never in an admin, accounts or support name.'}
+                      </p>
+                    </div>
+
                     {/* Amount */}
                     {(() => {
                       const effectiveQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12);
@@ -8982,7 +9048,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                       </Button>
                       <Button
                         onClick={() => setExternalPaymentStep('preview')}
-                        disabled={!paymentSource || !paymentAmount}
+                        disabled={!paymentSource || !paymentAmount || !saleCreditAgentId}
                         className="bg-blue-600 hover:bg-blue-700"
                       >
                         <Eye className="w-4 h-4 mr-2" />
