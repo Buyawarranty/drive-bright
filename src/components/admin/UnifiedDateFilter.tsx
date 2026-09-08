@@ -63,7 +63,7 @@ export function periodToRange(key: PeriodKey): DateRange | undefined {
   }
 }
 
-function detectPreset(range: DateRange | undefined): PeriodKey {
+export function detectPreset(range: DateRange | undefined): PeriodKey {
   if (!range?.from) return 'all';
   for (const p of PRESETS) {
     if (p.key === 'all' || p.key === 'custom') continue;
