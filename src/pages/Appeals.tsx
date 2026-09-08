@@ -212,6 +212,10 @@ const Appeals = () => {
       setTouched({});
       setErrors({});
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      // They asked for an independent inspection — take them straight to payment.
+      if (!requestMode && chosenInspection === 'Yes please' && data.token) {
+        createInspectionLink(data.token);
+      }
     } catch (err: any) {
       toast({ title: 'Submission failed', description: err.message || `Please try again or email ${CLAIMS_EMAIL}`, variant: 'destructive' });
     } finally {
@@ -219,8 +223,8 @@ const Appeals = () => {
     }
   };
 
-  const createInspectionLink = async () => {
-    const payToken = submittedToken || token;
+  const createInspectionLink = async (overrideToken?: string) => {
+    const payToken = overrideToken || submittedToken || token;
     if (!payToken || creatingInspectionLink) return;
     setCreatingInspectionLink(true);
     try {
@@ -236,6 +240,7 @@ const Appeals = () => {
       setCreatingInspectionLink(false);
     }
   };
+
 
   const showStatus = (name: string) => touched[name] || !!(form as any)[name];
 
@@ -367,7 +372,7 @@ const Appeals = () => {
                 )}
               </ul>
 
-              {/* Independent inspection payment prompt (full appeal only) */}
+              {/* Asked for an inspection — we send them straight to payment. */}
               {!requestMode && submittedInspectionChoice === 'Yes please' && submittedToken && (
                 <div className="rounded-xl border border-brand-blue/20 bg-brand-blue/10 p-4 mb-6">
                   <div className="flex items-start gap-3">
@@ -375,12 +380,12 @@ const Appeals = () => {
                       <ShieldCheck className="w-5 h-5 text-brand-blue" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-brand-blue-dark text-sm">Independent engineer's inspection</h3>
+                      <h3 className="font-semibold text-brand-blue-dark text-sm">Taking you to secure payment…</h3>
                       <p className="text-sm text-brand-blue-dark/80 mt-1 leading-relaxed">
-                        You've asked for an independent inspection. The £140 fee covers the engineer's visit to your vehicle anywhere in the UK. We'll appoint ACE or Scotia, and their decision will be full and final.
+                        The £140 fee covers the engineer's visit to your vehicle anywhere in the UK. If the payment page doesn't open, use the button below.
                       </p>
                       <button
-                        onClick={createInspectionLink}
+                        onClick={() => createInspectionLink()}
                         disabled={creatingInspectionLink}
                         className="mt-3 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-blue hover:bg-brand-blue-dark disabled:opacity-60 text-white text-sm font-medium rounded-md transition-colors"
                       >
@@ -392,19 +397,28 @@ const Appeals = () => {
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row gap-2">
-                <button
-                  onClick={() => { setReference(null); setSubmittedToken(null); setSubmittedInspectionChoice(null); setInspectionLink(null); setRegStatus('idle'); setRegCustomerName(null); }}
-                  className="flex-1 py-2.5 border border-slate-200 text-brand-blue-dark hover:bg-brand-gray-bg font-medium rounded-md text-sm"
-                >
-                  {requestMode ? 'Send another request' : 'Submit another appeal'}
-                </button>
+              {/* Said no / not sure — quiet option in case they change their mind. */}
+              {!requestMode && submittedInspectionChoice !== 'Yes please' && submittedToken && (
+                <p className="text-xs text-slate-500 mb-6 leading-relaxed">
+                  If you'd still like an independent engineer's inspection (£140),{' '}
+                  <button
+                    onClick={() => createInspectionLink()}
+                    disabled={creatingInspectionLink}
+                    className="underline font-medium text-brand-blue hover:text-brand-blue-dark disabled:opacity-60"
+                  >
+                    {creatingInspectionLink ? 'opening secure payment…' : 'you can pay for one here'}
+                  </button>.
+                </p>
+              )}
+
+              <div className="flex">
                 <button
                   onClick={() => navigate('/')}
                   className="flex-1 py-2.5 bg-brand-blue-dark hover:bg-brand-blue-dark text-white font-medium rounded-md text-sm"
                 >
                   Back to home
                 </button>
+
               </div>
             </div>
           </section>
@@ -569,7 +583,7 @@ const Appeals = () => {
                         {token && (
                           <button
                             type="button"
-                            onClick={createInspectionLink}
+                            onClick={() => createInspectionLink()}
                             disabled={creatingInspectionLink}
                             className="mt-3 inline-flex items-center justify-center rounded-lg bg-brand-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-blue-dark disabled:opacity-60"
                           >
