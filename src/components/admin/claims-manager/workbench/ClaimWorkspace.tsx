@@ -390,6 +390,100 @@ const Fld: React.FC<{ label: string; children: React.ReactNode }> = ({ label, ch
 // ============= Appeal panel =============
 const DEFAULT_APPEAL_FEE = 140;
 
+/**
+ * What the customer sent back with their appeal — kept here in the claim
+ * profile so everything about the appeal lives in one place.
+ */
+interface AppealResponseRow {
+  id: string;
+  created_at: string;
+  status_update: string | null;
+  notes: string | null;
+  invoice_number: string | null;
+  invoice_amount: number | null;
+  estimated_completion: string | null;
+  file_url: string | null;
+  file_name: string | null;
+  respondent_name: string | null;
+  respondent_email: string | null;
+}
+
+const AppealCustomerReturns: React.FC<{ claimId: string }> = ({ claimId }) => {
+  const [rows, setRows] = useState<AppealResponseRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('claim_update_responses')
+        .select('id, created_at, status_update, notes, invoice_number, invoice_amount, estimated_completion, file_url, file_name, respondent_name, respondent_email')
+        .eq('claim_id', claimId)
+        .order('created_at', { ascending: false });
+      if (cancelled) return;
+      setRows((data as any) || []);
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [claimId]);
+
+  if (loading) return <div className="text-xs text-muted-foreground">Loading what the customer sent back…</div>;
+
+  return (
+    <div className="space-y-2">
+      <h4 className="text-sm font-semibold">What the customer sent back</h4>
+      {rows.length === 0 ? (
+        <div className="text-xs text-muted-foreground border border-dashed border-border rounded-md p-3">
+          Nothing back from the customer yet. Anything they send with their appeal will show here.
+        </div>
+      ) : (
+        rows.map((r) => (
+          <div key={r.id} className="rounded-md border border-amber-200 bg-amber-50/50 p-3 space-y-2 text-xs">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-semibold text-foreground">
+                {new Date(r.created_at).toLocaleString('en-GB')}
+              </span>
+              {r.status_update && (
+                <span className="px-1.5 py-0.5 rounded border border-border bg-card">{r.status_update}</span>
+              )}
+              {r.respondent_name && <span className="text-muted-foreground">{r.respondent_name}</span>}
+              {r.respondent_email && (
+                <a href={`mailto:${r.respondent_email}`} className="text-primary underline">{r.respondent_email}</a>
+              )}
+            </div>
+            {r.notes && <p className="whitespace-pre-wrap text-foreground">{r.notes}</p>}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {r.invoice_number && (
+                <div>
+                  <span className="text-muted-foreground">Invoice number</span>
+                  <div className="font-medium">{r.invoice_number}</div>
+                </div>
+              )}
+              {r.invoice_amount != null && (
+                <div>
+                  <span className="text-muted-foreground">Invoice amount</span>
+                  <div className="font-medium">£{Number(r.invoice_amount).toLocaleString('en-GB')}</div>
+                </div>
+              )}
+              {r.estimated_completion && (
+                <div>
+                  <span className="text-muted-foreground">Estimated completion</span>
+                  <div className="font-medium">{r.estimated_completion}</div>
+                </div>
+              )}
+            </div>
+            {r.file_url && (
+              <a href={r.file_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary underline break-all">
+                {r.file_name || 'Supporting evidence'}
+              </a>
+            )}
+          </div>
+        ))
+      )}
+    </div>
+  );
+};
+
 const AppealPanel: React.FC<{ claimId: string; claim?: Claim }> = ({ claimId, claim }) => {
   const { appeal, loading, upsert, refetch } = useClaimAppeal(claimId);
   const [form, setForm] = useState<any>({ status: 'submitted', appeal_fee: DEFAULT_APPEAL_FEE });
