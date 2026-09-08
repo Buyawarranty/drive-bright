@@ -608,6 +608,7 @@ export const ClaimsTab = ({
               avgPayout={perfKpis.avgPayout}
               avgResolutionDays={avgResolutionDays}
               avgClaimsPerMonth={perfKpis.avgPerMonth}
+              claimsPerSalePct={claimsPerSalePct}
             />
           </WidgetErrorBoundary>
           <WidgetErrorBoundary label="Claims workbench">

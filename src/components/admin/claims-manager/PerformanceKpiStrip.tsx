@@ -1,10 +1,11 @@
 import React from 'react';
-import { PoundSterling, Timer, CalendarDays } from 'lucide-react';
+import { PoundSterling, Timer, CalendarDays, Percent } from 'lucide-react';
 
 interface PerformanceKpiStripProps {
   avgPayout: number;
   avgResolutionDays: number;
   avgClaimsPerMonth: number;
+  claimsPerSalePct?: number;
 }
 
 interface KpiProps {
