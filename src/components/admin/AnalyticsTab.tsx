@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { ApiConnectivityTest } from './ApiConnectivityTest';
 import { SalesAgeMileageAnalytics } from './SalesAgeMileageAnalytics';
 import { DateRangeFilter } from './DateRangeFilter';
+import { UnifiedDateFilter, periodToRange, detectPreset, type DateScope } from './UnifiedDateFilter';
 import { CostEfficiencyPanel } from './scoreboard/CostEfficiencyPanel';
 import { CoverOptionsMixPanel } from './analytics/CoverOptionsMixPanel';
 import { DailyRevenueTrendPanel } from './analytics/DailyRevenueTrendPanel';
@@ -479,6 +480,19 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     }
     return dateRange;
   }, [selectedMonth, dateRange]);
+
+  // Unified date selector (same control as Customer Management) — analytics
+  // always filters on signup date, so the scope is fixed to 'signup'.
+  const unifiedPeriod = useMemo(() => detectPreset(selectedMonth ? undefined : dateRange), [dateRange, selectedMonth]);
+
+  const handleUnifiedDateChange = useCallback(({ period, customRange }: { scope: DateScope; period: ReturnType<typeof detectPreset>; customRange: DateRange | undefined }) => {
+    const range = period === 'custom' ? customRange : periodToRange(period);
+    applyFilterChange(() => {
+      setDateRange(range);
+      setSelectedMonth(null);
+      setComparisonPeriod(null);
+    });
+  }, [applyFilterChange]);
 
   // Helper function to check if customer is cancelled/refunded (excluded from revenue)
   const isRevenueLost = (status: string): boolean => {
@@ -1804,17 +1818,15 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </div>
           
           <div className="space-y-1">
-            <Label className="text-sm font-medium">Custom date range</Label>
-            <DateRangeFilter 
-              dateRange={dateRange} 
-              onDateRangeChange={(range) => {
-                applyFilterChange(() => {
-                  setDateRange(range);
-                  setSelectedMonth(null);
-                  setComparisonPeriod(null);
-                });
-              }}
-              className="min-w-[280px]"
+            <Label className="text-sm font-medium">Date range</Label>
+            <UnifiedDateFilter
+              scope="signup"
+              period={unifiedPeriod}
+              customRange={unifiedPeriod === 'custom' ? dateRange : undefined}
+              availableScopes={['signup']}
+              onChange={handleUnifiedDateChange}
+              showLabel={false}
+              hideQuickLinks
             />
           </div>
 
