@@ -46,13 +46,15 @@ export const PerformanceKpiStrip: React.FC<PerformanceKpiStripProps> = ({
   avgPayout,
   avgResolutionDays,
   avgClaimsPerMonth,
+  claimsPerSalePct = 0,
 }) => {
   const payoutLabel = avgPayout > 0 ? `£${avgPayout.toLocaleString()}` : '—';
   const resolutionLabel = avgResolutionDays > 0 ? `${avgResolutionDays} days` : '—';
   const perMonthLabel = avgClaimsPerMonth > 0 ? `${avgClaimsPerMonth}` : '—';
+  const perSaleLabel = claimsPerSalePct > 0 ? `${claimsPerSalePct}%` : '—';
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       <PerfCard
         label="Average payout"
         value={payoutLabel}
@@ -73,6 +75,13 @@ export const PerformanceKpiStrip: React.FC<PerformanceKpiStripProps> = ({
         sub="Rolling average"
         icon={<CalendarDays className="h-5 w-5" />}
         accent="slate"
+      />
+      <PerfCard
+        label="Claims per sale"
+        value={perSaleLabel}
+        sub="Claims ÷ warranties sold (same period)"
+        icon={<Percent className="h-5 w-5" />}
+        accent="orange"
       />
     </div>
   );
