@@ -14,7 +14,7 @@
 export type ContactStage = 'settle' | 'nudge' | 'call' | 'retry' | 'lead';
 
 export const SETTLE_MINUTES = 15;
-export const NUDGE_MINUTES = 30;
+export const NUDGE_MINUTES = 15;
 export const CALL_MINUTES = 60;
 export const STOP_MINUTES = 24 * 60;
 
