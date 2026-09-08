@@ -395,7 +395,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           .gte('next_action_date', startOfToday.toISOString())
           .lte('next_action_date', endOfToday.toISOString());
       case 'new_to_recontact':
-        return q.lt('created_at', d30).is('last_contacted_at', null);
+        return q.lt('created_at', dMin).is('last_contacted_at', null);
       case 'no_answer':
         return q.eq('recovery_outcome', 'no_answer');
       case 'interested':
