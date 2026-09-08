@@ -287,6 +287,17 @@ const Appeals = () => {
                 <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-brand-blue shrink-0" /> Reviewed independently of the original decision</li>
                 <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-brand-blue shrink-0" /> Handled privately and securely</li>
               </ul>
+              <div className="mt-6">
+                <Link
+                  to="/independent-inspection/9a8937f950755e09fb6fbdaea2b1176f/"
+                  className="inline-flex items-center gap-2 px-5 py-3 bg-brand-blue hover:bg-brand-blue-dark text-white font-semibold rounded-lg transition-colors shadow-sm"
+                >
+                  <ShieldCheck className="w-5 h-5" />
+                  Yes — I want an independent inspector
+                </Link>
+                <p className="mt-2 text-xs text-slate-500">Pay the £140 inspection fee securely and book the engineer visit.</p>
+              </div>
+
             </div>
             <div className="hidden md:flex items-center justify-center">
               <div className="relative w-44 h-44 rounded-2xl bg-brand-blue/10 border border-brand-blue/15 flex items-center justify-center">
@@ -700,7 +711,20 @@ const Appeals = () => {
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <h3 className="text-base font-semibold text-brand-blue-dark mb-2">Independent inspector?</h3>
+              <p className="text-xs text-slate-600 mb-4">If you want an engineer to inspect the vehicle, you can pay the £140 fee and book the visit directly.</p>
+              <Link
+                to="/independent-inspection/9a8937f950755e09fb6fbdaea2b1176f/"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-semibold rounded-lg transition-colors w-full justify-center"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                Yes — I want an inspector
+              </Link>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
               <h3 className="text-base font-semibold text-brand-blue-dark mb-1">Need help with your appeal?</h3>
+
               <p className="text-xs text-slate-600 mb-4">Our claims team is here to support you.</p>
               <div className="space-y-3">
                 <a href={CLAIMS_PHONE_TEL} className="flex items-start gap-3 group">
