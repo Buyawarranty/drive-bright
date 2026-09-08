@@ -9048,7 +9048,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                       </Button>
                       <Button
                         onClick={() => setExternalPaymentStep('preview')}
-                        disabled={!paymentSource || !paymentAmount}
+                        disabled={!paymentSource || !paymentAmount || !saleCreditAgentId}
                         className="bg-blue-600 hover:bg-blue-700"
                       >
                         <Eye className="w-4 h-4 mr-2" />
