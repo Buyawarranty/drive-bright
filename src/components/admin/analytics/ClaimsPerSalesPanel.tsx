@@ -5,7 +5,8 @@ import {
   Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, ComposedChart,
 } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
-import { format, startOfMonth, subMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns';
+import type { DateRange } from 'react-day-picker';
 
 interface MonthRow {
   key: string;
@@ -18,26 +19,37 @@ interface MonthRow {
 const normReg = (v?: string | null) => (v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const normEmail = (v?: string | null) => (v || '').trim().toLowerCase();
 
-export const ClaimsPerSalesPanel: React.FC = () => {
+interface Props {
+  dateRange?: DateRange;
+}
+
+export const ClaimsPerSalesPanel: React.FC<Props> = ({ dateRange }) => {
   const [salesByMonth, setSalesByMonth] = useState<Map<string, number>>(new Map());
   const [claims, setClaims] = useState<{ created_at: string; reg: string; email: string }[]>([]);
   const [customerKeys, setCustomerKeys] = useState<{ regs: Set<string>; emails: Set<string> }>({ regs: new Set(), emails: new Set() });
   const [loading, setLoading] = useState(true);
 
+  const fromTs = dateRange?.from ? startOfMonth(dateRange.from).getTime() : null;
+  const toTs = dateRange?.to ? endOfMonth(dateRange.to).getTime() : (dateRange?.from ? endOfMonth(dateRange.from).getTime() : null);
+
   useEffect(() => {
     let active = true;
     (async () => {
       setLoading(true);
-      const since = startOfMonth(subMonths(new Date(), 11)).toISOString();
+      const rangeStart = fromTs ? new Date(fromTs) : startOfMonth(subMonths(new Date(), 11));
+      const rangeEnd = toTs ? new Date(toTs) : new Date();
       const [{ data: customers }, { data: claimRows }] = await Promise.all([
         supabase
           .from('customers')
           .select('signup_date, status, registration_plate, email')
-          .gte('signup_date', since)
+          .gte('signup_date', rangeStart.toISOString())
+          .lte('signup_date', rangeEnd.toISOString())
           .limit(10000),
         supabase
           .from('claims_submissions')
           .select('created_at, vehicle_registration, email')
+          .gte('created_at', rangeStart.toISOString())
+          .lte('created_at', rangeEnd.toISOString())
           .limit(10000),
       ]);
       if (!active) return;
@@ -69,30 +81,30 @@ export const ClaimsPerSalesPanel: React.FC = () => {
       setLoading(false);
     })();
     return () => { active = false; };
-  }, []);
+  }, [fromTs, toTs]);
 
   const { data, totalSales, totalClaims, overallRate } = useMemo(() => {
+    const rangeStart = fromTs ? new Date(fromTs) : startOfMonth(subMonths(new Date(), 11));
+    const rangeEnd = toTs ? new Date(toTs) : new Date();
+
     const months: MonthRow[] = [];
-    for (let i = 11; i >= 0; i--) {
-      const d = startOfMonth(subMonths(new Date(), i));
-      const key = format(d, 'yyyy-MM');
-      months.push({ key, month: format(d, 'MMM yyyy'), sales: salesByMonth.get(key) || 0, claims: 0, rate: 0 });
+    let cursor = startOfMonth(rangeStart);
+    let guard = 0;
+    while (cursor.getTime() <= rangeEnd.getTime() && guard < 37) {
+      const key = format(cursor, 'yyyy-MM');
+      months.push({ key, month: format(cursor, 'MMM yyyy'), sales: salesByMonth.get(key) || 0, claims: 0, rate: 0 });
+      cursor = startOfMonth(addMonths(cursor, 1));
+      guard += 1;
     }
-    const monthKeys = new Set(months.map(m => m.key));
     const map = new Map(months.map(m => [m.key, m]));
 
-    // Claims matched to a customer (by reg or email) whose purchase month we know
     const { regs, emails } = customerKeys;
-    let matched = 0;
     claims.forEach(c => {
       if (!c.created_at) return;
       if (!(regs.has(c.reg) || emails.has(c.email))) return;
-      matched += 1;
       const key = format(new Date(c.created_at), 'yyyy-MM');
-      if (monthKeys.has(key)) {
-        const row = map.get(key);
-        if (row) row.claims += 1;
-      }
+      const row = map.get(key);
+      if (row) row.claims += 1;
     });
 
     months.forEach(m => {
@@ -107,7 +119,11 @@ export const ClaimsPerSalesPanel: React.FC = () => {
       totalClaims: tClaims,
       overallRate: tSales > 0 ? Math.round((tClaims / tSales) * 1000) / 10 : 0,
     };
-  }, [salesByMonth, claims, customerKeys]);
+  }, [salesByMonth, claims, customerKeys, fromTs, toTs]);
+
+  const periodLabel = dateRange?.from
+    ? `${format(dateRange.from, 'dd MMM yyyy')}${dateRange.to ? ` – ${format(dateRange.to, 'dd MMM yyyy')}` : ''}`
+    : 'last 12 months';
 
   return (
     <Card className="border-l-4 border-l-amber-500">
@@ -115,12 +131,13 @@ export const ClaimsPerSalesPanel: React.FC = () => {
         <CardTitle>Claims per number of sales</CardTitle>
         <CardDescription className="mt-1">
           Warranties sold each month versus claims submitted that month (claims matched to a known customer by
-          registration or email). The line shows claims as a percentage of that month's sales.
+          registration or email) for {periodLabel}. The line shows claims as a percentage of that month's sales.
+          Use the date range picker or quick month filter above to change the period.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary">{totalSales.toLocaleString('en-GB')} sales (12 months)</Badge>
+          <Badge variant="secondary">{totalSales.toLocaleString('en-GB')} sales ({periodLabel})</Badge>
           <Badge variant="secondary">{totalClaims.toLocaleString('en-GB')} claims</Badge>
           <Badge variant="outline" className="border-amber-300 text-amber-700">
             {overallRate}% claims per sale
@@ -130,7 +147,7 @@ export const ClaimsPerSalesPanel: React.FC = () => {
         {loading ? (
           <div className="h-[320px] flex items-center justify-center text-muted-foreground">Loading…</div>
         ) : totalSales === 0 ? (
-          <div className="h-[320px] flex items-center justify-center text-muted-foreground">No sales found</div>
+          <div className="h-[320px] flex items-center justify-center text-muted-foreground">No sales found for this period</div>
         ) : (
           <ResponsiveContainer width="100%" height={320}>
             <ComposedChart data={data}>

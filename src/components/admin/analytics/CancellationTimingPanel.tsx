@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
+import { format, startOfDay, endOfDay } from 'date-fns';
+import type { DateRange } from 'react-day-picker';
 
 const BUCKETS = [
   { label: '0–7 days', max: 7 },
@@ -23,9 +25,16 @@ interface Row {
   claimedBefore: boolean;
 }
 
-export const CancellationTimingPanel: React.FC = () => {
+interface Props {
+  dateRange?: DateRange;
+}
+
+export const CancellationTimingPanel: React.FC<Props> = ({ dateRange }) => {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const fromTs = dateRange?.from ? startOfDay(dateRange.from).getTime() : null;
+  const toTs = dateRange?.to ? endOfDay(dateRange.to).getTime() : (dateRange?.from ? endOfDay(dateRange.from).getTime() : null);
 
   useEffect(() => {
     let active = true;
@@ -61,6 +70,9 @@ export const CancellationTimingPanel: React.FC = () => {
         const endRaw = c.cancellation_note_updated_at || c.deleted_at || c.updated_at;
         const end = new Date(endRaw).getTime();
         if (isNaN(start) || isNaN(end)) return;
+        // When a date range / month is selected, only include cancellations that happened in it
+        if (fromTs && end < fromTs) return;
+        if (toTs && end > toTs) return;
         const days = Math.floor((end - start) / 86400000);
         if (days < 0 || days > 365 * 6) return;
         const times = [
@@ -75,7 +87,7 @@ export const CancellationTimingPanel: React.FC = () => {
       setLoading(false);
     })();
     return () => { active = false; };
-  }, []);
+  }, [fromTs, toTs]);
 
   const { data, total, claimedCount, claimedPct, medianDays, avgDays } = useMemo(() => {
     const buckets = BUCKETS.map(b => ({ label: b.label, cancellations: 0, claimedFirst: 0 }));
@@ -106,6 +118,9 @@ export const CancellationTimingPanel: React.FC = () => {
         <CardDescription className="mt-1">
           Days between the purchase date and the date the order was cancelled or refunded, plus how many of those
           customers made a claim before they cancelled.
+          {dateRange?.from
+            ? ` Showing cancellations from ${format(dateRange.from, 'dd MMM yyyy')}${dateRange.to ? ` to ${format(dateRange.to, 'dd MMM yyyy')}` : ''}.`
+            : ' Use the date range picker or quick month filter above to narrow the period.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
