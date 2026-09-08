@@ -404,7 +404,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         return q.not('quote_amount', 'is', null)
           .or(`last_contacted_at.is.null,last_contacted_at.lt.${d14}`);
       case 'abandoned_checkout':
-        return q.not('abandoned_cart_id', 'is', null).lt('created_at', d7);
+        return q.not('abandoned_cart_id', 'is', null).lt('created_at', dMin);
       case 'not_interested':
         return q.in('recovery_outcome', ['not_interested', 'bought_elsewhere', 'vehicle_sold']);
       case 'all_leads':
