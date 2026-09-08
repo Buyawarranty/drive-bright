@@ -194,7 +194,7 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
               <div className="min-w-0 flex-1">
                 <p className="font-medium truncate">{agent.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {gbp(agent.revenue)} revenue so far · {agent.salesCount} sales
+                  {gbp(monthStats[agent.id]?.revenue ?? 0)} this month · {monthStats[agent.id]?.sales ?? 0} sales
                 </p>
               </div>
               <div className="flex items-center gap-2">
