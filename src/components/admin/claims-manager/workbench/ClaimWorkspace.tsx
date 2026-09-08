@@ -560,6 +560,9 @@ const AppealPanel: React.FC<{ claimId: string; claim?: Claim }> = ({ claimId, cl
         </div>
       )}
 
+      <AppealCustomerReturns claimId={claimId} />
+
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Fld label="Appeal status">
           <Select value={form.status ?? 'submitted'} onValueChange={(v) => setForm((f: any) => ({ ...f, status: v }))}>
