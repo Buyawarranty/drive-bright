@@ -674,6 +674,22 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [newEmailInput, setNewEmailInput] = useState('');
   
   // Confirm External Payment state
+  // A confirmed sale always belongs to a sales agent — back-office logins
+  // (accounts@/support@/info@/managers) confirm on their behalf and must never
+  // take the sale themselves.
+  const [salesAgentOptions, setSalesAgentOptions] = useState<SalesAgentOption[]>([]);
+  const [saleCreditAgentId, setSaleCreditAgentId] = useState<string>('');
+  useEffect(() => {
+    let cancelled = false;
+    fetchSalesAgentOptions()
+      .then((list) => { if (!cancelled) setSalesAgentOptions(list); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+  const iAmSalesAgent = !!currentAdminId && salesAgentOptions.some((a) => a.id === currentAdminId);
+  useEffect(() => {
+    if (iAmSalesAgent && currentAdminId) setSaleCreditAgentId(currentAdminId);
+  }, [iAmSalesAgent, currentAdminId]);
   const [isConfirmingPaid, setIsConfirmingPaid] = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState<{ show: boolean; record?: any }>({ show: false });
   const [showConfirmPaymentDialog, setShowConfirmPaymentDialog] = useState(false);
