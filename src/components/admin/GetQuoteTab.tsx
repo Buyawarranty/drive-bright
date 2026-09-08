@@ -3869,7 +3869,7 @@ Questions? Call 0330 229 5040`;
         seasonal_bonus_months: selectedBonusMonths,
         // Sales agent attribution for commission tracking
         quote_sent_by: quoteSentByUserId,
-        payment_confirmed_by: adminUserRecordId,
+        payment_confirmed_by: creditedAgentId,
       };
       
       // Include address in policy if provided
