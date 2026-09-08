@@ -89,6 +89,14 @@ function daysSince(iso: string | null | undefined): number | null {
   return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
 }
 
+/**
+ * Recontact leads must always be older than two months. Nothing fresher may
+ * ever appear on this page, whoever it is assigned to.
+ */
+const RECONTACT_MIN_AGE_DAYS = 60;
+const RECONTACT_MIN_AGE_ISO = () =>
+  new Date(Date.now() - RECONTACT_MIN_AGE_DAYS * 86400000).toISOString();
+
 function ageBadge(days: number | null) {
   if (days == null) return <Badge variant="outline">—</Badge>;
   if (days >= 60) return <Badge className="bg-red-100 text-red-800 border-red-200">{days}d</Badge>;
