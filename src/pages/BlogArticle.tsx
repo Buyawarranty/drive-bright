@@ -336,16 +336,7 @@ const BlogArticle = () => {
           "worksFor": { "@type": "Organization", "name": "Buy a Warranty" },
           "knowsAbout": ["UK extended car warranties", "vehicle repair costs in the UK", "MOT and DVSA rules"],
         },
-        "publisher": {
-          "@type": "Organization",
-          "name": "Buy a Warranty",
-          "url": "https://buyawarranty.co.uk/",
-          "areaServed": { "@type": "Country", "name": "United Kingdom", "alternateName": "GB" },
-          "logo": {
-            "@type": "ImageObject",
-            "url": "https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png"
-          }
-        },
+        "publisher": { "@id": "https://buyawarranty.co.uk/#organization" },
         "wordCount": (html ? html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length : 0)
           || post.content?.raw?.split(/\s+/).length
           || 0,
