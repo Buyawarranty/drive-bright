@@ -329,10 +329,10 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     const q = (supabase.from('sales_leads') as any).select(select);
 
     // Recontact eligibility rule:
-    //   Lead must be between 30 days and 1 year old — fresher leads belong to
-    //   the New Leads flow, and anything over a year is too cold to recover.
+    //   Lead must be OVER TWO MONTHS old (and under 1 year) — anything fresher
+    //   belongs to the New Leads flow, and anything over a year is too cold.
     //   Step 2 is not required (every enquiry here reached step 2 in practice).
-    const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
+    const dMin = RECONTACT_MIN_AGE_ISO();
     const d365 = new Date(Date.now() - 365 * 86400000).toISOString();
 
     // Terminal statuses (lost, not_interested, converted, fake_lead, archived)
@@ -344,7 +344,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       .not('status', 'in', '(converted,fake_lead,archived,lost,not_interested,not_eligible)')
       .or('status.neq.new,last_claimed_at.not.is.null')
       .or('is_paid.is.null,is_paid.eq.false')
-      .lt('created_at', d30)
+      .lt('created_at', dMin)
       .gte('created_at', d365);
   }, []);
 
