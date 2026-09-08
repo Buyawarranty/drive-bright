@@ -24,13 +24,32 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const { data: targetAdmin, error: adminErr } = await admin
-      .from("admin_users")
-      .select("id, user_id, email, first_name, last_name, role, is_active, archived_at")
-      .or(`email.ilike.${normalizedEmail},user_id.eq.${userId || "00000000-0000-0000-0000-000000000000"}`)
-      .maybeSingle();
+    // Deterministic lookup: id/user_id first, then exact email. Using .or() with
+    // maybeSingle() blew up whenever two rows shared an email or user_id.
+    const selectCols = "id, user_id, email, first_name, last_name, role, is_active, archived_at";
+    let targetAdmin: any = null;
 
-    if (adminErr) throw new Error(`Could not check admin user: ${adminErr.message}`);
+    if (userId) {
+      const { data } = await admin
+        .from("admin_users")
+        .select(selectCols)
+        .or(`user_id.eq.${userId},id.eq.${userId}`)
+        .order("archived_at", { ascending: true, nullsFirst: true })
+        .limit(1);
+      targetAdmin = data?.[0] ?? null;
+    }
+
+    if (!targetAdmin) {
+      const { data, error: adminErr } = await admin
+        .from("admin_users")
+        .select(selectCols)
+        .ilike("email", normalizedEmail)
+        .order("archived_at", { ascending: true, nullsFirst: true })
+        .limit(1);
+      if (adminErr) throw new Error(`Could not check admin user: ${adminErr.message}`);
+      targetAdmin = data?.[0] ?? null;
+    }
+
     if (!targetAdmin) throw new Error(`Admin user not found for ${normalizedEmail}`);
     if (targetAdmin.archived_at) {
       throw new Error("This staff account is archived. Reactivate it first before setting a password.");
