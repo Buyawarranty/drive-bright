@@ -38,7 +38,7 @@ type SegmentId =
 
 const SEGMENTS: { id: SegmentId; label: string; description: string }[] = [
   { id: 'due_today',          label: 'Due Today',          description: 'Callbacks scheduled for today — work these first.' },
-  { id: 'new_to_recontact',   label: 'New to Recontact',   description: 'Old enquiries (30+ days) that have never been worked.' },
+  { id: 'new_to_recontact',   label: 'New to Recontact',   description: 'Old enquiries (over 2 months) that have never been worked.' },
   { id: 'no_answer',          label: 'No Answer',          description: 'Previously called but no response yet.' },
   { id: 'interested',         label: 'Interested',         description: 'Customer showed interest — needs follow-up.' },
   { id: 'quote_sent',         label: 'Quote Sent',         description: 'Price/quote already sent — needs chasing.' },
@@ -88,6 +88,14 @@ function daysSince(iso: string | null | undefined): number | null {
   if (!iso) return null;
   return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
 }
+
+/**
+ * Recontact leads must always be older than two months. Nothing fresher may
+ * ever appear on this page, whoever it is assigned to.
+ */
+const RECONTACT_MIN_AGE_DAYS = 60;
+const RECONTACT_MIN_AGE_ISO = () =>
+  new Date(Date.now() - RECONTACT_MIN_AGE_DAYS * 86400000).toISOString();
 
 function ageBadge(days: number | null) {
   if (days == null) return <Badge variant="outline">—</Badge>;
@@ -329,10 +337,10 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     const q = (supabase.from('sales_leads') as any).select(select);
 
     // Recontact eligibility rule:
-    //   Lead must be between 30 days and 1 year old — fresher leads belong to
-    //   the New Leads flow, and anything over a year is too cold to recover.
+    //   Lead must be OVER TWO MONTHS old (and under 1 year) — anything fresher
+    //   belongs to the New Leads flow, and anything over a year is too cold.
     //   Step 2 is not required (every enquiry here reached step 2 in practice).
-    const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
+    const dMin = RECONTACT_MIN_AGE_ISO();
     const d365 = new Date(Date.now() - 365 * 86400000).toISOString();
 
     // Terminal statuses (lost, not_interested, converted, fake_lead, archived)
@@ -344,7 +352,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       .not('status', 'in', '(converted,fake_lead,archived,lost,not_interested,not_eligible)')
       .or('status.neq.new,last_claimed_at.not.is.null')
       .or('is_paid.is.null,is_paid.eq.false')
-      .lt('created_at', d30)
+      .lt('created_at', dMin)
       .gte('created_at', d365);
   }, []);
 
@@ -360,14 +368,14 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       'created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at, ' +
       'call_count, resubmission_count, last_resubmitted_at, is_callback, recovery_worked_at, recovery_outcome, ' +
       'claim_count, last_claimed_at';
-    const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
+    const dMin = RECONTACT_MIN_AGE_ISO();
     const d365 = new Date(Date.now() - 365 * 86400000).toISOString();
     return (supabase.from('sales_leads') as any)
       .select(select)
       .in('assigned_to', ids)
       .not('status', 'in', '(converted,fake_lead,archived,not_eligible)')
       .or('is_paid.is.null,is_paid.eq.false')
-      .lt('created_at', d30)
+      .lt('created_at', dMin)
       .gte('created_at', d365);
   }, []);
 
@@ -375,9 +383,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
   const applySegment = useCallback((q: any, id: SegmentId) => {
     const now = Date.now();
-    const d30 = new Date(now - 30 * 86400000).toISOString();
+    const dMin = RECONTACT_MIN_AGE_ISO();
     const d14 = new Date(now - 14 * 86400000).toISOString();
-    const d7 = new Date(now - 7 * 86400000).toISOString();
+    
     const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
     const endOfToday = new Date(); endOfToday.setHours(23, 59, 59, 999);
 
@@ -387,7 +395,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
           .gte('next_action_date', startOfToday.toISOString())
           .lte('next_action_date', endOfToday.toISOString());
       case 'new_to_recontact':
-        return q.lt('created_at', d30).is('last_contacted_at', null);
+        return q.lt('created_at', dMin).is('last_contacted_at', null);
       case 'no_answer':
         return q.eq('recovery_outcome', 'no_answer');
       case 'interested':
@@ -396,7 +404,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         return q.not('quote_amount', 'is', null)
           .or(`last_contacted_at.is.null,last_contacted_at.lt.${d14}`);
       case 'abandoned_checkout':
-        return q.not('abandoned_cart_id', 'is', null).lt('created_at', d7);
+        return q.not('abandoned_cart_id', 'is', null).lt('created_at', dMin);
       case 'not_interested':
         return q.in('recovery_outcome', ['not_interested', 'bought_elsewhere', 'vehicle_sold']);
       case 'all_leads':
@@ -424,8 +432,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
       // Sales agents can work the whole recontact pool: their own assigned
       // leads PLUS anything unassigned that's up for grabs. Leads that are
-      // already ASSIGNED to the agent are always shown, even if they'd fail
-      // the pool eligibility rules (no step 2, under 30 days old) — otherwise
+      // already ASSIGNED to the agent are always shown, provided they still
+      // meet the over-two-months age rule — otherwise
       // an agent who claimed 200 leads only sees a fraction of them.
       // NOTE: sales_leads.assigned_to historically holds EITHER admin_users.id
       // OR auth.uid depending on which flow assigned it. Match both.
@@ -473,6 +481,14 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         fetched = (data as any) || [];
       }
 
+      // Final guard: nothing newer than two months may ever show here, no
+      // matter which query path or assignment history produced the row.
+      const minCreatedMs = Date.now() - RECONTACT_MIN_AGE_DAYS * 86400000;
+      fetched = fetched.filter((l: any) => {
+        const t = new Date(l.created_at || 0).getTime();
+        return Number.isFinite(t) && t < minCreatedMs;
+      });
+
       setLeads(fetched);
 
 
@@ -508,13 +524,13 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     const results = await Promise.all(
       SEGMENTS.map(async (s) => {
         try {
-          const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
+          const dMin = RECONTACT_MIN_AGE_ISO();
           const d365 = new Date(Date.now() - 365 * 86400000).toISOString();
           let q: any = (supabase.from('sales_leads') as any)
             .select('id', { count: 'exact', head: true })
             .not('status', 'in', '(new,converted,fake_lead,archived,lost,not_interested,not_eligible)')
             .or('is_paid.is.null,is_paid.eq.false')
-            .lt('created_at', d30)
+            .lt('created_at', dMin)
             .gte('created_at', d365);
 
           q = applySegment(q, s.id);
