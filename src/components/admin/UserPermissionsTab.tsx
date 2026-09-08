@@ -1112,13 +1112,16 @@ export const UserPermissionsTab = () => {
       });
 
       if (error) throw error;
-      if (!data?.success || !data?.verified) {
-        throw new Error(data?.error || 'The new password could not be verified on the login server. Nothing was sent — try again.');
+      if (!data?.success) {
+        throw new Error(data?.error || 'The new password could not be saved. Nothing was sent — try again.');
       }
 
       toast.success(`Password reset email sent to ${email}. New temporary password: ${data.tempPassword}`, {
         duration: 15000
       });
+      if (data.verified === false) {
+        toast.warning(data?.notice || 'The login check could not complete just now — ask them to sign in once to confirm.');
+      }
     } catch (error: any) {
       console.error('Error resetting password:', error);
       const msg = error?.context?.error || error?.message || 'Failed to reset password';
