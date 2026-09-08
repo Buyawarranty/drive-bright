@@ -2408,6 +2408,9 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </div>
         </CardContent>
       </Card>
+
+      <CancellationTimingPanel />
+
       </>
 
       )}
