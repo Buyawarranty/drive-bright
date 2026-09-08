@@ -12,6 +12,7 @@ import { DateRangeFilter } from './DateRangeFilter';
 import { CostEfficiencyPanel } from './scoreboard/CostEfficiencyPanel';
 import { CoverOptionsMixPanel } from './analytics/CoverOptionsMixPanel';
 import { DailyRevenueTrendPanel } from './analytics/DailyRevenueTrendPanel';
+import { CancellationTimingPanel } from './analytics/CancellationTimingPanel';
 import { DailyAgentRevenuePanel } from './analytics/DailyAgentRevenuePanel';
 import { SalesByHourPanel } from './analytics/SalesByHourPanel';
 import { SalesByWeekdayPanel } from './analytics/SalesByWeekdayPanel';
