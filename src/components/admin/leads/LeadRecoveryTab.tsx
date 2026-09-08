@@ -432,8 +432,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
       // Sales agents can work the whole recontact pool: their own assigned
       // leads PLUS anything unassigned that's up for grabs. Leads that are
-      // already ASSIGNED to the agent are always shown, even if they'd fail
-      // the pool eligibility rules (no step 2, under 30 days old) — otherwise
+      // already ASSIGNED to the agent are always shown, provided they still
+      // meet the over-two-months age rule — otherwise
       // an agent who claimed 200 leads only sees a fraction of them.
       // NOTE: sales_leads.assigned_to historically holds EITHER admin_users.id
       // OR auth.uid depending on which flow assigned it. Match both.
