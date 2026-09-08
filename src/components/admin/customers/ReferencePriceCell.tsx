@@ -61,13 +61,23 @@ export const ReferencePriceCell: React.FC<{ order: SoldOrderLike | null | undefi
   const signed = (n: number) => `${n > 0 ? '+' : ''}${n.toFixed(1)}%`;
 
   // Recorded at the point of sale (what the agent actually gave away). This is the
-  // figure commissions use, so it always wins over a recalculated estimate.
+  // figure commissions use, so it always wins over a recalculated estimate — BUT
+  // only when it agrees with the two prices we are showing. Some sales had the
+  // quoted total corrected after the discount was first written, leaving a stale
+  // percentage (e.g. quoted £1,236 → sold £1,000 shown as "0.8% off"). When the
+  // stored figures disagree with quoted − paid, the two visible prices win.
   const storedQuoted = Number((order as any)?.sale_quoted_total) || 0;
   const storedPct = (order as any)?.sale_discount_pct;
+  const storedPaid = Number((order as any)?.final_amount) || 0;
+  const trueAmount = storedQuoted > 0 && storedPaid > 0 ? storedQuoted - storedPaid : 0;
+  const truePct = trueAmount > 0.5 ? Math.round((trueAmount / storedQuoted) * 1000) / 10 : 0;
+  const storedPctIsConsistent =
+    storedPct != null && Math.abs(Number(storedPct) - truePct) <= 0.6;
   const recorded =
-    storedQuoted > 0 && storedPct != null
-      ? { quoted: storedQuoted, pct: Number(storedPct), paid: Number((order as any)?.final_amount) || 0 }
+    storedQuoted > 0 && storedPaid > 0
+      ? { quoted: storedQuoted, pct: storedPctIsConsistent ? Number(storedPct) : truePct, paid: storedPaid }
       : getRecordedOrderDiscount(order as any);
+
 
   // Sold ABOVE the quoted price — a premium, not a discount. Shown explicitly so
   // "No discount given" only ever means sold exactly at the quote.
