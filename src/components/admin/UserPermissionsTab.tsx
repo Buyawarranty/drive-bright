@@ -579,11 +579,15 @@ export const UserPermissionsTab = () => {
         body: { userId: u.user_id || u.id, email: u.email, password: pw }
       });
       if (error) throw error;
-      if (!data?.success || !data?.verified) {
-        throw new Error(data?.error || 'Password could not be verified on the login server — nothing revealed. Try again.');
+      if (!data?.success) {
+        throw new Error(data?.error || 'Password could not be saved — nothing revealed. Try again.');
       }
       setRevealedCreds({ email: u.email, password: pw, loginUrl: loginUrlForRole(u.role) });
-      toast.success(`New password generated and verified for ${u.email}`);
+      if (data.verified === false) {
+        toast.warning(data?.notice || 'Password saved, but the login check could not complete — ask them to sign in once to confirm.');
+      } else {
+        toast.success(`New password generated and verified for ${u.email}`);
+      }
     } catch (err: any) {
       console.error('Generate password error:', err);
       toast.error(err.message || 'Failed to generate password');
@@ -1108,13 +1112,16 @@ export const UserPermissionsTab = () => {
       });
 
       if (error) throw error;
-      if (!data?.success || !data?.verified) {
-        throw new Error(data?.error || 'The new password could not be verified on the login server. Nothing was sent — try again.');
+      if (!data?.success) {
+        throw new Error(data?.error || 'The new password could not be saved. Nothing was sent — try again.');
       }
 
       toast.success(`Password reset email sent to ${email}. New temporary password: ${data.tempPassword}`, {
         duration: 15000
       });
+      if (data.verified === false) {
+        toast.warning(data?.notice || 'The login check could not complete just now — ask them to sign in once to confirm.');
+      }
     } catch (error: any) {
       console.error('Error resetting password:', error);
       const msg = error?.context?.error || error?.message || 'Failed to reset password';
@@ -1203,10 +1210,11 @@ export const UserPermissionsTab = () => {
     });
     if (error) throw new Error(error.message || 'Could not save the password');
     if (data && data.success === false) throw new Error(data.error || 'Could not save the password');
-    // The function signs in with the new password before returning — only treat
-    // it as shareable when that verification passed.
+    // The function signs in with the new password before returning. If that check
+    // could not complete (login server busy) the password is still saved, so we
+    // say so rather than blocking the admin.
     if (data && data.verified !== true) {
-      throw new Error('Password could not be verified on the login server — do not share it yet.');
+      toast.warning(data?.notice || 'Password saved, but the login check could not complete — ask them to sign in once to confirm.');
     }
     setSavedPassword(newPassword);
     return true;

@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { requireAdmin } from "../_shared/admin-auth.ts";
-import { verifyPassword, PASSWORD_NOT_VERIFIED_MESSAGE } from "../_shared/verify-password.ts";
+import { verifyPasswordDetailed, PASSWORD_NOT_VERIFIED_MESSAGE, PASSWORD_SAVED_UNVERIFIED_NOTICE } from "../_shared/verify-password.ts";
 
 
 const corsHeaders = {
@@ -115,15 +115,17 @@ serve(async (req) => {
 
     logStep("Password updated in auth system");
 
-    // Never email a password we have not proven works on the login server.
-    const verified = await verifyPassword(email, tempPassword);
-    logStep("Password verification", { verified });
-    if (!verified) {
+    // Never email a password Auth has explicitly rejected. A check that simply
+    // could not complete (rate limit / transient error) is not a rejection.
+    const verification = await verifyPasswordDetailed(email, tempPassword);
+    logStep("Password verification", verification);
+    if (verification.rejected) {
       return new Response(JSON.stringify({ success: false, error: PASSWORD_NOT_VERIFIED_MESSAGE }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
       });
     }
+    const verified = verification.ok;
 
     // Pick the correct gateway: only super_admin / admin go to /auth (debug-enabled).
     const isAdminTier = adminUser.role === 'super_admin' || adminUser.role === 'admin';
@@ -265,7 +267,8 @@ Buy A Warranty IT Administration Team`;
       message: "Password reset successfully",
       tempPassword: tempPassword,
       temporaryPassword: tempPassword,
-      verified: true,
+      verified,
+      notice: verified ? undefined : PASSWORD_SAVED_UNVERIFIED_NOTICE,
       emailSent: true
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
