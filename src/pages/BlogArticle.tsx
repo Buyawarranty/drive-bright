@@ -54,7 +54,7 @@ const proseClass = `prose prose-slate prose-base sm:prose-lg max-w-none
   prose-td:px-3 sm:prose-td:px-4 prose-td:py-3 prose-td:align-top prose-td:text-slate-700 prose-td:leading-relaxed
   [&_tbody_tr:nth-child(even)]:bg-slate-50
   [&_h2]:font-[Playfair_Display,Georgia,serif]
-  [&_.bw-table-wrap]:my-6 sm:[&_.bw-table-wrap]:my-8 [&_.bw-table-wrap]:rounded-xl [&_.bw-table-wrap]:border [&_.bw-table-wrap]:border-slate-200 [&_.bw-table-wrap]:shadow-sm [&_.bw-table-wrap>table]:my-0
+  [&_.bw-table-wrap]:my-6 sm:[&_.bw-table-wrap]:my-8 [&_.bw-table-wrap]:rounded-xl [&_.bw-table-wrap]:border [&_.bw-table-wrap]:border-slate-200 [&_.bw-table-wrap]:shadow-sm [&_.bw-table-wrap_table]:my-0 [&_.bw-table-wrap]:overflow-hidden
   [&_.overflow-x-auto]:-mx-4 [&_.overflow-x-auto]:px-4 sm:[&_.overflow-x-auto]:mx-0 sm:[&_.overflow-x-auto]:px-0`;
 
 const getDefaultHeroImage = (slug: string) => {
