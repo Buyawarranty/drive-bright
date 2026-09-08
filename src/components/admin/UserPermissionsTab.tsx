@@ -579,11 +579,15 @@ export const UserPermissionsTab = () => {
         body: { userId: u.user_id || u.id, email: u.email, password: pw }
       });
       if (error) throw error;
-      if (!data?.success || !data?.verified) {
-        throw new Error(data?.error || 'Password could not be verified on the login server — nothing revealed. Try again.');
+      if (!data?.success) {
+        throw new Error(data?.error || 'Password could not be saved — nothing revealed. Try again.');
       }
       setRevealedCreds({ email: u.email, password: pw, loginUrl: loginUrlForRole(u.role) });
-      toast.success(`New password generated and verified for ${u.email}`);
+      if (data.verified === false) {
+        toast.warning(data?.notice || 'Password saved, but the login check could not complete — ask them to sign in once to confirm.');
+      } else {
+        toast.success(`New password generated and verified for ${u.email}`);
+      }
     } catch (err: any) {
       console.error('Generate password error:', err);
       toast.error(err.message || 'Failed to generate password');
