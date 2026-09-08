@@ -33,12 +33,18 @@ export const fetchSalesCreditAgentIds = async (): Promise<Set<string>> => {
 export const buildSaleCreditResolver = (salesAgentIds: Set<string>) => {
   return (customer: SaleCreditFields | null | undefined): string | null => {
     if (!customer) return null;
-    // A manager's explicit override always wins, whoever it points at.
-    if (customer.sale_credit_admin_user_id) return customer.sale_credit_admin_user_id;
-    const chain = [customer.payment_confirmed_by, customer.quote_sent_by, customer.assigned_to];
+    // A manager's override wins — but ONLY if it points at a real sales agent.
+    // A sale can never sit with accounts@/support@/info@ or any back-office login.
+    const chain = [
+      customer.sale_credit_admin_user_id,
+      customer.payment_confirmed_by,
+      customer.quote_sent_by,
+      customer.assigned_to,
+    ];
     for (const id of chain) {
       if (id && salesAgentIds.has(id)) return id;
     }
     return null;
   };
 };
+
