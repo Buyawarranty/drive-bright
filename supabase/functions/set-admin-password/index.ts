@@ -104,31 +104,62 @@ serve(async (req) => {
     );
 
     // Prove the password actually works before telling the admin it is live.
-    // Without this, a silent Auth failure leaves the admin sharing a password
-    // that returns "Invalid login credentials".
+    // Retry a few times: Auth can briefly return a transient error or a rate
+    // limit right after a password change, which previously made a saved
+    // password look like a failure.
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const tokenUrl = `${Deno.env.get("SUPABASE_URL")}/auth/v1/token?grant_type=password`;
     let verified = false;
-    try {
-      const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-      const verifyRes = await fetch(
-        `${Deno.env.get("SUPABASE_URL")}/auth/v1/token?grant_type=password`,
-        {
+    let rejected = false; // Auth explicitly said the credentials are wrong
+    let lastDetail = "";
+
+    for (let attempt = 1; attempt <= 3 && !verified && !rejected; attempt++) {
+      if (attempt > 1) await new Promise((r) => setTimeout(r, attempt * 700));
+      try {
+        const verifyRes = await fetch(tokenUrl, {
           method: "POST",
           headers: { apikey: anonKey, "Content-Type": "application/json" },
           body: JSON.stringify({ email: normalizedEmail, password: rawPassword }),
+        });
+        if (verifyRes.ok) {
+          verified = true;
+          break;
         }
-      );
-      verified = verifyRes.ok;
-    } catch (_e) {
-      verified = false;
+        const body = await verifyRes.text();
+        lastDetail = `${verifyRes.status} ${body.slice(0, 200)}`;
+        // 400 invalid_grant = genuinely wrong password. 429/5xx = transient.
+        if (verifyRes.status === 400 && /invalid[_ ]grant|invalid login/i.test(body)) {
+          rejected = true;
+        }
+      } catch (e: any) {
+        lastDetail = e?.message || "network error";
+      }
     }
 
-    if (!verified) {
+    if (rejected) {
+      console.error("set-admin-password verification rejected:", lastDetail);
       return new Response(
         JSON.stringify({
           success: false,
-          error: "The password was submitted but could not be verified on the login server. Try again before sharing it.",
+          error: "The login server rejected this password. Please try setting it again.",
         }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!verified) {
+      // The password change itself succeeded; only the confirmation check could
+      // not complete. Report success so the admin is not sent round in circles.
+      console.warn("set-admin-password saved but unverified:", lastDetail);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          verified: false,
+          userId: targetAuthId,
+          notice:
+            "Password saved. The login check could not complete just now (login server busy), so ask the user to sign in once to confirm.",
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
