@@ -70,6 +70,7 @@ import { priceFromPricingModel } from './pricing/modelQuoteEngine';
 
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 import { resolveHighestQuotedTotal, discountGiven } from '@/lib/pricing/quotedTotalLookup';
+import { fetchSalesAgentOptions, resolveSaleCreditAgentId, type SalesAgentOption } from '@/lib/saleCreditAssignment';
 
 
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
