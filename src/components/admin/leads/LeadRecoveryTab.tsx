@@ -516,13 +516,13 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     const results = await Promise.all(
       SEGMENTS.map(async (s) => {
         try {
-          const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
+          const dMin = RECONTACT_MIN_AGE_ISO();
           const d365 = new Date(Date.now() - 365 * 86400000).toISOString();
           let q: any = (supabase.from('sales_leads') as any)
             .select('id', { count: 'exact', head: true })
             .not('status', 'in', '(new,converted,fake_lead,archived,lost,not_interested,not_eligible)')
             .or('is_paid.is.null,is_paid.eq.false')
-            .lt('created_at', d30)
+            .lt('created_at', dMin)
             .gte('created_at', d365);
 
           q = applySegment(q, s.id);
