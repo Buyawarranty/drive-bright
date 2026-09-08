@@ -368,14 +368,14 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
       'created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at, ' +
       'call_count, resubmission_count, last_resubmitted_at, is_callback, recovery_worked_at, recovery_outcome, ' +
       'claim_count, last_claimed_at';
-    const d30 = new Date(Date.now() - 30 * 86400000).toISOString();
+    const dMin = RECONTACT_MIN_AGE_ISO();
     const d365 = new Date(Date.now() - 365 * 86400000).toISOString();
     return (supabase.from('sales_leads') as any)
       .select(select)
       .in('assigned_to', ids)
       .not('status', 'in', '(converted,fake_lead,archived,not_eligible)')
       .or('is_paid.is.null,is_paid.eq.false')
-      .lt('created_at', d30)
+      .lt('created_at', dMin)
       .gte('created_at', d365);
   }, []);
 
