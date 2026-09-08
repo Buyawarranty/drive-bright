@@ -346,8 +346,7 @@ const BlogArticle = () => {
             "url": "https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png"
           }
         },
-        "wordCount": post.word_count
-          || (html ? html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length : 0)
+        "wordCount": (html ? html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length : 0)
           || post.content?.raw?.split(/\s+/).length
           || 0,
         "timeRequired": `PT${post.read_time_minutes}M`,
