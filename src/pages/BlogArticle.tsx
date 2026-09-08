@@ -336,17 +336,10 @@ const BlogArticle = () => {
           "worksFor": { "@type": "Organization", "name": "Buy a Warranty" },
           "knowsAbout": ["UK extended car warranties", "vehicle repair costs in the UK", "MOT and DVSA rules"],
         },
-        "publisher": {
-          "@type": "Organization",
-          "name": "Buy a Warranty",
-          "url": "https://buyawarranty.co.uk/",
-          "areaServed": { "@type": "Country", "name": "United Kingdom", "alternateName": "GB" },
-          "logo": {
-            "@type": "ImageObject",
-            "url": "https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png"
-          }
-        },
-        "wordCount": post.content?.raw?.split(/\s+/).length || 0,
+        "publisher": { "@id": "https://buyawarranty.co.uk/#organization" },
+        "wordCount": (html ? html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length : 0)
+          || post.content?.raw?.split(/\s+/).length
+          || 0,
         "timeRequired": `PT${post.read_time_minutes}M`,
         "spatialCoverage": {
           "@type": "Place",
@@ -366,23 +359,99 @@ const BlogArticle = () => {
           { "@type": "Thing", "name": "Car warranty" },
           { "@type": "Thing", "name": "Used car ownership costs" },
         ],
+        "mentions": (post.seo_keywords || []).slice(0, 10).map((k) => ({ "@type": "Thing", "name": k })),
         "speakable": {
           "@type": "SpeakableSpecification",
           "cssSelector": ["h1", "h2", ".article-content p"],
+          "xpath": ["/html/head/title", "/html/body//h1"],
         },
-        "isPartOf": {
-          "@type": "Blog",
-          "@id": "https://buyawarranty.co.uk/thewarrantyhub/#blog",
-          "name": "The Warranty Hub",
-          "inLanguage": "en-GB",
+        "isPartOf": { "@id": "https://buyawarranty.co.uk/thewarrantyhub/#blog" },
+        "mainEntityOfPage": { "@id": articleUrl },
+      },
+      // WebPage node: gives answer engines a single page entity to cite
+      {
+        "@type": "WebPage",
+        "@id": articleUrl,
+        "url": articleUrl,
+        "name": post.seo_title || post.title,
+        "description": metaDescription,
+        "inLanguage": "en-GB",
+        "isPartOf": { "@id": "https://buyawarranty.co.uk/#website" },
+        "primaryImageOfPage": { "@type": "ImageObject", "url": heroImage },
+        "datePublished": post.published_at,
+        "dateModified": lastModified,
+        "breadcrumb": { "@id": `${articleUrl}#breadcrumb` },
+        "mainEntity": { "@id": `${articleUrl}#article` },
+        "about": { "@id": "https://buyawarranty.co.uk/#organization" },
+        "speakable": {
+          "@type": "SpeakableSpecification",
+          "cssSelector": ["h1", ".article-content p"],
         },
-        "mainEntityOfPage": { "@type": "WebPage", "@id": articleUrl },
+        "potentialAction": {
+          "@type": "ReadAction",
+          "target": [articleUrl],
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${articleUrl}#breadcrumb`,
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://buyawarranty.co.uk/" },
+          { "@type": "ListItem", "position": 2, "name": "The Warranty Hub", "item": "https://buyawarranty.co.uk/thewarrantyhub/" },
+          { "@type": "ListItem", "position": 3, "name": post.title, "item": articleUrl },
+        ],
+      },
+      {
+        "@type": "Blog",
+        "@id": "https://buyawarranty.co.uk/thewarrantyhub/#blog",
+        "name": "The Warranty Hub",
+        "url": "https://buyawarranty.co.uk/thewarrantyhub/",
+        "description": "UK car warranty guides, repair cost data and claims advice from Buy a Warranty.",
+        "inLanguage": "en-GB",
+        "publisher": { "@id": "https://buyawarranty.co.uk/#organization" },
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://buyawarranty.co.uk/#website",
+        "url": "https://buyawarranty.co.uk/",
+        "name": "Buy a Warranty",
+        "inLanguage": "en-GB",
+        "publisher": { "@id": "https://buyawarranty.co.uk/#organization" },
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://buyawarranty.co.uk/#organization",
+        "name": "Buy a Warranty",
+        "alternateName": "BuyAWarranty UK",
+        "url": "https://buyawarranty.co.uk/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png",
+        },
+        "description": "UK provider of extended car, van, motorbike and EV warranties with in-house claims handling.",
+        "areaServed": { "@type": "Country", "name": "United Kingdom", "alternateName": "GB" },
+        "knowsAbout": [
+          "UK extended car warranties",
+          "vehicle repair costs in the UK",
+          "MOT and DVSA rules",
+          "warranty claims authorisation",
+          "warranty exclusions",
+          "vehicle modifications and warranty cover",
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer service",
+          "areaServed": "GB",
+          "availableLanguage": "English",
+          "url": "https://buyawarranty.co.uk/contact-us",
+        },
       },
       ...(faqItems.length
         ? [{
             "@type": "FAQPage",
             "@id": `${articleUrl}#faq`,
             "inLanguage": "en-GB",
+            "isPartOf": { "@id": articleUrl },
             "mainEntity": faqItems.map((f) => ({
               "@type": "Question",
               "name": f.question,
