@@ -30,7 +30,7 @@ export const fetchSalesAgentOptions = async (): Promise<SalesAgentOption[]> => {
   const { data } = await supabase
     .from('admin_users')
     .select('id, first_name, last_name, email, role, is_active')
-    .in('role', SALES_CREDIT_ROLES as unknown as string[])
+    .in('role', ['sales', 'sales_lead'])
     .eq('is_active', true)
     .order('first_name');
   return (data || []).map((u: any) => ({
