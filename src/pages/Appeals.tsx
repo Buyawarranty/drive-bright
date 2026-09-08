@@ -583,7 +583,7 @@ const Appeals = () => {
                         {token && (
                           <button
                             type="button"
-                            onClick={createInspectionLink}
+                            onClick={() => createInspectionLink()}
                             disabled={creatingInspectionLink}
                             className="mt-3 inline-flex items-center justify-center rounded-lg bg-brand-blue px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-blue-dark disabled:opacity-60"
                           >
