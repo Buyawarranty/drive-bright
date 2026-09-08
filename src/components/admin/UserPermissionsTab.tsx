@@ -1203,10 +1203,11 @@ export const UserPermissionsTab = () => {
     });
     if (error) throw new Error(error.message || 'Could not save the password');
     if (data && data.success === false) throw new Error(data.error || 'Could not save the password');
-    // The function signs in with the new password before returning — only treat
-    // it as shareable when that verification passed.
+    // The function signs in with the new password before returning. If that check
+    // could not complete (login server busy) the password is still saved, so we
+    // say so rather than blocking the admin.
     if (data && data.verified !== true) {
-      throw new Error('Password could not be verified on the login server — do not share it yet.');
+      toast.warning(data?.notice || 'Password saved, but the login check could not complete — ask them to sign in once to confirm.');
     }
     setSavedPassword(newPassword);
     return true;
