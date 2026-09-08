@@ -3594,6 +3594,25 @@ Questions? Call 0330 229 5040`;
         }
       }
 
+      // Who the sale belongs to. Only a sales agent can hold a sale: whoever
+      // pressed confirm (accounts@/support@/info@/a manager) is recorded in the
+      // audit note only. Direct website sales never come through here.
+      const creditedAgentId = await resolveSaleCreditAgentId([
+        saleCreditAgentId || null,
+        adminUserRecordId,
+        quoteSentByUserId,
+        selectedLeadOwnerId,
+      ]);
+      if (!creditedAgentId) {
+        setIsConfirmingPaid(false);
+        toast({
+          title: 'Choose the sales agent',
+          description: 'Every confirmed sale must be recorded against a sales agent — pick who converted this sale in "Sale credited to".',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       // === ATOMIC TRANSACTION START ===
       
       // 1. Find the existing customer record for THIS ORDER.
