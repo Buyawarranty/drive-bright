@@ -383,7 +383,7 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
 
   const applySegment = useCallback((q: any, id: SegmentId) => {
     const now = Date.now();
-    const d30 = new Date(now - 30 * 86400000).toISOString();
+    const dMin = RECONTACT_MIN_AGE_ISO();
     const d14 = new Date(now - 14 * 86400000).toISOString();
     const d7 = new Date(now - 7 * 86400000).toISOString();
     const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
