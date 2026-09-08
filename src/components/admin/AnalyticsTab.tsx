@@ -2415,6 +2415,8 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
       <ClaimsPerSalesPanel />
 
+      </>
+
       )}
 
 
