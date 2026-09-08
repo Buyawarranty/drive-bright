@@ -481,6 +481,14 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         fetched = (data as any) || [];
       }
 
+      // Final guard: nothing newer than two months may ever show here, no
+      // matter which query path or assignment history produced the row.
+      const minCreatedMs = Date.now() - RECONTACT_MIN_AGE_DAYS * 86400000;
+      fetched = fetched.filter((l: any) => {
+        const t = new Date(l.created_at || 0).getTime();
+        return Number.isFinite(t) && t < minCreatedMs;
+      });
+
       setLeads(fetched);
 
 
