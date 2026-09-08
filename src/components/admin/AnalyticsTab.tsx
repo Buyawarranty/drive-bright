@@ -2411,9 +2411,9 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         </CardContent>
       </Card>
 
-      <CancellationTimingPanel />
+      <CancellationTimingPanel dateRange={effectiveDateRange} />
 
-      <ClaimsPerSalesPanel />
+      <ClaimsPerSalesPanel dateRange={effectiveDateRange} />
 
       </>
 

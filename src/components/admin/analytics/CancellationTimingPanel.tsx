@@ -118,6 +118,9 @@ export const CancellationTimingPanel: React.FC<Props> = ({ dateRange }) => {
         <CardDescription className="mt-1">
           Days between the purchase date and the date the order was cancelled or refunded, plus how many of those
           customers made a claim before they cancelled.
+          {dateRange?.from
+            ? ` Showing cancellations from ${format(dateRange.from, 'dd MMM yyyy')}${dateRange.to ? ` to ${format(dateRange.to, 'dd MMM yyyy')}` : ''}.`
+            : ' Use the date range picker or quick month filter above to narrow the period.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
