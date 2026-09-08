@@ -129,9 +129,9 @@ const BlogArticle = () => {
 
     // Tables scroll horizontally instead of breaking mobile layout
     out = out.replace(
-      /<table/gi,
-      '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table'
-    ).replace(/<\/table>/gi, '</table></div>');
+      /<table[^>]*>/gi,
+      '<div class="bw-table-wrap"><div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="min-width:560px">'
+    ).replace(/<\/table>/gi, '</table></div></div>');
 
     return out;
   }, [html, toc]);
