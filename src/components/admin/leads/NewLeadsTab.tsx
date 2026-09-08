@@ -32,6 +32,7 @@ import { CallbackBanner } from './CallbackBanner';
 import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter, AgeWindow } from './LeadsFilters';
 import { useActiveCheckoutStruggles, buildStruggleByLeadId } from '@/hooks/useActiveCheckoutStruggles';
 import { LiveStuckCustomersPanel } from '@/components/admin/leads/LiveStuckCustomersPanel';
+import { DailyCrmSurveyBanner } from '@/components/admin/feedback/DailyCrmSurvey';
 
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { LiveLeadTrackingPanel } from './LiveLeadTrackingPanel';
@@ -1752,6 +1753,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   return (
     <div className="space-y-4">
       {/* MissedCallAlertBar now mounted globally in AdminDashboard so it shows on every tab */}
+      {!sandboxMode && (userRole === 'sales' || userRole === 'sales_lead') && (
+        <WidgetErrorBoundary label="Daily CRM survey">
+          <DailyCrmSurveyBanner adminUserId={currentAdminId} />
+        </WidgetErrorBoundary>
+      )}
       {!sandboxMode && (
         <WidgetErrorBoundary label="Live customers stuck on checkout">
           <LiveStuckCustomersPanel />
