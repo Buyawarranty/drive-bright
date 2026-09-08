@@ -193,6 +193,41 @@ export const ClaimsTab = ({
     return { avgPayout, avgPerMonth };
   }, [managerClaims]);
 
+  // Warranties sold over the same active period as the claims, for the claims-per-sale KPI
+  const [salesInClaimPeriod, setSalesInClaimPeriod] = useState<number>(0);
+  const claimPeriodKey = useMemo(() => {
+    const dates = managerClaims
+      .map((c: any) => c.submittedAt ? new Date(c.submittedAt).getTime() : null)
+      .filter((t): t is number => !!t);
+    if (!dates.length) return '';
+    return `${Math.min(...dates)}:${Math.max(...dates)}`;
+  }, [managerClaims]);
+
+  useEffect(() => {
+    if (!claimPeriodKey) { setSalesInClaimPeriod(0); return; }
+    let active = true;
+    const [min, max] = claimPeriodKey.split(':').map(Number);
+    (async () => {
+      const { data } = await supabase
+        .from('customers')
+        .select('id, status')
+        .gte('signup_date', new Date(min).toISOString())
+        .lte('signup_date', new Date(max).toISOString())
+        .limit(10000);
+      if (!active) return;
+      const sold = (data || []).filter((c: any) => {
+        const s = (c.status || '').toLowerCase();
+        return !s.includes('cancelled') && !s.includes('refunded');
+      });
+      setSalesInClaimPeriod(sold.length);
+    })();
+    return () => { active = false; };
+  }, [claimPeriodKey]);
+
+  const claimsPerSalePct = salesInClaimPeriod > 0
+    ? Math.round((managerClaims.length / salesInClaimPeriod) * 1000) / 10
+    : 0;
+
   const totalCount = managerClaims.length;
 
 
@@ -573,6 +608,7 @@ export const ClaimsTab = ({
               avgPayout={perfKpis.avgPayout}
               avgResolutionDays={avgResolutionDays}
               avgClaimsPerMonth={perfKpis.avgPerMonth}
+              claimsPerSalePct={claimsPerSalePct}
             />
           </WidgetErrorBoundary>
           <WidgetErrorBoundary label="Claims workbench">
