@@ -48,11 +48,11 @@ const proseClass = `prose prose-slate prose-base sm:prose-lg max-w-none
   prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-slate-50 prose-blockquote:py-2 prose-blockquote:px-4 sm:prose-blockquote:px-6 prose-blockquote:not-italic prose-blockquote:rounded-r-lg prose-blockquote:text-[#001F3F] prose-blockquote:font-medium
   prose-img:rounded-xl prose-img:shadow-md prose-img:my-6 sm:prose-img:my-8
   prose-table:w-full prose-table:my-6 sm:prose-table:my-8 prose-table:text-sm prose-table:border-collapse prose-table:table-fixed
-  prose-thead:bg-slate-100 prose-thead:border-b-2 prose-thead:border-slate-300
+  [&_thead]:bg-slate-100 [&_thead_tr]:border-b-2 [&_thead_tr]:border-slate-300
   prose-th:px-3 sm:prose-th:px-4 prose-th:py-3 prose-th:text-left prose-th:align-bottom prose-th:font-semibold prose-th:text-[#001F3F] prose-th:leading-snug
-  prose-tr:border-b prose-tr:border-slate-200
+  [&_tbody_tr]:border-b [&_tbody_tr]:border-slate-200 [&_tbody_tr:last-child]:border-b-0
   prose-td:px-3 sm:prose-td:px-4 prose-td:py-3 prose-td:align-top prose-td:text-slate-700 prose-td:leading-relaxed
-  [&_tbody_tr:nth-child(even)]:bg-slate-50/60
+  [&_tbody_tr:nth-child(even)]:bg-slate-50
   [&_h2]:font-[Playfair_Display,Georgia,serif]
   [&_.bw-table-wrap]:my-6 sm:[&_.bw-table-wrap]:my-8 [&_.bw-table-wrap]:rounded-xl [&_.bw-table-wrap]:border [&_.bw-table-wrap]:border-slate-200 [&_.bw-table-wrap]:shadow-sm [&_.bw-table-wrap>table]:my-0
   [&_.overflow-x-auto]:-mx-4 [&_.overflow-x-auto]:px-4 sm:[&_.overflow-x-auto]:mx-0 sm:[&_.overflow-x-auto]:px-0`;
