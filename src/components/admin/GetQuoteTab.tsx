@@ -3721,11 +3721,13 @@ Questions? Call 0330 229 5040`;
         payment_verified: false,
         breakdown_recovery: getAutoIncludedAddOns(paymentType).includes('breakdown'),
         vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
-        // Assign customer to the confirming sales agent
-        assigned_to: adminUserRecordId,
+        // The sale belongs to the sales agent who converted it, never to the
+        // admin/accounts/support login that pressed confirm.
+        assigned_to: creditedAgentId,
         // Sales agent attribution for commission tracking
         quote_sent_by: quoteSentByUserId,
-        payment_confirmed_by: adminUserRecordId,
+        payment_confirmed_by: creditedAgentId,
+        sale_credit_admin_user_id: creditedAgentId,
         // CRITICAL: Save the selected payment source from the dropdown
         purchase_source: paymentSource || 'external',
         // Persist notes to customer record so they appear in Customer Management Notes column
