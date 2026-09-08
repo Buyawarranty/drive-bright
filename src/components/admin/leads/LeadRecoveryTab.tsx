@@ -38,7 +38,7 @@ type SegmentId =
 
 const SEGMENTS: { id: SegmentId; label: string; description: string }[] = [
   { id: 'due_today',          label: 'Due Today',          description: 'Callbacks scheduled for today — work these first.' },
-  { id: 'new_to_recontact',   label: 'New to Recontact',   description: 'Old enquiries (30+ days) that have never been worked.' },
+  { id: 'new_to_recontact',   label: 'New to Recontact',   description: 'Old enquiries (over 2 months) that have never been worked.' },
   { id: 'no_answer',          label: 'No Answer',          description: 'Previously called but no response yet.' },
   { id: 'interested',         label: 'Interested',         description: 'Customer showed interest — needs follow-up.' },
   { id: 'quote_sent',         label: 'Quote Sent',         description: 'Price/quote already sent — needs chasing.' },
