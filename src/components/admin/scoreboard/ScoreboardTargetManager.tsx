@@ -20,9 +20,31 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
   const [existingIds, setExistingIds] = useState<Record<string, string>>({});
   const [savingAll, setSavingAll] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
+  // Month-to-date figures, taken from the same source as the Team progress board so
+  // the two panels can never disagree (the leaderboard above can be filtered to
+  // other periods such as the last 30 days).
+  const [monthStats, setMonthStats] = useState<Record<string, { revenue: number; sales: number }>>({});
 
   const monthStart = startOfMonth(new Date());
   const monthEnd = endOfMonth(new Date());
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase.rpc('get_team_scoreboard', {
+        p_start: monthStart.toISOString(),
+        p_end: monthEnd.toISOString(),
+      });
+      if (cancelled || error) return;
+      const map: Record<string, { revenue: number; sales: number }> = {};
+      ((data || []) as any[]).forEach(r => {
+        map[r.admin_user_id] = { revenue: Number(r.revenue) || 0, sales: Number(r.sales_count) || 0 };
+      });
+      setMonthStats(map);
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monthStart.getTime()]);
 
   const fetchTargets = React.useCallback(async () => {
       const agentIds = agents.map(a => a.id);
