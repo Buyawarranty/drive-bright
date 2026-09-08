@@ -267,7 +267,8 @@ Buy A Warranty IT Administration Team`;
       message: "Password reset successfully",
       tempPassword: tempPassword,
       temporaryPassword: tempPassword,
-      verified: true,
+      verified,
+      notice: verified ? undefined : PASSWORD_SAVED_UNVERIFIED_NOTICE,
       emailSent: true
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
