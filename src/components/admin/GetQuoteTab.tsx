@@ -8486,6 +8486,34 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                       </select>
                     </div>
 
+                    {/* Sale credited to — a sale ALWAYS belongs to a sales agent.
+                        Back office (accounts@/support@/info@) confirming on an
+                        agent's behalf must pick that agent. */}
+                    <div className="space-y-1.5">
+                      <Label htmlFor="sale-credit-agent" className="text-xs font-medium text-gray-600">
+                        Sale credited to (sales agent) *
+                      </Label>
+                      <select
+                        id="sale-credit-agent"
+                        value={saleCreditAgentId}
+                        onChange={(e) => setSaleCreditAgentId(e.target.value)}
+                        disabled={iAmSalesAgent}
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors text-sm disabled:opacity-70"
+                      >
+                        <option value="">Select the sales agent...</option>
+                        {salesAgentOptions.map((agent) => (
+                          <option key={agent.id} value={agent.id}>
+                            {agent.name}{agent.id === currentAdminId ? ' (You)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-[11px] text-gray-500">
+                        {iAmSalesAgent
+                          ? 'This sale is recorded in your name.'
+                          : 'Confirming on an agent’s behalf — the sale is recorded in their name, never in an admin, accounts or support name.'}
+                      </p>
+                    </div>
+
                     {/* Amount */}
                     {(() => {
                       const effectiveQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12);
