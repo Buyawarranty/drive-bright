@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { AgentScore } from '@/hooks/useScoreboardData';
+import { TrainingModeToggle, fetchTrainingFlags } from './TrainingModeToggle';
 
 const DEFAULT_REVENUE_TARGET = 35000;
 
@@ -24,6 +25,16 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
   // the two panels can never disagree (the leaderboard above can be filtered to
   // other periods such as the last 30 days).
   const [monthStats, setMonthStats] = useState<Record<string, { revenue: number; sales: number }>>({});
+  const [training, setTraining] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const flags = await fetchTrainingFlags(agents.map(a => a.id));
+      if (!cancelled) setTraining(flags);
+    })();
+    return () => { cancelled = true; };
+  }, [agents]);
 
   const monthStart = startOfMonth(new Date());
   const monthEnd = endOfMonth(new Date());
@@ -144,6 +155,7 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
     let fail = 0;
     try {
       for (const a of agents) {
+        if (training.has(a.id)) continue;
         const amount = targets[a.id];
         if (amount === undefined || amount < 0) { fail++; continue; }
         try {
@@ -195,23 +207,34 @@ export const ScoreboardTargetManager: React.FC<Props> = ({ agents, onTargetSaved
                 <p className="font-medium truncate">{agent.name}</p>
                 <p className="text-xs text-muted-foreground">
                   {gbp(monthStats[agent.id]?.revenue ?? 0)} this month · {monthStats[agent.id]?.sales ?? 0} sales
+                  {training.has(agent.id) && ' · in training, no target yet'}
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                <TrainingModeToggle
+                  agentId={agent.id}
+                  inTraining={training.has(agent.id)}
+                  onChanged={next => setTraining(prev => {
+                    const s = new Set(prev);
+                    if (next) s.add(agent.id); else s.delete(agent.id);
+                    return s;
+                  })}
+                />
                 <span className="text-sm text-muted-foreground">£</span>
                 <Input
                   type="number"
                   min={0}
                   step={500}
                   className="w-28 text-center"
-                  value={targets[agent.id] ?? ''}
+                  disabled={training.has(agent.id)}
+                  value={training.has(agent.id) ? '' : (targets[agent.id] ?? '')}
                   onChange={e => setTargets(prev => ({ ...prev, [agent.id]: parseInt(e.target.value) || 0 }))}
                   placeholder="35000"
                 />
                 <Button
                   size="sm"
                   onClick={() => handleSave(agent.id)}
-                  disabled={savingId === agent.id}
+                  disabled={savingId === agent.id || training.has(agent.id)}
                 >
                   <Save className="h-4 w-4 mr-1" />
                   Save
