@@ -28,8 +28,8 @@ export function isInstalmentAllowed(paymentType: string, count: number): boolean
 
 /** Total-price multiplier vs the 1-year annual price, per term + instalment plan. */
 export function instalmentMultiplier(paymentType: string, count: InstalmentCount): number {
-  if (paymentType === '24months') return count === 24 ? 2.22 : 1.85;
-  if (paymentType === '36months') return count === 36 ? 3.51 : 2.70;
+  if (paymentType === '24months') return count === 24 ? 2.22 : 1.75;
+  if (paymentType === '36months') return count === 36 ? 3.51 : 2.80;
   return 1.0;
 }
 
