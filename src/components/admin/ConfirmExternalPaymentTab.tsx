@@ -1287,6 +1287,11 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                       {getInstalmentOptions(paymentType).length > 1 && (
                         <div className="space-y-1.5 md:col-span-2">
                           <Label className="text-xs font-semibold text-slate-500">Instalment plan</Label>
+                          {twelvePlanSaving(annualTotalPrice, paymentType) > 0 && (
+                            <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-[12px] font-semibold text-emerald-900">
+                              Save £{twelvePlanSaving(annualTotalPrice, paymentType)} by paying over 12 instalments
+                            </div>
+                          )}
                           <div className="grid grid-cols-2 gap-2">
                              {getInstalmentOptions(paymentType).map((count) => {
                               const comingSoon = isInstalmentComingSoon(count);
