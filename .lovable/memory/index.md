@@ -167,6 +167,7 @@ Updated: just now
 - Sale credit is ONLY ever a sales/sales_lead login — non-sales ids are skipped even as a manager override. See mem://admin/sale-credit-only-sales-agents
 - Agent-worked leads (notes or outbound calls) always credit that agent, not the back-office login that confirmed payment; only true self-serve is Website. See mem://admin/sale-credit-agent-proof-of-work
 - [ORR Sandbox Page](mem://admin/leads/orr-sandbox-page) — Management-only read-only copy of New Leads with Open Round Robin allocation in orr_sandbox_allocations
+- [Daily CRM Survey](mem://admin/daily-crm-survey) — Launch 2026-09-09, silent daily pop-up 16:30 UK, agents see own answers only, managers see per-agent problem charts
 - [Duplicate Customer One Owner](mem://admin/leads/duplicate-customer-one-owner) — Same customer (email or phone tail-9) can never sit with 2 agents; owner change propagates to uncalled duplicates, split-call pairs get manager alert tag
 - [Agents On and Off + Leave](mem://admin/leads/agent-on-off-and-leave) — Lead Teams switch revokes login/permissions and pauses distribution; agent_leave_periods dates stop new leads for booked holiday
 - [Sale Today Clears Freeze](mem://admin/leads/sale-today-clears-freeze) — A sale credited today immediately unpauses leads and zeroes the days-without-a-sale counter
