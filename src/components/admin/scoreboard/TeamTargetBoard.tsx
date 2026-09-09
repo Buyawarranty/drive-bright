@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, endOfMonth, format, differenceInCalendarDays } from 'date-fns';
 import { getAgentColor } from '@/lib/agentColors';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import { fetchTrainingFlags } from './TrainingModeToggle';
 
 interface Row {
   team_id: string;
@@ -78,6 +79,7 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [training, setTraining] = useState<Set<string>>(new Set());
 
   const month = monthDate ?? new Date();
 
@@ -90,7 +92,9 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
     if (error) setError(error.message);
     else {
       setError(null);
-      setRows((data || []) as unknown as Row[]);
+      const list = (data || []) as unknown as Row[];
+      setRows(list);
+      setTraining(await fetchTrainingFlags(list.map(r => r.admin_user_id)));
     }
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -223,8 +227,11 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
                     .map(m => {
                       const firstName = (m.agent_name || '').split(' ')[0];
                       const avatarBg = getAgentColor(firstName, m.admin_user_id);
-                      const pct = m.pct_achieved;
-                      const tag = statusTag(pct, Number(m.sales_count) || 0);
+                      const isTraining = training.has(m.admin_user_id);
+                      const pct = isTraining ? null : m.pct_achieved;
+                      const tag = isTraining
+                        ? { label: '🎓 In training', cls: 'bg-sky-100 text-sky-800 border-sky-300', msg: 'Learning the ropes — no target yet.' }
+                        : statusTag(pct, Number(m.sales_count) || 0);
                       const gap =
                         m.revenue_target != null
                           ? Math.max(0, Number(m.revenue_target) - Number(m.revenue))
@@ -250,35 +257,38 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
                           <div className="flex items-end justify-between gap-2">
                             <div>
                               <p className="text-xs text-muted-foreground">
-                                {m.revenue_target != null ? 'To hit target' : 'Sales'}
+                                {isTraining ? 'Sales so far' : m.revenue_target != null ? 'To hit target' : 'Sales'}
                               </p>
                               <p className="text-xl font-bold tracking-tight">
                                 {gbp(Number(m.revenue))}
-                                {m.revenue_target != null && (
+                                {!isTraining && m.revenue_target != null && (
                                   <span className="text-sm font-normal text-muted-foreground"> / {gbp(Number(m.revenue_target))}</span>
                                 )}
                               </p>
                             </div>
                             <span className="text-2xl font-bold tabular-nums">
-                              {pct != null ? `${pct}%` : '—'}
+                              {isTraining ? 'In training' : pct != null ? `${pct}%` : '—'}
                             </span>
                           </div>
 
-                          <Progress value={Math.min(pct ?? 0, 100)} className={`h-2 ${progressBarColor(pct)}`} />
+                          {!isTraining && (
+                            <Progress value={Math.min(pct ?? 0, 100)} className={`h-2 ${progressBarColor(pct)}`} />
+                          )}
 
                           <div className="flex flex-wrap items-center gap-2">
                             <Badge variant="outline" className={tag.cls}>{tag.label}</Badge>
-                            {gap != null && gap > 0 && (
+                            {!isTraining && gap != null && gap > 0 && (
                               <span className="text-xs text-muted-foreground">{gbp(gap)} to go</span>
                             )}
-                            {m.revenue_target == null && (
+                            {!isTraining && m.revenue_target == null && (
                               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Lock className="h-3 w-3" /> target private
                               </span>
                             )}
                           </div>
 
-                          {m.revenue_target != null &&
+                          {!isTraining &&
+                            m.revenue_target != null &&
                             m.working_days != null &&
                             m.full_month_days != null &&
                             m.working_days < m.full_month_days && (
@@ -322,9 +332,13 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
                   </div>
                   <div className="flex items-center gap-3 text-sm">
                     <span className="font-semibold">{gbp(Number(r.revenue))}</span>
-                    <Badge variant="outline" className={statusTag(r.pct_achieved, Number(r.sales_count) || 0).cls}>
-                      {r.pct_achieved != null ? `${r.pct_achieved}%` : '—'}
-                    </Badge>
+                    {training.has(r.admin_user_id) ? (
+                      <Badge variant="outline" className="bg-sky-100 text-sky-800 border-sky-300">🎓 In training</Badge>
+                    ) : (
+                      <Badge variant="outline" className={statusTag(r.pct_achieved, Number(r.sales_count) || 0).cls}>
+                        {r.pct_achieved != null ? `${r.pct_achieved}%` : '—'}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               );

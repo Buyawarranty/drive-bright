@@ -126,6 +126,7 @@ Updated: just now
 - [Commission Claim System](mem://admin/commission-claim-system) — Flow mapping unpaid web sales
 - [Agent Performance](mem://admin/agent-performance-monitoring) — Daily distributions and view windows
 - [Sales Scoreboard](mem://admin/sales-scoreboard-v6) — KPIs pointing to the core customer tables
+- [Agents In Training](mem://admin/scoreboard/agents-in-training-no-target) — In-training agents show no target/%; period filters live inside the Scoreboard section
 - [Pro-rata Targets](mem://admin/scoreboard/pro-rata-targets) — Monthly target scales by days worked (working_days/full_month_days)
 - [Reminders Logic](mem://admin/reminders/system-logic) — NLP fields and UI color scales
 - [Vehicle Stats Dashboard](mem://features/admin/vehicle-stats-dashboard-v3) — Aggregations and classifying rules

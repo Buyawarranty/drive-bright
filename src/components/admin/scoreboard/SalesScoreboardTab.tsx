@@ -186,8 +186,97 @@ export const SalesScoreboardTab: React.FC = () => {
 
 
 
-      {/* Toolbar: period, month navigator, date range, team filter */}
+      {/* Team filter toolbar */}
       <div className="rounded-xl border bg-card/60 p-3 md:p-4 space-y-3">
+        {/* Team filter — management sees teams + an "Only me" focus toggle; agents see their own team as a locked label */}
+        {teams.length > 0 && isManagement && (
+          <div className="flex flex-wrap items-center gap-2 pt-3 border-t">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">Team</span>
+            <Button
+              variant={focusOnlyMe ? 'default' : 'outline'}
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => setFocusOnlyMe(v => !v)}
+              title="Hide other agents and teams — show only your own scoreboard row"
+            >
+              {focusOnlyMe ? 'Only me · on' : 'Only me'}
+            </Button>
+            <Button
+              variant={!focusOnlyMe && selectedTeamId === 'all' ? 'default' : 'outline'}
+              size="sm"
+              className="h-8 text-xs"
+              disabled={focusOnlyMe}
+              onClick={() => setSelectedTeamId('all')}
+            >
+              All teams
+            </Button>
+            {teams.map(t => {
+              const active = !focusOnlyMe && selectedTeamId === t.id;
+              return (
+                <Button
+                  key={t.id}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs gap-1.5"
+                  disabled={focusOnlyMe}
+                  onClick={() => setSelectedTeamId(t.id)}
+                  style={
+                    active
+                      ? { backgroundColor: t.color, borderColor: t.color, color: '#fff' }
+                      : { borderColor: `${t.color}66` }
+                  }
+                >
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: active ? '#fff' : t.color }}
+                  />
+                  {t.name}
+                </Button>
+              );
+            })}
+          </div>
+        )}
+
+        {teams.length > 0 && !isManagement && myTeamId && (() => {
+          const myTeam = teams.find(t => t.id === myTeamId);
+          if (!myTeam) return null;
+          return (
+            <div className="flex flex-wrap items-center gap-2 pt-3 border-t">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">Your team</span>
+              <span
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border"
+                style={{ backgroundColor: myTeam.color, borderColor: myTeam.color, color: '#fff' }}
+              >
+                <span className="h-2 w-2 rounded-full bg-white/90" />
+                {myTeam.name}
+              </span>
+            </div>
+          );
+        })()}
+      </div>
+
+
+      {/* Trustpilot review bonuses for the selected month */}
+      <ScoreboardReviewsPanel
+        monthDate={dateRange?.from ?? new Date()}
+        agents={visibleAgents.map(a => ({ id: a.id, name: a.name }))}
+      />
+
+
+
+      {/* Everything on one page — expand/collapse sections */}
+      <Accordion
+        type="multiple"
+        value={openSections}
+        onValueChange={setOpenSections}
+        className="space-y-3"
+      >
+        <AccordionItem value="scoreboard" className="border rounded-xl bg-card/60 px-4">
+          <AccordionTrigger className="text-sm font-semibold hover:no-underline">
+            <span className="flex items-center gap-2"><Trophy className="h-4 w-4 text-yellow-500" /> Scoreboard</span>
+          </AccordionTrigger>
+          <AccordionContent className="pb-4">
+            <div className="rounded-xl border bg-background p-3 md:p-4 mb-4">
         <div className="flex flex-wrap items-center gap-3">
           {/* Period segmented control */}
           <div className="inline-flex rounded-lg border bg-background p-0.5">
@@ -264,93 +353,7 @@ export const SalesScoreboardTab: React.FC = () => {
           </div>
         </div>
 
-        {/* Team filter — management sees teams + an "Only me" focus toggle; agents see their own team as a locked label */}
-        {teams.length > 0 && isManagement && (
-          <div className="flex flex-wrap items-center gap-2 pt-3 border-t">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">Team</span>
-            <Button
-              variant={focusOnlyMe ? 'default' : 'outline'}
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => setFocusOnlyMe(v => !v)}
-              title="Hide other agents and teams — show only your own scoreboard row"
-            >
-              {focusOnlyMe ? 'Only me · on' : 'Only me'}
-            </Button>
-            <Button
-              variant={!focusOnlyMe && selectedTeamId === 'all' ? 'default' : 'outline'}
-              size="sm"
-              className="h-8 text-xs"
-              disabled={focusOnlyMe}
-              onClick={() => setSelectedTeamId('all')}
-            >
-              All teams
-            </Button>
-            {teams.map(t => {
-              const active = !focusOnlyMe && selectedTeamId === t.id;
-              return (
-                <Button
-                  key={t.id}
-                  variant="outline"
-                  size="sm"
-                  className="h-8 text-xs gap-1.5"
-                  disabled={focusOnlyMe}
-                  onClick={() => setSelectedTeamId(t.id)}
-                  style={
-                    active
-                      ? { backgroundColor: t.color, borderColor: t.color, color: '#fff' }
-                      : { borderColor: `${t.color}66` }
-                  }
-                >
-                  <span
-                    className="h-2 w-2 rounded-full"
-                    style={{ backgroundColor: active ? '#fff' : t.color }}
-                  />
-                  {t.name}
-                </Button>
-              );
-            })}
-          </div>
-        )}
-
-        {teams.length > 0 && !isManagement && myTeamId && (() => {
-          const myTeam = teams.find(t => t.id === myTeamId);
-          if (!myTeam) return null;
-          return (
-            <div className="flex flex-wrap items-center gap-2 pt-3 border-t">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">Your team</span>
-              <span
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border"
-                style={{ backgroundColor: myTeam.color, borderColor: myTeam.color, color: '#fff' }}
-              >
-                <span className="h-2 w-2 rounded-full bg-white/90" />
-                {myTeam.name}
-              </span>
             </div>
-          );
-        })()}
-      </div>
-
-      {/* Trustpilot review bonuses for the selected month */}
-      <ScoreboardReviewsPanel
-        monthDate={dateRange?.from ?? new Date()}
-        agents={visibleAgents.map(a => ({ id: a.id, name: a.name }))}
-      />
-
-
-
-      {/* Everything on one page — expand/collapse sections */}
-      <Accordion
-        type="multiple"
-        value={openSections}
-        onValueChange={setOpenSections}
-        className="space-y-3"
-      >
-        <AccordionItem value="scoreboard" className="border rounded-xl bg-card/60 px-4">
-          <AccordionTrigger className="text-sm font-semibold hover:no-underline">
-            <span className="flex items-center gap-2"><Trophy className="h-4 w-4 text-yellow-500" /> Scoreboard</span>
-          </AccordionTrigger>
-          <AccordionContent className="pb-4">
             <TeamTargetBoard monthDate={dateRange?.from ?? new Date()} />
           </AccordionContent>
         </AccordionItem>
