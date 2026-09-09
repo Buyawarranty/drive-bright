@@ -22,6 +22,8 @@ import GlobalQuickReminderButton from '@/components/admin/GlobalQuickReminderBut
 import { PendingLeadsPill } from '@/components/admin/PendingLeadsPill';
 
 import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
+import { DailyCrmSurveyPrompt } from '@/components/admin/feedback/DailyCrmSurvey';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import LiveChatHoursBanner from '@/components/admin/LiveChatHoursBanner';
 
@@ -1403,6 +1405,13 @@ const AdminDashboardInner: React.FC<{
 
             {/* Agent new-lead alerts: stacked floating cards (beep + mute + close) */}
             <NewLeadAlerts />
+
+            {/* Daily CRM feedback survey pop-up for sales agents (silent, once a day) */}
+            <DailyCrmSurveyPrompt
+              adminUserId={currentAdminIdForSurvey}
+              userRole={displayRole}
+              onOpenResults={() => handleTabChange('staff-system-reports')}
+            />
 
 
             {/* Sticky left-hand rail host (kept mounted so portalled alerts have a home) */}
