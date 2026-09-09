@@ -87,11 +87,28 @@ const groupCount = (rows: Report[], key: (r: Report) => string | null) => {
     .sort((a, b) => b.count - a.count);
 };
 
-export const StaffSystemReportsTab: React.FC = () => {
+export const StaffSystemReportsTab: React.FC<{ selfOnly?: boolean }> = ({ selfOnly = false }) => {
   const [rangeId, setRangeId] = useState<(typeof RANGES)[number]['id']>('30d');
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  // Sales agents only see their own daily CRM survey answers — nothing else.
+  if (selfOnly) {
+    return (
+      <div className="space-y-6 p-1">
+        <div>
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <Gauge className="h-5 w-5" />
+            My CRM feedback survey
+          </h2>
+          <p className="text-sm text-muted-foreground">Your daily answers about how the CRM performed for you. Only you and the managers can see these.</p>
+        </div>
+        <DailyCrmSurveyResults days={30} selfOnly />
+      </div>
+    );
+  }
+
 
   const load = useCallback(async () => {
     setLoading(true);
