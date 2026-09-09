@@ -134,7 +134,10 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
   // Map of lead_id -> assigned tag IDs so we can filter by tags in the pill strip.
   const [leadTagMap, setLeadTagMap] = useState<Record<string, string[]>>({});
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
-  const [datePeriod, setDatePeriod] = useState<PeriodKey>('today');
+  // Recontact records are deliberately at least 60 days old, so opening this
+  // page on "Today" filters every valid row out and makes assigned queues look
+  // empty. Start unbounded; staff can still choose a historic date range.
+  const [datePeriod, setDatePeriod] = useState<PeriodKey>('all');
   const [dateCustomRange, setDateCustomRange] = useState<DateRange | undefined>(undefined);
   const [claimedToday, setClaimedToday] = useState(0);
   const [claiming, setClaiming] = useState(false);

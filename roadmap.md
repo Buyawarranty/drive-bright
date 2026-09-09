@@ -1,5 +1,6 @@
 # Roadmap
 
+- [x] Recontact leads: default the date filter to All time so 60-day-old assigned leads do not open as a blank list
 - [x] Daily CRM survey: hyper-focused blue/orange agent and manager views with one-tap answers, progress, today's completion and urgent-problem visibility
 - [x] Discounts given: de-duplicate repeated manual price override rows (same agent/customer/price seconds apart)
 - [x] Discounts given: agent filter must also filter the manual price overrides table
