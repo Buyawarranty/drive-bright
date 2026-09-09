@@ -412,4 +412,141 @@ export const SurveySentChip: React.FC = () => (
   </span>
 );
 
+const promptKey = (adminUserId: string, date: string) => `crm-survey-prompt:${adminUserId}:${date}`;
+
+/**
+ * Daily pop-up for sales agents, shown on whichever dashboard tab they are on
+ * once the survey window opens (and again if they are late). Silent — no sound.
+ * Dismissing it hides it for the rest of that day; it comes back the next day
+ * and disappears for good once the survey is sent.
+ */
+export const DailyCrmSurveyPrompt: React.FC<{
+  adminUserId: string | null;
+  userRole: string | null;
+  onOpenResults?: () => void;
+}> = ({ adminUserId, userRole, onOpenResults }) => {
+  const isAgent = userRole === 'sales' || userRole === 'sales_lead';
+  const [now, setNow] = useState(() => ukNow());
+  const [doneToday, setDoneToday] = useState<boolean | null>(null);
+  const [dismissedFor, setDismissedFor] = useState<string | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+
+  useEffect(() => {
+    const t = window.setInterval(() => setNow(ukNow()), 30_000);
+    return () => window.clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    if (!adminUserId) return;
+    try {
+      setDismissedFor(localStorage.getItem(promptKey(adminUserId, now.date)) ? now.date : null);
+    } catch {
+      setDismissedFor(null);
+    }
+  }, [adminUserId, now.date]);
+
+  const phase = surveyPhase(now.minutes);
+  const active = isAgent && !!adminUserId && phase !== 'before' && now.date >= SURVEY_START_DATE;
+
+  const checkDone = useCallback(async () => {
+    if (!adminUserId || !active) return;
+    const { data } = await (supabase as any)
+      .from('staff_system_reports')
+      .select('id')
+      .eq('admin_user_id', adminUserId)
+      .eq('report_kind', 'daily_survey')
+      .eq('survey_date', now.date)
+      .limit(1);
+    setDoneToday(Array.isArray(data) && data.length > 0);
+  }, [adminUserId, now.date, active]);
+
+  useEffect(() => {
+    void checkDone();
+  }, [checkDone]);
+
+  if (!active || doneToday !== false || dismissedFor === now.date) return null;
+
+  const dismiss = () => {
+    if (adminUserId) {
+      try {
+        localStorage.setItem(promptKey(adminUserId, now.date), '1');
+      } catch {
+        /* ignore */
+      }
+    }
+    setDismissedFor(now.date);
+  };
+
+  const resultsHref = `/admin-dashboard/?tab=${SURVEY_RESULTS_TAB}`;
+
+  return (
+    <>
+      <Dialog open={!formOpen} onOpenChange={(o) => !o && dismiss()}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardList className="h-5 w-5" />
+              Please fill in your CRM feedback survey
+            </DialogTitle>
+            <DialogDescription>
+              {phase === 'late'
+                ? `Today's survey is overdue — it only takes a minute.`
+                : `It takes about a minute. Please send it by ${fmtTime(SURVEY_DEADLINE)} today.`}
+            </DialogDescription>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Tell us what went wrong on the Orders and New Leads pages today so it can be fixed. You can read your previous answers on{' '}
+            <a
+              href={resultsHref}
+              className="text-primary underline underline-offset-2"
+              onClick={(e) => {
+                if (onOpenResults) {
+                  e.preventDefault();
+                  dismiss();
+                  onOpenResults();
+                }
+              }}
+            >
+              your CRM feedback page
+            </a>
+            .
+          </p>
+          <div className="flex flex-wrap justify-end gap-2 pt-1">
+            <Button variant="outline" onClick={dismiss}>Later today</Button>
+            <Button onClick={() => setFormOpen(true)}>Fill in now</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={formOpen} onOpenChange={setFormOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardList className="h-5 w-5" />
+              Daily CRM survey —{' '}
+              {new Date(`${now.date}T12:00:00Z`).toLocaleDateString('en-GB', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}
+            </DialogTitle>
+            <DialogDescription>
+              One a day, at the end of your shift ({surveyWindowLabel()} UK time). Your answers go straight to the managers.
+            </DialogDescription>
+          </DialogHeader>
+          <DailyCrmSurveyForm
+            adminUserId={adminUserId}
+            surveyDate={now.date}
+            onSubmitted={() => {
+              setFormOpen(false);
+              setDoneToday(true);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
 export default DailyCrmSurveyBanner;
