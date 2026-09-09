@@ -1288,8 +1288,11 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         <div className="space-y-1.5 md:col-span-2">
                           <Label className="text-xs font-semibold text-slate-500">Instalment plan</Label>
                           <div className="grid grid-cols-2 gap-2">
-                            {getInstalmentOptions(paymentType).map((count) => {
+                             {getInstalmentOptions(paymentType).map((count) => {
                               const comingSoon = isInstalmentComingSoon(count);
+                              const planTotal = annualTotalPrice > 0
+                                ? instalmentPlanTotal(annualTotalPrice, paymentType, count)
+                                : currentPrice.totalPrice;
                               return (
                                 <button
                                   key={count}
@@ -1318,14 +1321,19 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                                   <div className={cn("text-xs font-medium", comingSoon ? "text-slate-500" : "text-slate-900")}>
                                     {comingSoon
                                       ? "Not active yet"
-                                      : `£${instalmentAmount(currentPrice.totalPrice, count)}/mo · same £${currentPrice.totalPrice} total`}
+                                      : `£${instalmentAmount(planTotal, count)}/mo · £${planTotal} total`}
                                   </div>
                                 </button>
                               );
                             })}
                           </div>
+                          {isLongInstalmentPlan(instalmentCount) && (
+                            <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-900">
+                              💡 {SUBSCRIPTION_PAY_HINT}
+                            </div>
+                          )}
                           <p className="text-[11px] text-slate-500">
-                            Same total price — this only changes how many monthly payments it is spread over.
+                            Total price depends on the plan: longer plans cost more overall but lower the monthly payment.
                           </p>
                         </div>
                       )}
