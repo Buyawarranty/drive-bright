@@ -1259,20 +1259,32 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const pricingTrace = pricingTraceRef.current;
 
 
-  // Calculate base price (before any custom overrides)
-  const calculateBasePrice = () => {
+  // Calculate base price (before any custom overrides).
+  // periodOverride lets us price the SAME vehicle/options for a different term —
+  // used to get the 1-year annual price that the instalment multipliers apply to.
+  const calculateBasePrice = (periodOverride?: PaymentPeriod) => {
+    const period: PaymentPeriod = periodOverride ?? paymentType;
+    const periodFloor = Math.ceil(getNetPayableFloor({
+      paymentPeriod: period,
+      voluntaryExcess: excessAmount,
+      claimLimit,
+      labourRate,
+      isMotorbike: isMotorbikeQuote,
+      surface: 'admin',
+      absoluteMinTotal: (pricingModel as any)?.absoluteMinTotal || 0,
+    }));
     // Get duration months for add-on calculation
-    const durationMonths = DURATION_MONTHS[paymentType] || 12;
-    
+    const durationMonths = DURATION_MONTHS[period] || 12;
+
     // Auto-included add-ons based on duration (2yr gets breakdown, 3yr gets breakdown+rental)
-    const autoIncluded = getAutoIncludedAddOns(paymentType);
-    
+    const autoIncluded = getAutoIncludedAddOns(period);
+
     // Calculate add-on price from selected add-ons (excluding auto-included)
-    const addOnPrice = calculateAddOnPrice(selectedAddOns, paymentType, durationMonths);
-    
+    const addOnPrice = calculateAddOnPrice(selectedAddOns, period, durationMonths);
+
     // Calculate vehicle adjustment (high-mileage surcharge: +£200/+£400/+£600 for 1/2/3-year)
     // This matches Step 3 pricing logic exactly
-    const warrantyYears = paymentType === '12months' ? 1 : paymentType === '24months' ? 2 : 3;
+    const warrantyYears = period === '12months' ? 1 : period === '24months' ? 2 : 3;
     const vehicleMileage = parseInt(mileage.replace(/[^0-9]/g, '')) || 0;
     const vehicleAdjustmentResult = calculateVehiclePriceAdjustment(
       { 
