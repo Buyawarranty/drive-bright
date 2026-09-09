@@ -10,6 +10,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { CheckCircle2, ClipboardList, Clock, Loader2, Send, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { captureSystemEnvironment } from '@/lib/systemEnvironment';
+import '@fontsource/sora/600.css';
+import '@fontsource/sora/700.css';
+import '@fontsource/manrope/400.css';
+import '@fontsource/manrope/600.css';
 
 /**
  * Daily CRM issues survey for the sales team.
@@ -142,6 +146,8 @@ export const DailyCrmSurveyForm: React.FC<Props> = ({ adminUserId, surveyDate, o
     rating !== null &&
     (!ordersIssues.includes('Other') || ordersOther.trim().length > 0) &&
     (!leadsIssues.includes('Other') || leadsOther.trim().length > 0);
+  const completedRequired = [ordersIssues.length > 0, leadsIssues.length > 0, rating !== null].filter(Boolean).length;
+  const progress = Math.round((completedRequired / 3) * 100);
 
   const submit = async () => {
     if (!canSubmit || rating === null) return;
@@ -193,9 +199,9 @@ export const DailyCrmSurveyForm: React.FC<Props> = ({ adminUserId, surveyDate, o
     onOther: (v: string) => void,
     idPrefix: string,
   ) => (
-    <div className="space-y-2">
-      <Label className="text-sm font-semibold">{title}</Label>
-      <div className="grid gap-1.5 sm:grid-cols-2">
+    <div className="space-y-3 rounded-md border bg-card p-4 shadow-sm">
+      <Label className="font-crm-heading text-sm font-semibold">{title}</Label>
+      <div className="grid gap-2 sm:grid-cols-2">
         {options.map((opt) => {
           const id = `${idPrefix}-${opt}`;
           return (
@@ -203,15 +209,17 @@ export const DailyCrmSurveyForm: React.FC<Props> = ({ adminUserId, surveyDate, o
               key={opt}
               htmlFor={id}
               className={cn(
-                'flex items-start gap-2 rounded-md border px-2.5 py-2 text-sm cursor-pointer',
-                value.includes(opt) ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50',
+                'flex min-h-11 items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium cursor-pointer transition-colors',
+                value.includes(opt)
+                  ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                  : 'border-border bg-background hover:border-primary/50 hover:bg-primary/5',
               )}
             >
               <Checkbox
                 id={id}
                 checked={value.includes(opt)}
                 onCheckedChange={() => onChange(toggleIn(value, opt))}
-                className="mt-0.5"
+                className={cn('shrink-0', value.includes(opt) && 'border-primary-foreground data-[state=checked]:bg-primary-foreground data-[state=checked]:text-primary')}
               />
               <span>{opt}</span>
             </label>
@@ -231,7 +239,16 @@ export const DailyCrmSurveyForm: React.FC<Props> = ({ adminUserId, surveyDate, o
   );
 
   return (
-    <div className="space-y-5">
+    <div className="crm-survey-theme space-y-5 font-crm-body">
+      <div className="rounded-md border border-primary/20 bg-primary/5 px-4 py-3">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <span className="font-crm-heading text-sm font-semibold">Today’s check-in</span>
+          <span className="text-xs font-semibold text-primary">{completedRequired} of 3 required sections</span>
+        </div>
+        <div className="h-2 overflow-hidden rounded-full bg-primary/10" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
+          <div className="h-full rounded-full bg-primary transition-all duration-300" style={{ width: `${progress}%` }} />
+        </div>
+      </div>
       {checkboxGroup(
         'What issue(s) did you experience on the Orders page today?',
         ORDERS_ISSUE_OPTIONS,
@@ -252,9 +269,9 @@ export const DailyCrmSurveyForm: React.FC<Props> = ({ adminUserId, surveyDate, o
         'leads',
       )}
 
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold">How would you rate the CRM's overall performance today?</Label>
-        <div className="flex flex-wrap gap-2">
+      <div className="space-y-3 rounded-md border bg-card p-4 shadow-sm">
+        <Label className="font-crm-heading text-sm font-semibold">How would you rate the CRM's overall performance today?</Label>
+        <div className="grid grid-cols-5 gap-2">
           {[1, 2, 3, 4, 5].map((n) => (
             <Button
               key={n}
@@ -262,14 +279,16 @@ export const DailyCrmSurveyForm: React.FC<Props> = ({ adminUserId, surveyDate, o
               size="sm"
               variant={rating === n ? 'default' : 'outline'}
               onClick={() => setRating(n)}
+              className={cn('h-auto min-h-14 flex-col gap-0.5 px-1', rating === n && 'ring-2 ring-primary/20 ring-offset-2')}
             >
-              {n} · {CRM_RATING_LABELS[n]}
+              <span className="text-base font-bold">{n}</span>
+              <span className="hidden text-[10px] font-medium sm:block">{CRM_RATING_LABELS[n]}</span>
             </Button>
           ))}
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-md border bg-card p-4 shadow-sm">
         <Label className="text-sm font-semibold">
           Please describe the biggest CRM issue you experienced today.{' '}
           <span className="font-normal text-muted-foreground">(optional)</span>
@@ -277,7 +296,7 @@ export const DailyCrmSurveyForm: React.FC<Props> = ({ adminUserId, surveyDate, o
         <Textarea value={biggest} maxLength={MAX_TEXT} onChange={(e) => setBiggest(e.target.value)} rows={3} />
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-md border bg-card p-4 shadow-sm">
         <Label className="text-sm font-semibold">
           Is there anything else you would like us to know about the CRM today?{' '}
           <span className="font-normal text-muted-foreground">(optional)</span>
@@ -285,10 +304,13 @@ export const DailyCrmSurveyForm: React.FC<Props> = ({ adminUserId, surveyDate, o
         <Textarea value={other} maxLength={MAX_TEXT} onChange={(e) => setOther(e.target.value)} rows={3} />
       </div>
 
-      <Button onClick={() => void submit()} disabled={!canSubmit || submitting} className="w-full sm:w-auto">
+      <div className="sticky bottom-0 -mx-1 border-t bg-background/95 px-1 pt-4 backdrop-blur">
+      <Button onClick={() => void submit()} disabled={!canSubmit || submitting} className="h-12 w-full text-sm font-semibold shadow-md">
         {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
         Send today's survey
       </Button>
+      {!canSubmit && <p className="mt-2 text-center text-xs text-muted-foreground">Complete the two issue sections and today’s rating to send.</p>}
+      </div>
     </div>
   );
 };
@@ -352,10 +374,10 @@ export const DailyCrmSurveyBanner: React.FC<{ adminUserId: string | null }> = ({
 
   return (
     <>
-      <div className={cn('flex flex-wrap items-center gap-3 rounded-lg border-2 px-4 py-2.5', tone)}>
+      <div className={cn('crm-survey-theme flex flex-wrap items-center gap-3 rounded-md border-2 px-4 py-3 font-crm-body shadow-sm', tone)}>
         {phase === 'before' ? <Clock className="h-5 w-5 shrink-0" /> : <ClipboardList className="h-5 w-5 shrink-0" />}
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold leading-tight">{headline}</p>
+          <p className="font-crm-heading text-sm font-semibold leading-tight">{headline}</p>
           <p className="text-xs opacity-80">{sub}</p>
         </div>
         <Button size="sm" variant={phase === 'before' ? 'outline' : 'default'} onClick={() => setOpen(true)}>
@@ -375,9 +397,9 @@ export const DailyCrmSurveyBanner: React.FC<{ adminUserId: string | null }> = ({
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="crm-survey-theme max-w-2xl max-h-[90vh] overflow-y-auto font-crm-body">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="font-crm-heading flex items-center gap-2">
               <ClipboardList className="h-5 w-5" />
               Daily CRM survey —{' '}
               {new Date(`${now.date}T12:00:00Z`).toLocaleDateString('en-GB', {
@@ -482,10 +504,12 @@ export const DailyCrmSurveyPrompt: React.FC<{
   return (
     <>
       <Dialog open={!formOpen} onOpenChange={(o) => !o && dismiss()}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="crm-survey-theme max-w-md overflow-hidden border-primary/20 p-0 font-crm-body">
+          <div className="h-2 bg-accent" />
+          <div className="space-y-5 p-6">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ClipboardList className="h-5 w-5" />
+            <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-md bg-primary text-primary-foreground"><ClipboardList className="h-5 w-5" /></div>
+            <DialogTitle className="font-crm-heading text-xl">
               Please fill in your CRM feedback survey
             </DialogTitle>
             <DialogDescription>
@@ -515,13 +539,14 @@ export const DailyCrmSurveyPrompt: React.FC<{
             <Button variant="outline" onClick={dismiss}>Later today</Button>
             <Button onClick={() => setFormOpen(true)}>Fill in now</Button>
           </div>
+          </div>
         </DialogContent>
       </Dialog>
 
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="crm-survey-theme max-w-2xl max-h-[90vh] overflow-y-auto font-crm-body">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="font-crm-heading flex items-center gap-2">
               <ClipboardList className="h-5 w-5" />
               Daily CRM survey —{' '}
               {new Date(`${now.date}T12:00:00Z`).toLocaleDateString('en-GB', {
