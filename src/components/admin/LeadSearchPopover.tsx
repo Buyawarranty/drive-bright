@@ -312,11 +312,17 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
             ...Array.from(regVariants).map(v => `registration_plate.ilike.${q(v)}`),
           ];
           // Also match a pasted phone number after punctuation/spaces are removed.
-          // UK numbers are commonly stored in several different visual formats.
-          if (digits.length >= 7 && digits !== raw) {
-            leadClauses.push(`phone.ilike.${q(digits)}`);
-            cartClauses.push(`phone.ilike.${q(digits)}`);
-            customerClauses.push(`phone.ilike.${q(digits)}`);
+          // UK numbers are commonly stored in several different visual formats
+          // (07…, +447…, 447…, with or without spaces), so match on the last 9
+          // digits too — that is the part that never changes between formats.
+          if (digits.length >= 7) {
+            const phoneVariants = new Set<string>([digits, digits.slice(-9)]);
+            for (const v of phoneVariants) {
+              if (!v || v === raw) continue;
+              leadClauses.push(`phone.ilike.${q(v)}`);
+              cartClauses.push(`phone.ilike.${q(v)}`);
+              customerClauses.push(`phone.ilike.${q(v)}`);
+            }
           }
           query = query.or(leadClauses.join(','));
           cartQuery = cartQuery.or(cartClauses.join(','));
