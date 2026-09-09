@@ -706,6 +706,7 @@ export type Database = {
           email: string
           first_name: string | null
           id: string
+          in_training: boolean
           invited_at: string | null
           invited_by: string | null
           is_active: boolean
@@ -732,6 +733,7 @@ export type Database = {
           email: string
           first_name?: string | null
           id?: string
+          in_training?: boolean
           invited_at?: string | null
           invited_by?: string | null
           is_active?: boolean
@@ -758,6 +760,7 @@ export type Database = {
           email?: string
           first_name?: string | null
           id?: string
+          in_training?: boolean
           invited_at?: string | null
           invited_by?: string | null
           is_active?: boolean
