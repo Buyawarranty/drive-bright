@@ -1361,12 +1361,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 
 
      const effectiveClaimLimit = getBaseClaimLimit(claimLimit);
-    const premiumSurcharge = getClaimLimitSurcharge(claimLimit, paymentType, excessAmount);
-    
+    const premiumSurcharge = getClaimLimitSurcharge(claimLimit, period, excessAmount);
 
-    
+
+
     const result = calculateAdminQuoteWarrantyPrice({
-      paymentPeriod: paymentType,
+      paymentPeriod: period,
       voluntaryExcess: excessAmount,
       claimLimit: effectiveClaimLimit,
       labourRate: labourRate,
