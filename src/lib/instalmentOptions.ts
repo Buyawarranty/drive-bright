@@ -9,9 +9,9 @@
 // Pricing logic (Sep 2026): the TOTAL price is the 1-year annual price multiplied
 // by a fixed factor per term + instalment plan:
 //   1-year cover, 12 instalments: 1.00× annual price
-//   2-year cover, 12 instalments: 1.85× annual price
+//   2-year cover, 12 instalments: 1.75× annual price  (credit-checked, paid up front)
 //   2-year cover, 24 instalments: 2.22× annual price
-//   3-year cover, 12 instalments: 2.70× annual price
+//   3-year cover, 12 instalments: 2.80× annual price  (credit-checked, paid up front)
 //   3-year cover, 36 instalments: 3.51× annual price
 
 export type InstalmentCount = 12 | 24 | 36;
