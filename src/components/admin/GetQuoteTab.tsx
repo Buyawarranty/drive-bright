@@ -1464,10 +1464,35 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     [basePrice, isPriceOverridden, customFullPrice, customMonthlyPrice, includePayInFullDiscount]
   );
 
-  // When a custom price is set, the custom total is authoritative
+  // 1-year annual price for the SAME vehicle/options — the base every
+  // instalment-plan multiplier applies to (Sep 2026 pricing logic).
+  const annualBasePrice = React.useMemo(
+    () => calculateBasePrice('12months'),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      paymentType, excessAmount, claimLimit, labourRate, boostAddon,
+      selectedAddOns, includePayInFullDiscount, mileage, regNumber,
+      vehicleData, pricingModel, ABSOLUTE_MIN_TOTAL,
+    ]
+  );
+  const annualTotalPrice = Math.ceil(Number(annualBasePrice.monthlyPrice || 0) * 12)
+    || Number(annualBasePrice.totalPrice || 0);
+
+  // Total for the selected term + instalment plan:
+  //   1yr/12: 1.00× · 2yr/12: 1.85× · 2yr/24: 2.22× · 3yr/12: 2.70× · 3yr/36: 3.51×
+  // Never below the per-term net floor (grossed up when pay-in-full discount is on).
+  const instalmentTotalPrice = React.useMemo(() => {
+    const raw = instalmentPlanTotal(annualTotalPrice, paymentType, instalmentCount);
+    const netFloor = Math.ceil(ABSOLUTE_MIN_TOTAL);
+    const floor = includePayInFullDiscount ? Math.ceil(netFloor / 0.9) : netFloor;
+    return Math.max(raw, floor);
+  }, [annualTotalPrice, paymentType, instalmentCount, ABSOLUTE_MIN_TOTAL, includePayInFullDiscount]);
+
+  // When a custom price is set, the custom total is authoritative; otherwise the
+  // total comes from the annual price × instalment-plan multiplier.
   const displayedTotalPrice = isPriceOverridden
     ? Number(currentPrice.totalPrice || 0)
-    : Math.ceil(Number(currentPrice.monthlyPrice || 0) * 12);
+    : instalmentTotalPrice;
   const displayedPayInFullPrice = currentPrice.payInFullPrice || (includePayInFullDiscount ? Math.ceil(displayedTotalPrice * 0.9) : displayedTotalPrice);
   const displayedPayInFullSavings = Math.max(displayedTotalPrice - displayedPayInFullPrice, 0);
   // Hard block: total under the absolute minimum (never below £399) without an
