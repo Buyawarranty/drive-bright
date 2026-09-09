@@ -13,6 +13,8 @@
  * caused by something other than a stale deploy.
  */
 
+import { recoverFromStaleBuild } from '@/utils/lazyWithRetry';
+
 const RELOAD_FLAG = 'baw:chunk-reload-attempted';
 const RELOAD_TS_KEY = 'baw:chunk-reload-ts';
 const RELOAD_COOLDOWN_MS = 10_000;
