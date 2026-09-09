@@ -355,6 +355,33 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     }),
   }) : { totalPrice: 0, monthlyPrice: 0 };
 
+  // 1-year annual price for the SAME vehicle/options — the base that the
+  // instalment-plan multipliers apply to (Sep 2026 pricing logic):
+  //   1yr/12: 1.00× · 2yr/12: 1.85× · 2yr/24: 2.22× · 3yr/12: 2.70× · 3yr/36: 3.51×
+  const annualPrice12m = vehicleData ? calculateAdminQuoteWarrantyPrice({
+    paymentPeriod: '12months',
+    voluntaryExcess: excessAmount,
+    claimLimit: effectiveClaimLimit,
+    labourRate: labourRate,
+    boostEnabled: boostAddon,
+    addOnPrice: premiumSurcharge,
+    make: vehicleData?.make,
+    fuelType: vehicleData?.fuelType,
+    vehicleFactor: getVehiclePriceFactor({
+      year: vehicleData?.year,
+      mileage: mileage,
+      fuelType: vehicleData?.fuelType,
+      vehicleType: (vehicleData as any)?.vehicleType,
+    }),
+  }) : { totalPrice: 0, monthlyPrice: 0 };
+  const annualTotalPrice = Math.ceil(Number(annualPrice12m.monthlyPrice || 0) * 12)
+    || Number(annualPrice12m.totalPrice || 0);
+  // Total for the selected term + instalment plan.
+  const instalmentTotalPrice = annualTotalPrice > 0
+    ? instalmentPlanTotal(annualTotalPrice, paymentType, instalmentCount)
+    : currentPrice.totalPrice;
+
+
   // ── Hard 30% discount ceiling ───────────────────────────────────────────────
   // Confirming an outside payment must never be a back door around the discount
   // cap enforced on Get a quote. Anything more than 30% below the quoted grid
