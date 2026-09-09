@@ -5099,19 +5099,24 @@ Questions? Call 0330 229 5040`;
                           </span>
                         )}
                         <div className="font-semibold">{term.label}</div>
-                        {s && (
+                         {s && (
                           <div className="mt-1.5 space-y-1">
-                            <div className="text-xs text-black font-medium">£{s.total} total · £{s.perYear}/yr</div>
                             {(() => {
                               // Show the £/mo figure for the currently selected instalment plan where
                               // that plan is valid for this term; otherwise fall back to 12 instalments.
                               const plan = isInstalmentAllowed(term.id, instalmentCount) && !isInstalmentComingSoon(instalmentCount)
                                 ? instalmentCount
                                 : 12;
+                              const planTotal = annualTotalPrice > 0
+                                ? instalmentPlanTotal(annualTotalPrice, term.id, plan)
+                                : s.total;
                               return (
-                                <div className="text-[11px] font-medium text-black">
-                                  £{instalmentAmount(s.total, plan)}/mo · {plan} instalments
-                                </div>
+                                <>
+                                  <div className="text-xs text-black font-medium">£{planTotal} total</div>
+                                  <div className="text-[11px] font-medium text-black">
+                                    £{instalmentAmount(planTotal, plan)}/mo · {plan} instalments
+                                  </div>
+                                </>
                               );
                             })()}
                             {years === 1 ? (
