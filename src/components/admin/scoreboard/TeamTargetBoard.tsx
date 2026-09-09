@@ -92,13 +92,17 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
     if (error) setError(error.message);
     else {
       setError(null);
-      const list = (data || []) as unknown as Row[];
+      let list = (data || []) as unknown as Row[];
+      // Sales agents see only their own card, not the whole team.
+      if (!isManagement) {
+        list = list.filter(r => r.is_self);
+      }
       setRows(list);
       setTraining(await fetchTrainingFlags(list.map(r => r.admin_user_id)));
     }
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [month.getFullYear(), month.getMonth()]);
+  }, [month.getFullYear(), month.getMonth(), isManagement]);
 
   useEffect(() => { load(); }, [load]);
 

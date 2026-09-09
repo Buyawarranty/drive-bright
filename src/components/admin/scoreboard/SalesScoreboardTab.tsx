@@ -91,18 +91,12 @@ export const SalesScoreboardTab: React.FC = () => {
   }, [isManagement, myTeamId, selectedTeamId]);
 
   const visibleAgents = React.useMemo(() => {
-    // Sales agents (non-management) are LOCKED to their own team only
+    // Sales agents (non-management) see ONLY their own scoreboard row.
+    // They do not see team totals or other agents' numbers.
     if (!isManagement) {
-      const memberIds = new Set(
-        teamMembers.filter(m => m.team_id === myTeamId).map(m => m.admin_user_id)
-      );
-      const mine = myTeamId
-        ? agents.filter(a => memberIds.has(a.id))
-        : agents.filter(a => a.id === currentAdminUserId);
-      return mine
-        .slice()
-        .sort((a, b) => b.revenue - a.revenue || b.salesCount - a.salesCount)
-        .map((a, i) => ({ ...a, rank: i + 1 }));
+      const mine = agents.find(a => a.id === currentAdminUserId);
+      if (!mine) return [];
+      return [{ ...mine, rank: 1 }];
     }
     // Management "Only me" toggle
     if (focusOnlyMe && currentAdminUserId) {
