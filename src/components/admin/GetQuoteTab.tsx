@@ -5140,7 +5140,8 @@ Questions? Call 0330 229 5040`;
                       <Label className="text-sm font-semibold">Instalment plan</Label>
                       <div className="grid grid-cols-2 gap-2">
                         {getInstalmentOptions(paymentType).map((count) => {
-                          const amount = instalmentAmount(displayedTotalPrice, count);
+                          const planTotal = instalmentPlanTotal(annualTotalPrice, paymentType, count);
+                          const amount = instalmentAmount(planTotal, count);
                           const comingSoon = isInstalmentComingSoon(count);
                           return (
                             <button
@@ -5168,14 +5169,19 @@ Questions? Call 0330 229 5040`;
                                 {count} instalments
                               </div>
                               <div className={cn("text-xs font-medium", comingSoon ? "text-slate-500" : "text-black")}>
-                                {comingSoon ? "Not active yet" : `£${amount}/mo · same £${displayedTotalPrice} total`}
+                                {comingSoon ? "Not active yet" : `£${amount}/mo · £${planTotal} total`}
                               </div>
                             </button>
                           );
                         })}
                       </div>
+                      {isLongInstalmentPlan(instalmentCount) && (
+                        <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-900">
+                          💡 {SUBSCRIPTION_PAY_HINT}
+                        </div>
+                      )}
                       <p className="text-[11px] text-muted-foreground">
-                        Same total price — this only changes how many monthly payments it is spread over.
+                        Total price depends on the plan: longer plans cost more overall but lower the monthly payment.
                       </p>
                     </div>
                   )}
