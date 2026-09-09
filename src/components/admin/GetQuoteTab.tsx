@@ -1390,7 +1390,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     
     // Same permanent floor on the legacy grid path — net payable, so the
     // pay-in-full price is grossed up rather than dipping under the minimum.
-    const legacyNetFloor = Math.ceil(ABSOLUTE_MIN_TOTAL);
+    const legacyNetFloor = periodFloor;
     const legacyGrossFloor = includePayInFullDiscount
       ? Math.ceil(legacyNetFloor / 0.9)
       : legacyNetFloor;
