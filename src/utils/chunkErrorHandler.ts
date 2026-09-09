@@ -44,17 +44,15 @@ const forceReloadOnce = () => {
     }
 
     sessionStorage.setItem(RELOAD_FLAG, '1');
-    sessionStorage.setItem(RELOAD_TS_KEY, String(now));
   } catch {
     // sessionStorage may be blocked (private mode, iframes) — still try to reload.
   }
 
-  // Bust the HTTP cache: append a version query so the browser doesn't
-  // serve a stale index.html from disk cache.
-  const url = new URL(window.location.href);
-  url.searchParams.set('_v', String(Date.now()));
-  window.location.replace(url.toString());
+  // Drop any service worker / cached copy of the old build, then reload with a
+  // cache-busting query so the browser fetches a fresh index.html.
+  void recoverFromStaleBuild();
 };
+
 
 export const initChunkErrorHandler = () => {
   if (typeof window === 'undefined') return;
