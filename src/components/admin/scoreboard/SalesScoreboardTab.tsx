@@ -186,7 +186,7 @@ export const SalesScoreboardTab: React.FC = () => {
 
 
 
-      {/* Toolbar: period, month navigator, date range, team filter */}
+      {/* Team filter toolbar */}
       <div className="rounded-xl border bg-card/60 p-3 md:p-4 space-y-3">
         {/* Team filter — management sees teams + an "Only me" focus toggle; agents see their own team as a locked label */}
         {teams.length > 0 && isManagement && (
