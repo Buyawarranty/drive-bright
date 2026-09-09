@@ -479,7 +479,6 @@ const AdminDashboard = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userPermissions, setUserPermissions] = useState<Record<string, boolean> | null>(null);
   const [adminUserId, setAdminUserId] = useState<string | null>(null);
-  const currentAdminIdForSurvey = useCurrentAdminId();
   const [hasSetInitialTab, setHasSetInitialTab] = useState(!!urlTab);
   const [selectedLeadForQuote, setSelectedLeadForQuote] = useState<LeadForQuote | null>(null);
   const navigate = useNavigate();
