@@ -379,7 +379,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   // Total for the selected term + instalment plan.
   const instalmentTotalPrice = annualTotalPrice > 0
     ? instalmentPlanTotal(annualTotalPrice, paymentType, instalmentCount)
-    : currentPrice.totalPrice;
+    : instalmentTotalPrice;
 
 
   // ── Hard 30% discount ceiling ───────────────────────────────────────────────
@@ -680,7 +680,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     setEditableCustomerPhone(customerPhone);
     setEditableMileage(mileage.replace(/,/g, ''));
     setEditableRegNumber(vehicleData.regNumber);
-    setPaymentAmount(currentPrice.totalPrice.toString());
+    setPaymentAmount(instalmentTotalPrice.toString());
     setExternalPaymentStep('details');
     setShowConfirmDialog(true);
   };
@@ -995,7 +995,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       // Part payment: open a plan + log the deposit so the balance is chased
       if (partPaymentMode && data?.customerId) {
         try {
-          const totalDue = parseFloat(paymentAmount) || currentPrice.totalPrice;
+          const totalDue = parseFloat(paymentAmount) || instalmentTotalPrice;
           const depositValue = parseFloat(depositAmountInput) || 0;
           await supabase.from('customer_part_payment_plans').upsert(
             {
@@ -1292,7 +1292,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                               const comingSoon = isInstalmentComingSoon(count);
                               const planTotal = annualTotalPrice > 0
                                 ? instalmentPlanTotal(annualTotalPrice, paymentType, count)
-                                : currentPrice.totalPrice;
+                                : instalmentTotalPrice;
                               return (
                                 <button
                                   key={count}
@@ -1707,7 +1707,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           type="number"
                           value={paymentAmount}
                           onChange={(e) => setPaymentAmount(e.target.value)}
-                          placeholder={currentPrice.totalPrice.toString()}
+                          placeholder={instalmentTotalPrice.toString()}
                           required
                           aria-required="true"
                           aria-invalid={!paymentAmount || discountBlocked}
@@ -1721,8 +1721,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                             Required — enter the amount actually taken.
                           </p>
                         )}
-                        {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
-                          <p className="text-xs text-destructive">⚠️ Differs from quoted price (£{currentPrice.totalPrice})</p>
+                        {paymentAmount && Math.abs(parseFloat(paymentAmount) - instalmentTotalPrice) > 1 && (
+                          <p className="text-xs text-destructive">⚠️ Differs from quoted price (£{instalmentTotalPrice})</p>
                         )}
 
 
@@ -2190,7 +2190,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           <div className="space-y-1.5">
                             <Label className="text-xs font-semibold text-amber-900">Outstanding balance</Label>
                             <div className="h-10 flex items-center px-3 rounded-md bg-white border border-amber-300 font-semibold text-amber-900">
-                              £{Math.max(0, (parseFloat(paymentAmount) || currentPrice.totalPrice) - (parseFloat(depositAmountInput) || 0)).toFixed(2)}
+                              £{Math.max(0, (parseFloat(paymentAmount) || instalmentTotalPrice) - (parseFloat(depositAmountInput) || 0)).toFixed(2)}
                             </div>
                           </div>
                         </div>
@@ -2269,7 +2269,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                             <button
                               type="button"
                               onClick={() => {
-                                const base = parseFloat(paymentAmount) || currentPrice.totalPrice;
+                                const base = parseFloat(paymentAmount) || instalmentTotalPrice;
                                 const discounted = Math.round(base * 0.9 * 100) / 100;
                                 if (!isManagementRole && quotedTotal > 0 && discounted < minAllowedAmount) {
                                   toast({
@@ -2299,10 +2299,10 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         ) : (
                           <button
                             type="button"
-                            onClick={() => { setPaymentAmount(currentPrice.totalPrice.toString()); setIsEditingPrice(false); }}
+                            onClick={() => { setPaymentAmount(instalmentTotalPrice.toString()); setIsEditingPrice(false); }}
                             className="text-xs text-slate-400 hover:text-slate-200"
                           >
-                            Reset to £{currentPrice.totalPrice}
+                            Reset to £{instalmentTotalPrice}
                           </button>
                         )}
                       </div>
@@ -2321,20 +2321,20 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                               className="h-10 text-2xl font-bold bg-transparent border-0 text-white p-0 focus-visible:ring-0"
                             />
                           </div>
-                          {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
+                          {paymentAmount && Math.abs(parseFloat(paymentAmount) - instalmentTotalPrice) > 1 && (
                             <p className="text-[11px] text-amber-300">
-                              Manual override — quoted price is £{currentPrice.totalPrice}
+                              Manual override — quoted price is £{instalmentTotalPrice}
                             </p>
                           )}
                         </div>
                       ) : (
                         <div className="flex justify-between items-end">
                           <span className="text-xs text-slate-500">
-                            {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1
-                              ? `Overridden (quoted £${currentPrice.totalPrice})`
+                            {paymentAmount && Math.abs(parseFloat(paymentAmount) - instalmentTotalPrice) > 1
+                              ? `Overridden (quoted £${instalmentTotalPrice})`
                               : 'Matches quoted price'}
                           </span>
-                          <span className="text-3xl font-bold">£{paymentAmount || currentPrice.totalPrice}</span>
+                          <span className="text-3xl font-bold">£{paymentAmount || instalmentTotalPrice}</span>
                         </div>
                       )}
                     </div>
