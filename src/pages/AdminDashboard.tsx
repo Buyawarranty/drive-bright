@@ -1244,6 +1244,7 @@ const AdminDashboardInner: React.FC<{
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
   const { session } = useAuth();
   const isSuperAdmin = userRole === 'super_admin';
+  const currentAdminIdForSurvey = useCurrentAdminId();
 
   // Use effective (impersonated) role for sidebar and content
   const displayRole = isImpersonating ? effectiveRole : userRole;
