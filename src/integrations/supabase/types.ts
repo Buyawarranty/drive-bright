@@ -12147,6 +12147,7 @@ export type Database = {
           admin_email: string | null
           admin_name: string | null
           admin_user_id: string | null
+          biggest_issue: string | null
           browser: string | null
           browser_version: string | null
           connection_type: string | null
@@ -12157,21 +12158,29 @@ export type Database = {
           device_type: string | null
           downlink_mbps: number | null
           id: string
+          leads_issues: string[] | null
+          leads_other: string | null
           load_bucket: string | null
+          orders_issues: string[] | null
+          orders_other: string | null
           os: string | null
+          other_comments: string | null
           page_load_ms: number | null
           problem_type: string | null
+          report_kind: string
           role: string | null
           route: string | null
           screen: string | null
           screen_size: string | null
           speed_rating: number
+          survey_date: string | null
           user_agent: string | null
         }
         Insert: {
           admin_email?: string | null
           admin_name?: string | null
           admin_user_id?: string | null
+          biggest_issue?: string | null
           browser?: string | null
           browser_version?: string | null
           connection_type?: string | null
@@ -12182,21 +12191,29 @@ export type Database = {
           device_type?: string | null
           downlink_mbps?: number | null
           id?: string
+          leads_issues?: string[] | null
+          leads_other?: string | null
           load_bucket?: string | null
+          orders_issues?: string[] | null
+          orders_other?: string | null
           os?: string | null
+          other_comments?: string | null
           page_load_ms?: number | null
           problem_type?: string | null
+          report_kind?: string
           role?: string | null
           route?: string | null
           screen?: string | null
           screen_size?: string | null
           speed_rating?: number
+          survey_date?: string | null
           user_agent?: string | null
         }
         Update: {
           admin_email?: string | null
           admin_name?: string | null
           admin_user_id?: string | null
+          biggest_issue?: string | null
           browser?: string | null
           browser_version?: string | null
           connection_type?: string | null
@@ -12207,15 +12224,22 @@ export type Database = {
           device_type?: string | null
           downlink_mbps?: number | null
           id?: string
+          leads_issues?: string[] | null
+          leads_other?: string | null
           load_bucket?: string | null
+          orders_issues?: string[] | null
+          orders_other?: string | null
           os?: string | null
+          other_comments?: string | null
           page_load_ms?: number | null
           problem_type?: string | null
+          report_kind?: string
           role?: string | null
           route?: string | null
           screen?: string | null
           screen_size?: string | null
           speed_rating?: number
+          survey_date?: string | null
           user_agent?: string | null
         }
         Relationships: []
