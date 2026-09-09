@@ -388,7 +388,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   // price is blocked unless the person confirming is Management.
   const DISCOUNT_CEILING_PCT = 30;
   const enteredAmount = parseFloat(paymentAmount);
-  const quotedTotal = currentPrice.totalPrice;
+  const quotedTotal = instalmentTotalPrice;
   const discountPct =
     quotedTotal > 0 && Number.isFinite(enteredAmount) && enteredAmount < quotedTotal
       ? ((quotedTotal - enteredAmount) / quotedTotal) * 100
