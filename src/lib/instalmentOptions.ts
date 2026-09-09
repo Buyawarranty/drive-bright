@@ -9,10 +9,13 @@
 // Pricing logic (Sep 2026): the TOTAL price is the 1-year annual price multiplied
 // by a fixed factor per term + instalment plan:
 //   1-year cover, 12 instalments: 1.00× annual price
-//   2-year cover, 12 instalments: 1.75× annual price  (credit-checked, paid up front)
+//   2-year cover, 12 instalments: 2.51× annual price  (credit-checked, paid up front)
 //   2-year cover, 24 instalments: 2.22× annual price
-//   3-year cover, 12 instalments: 2.80× annual price  (credit-checked, paid up front)
+//   3-year cover, 12 instalments: 3.59× annual price  (credit-checked, paid up front)
 //   3-year cover, 36 instalments: 3.51× annual price
+//
+// The 12-instalment list prices are set so a 30% agent discount still sits at or
+// just above the net floor (£699 for 2-year, £999 for 3-year).
 
 export type InstalmentCount = 12 | 24 | 36;
 
@@ -28,8 +31,8 @@ export function isInstalmentAllowed(paymentType: string, count: number): boolean
 
 /** Total-price multiplier vs the 1-year annual price, per term + instalment plan. */
 export function instalmentMultiplier(paymentType: string, count: InstalmentCount): number {
-  if (paymentType === '24months') return count === 24 ? 2.22 : 1.75;
-  if (paymentType === '36months') return count === 36 ? 3.51 : 2.80;
+  if (paymentType === '24months') return count === 24 ? 2.22 : 2.51;
+  if (paymentType === '36months') return count === 36 ? 3.51 : 3.59;
   return 1.0;
 }
 
