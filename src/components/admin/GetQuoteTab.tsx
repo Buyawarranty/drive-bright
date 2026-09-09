@@ -1321,7 +1321,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       make: vehicleData?.make,
       model: (vehicleData as any)?.model,
     }, {
-      paymentPeriod: paymentType,
+      paymentPeriod: period,
       voluntaryExcess: excessAmount,
       claimLimit: getDisplayClaimLimitValue(claimLimit),
       labourRate: labourRate,
@@ -1333,7 +1333,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       // sellable price for this term/claim limit/labour rate/excess combo.
       // The floor is NET PAYABLE, so when the 10% pay-in-full discount is on we
       // gross the instalment total up until the discounted price clears it.
-      const netFloor = Math.ceil(ABSOLUTE_MIN_TOTAL);
+      const netFloor = periodFloor;
       const grossFloor = includePayInFullDiscount ? Math.ceil(netFloor / 0.9) : netFloor;
       const totalPrice = Math.max(
         Math.ceil(modelQuote.totalPrice + addOnPrice),
@@ -1347,8 +1347,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         payInFullPrice: includePayInFullDiscount
           ? Math.max(netFloor, Math.ceil(contractTotal * 0.90))
           : contractTotal,
-        wasPrice: totalPrice + (MARKETING_SAVINGS[paymentType] || 0),
-        savings: MARKETING_SAVINGS[paymentType] || 0,
+        wasPrice: totalPrice + (MARKETING_SAVINGS[period] || 0),
+        savings: MARKETING_SAVINGS[period] || 0,
       };
 
     }
