@@ -1728,16 +1728,19 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
                         {discountBlocked && (
                           <p className="text-xs font-semibold text-destructive">
-                            {`Blocked — £${netFloorAmount.toFixed(2)} is the minimum sellable price for this cover (${paymentType.replace('months', ' month')} term). Contact management to authorise anything lower.`}
+                            {underNetFloor
+                              ? `Blocked — £${netFloorAmount.toFixed(2)} is the minimum sellable price for this cover (${paymentType.replace('months', ' month')} term). Contact management to authorise anything lower.`
+                              : `Blocked — ${discountPct.toFixed(1)}% off is over the ${DISCOUNT_CEILING_PCT}% limit. Lowest you can confirm without management authorisation is £${minAllowedAmount.toFixed(2)}.`}
                           </p>
                         )}
 
                         {!discountBlocked && overDiscountCeiling && !isManagementRole && (
                           <p className="text-xs font-semibold text-amber-700">
-                            {discountPct.toFixed(1)}% off — above the {DISCOUNT_CEILING_PCT}% guideline. You can still
-                            confirm it; the discount is recorded against your name for management review.
+                            {discountPct.toFixed(1)}% off — approved above the {DISCOUNT_CEILING_PCT}% limit and recorded
+                            against your name.
                           </p>
                         )}
+
 
 
 
