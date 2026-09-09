@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Bar, BarChart, CartesianGrid, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, ComposedChart } from 'recharts';
-import { Check, ClipboardList, Download, Minus, User } from 'lucide-react';
+import { AlertTriangle, Check, ClipboardList, Download, Minus, User } from 'lucide-react';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import {
   CRM_RATING_LABELS,
@@ -192,6 +192,11 @@ export const DailyCrmSurveyResults: React.FC<{ days: number; selfOnly?: boolean 
   const avg = rows.length ? rows.reduce((s, r) => s + r.speed_rating, 0) / rows.length : null;
   const expected = agents.length * dayList.length;
   const received = dayList.reduce((n, d) => n + agents.filter((a) => byAgentDay.has(`${a.id}|${d}`)).length, 0);
+  const today = ukDate(new Date());
+  const todayReceived = agents.filter((a) => byAgentDay.has(`${a.id}|${today}`)).length;
+  const todayRows = rows.filter((r) => r.survey_date === today);
+  const todayProblems = todayRows.filter((r) => realIssues(r).length > 0).length;
+  const todayCompletion = agents.length ? Math.round((todayReceived / agents.length) * 100) : 0;
 
   const exportCsv = () => {
     const headers = ['Survey day', 'Agent', 'CRM rating', 'Orders page issues', 'Orders other', 'New Leads issues', 'New Leads other', 'Biggest issue', 'Anything else', 'Sent at (UK)'];
@@ -304,11 +309,11 @@ export const DailyCrmSurveyResults: React.FC<{ days: number; selfOnly?: boolean 
 
   if (selfOnly) {
     return (
-      <div className="space-y-4">
+      <div className="crm-survey-theme space-y-5 font-crm-body">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Surveys sent</p><p className="text-2xl font-semibold">{rows.length}</p></CardContent></Card>
-          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Your average rating</p><p className="text-2xl font-semibold">{avg ? avg.toFixed(1) : '—'}</p></CardContent></Card>
-          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Days with a real issue</p><p className="text-2xl font-semibold">{rows.filter((r) => realIssues(r).length > 0).length}</p></CardContent></Card>
+          <Card className="border-primary/20 bg-primary text-primary-foreground"><CardContent className="p-4"><p className="text-xs opacity-80">Surveys sent</p><p className="font-crm-heading text-3xl font-bold">{rows.length}</p></CardContent></Card>
+          <Card className="border-primary/20"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Your average rating</p><p className="font-crm-heading text-3xl font-bold">{avg ? avg.toFixed(1) : '—'}</p></CardContent></Card>
+          <Card className="border-accent/30 bg-accent/5"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Days with a real issue</p><p className="font-crm-heading text-3xl font-bold text-accent">{rows.filter((r) => realIssues(r).length > 0).length}</p></CardContent></Card>
         </div>
         {perAgent.map(agentCard)}
         {answerList}
@@ -317,10 +322,10 @@ export const DailyCrmSurveyResults: React.FC<{ days: number; selfOnly?: boolean 
   }
 
   return (
-    <div className="space-y-4">
+    <div className="crm-survey-theme space-y-5 font-crm-body">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-lg font-semibold flex items-center gap-2">
+          <h3 className="font-crm-heading text-xl font-semibold flex items-center gap-2">
             <ClipboardList className="h-5 w-5" />
             Daily CRM survey
           </h3>
@@ -335,11 +340,18 @@ export const DailyCrmSurveyResults: React.FC<{ days: number; selfOnly?: boolean 
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Surveys received</p><p className="text-2xl font-semibold">{rows.length}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Completion ({dayList.length} day{dayList.length === 1 ? '' : 's'})</p><p className="text-2xl font-semibold">{expected ? Math.round((received / expected) * 100) : 0}%</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Average CRM rating</p><p className="text-2xl font-semibold">{avg ? avg.toFixed(1) : '—'}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Days with a real issue</p><p className="text-2xl font-semibold">{trend.filter((t) => t.withProblems > 0).length}</p></CardContent></Card>
+        <Card className="border-primary/20 bg-primary text-primary-foreground"><CardContent className="p-4"><p className="text-xs opacity-80">Today’s completion</p><p className="font-crm-heading text-3xl font-bold">{todayReceived}/{agents.length}</p><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-primary-foreground/20"><div className="h-full bg-primary-foreground" style={{ width: `${todayCompletion}%` }} /></div></CardContent></Card>
+        <Card className="border-accent/30 bg-accent/5"><CardContent className="p-4"><p className="text-xs text-muted-foreground">Problems today</p><p className="font-crm-heading text-3xl font-bold text-accent">{todayProblems}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Average CRM rating</p><p className="font-crm-heading text-3xl font-bold">{avg ? avg.toFixed(1) : '—'}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Period completion</p><p className="font-crm-heading text-3xl font-bold">{expected ? Math.round((received / expected) * 100) : 0}%</p></CardContent></Card>
       </div>
+
+      {todayProblems > 0 && (
+        <div className="flex items-center gap-3 rounded-md border border-accent/30 bg-accent/10 px-4 py-3 text-sm">
+          <AlertTriangle className="h-5 w-5 shrink-0 text-accent" />
+          <p><span className="font-semibold">{todayProblems} agent{todayProblems === 1 ? '' : 's'} reported a problem today.</span> Review their answers below.</p>
+        </div>
+      )}
 
       <Card>
         <CardHeader className="pb-2">
@@ -409,7 +421,7 @@ export const DailyCrmSurveyResults: React.FC<{ days: number; selfOnly?: boolean 
                 <Legend />
                 <Bar yAxisId="left" dataKey="responses" name="Responses" fill="hsl(var(--primary))" />
                 <Bar yAxisId="left" dataKey="withProblems" name="Reported a real issue" fill="hsl(var(--destructive))" />
-                <Line yAxisId="right" type="monotone" dataKey="avgRating" name="Avg rating" stroke="#8b5cf6" strokeWidth={2} />
+                <Line yAxisId="right" type="monotone" dataKey="avgRating" name="Avg rating" stroke="hsl(var(--accent))" strokeWidth={2} />
               </ComposedChart>
             </ResponsiveContainer>
           )}

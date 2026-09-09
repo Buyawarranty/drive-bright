@@ -5,6 +5,24 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Focused daily CRM feedback workspace. Scoped so the public site keeps its brand theme. */
+.crm-survey-theme {
+  --primary: 217 91% 60%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 21 90% 52%;
+  --accent-foreground: 0 0% 100%;
+}
+
+.font-crm-heading {
+  font-family: 'Sora', sans-serif;
+  letter-spacing: 0;
+}
+
+.font-crm-body {
+  font-family: 'Manrope', sans-serif;
+  letter-spacing: 0;
+}
+
 /* Custom car animation */
 @keyframes gentle-bounce {
   0%, 20%, 50%, 80%, 100% {
