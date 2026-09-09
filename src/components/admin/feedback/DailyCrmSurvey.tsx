@@ -25,6 +25,10 @@ import { captureSystemEnvironment } from '@/lib/systemEnvironment';
 
 export const SURVEY_OPEN = { hour: 16, minute: 30 };
 export const SURVEY_DEADLINE = { hour: 17, minute: 30 };
+/** Day the daily survey went live (UK date). Nothing before this is shown or expected. */
+export const SURVEY_START_DATE = '2026-09-09';
+/** Admin dashboard tab where agents read their own answers and managers see everyone. */
+export const SURVEY_RESULTS_TAB = 'staff-system-reports';
 
 export const ORDERS_ISSUE_OPTIONS = [
   'No issues',
