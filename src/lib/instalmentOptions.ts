@@ -9,9 +9,9 @@
 // Pricing logic (Sep 2026): the TOTAL price is the 1-year annual price multiplied
 // by a fixed factor per term + instalment plan:
 //   1-year cover, 12 instalments: 1.00× annual price
-//   2-year cover, 12 instalments: 1.85× annual price
+//   2-year cover, 12 instalments: 1.75× annual price  (credit-checked, paid up front)
 //   2-year cover, 24 instalments: 2.22× annual price
-//   3-year cover, 12 instalments: 2.70× annual price
+//   3-year cover, 12 instalments: 2.80× annual price  (credit-checked, paid up front)
 //   3-year cover, 36 instalments: 3.51× annual price
 
 export type InstalmentCount = 12 | 24 | 36;
@@ -28,8 +28,8 @@ export function isInstalmentAllowed(paymentType: string, count: number): boolean
 
 /** Total-price multiplier vs the 1-year annual price, per term + instalment plan. */
 export function instalmentMultiplier(paymentType: string, count: InstalmentCount): number {
-  if (paymentType === '24months') return count === 24 ? 2.22 : 1.85;
-  if (paymentType === '36months') return count === 36 ? 3.51 : 2.70;
+  if (paymentType === '24months') return count === 24 ? 2.22 : 1.75;
+  if (paymentType === '36months') return count === 36 ? 3.51 : 2.80;
   return 1.0;
 }
 
@@ -68,6 +68,19 @@ export function isInstalmentComingSoon(_count: InstalmentCount): boolean {
  */
 export function isLongInstalmentPlan(count: InstalmentCount): boolean {
   return count === 24 || count === 36;
+}
+
+/**
+ * How much the customer saves overall by taking 12 instalments instead of the
+ * long plan for this term. 0 when the term has no long plan.
+ */
+export function twelvePlanSaving(annualPrice: number, paymentType: string): number {
+  const options = getInstalmentOptions(paymentType);
+  const long = options.find((c) => c !== 12);
+  if (!long) return 0;
+  const saving = instalmentPlanTotal(annualPrice, paymentType, long)
+    - instalmentPlanTotal(annualPrice, paymentType, 12);
+  return saving > 0 ? saving : 0;
 }
 
 export const SUBSCRIPTION_PAY_HINT =
