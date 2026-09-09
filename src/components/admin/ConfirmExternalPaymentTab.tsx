@@ -726,8 +726,10 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
     if (discountBlocked) {
       toast({
-        title: `Below the minimum sellable price`,
-        description: `£${enteredAmount.toFixed(2)} is under the £${netFloorAmount.toFixed(2)} floor for this cover. Contact management to authorise anything lower.`,
+        title: underNetFloor ? `Below the minimum sellable price` : `Authorisation required`,
+        description: underNetFloor
+          ? `£${enteredAmount.toFixed(2)} is under the £${netFloorAmount.toFixed(2)} floor for this cover. Contact management to authorise anything lower.`
+          : `${discountPct.toFixed(1)}% off is over the ${DISCOUNT_CEILING_PCT}% limit. Lowest you can confirm without authorisation is £${minAllowedAmount.toFixed(2)}.`,
         variant: "destructive",
       });
       return;
