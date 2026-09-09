@@ -600,18 +600,23 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
         return true;
       });
     }
-    // Collision safeguard: hide leads that are assigned to another agent
-    // AND have been touched in the last 48h. Prevents two agents working the
-    // same lead across New Leads + Recontact. Skipped when management is
-    // explicitly filtering by a specific agent (they want to see that work)
-    // or when "My leads only" is on (already restricts to self).
+    // Recent-contact lock: a lead still being worked by its own agent must
+    // never appear for another agent to recontact. If the assigned agent has
+    // called, noted or otherwise touched the lead in the last 30 days it stays
+    // with them. Skipped when management explicitly filters by one agent (they
+    // want to review that agent's work) or when "My leads only" is on.
     if (!myOnly && agentFilter === 'all') {
       const mineIds = new Set([currentUserId, currentAuthUserId].filter(Boolean) as string[]);
-      const cutoff = Date.now() - 48 * 3600 * 1000;
+      const cutoff = Date.now() - RECENT_CONTACT_LOCK_DAYS * 86400000;
       list = list.filter((l: any) => {
         if (!l.assigned_to) return true;
         if (mineIds.has(l.assigned_to)) return true;
-        const touched = l.updated_at || l.last_activity_date || l.assigned_at;
+        const touched =
+          l.last_contacted_at ||
+          l.recovery_worked_at ||
+          l.last_activity_date ||
+          l.updated_at ||
+          l.assigned_at;
         if (!touched) return true;
         return new Date(touched).getTime() < cutoff;
       });
