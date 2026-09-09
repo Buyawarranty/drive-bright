@@ -1493,6 +1493,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const displayedTotalPrice = isPriceOverridden
     ? Number(currentPrice.totalPrice || 0)
     : instalmentTotalPrice;
+  // Monthly figure for the SELECTED instalment plan (total ÷ number of payments).
+  const displayedMonthlyPrice = instalmentAmount(displayedTotalPrice, instalmentCount);
   const displayedPayInFullPrice = currentPrice.payInFullPrice || (includePayInFullDiscount ? Math.ceil(displayedTotalPrice * 0.9) : displayedTotalPrice);
   const displayedPayInFullSavings = Math.max(displayedTotalPrice - displayedPayInFullPrice, 0);
   // Hard block: total under the absolute minimum (never below £399) without an
