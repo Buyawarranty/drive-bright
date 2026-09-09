@@ -94,6 +94,9 @@ function daysSince(iso: string | null | undefined): number | null {
  * ever appear on this page, whoever it is assigned to.
  */
 const RECONTACT_MIN_AGE_DAYS = 60;
+// A lead touched by its own agent within this window stays with that agent and
+// is hidden from other agents' recontact lists.
+const RECENT_CONTACT_LOCK_DAYS = 30;
 const RECONTACT_MIN_AGE_ISO = () =>
   new Date(Date.now() - RECONTACT_MIN_AGE_DAYS * 86400000).toISOString();
 
