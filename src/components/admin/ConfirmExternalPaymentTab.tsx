@@ -378,16 +378,16 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     isMotorbike: /motor\s*(bike|cycle)|\bbike\b/i.test(String((vehicleData as any)?.vehicleType || '')),
     surface: 'admin',
   });
-  // Kept for reference/display only — no longer used to block a confirmation.
+  // Lowest amount the 30% ceiling allows against the quoted grid price.
   const ceilingMinAmount = quotedTotal > 0
     ? Math.round(quotedTotal * (1 - DISCOUNT_CEILING_PCT / 100) * 100) / 100
     : 0;
-  void ceilingMinAmount;
 
-  // Sales staff may confirm ANY amount down to the absolute net floor — the 30%
-  // ceiling no longer blocks a confirmation here, it only flags the discount.
-  const minAllowedAmount = netFloorAmount;
   const overDiscountCeiling = discountPct > DISCOUNT_CEILING_PCT + 0.01;
+  // Sales staff cannot go past EITHER gate: the absolute net floor, or 30% off
+  // the quoted price. Anything lower needs management, an approved
+  // authorisation, or an evidenced price match.
+  const minAllowedAmount = Math.max(netFloorAmount, ceilingMinAmount);
 
   const underNetFloor = Number.isFinite(enteredAmount) && enteredAmount > 0 && enteredAmount < netFloorAmount - 0.01;
   // A manager-approved authorisation for this vehicle lifts the block up to the
@@ -410,14 +410,17 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     pmFloor !== null &&
     enteredAmount >= pmFloor - 0.01;
   const priceMatchApplied = priceMatchReady && !isManagementRole;
-  // The Confirm payment price block is OFF by default (Lead Allocation → Confirm
-  // payment price block). While it is off, EVERY sales agent can confirm an
-  // external payment at any amount — nothing here stops them. Only when
-  // management switch it on does the absolute net floor (£349/£699/£999, half for
-  // motorbikes) block a confirmation; discounts above 30% are always allowed,
-  // flagged and logged.
+  // With the Confirm payment price block ON (Lead Allocation → Confirm payment
+  // price block), a sales agent is blocked BOTH below the absolute net floor
+  // (£399/£699/£999, half for motorbikes) AND above the 30% discount ceiling.
+  // Management, a manager-approved authorisation, or an evidenced price match
+  // lift the block.
   const discountBlocked =
-    priceBlockEnabled && underNetFloor && !isManagementRole && !hasApprovedAuth && !priceMatchReady;
+    priceBlockEnabled &&
+    (underNetFloor || overDiscountCeiling) &&
+    !isManagementRole &&
+    !hasApprovedAuth &&
+    !priceMatchReady;
 
 
 
@@ -723,8 +726,10 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
     if (discountBlocked) {
       toast({
-        title: `Below the minimum sellable price`,
-        description: `£${enteredAmount.toFixed(2)} is under the £${netFloorAmount.toFixed(2)} floor for this cover. Contact management to authorise anything lower.`,
+        title: underNetFloor ? `Below the minimum sellable price` : `Authorisation required`,
+        description: underNetFloor
+          ? `£${enteredAmount.toFixed(2)} is under the £${netFloorAmount.toFixed(2)} floor for this cover. Contact management to authorise anything lower.`
+          : `${discountPct.toFixed(1)}% off is over the ${DISCOUNT_CEILING_PCT}% limit. Lowest you can confirm without authorisation is £${minAllowedAmount.toFixed(2)}.`,
         variant: "destructive",
       });
       return;
@@ -1723,16 +1728,19 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
                         {discountBlocked && (
                           <p className="text-xs font-semibold text-destructive">
-                            {`Blocked — £${netFloorAmount.toFixed(2)} is the minimum sellable price for this cover (${paymentType.replace('months', ' month')} term). Contact management to authorise anything lower.`}
+                            {underNetFloor
+                              ? `Blocked — £${netFloorAmount.toFixed(2)} is the minimum sellable price for this cover (${paymentType.replace('months', ' month')} term). Contact management to authorise anything lower.`
+                              : `Blocked — ${discountPct.toFixed(1)}% off is over the ${DISCOUNT_CEILING_PCT}% limit. Lowest you can confirm without management authorisation is £${minAllowedAmount.toFixed(2)}.`}
                           </p>
                         )}
 
                         {!discountBlocked && overDiscountCeiling && !isManagementRole && (
                           <p className="text-xs font-semibold text-amber-700">
-                            {discountPct.toFixed(1)}% off — above the {DISCOUNT_CEILING_PCT}% guideline. You can still
-                            confirm it; the discount is recorded against your name for management review.
+                            {discountPct.toFixed(1)}% off — approved above the {DISCOUNT_CEILING_PCT}% limit and recorded
+                            against your name.
                           </p>
                         )}
+
 
 
 
