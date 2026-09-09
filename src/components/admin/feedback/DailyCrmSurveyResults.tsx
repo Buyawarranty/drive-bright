@@ -4,12 +4,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Bar, BarChart, CartesianGrid, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, ComposedChart } from 'recharts';
-import { Check, ClipboardList, Download, Minus } from 'lucide-react';
-import { CRM_RATING_LABELS, LEADS_ISSUE_OPTIONS, ORDERS_ISSUE_OPTIONS, surveyWindowLabel } from './DailyCrmSurvey';
+import { Check, ClipboardList, Download, Minus, User } from 'lucide-react';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import {
+  CRM_RATING_LABELS,
+  LEADS_ISSUE_OPTIONS,
+  ORDERS_ISSUE_OPTIONS,
+  SURVEY_START_DATE,
+  surveyWindowLabel,
+} from './DailyCrmSurvey';
 
 /**
- * Manager view of the daily CRM survey: who has filled it in each day,
- * which issues come up most on Orders and New Leads, and the rating trend.
+ * Daily CRM survey results.
+ *
+ * Managers: who has filled it in each day (from the survey launch date, never
+ * earlier), overall issue charts, and a chart per agent of their own problems.
+ * Agents (selfOnly): only their own answers and their own chart.
  */
 
 type SurveyRow = {
@@ -44,43 +54,89 @@ const ukDate = (d: Date) =>
 const fmtShort = (iso: string) =>
   new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
 
-export const DailyCrmSurveyResults: React.FC<{ days: number }> = ({ days }) => {
+const fmtLong = (iso: string) =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+const realIssues = (r: SurveyRow) => [...(r.orders_issues || []), ...(r.leads_issues || [])].filter((i) => !SOFT.has(i));
+
+const countIssues = (rows: SurveyRow[], key: 'orders_issues' | 'leads_issues', options: readonly string[]) =>
+  options
+    .map((opt) => ({ label: opt, count: rows.filter((r) => (r[key] || []).includes(opt)).length }))
+    .filter((o) => o.count > 0)
+    .sort((a, b) => b.count - a.count);
+
+const IssueBars: React.FC<{ data: Array<{ label: string; count: number }>; height?: number }> = ({ data, height = 220 }) => (
+  <div style={{ height }}>
+    {data.length === 0 ? (
+      <p className="text-xs text-muted-foreground">No answers yet.</p>
+    ) : (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
+          <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+          <XAxis type="number" allowDecimals={false} fontSize={11} />
+          <YAxis type="category" dataKey="label" width={170} fontSize={11} tickFormatter={(v: string) => (v.length > 28 ? `${v.slice(0, 27)}…` : v)} />
+          <Tooltip />
+          <Bar dataKey="count" name="Times reported" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    )}
+  </div>
+);
+
+export const DailyCrmSurveyResults: React.FC<{ days: number; selfOnly?: boolean }> = ({ days, selfOnly = false }) => {
+  const currentAdminId = useCurrentAdminId();
   const [rows, setRows] = useState<SurveyRow[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
 
   useEffect(() => {
-    const since = ukDate(new Date(Date.now() - (days - 1) * 86400_000));
+    if (selfOnly && !currentAdminId) return;
+    // Never look further back than the day the survey went live.
+    const rangeSince = ukDate(new Date(Date.now() - (days - 1) * 86400_000));
+    const since = rangeSince < SURVEY_START_DATE ? SURVEY_START_DATE : rangeSince;
     (async () => {
-      const [{ data: surveys }, { data: staff }] = await Promise.all([
-        (supabase as any)
-          .from('staff_system_reports')
-          .select(
-            'id, admin_user_id, admin_name, admin_email, survey_date, speed_rating, orders_issues, orders_other, leads_issues, leads_other, biggest_issue, other_comments, created_at',
-          )
-          .eq('report_kind', 'daily_survey')
-          .gte('survey_date', since)
-          .order('survey_date', { ascending: false })
-          .limit(2000),
-        supabase
-          .from('admin_users')
-          .select('id, first_name, last_name, email, role, is_active')
-          .in('role', ['sales', 'sales_lead'])
-          .eq('is_active', true),
+      let q = (supabase as any)
+        .from('staff_system_reports')
+        .select(
+          'id, admin_user_id, admin_name, admin_email, survey_date, speed_rating, orders_issues, orders_other, leads_issues, leads_other, biggest_issue, other_comments, created_at',
+        )
+        .eq('report_kind', 'daily_survey')
+        .gte('survey_date', since)
+        .order('survey_date', { ascending: false })
+        .limit(2000);
+      if (selfOnly) q = q.eq('admin_user_id', currentAdminId);
+
+      const [{ data: surveys }, staffRes] = await Promise.all([
+        q,
+        selfOnly
+          ? Promise.resolve({ data: [] as any[] })
+          : supabase
+              .from('admin_users')
+              .select('id, first_name, last_name, email, role, is_active')
+              .in('role', ['sales', 'sales_lead'])
+              .eq('is_active', true),
       ]);
       setRows((surveys || []) as SurveyRow[]);
       setAgents(
-        ((staff || []) as any[]).map((a) => ({
+        ((staffRes.data || []) as any[]).map((a) => ({
           id: a.id,
           name: [a.first_name, a.last_name].filter(Boolean).join(' ') || a.email,
         })),
       );
     })();
-  }, [days]);
+  }, [days, selfOnly, currentAdminId]);
 
+  /** Days shown in the completion grid: launch date → today, capped at 14 columns. */
   const dayList = useMemo(() => {
-    const n = Math.min(days, 14);
-    return Array.from({ length: n }, (_, i) => ukDate(new Date(Date.now() - (n - 1 - i) * 86400_000)));
+    const today = ukDate(new Date());
+    const all: string[] = [];
+    for (let i = 0; i < 400; i++) {
+      const d = ukDate(new Date(Date.now() - i * 86400_000));
+      if (d < SURVEY_START_DATE) break;
+      all.unshift(d);
+    }
+    if (!all.length) all.push(today);
+    return all.slice(-Math.min(days, 14));
   }, [days]);
 
   const byAgentDay = useMemo(() => {
@@ -89,14 +145,8 @@ export const DailyCrmSurveyResults: React.FC<{ days: number }> = ({ days }) => {
     return m;
   }, [rows]);
 
-  const issueCounts = (key: 'orders_issues' | 'leads_issues', options: readonly string[]) =>
-    options
-      .map((opt) => ({ label: opt, count: rows.filter((r) => (r[key] || []).includes(opt)).length }))
-      .filter((o) => o.count > 0)
-      .sort((a, b) => b.count - a.count);
-
-  const ordersCounts = useMemo(() => issueCounts('orders_issues', ORDERS_ISSUE_OPTIONS), [rows]);
-  const leadsCounts = useMemo(() => issueCounts('leads_issues', LEADS_ISSUE_OPTIONS), [rows]);
+  const ordersCounts = useMemo(() => countIssues(rows, 'orders_issues', ORDERS_ISSUE_OPTIONS), [rows]);
+  const leadsCounts = useMemo(() => countIssues(rows, 'leads_issues', LEADS_ISSUE_OPTIONS), [rows]);
 
   const trend = useMemo(() => {
     const m = new Map<string, { sum: number; n: number; problems: number }>();
@@ -104,13 +154,39 @@ export const DailyCrmSurveyResults: React.FC<{ days: number }> = ({ days }) => {
       const e = m.get(r.survey_date) || { sum: 0, n: 0, problems: 0 };
       e.sum += r.speed_rating;
       e.n += 1;
-      const real = [...(r.orders_issues || []), ...(r.leads_issues || [])].filter((i) => !SOFT.has(i));
-      if (real.length) e.problems += 1;
+      if (realIssues(r).length) e.problems += 1;
       m.set(r.survey_date, e);
     });
     return Array.from(m.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([d, e]) => ({ label: fmtShort(d), responses: e.n, withProblems: e.problems, avgRating: +(e.sum / e.n).toFixed(2) }));
+  }, [rows]);
+
+  /** One chart per agent: which problems they personally keep hitting. */
+  const perAgent = useMemo(() => {
+    const groups = new Map<string, { name: string; rows: SurveyRow[] }>();
+    rows.forEach((r) => {
+      const key = r.admin_user_id || r.admin_email || 'unknown';
+      const g = groups.get(key) || { name: r.admin_name || r.admin_email || 'Unknown', rows: [] };
+      g.rows.push(r);
+      groups.set(key, g);
+    });
+    return Array.from(groups.entries())
+      .map(([id, g]) => {
+        const avg = g.rows.reduce((s, r) => s + r.speed_rating, 0) / g.rows.length;
+        const problemDays = g.rows.filter((r) => realIssues(r).length > 0).length;
+        const issues = [
+          ...countIssues(g.rows, 'orders_issues', ORDERS_ISSUE_OPTIONS).map((i) => ({ ...i, label: `Orders: ${i.label}` })),
+          ...countIssues(g.rows, 'leads_issues', LEADS_ISSUE_OPTIONS).map((i) => ({ ...i, label: `New Leads: ${i.label}` })),
+        ]
+          .filter((i) => !SOFT.has(i.label.replace(/^(Orders|New Leads): /, '')))
+          .sort((a, b) => b.count - a.count);
+        const ratings = [...g.rows]
+          .sort((a, b) => a.survey_date.localeCompare(b.survey_date))
+          .map((r) => ({ label: fmtShort(r.survey_date), rating: r.speed_rating, problems: realIssues(r).length }));
+        return { id, name: g.name, count: g.rows.length, avg, problemDays, issues, ratings };
+      })
+      .sort((a, b) => a.avg - b.avg || b.problemDays - a.problemDays);
   }, [rows]);
 
   const avg = rows.length ? rows.reduce((s, r) => s + r.speed_rating, 0) / rows.length : null;
@@ -140,28 +216,105 @@ export const DailyCrmSurveyResults: React.FC<{ days: number }> = ({ days }) => {
     URL.revokeObjectURL(url);
   };
 
-  const issueCard = (title: string, data: Array<{ label: string; count: number }>) => (
+  const answerList = (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm">{title}</CardTitle>
+        <CardTitle className="text-base">{selfOnly ? 'Your answers' : 'Every answer'}</CardTitle>
+        <CardDescription>Click a row to see the full answers.</CardDescription>
       </CardHeader>
-      <CardContent className="h-56">
-        {data.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No answers yet.</p>
+      <CardContent>
+        {rows.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-6 text-center">
+            {selfOnly ? "You haven't sent a survey yet." : 'No surveys in this period.'}
+          </p>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" allowDecimals={false} fontSize={11} />
-              <YAxis type="category" dataKey="label" width={170} fontSize={11} tickFormatter={(v: string) => (v.length > 28 ? `${v.slice(0, 27)}…` : v)} />
-              <Tooltip />
-              <Bar dataKey="count" name="Times reported" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="rounded-md border divide-y">
+            {rows.map((r) => {
+              const real = realIssues(r);
+              return (
+                <div key={r.id} className="px-3 py-2.5 text-sm cursor-pointer hover:bg-muted/50" onClick={() => setExpanded(expanded === r.id ? null : r.id)}>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <Badge variant="outline" className={ratingTone(r.speed_rating)}>
+                      {r.speed_rating} · {CRM_RATING_LABELS[r.speed_rating] || ''}
+                    </Badge>
+                    {!selfOnly && <span className="font-medium">{r.admin_name || r.admin_email || 'Unknown'}</span>}
+                    <span className="text-xs text-muted-foreground">{fmtShort(r.survey_date)}</span>
+                    <span className={`text-xs ${real.length ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      {real.length ? real.join(', ') : 'No real issues'}
+                    </span>
+                  </div>
+                  {r.biggest_issue && <p className="mt-1 text-sm">{r.biggest_issue}</p>}
+                  {expanded === r.id && (
+                    <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                      <p><span className="font-medium text-foreground">Orders page:</span> {(r.orders_issues || []).join(', ') || '—'}{r.orders_other ? ` — ${r.orders_other}` : ''}</p>
+                      <p><span className="font-medium text-foreground">New Leads page:</span> {(r.leads_issues || []).join(', ') || '—'}{r.leads_other ? ` — ${r.leads_other}` : ''}</p>
+                      {r.other_comments && <p><span className="font-medium text-foreground">Anything else:</span> {r.other_comments}</p>}
+                      <p>Sent {new Date(r.created_at).toLocaleString('en-GB', { timeZone: 'Europe/London' })}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
       </CardContent>
     </Card>
   );
+
+  const agentCard = (a: (typeof perAgent)[number]) => (
+    <Card key={a.id}>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex flex-wrap items-center gap-2">
+          <User className="h-4 w-4" />
+          {a.name}
+          <Badge variant="outline" className={ratingTone(a.avg)}>avg {a.avg.toFixed(1)}</Badge>
+          <span className="text-xs font-normal text-muted-foreground">
+            {a.count} survey{a.count === 1 ? '' : 's'} · {a.problemDays} day{a.problemDays === 1 ? '' : 's'} with a real issue
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-4 lg:grid-cols-2">
+        <div>
+          <p className="text-xs font-medium mb-1">Problems reported</p>
+          {a.issues.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No real issues reported.</p>
+          ) : (
+            <IssueBars data={a.issues} height={Math.max(120, a.issues.length * 28 + 40)} />
+          )}
+        </div>
+        <div>
+          <p className="text-xs font-medium mb-1">Rating by day (1 = very poor, 5 = very good)</p>
+          <div className="h-40">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={a.ratings}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="label" fontSize={11} />
+                <YAxis yAxisId="left" fontSize={11} allowDecimals={false} />
+                <YAxis yAxisId="right" orientation="right" domain={[0, 5]} fontSize={11} />
+                <Tooltip />
+                <Bar yAxisId="left" dataKey="problems" name="Issues ticked" fill="hsl(var(--destructive))" />
+                <Line yAxisId="right" type="monotone" dataKey="rating" name="Rating" stroke="#8b5cf6" strokeWidth={2} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  if (selfOnly) {
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Surveys sent</p><p className="text-2xl font-semibold">{rows.length}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Your average rating</p><p className="text-2xl font-semibold">{avg ? avg.toFixed(1) : '—'}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Days with a real issue</p><p className="text-2xl font-semibold">{rows.filter((r) => realIssues(r).length > 0).length}</p></CardContent></Card>
+        </div>
+        {perAgent.map(agentCard)}
+        {answerList}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -172,7 +325,7 @@ export const DailyCrmSurveyResults: React.FC<{ days: number }> = ({ days }) => {
             Daily CRM survey
           </h3>
           <p className="text-sm text-muted-foreground">
-            Agents are prompted on New Leads every day between {surveyWindowLabel()} UK time. One answer per agent per day.
+            Agents get a pop-up every day between {surveyWindowLabel()} UK time. One answer per agent per day, tracked from {fmtLong(SURVEY_START_DATE)}.
           </p>
         </div>
         <Button size="sm" variant="outline" onClick={exportCsv} disabled={rows.length === 0}>
@@ -183,7 +336,7 @@ export const DailyCrmSurveyResults: React.FC<{ days: number }> = ({ days }) => {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Surveys received</p><p className="text-2xl font-semibold">{rows.length}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Completion (last {dayList.length} days)</p><p className="text-2xl font-semibold">{expected ? Math.round((received / expected) * 100) : 0}%</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Completion ({dayList.length} day{dayList.length === 1 ? '' : 's'})</p><p className="text-2xl font-semibold">{expected ? Math.round((received / expected) * 100) : 0}%</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Average CRM rating</p><p className="text-2xl font-semibold">{avg ? avg.toFixed(1) : '—'}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Days with a real issue</p><p className="text-2xl font-semibold">{trend.filter((t) => t.withProblems > 0).length}</p></CardContent></Card>
       </div>
@@ -191,7 +344,7 @@ export const DailyCrmSurveyResults: React.FC<{ days: number }> = ({ days }) => {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Who has filled it in</CardTitle>
-          <CardDescription>Tick = sent that day. Click a tick to read the answers.</CardDescription>
+          <CardDescription>Starts from {fmtLong(SURVEY_START_DATE)}. Tick = sent that day. Click a tick to read the answers.</CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           {agents.length === 0 ? (
@@ -244,7 +397,7 @@ export const DailyCrmSurveyResults: React.FC<{ days: number }> = ({ days }) => {
         </CardHeader>
         <CardContent className="h-64">
           {trend.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-10 text-center">No surveys in this period.</p>
+            <p className="text-sm text-muted-foreground py-10 text-center">No surveys yet — the first answers arrive after today's {surveyWindowLabel()} window.</p>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={trend}>
@@ -264,50 +417,27 @@ export const DailyCrmSurveyResults: React.FC<{ days: number }> = ({ days }) => {
       </Card>
 
       <div className="grid gap-3 md:grid-cols-2">
-        {issueCard('Orders page — issues reported', ordersCounts)}
-        {issueCard('New Leads page — issues reported', leadsCounts)}
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm">Orders page — issues reported (all agents)</CardTitle></CardHeader>
+          <CardContent><IssueBars data={ordersCounts} /></CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm">New Leads page — issues reported (all agents)</CardTitle></CardHeader>
+          <CardContent><IssueBars data={leadsCounts} /></CardContent>
+        </Card>
       </div>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Every answer</CardTitle>
-          <CardDescription>Click a row to see the full answers.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {rows.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">No surveys in this period.</p>
-          ) : (
-            <div className="rounded-md border divide-y">
-              {rows.map((r) => {
-                const real = [...(r.orders_issues || []), ...(r.leads_issues || [])].filter((i) => !SOFT.has(i));
-                return (
-                  <div key={r.id} className="px-3 py-2.5 text-sm cursor-pointer hover:bg-muted/50" onClick={() => setExpanded(expanded === r.id ? null : r.id)}>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                      <Badge variant="outline" className={ratingTone(r.speed_rating)}>
-                        {r.speed_rating} · {CRM_RATING_LABELS[r.speed_rating] || ''}
-                      </Badge>
-                      <span className="font-medium">{r.admin_name || r.admin_email || 'Unknown'}</span>
-                      <span className="text-xs text-muted-foreground">{fmtShort(r.survey_date)}</span>
-                      <span className={`text-xs ${real.length ? 'text-destructive' : 'text-muted-foreground'}`}>
-                        {real.length ? real.join(', ') : 'No real issues'}
-                      </span>
-                    </div>
-                    {r.biggest_issue && <p className="mt-1 text-sm">{r.biggest_issue}</p>}
-                    {expanded === r.id && (
-                      <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-                        <p><span className="font-medium text-foreground">Orders page:</span> {(r.orders_issues || []).join(', ') || '—'}{r.orders_other ? ` — ${r.orders_other}` : ''}</p>
-                        <p><span className="font-medium text-foreground">New Leads page:</span> {(r.leads_issues || []).join(', ') || '—'}{r.leads_other ? ` — ${r.leads_other}` : ''}</p>
-                        {r.other_comments && <p><span className="font-medium text-foreground">Anything else:</span> {r.other_comments}</p>}
-                        <p>Sent {new Date(r.created_at).toLocaleString('en-GB', { timeZone: 'Europe/London' })}</p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <div>
+        <h4 className="text-base font-semibold">Problems by agent</h4>
+        <p className="text-sm text-muted-foreground">What each agent keeps running into, and how they rated the CRM day by day. Worst average first.</p>
+      </div>
+      {perAgent.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-4 text-center">No agent answers yet.</p>
+      ) : (
+        <div className="space-y-3">{perAgent.map(agentCard)}</div>
+      )}
+
+      {answerList}
     </div>
   );
 };

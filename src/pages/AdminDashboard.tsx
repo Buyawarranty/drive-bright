@@ -22,6 +22,8 @@ import GlobalQuickReminderButton from '@/components/admin/GlobalQuickReminderBut
 import { PendingLeadsPill } from '@/components/admin/PendingLeadsPill';
 
 import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
+import { DailyCrmSurveyPrompt } from '@/components/admin/feedback/DailyCrmSurvey';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import LiveChatHoursBanner from '@/components/admin/LiveChatHoursBanner';
 
@@ -134,8 +136,8 @@ const ADMIN_ROLES = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_
 const ROLE_PRIORITY = ['super_admin', 'admin', 'claims_agent', 'claims_manager', 'member', 'performance_manager', 'sales_manager', 'sales_lead', 'lead_gen', 'accounts_manager', 'accounts_payroll', 'accounts', 'viewer', 'guest', 'sales', 'blog_writer', 'dev_tester'];
 const CLAIMS_AGENT_TABS = ['claims', 'complaints', 'customers', 'discount-codes', 'discounts-given', 'cancellations', 'refunds-paid', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
 const CLAIMS_MANAGER_TABS = ['claims', 'complaints', 'attendance', 'hr', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
-const SALES_TABS = ['overview', 'new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
-const SALES_LEAD_TABS = ['overview', 'new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'agent-feedback', 'unsubscribe', 'account'];
+const SALES_TABS = ['overview', 'new-leads', 'recontact-leads', 'get-quote', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'agent-feedback', 'staff-system-reports', 'unsubscribe', 'account'];
+const SALES_LEAD_TABS = ['overview', 'new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'staff-hub', 'agent-feedback', 'staff-system-reports', 'unsubscribe', 'account'];
 const SALES_MANAGER_TABS = ['overview', 'concessions', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'attendance', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'open-round-robin', 'orr-test-lab', 'orr-sandbox', 'price-updates', 'vehicle-stats', 'banners-billboards', 'sms-tracking', 'user-permissions', 'unsubscribe', 'account'];
 const PERFORMANCE_MANAGER_TABS = SALES_MANAGER_TABS;
 
@@ -1018,10 +1020,12 @@ const AdminDashboard = () => {
       case 'user-permissions':
         return <UserPermissionsTab />;
       case 'staff-system-reports': {
-        const canSee =
+        const isManagerView =
           ['super_admin', 'admin', 'performance_manager', 'sales_manager', 'dev_tester'].includes(effectiveUserRole || '') ||
           effectiveUserPermissions?.['tab_staff-system-reports'] === true;
-        if (!canSee) {
+        // Sales agents only ever see their own daily survey answers.
+        const isAgentSelfView = ['sales', 'sales_lead'].includes(effectiveUserRole || '');
+        if (!isManagerView && !isAgentSelfView) {
           return (
             <div className="p-6">
               <h2 className="text-xl font-semibold">Access denied</h2>
@@ -1029,7 +1033,7 @@ const AdminDashboard = () => {
             </div>
           );
         }
-        return <StaffSystemReportsTab />;
+        return <StaffSystemReportsTab selfOnly={!isManagerView} />;
       }
       case 'lead-teams':
         if (
@@ -1240,6 +1244,7 @@ const AdminDashboardInner: React.FC<{
   const { collapsed: sidebarCollapsed } = useAdminSidebarCollapsed();
   const { session } = useAuth();
   const isSuperAdmin = userRole === 'super_admin';
+  const currentAdminIdForSurvey = useCurrentAdminId();
 
   // Use effective (impersonated) role for sidebar and content
   const displayRole = isImpersonating ? effectiveRole : userRole;
@@ -1401,6 +1406,13 @@ const AdminDashboardInner: React.FC<{
 
             {/* Agent new-lead alerts: stacked floating cards (beep + mute + close) */}
             <NewLeadAlerts />
+
+            {/* Daily CRM feedback survey pop-up for sales agents (silent, once a day) */}
+            <DailyCrmSurveyPrompt
+              adminUserId={currentAdminIdForSurvey}
+              userRole={displayRole}
+              onOpenResults={() => handleTabChange('staff-system-reports')}
+            />
 
 
             {/* Sticky left-hand rail host (kept mounted so portalled alerts have a home) */}
