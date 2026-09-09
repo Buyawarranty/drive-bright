@@ -25,6 +25,8 @@ export default {
 			fontFamily: {
 				sans: ['Helvetica Neue', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Tahoma', 'Roboto', 'sans-serif'],
 				helvetica: ['Helvetica Neue', 'Tahoma', 'sans-serif'],
+				'crm-heading': ['Sora', 'sans-serif'],
+				'crm-body': ['Manrope', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',

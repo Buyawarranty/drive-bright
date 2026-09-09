@@ -19,6 +19,10 @@ import { AlertTriangle, Download, Gauge, Monitor, RefreshCw, Users } from 'lucid
 import { describeEnvironment } from '@/lib/systemEnvironment';
 import { LOAD_OPTIONS, PROBLEM_OPTIONS, RATING_LABELS } from '@/components/admin/feedback/SystemCheckInForm';
 import { DailyCrmSurveyResults } from '@/components/admin/feedback/DailyCrmSurveyResults';
+import '@fontsource/sora/600.css';
+import '@fontsource/sora/700.css';
+import '@fontsource/manrope/400.css';
+import '@fontsource/manrope/600.css';
 
 /**
  * Staff System Reports — what sales staff say about how the dashboard performs
@@ -265,13 +269,13 @@ export const StaffSystemReportsTab: React.FC<{ selfOnly?: boolean }> = ({ selfOn
   // Sales agents only see their own daily CRM survey answers — nothing else.
   if (selfOnly) {
     return (
-      <div className="space-y-6 p-1">
-        <div>
-          <h2 className="text-xl font-semibold flex items-center gap-2">
+      <div className="crm-survey-theme space-y-6 p-1 font-crm-body">
+        <div className="rounded-md border border-primary/20 bg-primary px-5 py-4 text-primary-foreground shadow-sm">
+          <h2 className="font-crm-heading text-xl font-semibold flex items-center gap-2">
             <Gauge className="h-5 w-5" />
             My CRM feedback survey
           </h2>
-          <p className="text-sm text-muted-foreground">Your daily answers about how the CRM performed for you. Only you and the managers can see these.</p>
+          <p className="mt-1 text-sm text-primary-foreground/80">Your daily answers about how the CRM performed for you. Only you and the managers can see these.</p>
         </div>
         <DailyCrmSurveyResults days={30} selfOnly />
       </div>
@@ -279,12 +283,12 @@ export const StaffSystemReportsTab: React.FC<{ selfOnly?: boolean }> = ({ selfOn
   }
 
   return (
-    <div className="space-y-6 p-1">
+    <div className="crm-survey-theme space-y-6 p-1 font-crm-body">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold flex items-center gap-2">
+          <h2 className="font-crm-heading text-2xl font-semibold flex items-center gap-2">
             <Gauge className="h-5 w-5" />
-            Staff System Reports
+            CRM feedback intelligence
           </h2>
           <p className="text-sm text-muted-foreground">
             What sales staff tell us about how the dashboard performs on their own computer.
