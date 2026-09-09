@@ -379,7 +379,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   // Total for the selected term + instalment plan.
   const instalmentTotalPrice = annualTotalPrice > 0
     ? instalmentPlanTotal(annualTotalPrice, paymentType, instalmentCount)
-    : instalmentTotalPrice;
+    : currentPrice.totalPrice;
 
 
   // ── Hard 30% discount ceiling ───────────────────────────────────────────────
