@@ -410,14 +410,17 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     pmFloor !== null &&
     enteredAmount >= pmFloor - 0.01;
   const priceMatchApplied = priceMatchReady && !isManagementRole;
-  // The Confirm payment price block is OFF by default (Lead Allocation → Confirm
-  // payment price block). While it is off, EVERY sales agent can confirm an
-  // external payment at any amount — nothing here stops them. Only when
-  // management switch it on does the absolute net floor (£349/£699/£999, half for
-  // motorbikes) block a confirmation; discounts above 30% are always allowed,
-  // flagged and logged.
+  // With the Confirm payment price block ON (Lead Allocation → Confirm payment
+  // price block), a sales agent is blocked BOTH below the absolute net floor
+  // (£399/£699/£999, half for motorbikes) AND above the 30% discount ceiling.
+  // Management, a manager-approved authorisation, or an evidenced price match
+  // lift the block.
   const discountBlocked =
-    priceBlockEnabled && underNetFloor && !isManagementRole && !hasApprovedAuth && !priceMatchReady;
+    priceBlockEnabled &&
+    (underNetFloor || overDiscountCeiling) &&
+    !isManagementRole &&
+    !hasApprovedAuth &&
+    !priceMatchReady;
 
 
 
