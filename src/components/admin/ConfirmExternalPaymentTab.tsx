@@ -378,16 +378,16 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     isMotorbike: /motor\s*(bike|cycle)|\bbike\b/i.test(String((vehicleData as any)?.vehicleType || '')),
     surface: 'admin',
   });
-  // Kept for reference/display only — no longer used to block a confirmation.
+  // Lowest amount the 30% ceiling allows against the quoted grid price.
   const ceilingMinAmount = quotedTotal > 0
     ? Math.round(quotedTotal * (1 - DISCOUNT_CEILING_PCT / 100) * 100) / 100
     : 0;
-  void ceilingMinAmount;
 
-  // Sales staff may confirm ANY amount down to the absolute net floor — the 30%
-  // ceiling no longer blocks a confirmation here, it only flags the discount.
-  const minAllowedAmount = netFloorAmount;
   const overDiscountCeiling = discountPct > DISCOUNT_CEILING_PCT + 0.01;
+  // Sales staff cannot go past EITHER gate: the absolute net floor, or 30% off
+  // the quoted price. Anything lower needs management, an approved
+  // authorisation, or an evidenced price match.
+  const minAllowedAmount = Math.max(netFloorAmount, ceilingMinAmount);
 
   const underNetFloor = Number.isFinite(enteredAmount) && enteredAmount > 0 && enteredAmount < netFloorAmount - 0.01;
   // A manager-approved authorisation for this vehicle lifts the block up to the
