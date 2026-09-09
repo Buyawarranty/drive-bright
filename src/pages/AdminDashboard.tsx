@@ -1018,10 +1018,12 @@ const AdminDashboard = () => {
       case 'user-permissions':
         return <UserPermissionsTab />;
       case 'staff-system-reports': {
-        const canSee =
+        const isManagerView =
           ['super_admin', 'admin', 'performance_manager', 'sales_manager', 'dev_tester'].includes(effectiveUserRole || '') ||
           effectiveUserPermissions?.['tab_staff-system-reports'] === true;
-        if (!canSee) {
+        // Sales agents only ever see their own daily survey answers.
+        const isAgentSelfView = ['sales', 'sales_lead'].includes(effectiveUserRole || '');
+        if (!isManagerView && !isAgentSelfView) {
           return (
             <div className="p-6">
               <h2 className="text-xl font-semibold">Access denied</h2>
@@ -1029,7 +1031,7 @@ const AdminDashboard = () => {
             </div>
           );
         }
-        return <StaffSystemReportsTab />;
+        return <StaffSystemReportsTab selfOnly={!isManagerView} />;
       }
       case 'lead-teams':
         if (
