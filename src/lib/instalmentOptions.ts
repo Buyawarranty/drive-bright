@@ -30,7 +30,12 @@ export function instalmentLabel(count: InstalmentCount): string {
   return `${count} instalments`;
 }
 
-/** Instalment plans that are visible but not selectable yet. */
-export function isInstalmentComingSoon(count: InstalmentCount): boolean {
-  return count === 24 || count === 36;
+/**
+ * Instalment plans that are visible but not selectable yet.
+ * 24 (2-year cover) and 36 (3-year cover) are now LIVE on the admin quoting
+ * surfaces, so nothing is "coming soon" any more. The total price is unchanged —
+ * only how many monthly payments it is split over.
+ */
+export function isInstalmentComingSoon(_count: InstalmentCount): boolean {
+  return false;
 }
