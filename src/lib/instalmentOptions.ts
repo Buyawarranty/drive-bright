@@ -70,5 +70,18 @@ export function isLongInstalmentPlan(count: InstalmentCount): boolean {
   return count === 24 || count === 36;
 }
 
+/**
+ * How much the customer saves overall by taking 12 instalments instead of the
+ * long plan for this term. 0 when the term has no long plan.
+ */
+export function twelvePlanSaving(annualPrice: number, paymentType: string): number {
+  const options = getInstalmentOptions(paymentType);
+  const long = options.find((c) => c !== 12);
+  if (!long) return 0;
+  const saving = instalmentPlanTotal(annualPrice, paymentType, long)
+    - instalmentPlanTotal(annualPrice, paymentType, 12);
+  return saving > 0 ? saving : 0;
+}
+
 export const SUBSCRIPTION_PAY_HINT =
   'Better option: Subscription Pay — flexible monthly payments, usually cheaper for the customer than spreading over more instalments.';
