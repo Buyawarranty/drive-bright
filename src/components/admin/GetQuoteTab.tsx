@@ -1623,7 +1623,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       matrixTotal,
       matrixMonthly: Number(basePrice.monthlyPrice || 0),
       enteredTotal: total,
-      enteredMonthly: parseFloat(customMonthlyPrice) || Number(currentPrice.monthlyPrice || 0),
+      enteredMonthly: parseFloat(customMonthlyPrice) || displayedMonthlyPrice,
       floorAmount: MIN_BASE_PRICE_BY_PERIOD[paymentType as PaymentPeriod] ?? null,
       priceMatchMode,
       priceMatchCompany: priceMatchMode
@@ -2470,7 +2470,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
             boost_addon: boostAddon,
             duration_months: durationMap[paymentType] || 12,
             bonus_months: bonusMonths,
-            monthly_price: currentPrice.monthlyPrice,
+            monthly_price: displayedMonthlyPrice,
             upfront_price: displayedPayInFullPrice,
             customer_name: cleanCustomerName,
             customer_email: cleanCustomerEmail,
@@ -2526,7 +2526,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
             plan: 'Platinum',
             paymentType,
             totalPrice: displayedTotalPrice,
-            monthlyPrice: currentPrice.monthlyPrice,
+            monthlyPrice: displayedMonthlyPrice,
             payInFullPrice: displayedPayInFullPrice,
             savings: displayedPayInFullSavings,
             includePayInFullDiscount,
@@ -2602,7 +2602,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
           excess_amount: excessAmount,
           claim_limit: displayClaimLimit,
           total_price: displayedTotalPrice,
-          monthly_price: currentPrice.monthlyPrice,
+          monthly_price: displayedMonthlyPrice,
           labour_rate: labourRate,
           boost_addon: boostAddon,
           additional_notes: additionalNotes || null,
@@ -2735,7 +2735,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
           plan: 'Platinum',
           paymentType,
           totalPrice: displayedTotalPrice,
-          monthlyPrice: currentPrice.monthlyPrice,
+          monthlyPrice: displayedMonthlyPrice,
           payInFullPrice: displayedPayInFullPrice,
           savings: displayedPayInFullSavings,
           includePayInFullDiscount,
@@ -2861,7 +2861,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
             plan: 'Platinum',
             paymentType,
             totalPrice: displayedTotalPrice,
-            monthlyPrice: currentPrice.monthlyPrice,
+            monthlyPrice: displayedMonthlyPrice,
             payInFullPrice: displayedPayInFullPrice,
             savings: displayedPayInFullSavings,
             includePayInFullDiscount,
@@ -3046,7 +3046,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
 Here's your warranty quote for ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}):
 
 Plan: Platinum
-Price: £${currentPrice.monthlyPrice}/month
+Price: £${displayedMonthlyPrice}/month
 Cover: ${months} months + ${bonus} FREE
 Claim Limit: £${displayClaimLimit.toLocaleString()}
 
@@ -3078,7 +3078,7 @@ Questions? Call 0330 229 5040`;
     String(claimLimit),
     String(labourRate),
     String(boostAddon),
-    String(currentPrice.monthlyPrice),
+    String(displayedMonthlyPrice),
   ].join('|');
   const quoteLinkIdentityRef = useRef<string | null>(null);
 
@@ -3131,7 +3131,7 @@ Questions? Call 0330 229 5040`;
 
     
     const displayClaimLimit = boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit);
-    const contractTotal = currentPrice.monthlyPrice * 12; // Use monthly × 12 for consistency
+    const contractTotal = displayedTotalPrice; // Use monthly × 12 for consistency
     const payInFullPrice = currentPrice.payInFullPrice || Math.ceil(contractTotal * 0.90);
     
     try {
@@ -3154,7 +3154,7 @@ Questions? Call 0330 229 5040`;
           claimLimit, // Send raw claim limit - customer page will add boost if needed
           labourRate,
           boostAddon,
-          monthlyPrice: currentPrice.monthlyPrice,
+          monthlyPrice: displayedMonthlyPrice,
           upfrontPrice: payInFullPrice,
           breakdownIncluded: getAutoIncludedAddOns(paymentType).includes('breakdown'),
           rentalIncluded: getAutoIncludedAddOns(paymentType).includes('rental'),
@@ -3382,7 +3382,7 @@ Questions? Call 0330 229 5040`;
     // price and the discount no longer reconcile.
     const prefillQuoted = quotedPriceOverride !== ''
       ? Math.round(parseFloat(quotedPriceOverride) || 0)
-      : Math.round(currentPrice.monthlyPrice * 12);
+      : Math.round(displayedTotalPrice);
     setPaymentAmount(prefillQuoted ? prefillQuoted.toString() : '');
 
     // Reset warranty start date to today
@@ -3567,7 +3567,7 @@ Questions? Call 0330 229 5040`;
     // quote or from typing a lower figure in the confirm box, so the CRM, the
     // "discount given" report and the sale email all agree.
     const quotedOnScreen = Math.max(
-      Math.round(currentPrice.monthlyPrice * 12),
+      Math.round(displayedTotalPrice),
       quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : 0,
     );
     // Also check every quote already on record for this plate, so a discount is
@@ -3587,7 +3587,7 @@ Questions? Call 0330 229 5040`;
     auditPriceOverride('confirm_payment', Number.isFinite(confirmedAmount) ? confirmedAmount : undefined);
 
 
-    const hasPriceDifference = Math.abs(confirmedAmount - currentPrice.monthlyPrice * 12) > 1;
+    const hasPriceDifference = Math.abs(confirmedAmount - displayedTotalPrice) > 1;
 
     setIsConfirmingPaid(true);
     const warrantyReference = await generateWarrantyReference();
@@ -4733,7 +4733,7 @@ Questions? Call 0330 229 5040`;
               excessAmount,
               labourRate,
               totalPrice: displayedTotalPrice,
-              monthlyPrice: Number(currentPrice.monthlyPrice || 0),
+              monthlyPrice: displayedMonthlyPrice,
               addOns: Object.entries(selectedAddOns)
                 .filter(([, on]) => on)
                 .map(([key]) => key),
@@ -7128,7 +7128,7 @@ Questions? Call 0330 229 5040`;
                     <p><strong>Excess:</strong> £{excessAmount}</p>
                     <p><strong>Claim Limit:</strong> £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
                     <p><strong>Labour Rate:</strong> £{labourRate}/hr</p>
-                    <p><strong>Total Price:</strong> £{currentPrice.monthlyPrice * 12}</p>
+                    <p><strong>Total Price:</strong> £{displayedTotalPrice}</p>
                     {additionalNotes && <p className="col-span-2"><strong>Notes:</strong> {additionalNotes}</p>}
                   </div>
                   {freeExtendedCover !== 'none' && (
@@ -7151,7 +7151,7 @@ Questions? Call 0330 229 5040`;
                       Customer will receive a link to complete payment via Stripe (pay in full) or Bumper (monthly).
                     </p>
                     <div className="flex gap-2 text-sm">
-                      <span className="px-2 py-1 rounded bg-white text-black border border-orange-200">£{currentPrice.monthlyPrice}/mo</span>
+                      <span className="px-2 py-1 rounded bg-white text-black border border-orange-200">£{displayedMonthlyPrice}/mo</span>
                       <span className="px-2 py-1 rounded bg-orange-100 text-black border border-orange-200">£{currentPrice.payInFullPrice || Math.ceil(currentPrice.totalPrice * 0.9)} upfront</span>
                     </div>
                     
@@ -7212,7 +7212,7 @@ Questions? Call 0330 229 5040`;
                         </Button>
                         <Button 
                           onClick={() => {
-                            const message = `Hi ${customerName?.split(' ')[0] || 'there'},\n\nYour warranty quote for ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}) is ready!\n\n💰 £${currentPrice.monthlyPrice}/month via Bumper\n💳 £${currentPrice.payInFullPrice || Math.ceil(currentPrice.totalPrice * 0.9)} pay in full (10% off)\n\n🔗 Complete your purchase: ${quoteLink}\n\nBuyawarranty Customer Care\n📞 0330 229 5040`;
+                            const message = `Hi ${customerName?.split(' ')[0] || 'there'},\n\nYour warranty quote for ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}) is ready!\n\n💰 £${displayedMonthlyPrice}/month via Bumper\n💳 £${currentPrice.payInFullPrice || Math.ceil(currentPrice.totalPrice * 0.9)} pay in full (10% off)\n\n🔗 Complete your purchase: ${quoteLink}\n\nBuyawarranty Customer Care\n📞 0330 229 5040`;
                             const encodedMessage = encodeURIComponent(message);
                             window.open(`https://api.whatsapp.com/send?text=${encodedMessage}`, '_blank');
                           }}
@@ -7404,7 +7404,7 @@ Questions? Call 0330 229 5040`;
                         </div>
                         <div className="flex items-center justify-between pt-3">
                           <span className="font-semibold">Customer price</span>
-                          <span className="text-xl font-bold text-primary">£{currentPrice.monthlyPrice}/mo</span>
+                          <span className="text-xl font-bold text-primary">£{displayedMonthlyPrice}/mo</span>
                         </div>
                       </div>
 
@@ -7560,7 +7560,7 @@ Cover period: ${coverPeriod}${bonus}
 Claim limit: £${claim} per claim
 Excess: £${excessAmount}
 Labour rate: Up to £${labourRate}/hr
-Customer price: £${currentPrice.monthlyPrice}/mo
+Customer price: £${displayedMonthlyPrice}/mo
 
 Choose how to pay and activate your warranty:
 
@@ -7591,7 +7591,7 @@ Buy A Warranty`;
 <tr><td style="padding:10px 14px;color:#6b7280;border-top:1px solid #eef0f3;">Claim limit</td><td style="padding:10px 14px;color:#111827;font-weight:600;border-top:1px solid #eef0f3;">£${claim} per claim</td></tr>
 <tr><td style="padding:10px 14px;color:#6b7280;border-top:1px solid #eef0f3;">Excess</td><td style="padding:10px 14px;color:#111827;font-weight:600;border-top:1px solid #eef0f3;">£${excessAmount}</td></tr>
 <tr><td style="padding:10px 14px;color:#6b7280;border-top:1px solid #eef0f3;">Labour rate</td><td style="padding:10px 14px;color:#111827;font-weight:600;border-top:1px solid #eef0f3;">Up to £${labourRate}/hr</td></tr>
-<tr><td style="padding:10px 14px;color:#6b7280;border-top:1px solid #eef0f3;">Customer price</td><td style="padding:10px 14px;color:#111827;font-weight:700;border-top:1px solid #eef0f3;">£${currentPrice.monthlyPrice}/mo</td></tr>
+<tr><td style="padding:10px 14px;color:#6b7280;border-top:1px solid #eef0f3;">Customer price</td><td style="padding:10px 14px;color:#111827;font-weight:700;border-top:1px solid #eef0f3;">£${displayedMonthlyPrice}/mo</td></tr>
 </table>
 </td></tr>
 <tr><td style="padding:24px 32px 8px 32px;text-align:center;">
@@ -7906,7 +7906,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                             </tr>
                             <tr>
                               <td className="py-3 text-gray-900 font-bold">Total price</td>
-                              <td className="py-3 text-right text-xl font-bold text-orange-600">£{currentPrice.monthlyPrice * 12}</td>
+                              <td className="py-3 text-right text-xl font-bold text-orange-600">£{displayedTotalPrice}</td>
                             </tr>
                           </tbody>
                         </table>
@@ -8002,9 +8002,9 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                       <h4 className="font-semibold text-orange-900 mb-2">💰 Pricing</h4>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <span className="text-orange-700">Total Price:</span>
-                        <span className="font-bold text-lg text-orange-600">£{currentPrice.monthlyPrice * 12}</span>
+                        <span className="font-bold text-lg text-orange-600">£{displayedTotalPrice}</span>
                         <span className="text-orange-700">Monthly Price:</span>
-                        <span className="font-medium">£{currentPrice.monthlyPrice}/month</span>
+                        <span className="font-medium">£{displayedMonthlyPrice}/month</span>
                         <span className="text-orange-700">Pay in Full (10% off):</span>
                         <span className="font-medium">£{currentPrice.payInFullPrice || Math.ceil(currentPrice.totalPrice * 0.9)}</span>
                       </div>
@@ -8374,7 +8374,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                           <h4 className="font-semibold text-gray-800 text-sm">Policy Configuration</h4>
                           {!expandedSections.policyConfig && (
                             <p className="text-xs text-gray-500 mt-0.5">
-                              {termOptions.find(t => t.id === paymentType)?.label} • £{excessAmount} excess • £{currentPrice.monthlyPrice * 12} total
+                              {termOptions.find(t => t.id === paymentType)?.label} • £{excessAmount} excess • £{displayedTotalPrice} total
                             </p>
                           )}
                         </div>
@@ -8486,7 +8486,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                                   onClick={() => setQuotedPriceOverride('')}
                                   className="text-[10px] text-blue-600 hover:underline"
                                 >
-                                  Reset to £{currentPrice.monthlyPrice * 12}
+                                  Reset to £{displayedTotalPrice}
                                 </button>
                               )}
                             </Label>
@@ -8496,7 +8496,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                                 type="number"
                                 step={1}
                                 min={0}
-                                value={quotedPriceOverride === '' ? (currentPrice.monthlyPrice * 12) : quotedPriceOverride}
+                                value={quotedPriceOverride === '' ? (displayedTotalPrice) : quotedPriceOverride}
                                 /* Whole pounds only — pence are stripped on entry. */
                                 onChange={(e) => setQuotedPriceOverride(e.target.value.replace(/[^0-9]/g, ''))}
                                 className="pl-7 bg-green-50 border-green-200 text-green-800 font-semibold text-base focus:bg-white focus:border-green-400"
@@ -8604,7 +8604,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
 
                     {/* Amount */}
                     {(() => {
-                      const effectiveQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12);
+                      const effectiveQuoted = quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (displayedTotalPrice);
                       return (
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1.5">
@@ -8698,7 +8698,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                             <div className="space-y-1">
                               <Label className="text-xs font-semibold text-amber-900">Balance outstanding</Label>
                               <div className="h-10 flex items-center px-3 rounded-md border border-amber-300 bg-white text-sm font-bold text-amber-900">
-                                £{Math.max(0, Math.round(((quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (currentPrice.monthlyPrice * 12)) || 0) - (depositAmountValue || 0)))}
+                                £{Math.max(0, Math.round(((quotedPriceOverride !== '' ? Math.round(parseFloat(quotedPriceOverride) || 0) : (displayedTotalPrice)) || 0) - (depositAmountValue || 0)))}
                               </div>
                             </div>
                           </div>
