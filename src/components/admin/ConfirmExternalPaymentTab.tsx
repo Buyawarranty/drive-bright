@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, type InstalmentCount } from '@/lib/instalmentOptions';
+import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 import { getNetPayableFloor } from '@/lib/pricing/netFloor';
@@ -1286,15 +1286,18 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                                   <div className={cn("text-xs font-medium", comingSoon ? "text-slate-500" : "text-slate-900")}>
                                     {comingSoon
                                       ? "Not active yet"
-                                      : `£${instalmentAmount(currentPrice.totalPrice, count)}/mo · same £${currentPrice.totalPrice} total`}
+                                      : `£${instalmentAmount(currentPrice.totalPrice, count)}/mo · £${instalmentPlanTotal(currentPrice.totalPrice, count)} total`}
                                   </div>
                                 </button>
                               );
                             })}
                           </div>
                           <p className="text-[11px] text-slate-500">
-                            Same total price — this only changes how many monthly payments it is spread over.
+                            Spreading the payments over 24 or 36 months costs more than the 12-instalment plan.
                           </p>
+                          {instalmentCount !== 12 && (
+                            <p className="text-[11px] font-semibold text-amber-700">{BUMPER_LONG_PLAN_NOTE}</p>
+                          )}
                         </div>
                       )}
                       <div className="space-y-1.5">
@@ -1397,6 +1400,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         <p className="text-xs text-slate-500 text-right mt-1">
                           £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(currentPrice.totalPrice, instalmentCount)}/month
                           {' '}× {instalmentCount} instalments
+                          {instalmentCount !== 12 && ` · £${instalmentPlanTotal(currentPrice.totalPrice, instalmentCount)} total on Bumper`}
                         </p>
                       )}
                     </div>
