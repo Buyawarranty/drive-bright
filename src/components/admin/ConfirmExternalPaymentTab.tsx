@@ -355,6 +355,26 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     }),
   }) : { totalPrice: 0, monthlyPrice: 0 };
 
+  // LONGER PLAN BASE = the 1-YEAR price. Price the same cover over 12 months so the
+  // 24/36 instalment plans can be set at 2.22× / 3.51× that figure.
+  const oneYearPrice = vehicleData ? calculateAdminQuoteWarrantyPrice({
+    paymentPeriod: '12months',
+    voluntaryExcess: excessAmount,
+    claimLimit: effectiveClaimLimit,
+    labourRate: labourRate,
+    boostEnabled: boostAddon,
+    addOnPrice: getClaimLimitSurcharge(claimLimit, '12months', excessAmount),
+    make: vehicleData?.make,
+    fuelType: vehicleData?.fuelType,
+    vehicleFactor: getVehiclePriceFactor({
+      year: vehicleData?.year,
+      mileage: mileage,
+      fuelType: vehicleData?.fuelType,
+      vehicleType: (vehicleData as any)?.vehicleType,
+    }),
+  }) : { totalPrice: 0, monthlyPrice: 0 };
+  const longPlanRatio = oneYearRatio(oneYearPrice.totalPrice, currentPrice.totalPrice);
+
   // ── Hard 30% discount ceiling ───────────────────────────────────────────────
   // Confirming an outside payment must never be a back door around the discount
   // cap enforced on Get a quote. Anything more than 30% below the quoted grid
