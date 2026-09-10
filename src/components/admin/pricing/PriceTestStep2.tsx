@@ -1069,7 +1069,12 @@ export default function PriceTestStep2({
                     </div>
                   ) : null}
                   <div className="pt-1 font-semibold text-foreground">Term total: {formatGBP(calc.total)}</div>
-                  <div>÷ 12 instalments: {formatGBP(calc.monthly)}/month (only 12-payment plans available today)</div>
+                  <div>÷ 12 instalments: {formatGBP(calc.monthly)}/month</div>
+                  {calc.longPlanCount ? (
+                    <div className="text-amber-700">
+                      {calc.longPlanCount}-instalment plan: one-year price {formatGBP(calc.oneYearAnchor)} × {calc.longPlanMultiple} = {formatGBP(calc.longPlanTotal as number)} ÷ {calc.longPlanCount} = {formatGBP(calc.longPlanMonthly as number)}/month (Quotes &amp; Orders only)
+                    </div>
+                  ) : null}
 
 
                 </div>
