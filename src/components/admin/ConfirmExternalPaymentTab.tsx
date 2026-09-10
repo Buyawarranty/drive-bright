@@ -1288,6 +1288,11 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                                       ? "Not active yet"
                                       : `£${instalmentAmount(currentPrice.totalPrice, count)}/mo · £${instalmentPlanTotal(currentPrice.totalPrice, count)} total`}
                                   </div>
+                                  {!comingSoon && count !== 12 && (
+                                    <div className="text-[11px] font-semibold text-amber-700">
+                                      +£{instalmentPlanTotal(currentPrice.totalPrice, count) - Math.round(Number(currentPrice.totalPrice) || 0)} vs 12-instalment plan
+                                    </div>
+                                  )}
                                 </button>
                               );
                             })}
