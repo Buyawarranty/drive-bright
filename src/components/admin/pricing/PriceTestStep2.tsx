@@ -36,6 +36,7 @@ import {
   getJourneyAddOns,
   periodForMonths,
 } from '@/lib/pricing/journeyOptions';
+import { getLongPlanMultiples } from '@/lib/instalmentOptions';
 
 /** Per-day figures are shown in whole pence (or whole pounds) — never pounds-with-pence. */
 const perDayLabel = (amount: number) =>
@@ -405,7 +406,8 @@ export default function PriceTestStep2({
     const undiscountedTotal = Math.max(Math.round(baseTermTotal + excessAdjFor(term.period, baseTermTotal) + addOnTotal), minSellable);
     const discountRatio = undiscountedTotal > 0 ? total / undiscountedTotal : 1;
     const longPlanCount = term.months === 24 ? 24 : term.months === 36 ? 36 : null;
-    const longPlanMultiple = longPlanCount === 24 ? 2.22 : longPlanCount === 36 ? 3.51 : 1;
+    const configuredMultiples = getLongPlanMultiples();
+    const longPlanMultiple = longPlanCount ? configuredMultiples[longPlanCount] : 1;
     const longPlanTotal = longPlanCount ? Math.round(oneYearAnchor * longPlanMultiple * discountRatio) : null;
     const longPlanMonthly = longPlanCount && longPlanTotal ? Math.ceil(longPlanTotal / longPlanCount) : null;
 
