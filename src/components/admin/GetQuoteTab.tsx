@@ -517,7 +517,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     ? Math.round(priceMatchCompetitorPrice * (1 - PRICE_MATCH_MAX_PCT / 100))
     : null;
 
-  // NET floor: no warranty may ever be SOLD below £349 / £699 / £999 (12/24/36mo)
+  // NET floor: no warranty may ever be SOLD below £349 / £769 / £1,099 (12/24/36mo)
   // on Quotes & Orders — after discounts, manual overrides and manual payments.
   // Shaped up when the customer picks a richer claim limit / labour rate / lower
   // excess, halved for motorbikes. Exceptions: Management, and an evidenced
@@ -5809,7 +5809,7 @@ Questions? Call 0330 229 5040`;
                             ) : priceMatchEvidenced && isUnderAbsoluteMin(displayedTotalPrice) ? (
                               <span>— allowed: evidenced price match on file.</span>
                             ) : (
-                              <span className="font-normal">— this figure moves when you change term, claim limit, excess or labour rate: the base floor is £399 (1 year), £699 (2 year), £999 (3 year), then shaped up for richer cover. Whatever discount is applied it cannot go below the figure shown; price match with evidence only.</span>
+                              <span className="font-normal">— this figure moves when you change term, claim limit, excess or labour rate: the base floor is £399 (1 year), £769 (2 year), £1,099 (3 year), then shaped up for richer cover. Whatever discount is applied it cannot go below the figure shown; price match with evidence only.</span>
                             )}
                           </div>
 

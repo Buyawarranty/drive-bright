@@ -6,7 +6,7 @@
  *   - this net floor caps the *final payable* amount (after agent discounts,
  *     manual price overrides and manual/external payment confirmation)
  *
- * Agreed values (11/08/2026): £399 / £699 / £999 for 12 / 24 / 36 months at the
+ * Agreed values (Sep 2026): £399 / £769 / £1,099 for 12 / 24 / 36 months at the
  * cheapest combo (£1,000 claim / £50 labour / £500 excess),
  * halved for motorbikes, and shaped up when the customer picks a richer
  * claim limit / labour rate / lower excess than that cheapest combo.
@@ -31,8 +31,9 @@ export const GLOBAL_ABSOLUTE_MIN_TOTAL = 399;
 /** Flat net floor by term, before option shaping and motorbike halving. */
 export const NET_FLOOR_BY_PERIOD: Record<PaymentPeriod, number> = {
   '12months': 399,
-  '24months': 699,
-  '36months': 999,
+  // Sep 2026: 24/36-month net floors raised +10% (£699→£769, £999→£1,099).
+  '24months': 769,
+  '36months': 1099,
 };
 
 
@@ -107,7 +108,7 @@ export function clampWebToNetFloor(amount: number, params: NetFloorParams): numb
 /**
  * WEBSITE (Step 3 / Step 4 / Bumper–Stripe handoff) sell floor.
  *
- * Agreed 18/08/2026: the public journey uses the SAME £399 / £699 / £999
+ * Agreed 18/08/2026: the public journey uses the SAME £399 / £769 / £1,099
  * shaped floor as Quotes & Orders — no "minus the web gap" version — so the
  * site can never publish or sell a warranty below the minimum sellable price
  * for that cover. Promo codes (SAVE25, cart recovery, pay-in-full 10%) are

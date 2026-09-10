@@ -366,7 +366,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     quotedTotal > 0 && Number.isFinite(enteredAmount) && enteredAmount < quotedTotal
       ? ((quotedTotal - enteredAmount) / quotedTotal) * 100
       : 0;
-  // NET payable floor — £349 / £699 / £999 (12/24/36mo), shaped by the options
+  // NET payable floor — £349 / £769 / £1,099 (12/24/36mo), shaped by the options
   // chosen and halved for motorbikes. Confirming a manual payment used to have no
   // floor at all, so this closes the biggest under-floor leak. Management may go
   // below (logged to price_override_audit).
@@ -413,7 +413,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   // The Confirm payment price block is OFF by default (Lead Allocation → Confirm
   // payment price block). While it is off, EVERY sales agent can confirm an
   // external payment at any amount — nothing here stops them. Only when
-  // management switch it on does the absolute net floor (£349/£699/£999, half for
+  // management switch it on does the absolute net floor (£349/£769/£1,099, half for
   // motorbikes) block a confirmation; discounts above 30% are always allowed,
   // flagged and logged.
   const discountBlocked =
@@ -784,7 +784,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     }
 
     // Hard stop: never create a policy more than 30% below the quoted price, and
-    // never below the absolute net floor (£349/£699/£999 shaped), unless
+    // never below the absolute net floor (£349/£769/£1,099 shaped), unless
     // Management are the ones confirming it.
     if (discountBlocked) {
       toast({
@@ -1711,7 +1711,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           ) : (
                             <span className="block font-normal">
                               This figure moves with the term, claim limit, excess and labour rate: base £399 (1 year),
-                              £699 (2 year), £999 (3 year), shaped up for richer cover and halved for motorbikes.
+                              £769 (2 year), £1,099 (3 year), shaped up for richer cover and halved for motorbikes.
                               Whatever discount is applied, nothing can be confirmed below the figure shown.
                             </span>
                           )}

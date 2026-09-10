@@ -41,21 +41,22 @@ export const BASE_PRICING_MATRIX = {
     500: { 1000: 177, 2000: 200, 3000: 247 }
   },
   // +20% uplift applied (Jul 2026) to 2yr and 3yr only — 12 months unchanged.
+  // +10% uplift applied (Sep 2026) to 2yr and 3yr only (12-instalment plans) — 12 months unchanged.
   '24months': {
-    0: { 1000: 1071, 2000: 1119, 3000: 1226 },
-    50: { 1000: 988, 2000: 1047, 3000: 1142 },
-    100: { 1000: 879, 2000: 939, 3000: 1047 },
-    150: { 1000: 831, 2000: 879, 3000: 988 },
-    250: { 1000: 650, 2000: 718, 3000: 829 },
-    500: { 1000: 415, 2000: 469, 3000: 562 }
+    0: { 1000: 1179, 2000: 1231, 3000: 1349 },
+    50: { 1000: 1087, 2000: 1152, 3000: 1257 },
+    100: { 1000: 967, 2000: 1033, 3000: 1152 },
+    150: { 1000: 915, 2000: 967, 3000: 1087 },
+    250: { 1000: 715, 2000: 790, 3000: 912 },
+    500: { 1000: 457, 2000: 516, 3000: 619 }
   },
   '36months': {
-    0: { 1000: 1609, 2000: 1669, 3000: 1789 },
-    50: { 1000: 1490, 2000: 1549, 3000: 1669 },
-    100: { 1000: 1309, 2000: 1407, 3000: 1527 },
-    150: { 1000: 1250, 2000: 1309, 3000: 1429 },
-    250: { 1000: 1010, 2000: 1052, 3000: 1167 },
-    500: { 1000: 802, 2000: 844, 3000: 960 }
+    0: { 1000: 1770, 2000: 1836, 3000: 1968 },
+    50: { 1000: 1639, 2000: 1704, 3000: 1836 },
+    100: { 1000: 1440, 2000: 1548, 3000: 1680 },
+    150: { 1000: 1375, 2000: 1440, 3000: 1572 },
+    250: { 1000: 1111, 2000: 1158, 3000: 1284 },
+    500: { 1000: 883, 2000: 929, 3000: 1056 }
   }
 } as const;
 
@@ -284,8 +285,9 @@ export type ClaimLimit = keyof typeof BASE_PRICING_MATRIX['12months'][0];
  */
 export const MIN_BASE_PRICE_BY_PERIOD: Record<PaymentPeriod, number> = {
   '12months': 294,
-  '24months': 672,
-  '36months': 1008,
+  // 24/36 raised +10% (Sep 2026) alongside the 12-instalment price increase.
+  '24months': 740,
+  '36months': 1109,
 };
 
 // Minimum gap between the £250-excess tier and the £500-excess tier so £500 stays cheaper.
@@ -514,8 +516,9 @@ export const ABSOLUTE_MIN_GRID_TOTAL_12M = 399;
 /** Flat term multipliers for the absolute minimum. */
 const ABSOLUTE_MIN_GRID_BY_PERIOD: Record<PaymentPeriod, number> = {
   '12months': 399,
-  '24months': 699,
-  '36months': 999,
+  // Sep 2026: 24/36-month absolute minimums raised +10% (£699→£769, £999→£1,099).
+  '24months': 769,
+  '36months': 1099,
 };
 
 /**

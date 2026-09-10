@@ -18,12 +18,12 @@ export const MANUAL_REFERRAL_MESSAGE =
 
 /**
  * Term scaling for a one-year minimum price. Mirrors the sellable minimums
- * (£399 / £699 / £999) so a 12-month floor lifts 24 and 36 months in proportion.
+ * (£399 / £769 / £1,099) so a 12-month floor lifts 24 and 36 months in proportion.
  */
 const TERM_FLOOR_RATIO: Record<string, number> = {
   '12months': 1,
-  '24months': 699 / 399,
-  '36months': 999 / 399,
+  '24months': 769 / 399,
+  '36months': 1099 / 399,
 };
 
 let VEHICLE_RULES: VehiclePricingRule[] = [];
