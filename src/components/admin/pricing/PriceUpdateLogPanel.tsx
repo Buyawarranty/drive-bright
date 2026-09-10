@@ -238,6 +238,13 @@ export default function PriceUpdateLogPanel({
           live again — the website price follows at its published gap. Sales already taken keep the
           price they were sold at.
         </p>
+        <p className="text-xs text-muted-foreground">
+          <strong>How to read the tags:</strong> “±% price vs previous” is just how much the price
+          moved against the model saved before it. <strong>“Best performer so far”</strong> names
+          the single model that made the most sales per day while live (at least 2 days and 3 sales,
+          so one lucky afternoon can't win), and every other row shows its sales-per-day gap to that
+          best one.
+        </p>
       </CardHeader>
       <CardContent className="space-y-2">
         {rows.length === 0 && (
