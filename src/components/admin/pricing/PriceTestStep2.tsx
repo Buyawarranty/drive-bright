@@ -395,6 +395,20 @@ export default function PriceTestStep2({
     const monthly = Math.ceil(total / 12);
     const payInFullTotal = Math.max(minSellable, Math.round(total * payInFullFactor));
 
+    /**
+     * LONGER PAYMENT PLANS (Quotes & Orders only) — the 1-YEAR PRICE IS THE BASE.
+     * 24 instalments = 2.22× and 36 instalments = 3.51× the one-year price for the
+     * same excess / claim limit / labour rate. Any discount applied above is kept
+     * in proportion, so the sandbox mirrors the live agent screens exactly.
+     */
+    const oneYearAnchor = Math.max(Math.round(annual), minimumFor(12));
+    const undiscountedTotal = Math.max(Math.round(baseTermTotal + excessAdjFor(term.period, baseTermTotal) + addOnTotal), minSellable);
+    const discountRatio = undiscountedTotal > 0 ? total / undiscountedTotal : 1;
+    const longPlanCount = term.months === 24 ? 24 : term.months === 36 ? 36 : null;
+    const longPlanMultiple = longPlanCount === 24 ? 2.22 : longPlanCount === 36 ? 3.51 : 1;
+    const longPlanTotal = longPlanCount ? Math.round(oneYearAnchor * longPlanMultiple * discountRatio) : null;
+    const longPlanMonthly = longPlanCount && longPlanTotal ? Math.ceil(longPlanTotal / longPlanCount) : null;
+
     const days = term.months * 30.42 + freeMonths * 30.42;
     return {
       annualBase,
@@ -410,6 +424,11 @@ export default function PriceTestStep2({
       payInFullTotal,
       payInFullSaving: total - payInFullTotal,
       discountAmount,
+      oneYearAnchor,
+      longPlanCount,
+      longPlanMultiple,
+      longPlanTotal,
+      longPlanMonthly,
       perDay: total / days,
       payInFullPerDay: payInFullTotal / days,
       days: Math.round(days),
