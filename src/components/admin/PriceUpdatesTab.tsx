@@ -1106,6 +1106,9 @@ export default function PriceUpdatesTab() {
               <TabsTrigger value="excluded" className="rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground">
                 <Ban className="h-4 w-4 mr-2" /> Excluded vehicles
               </TabsTrigger>
+              <TabsTrigger value="longplans" className="rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground">
+                <Percent className="h-4 w-4 mr-2" /> Longer plans (24 &amp; 36)
+              </TabsTrigger>
               <TabsTrigger value="engine" className="rounded-md border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:border-foreground">
                 <FlaskConical className="h-4 w-4 mr-2" /> Pricing engine (draft)
               </TabsTrigger>
@@ -1115,6 +1118,9 @@ export default function PriceUpdatesTab() {
             </TabsContent>
             <TabsContent value="excluded" className="mt-4">
               <ExcludedVehiclesPanel />
+            </TabsContent>
+            <TabsContent value="longplans" className="mt-4">
+              <LongInstalmentPlanPanel />
             </TabsContent>
             <TabsContent value="engine" className="mt-4">
               <PricingEngineDraftPanel />
