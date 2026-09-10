@@ -759,7 +759,7 @@ export default function PriceTestStep2({
                 ))}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                {term.perks.join(' · ')} · always paid over 12 instalments
+                {term.perks.join(' · ')} · 12 instalments, or a longer Bumper plan on Quotes &amp; Orders
               </p>
             </div>
 
