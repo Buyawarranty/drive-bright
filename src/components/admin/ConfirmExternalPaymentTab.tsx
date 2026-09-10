@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, isLongInstalmentPlan, twelvePlanSaving, SUBSCRIPTION_PAY_HINT, type InstalmentCount } from '@/lib/instalmentOptions';
+import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, type InstalmentCount } from '@/lib/instalmentOptions';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 import { getNetPayableFloor } from '@/lib/pricing/netFloor';
@@ -355,40 +355,13 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     }),
   }) : { totalPrice: 0, monthlyPrice: 0 };
 
-  // 1-year annual price for the SAME vehicle/options — the base that the
-  // instalment-plan multipliers apply to (Sep 2026 pricing logic):
-  //   1yr/12: 1.00× · 2yr/12: 1.85× · 2yr/24: 2.22× · 3yr/12: 2.70× · 3yr/36: 3.51×
-  const annualPrice12m = vehicleData ? calculateAdminQuoteWarrantyPrice({
-    paymentPeriod: '12months',
-    voluntaryExcess: excessAmount,
-    claimLimit: effectiveClaimLimit,
-    labourRate: labourRate,
-    boostEnabled: boostAddon,
-    addOnPrice: premiumSurcharge,
-    make: vehicleData?.make,
-    fuelType: vehicleData?.fuelType,
-    vehicleFactor: getVehiclePriceFactor({
-      year: vehicleData?.year,
-      mileage: mileage,
-      fuelType: vehicleData?.fuelType,
-      vehicleType: (vehicleData as any)?.vehicleType,
-    }),
-  }) : { totalPrice: 0, monthlyPrice: 0 };
-  const annualTotalPrice = Math.ceil(Number(annualPrice12m.monthlyPrice || 0) * 12)
-    || Number(annualPrice12m.totalPrice || 0);
-  // Total for the selected term + instalment plan.
-  const instalmentTotalPrice = annualTotalPrice > 0
-    ? instalmentPlanTotal(annualTotalPrice, paymentType, instalmentCount)
-    : currentPrice.totalPrice;
-
-
   // ── Hard 30% discount ceiling ───────────────────────────────────────────────
   // Confirming an outside payment must never be a back door around the discount
   // cap enforced on Get a quote. Anything more than 30% below the quoted grid
   // price is blocked unless the person confirming is Management.
   const DISCOUNT_CEILING_PCT = 30;
   const enteredAmount = parseFloat(paymentAmount);
-  const quotedTotal = instalmentTotalPrice;
+  const quotedTotal = currentPrice.totalPrice;
   const discountPct =
     quotedTotal > 0 && Number.isFinite(enteredAmount) && enteredAmount < quotedTotal
       ? ((quotedTotal - enteredAmount) / quotedTotal) * 100
@@ -405,16 +378,16 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     isMotorbike: /motor\s*(bike|cycle)|\bbike\b/i.test(String((vehicleData as any)?.vehicleType || '')),
     surface: 'admin',
   });
-  // Lowest amount the 30% ceiling allows against the quoted grid price.
+  // Kept for reference/display only — no longer used to block a confirmation.
   const ceilingMinAmount = quotedTotal > 0
     ? Math.round(quotedTotal * (1 - DISCOUNT_CEILING_PCT / 100) * 100) / 100
     : 0;
+  void ceilingMinAmount;
 
+  // Sales staff may confirm ANY amount down to the absolute net floor — the 30%
+  // ceiling no longer blocks a confirmation here, it only flags the discount.
+  const minAllowedAmount = netFloorAmount;
   const overDiscountCeiling = discountPct > DISCOUNT_CEILING_PCT + 0.01;
-  // Sales staff cannot go past EITHER gate: the absolute net floor, or 30% off
-  // the quoted price. Anything lower needs management, an approved
-  // authorisation, or an evidenced price match.
-  const minAllowedAmount = Math.max(netFloorAmount, ceilingMinAmount);
 
   const underNetFloor = Number.isFinite(enteredAmount) && enteredAmount > 0 && enteredAmount < netFloorAmount - 0.01;
   // A manager-approved authorisation for this vehicle lifts the block up to the
@@ -437,17 +410,14 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     pmFloor !== null &&
     enteredAmount >= pmFloor - 0.01;
   const priceMatchApplied = priceMatchReady && !isManagementRole;
-  // With the Confirm payment price block ON (Lead Allocation → Confirm payment
-  // price block), a sales agent is blocked BOTH below the absolute net floor
-  // (£399/£699/£999, half for motorbikes) AND above the 30% discount ceiling.
-  // Management, a manager-approved authorisation, or an evidenced price match
-  // lift the block.
+  // The Confirm payment price block is OFF by default (Lead Allocation → Confirm
+  // payment price block). While it is off, EVERY sales agent can confirm an
+  // external payment at any amount — nothing here stops them. Only when
+  // management switch it on does the absolute net floor (£349/£699/£999, half for
+  // motorbikes) block a confirmation; discounts above 30% are always allowed,
+  // flagged and logged.
   const discountBlocked =
-    priceBlockEnabled &&
-    (underNetFloor || overDiscountCeiling) &&
-    !isManagementRole &&
-    !hasApprovedAuth &&
-    !priceMatchReady;
+    priceBlockEnabled && underNetFloor && !isManagementRole && !hasApprovedAuth && !priceMatchReady;
 
 
 
@@ -680,7 +650,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     setEditableCustomerPhone(customerPhone);
     setEditableMileage(mileage.replace(/,/g, ''));
     setEditableRegNumber(vehicleData.regNumber);
-    setPaymentAmount(instalmentTotalPrice.toString());
+    setPaymentAmount(currentPrice.totalPrice.toString());
     setExternalPaymentStep('details');
     setShowConfirmDialog(true);
   };
@@ -753,10 +723,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
     if (discountBlocked) {
       toast({
-        title: underNetFloor ? `Below the minimum sellable price` : `Authorisation required`,
-        description: underNetFloor
-          ? `£${enteredAmount.toFixed(2)} is under the £${netFloorAmount.toFixed(2)} floor for this cover. Contact management to authorise anything lower.`
-          : `${discountPct.toFixed(1)}% off is over the ${DISCOUNT_CEILING_PCT}% limit. Lowest you can confirm without authorisation is £${minAllowedAmount.toFixed(2)}.`,
+        title: `Below the minimum sellable price`,
+        description: `£${enteredAmount.toFixed(2)} is under the £${netFloorAmount.toFixed(2)} floor for this cover. Contact management to authorise anything lower.`,
         variant: "destructive",
       });
       return;
@@ -995,7 +963,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       // Part payment: open a plan + log the deposit so the balance is chased
       if (partPaymentMode && data?.customerId) {
         try {
-          const totalDue = parseFloat(paymentAmount) || instalmentTotalPrice;
+          const totalDue = parseFloat(paymentAmount) || currentPrice.totalPrice;
           const depositValue = parseFloat(depositAmountInput) || 0;
           await supabase.from('customer_part_payment_plans').upsert(
             {
@@ -1287,17 +1255,9 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                       {getInstalmentOptions(paymentType).length > 1 && (
                         <div className="space-y-1.5 md:col-span-2">
                           <Label className="text-xs font-semibold text-slate-500">Instalment plan</Label>
-                          {twelvePlanSaving(annualTotalPrice, paymentType) > 0 && (
-                            <div className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-[12px] font-semibold text-emerald-900">
-                              Save £{twelvePlanSaving(annualTotalPrice, paymentType)} by paying over 12 instalments
-                            </div>
-                          )}
                           <div className="grid grid-cols-2 gap-2">
-                             {getInstalmentOptions(paymentType).map((count) => {
+                            {getInstalmentOptions(paymentType).map((count) => {
                               const comingSoon = isInstalmentComingSoon(count);
-                              const planTotal = annualTotalPrice > 0
-                                ? instalmentPlanTotal(annualTotalPrice, paymentType, count)
-                                : instalmentTotalPrice;
                               return (
                                 <button
                                   key={count}
@@ -1326,19 +1286,14 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                                   <div className={cn("text-xs font-medium", comingSoon ? "text-slate-500" : "text-slate-900")}>
                                     {comingSoon
                                       ? "Not active yet"
-                                      : `£${instalmentAmount(planTotal, count)}/mo · £${planTotal} total`}
+                                      : `£${instalmentAmount(currentPrice.totalPrice, count)}/mo · same £${currentPrice.totalPrice} total`}
                                   </div>
                                 </button>
                               );
                             })}
                           </div>
-                          {isLongInstalmentPlan(instalmentCount) && (
-                            <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-900">
-                              💡 {SUBSCRIPTION_PAY_HINT}
-                            </div>
-                          )}
                           <p className="text-[11px] text-slate-500">
-                            Total price depends on the plan: longer plans cost more overall but lower the monthly payment.
+                            Same total price — this only changes how many monthly payments it is spread over.
                           </p>
                         </div>
                       )}
@@ -1436,11 +1391,11 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                     <div className="pt-4 border-t border-slate-800">
                       <div className="flex justify-between items-end">
                         <span className="text-slate-400 text-sm">Total Due</span>
-                        <span className="text-3xl font-bold">£{instalmentTotalPrice}</span>
+                        <span className="text-3xl font-bold">£{currentPrice.totalPrice}</span>
                       </div>
-                      {instalmentTotalPrice > 0 && (
+                      {currentPrice.monthlyPrice > 0 && (
                         <p className="text-xs text-slate-500 text-right mt-1">
-                          £{instalmentAmount(instalmentTotalPrice, instalmentCount)}/month
+                          £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(currentPrice.totalPrice, instalmentCount)}/month
                           {' '}× {instalmentCount} instalments
                         </p>
                       )}
@@ -1712,7 +1667,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           type="number"
                           value={paymentAmount}
                           onChange={(e) => setPaymentAmount(e.target.value)}
-                          placeholder={instalmentTotalPrice.toString()}
+                          placeholder={currentPrice.totalPrice.toString()}
                           required
                           aria-required="true"
                           aria-invalid={!paymentAmount || discountBlocked}
@@ -1726,8 +1681,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                             Required — enter the amount actually taken.
                           </p>
                         )}
-                        {paymentAmount && Math.abs(parseFloat(paymentAmount) - instalmentTotalPrice) > 1 && (
-                          <p className="text-xs text-destructive">⚠️ Differs from quoted price (£{instalmentTotalPrice})</p>
+                        {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
+                          <p className="text-xs text-destructive">⚠️ Differs from quoted price (£{currentPrice.totalPrice})</p>
                         )}
 
 
@@ -1768,19 +1723,16 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
                         {discountBlocked && (
                           <p className="text-xs font-semibold text-destructive">
-                            {underNetFloor
-                              ? `Blocked — £${netFloorAmount.toFixed(2)} is the minimum sellable price for this cover (${paymentType.replace('months', ' month')} term). Contact management to authorise anything lower.`
-                              : `Blocked — ${discountPct.toFixed(1)}% off is over the ${DISCOUNT_CEILING_PCT}% limit. Lowest you can confirm without management authorisation is £${minAllowedAmount.toFixed(2)}.`}
+                            {`Blocked — £${netFloorAmount.toFixed(2)} is the minimum sellable price for this cover (${paymentType.replace('months', ' month')} term). Contact management to authorise anything lower.`}
                           </p>
                         )}
 
                         {!discountBlocked && overDiscountCeiling && !isManagementRole && (
                           <p className="text-xs font-semibold text-amber-700">
-                            {discountPct.toFixed(1)}% off — approved above the {DISCOUNT_CEILING_PCT}% limit and recorded
-                            against your name.
+                            {discountPct.toFixed(1)}% off — above the {DISCOUNT_CEILING_PCT}% guideline. You can still
+                            confirm it; the discount is recorded against your name for management review.
                           </p>
                         )}
-
 
 
 
@@ -2195,7 +2147,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           <div className="space-y-1.5">
                             <Label className="text-xs font-semibold text-amber-900">Outstanding balance</Label>
                             <div className="h-10 flex items-center px-3 rounded-md bg-white border border-amber-300 font-semibold text-amber-900">
-                              £{Math.max(0, (parseFloat(paymentAmount) || instalmentTotalPrice) - (parseFloat(depositAmountInput) || 0)).toFixed(2)}
+                              £{Math.max(0, (parseFloat(paymentAmount) || currentPrice.totalPrice) - (parseFloat(depositAmountInput) || 0)).toFixed(2)}
                             </div>
                           </div>
                         </div>
@@ -2274,7 +2226,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                             <button
                               type="button"
                               onClick={() => {
-                                const base = parseFloat(paymentAmount) || instalmentTotalPrice;
+                                const base = parseFloat(paymentAmount) || currentPrice.totalPrice;
                                 const discounted = Math.round(base * 0.9 * 100) / 100;
                                 if (!isManagementRole && quotedTotal > 0 && discounted < minAllowedAmount) {
                                   toast({
@@ -2304,10 +2256,10 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         ) : (
                           <button
                             type="button"
-                            onClick={() => { setPaymentAmount(instalmentTotalPrice.toString()); setIsEditingPrice(false); }}
+                            onClick={() => { setPaymentAmount(currentPrice.totalPrice.toString()); setIsEditingPrice(false); }}
                             className="text-xs text-slate-400 hover:text-slate-200"
                           >
-                            Reset to £{instalmentTotalPrice}
+                            Reset to £{currentPrice.totalPrice}
                           </button>
                         )}
                       </div>
@@ -2326,20 +2278,20 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                               className="h-10 text-2xl font-bold bg-transparent border-0 text-white p-0 focus-visible:ring-0"
                             />
                           </div>
-                          {paymentAmount && Math.abs(parseFloat(paymentAmount) - instalmentTotalPrice) > 1 && (
+                          {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
                             <p className="text-[11px] text-amber-300">
-                              Manual override — quoted price is £{instalmentTotalPrice}
+                              Manual override — quoted price is £{currentPrice.totalPrice}
                             </p>
                           )}
                         </div>
                       ) : (
                         <div className="flex justify-between items-end">
                           <span className="text-xs text-slate-500">
-                            {paymentAmount && Math.abs(parseFloat(paymentAmount) - instalmentTotalPrice) > 1
-                              ? `Overridden (quoted £${instalmentTotalPrice})`
+                            {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1
+                              ? `Overridden (quoted £${currentPrice.totalPrice})`
                               : 'Matches quoted price'}
                           </span>
-                          <span className="text-3xl font-bold">£{paymentAmount || instalmentTotalPrice}</span>
+                          <span className="text-3xl font-bold">£{paymentAmount || currentPrice.totalPrice}</span>
                         </div>
                       )}
                     </div>
