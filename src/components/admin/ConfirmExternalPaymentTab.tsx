@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
+import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, oneYearRatio, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 import { getNetPayableFloor } from '@/lib/pricing/netFloor';
