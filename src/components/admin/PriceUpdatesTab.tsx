@@ -283,7 +283,7 @@ export default function PriceUpdatesTab() {
     setDiscountPct(
       Number(v.step3_discount_pct) > 0 ? Number(v.step3_discount_pct) : 10
     );
-    setMatrix(cloneMatrix(v.admin_matrix));
+    setMatrix(roundMatrixWhole(v.admin_matrix));
   }
 
   /** History: version opened in the quick-summary dialog. */
@@ -373,7 +373,7 @@ export default function PriceUpdatesTab() {
     try {
       const v = await createVersion(
         `Test pricing ${new Date().toLocaleDateString('en-GB')}`,
-        liveVersion ? cloneMatrix(liveVersion.admin_matrix) : buildCodeAdminMatrix(),
+        roundMatrixWhole(liveVersion ? liveVersion.admin_matrix : buildCodeAdminMatrix()),
         liveVersion ? Number(liveVersion.step3_discount_pct) : 10,
         ''
       );
@@ -497,7 +497,7 @@ export default function PriceUpdatesTab() {
       await saveVersion(selectedId, {
         label,
         notes,
-        admin_matrix: matrix,
+        admin_matrix: roundMatrixWhole(matrix),
         step3_discount_pct: discountPct,
         claim_limit_factors: currentClaimLimitFactors(),
         labour_rate_factors: currentLabourRateFactors(),
@@ -538,6 +538,7 @@ export default function PriceUpdatesTab() {
     }
     setBusy(true);
     try {
+      modelMatrix = roundMatrixWhole(modelMatrix);
       const draftLabel = opts?.draftLabel || `Vehicle risk pricing model ${new Date().toLocaleString('en-GB')}`;
       const v = await createVersion(
         draftLabel,
