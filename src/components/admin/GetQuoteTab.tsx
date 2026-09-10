@@ -6945,11 +6945,20 @@ Questions? Call 0330 229 5040`;
                       {/* 4 — Cover summary */}
                       <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
                         <div className="text-[11px] font-bold uppercase tracking-wide text-slate-500">This quote</div>
-                        <div className="mt-1 text-2xl font-extrabold leading-none text-slate-800">£{gridTotal}</div>
+                        <div className="mt-1 text-2xl font-extrabold leading-none text-slate-800">
+                          £{instalmentPlanTotal(gridTotal, instalmentCount)}
+                        </div>
                         <div className="mt-1.5 text-[11px] text-slate-600">
                           Claim £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} · Labour £{labourRate}/hr
                         </div>
-                        <div className="text-[11px] text-slate-500">Over {durationMonths} months</div>
+                        <div className="text-[11px] text-slate-500">
+                          Over {durationMonths} months · {instalmentCount} instalments
+                        </div>
+                        {instalmentCount !== 12 && (
+                          <div className="mt-1 text-[11px] font-semibold text-amber-700">
+                            +£{instalmentPlanTotal(gridTotal, instalmentCount) - gridTotal} vs 12-instalment plan
+                          </div>
+                        )}
                         {priceMatchMode && priceMatchCompetitorPrice && (
                           <div className="mt-1 text-[11px] font-semibold text-sky-700">
                             Matched vs {priceMatchCompany === 'Other' ? (priceMatchOtherName || 'competitor') : (priceMatchCompany || 'competitor')} £{Math.round(priceMatchCompetitorPrice)}
