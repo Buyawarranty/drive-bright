@@ -36,6 +36,7 @@ import {
   getJourneyAddOns,
   periodForMonths,
 } from '@/lib/pricing/journeyOptions';
+import { getLongPlanMultiples } from '@/lib/instalmentOptions';
 
 /** Per-day figures are shown in whole pence (or whole pounds) — never pounds-with-pence. */
 const perDayLabel = (amount: number) =>
