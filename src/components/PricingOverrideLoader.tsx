@@ -77,7 +77,7 @@ export default function PricingOverrideLoader() {
           .eq('config_key', LONG_PLAN_MULTIPLES_CONFIG_KEY)
           .maybeSingle();
         if (cancelled || error || !data?.config_value) return;
-        const raw = data.config_value as Record<string, unknown>;
+        const raw = (data.config_value ?? {}) as unknown as Record<string, unknown>;
         setLongPlanMultiples({ 24: Number(raw['24']), 36: Number(raw['36']) });
       } catch {
         // Ignore — the code defaults (2.22 / 3.51) stay in force.
