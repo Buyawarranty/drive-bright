@@ -71,6 +71,7 @@ export default function PriceVersionPerformancePanel({ versions }: { versions: P
   const [carts, setCarts] = useState<CartRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [minDays, setMinDays] = useState<number>(7);
 
   // Only versions that actually went live can own a trading window.
   const timeline = useMemo(() => {
