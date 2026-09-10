@@ -5133,6 +5133,11 @@ Questions? Call 0330 229 5040`;
                               <div className={cn("text-xs font-medium", comingSoon ? "text-slate-500" : "text-black")}>
                                 {comingSoon ? "Not active yet" : `£${amount}/mo · £${instalmentPlanTotal(displayedTotalPrice, count)} total`}
                               </div>
+                              {!comingSoon && count !== 12 && (
+                                <div className="text-[11px] font-semibold text-amber-700">
+                                  +£{instalmentPlanTotal(displayedTotalPrice, count) - Math.round(Number(displayedTotalPrice) || 0)} vs 12-instalment plan
+                                </div>
+                              )}
                             </button>
                           );
                         })}
