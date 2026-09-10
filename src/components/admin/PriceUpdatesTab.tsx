@@ -154,6 +154,25 @@ function cloneMatrix(m: PricingMatrixShape): PricingMatrixShape {
 }
 
 /**
+ * WHOLE POUNDS ONLY. Every price that is edited, saved, pushed live or loaded
+ * back into the editor is rounded to the nearest whole pound — a pricing update
+ * must never introduce pence anywhere (grid, drafts, live version, website).
+ */
+function roundMatrixWhole(m: PricingMatrixShape): PricingMatrixShape {
+  const out = cloneMatrix(m || ({} as PricingMatrixShape));
+  for (const p of Object.keys(out || {})) {
+    for (const e of Object.keys(out[p] || {})) {
+      for (const l of Object.keys(out[p][e] || {})) {
+        const n = Number(out[p][e][l]);
+        out[p][e][l] = Number.isFinite(n) ? Math.round(n) : 0;
+      }
+    }
+  }
+  return out;
+}
+
+
+/**
  * Pre-publish safety net. A live grid must contain EVERY period × excess ×
  * claim-limit cell that Quotes & Orders and website Step 3 ask for — a missing
  * or zero cell is what breaks those pages after a push. Missing cells are
@@ -264,7 +283,7 @@ export default function PriceUpdatesTab() {
     setDiscountPct(
       Number(v.step3_discount_pct) > 0 ? Number(v.step3_discount_pct) : 10
     );
-    setMatrix(cloneMatrix(v.admin_matrix));
+    setMatrix(roundMatrixWhole(v.admin_matrix));
   }
 
   /** History: version opened in the quick-summary dialog. */
@@ -354,7 +373,7 @@ export default function PriceUpdatesTab() {
     try {
       const v = await createVersion(
         `Test pricing ${new Date().toLocaleDateString('en-GB')}`,
-        liveVersion ? cloneMatrix(liveVersion.admin_matrix) : buildCodeAdminMatrix(),
+        roundMatrixWhole(liveVersion ? liveVersion.admin_matrix : buildCodeAdminMatrix()),
         liveVersion ? Number(liveVersion.step3_discount_pct) : 10,
         ''
       );
@@ -478,7 +497,7 @@ export default function PriceUpdatesTab() {
       await saveVersion(selectedId, {
         label,
         notes,
-        admin_matrix: matrix,
+        admin_matrix: roundMatrixWhole(matrix),
         step3_discount_pct: discountPct,
         claim_limit_factors: currentClaimLimitFactors(),
         labour_rate_factors: currentLabourRateFactors(),
@@ -519,6 +538,7 @@ export default function PriceUpdatesTab() {
     }
     setBusy(true);
     try {
+      modelMatrix = roundMatrixWhole(modelMatrix);
       const draftLabel = opts?.draftLabel || `Vehicle risk pricing model ${new Date().toLocaleString('en-GB')}`;
       const v = await createVersion(
         draftLabel,
