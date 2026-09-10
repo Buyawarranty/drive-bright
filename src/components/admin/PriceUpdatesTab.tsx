@@ -154,6 +154,25 @@ function cloneMatrix(m: PricingMatrixShape): PricingMatrixShape {
 }
 
 /**
+ * WHOLE POUNDS ONLY. Every price that is edited, saved, pushed live or loaded
+ * back into the editor is rounded to the nearest whole pound — a pricing update
+ * must never introduce pence anywhere (grid, drafts, live version, website).
+ */
+function roundMatrixWhole(m: PricingMatrixShape): PricingMatrixShape {
+  const out = cloneMatrix(m || ({} as PricingMatrixShape));
+  for (const p of Object.keys(out || {})) {
+    for (const e of Object.keys(out[p] || {})) {
+      for (const l of Object.keys(out[p][e] || {})) {
+        const n = Number(out[p][e][l]);
+        out[p][e][l] = Number.isFinite(n) ? Math.round(n) : 0;
+      }
+    }
+  }
+  return out;
+}
+
+
+/**
  * Pre-publish safety net. A live grid must contain EVERY period × excess ×
  * claim-limit cell that Quotes & Orders and website Step 3 ask for — a missing
  * or zero cell is what breaks those pages after a push. Missing cells are
