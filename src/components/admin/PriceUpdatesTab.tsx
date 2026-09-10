@@ -63,6 +63,7 @@ import PriceSurfaceBadge from '@/components/admin/pricing/PriceSurfaceBadge';
 import VehicleRiskBandsPanel from '@/components/admin/pricing/VehicleRiskBandsPanel';
 import PriceTestStep2 from '@/components/admin/pricing/PriceTestStep2';
 import SectionPushLiveBar from '@/components/admin/pricing/SectionPushLiveBar';
+import LongInstalmentPlanPanel from '@/components/admin/pricing/LongInstalmentPlanPanel';
 
 
 /** The real Quotes & Orders page, rendered read-only for beta testing before pushing prices live. */
