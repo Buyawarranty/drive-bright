@@ -1552,6 +1552,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     return out;
   }, [mileage, vehicleData, pricingModel, excessAmount, claimLimit, labourRate]);
 
+  /**
+   * LONGER PLAN BASE = the 1-YEAR price. 24 instalments = 2.22× and 36 = 3.51× the
+   * 1-year price for the same excess / claim limit / labour rate, so any Price
+   * Updates push to the 1-year grid re-prices the longer plans automatically.
+   */
+  const longPlanRatio = React.useMemo(
+    () => oneYearRatio(termSavings['12months']?.total, termSavings[paymentType]?.total),
+    [termSavings, paymentType]
+  );
+
 
 
 
