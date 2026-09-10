@@ -5073,7 +5073,7 @@ Questions? Call 0330 229 5040`;
                                 : 12;
                               return (
                                 <div className="text-[11px] font-medium text-black">
-                                  £{instalmentAmount(s.total, plan)}/mo · {plan} instalments
+                                  £{instalmentAmount(s.total, plan, oneYearRatio(termSavings["12months"]?.total, s.total))}/mo · {plan} instalments
                                 </div>
                               );
                             })()}
@@ -5103,7 +5103,7 @@ Questions? Call 0330 229 5040`;
                       <Label className="text-sm font-semibold">Instalment plan</Label>
                       <div className="grid grid-cols-2 gap-2">
                         {getInstalmentOptions(paymentType).map((count) => {
-                          const amount = instalmentAmount(displayedTotalPrice, count);
+                          const amount = instalmentAmount(displayedTotalPrice, count, longPlanRatio);
                           const comingSoon = isInstalmentComingSoon(count);
                           return (
                             <button
@@ -5131,11 +5131,11 @@ Questions? Call 0330 229 5040`;
                                 {count} instalments
                               </div>
                               <div className={cn("text-xs font-medium", comingSoon ? "text-slate-500" : "text-black")}>
-                                {comingSoon ? "Not active yet" : `£${amount}/mo · £${instalmentPlanTotal(displayedTotalPrice, count)} total`}
+                                {comingSoon ? "Not active yet" : `£${amount}/mo · £${instalmentPlanTotal(displayedTotalPrice, count, longPlanRatio)} total`}
                               </div>
                               {!comingSoon && count !== 12 && (
                                 <div className="text-[11px] font-semibold text-amber-700">
-                                  +£{instalmentPlanTotal(displayedTotalPrice, count) - Math.round(Number(displayedTotalPrice) || 0)} vs 12-instalment plan
+                                  +£{instalmentPlanTotal(displayedTotalPrice, count, longPlanRatio) - Math.round(Number(displayedTotalPrice) || 0)} vs 12-instalment plan
                                 </div>
                               )}
                             </button>
@@ -6875,9 +6875,9 @@ Questions? Call 0330 229 5040`;
                       <div className="rounded-lg border border-blue-200 bg-blue-50/60 px-3 py-2.5">
                         <div className="text-[11px] font-bold uppercase tracking-wide text-blue-700">Monthly · Bumper ({instalmentCount})</div>
                         <div className="mt-1 text-2xl font-extrabold leading-none text-blue-800">
-                          £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(monthlyTotal, instalmentCount)}<span className="text-sm font-semibold text-blue-600">/mo</span>
+                          £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(monthlyTotal, instalmentCount, longPlanRatio)}<span className="text-sm font-semibold text-blue-600">/mo</span>
                         </div>
-                        <div className="mt-1.5 text-[11px] text-blue-700">Total £{instalmentPlanTotal(monthlyTotal, instalmentCount)} · {instalmentCount} × £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(monthlyTotal, instalmentCount)}</div>
+                        <div className="mt-1.5 text-[11px] text-blue-700">Total £{instalmentPlanTotal(monthlyTotal, instalmentCount, longPlanRatio)} · {instalmentCount} × £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(monthlyTotal, instalmentCount, longPlanRatio)}</div>
                         {instalmentCount !== 12 && (
                           <div className="mt-1 text-[11px] font-semibold text-amber-700">Must be set up on the Bumper {instalmentCount}-month plan</div>
                         )}
@@ -6946,7 +6946,7 @@ Questions? Call 0330 229 5040`;
                       <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
                         <div className="text-[11px] font-bold uppercase tracking-wide text-slate-500">This quote</div>
                         <div className="mt-1 text-2xl font-extrabold leading-none text-slate-800">
-                          £{instalmentPlanTotal(gridTotal, instalmentCount)}
+                          £{instalmentPlanTotal(gridTotal, instalmentCount, longPlanRatio)}
                         </div>
                         <div className="mt-1.5 text-[11px] text-slate-600">
                           Claim £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} · Labour £{labourRate}/hr
@@ -6956,7 +6956,7 @@ Questions? Call 0330 229 5040`;
                         </div>
                         {instalmentCount !== 12 && (
                           <div className="mt-1 text-[11px] font-semibold text-amber-700">
-                            +£{instalmentPlanTotal(gridTotal, instalmentCount) - gridTotal} vs 12-instalment plan
+                            +£{instalmentPlanTotal(gridTotal, instalmentCount, longPlanRatio) - gridTotal} vs 12-instalment plan
                           </div>
                         )}
                         {priceMatchMode && priceMatchCompetitorPrice && (
