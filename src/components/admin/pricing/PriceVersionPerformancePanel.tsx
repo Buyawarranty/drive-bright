@@ -205,6 +205,60 @@ export default function PriceVersionPerformancePanel({ versions }: { versions: P
     return Object.values(map).sort((a, b) => (a.date < b.date ? -1 : 1));
   }, [sales]);
 
+  /* ---------------------------------------------------------------------
+   * SUSTAINED PERFORMANCE
+   * Only price models that traded for a full run (7+ days by default) can
+   * be judged fairly — a single strong day is noise, not a trend.
+   * ------------------------------------------------------------------- */
+  const sustained = useMemo(
+    () => rows.filter((r) => r.days >= minDays && r.orders > 0),
+    [rows, minDays],
+  );
+
+  const bestSustained = useMemo(() => {
+    const eligible = sustained.filter((r) => r.orders >= 5);
+    if (!eligible.length) return null;
+    return eligible.reduce((a, b) => (b.conversion > a.conversion ? b : a));
+  }, [sustained]);
+
+  const sustainedChart = useMemo(
+    () =>
+      [...sustained].reverse().map((r) => ({
+        name: r.label.length > 18 ? `${r.label.slice(0, 17)}…` : r.label,
+        conversion: Math.round(r.conversion * 100) / 100,
+        salesPerDay: Math.round((r.orders / r.days) * 100) / 100,
+        days: r.days,
+        isBest: bestSustained?.id === r.id,
+      })),
+    [sustained, bestSustained],
+  );
+
+  // Rolling 7-day conversion over the whole history, so a good week is visible
+  // as a sustained lift rather than one spike.
+  const rollingSeries = useMemo(() => {
+    const byDay: Record<string, { orders: number; checkouts: number }> = {};
+    sales.forEach((s) => {
+      const b = (byDay[s.date] ||= { orders: 0, checkouts: 0 });
+      b.orders += 1;
+    });
+    carts.forEach((c) => {
+      const b = (byDay[c.date] ||= { orders: 0, checkouts: 0 });
+      b.checkouts += 1;
+    });
+    const days = Object.keys(byDay).sort();
+    const WINDOW = 7;
+    return days.map((date, i) => {
+      const slice = days.slice(Math.max(0, i - WINDOW + 1), i + 1);
+      const orders = slice.reduce((s, d) => s + byDay[d].orders, 0);
+      const checkouts = slice.reduce((s, d) => s + byDay[d].checkouts, 0);
+      return {
+        date,
+        rollingConversion: checkouts ? Math.round((orders / checkouts) * 1000) / 10 : 0,
+        rollingSalesPerDay: Math.round((orders / slice.length) * 100) / 100,
+      };
+    });
+  }, [sales, carts]);
+
   if (!timeline.length) {
     return (
       <Card>
