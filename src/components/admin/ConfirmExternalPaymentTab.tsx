@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
+import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, oneYearRatio, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 import { getNetPayableFloor } from '@/lib/pricing/netFloor';
@@ -354,6 +354,26 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       vehicleType: (vehicleData as any)?.vehicleType,
     }),
   }) : { totalPrice: 0, monthlyPrice: 0 };
+
+  // LONGER PLAN BASE = the 1-YEAR price. Price the same cover over 12 months so the
+  // 24/36 instalment plans can be set at 2.22× / 3.51× that figure.
+  const oneYearPrice = vehicleData ? calculateAdminQuoteWarrantyPrice({
+    paymentPeriod: '12months',
+    voluntaryExcess: excessAmount,
+    claimLimit: effectiveClaimLimit,
+    labourRate: labourRate,
+    boostEnabled: boostAddon,
+    addOnPrice: getClaimLimitSurcharge(claimLimit, '12months', excessAmount),
+    make: vehicleData?.make,
+    fuelType: vehicleData?.fuelType,
+    vehicleFactor: getVehiclePriceFactor({
+      year: vehicleData?.year,
+      mileage: mileage,
+      fuelType: vehicleData?.fuelType,
+      vehicleType: (vehicleData as any)?.vehicleType,
+    }),
+  }) : { totalPrice: 0, monthlyPrice: 0 };
+  const longPlanRatio = oneYearRatio(oneYearPrice.totalPrice, currentPrice.totalPrice);
 
   // ── Hard 30% discount ceiling ───────────────────────────────────────────────
   // Confirming an outside payment must never be a back door around the discount
@@ -1286,11 +1306,11 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                                   <div className={cn("text-xs font-medium", comingSoon ? "text-slate-500" : "text-slate-900")}>
                                     {comingSoon
                                       ? "Not active yet"
-                                      : `£${instalmentAmount(currentPrice.totalPrice, count)}/mo · £${instalmentPlanTotal(currentPrice.totalPrice, count)} total`}
+                                      : `£${instalmentAmount(currentPrice.totalPrice, count, longPlanRatio)}/mo · £${instalmentPlanTotal(currentPrice.totalPrice, count, longPlanRatio)} total`}
                                   </div>
                                   {!comingSoon && count !== 12 && (
                                     <div className="text-[11px] font-semibold text-amber-700">
-                                      +£{instalmentPlanTotal(currentPrice.totalPrice, count) - Math.round(Number(currentPrice.totalPrice) || 0)} vs 12-instalment plan
+                                      +£{instalmentPlanTotal(currentPrice.totalPrice, count, longPlanRatio) - Math.round(Number(currentPrice.totalPrice) || 0)} vs 12-instalment plan
                                     </div>
                                   )}
                                 </button>
@@ -1403,9 +1423,9 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                       </div>
                       {currentPrice.monthlyPrice > 0 && (
                         <p className="text-xs text-slate-500 text-right mt-1">
-                          £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(currentPrice.totalPrice, instalmentCount)}/month
+                          £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(currentPrice.totalPrice, instalmentCount, longPlanRatio)}/month
                           {' '}× {instalmentCount} instalments
-                          {instalmentCount !== 12 && ` · £${instalmentPlanTotal(currentPrice.totalPrice, instalmentCount)} total on Bumper`}
+                          {instalmentCount !== 12 && ` · £${instalmentPlanTotal(currentPrice.totalPrice, instalmentCount, longPlanRatio)} total on Bumper`}
                         </p>
                       )}
                     </div>

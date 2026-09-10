@@ -6,15 +6,20 @@
 //   2-Year Cover  -> 12 or 24 instalments
 //   3-Year Cover  -> 12 or 36 instalments
 //
-// PRICING (Sep 2026): spreading the payments over 24 or 36 months costs MORE
-// than the 12-instalment plan. The agreed ladder, expressed against the 1-year
-// price, is:
-//   1 year  · 12 instalments = 1.00x
-//   2 years · 12 instalments = 1.65x   ->  24 instalments = 2.22x
-//   3 years · 12 instalments = 2.35x   ->  36 instalments = 3.51x
-// So a longer plan is the term's 12-instalment total multiplied by:
-//   24 instalments = 2.22 / 1.65 = 1.345
-//   36 instalments = 3.51 / 2.35 = 1.494
+// PRICING RULE (locked Sep 2026) — the 1-YEAR PRICE IS THE BASE for longer plans.
+// Spreading payments over 24 or 36 months costs us more, so the plan total is set
+// directly off the 1-year price for the SAME excess / claim limit / labour rate:
+//   24 instalments (2-year cover) = 2.22 x the 1-year price
+//   36 instalments (3-year cover) = 3.51 x the 1-year price
+// The 12-instalment prices come straight from the live pricing matrix and are NOT
+// touched by this rule, so future Price Updates pushes flow through automatically:
+// change the 1-year grid and the longer plans re-price themselves.
+//
+// Implementation note: callers pass the term total they are displaying plus
+// `oneYearRatio` = (undiscounted 1-year total) / (undiscounted term total). That way
+// any discount applied to the term price is carried into the longer plan
+// proportionally, while the anchor stays the 1-year price. With no ratio supplied we
+// fall back to the historic assumption (2-year = 1.65x, 3-year = 2.35x of 1 year).
 // Longer plans can only ever be taken on Bumper (the 24/36-month Bumper plan).
 
 export type InstalmentCount = 12 | 24 | 36;
@@ -29,7 +34,21 @@ export function isInstalmentAllowed(paymentType: string, count: number): boolean
   return getInstalmentOptions(paymentType).includes(count as InstalmentCount);
 }
 
-/** Uplift applied to the 12-instalment total when the payments are spread longer. */
+/** THE RULE: longer-plan total as a multiple of the 1-year price. */
+export const LONG_PLAN_MULTIPLE_OF_ONE_YEAR: Record<InstalmentCount, number> = {
+  12: 1,
+  24: 2.22,
+  36: 3.51,
+};
+
+/** Fallback term ladder used only when the 1-year price is unavailable. */
+const ASSUMED_TERM_MULTIPLE_OF_ONE_YEAR: Record<InstalmentCount, number> = {
+  12: 1,
+  24: 1.65,
+  36: 2.35,
+};
+
+/** Uplift on the 12-instalment total, kept for display fallbacks. */
 export const INSTALMENT_TOTAL_UPLIFT: Record<InstalmentCount, number> = {
   12: 1,
   24: 1.345,
@@ -37,18 +56,40 @@ export const INSTALMENT_TOTAL_UPLIFT: Record<InstalmentCount, number> = {
 };
 
 /**
- * Total payable on the chosen instalment plan. Whole pounds only — no pence.
+ * `oneYearRatio` for a term: undiscounted 1-year total ÷ undiscounted term total.
+ * Returns undefined when either figure is missing, so the caller falls back safely.
  */
-export function instalmentPlanTotal(totalPrice: number, count: InstalmentCount): number {
+export function oneYearRatio(oneYearTotal?: number | null, termTotal?: number | null): number | undefined {
+  const oneYear = Number(oneYearTotal) || 0;
+  const term = Number(termTotal) || 0;
+  if (oneYear <= 0 || term <= 0) return undefined;
+  return oneYear / term;
+}
+
+/** Factor applied to the displayed term total to reach the longer-plan total. */
+export function longPlanFactor(count: InstalmentCount, ratio?: number): number {
+  if (count === 12) return 1;
+  const multiple = LONG_PLAN_MULTIPLE_OF_ONE_YEAR[count] ?? 1;
+  const effectiveRatio =
+    ratio && Number.isFinite(ratio) && ratio > 0
+      ? ratio
+      : 1 / (ASSUMED_TERM_MULTIPLE_OF_ONE_YEAR[count] ?? 1);
+  return multiple * effectiveRatio;
+}
+
+/**
+ * Total payable on the chosen instalment plan. Whole pounds only — no pence.
+ * For 24/36 the figure is anchored to the 1-year price (see rule above).
+ */
+export function instalmentPlanTotal(totalPrice: number, count: InstalmentCount, ratio?: number): number {
   const total = Number(totalPrice) || 0;
   if (total <= 0) return 0;
-  const uplift = INSTALMENT_TOTAL_UPLIFT[count] ?? 1;
-  return Math.round(total * uplift);
+  return Math.round(total * longPlanFactor(count, ratio));
 }
 
 /** Monthly amount for the chosen plan (whole pounds, rounded up). */
-export function instalmentAmount(totalPrice: number, count: InstalmentCount): number {
-  const total = instalmentPlanTotal(totalPrice, count);
+export function instalmentAmount(totalPrice: number, count: InstalmentCount, ratio?: number): number {
+  const total = instalmentPlanTotal(totalPrice, count, ratio);
   if (total <= 0) return 0;
   return Math.ceil(total / count);
 }
