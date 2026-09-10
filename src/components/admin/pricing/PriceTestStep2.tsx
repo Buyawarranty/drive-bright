@@ -395,6 +395,20 @@ export default function PriceTestStep2({
     const monthly = Math.ceil(total / 12);
     const payInFullTotal = Math.max(minSellable, Math.round(total * payInFullFactor));
 
+    /**
+     * LONGER PAYMENT PLANS (Quotes & Orders only) — the 1-YEAR PRICE IS THE BASE.
+     * 24 instalments = 2.22× and 36 instalments = 3.51× the one-year price for the
+     * same excess / claim limit / labour rate. Any discount applied above is kept
+     * in proportion, so the sandbox mirrors the live agent screens exactly.
+     */
+    const oneYearAnchor = Math.max(Math.round(annual), minimumFor(12));
+    const undiscountedTotal = Math.max(Math.round(baseTermTotal + excessAdjFor(term.period, baseTermTotal) + addOnTotal), minSellable);
+    const discountRatio = undiscountedTotal > 0 ? total / undiscountedTotal : 1;
+    const longPlanCount = term.months === 24 ? 24 : term.months === 36 ? 36 : null;
+    const longPlanMultiple = longPlanCount === 24 ? 2.22 : longPlanCount === 36 ? 3.51 : 1;
+    const longPlanTotal = longPlanCount ? Math.round(oneYearAnchor * longPlanMultiple * discountRatio) : null;
+    const longPlanMonthly = longPlanCount && longPlanTotal ? Math.ceil(longPlanTotal / longPlanCount) : null;
+
     const days = term.months * 30.42 + freeMonths * 30.42;
     return {
       annualBase,
@@ -410,6 +424,11 @@ export default function PriceTestStep2({
       payInFullTotal,
       payInFullSaving: total - payInFullTotal,
       discountAmount,
+      oneYearAnchor,
+      longPlanCount,
+      longPlanMultiple,
+      longPlanTotal,
+      longPlanMonthly,
       perDay: total / days,
       payInFullPerDay: payInFullTotal / days,
       days: Math.round(days),
@@ -740,7 +759,7 @@ export default function PriceTestStep2({
                 ))}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                {term.perks.join(' · ')} · always paid over 12 instalments
+                {term.perks.join(' · ')} · 12 instalments, or a longer Bumper plan on Quotes &amp; Orders
               </p>
             </div>
 
@@ -943,6 +962,26 @@ export default function PriceTestStep2({
                 </div>
               ) : null}
 
+              {calc?.longPlanCount ? (
+                <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 p-3">
+                  <div className="text-sm font-semibold text-amber-900">
+                    Longer plan · Bumper ({calc.longPlanCount} instalments)
+                  </div>
+                  <div className="text-2xl font-bold text-amber-900">
+                    {formatGBP(calc.longPlanMonthly as number)}
+                    <span className="text-sm font-normal">/month</span>
+                    <span className="ml-2 text-sm font-semibold">
+                      · {formatGBP(calc.longPlanTotal as number)} total
+                    </span>
+                  </div>
+                  <div className="text-xs text-amber-800">
+                    {calc.longPlanMultiple}× the one-year price ({formatGBP(calc.oneYearAnchor)}) ·{' '}
+                    +{formatGBP((calc.longPlanTotal as number) - calc.total)} vs the 12-instalment plan ·
+                    must be set up on the matching {calc.longPlanCount}-month Bumper plan
+                  </div>
+                </div>
+              ) : null}
+
               <div className="mt-4 border-t pt-3">
                 <div className="flex items-center justify-between text-sm font-semibold">
                   <span>Pay in Full · Stripe (10% off)</span>
@@ -1030,7 +1069,12 @@ export default function PriceTestStep2({
                     </div>
                   ) : null}
                   <div className="pt-1 font-semibold text-foreground">Term total: {formatGBP(calc.total)}</div>
-                  <div>÷ 12 instalments: {formatGBP(calc.monthly)}/month (only 12-payment plans available today)</div>
+                  <div>÷ 12 instalments: {formatGBP(calc.monthly)}/month</div>
+                  {calc.longPlanCount ? (
+                    <div className="text-amber-700">
+                      {calc.longPlanCount}-instalment plan: one-year price {formatGBP(calc.oneYearAnchor)} × {calc.longPlanMultiple} = {formatGBP(calc.longPlanTotal as number)} ÷ {calc.longPlanCount} = {formatGBP(calc.longPlanMonthly as number)}/month (Quotes &amp; Orders only)
+                    </div>
+                  ) : null}
 
 
                 </div>
