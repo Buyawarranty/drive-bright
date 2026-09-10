@@ -79,7 +79,7 @@ export const NEUTRAL_REFERENCE_FACTORS: ReferenceFactors = {
 /**
  * Floors for a stored version (Aug hybrid, Aug 2026, age-based builder, …).
  *
- * The NET sell floor (£349 / £699 / £999 — see `lib/pricing/netFloor.ts`) is a
+ * The NET sell floor (£349 / £769 / £1,099 — see `lib/pricing/netFloor.ts`) is a
  * hard bottom: a version may raise a floor, never lower it. Richer claim limits,
  * labour rates and lower excesses step that bottom up, so a floor-bound vehicle
  * still moves when the options change.
