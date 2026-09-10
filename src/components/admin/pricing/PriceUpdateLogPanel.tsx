@@ -270,6 +270,7 @@ export default function PriceUpdateLogPanel({
                     {move !== null && (
                       <Badge
                         variant="outline"
+                        title="How the average Quotes & Orders price moved compared with the price model saved before this one"
                         className={
                           move > 0
                             ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
@@ -279,8 +280,32 @@ export default function PriceUpdateLogPanel({
                         }
                       >
                         {move > 0 ? '+' : move < 0 ? '−' : ''}
-                        {Math.abs(move)}% {move === 0 ? 'no change' : 'vs previous'}
+                        {Math.abs(move)}% price {move === 0 ? 'no change' : 'vs previous'}
                       </Badge>
+                    )}
+                    {bestId === v.id && (
+                      <Badge className="gap-1 bg-emerald-600 hover:bg-emerald-600">
+                        Best performer so far
+                      </Badge>
+                    )}
+                    {bestId && bestId !== v.id && statsById[v.id] && statsById[bestId] && statsById[bestId].salesPerDay > 0 && (
+                      (() => {
+                        const gap = Math.round(((statsById[v.id].salesPerDay - statsById[bestId].salesPerDay) / statsById[bestId].salesPerDay) * 100);
+                        return (
+                          <Badge
+                            variant="outline"
+                            title={`This model made ${statsById[v.id].salesPerDay.toFixed(1)} sales/day while live. The best performer (${rows.find(r => r.id === bestId)?.label || 'best'}) made ${statsById[bestId].salesPerDay.toFixed(1)} sales/day.`}
+                            className={
+                              gap >= 0
+                                ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                                : 'border-orange-300 bg-orange-50 text-orange-800'
+                            }
+                          >
+                            {gap >= 0 ? '+' : '−'}
+                            {Math.abs(gap)}% sales/day vs best
+                          </Badge>
+                        );
+                      })()
                     )}
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
