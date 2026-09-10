@@ -190,6 +190,41 @@ export default function PriceUpdateLogPanel({
     return showAll ? sorted : sorted.slice(0, 8);
   }, [versions, showAll]);
 
+  // Sales-per-day for every row, so we can name the best performer and
+  // compare every other row against it — not just against the previous one.
+  const statsById = useMemo(() => {
+    const map: Record<string, { revenue: number; orders: number; aov: number; daysLive: number; salesPerDay: number }> = {};
+    rows.forEach((v, i) => {
+      const s = windowStats(v, rows[i - 1]);
+      if (!s) return;
+      const daysLive = Math.max(1, s.list.length);
+      map[v.id] = {
+        revenue: s.revenue,
+        orders: s.orders,
+        aov: s.aov,
+        daysLive,
+        salesPerDay: s.orders / daysLive,
+      };
+    });
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, salesByDay]);
+
+  /** The best-performing price model: highest sales per day, requiring at
+   *  least 2 days live and 3 sales so one lucky afternoon can't win. */
+  const bestId = useMemo(() => {
+    let best: string | null = null;
+    let bestRate = -1;
+    for (const [id, s] of Object.entries(statsById)) {
+      if (s.daysLive < 2 || s.orders < 3) continue;
+      if (s.salesPerDay > bestRate) {
+        bestRate = s.salesPerDay;
+        best = id;
+      }
+    }
+    return best;
+  }, [statsById]);
+
   return (
     <Card className="border-2">
       <CardHeader className="pb-3">
@@ -202,6 +237,13 @@ export default function PriceUpdateLogPanel({
           <strong>Revert price</strong> on any row to make those exact Quotes &amp; Orders prices
           live again — the website price follows at its published gap. Sales already taken keep the
           price they were sold at.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          <strong>How to read the tags:</strong> “±% price vs previous” is just how much the price
+          moved against the model saved before it. <strong>“Best performer so far”</strong> names
+          the single model that made the most sales per day while live (at least 2 days and 3 sales,
+          so one lucky afternoon can't win), and every other row shows its sales-per-day gap to that
+          best one.
         </p>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -235,6 +277,7 @@ export default function PriceUpdateLogPanel({
                     {move !== null && (
                       <Badge
                         variant="outline"
+                        title="How the average Quotes & Orders price moved compared with the price model saved before this one"
                         className={
                           move > 0
                             ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
@@ -244,8 +287,32 @@ export default function PriceUpdateLogPanel({
                         }
                       >
                         {move > 0 ? '+' : move < 0 ? '−' : ''}
-                        {Math.abs(move)}% {move === 0 ? 'no change' : 'vs previous'}
+                        {Math.abs(move)}% price {move === 0 ? 'no change' : 'vs previous'}
                       </Badge>
+                    )}
+                    {bestId === v.id && (
+                      <Badge className="gap-1 bg-emerald-600 hover:bg-emerald-600">
+                        Best performer so far
+                      </Badge>
+                    )}
+                    {bestId && bestId !== v.id && statsById[v.id] && statsById[bestId] && statsById[bestId].salesPerDay > 0 && (
+                      (() => {
+                        const gap = Math.round(((statsById[v.id].salesPerDay - statsById[bestId].salesPerDay) / statsById[bestId].salesPerDay) * 100);
+                        return (
+                          <Badge
+                            variant="outline"
+                            title={`This model made ${statsById[v.id].salesPerDay.toFixed(1)} sales/day while live. The best performer (${rows.find(r => r.id === bestId)?.label || 'best'}) made ${statsById[bestId].salesPerDay.toFixed(1)} sales/day.`}
+                            className={
+                              gap >= 0
+                                ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                                : 'border-orange-300 bg-orange-50 text-orange-800'
+                            }
+                          >
+                            {gap >= 0 ? '+' : '−'}
+                            {Math.abs(gap)}% sales/day vs best
+                          </Badge>
+                        );
+                      })()
                     )}
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
