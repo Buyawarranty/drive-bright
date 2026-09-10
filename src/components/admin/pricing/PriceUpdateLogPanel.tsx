@@ -190,6 +190,41 @@ export default function PriceUpdateLogPanel({
     return showAll ? sorted : sorted.slice(0, 8);
   }, [versions, showAll]);
 
+  // Sales-per-day for every row, so we can name the best performer and
+  // compare every other row against it — not just against the previous one.
+  const statsById = useMemo(() => {
+    const map: Record<string, { revenue: number; orders: number; aov: number; daysLive: number; salesPerDay: number }> = {};
+    rows.forEach((v, i) => {
+      const s = windowStats(v, rows[i - 1]);
+      if (!s) return;
+      const daysLive = Math.max(1, s.list.length);
+      map[v.id] = {
+        revenue: s.revenue,
+        orders: s.orders,
+        aov: s.aov,
+        daysLive,
+        salesPerDay: s.orders / daysLive,
+      };
+    });
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, salesByDay]);
+
+  /** The best-performing price model: highest sales per day, requiring at
+   *  least 2 days live and 3 sales so one lucky afternoon can't win. */
+  const bestId = useMemo(() => {
+    let best: string | null = null;
+    let bestRate = -1;
+    for (const [id, s] of Object.entries(statsById)) {
+      if (s.daysLive < 2 || s.orders < 3) continue;
+      if (s.salesPerDay > bestRate) {
+        bestRate = s.salesPerDay;
+        best = id;
+      }
+    }
+    return best;
+  }, [statsById]);
+
   return (
     <Card className="border-2">
       <CardHeader className="pb-3">
