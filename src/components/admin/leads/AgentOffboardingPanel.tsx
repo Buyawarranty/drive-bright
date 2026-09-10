@@ -215,54 +215,28 @@ export const AgentOffboardingPanel: React.FC = () => {
     }
     setWorking(true);
     try {
-      // Capture the lead ids BEFORE the handover so a multi-agent split can
-      // spread exactly this batch afterwards.
-      const { data: leadRows } = await (supabase.from('sales_leads') as any)
-        .select('id')
-        .eq('assigned_to', sourceId)
-        .order('created_at', { ascending: false });
-      const ownedIds: string[] = (leadRows ?? []).map((r: any) => r.id);
-      // Reclaimed leads (previously this agent's, now unassigned) ride along.
-      const leadIds: string[] = [...ownedIds, ...(includeReclaim ? reclaimIds : [])];
+      // One atomic server-side action: snapshot every lead (owned AND the ones
+      // they used to own that are still unassigned), then split them across the
+      // chosen receivers. Runs with the reassignment guards released, so a
+      // deliberate management handover can never be silently snapped back.
+      const { data, error } = await (supabase as any).rpc('offboard_agent_handover', {
+        _source_admin_user_id: sourceId,
+        _target_admin_user_ids: targetIds,
+        _extra_lead_ids: includeReclaim ? reclaimIds : [],
+        _reset_to_new: resetToNew,
+        _also_deactivate: alsoDeactivate,
+        _notes: null,
+      });
+      if (error) throw error;
 
-      let moved = 0;
-      if (ownedIds.length > 0) {
-        // Atomic: snapshot every lead + notes + reminders + changelog + call logs,
-        // then reassign — all in one server-side transaction so nothing can be lost.
-        const { data, error } = await (supabase as any).rpc('create_agent_offboarding_backup', {
-          _source_admin_user_id: sourceId,
-          _target_admin_user_id: targetIds[0],
-          _reset_to_new: resetToNew,
-          _also_deactivate: alsoDeactivate,
-          _notes: null,
-        });
-        if (error) throw error;
-        moved = (data as any)?.lead_count ?? 0;
+      const moved = Number((data as any)?.moved ?? 0);
+      if (moved === 0) {
+        toast.error('Nothing moved — no leads were found for this agent. Check the "received from" date.');
+      } else {
+        toast.success(
+          `Backed up & moved ${moved} lead${moved === 1 ? '' : 's'} to ${targetLabel}. Full history preserved.`,
+        );
       }
-
-      // Spread the whole batch (owned + reclaimed) round-robin across receivers.
-      if (leadIds.length > 0) {
-        const buckets: Record<string, string[]> = {};
-        leadIds.forEach((id, i) => {
-          const agentId = targetIds[i % targetIds.length];
-          (buckets[agentId] ||= []).push(id);
-        });
-        for (const [agentId, ids] of Object.entries(buckets)) {
-          for (let i = 0; i < ids.length; i += 200) {
-            const chunk = ids.slice(i, i + 200);
-            const patch: Record<string, any> = { assigned_to: agentId };
-            const { error: upErr } = await (supabase.from('sales_leads') as any)
-              .update(patch)
-              .in('id', chunk);
-            if (upErr) throw upErr;
-          }
-        }
-        moved = Math.max(moved, leadIds.length);
-      }
-
-      toast.success(
-        `Backed up & moved ${moved} lead${moved === 1 ? '' : 's'} to ${targetLabel}. Full history preserved.`,
-      );
       setConfirmOpen(false);
       setReclaimIds([]);
       await loadCounts(sourceId);
@@ -273,6 +247,7 @@ export const AgentOffboardingPanel: React.FC = () => {
       setWorking(false);
     }
   }, [canRun, sourceId, targetIds, resetToNew, alsoDeactivate, targetLabel, loadCounts, includeReclaim, reclaimIds]);
+
 
   const runDryRun = useCallback(async () => {
     if (!canRun) {
