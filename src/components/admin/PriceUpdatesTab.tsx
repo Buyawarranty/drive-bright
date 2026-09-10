@@ -141,8 +141,9 @@ const CLAIM_COLUMN_LABELS: Record<number, { title: string; sub: string }> = {
  */
 const MIN_SELLABLE_BY_PERIOD: Record<string, number> = {
   '12months': 349,
-  '24months': 699,
-  '36months': 999,
+  // Sep 2026: 24/36-month minimums raised +10% (£699→£769, £999→£1,099).
+  '24months': 769,
+  '36months': 1099,
 };
 
 
