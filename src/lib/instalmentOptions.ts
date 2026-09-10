@@ -34,12 +34,52 @@ export function isInstalmentAllowed(paymentType: string, count: number): boolean
   return getInstalmentOptions(paymentType).includes(count as InstalmentCount);
 }
 
-/** THE RULE: longer-plan total as a multiple of the 1-year price. */
-export const LONG_PLAN_MULTIPLE_OF_ONE_YEAR: Record<InstalmentCount, number> = {
+/** Config key holding the manager-editable longer-plan multiples. */
+export const LONG_PLAN_MULTIPLES_CONFIG_KEY = 'long_instalment_plan_multiples';
+
+/** Code defaults, used until a saved value is loaded. */
+export const LONG_PLAN_MULTIPLE_DEFAULTS: Record<InstalmentCount, number> = {
   12: 1,
   24: 2.22,
   36: 3.51,
 };
+
+/**
+ * THE RULE: longer-plan total as a multiple of the 1-year price.
+ * Editable by management on Price updates → Excluded vehicles & tools → Longer plans.
+ */
+export const LONG_PLAN_MULTIPLE_OF_ONE_YEAR: Record<InstalmentCount, number> = {
+  ...LONG_PLAN_MULTIPLE_DEFAULTS,
+};
+
+/** Sensible guard rails so a typo cannot produce an absurd plan price. */
+export const LONG_PLAN_MULTIPLE_LIMITS: Record<24 | 36, { min: number; max: number }> = {
+  24: { min: 1.5, max: 4 },
+  36: { min: 2, max: 6 },
+};
+
+export function clampLongPlanMultiple(count: 24 | 36, value: number): number {
+  const { min, max } = LONG_PLAN_MULTIPLE_LIMITS[count];
+  const n = Number(value);
+  if (!Number.isFinite(n)) return LONG_PLAN_MULTIPLE_DEFAULTS[count];
+  return Math.min(max, Math.max(min, Math.round(n * 100) / 100));
+}
+
+/** Applies saved multiples app-wide (called on app start and after a save). */
+export function setLongPlanMultiples(next: { 24?: number; 36?: number } | null | undefined): void {
+  LONG_PLAN_MULTIPLE_OF_ONE_YEAR[24] =
+    next?.[24] != null ? clampLongPlanMultiple(24, next[24]) : LONG_PLAN_MULTIPLE_DEFAULTS[24];
+  LONG_PLAN_MULTIPLE_OF_ONE_YEAR[36] =
+    next?.[36] != null ? clampLongPlanMultiple(36, next[36]) : LONG_PLAN_MULTIPLE_DEFAULTS[36];
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('long-plan-multiples-changed'));
+  }
+}
+
+/** Reads whatever value is currently in force. */
+export function getLongPlanMultiples(): { 24: number; 36: number } {
+  return { 24: LONG_PLAN_MULTIPLE_OF_ONE_YEAR[24], 36: LONG_PLAN_MULTIPLE_OF_ONE_YEAR[36] };
+}
 
 /** Fallback term ladder used only when the 1-year price is unavailable. */
 const ASSUMED_TERM_MULTIPLE_OF_ONE_YEAR: Record<InstalmentCount, number> = {

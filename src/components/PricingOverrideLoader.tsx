@@ -4,6 +4,7 @@ import { setVehiclePricingRules } from '@/lib/pricing/vehicleRules';
 import { setLiveClaim5kBlocklist, type Claim5kBlockRule } from '@/lib/claimLimitTiers';
 import { refreshLivePricing } from '@/lib/pricing/refreshLivePricing';
 import { primeLiveExclusions } from '@/lib/pricing/liveVehicleExclusions';
+import { LONG_PLAN_MULTIPLES_CONFIG_KEY, setLongPlanMultiples } from '@/lib/instalmentOptions';
 
 /**
  * Loads the published (live) pricing version once at app start and applies it as
@@ -64,6 +65,22 @@ export default function PricingOverrideLoader() {
         setLiveClaim5kBlocklist(data.config_value as unknown as Claim5kBlockRule[]);
       } catch {
         // Ignore — fall back to the code default blocked makes.
+      }
+    })();
+
+    // Manager-set multiples for the 24 / 36 payment plans (agent quotes only).
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('admin_config')
+          .select('config_value')
+          .eq('config_key', LONG_PLAN_MULTIPLES_CONFIG_KEY)
+          .maybeSingle();
+        if (cancelled || error || !data?.config_value) return;
+        const raw = (data.config_value ?? {}) as unknown as Record<string, unknown>;
+        setLongPlanMultiples({ 24: Number(raw['24']), 36: Number(raw['36']) });
+      } catch {
+        // Ignore — the code defaults (2.22 / 3.51) stay in force.
       }
     })();
 
