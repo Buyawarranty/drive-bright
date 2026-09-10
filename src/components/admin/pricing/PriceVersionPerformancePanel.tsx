@@ -370,6 +370,180 @@ export default function PriceVersionPerformancePanel({ versions }: { versions: P
           </div>
         </div>
 
+        {/* Sustained performance — a full run, not a lucky day */}
+        <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-semibold">Which price converts better over a full run</p>
+              <p className="text-xs text-muted-foreground">
+                Only price models that traded for {minDays} days or more, so one strong day cannot
+                flatter a price. Judged on conversion and sales per day across the whole run.
+              </p>
+            </div>
+            <div className="flex gap-1">
+              {[7, 14, 30].map((d) => (
+                <Button
+                  key={d}
+                  size="sm"
+                  variant={minDays === d ? 'default' : 'outline'}
+                  onClick={() => setMinDays(d)}
+                >
+                  {d}+ days
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {bestSustained ? (
+            <div className="flex items-center gap-2 text-sm">
+              <Trophy className="h-4 w-4 text-amber-600" />
+              <span>
+                Best over a full run: <strong>{bestSustained.label}</strong> — {pct(bestSustained.conversion)}{' '}
+                conversion, {(bestSustained.orders / bestSustained.days).toFixed(2)} sales/day, AOV{' '}
+                {money(bestSustained.aov)} across {bestSustained.days} days.
+              </span>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No price model has traded for {minDays} days with at least 5 sales yet.
+            </p>
+          )}
+
+          {sustainedChart.length > 0 && (
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div>
+                <p className="text-xs font-medium mb-1">Conversion and sales per day ({minDays}+ day runs)</p>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={sustainedChart} margin={{ top: 8, right: 8, left: 0, bottom: 24 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="name" tick={{ fontSize: 11 }} angle={-20} textAnchor="end" height={50} />
+                      <YAxis yAxisId="left" tick={{ fontSize: 11 }} unit="%" />
+                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
+                      <Tooltip
+                        formatter={(v: any, n: any) =>
+                          n === 'Conversion' ? `${v}%` : `${v} sales/day`
+                        }
+                      />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Bar yAxisId="left" dataKey="conversion" name="Conversion" radius={[4, 4, 0, 0]}>
+                        {sustainedChart.map((d) => (
+                          <Cell
+                            key={d.name}
+                            fill={d.isBest ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))'}
+                          />
+                        ))}
+                      </Bar>
+                      <Bar
+                        yAxisId="right"
+                        dataKey="salesPerDay"
+                        name="Sales/day"
+                        fill="hsl(var(--accent-foreground))"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-medium mb-1">
+                  Rolling 7-day conversion, with each price change marked
+                </p>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={rollingSeries} margin={{ top: 8, right: 8, left: 0, bottom: 24 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" height={50} />
+                      <YAxis yAxisId="left" tick={{ fontSize: 11 }} unit="%" />
+                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
+                      <Tooltip
+                        formatter={(v: any, n: any) =>
+                          n === '7-day conversion' ? `${v}%` : `${v} sales/day`
+                        }
+                      />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      {timeline.map((t) => (
+                        <ReferenceLine
+                          key={t.version.id}
+                          yAxisId="left"
+                          x={t.startKey}
+                          stroke="hsl(var(--muted-foreground))"
+                          strokeDasharray="4 4"
+                        />
+                      ))}
+                      <Line
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey="rollingConversion"
+                        name="7-day conversion"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                      <Line
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="rollingSalesPerDay"
+                        name="7-day sales/day"
+                        stroke="hsl(var(--accent-foreground))"
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {sustainedChart.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-xs text-muted-foreground">
+                    <th className="py-2 pr-3 font-medium">Price model</th>
+                    <th className="py-2 pr-3 font-medium">Run</th>
+                    <th className="py-2 pr-3 font-medium text-right">Days</th>
+                    <th className="py-2 pr-3 font-medium text-right">Sales</th>
+                    <th className="py-2 pr-3 font-medium text-right">Sales/day</th>
+                    <th className="py-2 pr-3 font-medium text-right">Conversion</th>
+                    <th className="py-2 pr-3 font-medium text-right">AOV</th>
+                    <th className="py-2 font-medium text-right">Revenue/day</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sustained.map((r) => (
+                    <tr key={`sustained-${r.id}`} className="border-b last:border-0">
+                      <td className="py-2 pr-3">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{r.label}</span>
+                          {bestSustained?.id === r.id && (
+                            <Badge variant="outline" className="text-[10px] border-amber-400 text-amber-700">
+                              Best full run
+                            </Badge>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-2 pr-3 text-xs text-muted-foreground">
+                        {format(new Date(r.startKey), 'd MMM')} – {format(new Date(r.endKey), 'd MMM yyyy')}
+                      </td>
+                      <td className="py-2 pr-3 text-right">{r.days}</td>
+                      <td className="py-2 pr-3 text-right">{r.orders.toLocaleString('en-GB')}</td>
+                      <td className="py-2 pr-3 text-right">{(r.orders / r.days).toFixed(2)}</td>
+                      <td className="py-2 pr-3 text-right font-semibold">
+                        {r.checkouts ? pct(r.conversion) : '—'}
+                      </td>
+                      <td className="py-2 pr-3 text-right">{money(r.aov)}</td>
+                      <td className="py-2 text-right font-semibold">{money(r.perDay)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
