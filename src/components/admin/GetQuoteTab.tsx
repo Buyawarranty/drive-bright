@@ -1,5 +1,5 @@
 import { getVehicleAge } from '@/lib/vehicleAge';
-import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, type InstalmentCount } from '@/lib/instalmentOptions';
+import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 
@@ -5131,15 +5131,18 @@ Questions? Call 0330 229 5040`;
                                 {count} instalments
                               </div>
                               <div className={cn("text-xs font-medium", comingSoon ? "text-slate-500" : "text-black")}>
-                                {comingSoon ? "Not active yet" : `£${amount}/mo · same £${displayedTotalPrice} total`}
+                                {comingSoon ? "Not active yet" : `£${amount}/mo · £${instalmentPlanTotal(displayedTotalPrice, count)} total`}
                               </div>
                             </button>
                           );
                         })}
                       </div>
                       <p className="text-[11px] text-muted-foreground">
-                        Same total price — this only changes how many monthly payments it is spread over.
+                        Spreading the payments over 24 or 36 months costs more than the 12-instalment plan.
                       </p>
+                      {instalmentCount !== 12 && (
+                        <p className="text-[11px] font-semibold text-amber-700">{BUMPER_LONG_PLAN_NOTE}</p>
+                      )}
                     </div>
                   )}
                   {termSavings['24months'] && (
@@ -6869,7 +6872,10 @@ Questions? Call 0330 229 5040`;
                         <div className="mt-1 text-2xl font-extrabold leading-none text-blue-800">
                           £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(monthlyTotal, instalmentCount)}<span className="text-sm font-semibold text-blue-600">/mo</span>
                         </div>
-                        <div className="mt-1.5 text-[11px] text-blue-700">Total £{monthlyTotal} · {instalmentCount} × £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(monthlyTotal, instalmentCount)}</div>
+                        <div className="mt-1.5 text-[11px] text-blue-700">Total £{instalmentPlanTotal(monthlyTotal, instalmentCount)} · {instalmentCount} × £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(monthlyTotal, instalmentCount)}</div>
+                        {instalmentCount !== 12 && (
+                          <div className="mt-1 text-[11px] font-semibold text-amber-700">Must be set up on the Bumper {instalmentCount}-month plan</div>
+                        )}
                         <div className="text-[11px] text-blue-600/80">{fmtPerDay(monthlyPence)} over cover</div>
                       </div>
 
