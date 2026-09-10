@@ -25,8 +25,8 @@ describe('Quotes & Orders absolute minimum ladder', () => {
   });
 
   it('term floors scale', () => {
-    expect(admin(1000, 50, 500, '24months')).toBe(699);
-    expect(admin(1000, 50, 500, '36months')).toBe(999);
+    expect(admin(1000, 50, 500, '24months')).toBe(769);
+    expect(admin(1000, 50, 500, '36months')).toBe(1099);
   });
 
   it('motorbikes are half', () => {

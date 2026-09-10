@@ -26,8 +26,8 @@ import {
 /** Term scaling for a band 1-year minimum, mirroring the sellable minimums. */
 const TERM_FLOOR_RATIO: Record<string, number> = {
   '12months': 1,
-  '24months': 699 / 399,
-  '36months': 999 / 399,
+  '24months': 769 / 399,
+  '36months': 1099 / 399,
 };
 
 /**

@@ -51,11 +51,12 @@ export type PricingVersionConfig = {
   config_checksum?: string | null;
 };
 
-/** The absolute minimum sellable total currently hardcoded in the engine (£349 / £699 / £999 at the cheapest option combo). */
+/** The absolute minimum sellable total currently hardcoded in the engine (£349 / £769 / £1,099 at the cheapest option combo). */
 export const CODE_PRICE_FLOORS: PriceFloors = {
   '12months': 349,
-  '24months': 699,
-  '36months': 999,
+  // Sep 2026: 24/36-month floors raised +10% (£699→£769, £999→£1,099).
+  '24months': 769,
+  '36months': 1099,
 };
 
 

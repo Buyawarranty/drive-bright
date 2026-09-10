@@ -31,8 +31,9 @@ export const GLOBAL_ABSOLUTE_MIN_TOTAL = 399;
 /** Flat net floor by term, before option shaping and motorbike halving. */
 export const NET_FLOOR_BY_PERIOD: Record<PaymentPeriod, number> = {
   '12months': 399,
-  '24months': 699,
-  '36months': 999,
+  // Sep 2026: 24/36-month net floors raised +10% (£699→£769, £999→£1,099).
+  '24months': 769,
+  '36months': 1099,
 };
 
 
