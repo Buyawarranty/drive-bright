@@ -67,6 +67,22 @@ export default function PricingOverrideLoader() {
       }
     })();
 
+    // Manager-set multiples for the 24 / 36 payment plans (agent quotes only).
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('admin_config')
+          .select('config_value')
+          .eq('config_key', LONG_PLAN_MULTIPLES_CONFIG_KEY)
+          .maybeSingle();
+        if (cancelled || error || !data?.config_value) return;
+        const raw = data.config_value as Record<string, unknown>;
+        setLongPlanMultiples({ 24: Number(raw['24']), 36: Number(raw['36']) });
+      } catch {
+        // Ignore — the code defaults (2.22 / 3.51) stay in force.
+      }
+    })();
+
     return () => {
       cancelled = true;
       window.removeEventListener('focus', onFocus);
