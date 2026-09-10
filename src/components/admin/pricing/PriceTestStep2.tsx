@@ -962,6 +962,26 @@ export default function PriceTestStep2({
                 </div>
               ) : null}
 
+              {calc?.longPlanCount ? (
+                <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 p-3">
+                  <div className="text-sm font-semibold text-amber-900">
+                    Longer plan · Bumper ({calc.longPlanCount} instalments)
+                  </div>
+                  <div className="text-2xl font-bold text-amber-900">
+                    {formatGBP(calc.longPlanMonthly as number)}
+                    <span className="text-sm font-normal">/month</span>
+                    <span className="ml-2 text-sm font-semibold">
+                      · {formatGBP(calc.longPlanTotal as number)} total
+                    </span>
+                  </div>
+                  <div className="text-xs text-amber-800">
+                    {calc.longPlanMultiple}× the one-year price ({formatGBP(calc.oneYearAnchor)}) ·{' '}
+                    +{formatGBP((calc.longPlanTotal as number) - calc.total)} vs the 12-instalment plan ·
+                    must be set up on the matching {calc.longPlanCount}-month Bumper plan
+                  </div>
+                </div>
+              ) : null}
+
               <div className="mt-4 border-t pt-3">
                 <div className="flex items-center justify-between text-sm font-semibold">
                   <span>Pay in Full · Stripe (10% off)</span>
