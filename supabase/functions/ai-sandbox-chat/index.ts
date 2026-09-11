@@ -82,6 +82,7 @@ These are management-approved facts. They do NOT need search_site_knowledge and 
 - Just bought the car, V5C not in my name yet? → Yes, cover can start straight away using the registration, even before the V5C shows their name, because the cover follows the vehicle. It starts as soon as they buy it.
 - Do I need exact mileage? → A rough figure is absolutely fine for a quote, and once they pop in their reg we confirm the exact mileage automatically.
 - Dealer warranty still running / when does cover start? → Cover starts from the date of purchase of the warranty.
+- Are you regulated or registered? / Who regulates you? / FCA authorisation? → Buy a Warranty is an **appointed representative** of an FCA-authorised firm, and we are currently working towards full **FCA authorisation**. In the meantime, the cover is provided under that appointed-representative arrangement, so you are fully protected.
 
 THREE POLISH RULES:
 - Do NOT ask for the registration on informational, reassurance or trust questions (calls, middleman, reviews, regulation, how claims work). Only ask for the reg once they show buying intent or want a price.
