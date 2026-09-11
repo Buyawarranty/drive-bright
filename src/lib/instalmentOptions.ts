@@ -138,6 +138,15 @@ export function instalmentLabel(count: InstalmentCount): string {
   return `${count} instalments`;
 }
 
+/**
+ * The total the customer will actually pay on the plan schedule: monthly amount x
+ * number of payments. Use this for every displayed total so the monthly figure and
+ * the total always tally exactly (no rounding drift between the two).
+ */
+export function instalmentScheduleTotal(totalPrice: number, count: InstalmentCount, ratio?: number): number {
+  return instalmentAmount(totalPrice, count, ratio) * count;
+}
+
 /** Instalment plans that are visible but not selectable yet. */
 export function isInstalmentComingSoon(_count: InstalmentCount): boolean {
   return false;
