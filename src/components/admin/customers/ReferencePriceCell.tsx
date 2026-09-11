@@ -94,6 +94,7 @@ export const ReferencePriceCell: React.FC<{ order: SoldOrderLike | null | undefi
           Quoted <span className="font-semibold text-slate-900">{gbp(recorded.quoted)}</span> → sold{' '}
           <span className="font-semibold text-emerald-700">{gbp(recorded.paid)}</span>
         </div>
+        {quoteGivenAt}
         <Badge
           variant="outline"
           className={`text-xs whitespace-nowrap ${
