@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { Bot, MessageSquare, Car, PoundSterling, PhoneCall, UserPlus, RefreshCw, Download, ExternalLink, Eraser } from 'lucide-react';
+import { Bot, MessageSquare, Car, PoundSterling, PhoneCall, UserPlus, RefreshCw, Download, ExternalLink, Eraser, ClipboardCopy, FileText } from 'lucide-react';
+import { buildChatbotTrainingBrief } from '@/lib/chatbotTrainingBrief';
 import ChatConversationsPanel from './ChatConversationsPanel';
 import ChatActionQueuePanel from './ChatActionQueuePanel';
 import ChatbotImprovementPanel from './ChatbotImprovementPanel';
@@ -205,6 +206,33 @@ export default function ChatbotDataTab() {
     URL.revokeObjectURL(url);
   };
 
+  const rangeLabel = (() => {
+    if (!activeRange?.from) return 'All time';
+    const fmt = (d: Date) => new Date(d).toLocaleDateString('en-GB');
+    return activeRange.to ? `${fmt(activeRange.from)} – ${fmt(activeRange.to)}` : fmt(activeRange.from);
+  })();
+
+  const buildBrief = () => buildChatbotTrainingBrief(filtered as any, { rangeLabel });
+
+  const copyBrief = async () => {
+    const brief = buildBrief();
+    try {
+      await navigator.clipboard.writeText(brief);
+      toast.success('Training brief copied — paste it into Lovable chat');
+    } catch {
+      toast.error('Could not copy. Use "Download brief" instead.');
+    }
+  };
+
+  const downloadBrief = () => {
+    const url = URL.createObjectURL(new Blob([buildBrief()], { type: 'text/markdown' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `miles-training-brief-${new Date().toISOString().slice(0, 10)}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const StatCard = ({ icon: Icon, label, value, hint }: { icon: any; label: string; value: React.ReactNode; hint?: string }) => (
     <Card>
       <CardContent className="p-4">
@@ -231,6 +259,12 @@ export default function ChatbotDataTab() {
         <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" variant="outline" onClick={load} disabled={loading}>
             <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} /> Refresh
+          </Button>
+          <Button size="sm" onClick={copyBrief} disabled={!filtered.length}>
+            <ClipboardCopy className="h-4 w-4 mr-1" /> Copy brief for Lovable
+          </Button>
+          <Button size="sm" variant="outline" onClick={downloadBrief} disabled={!filtered.length}>
+            <FileText className="h-4 w-4 mr-1" /> Download brief
           </Button>
           <Button size="sm" variant="outline" onClick={exportCsv} disabled={!filtered.length}>
             <Download className="h-4 w-4 mr-1" /> Export CSV
