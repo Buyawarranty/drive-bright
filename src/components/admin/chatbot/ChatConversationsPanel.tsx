@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { MessageSquare, UserPlus, RefreshCw, Search, CheckCircle2 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { MessageSquare, UserPlus, RefreshCw, Search, CheckCircle2, Send } from 'lucide-react';
 
 type Thread = {
   id: string;
@@ -363,6 +364,42 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso }: { 
                   )}
                 </div>
               </ScrollArea>
+
+              <div className="rounded-md border p-3">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Reply live to this customer
+                  </span>
+                  {customerLikelyLive ? (
+                    <Badge className="border-emerald-200 bg-emerald-100 text-emerald-800">
+                      Customer active now
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline">May have left the chat</Badge>
+                  )}
+                </div>
+                <Textarea
+                  value={reply}
+                  onChange={(e) => setReply(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                      e.preventDefault();
+                      void sendReply();
+                    }
+                  }}
+                  rows={3}
+                  placeholder="Type your answer — the customer sees it straight away in their chat box…"
+                />
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Button onClick={sendReply} disabled={replying || !reply.trim()}>
+                    <Send className="mr-1 h-4 w-4" />
+                    {replying ? 'Sending…' : 'Send to customer'}
+                  </Button>
+                  <span className="text-xs text-muted-foreground">
+                    It shows as a warranty specialist, not as Miles.
+                  </span>
+                </div>
+              </div>
             </>
           )}
         </CardContent>
