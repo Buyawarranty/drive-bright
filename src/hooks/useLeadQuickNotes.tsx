@@ -188,9 +188,11 @@ let cacheExpiry = 0;
 export const useLeadQuickNotes = (leadId: string) => {
   const [notes, setNotes] = useState<QuickNote[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const hasFetchedRef = useRef(false);
   const notesRef = useRef<QuickNote[]>([]);
   const isSavingRef = useRef(false);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Keep ref in sync - supports both direct value and updater function
   const updateNotes = useCallback((newNotesOrUpdater: QuickNote[] | ((prev: QuickNote[]) => QuickNote[])) => {
@@ -234,13 +236,14 @@ export const useLeadQuickNotes = (leadId: string) => {
 
     hasFetchedRef.current = hasCachedNotes;
     setLoading(false);
+    setLoadFailed(false);
     updateNotes(cachedNotes || mirrored || []);
   }, [leadId, updateNotes]);
 
   // Session validation removed — RLS policies handle authorization, and
   // getAuthenticatedAdmin() validates auth before write operations.
 
-  const fetchNotes = useCallback(async (isRefetch = false) => {
+  const fetchNotes = useCallback(async (isRefetch = false, attempt = 0) => {
     if (!leadId) {
       setLoading(false);
       updateNotes([]);
@@ -346,17 +349,34 @@ export const useLeadQuickNotes = (leadId: string) => {
       }
       
       hasFetchedRef.current = true;
+      setLoadFailed(false);
     } catch (error) {
       console.error('[fetchNotes] Error:', error);
-      // CRITICAL: Do NOT clear notes on error if we already had notes loaded
-      if (!hasFetchedRef.current && notesRef.current.length === 0) {
-        updateNotes([]);
+      // Never wipe notes we already showed, and never claim "no notes yet"
+      // when the read itself failed — retry a few times, then flag the failure
+      // so the panel can offer a retry instead of an empty state.
+      const mirrored = readMirroredNotes(leadId);
+      if (!hasFetchedRef.current && notesRef.current.length === 0 && mirrored.length > 0) {
+        updateNotes(mirrored);
+      }
+
+      if (attempt < 3) {
+        if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = setTimeout(() => {
+          void fetchNotes(true, attempt + 1);
+        }, 800 * Math.pow(2, attempt));
+      } else if (!hasFetchedRef.current) {
+        setLoadFailed(true);
       }
     } finally {
       clearTimeout(timeoutId);
       setLoading(false);
     }
   }, [leadId, isAbandonedCart, actualId, updateNotes]);
+
+  useEffect(() => () => {
+    if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+  }, []);
 
   useEffect(() => {
     fetchNotes(false); // initial load
@@ -737,11 +757,15 @@ export const useLeadQuickNotes = (leadId: string) => {
   return {
     notes,
     loading,
+    loadFailed,
     addNote,
     updateNote,
     togglePin,
     deleteNote,
-    refetch: () => fetchNotes(true),
+    refetch: () => {
+      setLoadFailed(false);
+      return fetchNotes(true);
+    },
     isAbandonedCart,
     isSaving: isSavingRef.current,
     flushPendingQuickNotes: flushAllPendingQuickNotes
