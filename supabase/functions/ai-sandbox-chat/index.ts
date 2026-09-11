@@ -1,7 +1,7 @@
 // Sandbox AI customer chatbot — streaming assistant grounded in site content,
 // with live indicative pricing and TEST-MODE payment links.
 // Nothing here is wired into the public website.
-import { streamText, tool, stepCountIs, convertToModelMessages } from "npm:ai@^7.0.64";
+import { streamText, generateText, tool, stepCountIs, convertToModelMessages } from "npm:ai@^7.0.64";
 import { z } from "npm:zod@^3.25.76";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Stripe from "https://esm.sh/stripe@14.21.0";
@@ -224,6 +224,61 @@ Deno.serve(async (req) => {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // CRM answer library helper: draft a suggested answer for a question Miles
+    // could not answer, grounded in the same approved material. Management
+    // only, and nothing goes live until a person approves the wording in the
+    // CRM (Admin dashboard → Chatbot data → Answer library).
+    if (body?.action === "draft_answer") {
+      if (!user) {
+        return new Response(JSON.stringify({ error: "Not signed in" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data: adminRow } = await admin
+        .from("admin_users")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .maybeSingle();
+      const role = String((adminRow as any)?.role ?? "");
+      if (!["admin", "super_admin", "sales_manager"].includes(role)) {
+        return new Response(JSON.stringify({ error: "Managers only" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const question = String(body?.question ?? "").trim().slice(0, 500);
+      const milesSaid = String(body?.milesSaid ?? "").trim().slice(0, 1200);
+      if (question.length < 5) {
+        return new Response(JSON.stringify({ error: "question is required" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const grounded: any = retrieveGrounded(question, 6);
+      const passages = (grounded?.passages ?? [])
+        .map((p: any) => `- (${p.source}${p.section ? `, ${p.section}` : ""}) ${p.text}`)
+        .join("\n");
+      const gateway = createLovableAiGatewayProvider(lovableKey);
+      const drafted = await generateText({
+        model: gateway(MODEL),
+        system:
+          SYSTEM_PROMPT +
+          `\n\nYou are now helping a MANAGER draft an approved answer for the answer library, not chatting to a customer. Draft the ideal reply Miles should give to the customer question below: 1-3 short sentences in Miles's voice, plain UK English, no long dashes, every fact taken only from the approved material passages provided or the APPROVED ANSWERS list above. If the approved material does not answer it, say so plainly in one line starting "NO APPROVED SOURCE:" instead of drafting. Output only the draft wording, nothing else.`,
+        prompt: `Customer question: "${question}"\n\n${
+          passages ? `Approved material passages:\n${passages}\n\n` : "No approved material passages matched this question.\n\n"
+        }${
+          milesSaid ? `What Miles said at the time (may be improved on):\n${milesSaid}\n\n` : ""
+        }Draft the approved answer now.`,
+      });
+      const text = (drafted.text ?? "").trim();
+      return new Response(
+        JSON.stringify({ draft: text, grounded: grounded?.confident ?? false }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     let thread: { id: string; user_id: string | null; title: string | null } | null = null;

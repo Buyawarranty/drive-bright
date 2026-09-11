@@ -66,6 +66,32 @@ export default function ChatbotAnswerLibraryPanel({ fromIso, toIso }: { fromIso?
   const [newQuestion, setNewQuestion] = useState('');
   const [newAnswer, setNewAnswer] = useState('');
   const [saving, setSaving] = useState(false);
+  const [draftingFor, setDraftingFor] = useState<string | null>(null);
+
+  /** Ask Miles to draft a suggested answer from the approved material; the manager edits and approves it. */
+  const suggestAnswer = async (a: Asked) => {
+    setDraftingFor(a.question);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-sandbox-chat', {
+        body: { action: 'draft_answer', question: a.question, milesSaid: a.milesSaid ?? '' },
+      });
+      if (error) throw error;
+      const draft = String((data as any)?.draft ?? '').trim();
+      if (!draft) throw new Error('No suggestion came back — try again');
+      if (draft.startsWith('NO APPROVED SOURCE')) {
+        toast.message('Miles has no approved material for this one', {
+          description: 'Write the answer yourself below and save it — Miles will use your wording from then on.',
+        });
+      } else {
+        setDrafts((d) => ({ ...d, [a.question]: draft }));
+        toast.success('Suggestion added — check the wording, then save');
+      }
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not draft a suggestion');
+    } finally {
+      setDraftingFor(null);
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -230,8 +256,9 @@ export default function ChatbotAnswerLibraryPanel({ fromIso, toIso }: { fromIso?
             <BookOpen className="h-4 w-4" /> Questions waiting for your answer
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Write the answer you want customers to get. Miles uses your wording straight away, and reuses it whenever
-            someone asks the same or a similar question.
+            Write the answer you want customers to get, or press <strong>Suggest an answer</strong> and Miles drafts one from the
+            approved plan documents for you to check. Once you save, Miles uses your wording straight away and reuses it whenever
+            someone asks the same or a similar question — so the chat learns from every question it could not answer before.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -264,13 +291,23 @@ export default function ChatbotAnswerLibraryPanel({ fromIso, toIso }: { fromIso?
                 <Button size="sm" onClick={() => saveAnswer(a.question, drafts[a.question] ?? '', a.threadId)} disabled={saving}>
                   <Check className="mr-1 h-4 w-4" /> Save and use this answer
                 </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-violet-300 text-violet-800"
+                  onClick={() => suggestAnswer(a)}
+                  disabled={draftingFor === a.question}
+                >
+                  <Wand2 className={`mr-1 h-4 w-4 ${draftingFor === a.question ? 'animate-pulse' : ''}`} />
+                  {draftingFor === a.question ? 'Drafting…' : 'Suggest an answer'}
+                </Button>
                 {a.milesSaid && (
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => setDrafts((d) => ({ ...d, [a.question]: a.milesSaid! }))}
                   >
-                    <Wand2 className="mr-1 h-4 w-4" /> Start from what Miles said
+                    Start from what Miles said
                   </Button>
                 )}
               </div>
