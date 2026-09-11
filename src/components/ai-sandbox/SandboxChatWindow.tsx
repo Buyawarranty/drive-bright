@@ -1092,7 +1092,9 @@ export function SandboxChatWindow({
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
               </span>
               {open
-                ? `Connecting you to a live agent${holdSeconds ? ` (${holdSeconds}s)` : ''} — keep chatting meanwhile`
+                ? holdSeconds >= 20
+                  ? `Our specialists are busy with other customers right now — you're next in line (${holdSeconds}s). Keep chatting with me meanwhile, or give us a call.`
+                  : `Connecting you to a live agent${holdSeconds ? ` (${holdSeconds}s)` : ''} — keep chatting meanwhile`
                 : `Your request is with the team — a specialist picks this up ${nextOpeningLabel()}`}
               {open && (
                 <a href="tel:03302295040" className="ml-auto shrink-0 font-bold text-primary underline underline-offset-2">
