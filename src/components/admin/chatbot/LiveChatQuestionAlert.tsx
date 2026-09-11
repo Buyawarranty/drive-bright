@@ -21,6 +21,8 @@ const MUTE_KEY = 'chat_question_alert_muted';
 const WINDOW_MINUTES = 20;
 /** Beep cadence while a customer is waiting for a real person. */
 const BEEP_MS = 10000;
+/** The beeping silences itself after 20 seconds (two beeps). */
+const AUTO_SILENCE_MS = 20000;
 
 const text = (m: Row) => {
   if (m.content && m.content.trim()) return m.content.trim();
