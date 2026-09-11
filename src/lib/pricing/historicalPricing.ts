@@ -9,6 +9,8 @@ import {
 
 export interface PricingVersionSnapshot {
   id: string;
+  /** Name the model was saved under in Price Updates (shown to managers only). */
+  label: string;
   publishedAt: number; // epoch ms
   matrix: PricingMatrixShape;
   step3DiscountPct: number;
