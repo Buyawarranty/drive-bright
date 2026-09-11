@@ -5148,11 +5148,11 @@ Questions? Call 0330 229 5040`;
                                 {count} instalments
                               </div>
                               <div className={cn("text-xs font-medium", comingSoon ? "text-slate-500" : "text-black")}>
-                                {comingSoon ? "Not active yet" : `£${amount}/mo · £${instalmentPlanTotal(displayedTotalPrice, count, longPlanRatio)} total`}
+                                {comingSoon ? "Not active yet" : `£${amount}/mo · £${scheduleTotal} total`}
                               </div>
                               {!comingSoon && count !== 12 && (
                                 <div className="text-[11px] font-semibold text-amber-700">
-                                  +£{instalmentPlanTotal(displayedTotalPrice, count, longPlanRatio) - Math.round(Number(displayedTotalPrice) || 0)} vs 12-instalment plan
+                                  +£{scheduleTotal - twelveTotal} vs 12-instalment plan
                                 </div>
                               )}
                             </button>
