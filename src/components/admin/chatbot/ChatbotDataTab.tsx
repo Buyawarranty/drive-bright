@@ -339,8 +339,19 @@ export default function ChatbotDataTab() {
         </TabsContent>
 
         <TabsContent value="conversations" className="pt-4">
-          <ChatConversationsPanel rangeDays="all" fromIso={fromIso} toIso={toIso} />
+          <ChatConversationsPanel
+            rangeDays="all"
+            fromIso={fromIso}
+            toIso={toIso}
+            initialThreadId={deepLinkThread}
+          />
         </TabsContent>
+
+        <TabsContent value="response" className="pt-4">
+          <ChatResponseStatsPanel fromIso={fromIso} toIso={toIso} />
+        </TabsContent>
+
+
 
 
         <TabsContent value="library" className="pt-4">
