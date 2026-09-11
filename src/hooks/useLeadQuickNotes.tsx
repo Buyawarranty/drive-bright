@@ -188,9 +188,11 @@ let cacheExpiry = 0;
 export const useLeadQuickNotes = (leadId: string) => {
   const [notes, setNotes] = useState<QuickNote[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const hasFetchedRef = useRef(false);
   const notesRef = useRef<QuickNote[]>([]);
   const isSavingRef = useRef(false);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Keep ref in sync - supports both direct value and updater function
   const updateNotes = useCallback((newNotesOrUpdater: QuickNote[] | ((prev: QuickNote[]) => QuickNote[])) => {
