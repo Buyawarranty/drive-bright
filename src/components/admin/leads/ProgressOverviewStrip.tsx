@@ -340,6 +340,36 @@ export const ProgressOverviewStrip: React.FC = () => {
   }, [adminId]);
 
 
+  /** Agents mark their own working days straight from this strip. */
+  const toggleMyWorkingDay = async (dateStr: string, currentType?: string) => {
+    if (!adminId || saving) return;
+    const working = !!currentType && currentType !== 'off';
+    const nextType = working ? 'off' : 'full_day';
+    setSaving(true);
+    setData((prev) => ({ ...prev, workDays: { ...prev.workDays, [dateStr]: nextType } }));
+    try {
+      const { data: userRes } = await supabase.auth.getUser();
+      const { error } = await (supabase as any)
+        .from('agent_working_days')
+        .upsert(
+          {
+            admin_user_id: adminId,
+            work_date: dateStr,
+            day_type: nextType,
+            created_by: userRes?.user?.id ?? null,
+          },
+          { onConflict: 'admin_user_id,work_date' },
+        );
+      if (error) throw error;
+      toast.success(nextType === 'off' ? 'Marked as not working' : 'Marked as working');
+    } catch (e: any) {
+      toast.error('Could not save that day', { description: e?.message });
+      load();
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const toggleBreak = async () => {
     if (!adminId) return;
     setSaving(true);
