@@ -955,7 +955,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
       </div>
 
       <div className="px-4 py-3 max-h-[320px] overflow-y-auto">
-        {sortedNotes.length === 0 ? (
+        {sortedNotes.length === 0 && loadFailed ? (
+          <div className="py-2 flex items-center gap-2">
+            <p className="text-sm text-destructive">Notes couldn't load — nothing has been lost.</p>
+            <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => refetch()}>
+              Try again
+            </Button>
+          </div>
+        ) : sortedNotes.length === 0 ? (
           <p className="text-sm text-muted-foreground italic py-2">No notes yet — type one above or use the quick log outcome.</p>
         ) : (
           <div className="space-y-1.5">
