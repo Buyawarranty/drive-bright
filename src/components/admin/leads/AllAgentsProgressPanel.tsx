@@ -444,20 +444,26 @@ export const AllAgentsProgressPanel: React.FC = () => {
                     {dayLabels.map((d, i) => {
                       const key = format(addDays(weekStart, i), 'yyyy-MM-dd');
                       const type = r.weekDays[key];
+                      const working = !!type && type !== 'off';
+                      const editable = canEditDays(r.adminUserId);
                       return (
-                        <span
+                        <button
                           key={i}
-                          title={`${format(addDays(weekStart, i), 'EEE d MMM')} · ${type ? type.replace('_', ' ') : 'not marked'}`}
-                          className={`h-5 w-5 rounded text-[10px] font-semibold flex items-center justify-center ${
-                            !type
-                              ? 'bg-muted text-muted-foreground'
-                              : type === 'full_day' || type === 'worked'
-                                ? 'bg-emerald-600 text-primary-foreground'
-                                : 'bg-emerald-600/50 text-primary-foreground'
-                          }`}
+                          type="button"
+                          disabled={!editable || savingDay === `${r.adminUserId}|${key}`}
+                          onClick={() => toggleWorkingDay(r.adminUserId, key, type)}
+                          aria-pressed={working}
+                          title={`${format(addDays(weekStart, i), 'EEE d MMM')} · ${
+                            working ? 'working' : type === 'off' ? 'not working' : 'not marked'
+                          }${editable ? ' — tap to change' : ''}`}
+                          className={`h-6 w-6 rounded border text-[10px] font-semibold flex items-center justify-center transition-colors ${
+                            working
+                              ? 'bg-emerald-600 text-primary-foreground border-emerald-700'
+                              : 'bg-background text-muted-foreground border-dashed border-border'
+                          } ${editable ? 'hover:opacity-90 cursor-pointer' : 'cursor-default'} disabled:opacity-60`}
                         >
                           {d}
-                        </span>
+                        </button>
                       );
                     })}
                   </div>
