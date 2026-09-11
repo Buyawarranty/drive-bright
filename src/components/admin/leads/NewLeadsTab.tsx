@@ -375,8 +375,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const isAdminRole = userRole === 'admin';
   const seeSourceDefault = isSuperAdmin || isAdminRole || isLeadGenUser;
   const seeSourceAllowed = seeSourceGranular === undefined ? seeSourceDefault : seeSourceGranular;
+  // Hard rule: sales roles (agents, sales leads, sales managers) never see the
+  // lead source anywhere in New Leads — not even if a granular permission was
+  // switched on for them by mistake.
+  const isSalesSideRole =
+    userRole === 'sales' || userRole === 'sales_lead' || userRole === 'sales_manager';
   const sourceVisible =
     !isSupportUser &&
+    !isSalesSideRole &&
     seeSourceAllowed &&
     !(isSuperAdmin && superAdminHideSource);
   const sourceHidden = !sourceVisible;

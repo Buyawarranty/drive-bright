@@ -353,6 +353,8 @@ const LeadAlertCard: React.FC<CardProps> = ({
   }, [lead, onDismiss]);
 
 
+  // Lead source is deliberately NOT shown here — the new-lead pop-up is an
+  // agent-facing surface and sales agents must never see where a lead came from.
   const detailRows: Array<[string, string]> = [
     ['Name', fullName],
     ['Phone', displayPhone || '—'],
@@ -360,7 +362,6 @@ const LeadAlertCard: React.FC<CardProps> = ({
     ['Reg', lead.vehicle_reg || '—'],
     ['Vehicle', vehicleParts || '—'],
     ['Mileage', lead.mileage ? String(lead.mileage) : '—'],
-    ['Source', lead.lead_source || '—'],
   ];
 
   const openLead = (e: React.MouseEvent) => {
