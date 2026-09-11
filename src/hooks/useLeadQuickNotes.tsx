@@ -757,11 +757,15 @@ export const useLeadQuickNotes = (leadId: string) => {
   return {
     notes,
     loading,
+    loadFailed,
     addNote,
     updateNote,
     togglePin,
     deleteNote,
-    refetch: () => fetchNotes(true),
+    refetch: () => {
+      setLoadFailed(false);
+      return fetchNotes(true);
+    },
     isAbandonedCart,
     isSaving: isSavingRef.current,
     flushPendingQuickNotes: flushAllPendingQuickNotes
