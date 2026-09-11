@@ -1599,7 +1599,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         {/* Header row */}
         {showAgentSettings && (
 
-        <div className={`hidden md:grid ${hideSources ? 'grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
+        <div className={`hidden md:grid ${!showSources ? 'grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
           <div>Agent</div>
           <div>Team</div>
           <div>Getting leads?</div>
@@ -1607,7 +1607,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           <div>New leads today</div>
           <div title="Leads assigned to this agent since 6:00 pm yesterday (London time). Helps managers see who has been fed leads recently so they can distribute the overnight batch fairly.">Since 6pm <span className="normal-case text-[10px] opacity-70">yesterday</span></div>
           <div>Lead Types</div>
-          {!hideSources && <div>Sources they handle</div>}
+          {showSources && <div>Sources they handle</div>}
           <div className="text-right">Actions</div>
         </div>
         )}
