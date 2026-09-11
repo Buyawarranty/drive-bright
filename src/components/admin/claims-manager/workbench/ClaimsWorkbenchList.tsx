@@ -33,6 +33,7 @@ export const SIMPLE_STATUSES = [
   { value: 'refund',              label: 'Refund',              tone: 'bg-orange-50 text-orange-700 border-orange-200' },
   { value: 'complaint_submitted', label: 'Complaint Submitted', tone: 'bg-red-50 text-red-700 border-red-200' },
   { value: 'not_a_customer',      label: 'Not a customer',      tone: 'bg-[hsl(351,83%,55%)] text-white border-[hsl(351,83%,45%)]' },
+  { value: 'not_responded',       label: 'Not responded',       tone: 'bg-stone-100 text-stone-700 border-stone-300' },
 ] as const;
 
 export type SimpleStatus = typeof SIMPLE_STATUSES[number]['value'];
@@ -54,6 +55,7 @@ export const deriveSimpleStatus = (c: Claim): SimpleStatus => {
   if (raw === 'canceled') return 'cancelled';
   if (raw === 'complaint') return 'complaint_submitted';
   if (raw === 'not_customer' || raw === 'no_policy' || raw === 'not a customer') return 'not_a_customer';
+  if (raw === 'no_response' || raw === 'not responded' || raw === 'no response' || raw === 'unresponsive') return 'not_responded';
   return 'in_review';
 };
 

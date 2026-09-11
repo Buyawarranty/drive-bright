@@ -26,6 +26,7 @@ const CLAIM_STATUSES = [
   { value: 'approved', label: 'Approved' },
   { value: 'paid', label: 'Paid' },
   { value: 'rejected', label: 'Rejected' },
+  { value: 'not_responded', label: 'Not Responded' },
 ];
 
 export const AddClaimDialog: React.FC<AddClaimDialogProps> = ({
