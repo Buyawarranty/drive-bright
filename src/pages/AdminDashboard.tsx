@@ -21,7 +21,7 @@ import ReminderDuePopup from '@/components/admin/leads/ReminderDuePopup';
 import GlobalQuickReminderButton from '@/components/admin/GlobalQuickReminderButton';
 import { PendingLeadsPill } from '@/components/admin/PendingLeadsPill';
 
-import { CheckoutStruggleAlertBar } from '@/components/admin/CheckoutStruggleAlertBar';
+
 import { DailyCrmSurveyPrompt } from '@/components/admin/feedback/DailyCrmSurvey';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
@@ -1368,8 +1368,6 @@ const AdminDashboardInner: React.FC<{
                 {/* Quick-grant access bar for admins */}
                 <QuickGrantAccessBar userRole={displayRole} />
 
-                {/* Checkout struggle alert bar — admin & super_admin only */}
-                <CheckoutStruggleAlertBar userRole={userRole} />
 
                 {/* Payments to collect — management only */}
                 <CollectPaymentsBanner userRole={userRole} onNavigate={handleTabChange} />
