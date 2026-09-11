@@ -66,6 +66,32 @@ export default function ChatbotAnswerLibraryPanel({ fromIso, toIso }: { fromIso?
   const [newQuestion, setNewQuestion] = useState('');
   const [newAnswer, setNewAnswer] = useState('');
   const [saving, setSaving] = useState(false);
+  const [draftingFor, setDraftingFor] = useState<string | null>(null);
+
+  /** Ask Miles to draft a suggested answer from the approved material; the manager edits and approves it. */
+  const suggestAnswer = async (a: Asked) => {
+    setDraftingFor(a.question);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-sandbox-chat', {
+        body: { action: 'draft_answer', question: a.question, milesSaid: a.milesSaid ?? '' },
+      });
+      if (error) throw error;
+      const draft = String((data as any)?.draft ?? '').trim();
+      if (!draft) throw new Error('No suggestion came back — try again');
+      if (draft.startsWith('NO APPROVED SOURCE')) {
+        toast.message('Miles has no approved material for this one', {
+          description: 'Write the answer yourself below and save it — Miles will use your wording from then on.',
+        });
+      } else {
+        setDrafts((d) => ({ ...d, [a.question]: draft }));
+        toast.success('Suggestion added — check the wording, then save');
+      }
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not draft a suggestion');
+    } finally {
+      setDraftingFor(null);
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
