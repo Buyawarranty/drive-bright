@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { RefreshCw, Check, Save, Split, Info, MoreVertical, Lock, Infinity as InfinityIcon, LifeBuoy, X, ChevronUp, ChevronDown, SkipForward, RotateCcw, Sunrise, Settings, Radio, UserMinus } from 'lucide-react';
+import { RefreshCw, Check, Save, Split, Info, MoreVertical, Lock, Infinity as InfinityIcon, LifeBuoy, X, ChevronUp, ChevronDown, SkipForward, RotateCcw, Sunrise, Settings, Radio, UserMinus, Eye, EyeOff } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -111,6 +111,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
   const [since6pmCounts, setSince6pmCounts] = useState<Record<string, number>>({});
   const [overflowRecipients, setOverflowRecipients] = useState<{ id: string; admin_user_id: string; sort_order: number }[]>([]);
+  /** Show the "Sources they handle" column by default; purple H/S button toggles it. */
+  const [showSources, setShowSources] = useState(true);
 
   const getTodayAssignmentCounts = useCallback(async (): Promise<Record<string, number>> => {
     const todayStart = new Date();
@@ -1405,6 +1407,15 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         <span className={`text-[10px] font-bold uppercase rounded px-1.5 py-0.5 ${strictEnabled ? 'bg-emerald-600 text-white' : 'bg-emerald-200 text-emerald-800'}`}>
                           {strictEnabled ? 'On' : 'Off'}
                         </span>
+                        <button
+                          type="button"
+                          onClick={() => setShowSources(v => !v)}
+                          title={showSources ? 'Hide lead sources (H)' : 'Show lead sources (S)'}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide bg-purple-600 text-white hover:bg-purple-700 transition-colors"
+                        >
+                          {showSources ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                          {showSources ? 'H' : 'S'}
+                        </button>
                       </h3>
                       <p className="text-[11px] font-medium text-emerald-900 bg-emerald-200/70 border border-emerald-400/50 rounded px-2 py-1">
                         RR agents get leads sent to them automatically. ORR agents grab their own from the pool. Both can coexist — this toggle only affects RR agents.
@@ -1597,7 +1608,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
         {/* Header row */}
         {showAgentSettings && (
 
-        <div className={`hidden md:grid ${hideSources ? 'grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
+        <div className={`hidden md:grid ${!showSources ? 'grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_56px]' : 'grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30`}>
           <div>Agent</div>
           <div>Team</div>
           <div>Getting leads?</div>
@@ -1605,7 +1616,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           <div>New leads today</div>
           <div title="Leads assigned to this agent since 6:00 pm yesterday (London time). Helps managers see who has been fed leads recently so they can distribute the overnight batch fairly.">Since 6pm <span className="normal-case text-[10px] opacity-70">yesterday</span></div>
           <div>Lead Types</div>
-          {!hideSources && <div>Sources they handle</div>}
+          {showSources && <div>Sources they handle</div>}
           <div className="text-right">Actions</div>
         </div>
         )}
@@ -1666,7 +1677,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
             return (
               <div
                 key={a.id}
-                className={`grid grid-cols-1 ${hideSources ? 'md:grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_56px]' : 'md:grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors`}
+                className={`grid grid-cols-1 ${!showSources ? 'md:grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_56px]' : 'md:grid-cols-[1.4fr_130px_110px_90px_90px_90px_1.2fr_1.6fr_56px]'} gap-3 px-5 py-3 items-center hover:bg-muted/20 transition-colors`}
               >
 
 
@@ -2025,7 +2036,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                 </div>
 
                 {/* Allowed Sources */}
-                {!hideSources && (
+                {showSources && (
 
                 <div className="space-y-1">
                   <div className="flex flex-wrap gap-1">
