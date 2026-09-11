@@ -31,6 +31,7 @@ const SOURCES = [
   { value: 'stripe', label: 'Stripe' },
   { value: 'bumper', label: 'Bumper' },
   { value: 'payment_assist', label: 'Payment Assist' },
+  { value: 'paybetter', label: 'PayBetter' },
   { value: 'bank_transfer', label: 'Bank transfer' },
   { value: 'card_machine', label: 'Card / phone payment' },
   { value: 'other', label: 'Other' },

@@ -148,6 +148,15 @@ export const PurchaseSourceBadge: React.FC<PurchaseSourceBadgeProps> = ({
           className: 'bg-pink-100 text-pink-800 hover:bg-pink-100 border-pink-200',
           tooltip: 'Payment Assist finance'
         };
+      case 'paybetter':
+      case 'pay_better':
+        return {
+          label: 'PayBetter sale',
+          icon: Banknote,
+          variant: 'default' as const,
+          className: 'bg-violet-100 text-violet-800 hover:bg-violet-100 border-violet-200',
+          tooltip: 'PayBetter finance — counts towards the sales target at the one-year equivalent'
+        };
       case 'other':
         return {
           label: 'Other',

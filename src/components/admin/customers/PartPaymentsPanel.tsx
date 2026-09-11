@@ -50,6 +50,7 @@ const METHODS = [
   { value: 'stripe', label: 'Stripe' },
   { value: 'bumper', label: 'Bumper' },
   { value: 'payment_assist', label: 'Payment Assist' },
+  { value: 'paybetter', label: 'PayBetter' },
   { value: 'bank_transfer', label: 'Bank transfer' },
   { value: 'card_over_phone', label: 'Card over phone' },
   { value: 'cash', label: 'Cash' },
