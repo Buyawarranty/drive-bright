@@ -5072,21 +5072,25 @@ Questions? Call 0330 229 5040`;
                           </span>
                         )}
                         <div className="font-semibold">{term.label}</div>
-                        {s && (
+                        {s && (() => {
+                          // The big box must always agree with the instalment plan boxes and the
+                          // sticky bar: same base total, same plan, same rounding.
+                          const isSelectedTerm = paymentType === term.id;
+                          const baseTotal = isSelectedTerm
+                            ? Math.round(Number(displayedTotalPrice) || s.total)
+                            : s.total;
+                          const ratio = oneYearRatio(termSavings["12months"]?.total, s.total);
+                          const plan = isInstalmentAllowed(term.id, instalmentCount) && !isInstalmentComingSoon(instalmentCount)
+                            ? instalmentCount
+                            : 12;
+                          const planTotal = instalmentScheduleTotal(baseTotal, plan, ratio);
+                          const planMonthly = instalmentAmount(baseTotal, plan, ratio);
+                          return (
                           <div className="mt-1.5 space-y-1">
-                            <div className="text-xs text-black font-medium">£{s.total} total · £{s.perYear}/yr</div>
-                            {(() => {
-                              // Show the £/mo figure for the currently selected instalment plan where
-                              // that plan is valid for this term; otherwise fall back to 12 instalments.
-                              const plan = isInstalmentAllowed(term.id, instalmentCount) && !isInstalmentComingSoon(instalmentCount)
-                                ? instalmentCount
-                                : 12;
-                              return (
-                                <div className="text-[11px] font-medium text-black">
-                                  £{instalmentAmount(s.total, plan, oneYearRatio(termSavings["12months"]?.total, s.total))}/mo · {plan} instalments
-                                </div>
-                              );
-                            })()}
+                            <div className="text-xs text-black font-medium">£{planTotal} total · £{Math.round(planTotal / years)}/yr</div>
+                            <div className="text-[11px] font-medium text-black">
+                              £{planMonthly}/mo · {plan} instalments
+                            </div>
                             {years === 1 ? (
                               <div className="text-[11px] font-medium text-muted-foreground">Baseline price</div>
                             ) : s.saving > 0 ? (
