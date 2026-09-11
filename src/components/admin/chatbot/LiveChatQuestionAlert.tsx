@@ -21,6 +21,8 @@ const MUTE_KEY = 'chat_question_alert_muted';
 const WINDOW_MINUTES = 20;
 /** Beep cadence while a customer is waiting for a real person. */
 const BEEP_MS = 10000;
+/** The beeping silences itself after 20 seconds (two beeps). */
+const AUTO_SILENCE_MS = 20000;
 
 const text = (m: Row) => {
   if (m.content && m.content.trim()) return m.content.trim();
@@ -124,18 +126,25 @@ export const LiveChatQuestionAlert: React.FC = () => {
   const visible = useMemo(() => rows.filter((r) => !dismissed.has(r.id)), [rows, dismissed]);
   const shouldBeep = allowed && !muted && waitingCount > 0 && openNow.current;
 
+  // The beep switches itself off after 20 seconds — staff can mute it sooner
+  // with the speaker button above. A NEW customer waiting re-arms the beep.
   useEffect(() => {
     if (!shouldBeep) {
       stopPhoneRing();
       return;
     }
     playPhoneRing();
-    const t = window.setInterval(() => playPhoneRing(), BEEP_MS);
+    const beepTimer = window.setInterval(() => playPhoneRing(), BEEP_MS);
+    const silenceTimer = window.setTimeout(() => {
+      window.clearInterval(beepTimer);
+      stopPhoneRing();
+    }, AUTO_SILENCE_MS);
     return () => {
-      window.clearInterval(t);
+      window.clearInterval(beepTimer);
+      window.clearTimeout(silenceTimer);
       stopPhoneRing();
     };
-  }, [shouldBeep]);
+  }, [shouldBeep, waitingThreadId]);
 
   const toggleMute = () => {
     setMuted((prev) => {
@@ -188,7 +197,8 @@ export const LiveChatQuestionAlert: React.FC = () => {
             {waitingCount > 0 && (
               <div className="flex items-center gap-2 rounded border border-amber-300 bg-amber-50 px-2 py-1.5 text-xs font-semibold text-amber-900">
                 <Headset className="h-3.5 w-3.5" />
-                Someone has asked for a real person — reply now, the beeping stops once you do.
+                Someone has asked for a real person — reply now. The beep stops by itself after 20
+                seconds, or mute it sooner with the speaker button.
               </div>
             )}
             {waitingCount > 0 && waitingThreadId && (
