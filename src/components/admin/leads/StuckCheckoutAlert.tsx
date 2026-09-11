@@ -1,12 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertTriangle, Phone, Copy, Mail, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertTriangle, Phone, Copy, Mail, X, ChevronDown, ChevronUp, UserCircle2 } from 'lucide-react';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { isTestStruggle } from '@/lib/checkoutStruggleTest';
 import { getContactCadence } from '@/lib/checkoutContactCadence';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
+import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
 const DISMISSED_IDS_KEY = 'stuck-checkout-alert-dismissed-ids';
+
+const tail9 = (p?: string | null) => (p || '').replace(/\D/g, '').slice(-9);
+
+/** alert id → the admin_user id that owns the matching lead (null = unassigned/none). */
+type OwnerMap = Record<string, string | null>;
 
 interface StuckRow {
   id: string;
