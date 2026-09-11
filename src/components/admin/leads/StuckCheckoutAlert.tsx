@@ -64,7 +64,9 @@ export const StuckCheckoutAlert: React.FC = () => {
   const [owners, setOwners] = useState<OwnerMap>({});
 
   const load = useCallback(async () => {
-    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    // Only show genuinely fresh cases — anything older than 3 hours is stale
+    // and belongs in the normal lead follow-up flow, not a live pop-up.
+    const since = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
     const { data } = await supabase
       .from('checkout_struggle_alerts')
       .select('id, signal_type, status, created_at, customer_name, customer_email, customer_phone, vehicle_reg, device_type, payment_method, plan_name, amount')
@@ -160,7 +162,7 @@ export const StuckCheckoutAlert: React.FC = () => {
               <p className="text-sm font-bold leading-tight">
                 {live.length === 1 ? 'Customer stuck on checkout' : `${live.length} customers stuck on checkout`}
               </p>
-              <p className="text-[11px] text-red-100">{readyToCall} ready to call now</p>
+              <p className="text-[11px] text-white">{readyToCall} ready to call now</p>
             </div>
             {expanded ? <ChevronUp className="h-4 w-4 mt-0.5 shrink-0" /> : <ChevronDown className="h-4 w-4 mt-0.5 shrink-0" />}
           </button>
