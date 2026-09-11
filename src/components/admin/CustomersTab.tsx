@@ -4,6 +4,7 @@ import { AdminNotification } from '@/hooks/useAdminNotifications';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchSalesCreditAgentIds, buildSaleCreditResolver } from '@/lib/saleCredit';
+import { isPayBetterSale, PAYBETTER_TARGET_NOTE } from '@/lib/payBetterSales';
 
 import { ReferencePriceCell } from '@/components/admin/customers/ReferencePriceCell';
 import FreeMonthsOptions, { bonusMonthsForOption, type FreeCoverOption } from './quote/FreeMonthsOptions';
@@ -1665,11 +1666,13 @@ export const CustomersTab = ({
         const paymentTypeStr = (customer.payment_type || '').toLowerCase();
         const isPaypal = sessionId.includes('paypal') || paymentTypeStr.includes('paypal') || purchaseSrc.includes('paypal');
         const isPaymentAssist = purchaseSrc.includes('payment_assist') || purchaseSrc.includes('payment assist');
+        const isPayBetter = isPayBetterSale(purchaseSrc);
         if (filterByPaymentSource === 'bumper') return hasBumper;
         if (filterByPaymentSource === 'stripe') return hasStripe && !isPaypal && !hasBumper;
         if (filterByPaymentSource === 'paypal') return isPaypal;
-        if (filterByPaymentSource === 'payment_assist') return isPaymentAssist || (!hasBumper && !hasStripe && !isPaypal && purchaseSrc === '');
-        if (filterByPaymentSource === 'other') return !hasBumper && !hasStripe && !isPaypal && !isPaymentAssist;
+        if (filterByPaymentSource === 'paybetter') return isPayBetter;
+        if (filterByPaymentSource === 'payment_assist') return isPaymentAssist || (!hasBumper && !hasStripe && !isPaypal && !isPayBetter && purchaseSrc === '');
+        if (filterByPaymentSource === 'other') return !hasBumper && !hasStripe && !isPaypal && !isPaymentAssist && !isPayBetter;
         return true;
       });
     }
@@ -5057,6 +5060,7 @@ Buyawarranty.co.uk`,
                         <SelectItem value="bumper">Bumper</SelectItem>
                         <SelectItem value="stripe">Stripe</SelectItem>
                         <SelectItem value="payment_assist">Payment Assist</SelectItem>
+                        <SelectItem value="paybetter">PayBetter</SelectItem>
                         <SelectItem value="paypal">PayPal</SelectItem>
                         <SelectItem value="other">Other / Manual</SelectItem>
                       </SelectContent>
@@ -5515,7 +5519,18 @@ Buyawarranty.co.uk`,
                         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" largeCloseButton>
                           <DialogHeader>
                             <div className="flex items-center justify-between">
-                              <DialogTitle>Manage Customer: {selectedCustomer?.name}</DialogTitle>
+                               <DialogTitle className="flex items-center gap-2">
+                                 Manage Customer: {selectedCustomer?.name}
+                                 {isPayBetterSale((selectedCustomer as any)?.purchase_source) && (
+                                   <Badge
+                                     variant="outline"
+                                     className="bg-violet-100 text-violet-800 border-violet-300 text-[11px] font-semibold"
+                                     title={PAYBETTER_TARGET_NOTE}
+                                   >
+                                     PayBetter sale · 1-year equivalent to target
+                                   </Badge>
+                                 )}
+                               </DialogTitle>
                               {selectedCustomer && (
                                 <div className="flex items-center gap-2">
                                   {canRaiseSaveDeal && (
@@ -6954,6 +6969,7 @@ Please log in and change your password after first login.`;
                       stripe: 'Stripe',
                       stripe_dashboard: 'Stripe',
                       payment_assist: 'Payment Assist',
+                      paybetter: 'PayBetter',
                       klarna: 'Klarna',
                       ivendi: 'iVendi',
                       zopa: 'Zopa',

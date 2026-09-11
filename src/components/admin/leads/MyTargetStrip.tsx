@@ -9,6 +9,7 @@ import { buildSaleCreditResolver, fetchSalesCreditAgentIds } from '@/lib/saleCre
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { useSeesAllAgents } from '@/hooks/useSeesAllAgents';
 import { getAgentColor } from '@/lib/agentColors';
+import { targetCreditAmount } from '@/lib/payBetterSales';
 
 const gbp = (n: number) => `£${Math.round(n || 0).toLocaleString('en-GB')}`;
 
@@ -60,7 +61,7 @@ export const MyTargetStrip: React.FC = () => {
       const end = endOfMonth(month);
       const { data: sales } = await supabase
         .from('customers')
-        .select('final_amount, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, assigned_to')
+        .select('final_amount, purchase_source, payment_type, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, assigned_to')
         .eq('is_deleted', false)
         .ilike('status', 'active')
         .gte('signup_date', start.toISOString())
@@ -71,7 +72,8 @@ export const MyTargetStrip: React.FC = () => {
       (sales || []).forEach((s: any) => {
         const aid = resolveCredit(s);
         if (!aid || !ids.includes(aid)) return;
-        map[aid] = (map[aid] || 0) + (Number(s.final_amount) || 0);
+        // PayBetter sales only credit the one-year equivalent towards target.
+        map[aid] = (map[aid] || 0) + targetCreditAmount(s);
       });
 
       setFallbackRevenue(map);

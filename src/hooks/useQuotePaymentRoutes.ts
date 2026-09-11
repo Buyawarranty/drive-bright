@@ -20,6 +20,7 @@ export const PAYMENT_ROUTE_LABELS: Record<string, string> = {
   bumper: 'Bumper',
   bumper_portal: 'Bumper',
   payment_assist: 'Payment Assist',
+  paybetter: 'PayBetter',
   klarna: 'Klarna',
   ivendi: 'iVendi',
   zopa: 'Zopa',
