@@ -35,6 +35,7 @@ const normaliseStatus = (raw?: string | null): string => {
   if (s === 'canceled') return 'cancelled';
   if (s === 'complaint') return 'complaint_submitted';
   if (s === 'not_customer' || s === 'no_policy') return 'not_a_customer';
+  if (s === 'no_response' || s === 'not responded' || s === 'no response' || s === 'unresponsive') return 'not_responded';
   return '';
 };
 
@@ -45,6 +46,7 @@ const STATUS_TO_TAG_NAME: Record<string, string> = {
   approved: 'Approved',
   payment_pending: 'Paid',
   declined: 'Rejected',
+  not_responded: 'Not Responded',
 };
 
 export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({

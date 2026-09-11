@@ -36,6 +36,7 @@ export const getReadinessState = (claim: {
   if (claim.status === 'approved' || claim.status === 'paid') return 'Approved';
   if (claim.status === 'rejected') return 'Rejected';
   if (claim.status === 'awaiting_info') return 'Waiting for Evidence';
+  if (claim.status === 'not_responded') return 'Not Responded';
   if (!claim.file_url && claim.status !== 'resolved') return 'Evidence Needed';
   if (claim.status === 'new') return 'Ready for Review';
   if (claim.status === 'in_progress') return 'Under Review';
@@ -52,6 +53,7 @@ export const readinessColor = (state: string) => {
     case 'Approved': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
     case 'Rejected': return 'bg-red-100 text-red-800 border-red-200';
     case 'Resolved': return 'bg-slate-100 text-slate-800 border-slate-200';
+    case 'Not Responded': return 'bg-stone-100 text-stone-700 border-stone-300';
     case 'Fake/Test': return 'bg-gray-200 text-gray-500 border-gray-300 line-through';
     default: return 'bg-gray-100 text-gray-800 border-gray-200';
   }
@@ -85,6 +87,7 @@ export const ClaimsFilterBar: React.FC<ClaimsFilterBarProps> = ({
             <SelectItem value="paid">Paid</SelectItem>
             <SelectItem value="rejected">Rejected</SelectItem>
             <SelectItem value="resolved">Resolved</SelectItem>
+            <SelectItem value="not_responded">Not Responded</SelectItem>
             <SelectItem value="fake_test">Fake/Test</SelectItem>
           </SelectContent>
         </Select>
