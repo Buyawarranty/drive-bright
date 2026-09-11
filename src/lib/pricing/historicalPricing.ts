@@ -88,3 +88,29 @@ export function getPricingVersionHistoryCached(): Promise<PricingVersionSnapshot
   if (!historyPromise) historyPromise = loadPricingVersionHistory();
   return historyPromise;
 }
+
+/**
+ * Point-of-sale audit stamp: the exact moment a quote was given plus the price
+ * model that was live at that moment.
+ *
+ * Sales staff and managers argue about discounts weeks later, so every sale
+ * records when the quote was produced. Managers can then line that timestamp up
+ * against the price model in Price Updates that was live at the time.
+ */
+export async function quoteAuditStamp(when: Date = new Date()): Promise<{
+  sale_quoted_at: string;
+  sale_pricing_version_id: string | null;
+  sale_pricing_version_label: string | null;
+}> {
+  let version: PricingVersionSnapshot | null = null;
+  try {
+    version = pricingVersionAsOf(await getPricingVersionHistoryCached(), when);
+  } catch {
+    version = null;
+  }
+  return {
+    sale_quoted_at: when.toISOString(),
+    sale_pricing_version_id: version?.id ?? null,
+    sale_pricing_version_label: version?.label ?? null,
+  };
+}
