@@ -348,17 +348,34 @@ export const useLeadQuickNotes = (leadId: string) => {
       }
       
       hasFetchedRef.current = true;
+      setLoadFailed(false);
     } catch (error) {
       console.error('[fetchNotes] Error:', error);
-      // CRITICAL: Do NOT clear notes on error if we already had notes loaded
-      if (!hasFetchedRef.current && notesRef.current.length === 0) {
-        updateNotes([]);
+      // Never wipe notes we already showed, and never claim "no notes yet"
+      // when the read itself failed — retry a few times, then flag the failure
+      // so the panel can offer a retry instead of an empty state.
+      const mirrored = readMirroredNotes(leadId);
+      if (!hasFetchedRef.current && notesRef.current.length === 0 && mirrored.length > 0) {
+        updateNotes(mirrored);
+      }
+
+      if (attempt < 3) {
+        if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = setTimeout(() => {
+          void fetchNotes(true, attempt + 1);
+        }, 800 * Math.pow(2, attempt));
+      } else if (!hasFetchedRef.current) {
+        setLoadFailed(true);
       }
     } finally {
       clearTimeout(timeoutId);
       setLoading(false);
     }
   }, [leadId, isAbandonedCart, actualId, updateNotes]);
+
+  useEffect(() => () => {
+    if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+  }, []);
 
   useEffect(() => {
     fetchNotes(false); // initial load
