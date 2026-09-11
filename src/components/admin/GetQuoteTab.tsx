@@ -5119,6 +5119,8 @@ Questions? Call 0330 229 5040`;
                       <div className="grid grid-cols-2 gap-2">
                         {getInstalmentOptions(paymentType).map((count) => {
                           const amount = instalmentAmount(displayedTotalPrice, count, longPlanRatio);
+                          const scheduleTotal = instalmentScheduleTotal(displayedTotalPrice, count, longPlanRatio);
+                          const twelveTotal = instalmentScheduleTotal(displayedTotalPrice, 12, longPlanRatio);
                           const comingSoon = isInstalmentComingSoon(count);
                           return (
                             <button
