@@ -17,7 +17,6 @@ export const CHAT_ALERT_EMAILS = [
 
 export const CHAT_ALERT_ROLES = [
   'super_admin',
-  'sales_manager',
   'claims_manager',
   'performance_manager',
   'accounts_manager',
