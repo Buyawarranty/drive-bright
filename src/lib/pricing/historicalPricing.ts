@@ -26,7 +26,7 @@ export interface PricingVersionSnapshot {
 export async function loadPricingVersionHistory(): Promise<PricingVersionSnapshot[]> {
   const { data, error } = await supabase
     .from('pricing_matrix_versions')
-    .select('id, published_at, admin_matrix, step3_discount_pct, labour_rate_factors')
+    .select('id, label, published_at, admin_matrix, step3_discount_pct, labour_rate_factors')
     .not('published_at', 'is', null)
     .order('published_at', { ascending: false });
 
@@ -36,6 +36,7 @@ export async function loadPricingVersionHistory(): Promise<PricingVersionSnapsho
     .filter(v => !!v.admin_matrix)
     .map(v => ({
       id: v.id,
+      label: (v as any).label || 'Unnamed price model',
       publishedAt: new Date(v.published_at as string).getTime(),
       matrix: v.admin_matrix as unknown as PricingMatrixShape,
       step3DiscountPct: Number(v.step3_discount_pct ?? 10),
