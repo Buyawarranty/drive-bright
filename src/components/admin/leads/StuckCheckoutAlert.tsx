@@ -1,12 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertTriangle, Phone, Copy, Mail, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertTriangle, Phone, Copy, Mail, X, ChevronDown, ChevronUp, UserCircle2 } from 'lucide-react';
 import { setVisibleInterval } from '@/lib/visibilityInterval';
 import { isTestStruggle } from '@/lib/checkoutStruggleTest';
 import { getContactCadence } from '@/lib/checkoutContactCadence';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
+import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
 const DISMISSED_IDS_KEY = 'stuck-checkout-alert-dismissed-ids';
+
+const tail9 = (p?: string | null) => (p || '').replace(/\D/g, '').slice(-9);
+
+/** alert id → the admin_user id that owns the matching lead (null = unassigned/none). */
+type OwnerMap = Record<string, string | null>;
 
 interface StuckRow {
   id: string;
@@ -55,6 +61,7 @@ export const StuckCheckoutAlert: React.FC = () => {
   const [rows, setRows] = useState<StuckRow[]>([]);
   const [dismissedIds, setDismissedIds] = useState<string[]>(() => readDismissed());
   const [expanded, setExpanded] = useState(true);
+  const [owners, setOwners] = useState<OwnerMap>({});
 
   const load = useCallback(async () => {
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -85,6 +92,44 @@ export const StuckCheckoutAlert: React.FC = () => {
     () => rows.filter((r) => !isTestStruggle(r) && !dismissedIds.includes(r.id)),
     [rows, dismissedIds],
   );
+
+  // Resolve which agent owns each stuck customer's lead (by email / phone tail-9).
+  useEffect(() => {
+    const unresolved = live.filter((r) => !(r.id in owners));
+    if (unresolved.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const results = await Promise.all(
+        unresolved.map(async (r) => {
+          const email = (r.customer_email || '').trim().toLowerCase();
+          const phone9 = tail9(r.customer_phone);
+          try {
+            const { data } = await supabase.rpc('find_lead_owner_by_contact', {
+              _email: email.includes('@') ? email : null,
+              _phone9: phone9.length === 9 ? phone9 : null,
+            });
+            const rowsFound = (data as any[]) || [];
+            const owner = rowsFound.find((x) => x.assigned_to)?.assigned_to ?? null;
+            return [r.id, owner] as const;
+          } catch {
+            return [r.id, null] as const;
+          }
+        }),
+      );
+      if (cancelled) return;
+      setOwners((prev) => ({ ...prev, ...Object.fromEntries(results) }));
+    })();
+    return () => { cancelled = true; };
+  }, [live, owners]);
+
+  const ownerIds = useMemo(() => Object.values(owners).filter((v): v is string => !!v), [owners]);
+  const adminMap = useAllAdminUsersMap(ownerIds);
+  const ownerName = (id: string | null | undefined) => {
+    if (!id) return null;
+    const u = adminMap.get(id);
+    if (!u) return null;
+    return [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email;
+  };
 
   const dismiss = (id: string) => {
     setDismissedIds((prev) => {
@@ -157,6 +202,18 @@ export const StuckCheckoutAlert: React.FC = () => {
                       <span className={`inline-block mt-1 text-[10px] font-semibold border rounded-full px-2 py-0.5 ${cadence.chipClass}`}>
                         {cadence.label}
                       </span>
+                      {r.id in owners && (
+                        ownerName(owners[r.id]) ? (
+                          <span className="inline-flex items-center gap-1 mt-1 ml-1 text-[10px] font-semibold border border-indigo-200 bg-indigo-50 text-indigo-700 rounded-full px-2 py-0.5" title="This customer already has a lead owned by this agent">
+                            <UserCircle2 className="h-3 w-3" />
+                            Lead with {ownerName(owners[r.id])}
+                          </span>
+                        ) : (
+                          <span className="inline-block mt-1 ml-1 text-[10px] font-semibold border border-gray-200 bg-gray-50 text-gray-500 rounded-full px-2 py-0.5">
+                            No lead owner
+                          </span>
+                        )
+                      )}
                     </div>
                     <button
                       onClick={() => dismiss(r.id)}
