@@ -170,6 +170,10 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
             </p>
           )}
 
+          <p className="mt-2 rounded-md border-2 border-violet-300 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-900">
+            PayBetter sales count at the one-year equivalent — a 2 or 3 year PayBetter warranty is credited as the
+            yearly figure (total ÷ cover years). Every other sale counts in full.
+          </p>
         </CardHeader>
         <CardContent className="space-y-5">
           {loading && <p className="text-sm text-muted-foreground">Loading team figures…</p>}
