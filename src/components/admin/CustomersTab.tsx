@@ -1665,11 +1665,13 @@ export const CustomersTab = ({
         const paymentTypeStr = (customer.payment_type || '').toLowerCase();
         const isPaypal = sessionId.includes('paypal') || paymentTypeStr.includes('paypal') || purchaseSrc.includes('paypal');
         const isPaymentAssist = purchaseSrc.includes('payment_assist') || purchaseSrc.includes('payment assist');
+        const isPayBetter = isPayBetterSale(purchaseSrc);
         if (filterByPaymentSource === 'bumper') return hasBumper;
         if (filterByPaymentSource === 'stripe') return hasStripe && !isPaypal && !hasBumper;
         if (filterByPaymentSource === 'paypal') return isPaypal;
-        if (filterByPaymentSource === 'payment_assist') return isPaymentAssist || (!hasBumper && !hasStripe && !isPaypal && purchaseSrc === '');
-        if (filterByPaymentSource === 'other') return !hasBumper && !hasStripe && !isPaypal && !isPaymentAssist;
+        if (filterByPaymentSource === 'paybetter') return isPayBetter;
+        if (filterByPaymentSource === 'payment_assist') return isPaymentAssist || (!hasBumper && !hasStripe && !isPaypal && !isPayBetter && purchaseSrc === '');
+        if (filterByPaymentSource === 'other') return !hasBumper && !hasStripe && !isPaypal && !isPaymentAssist && !isPayBetter;
         return true;
       });
     }
@@ -5057,6 +5059,7 @@ Buyawarranty.co.uk`,
                         <SelectItem value="bumper">Bumper</SelectItem>
                         <SelectItem value="stripe">Stripe</SelectItem>
                         <SelectItem value="payment_assist">Payment Assist</SelectItem>
+                        <SelectItem value="paybetter">PayBetter</SelectItem>
                         <SelectItem value="paypal">PayPal</SelectItem>
                         <SelectItem value="other">Other / Manual</SelectItem>
                       </SelectContent>
@@ -6954,6 +6957,7 @@ Please log in and change your password after first login.`;
                       stripe: 'Stripe',
                       stripe_dashboard: 'Stripe',
                       payment_assist: 'Payment Assist',
+                      paybetter: 'PayBetter',
                       klarna: 'Klarna',
                       ivendi: 'iVendi',
                       zopa: 'Zopa',
