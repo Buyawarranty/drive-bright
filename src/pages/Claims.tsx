@@ -402,7 +402,10 @@ const Claims = () => {
         return;
       }
 
-      if (data?.found && (data?.make || data?.model)) {
+      // Existing warranty holders must always be able to file a claim, so the
+      // sales-side eligibility/exclusion blocks (e.g. specialist makes) must not
+      // stop the lookup here. If DVLA returned a vehicle, accept it.
+      if (data?.make || data?.model) {
         setVehicleDetails({
           make: data.make,
           model: data.model,
