@@ -6,6 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { buildSaleCreditResolver, fetchSalesCreditAgentIds } from '@/lib/saleCredit';
 import { withBackgroundPriority } from '@/lib/requestQueue';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { useAuth } from '@/hooks/useAuth';
 import { UnattributedSalesAssigner } from './UnattributedSalesAssigner';
 
 
