@@ -61,6 +61,7 @@ export const StuckCheckoutAlert: React.FC = () => {
   const [rows, setRows] = useState<StuckRow[]>([]);
   const [dismissedIds, setDismissedIds] = useState<string[]>(() => readDismissed());
   const [expanded, setExpanded] = useState(true);
+  const [owners, setOwners] = useState<OwnerMap>({});
 
   const load = useCallback(async () => {
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -91,6 +92,44 @@ export const StuckCheckoutAlert: React.FC = () => {
     () => rows.filter((r) => !isTestStruggle(r) && !dismissedIds.includes(r.id)),
     [rows, dismissedIds],
   );
+
+  // Resolve which agent owns each stuck customer's lead (by email / phone tail-9).
+  useEffect(() => {
+    const unresolved = live.filter((r) => !(r.id in owners));
+    if (unresolved.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const results = await Promise.all(
+        unresolved.map(async (r) => {
+          const email = (r.customer_email || '').trim().toLowerCase();
+          const phone9 = tail9(r.customer_phone);
+          try {
+            const { data } = await supabase.rpc('find_lead_owner_by_contact', {
+              _email: email.includes('@') ? email : null,
+              _phone9: phone9.length === 9 ? phone9 : null,
+            });
+            const rowsFound = (data as any[]) || [];
+            const owner = rowsFound.find((x) => x.assigned_to)?.assigned_to ?? null;
+            return [r.id, owner] as const;
+          } catch {
+            return [r.id, null] as const;
+          }
+        }),
+      );
+      if (cancelled) return;
+      setOwners((prev) => ({ ...prev, ...Object.fromEntries(results) }));
+    })();
+    return () => { cancelled = true; };
+  }, [live, owners]);
+
+  const ownerIds = useMemo(() => Object.values(owners).filter((v): v is string => !!v), [owners]);
+  const adminMap = useAllAdminUsersMap(ownerIds);
+  const ownerName = (id: string | null | undefined) => {
+    if (!id) return null;
+    const u = adminMap.get(id);
+    if (!u) return null;
+    return [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.email;
+  };
 
   const dismiss = (id: string) => {
     setDismissedIds((prev) => {
