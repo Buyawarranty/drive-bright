@@ -5106,7 +5106,8 @@ Questions? Call 0330 229 5040`;
                               <div className="text-[11px] text-muted-foreground">Same yearly rate as 1 year</div>
                             )}
                           </div>
-                        )}
+                          );
+                        })()}
                       </button>
                       );
                     })}
