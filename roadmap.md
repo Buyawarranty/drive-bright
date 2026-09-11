@@ -63,3 +63,6 @@
 - [x] Stop 20% off marketing reminders going to customers who already hold active warranty cover (Jenny Beaumont)
 - [ ] Renewals: 90-day window, feed every 2h into Renewals + New Leads
 - [ ] Open Round Robin: plan safe merge into New Leads (sandbox only, no live impact)
+
+## Chatbot answer library (Sep 11)
+- [ ] Managers write/approve answers in Chatbot data tab; Miles reuses them for same/similar questions
