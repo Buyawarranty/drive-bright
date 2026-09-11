@@ -19,6 +19,7 @@ import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { PriceOverridesPanel } from './pricing/PriceOverridesPanel';
 import { DiscountsByMonthAgentTable } from './discounts/DiscountsByMonthAgentTable';
 import { getRecordedOrderDiscount } from '@/lib/pricing/orderDiscount';
+import { useIsManagement } from '@/hooks/useIsManagement';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 
@@ -291,6 +292,8 @@ const computeRange = (key: QuickRange): DateRange | undefined => {
 };
 
 export const DiscountsGivenTab: React.FC = () => {
+  // Only managers get to see which price model was live when the quote was given.
+  const { isManagement } = useIsManagement();
   const { user, userRole } = useAuth();
   const [customers, setCustomers] = useState<CustomerRecord[]>([]);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
