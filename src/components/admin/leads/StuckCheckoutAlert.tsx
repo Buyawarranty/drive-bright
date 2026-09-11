@@ -202,6 +202,18 @@ export const StuckCheckoutAlert: React.FC = () => {
                       <span className={`inline-block mt-1 text-[10px] font-semibold border rounded-full px-2 py-0.5 ${cadence.chipClass}`}>
                         {cadence.label}
                       </span>
+                      {r.id in owners && (
+                        ownerName(owners[r.id]) ? (
+                          <span className="inline-flex items-center gap-1 mt-1 ml-1 text-[10px] font-semibold border border-indigo-200 bg-indigo-50 text-indigo-700 rounded-full px-2 py-0.5" title="This customer already has a lead owned by this agent">
+                            <UserCircle2 className="h-3 w-3" />
+                            Lead with {ownerName(owners[r.id])}
+                          </span>
+                        ) : (
+                          <span className="inline-block mt-1 ml-1 text-[10px] font-semibold border border-gray-200 bg-gray-50 text-gray-500 rounded-full px-2 py-0.5">
+                            No lead owner
+                          </span>
+                        )
+                      )}
                     </div>
                     <button
                       onClick={() => dismiss(r.id)}
