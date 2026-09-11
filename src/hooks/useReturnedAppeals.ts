@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export interface ReturnedAppeal {
   id: string;
+  appealId: string | null;
   claimId: string;
   createdAt: string;
   isRead: boolean;
@@ -35,7 +36,7 @@ export const useReturnedAppeals = () => {
     try {
       const { data: openAppeals } = await supabase
         .from('claim_appeals')
-        .select('claim_id, reason, appeal_fee, independent_reviewer, sent_at, closed_at, created_at')
+        .select('id, claim_id, reason, appeal_fee, independent_reviewer, sent_at, closed_at, created_at')
         .is('closed_at', null)
         .order('created_at', { ascending: false });
 
@@ -60,6 +61,7 @@ export const useReturnedAppeals = () => {
         const a = appealByClaim.get(r.claim_id) || {};
         return {
           id: r.id,
+          appealId: a.id ?? null,
           claimId: r.claim_id,
           createdAt: r.created_at,
           isRead: !!r.is_read,
@@ -108,6 +110,15 @@ export const useReturnedAppeals = () => {
     setAppeals(prev => prev.map(a => (a.id === id ? { ...a, isRead: true } : a)));
   }, []);
 
+  const closeAppeal = useCallback(async (appealId: string) => {
+    if (!appealId) return;
+    await supabase
+      .from('claim_appeals')
+      .update({ closed_at: new Date().toISOString(), status: 'closed' })
+      .eq('id', appealId);
+    setAppeals(prev => prev.filter(a => a.appealId !== appealId));
+  }, []);
+
   return {
     appeals,
     unread: appeals.filter(a => !a.isRead),
@@ -116,5 +127,6 @@ export const useReturnedAppeals = () => {
     loading,
     refetch: fetchAppeals,
     markAsRead,
+    closeAppeal,
   };
 };
