@@ -7,6 +7,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createLovableAiGatewayProvider } from "../_shared/ai-gateway.ts";
 import { retrieveGrounded } from "./knowledge.ts";
+import { matchLibrary, libraryPromptBlock } from "./answer-library.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -331,7 +332,7 @@ Deno.serve(async (req) => {
       if (lastUserText.trim().length > 3) {
         const { data: libraryRows } = await admin
           .from("ai_chat_answer_library")
-          .select("id, question, answer, keywords")
+          .select("id, question, answer, keywords, times_used")
           .eq("status", "approved")
           .limit(500);
         const matches = matchLibrary(lastUserText, (libraryRows ?? []) as any);
@@ -979,7 +980,7 @@ Deno.serve(async (req) => {
 
     const result = streamText({
       model: gateway(MODEL),
-      system: SYSTEM_PROMPT + liveContext,
+      system: SYSTEM_PROMPT + liveContext + libraryBlock,
       messages: modelMessages,
       tools,
       stopWhen: stepCountIs(50),
