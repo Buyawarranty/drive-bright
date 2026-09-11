@@ -3721,6 +3721,9 @@ Questions? Call 0330 229 5040`;
         original_amount: quotedTotalAtSale,
         discount_amount: discountGivenAtSale,
         sale_quoted_total: quotedTotalAtSale,
+        // Date/time the quote was given + the price model live at that moment,
+        // so a disputed discount can always be verified after the fact.
+        ...(await quoteAuditStamp()),
         sale_discount_amount: discountGivenAtSale,
         sale_discount_pct: quotedTotalAtSale > 0
           ? Math.round((discountGivenAtSale / quotedTotalAtSale) * 1000) / 10
