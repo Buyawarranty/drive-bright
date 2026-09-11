@@ -6973,7 +6973,7 @@ Questions? Call 0330 229 5040`;
                         </div>
                         {instalmentCount !== 12 && (
                           <div className="mt-1 text-[11px] font-semibold text-amber-700">
-                            +£{instalmentPlanTotal(gridTotal, instalmentCount, longPlanRatio) - gridTotal} vs 12-instalment plan
+                            +£{instalmentScheduleTotal(gridTotal, instalmentCount, longPlanRatio) - instalmentScheduleTotal(gridTotal, 12, longPlanRatio)} vs 12-instalment plan
                           </div>
                         )}
                         {priceMatchMode && priceMatchCompetitorPrice && (
