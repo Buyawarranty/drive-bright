@@ -59,7 +59,7 @@ const detect = (messages: Message[]) => {
  * Every customer conversation with Miles, in full, with a one-click
  * "Send as new lead" that writes the whole chat into the lead's notes.
  */
-export default function ChatConversationsPanel({ rangeDays, fromIso, toIso }: { rangeDays: string; fromIso?: string | null; toIso?: string | null }) {
+export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, initialThreadId }: { rangeDays: string; fromIso?: string | null; toIso?: string | null; initialThreadId?: string | null }) {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
