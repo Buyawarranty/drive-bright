@@ -69,6 +69,14 @@ export default function ChatbotDataTab() {
   const fromIso = activeRange?.from ? new Date(new Date(activeRange.from).setHours(0, 0, 0, 0)).toISOString() : null;
   const toIso = activeRange?.to ? new Date(new Date(activeRange.to).setHours(23, 59, 59, 999)).toISOString() : null;
   const [search, setSearch] = useState('');
+  // Opened straight from a chat pop-up: land on the conversation itself.
+  const deepLinkThread = useMemo(() => {
+    try {
+      return new URLSearchParams(window.location.search).get('chatThread');
+    } catch {
+      return null;
+    }
+  }, []);
 
   const load = async () => {
     setLoading(true);
