@@ -256,8 +256,9 @@ export default function ChatbotAnswerLibraryPanel({ fromIso, toIso }: { fromIso?
             <BookOpen className="h-4 w-4" /> Questions waiting for your answer
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Write the answer you want customers to get. Miles uses your wording straight away, and reuses it whenever
-            someone asks the same or a similar question.
+            Write the answer you want customers to get, or press <strong>Suggest an answer</strong> and Miles drafts one from the
+            approved plan documents for you to check. Once you save, Miles uses your wording straight away and reuses it whenever
+            someone asks the same or a similar question — so the chat learns from every question it could not answer before.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
