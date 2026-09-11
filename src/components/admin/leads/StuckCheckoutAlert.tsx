@@ -160,7 +160,7 @@ export const StuckCheckoutAlert: React.FC = () => {
               <p className="text-sm font-bold leading-tight">
                 {live.length === 1 ? 'Customer stuck on checkout' : `${live.length} customers stuck on checkout`}
               </p>
-              <p className="text-[11px] text-red-100">{readyToCall} ready to call now</p>
+              <p className="text-[11px] text-white">{readyToCall} ready to call now</p>
             </div>
             {expanded ? <ChevronUp className="h-4 w-4 mt-0.5 shrink-0" /> : <ChevronDown className="h-4 w-4 mt-0.5 shrink-0" />}
           </button>
