@@ -18,6 +18,7 @@ import { preloadCriticalRoutes } from "@/utils/preloadRoutes";
 import Index from "./pages/Index";
 import WebsiteFooter from "@/components/WebsiteFooter";
 import ScrollToTop from "@/components/ScrollToTop";
+import GlobalSiteChat from "@/components/ai-sandbox/GlobalSiteChat";
 import NotFound from "./pages/NotFound";
 
 import { PageViewTracker } from "@/components/PageViewTracker";
@@ -283,6 +284,8 @@ const App = () => {
             
             <div className="min-h-screen flex flex-col w-full">
               <ConditionalStickyNavigation />
+              {/* Miles chat: marketing/information pages only, never checkout or forms */}
+              <GlobalSiteChat />
               <ConditionalSeasonalBanner />
               <main className="flex-1 pb-16 w-full overflow-x-hidden">
                 <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
