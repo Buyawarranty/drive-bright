@@ -99,6 +99,17 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rangeDays, fromIso, toIso]);
 
+  // Arrived from a chat pop-up — open that conversation straight away.
+  const openedDeepLink = useRef(false);
+  useEffect(() => {
+    if (openedDeepLink.current || !initialThreadId || threads.length === 0) return;
+    const match = threads.find((t) => t.id === initialThreadId);
+    if (!match) return;
+    openedDeepLink.current = true;
+    void openThread(match);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialThreadId, threads]);
+
   const openThread = async (thread: Thread) => {
     setSelectedId(thread.id);
     setLoadingMessages(true);
