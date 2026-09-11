@@ -6,6 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { buildSaleCreditResolver, fetchSalesCreditAgentIds } from '@/lib/saleCredit';
 import { withBackgroundPriority } from '@/lib/requestQueue';
 import { useIsManagement } from '@/hooks/useIsManagement';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
+import { useAuth } from '@/hooks/useAuth';
 import { UnattributedSalesAssigner } from './UnattributedSalesAssigner';
 
 
@@ -51,12 +53,15 @@ interface ReconRow {
 
 export const AllAgentsProgressPanel: React.FC = () => {
   const { isManagement } = useIsManagement();
+  const currentAdminId = useCurrentAdminId();
+  const { user } = useAuth();
   const [rows, setRows] = useState<AgentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [recon, setRecon] = useState<ReconRow[]>([]);
   const [editingTarget, setEditingTarget] = useState<string | null>(null);
   const [targetDraft, setTargetDraft] = useState('');
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [savingDay, setSavingDay] = useState<string | null>(null);
 
   const now = new Date();
   const weekStart = useMemo(() => startOfWeek(now, { weekStartsOn: 1 }), [now.toDateString()]);
@@ -289,6 +294,52 @@ export const AllAgentsProgressPanel: React.FC = () => {
     }
   };
 
+  /** Managers can mark any agent's days; an agent can mark their own. */
+  const canEditDays = (agentId: string) => isManagement || agentId === currentAdminId;
+
+  const toggleWorkingDay = async (agentId: string, dateStr: string, currentType?: string) => {
+    if (!canEditDays(agentId)) return;
+    const cellKey = `${agentId}|${dateStr}`;
+    if (savingDay) return;
+    const working = !!currentType && currentType !== 'off';
+    const nextType = working ? 'off' : 'full_day';
+    setSavingDay(cellKey);
+    // Optimistic so the tick responds straight away.
+    setRows((prev) =>
+      prev.map((r) =>
+        r.adminUserId === agentId
+          ? {
+              ...r,
+              weekDays: { ...r.weekDays, [dateStr]: nextType },
+              daysMarked: Math.max(0, r.daysMarked + (working ? -1 : 1)),
+            }
+          : r,
+      ),
+    );
+    try {
+      const { error } = await (supabase as any)
+        .from('agent_working_days')
+        .upsert(
+          {
+            admin_user_id: agentId,
+            work_date: dateStr,
+            day_type: nextType,
+            created_by: user?.id ?? null,
+          },
+          { onConflict: 'admin_user_id,work_date' },
+        );
+      if (error) throw error;
+      toast.success(nextType === 'off' ? 'Marked as not working' : 'Marked as working');
+    } catch (e: any) {
+      toast.error('Could not save that day', { description: e?.message });
+      load();
+    } finally {
+      setSavingDay(null);
+    }
+  };
+
+
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
@@ -393,20 +444,26 @@ export const AllAgentsProgressPanel: React.FC = () => {
                     {dayLabels.map((d, i) => {
                       const key = format(addDays(weekStart, i), 'yyyy-MM-dd');
                       const type = r.weekDays[key];
+                      const working = !!type && type !== 'off';
+                      const editable = canEditDays(r.adminUserId);
                       return (
-                        <span
+                        <button
                           key={i}
-                          title={`${format(addDays(weekStart, i), 'EEE d MMM')} · ${type ? type.replace('_', ' ') : 'not marked'}`}
-                          className={`h-5 w-5 rounded text-[10px] font-semibold flex items-center justify-center ${
-                            !type
-                              ? 'bg-muted text-muted-foreground'
-                              : type === 'full_day' || type === 'worked'
-                                ? 'bg-emerald-600 text-primary-foreground'
-                                : 'bg-emerald-600/50 text-primary-foreground'
-                          }`}
+                          type="button"
+                          disabled={!editable || savingDay === `${r.adminUserId}|${key}`}
+                          onClick={() => toggleWorkingDay(r.adminUserId, key, type)}
+                          aria-pressed={working}
+                          title={`${format(addDays(weekStart, i), 'EEE d MMM')} · ${
+                            working ? 'working' : type === 'off' ? 'not working' : 'not marked'
+                          }${editable ? ' — tap to change' : ''}`}
+                          className={`h-6 w-6 rounded border text-[10px] font-semibold flex items-center justify-center transition-colors ${
+                            working
+                              ? 'bg-emerald-600 text-primary-foreground border-emerald-700'
+                              : 'bg-background text-muted-foreground border-dashed border-border'
+                          } ${editable ? 'hover:opacity-90 cursor-pointer' : 'cursor-default'} disabled:opacity-60`}
                         >
                           {d}
-                        </span>
+                        </button>
                       );
                     })}
                   </div>

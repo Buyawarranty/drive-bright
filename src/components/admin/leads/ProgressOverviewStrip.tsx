@@ -340,6 +340,36 @@ export const ProgressOverviewStrip: React.FC = () => {
   }, [adminId]);
 
 
+  /** Agents mark their own working days straight from this strip. */
+  const toggleMyWorkingDay = async (dateStr: string, currentType?: string) => {
+    if (!adminId || saving) return;
+    const working = !!currentType && currentType !== 'off';
+    const nextType = working ? 'off' : 'full_day';
+    setSaving(true);
+    setData((prev) => ({ ...prev, workDays: { ...prev.workDays, [dateStr]: nextType } }));
+    try {
+      const { data: userRes } = await supabase.auth.getUser();
+      const { error } = await (supabase as any)
+        .from('agent_working_days')
+        .upsert(
+          {
+            admin_user_id: adminId,
+            work_date: dateStr,
+            day_type: nextType,
+            created_by: userRes?.user?.id ?? null,
+          },
+          { onConflict: 'admin_user_id,work_date' },
+        );
+      if (error) throw error;
+      toast.success(nextType === 'off' ? 'Marked as not working' : 'Marked as working');
+    } catch (e: any) {
+      toast.error('Could not save that day', { description: e?.message });
+      load();
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const toggleBreak = async () => {
     if (!adminId) return;
     setSaving(true);
@@ -535,31 +565,35 @@ export const ProgressOverviewStrip: React.FC = () => {
                 const date = addDays(weekStart, i);
                 const key = format(date, 'yyyy-MM-dd');
                 const type = data.workDays[key];
+                const working = !!type && type !== 'off';
                 const isToday = format(now, 'yyyy-MM-dd') === key;
                 return (
                   <Tooltip key={i}>
                     <TooltipTrigger asChild>
-                      <span
-                        className={`h-6 w-6 rounded-md text-[11px] font-semibold flex items-center justify-center ${
-                          !type
-                            ? 'bg-muted text-muted-foreground'
-                            : type === 'worked'
-                              ? 'bg-emerald-600 text-primary-foreground'
-                              : 'bg-emerald-600/50 text-primary-foreground'
-                        } ${isToday ? 'ring-2 ring-orange-500' : ''}`}
+                      <button
+                        type="button"
+                        disabled={saving}
+                        aria-pressed={working}
+                        onClick={() => toggleMyWorkingDay(key, type)}
+                        className={`h-6 w-6 rounded-md border text-[11px] font-semibold flex items-center justify-center transition-colors ${
+                          working
+                            ? 'bg-emerald-600 text-primary-foreground border-emerald-700'
+                            : 'bg-background text-muted-foreground border-dashed border-border'
+                        } ${isToday ? 'ring-2 ring-orange-500' : ''} disabled:opacity-60`}
                       >
                         {d}
-                      </span>
+                      </button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="text-xs">
-                      {format(date, 'EEE d MMM')} · {type ? type.replace('_', ' ') : 'not marked'}
+                      {format(date, 'EEE d MMM')} · {working ? 'working' : type === 'off' ? 'not working' : 'not marked'} — tap to change
                     </TooltipContent>
                   </Tooltip>
                 );
               })}
             </div>
             <div className="mt-0.5 text-[11px] text-muted-foreground whitespace-nowrap">
-              {Object.keys(data.workDays).length} day{Object.keys(data.workDays).length === 1 ? '' : 's'} marked
+              {Object.values(data.workDays).filter((t) => t && t !== 'off').length} day
+              {Object.values(data.workDays).filter((t) => t && t !== 'off').length === 1 ? '' : 's'} marked
             </div>
           </Cell>
 
