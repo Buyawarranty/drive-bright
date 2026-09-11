@@ -31,7 +31,6 @@ import { useOvernightQueue } from '@/hooks/useOvernightQueue';
 import { CallbackBanner } from './CallbackBanner';
 import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter, AgeWindow } from './LeadsFilters';
 import { useActiveCheckoutStruggles, buildStruggleByLeadId } from '@/hooks/useActiveCheckoutStruggles';
-import { LiveStuckCustomersPanel } from '@/components/admin/leads/LiveStuckCustomersPanel';
 import { DailyCrmSurveyBanner } from '@/components/admin/feedback/DailyCrmSurvey';
 
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
@@ -1764,11 +1763,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           <DailyCrmSurveyBanner adminUserId={currentAdminId} />
         </WidgetErrorBoundary>
       )}
-      {!sandboxMode && (
-        <WidgetErrorBoundary label="Live customers stuck on checkout">
-          <LiveStuckCustomersPanel />
-        </WidgetErrorBoundary>
-      )}
+      {/* Stuck-on-checkout alerts now pop up in the red left-hand rail on every tab */}
 
       {isAdminOrSuperAdmin || userRole === 'sales_manager' ? (
         /* Management sees every agent's figures, not a personal strip */
