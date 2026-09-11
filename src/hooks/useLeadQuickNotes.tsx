@@ -468,8 +468,25 @@ export const useLeadQuickNotes = (leadId: string) => {
 
             if (updateError) throw updateError;
           } else {
-            const alreadySaved = await findRecentDuplicateNote(queuedLeadId, queuedNote.noteText.trim());
-            if (!alreadySaved) {
+            const related = await findRecentRelatedNote(
+              queuedLeadId,
+              queuedNote.noteText.trim(),
+              adminUser.id,
+            );
+
+            if (related?.shouldExtend) {
+              // The queued text continues a fragment already saved — extend it
+              // rather than leaving two half-written notes on the lead.
+              const { error: extendError } = await withTimeout<any>(
+                supabase
+                  .from('lead_quick_notes')
+                  .update({ note_text: queuedNote.noteText.trim() })
+                  .eq('id', related.note.id),
+                NOTE_SAVE_TIMEOUT_MS,
+                'Queued note save timed out'
+              );
+              if (extendError) throw extendError;
+            } else if (!related) {
               const { error: insertError } = await withTimeout<any>(
                 supabase
                   .from('lead_quick_notes')
@@ -484,6 +501,7 @@ export const useLeadQuickNotes = (leadId: string) => {
 
               if (insertError) throw insertError;
             }
+
           }
 
 
