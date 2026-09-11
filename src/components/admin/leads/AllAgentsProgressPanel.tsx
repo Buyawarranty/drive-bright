@@ -294,6 +294,52 @@ export const AllAgentsProgressPanel: React.FC = () => {
     }
   };
 
+  /** Managers can mark any agent's days; an agent can mark their own. */
+  const canEditDays = (agentId: string) => isManagement || agentId === currentAdminId;
+
+  const toggleWorkingDay = async (agentId: string, dateStr: string, currentType?: string) => {
+    if (!canEditDays(agentId)) return;
+    const cellKey = `${agentId}|${dateStr}`;
+    if (savingDay) return;
+    const working = !!currentType && currentType !== 'off';
+    const nextType = working ? 'off' : 'full_day';
+    setSavingDay(cellKey);
+    // Optimistic so the tick responds straight away.
+    setRows((prev) =>
+      prev.map((r) =>
+        r.adminUserId === agentId
+          ? {
+              ...r,
+              weekDays: { ...r.weekDays, [dateStr]: nextType },
+              daysMarked: Math.max(0, r.daysMarked + (working ? -1 : 1)),
+            }
+          : r,
+      ),
+    );
+    try {
+      const { error } = await (supabase as any)
+        .from('agent_working_days')
+        .upsert(
+          {
+            admin_user_id: agentId,
+            work_date: dateStr,
+            day_type: nextType,
+            created_by: user?.id ?? null,
+          },
+          { onConflict: 'admin_user_id,work_date' },
+        );
+      if (error) throw error;
+      toast.success(nextType === 'off' ? 'Marked as not working' : 'Marked as working');
+    } catch (e: any) {
+      toast.error('Could not save that day', { description: e?.message });
+      load();
+    } finally {
+      setSavingDay(null);
+    }
+  };
+
+
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
