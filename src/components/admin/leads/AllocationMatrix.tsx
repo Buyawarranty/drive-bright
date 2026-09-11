@@ -111,6 +111,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [todayLeadCounts, setTodayLeadCounts] = useState<Record<string, number>>({});
   const [since6pmCounts, setSince6pmCounts] = useState<Record<string, number>>({});
   const [overflowRecipients, setOverflowRecipients] = useState<{ id: string; admin_user_id: string; sort_order: number }[]>([]);
+  /** Show the "Sources they handle" column by default; purple H/S button toggles it. */
+  const [showSources, setShowSources] = useState(true);
 
   const getTodayAssignmentCounts = useCallback(async (): Promise<Record<string, number>> => {
     const todayStart = new Date();
