@@ -31,7 +31,6 @@ import { useOvernightQueue } from '@/hooks/useOvernightQueue';
 import { CallbackBanner } from './CallbackBanner';
 import { LeadsFilters, AssignmentFilter, SortOption, SourceFilter, AgeWindow } from './LeadsFilters';
 import { useActiveCheckoutStruggles, buildStruggleByLeadId } from '@/hooks/useActiveCheckoutStruggles';
-import { LiveStuckCustomersPanel } from '@/components/admin/leads/LiveStuckCustomersPanel';
 import { DailyCrmSurveyBanner } from '@/components/admin/feedback/DailyCrmSurvey';
 
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
