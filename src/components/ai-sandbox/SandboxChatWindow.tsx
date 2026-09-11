@@ -1244,7 +1244,7 @@ export function SandboxChatWindow({
                           <div key={i}>
                             {body && <MessageResponse className={CHAT_TEXT}>{body}</MessageResponse>}
                             {question && (
-                              <p className="mt-2 border-l-2 border-primary pl-3 text-sm font-semibold leading-relaxed text-primary">
+                              <p className="mt-2 border-l-2 border-primary pl-3 text-base font-semibold leading-relaxed text-primary">
                                 {question}
                               </p>
                             )}
