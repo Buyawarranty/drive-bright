@@ -206,6 +206,33 @@ export default function ChatbotDataTab() {
     URL.revokeObjectURL(url);
   };
 
+  const rangeLabel = (() => {
+    if (!activeRange?.from) return 'All time';
+    const fmt = (d: Date) => new Date(d).toLocaleDateString('en-GB');
+    return activeRange.to ? `${fmt(activeRange.from)} – ${fmt(activeRange.to)}` : fmt(activeRange.from);
+  })();
+
+  const buildBrief = () => buildChatbotTrainingBrief(filtered as any, { rangeLabel });
+
+  const copyBrief = async () => {
+    const brief = buildBrief();
+    try {
+      await navigator.clipboard.writeText(brief);
+      toast.success('Training brief copied — paste it into Lovable chat');
+    } catch {
+      toast.error('Could not copy. Use "Download brief" instead.');
+    }
+  };
+
+  const downloadBrief = () => {
+    const url = URL.createObjectURL(new Blob([buildBrief()], { type: 'text/markdown' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `miles-training-brief-${new Date().toISOString().slice(0, 10)}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const StatCard = ({ icon: Icon, label, value, hint }: { icon: any; label: string; value: React.ReactNode; hint?: string }) => (
     <Card>
       <CardContent className="p-4">
