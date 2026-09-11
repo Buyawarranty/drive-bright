@@ -3,6 +3,7 @@ import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, inst
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 import { getNetPayableFloor } from '@/lib/pricing/netFloor';
+import { quoteAuditStamp } from '@/lib/pricing/historicalPricing';
 import { getSoldVsReference } from '@/lib/pricing/soldVsReference';
 import { resolveHighestQuotedTotal } from '@/lib/pricing/quotedTotalLookup';
 import { isPayBetterSale, PAYBETTER_TARGET_NOTE } from '@/lib/payBetterSales';
