@@ -10,6 +10,7 @@ Updated: just now
 - Normalize dates to UTC midnight (`Date.UTC`) before storage. Use `date.setDate(1)` before month math.
 - Never use negative wording ("won't pay"). Use explanatory phrasing ("designed for"). Sentence case headings.
 - Stripe metadata must include `plan_id = plan_type`.
+- PayBetter sales credit only the ONE YEAR EQUIVALENT towards scoreboard targets (total ÷ cover years). See mem://pricing/paybetter-one-year-equivalent-target
 - Claim limits mapping internally: Basic(1000) = 750, Essential(2000) = 1250, Elite(3000)/Premium(5000) = 2000 + £60 boost.
 - Match BOTH normalized email and registration plate to deduplicate customer records.
 - Never use placeholder data (e.g., info@buyawarranty.co.uk).
