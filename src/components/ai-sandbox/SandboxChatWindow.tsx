@@ -1080,7 +1080,7 @@ export function SandboxChatWindow({
                 />
               </div>
             </div>
-          ) : holdState === 'joined' ? (
+          ) : holdState === 'joined' || specialistJoined ? (
             <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
               <Headset className="h-3.5 w-3.5 shrink-0 text-primary" />
               A warranty specialist has joined this chat.
