@@ -15,9 +15,9 @@ export const CHATBOT_POPUP_DEFAULT_ROLES = [
 /**
  * Sales never see the website chat pop-up — not by default, and not even if
  * the permission is switched on by mistake. Handovers are a claims/management
- * job; sales agents work leads.
+ * job; sales agents work leads. Includes sales managers and sales leads.
  */
-export const CHATBOT_POPUP_BLOCKED_ROLES = ['sales', 'sales_lead'] as const;
+export const CHATBOT_POPUP_BLOCKED_ROLES = ['sales', 'sales_lead', 'sales_manager'] as const;
 
 /**
  * Who may see the "Customer waiting for a specialist" chatbot pop-up.
