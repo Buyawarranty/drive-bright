@@ -1764,11 +1764,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           <DailyCrmSurveyBanner adminUserId={currentAdminId} />
         </WidgetErrorBoundary>
       )}
-      {!sandboxMode && (
-        <WidgetErrorBoundary label="Live customers stuck on checkout">
-          <LiveStuckCustomersPanel />
-        </WidgetErrorBoundary>
-      )}
+      {/* Stuck-on-checkout alerts now pop up in the red left-hand rail on every tab */}
 
       {isAdminOrSuperAdmin || userRole === 'sales_manager' ? (
         /* Management sees every agent's figures, not a personal strip */

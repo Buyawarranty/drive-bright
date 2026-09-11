@@ -30,6 +30,7 @@ import LiveChatHoursBanner from '@/components/admin/LiveChatHoursBanner';
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
 import { AlertRailHost } from '@/components/admin/AlertRail';
+import { StuckCheckoutAlert } from '@/components/admin/leads/StuckCheckoutAlert';
 
 
 
@@ -1406,6 +1407,9 @@ const AdminDashboardInner: React.FC<{
 
             {/* Agent new-lead alerts: stacked floating cards (beep + mute + close) */}
             <NewLeadAlerts />
+
+            {/* Red "stuck on checkout" pop-up — left rail, below the new-lead cards, every tab */}
+            <StuckCheckoutAlert />
 
             {/* Daily CRM feedback survey pop-up for sales agents (silent, once a day) */}
             <DailyCrmSurveyPrompt
