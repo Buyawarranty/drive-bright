@@ -93,7 +93,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   compact = false,
   hidePoolOutcome: hidePoolOutcomeProp,
 }) => {
-  const { notes, loading, addNote, updateNote, togglePin, deleteNote, refetch, isAbandonedCart, isSaving: hookIsSaving } = useLeadQuickNotes(leadId);
+  const { notes, loading, loadFailed, addNote, updateNote, togglePin, deleteNote, refetch, isAbandonedCart, isSaving: hookIsSaving } = useLeadQuickNotes(leadId);
   const draftStorageKey = `${NOTE_DRAFT_STORAGE_KEY_PREFIX}${leadId}`;
   const { isImpersonating, viewAsAgent } = useViewAs();
   // The Open-Pool "Take / Spoken to / Couldn't connect" chooser only belongs on
