@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import { MessageSquare, UserPlus, RefreshCw, Search, CheckCircle2 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { MessageSquare, UserPlus, RefreshCw, Search, CheckCircle2, Send } from 'lucide-react';
 
 type Thread = {
   id: string;
@@ -119,6 +120,54 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso }: { 
   };
 
   const selected = threads.find((t) => t.id === selectedId) ?? null;
+
+  // ---- Live reply: type here and the customer sees it in their chat box ----
+  const [reply, setReply] = useState('');
+  const [replying, setReplying] = useState(false);
+
+  const refreshMessages = async (threadId: string) => {
+    const { data } = await supabase
+      .from('ai_sandbox_messages')
+      .select('id, role, content, parts, created_at')
+      .eq('thread_id', threadId)
+      .order('created_at', { ascending: true });
+    setMessages((data ?? []) as Message[]);
+  };
+
+  // Keep the open conversation up to date so a customer's new message appears
+  // while the agent is reading it.
+  useEffect(() => {
+    if (!selectedId) return;
+    const t = window.setInterval(() => void refreshMessages(selectedId), 6000);
+    return () => window.clearInterval(t);
+  }, [selectedId]);
+
+  const sendReply = async () => {
+    const text = reply.trim();
+    if (!selected || !text) return;
+    setReplying(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('chat-live-reply', {
+        body: { action: 'send', threadId: selected.id, text },
+      });
+      if (error) throw error;
+      if ((data as any)?.ok === false) throw new Error((data as any).error || 'Could not send');
+      setReply('');
+      await refreshMessages(selected.id);
+      toast.success('Sent — the customer sees it in their chat box');
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not send that reply');
+    } finally {
+      setReplying(false);
+    }
+  };
+
+  const lastCustomerAt = useMemo(() => {
+    const customer = messages.filter((m) => m.role === 'user');
+    return customer.length ? new Date(customer[customer.length - 1].created_at) : null;
+  }, [messages]);
+  const customerLikelyLive =
+    lastCustomerAt !== null && Date.now() - lastCustomerAt.getTime() < 15 * 60 * 1000;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -315,6 +364,42 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso }: { 
                   )}
                 </div>
               </ScrollArea>
+
+              <div className="rounded-md border p-3">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Reply live to this customer
+                  </span>
+                  {customerLikelyLive ? (
+                    <Badge className="border-emerald-200 bg-emerald-100 text-emerald-800">
+                      Customer active now
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline">May have left the chat</Badge>
+                  )}
+                </div>
+                <Textarea
+                  value={reply}
+                  onChange={(e) => setReply(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                      e.preventDefault();
+                      void sendReply();
+                    }
+                  }}
+                  rows={3}
+                  placeholder="Type your answer — the customer sees it straight away in their chat box…"
+                />
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Button onClick={sendReply} disabled={replying || !reply.trim()}>
+                    <Send className="mr-1 h-4 w-4" />
+                    {replying ? 'Sending…' : 'Send to customer'}
+                  </Button>
+                  <span className="text-xs text-muted-foreground">
+                    It shows as a warranty specialist, not as Miles.
+                  </span>
+                </div>
+              </div>
             </>
           )}
         </CardContent>
