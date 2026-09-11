@@ -110,6 +110,7 @@ export const LiveChatQuestionAlert: React.FC = () => {
       return !replied;
     });
     setWaitingCount(stillWaiting.length);
+    setWaitingThreadId(stillWaiting.length ? String(stillWaiting[0]) : null);
     openNow.current = isTeamOpenNow();
   }, []);
 
@@ -189,6 +190,15 @@ export const LiveChatQuestionAlert: React.FC = () => {
                 <Headset className="h-3.5 w-3.5" />
                 Someone has asked for a real person — reply now, the beeping stops once you do.
               </div>
+            )}
+            {waitingCount > 0 && waitingThreadId && (
+              <Button
+                size="sm"
+                className="h-8 w-full text-xs"
+                onClick={() => openChat(waitingThreadId)}
+              >
+                Go to the chat and reply now
+              </Button>
             )}
             {visible.map((q) => (
               <div key={q.id} className="rounded border border-border bg-card p-2">
