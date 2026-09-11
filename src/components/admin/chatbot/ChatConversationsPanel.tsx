@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -114,6 +114,8 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso }: { 
       return;
     }
     const rows = (data ?? []) as Message[];
+    seenIdsRef.current = new Set(rows.map((m) => m.id));
+    setNewCustomerReplies(0);
     setMessages(rows);
     const found = detect(rows);
     setForm({ name: '', ...found });
@@ -125,22 +127,41 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso }: { 
   const [reply, setReply] = useState('');
   const [replying, setReplying] = useState(false);
 
-  const refreshMessages = async (threadId: string) => {
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const seenIdsRef = useRef<Set<string>>(new Set());
+  const [newCustomerReplies, setNewCustomerReplies] = useState(0);
+
+  const refreshMessages = async (threadId: string, announce = true) => {
     const { data } = await supabase
       .from('ai_sandbox_messages')
       .select('id, role, content, parts, created_at')
       .eq('thread_id', threadId)
       .order('created_at', { ascending: true });
-    setMessages((data ?? []) as Message[]);
+    const rows = (data ?? []) as Message[];
+    if (announce) {
+      const fresh = rows.filter((m) => m.role === 'user' && !seenIdsRef.current.has(m.id));
+      if (fresh.length > 0 && seenIdsRef.current.size > 0) {
+        setNewCustomerReplies((n) => n + fresh.length);
+        toast.info('The customer has replied in this chat');
+      }
+    }
+    rows.forEach((m) => seenIdsRef.current.add(m.id));
+    setMessages(rows);
   };
 
   // Keep the open conversation up to date so a customer's new message appears
-  // while the agent is reading it.
+  // while the agent is reading it, and stays a two-way conversation here.
   useEffect(() => {
     if (!selectedId) return;
-    const t = window.setInterval(() => void refreshMessages(selectedId), 6000);
+    const t = window.setInterval(() => void refreshMessages(selectedId), 3000);
     return () => window.clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);
+
+  // Always show the newest message in the thread.
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ block: 'end' });
+  }, [messages.length]);
 
   const sendReply = async () => {
     const text = reply.trim();
@@ -362,6 +383,7 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso }: { 
                       No messages saved for this conversation.
                     </p>
                   )}
+                  <div ref={bottomRef} />
                 </div>
               </ScrollArea>
 
@@ -377,6 +399,22 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso }: { 
                   ) : (
                     <Badge variant="outline">May have left the chat</Badge>
                   )}
+                  {newCustomerReplies > 0 && (
+                    <Badge className="border-amber-200 bg-amber-100 text-amber-900">
+                      {newCustomerReplies} new {newCustomerReplies === 1 ? 'reply' : 'replies'} from the customer
+                    </Badge>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => {
+                      setNewCustomerReplies(0);
+                      void refreshMessages(selected.id, false);
+                    }}
+                  >
+                    <RefreshCw className="mr-1 h-3 w-3" /> Check for a reply
+                  </Button>
                 </div>
                 <Textarea
                   value={reply}
