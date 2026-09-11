@@ -26,6 +26,7 @@ import { DailyCrmSurveyPrompt } from '@/components/admin/feedback/DailyCrmSurvey
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import LiveChatHoursBanner from '@/components/admin/LiveChatHoursBanner';
+import LiveChatQuestionAlert from '@/components/admin/chatbot/LiveChatQuestionAlert';
 
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
