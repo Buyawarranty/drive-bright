@@ -13,6 +13,7 @@ export const CHAT_ALERT_EMAILS = [
   'info@buyawarranty.co.uk',
   'abdulnafay2702@gmail.com',
   'masokdigital482@gmail.com',
+  'accounts@buyawarranty.co.uk',
 ] as const;
 
 export const CHAT_ALERT_ROLES = [
