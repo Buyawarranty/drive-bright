@@ -18,6 +18,7 @@ import { preloadCriticalRoutes } from "@/utils/preloadRoutes";
 import Index from "./pages/Index";
 import WebsiteFooter from "@/components/WebsiteFooter";
 import ScrollToTop from "@/components/ScrollToTop";
+import GlobalSiteChat from "@/components/ai-sandbox/GlobalSiteChat";
 import NotFound from "./pages/NotFound";
 
 import { PageViewTracker } from "@/components/PageViewTracker";
