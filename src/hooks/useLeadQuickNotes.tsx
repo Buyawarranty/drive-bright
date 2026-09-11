@@ -565,29 +565,13 @@ export const useLeadQuickNotes = (leadId: string) => {
         fetchNotes(true).catch(e => console.warn('[addNote] Background refetch error:', e));
         return { id: `cart_note_${actualId}`, note_text: updatedNotes };
       } else {
-        // If the same note is already on the lead from moments ago, reuse it
-        // instead of writing a second copy.
-        const existing = await findRecentDuplicateNote(leadId, noteText.trim());
-
-        const { data, error } = existing
-          ? { data: existing, error: null }
-          : await supabase
-              .from('lead_quick_notes')
-              .insert({
-                lead_id: leadId,
-                note_text: noteText.trim(),
-                created_by: adminUser.id
-              })
-              .select()
-              .maybeSingle();
-
         // If this text is the same note the agent is still writing (a repeat
         // save or a mid-typing auto-save fragment), reuse that row — extending
         // it when the new text carries on from the fragment.
         const related = await findRecentRelatedNote(leadId, noteText.trim(), adminUser.id);
 
         let data: any = null;
-        let error: any = null;
+        let saveError: any = null;
 
         if (related?.shouldExtend) {
           const res = await supabase
@@ -597,7 +581,7 @@ export const useLeadQuickNotes = (leadId: string) => {
             .select()
             .maybeSingle();
           data = res.data || { ...related.note, note_text: noteText.trim() };
-          error = res.error;
+          saveError = res.error;
         } else if (related) {
           data = related.note;
         } else {
@@ -611,10 +595,19 @@ export const useLeadQuickNotes = (leadId: string) => {
             .select()
             .maybeSingle();
           data = res.data;
-          error = res.error;
+          saveError = res.error;
         }
 
-        if (error) throw error;
+        if (saveError) throw saveError;
+
+        const newNote: QuickNote = {
+          ...(data || {}),
+          author: {
+            first_name: adminUser.first_name,
+            last_name: adminUser.last_name,
+            email: adminUser.email
+          }
+        };
 
         updateNotes(prev => {
           const withoutOptimistic = prev.filter(
@@ -624,6 +617,7 @@ export const useLeadQuickNotes = (leadId: string) => {
           const unpinned = withoutOptimistic.filter(n => !n.is_pinned);
           return [...pinned, newNote, ...unpinned];
         });
+
 
 
         touchLeadActivity(leadId);
