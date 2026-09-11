@@ -10,6 +10,8 @@
  * spent it returns false forever and the caller plays nothing.
  */
 
+import { isUkWorkHours } from '@/lib/ukAlertHours';
+
 const KEY = 'alerts.sound_plays_used';
 const MAX_PLAYS = 1; // one two-tone beep
 
@@ -36,11 +38,16 @@ const write = (n: number) => {
   }
 };
 
-/** True only while the session still has its opening beep left. */
-export const alertSoundsAvailable = (): boolean => read() < MAX_PLAYS;
+/** True only while the session still has its opening beep left AND it is UK work hours. */
+export const alertSoundsAvailable = (): boolean => read() < MAX_PLAYS && isUkWorkHours();
 
-/** Reserve a play. Returns false once the session's beeps are used up. */
+/**
+ * Reserve a play. Returns false once the session's beeps are used up, and
+ * always returns false outside UK work hours (Mon–Sat, 9am–6pm) — the budget
+ * is not spent then, the sound simply never plays.
+ */
 export const consumeAlertSound = (): boolean => {
+  if (!isUkWorkHours()) return false;
   const n = read();
   if (n >= MAX_PLAYS) return false;
   write(n + 1);
