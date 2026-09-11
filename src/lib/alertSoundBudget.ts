@@ -10,6 +10,8 @@
  * spent it returns false forever and the caller plays nothing.
  */
 
+import { isUkWorkHours } from '@/lib/ukAlertHours';
+
 const KEY = 'alerts.sound_plays_used';
 const MAX_PLAYS = 1; // one two-tone beep
 
