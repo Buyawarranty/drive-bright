@@ -236,6 +236,7 @@ export const useLeadQuickNotes = (leadId: string) => {
 
     hasFetchedRef.current = hasCachedNotes;
     setLoading(false);
+    setLoadFailed(false);
     updateNotes(cachedNotes || mirrored || []);
   }, [leadId, updateNotes]);
 
