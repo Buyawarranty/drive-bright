@@ -4660,6 +4660,9 @@ export type Database = {
           sale_discount_amount: number | null
           sale_discount_pct: number | null
           sale_price_basis: string | null
+          sale_pricing_version_id: string | null
+          sale_pricing_version_label: string | null
+          sale_quoted_at: string | null
           sale_quoted_total: number | null
           seasonal_bonus_months: number | null
           signup_date: string
@@ -4788,6 +4791,9 @@ export type Database = {
           sale_discount_amount?: number | null
           sale_discount_pct?: number | null
           sale_price_basis?: string | null
+          sale_pricing_version_id?: string | null
+          sale_pricing_version_label?: string | null
+          sale_quoted_at?: string | null
           sale_quoted_total?: number | null
           seasonal_bonus_months?: number | null
           signup_date?: string
@@ -4916,6 +4922,9 @@ export type Database = {
           sale_discount_amount?: number | null
           sale_discount_pct?: number | null
           sale_price_basis?: string | null
+          sale_pricing_version_id?: string | null
+          sale_pricing_version_label?: string | null
+          sale_quoted_at?: string | null
           sale_quoted_total?: number | null
           seasonal_bonus_months?: number | null
           signup_date?: string
