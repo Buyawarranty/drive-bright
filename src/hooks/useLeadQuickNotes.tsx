@@ -242,7 +242,7 @@ export const useLeadQuickNotes = (leadId: string) => {
   // Session validation removed — RLS policies handle authorization, and
   // getAuthenticatedAdmin() validates auth before write operations.
 
-  const fetchNotes = useCallback(async (isRefetch = false) => {
+  const fetchNotes = useCallback(async (isRefetch = false, attempt = 0) => {
     if (!leadId) {
       setLoading(false);
       updateNotes([]);
