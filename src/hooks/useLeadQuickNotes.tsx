@@ -107,23 +107,48 @@ const NOTE_SAVE_TIMEOUT_MS = 8000;
  */
 const DUPLICATE_WINDOW_MS = 5 * 60 * 1000;
 
-const findRecentDuplicateNote = async (leadId: string, noteText: string) => {
+/**
+ * Finds a note on the same lead, written moments ago, that is really the SAME
+ * note the agent is still writing:
+ *  - identical text (a repeated save), or
+ *  - a shorter fragment of the new text ("wants" then "wants to mull it over"),
+ *    which happens when the panel auto-saves mid-typing, or
+ *  - a longer note that already contains the fragment being saved.
+ * Returns the existing row plus whether it should be extended to the new text.
+ */
+const findRecentRelatedNote = async (
+  leadId: string,
+  noteText: string,
+  authorId?: string,
+): Promise<{ note: any; shouldExtend: boolean } | null> => {
   try {
     const since = new Date(Date.now() - DUPLICATE_WINDOW_MS).toISOString();
-    const { data } = await supabase
+    let query = supabase
       .from('lead_quick_notes')
       .select('*')
       .eq('lead_id', leadId)
-      .eq('note_text', noteText)
       .gte('created_at', since)
       .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    return data || null;
+      .limit(10);
+    if (authorId) query = query.eq('created_by', authorId);
+
+    const { data } = await query;
+    const candidates = (data || []) as any[];
+    const target = noteText.trim();
+
+    for (const row of candidates) {
+      const existing = String(row.note_text || '').trim();
+      if (!existing) continue;
+      if (existing === target) return { note: row, shouldExtend: false };
+      if (target.startsWith(existing)) return { note: row, shouldExtend: true };
+      if (existing.startsWith(target)) return { note: row, shouldExtend: false };
+    }
+    return null;
   } catch {
     return null;
   }
 };
+
 
 
 
