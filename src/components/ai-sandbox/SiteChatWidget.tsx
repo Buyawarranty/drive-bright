@@ -115,36 +115,32 @@ export default function SiteChatWidget({
 
   return (
     <>
-      {/* Launcher — closed state: small, discreet avatar bubble only */}
+      {/* Launcher — closed state: panda avatar with a clear "chat with us" label */}
       {!open && (
-        <div className="fixed bottom-4 right-4 z-40 flex items-end gap-2 sm:bottom-5 sm:right-5">
-          {showNudge && (
-            <button
-              onClick={openChat}
-              className="mb-1 hidden max-w-[230px] rounded-2xl rounded-br-sm border border-border bg-background/95 px-4 py-2 text-left text-sm text-muted-foreground shadow-md sm:block"
-            >
-              {greeting}
-            </button>
-          )}
+        <div className="fixed bottom-20 right-4 z-40 sm:bottom-6 sm:right-6">
           <button
             onClick={openChat}
             aria-label="Chat with Miles, our AI warranty assistant"
-            className="group relative flex h-16 w-16 items-center justify-center rounded-full border border-border bg-background shadow-lg backdrop-blur transition-all hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:h-[68px] sm:w-[68px]"
+            className="group flex items-center gap-3 rounded-full border border-border bg-background/95 pl-4 pr-1.5 py-1.5 shadow-lg shadow-black/10 backdrop-blur transition-all hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <span className="block h-[54px] w-[54px] overflow-hidden rounded-full sm:h-[58px] sm:w-[58px]">
-              <img
-                src={milesAvatar.url}
-                alt="Miles the panda"
-                width={58}
-                height={58}
-                className="h-full w-full scale-[1.35] object-cover object-center"
-              />
+            <span className="flex items-center gap-2 whitespace-nowrap text-sm font-medium text-foreground">
+              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              Need help? Chat with us
             </span>
-            <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-background bg-green-500" />
+            <span className="relative shrink-0">
+              <span className="block h-11 w-11 overflow-hidden rounded-full ring-1 ring-border">
+                <img
+                  src={milesAvatar.url}
+                  alt="Miles the panda"
+                  width={44}
+                  height={44}
+                  className="h-full w-full scale-[1.35] object-cover object-center"
+                />
+              </span>
+              <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
+            </span>
           </button>
-
         </div>
-
       )}
 
       {/* Chat panel — kept mounted after first open so minimising keeps history */}
