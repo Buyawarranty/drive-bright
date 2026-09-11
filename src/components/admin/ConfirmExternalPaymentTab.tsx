@@ -1632,8 +1632,28 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                         <p className="text-xs font-semibold text-destructive">
                           Required — we must record where the payment was taken.
                         </p>
+                       )}
+
+                      {isPayBetterSale(paymentSource) && (
+                        <div className="rounded-lg border-2 border-violet-300 bg-violet-50 p-3">
+                          <p className="text-xs font-bold uppercase tracking-wide text-violet-900 mb-1">
+                            PayBetter sale — one-year equivalent towards target
+                          </p>
+                          <p className="text-xs text-violet-900">
+                            {PAYBETTER_TARGET_NOTE}
+                          </p>
+                          {(paymentType === '24months' || paymentType === '36months') && (
+                            <p className="text-xs font-semibold text-violet-900 mt-1">
+                              This {Math.round((DURATION_MONTHS[paymentType] || 12) / 12)}-year sale will count as
+                              {' '}£{(
+                                (Number.isFinite(enteredAmount) && enteredAmount > 0 ? enteredAmount : quotedTotal) /
+                                Math.max(1, Math.round((DURATION_MONTHS[paymentType] || 12) / 12))
+                              ).toFixed(2)} towards the scoreboard target.
+                            </p>
+                          )}
+                        </div>
                       )}
-                    </div>
+                     </div>
 
 
 
