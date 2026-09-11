@@ -1,5 +1,5 @@
 import { getVehicleAge } from '@/lib/vehicleAge';
-import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, oneYearRatio, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
+import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, instalmentScheduleTotal, oneYearRatio, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 
@@ -5072,21 +5072,25 @@ Questions? Call 0330 229 5040`;
                           </span>
                         )}
                         <div className="font-semibold">{term.label}</div>
-                        {s && (
+                        {s && (() => {
+                          // The big box must always agree with the instalment plan boxes and the
+                          // sticky bar: same base total, same plan, same rounding.
+                          const isSelectedTerm = paymentType === term.id;
+                          const baseTotal = isSelectedTerm
+                            ? Math.round(Number(displayedTotalPrice) || s.total)
+                            : s.total;
+                          const ratio = oneYearRatio(termSavings["12months"]?.total, s.total);
+                          const plan = isInstalmentAllowed(term.id, instalmentCount) && !isInstalmentComingSoon(instalmentCount)
+                            ? instalmentCount
+                            : 12;
+                          const planTotal = instalmentScheduleTotal(baseTotal, plan, ratio);
+                          const planMonthly = instalmentAmount(baseTotal, plan, ratio);
+                          return (
                           <div className="mt-1.5 space-y-1">
-                            <div className="text-xs text-black font-medium">£{s.total} total · £{s.perYear}/yr</div>
-                            {(() => {
-                              // Show the £/mo figure for the currently selected instalment plan where
-                              // that plan is valid for this term; otherwise fall back to 12 instalments.
-                              const plan = isInstalmentAllowed(term.id, instalmentCount) && !isInstalmentComingSoon(instalmentCount)
-                                ? instalmentCount
-                                : 12;
-                              return (
-                                <div className="text-[11px] font-medium text-black">
-                                  £{instalmentAmount(s.total, plan, oneYearRatio(termSavings["12months"]?.total, s.total))}/mo · {plan} instalments
-                                </div>
-                              );
-                            })()}
+                            <div className="text-xs text-black font-medium">£{planTotal} total · £{Math.round(planTotal / years)}/yr</div>
+                            <div className="text-[11px] font-medium text-black">
+                              £{planMonthly}/mo · {plan} instalments
+                            </div>
                             {years === 1 ? (
                               <div className="text-[11px] font-medium text-muted-foreground">Baseline price</div>
                             ) : s.saving > 0 ? (
@@ -5102,7 +5106,8 @@ Questions? Call 0330 229 5040`;
                               <div className="text-[11px] text-muted-foreground">Same yearly rate as 1 year</div>
                             )}
                           </div>
-                        )}
+                          );
+                        })()}
                       </button>
                       );
                     })}
@@ -5114,6 +5119,8 @@ Questions? Call 0330 229 5040`;
                       <div className="grid grid-cols-2 gap-2">
                         {getInstalmentOptions(paymentType).map((count) => {
                           const amount = instalmentAmount(displayedTotalPrice, count, longPlanRatio);
+                          const scheduleTotal = instalmentScheduleTotal(displayedTotalPrice, count, longPlanRatio);
+                          const twelveTotal = instalmentScheduleTotal(displayedTotalPrice, 12, longPlanRatio);
                           const comingSoon = isInstalmentComingSoon(count);
                           return (
                             <button
@@ -5141,11 +5148,11 @@ Questions? Call 0330 229 5040`;
                                 {count} instalments
                               </div>
                               <div className={cn("text-xs font-medium", comingSoon ? "text-slate-500" : "text-black")}>
-                                {comingSoon ? "Not active yet" : `£${amount}/mo · £${instalmentPlanTotal(displayedTotalPrice, count, longPlanRatio)} total`}
+                                {comingSoon ? "Not active yet" : `£${amount}/mo · £${scheduleTotal} total`}
                               </div>
                               {!comingSoon && count !== 12 && (
                                 <div className="text-[11px] font-semibold text-amber-700">
-                                  +£{instalmentPlanTotal(displayedTotalPrice, count, longPlanRatio) - Math.round(Number(displayedTotalPrice) || 0)} vs 12-instalment plan
+                                  +£{scheduleTotal - twelveTotal} vs 12-instalment plan
                                 </div>
                               )}
                             </button>
@@ -6885,9 +6892,9 @@ Questions? Call 0330 229 5040`;
                       <div className="rounded-lg border border-blue-200 bg-blue-50/60 px-3 py-2.5">
                         <div className="text-[11px] font-bold uppercase tracking-wide text-blue-700">Monthly · Bumper ({instalmentCount})</div>
                         <div className="mt-1 text-2xl font-extrabold leading-none text-blue-800">
-                          £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(monthlyTotal, instalmentCount, longPlanRatio)}<span className="text-sm font-semibold text-blue-600">/mo</span>
+                          £{instalmentAmount(monthlyTotal, instalmentCount, longPlanRatio)}<span className="text-sm font-semibold text-blue-600">/mo</span>
                         </div>
-                        <div className="mt-1.5 text-[11px] text-blue-700">Total £{instalmentPlanTotal(monthlyTotal, instalmentCount, longPlanRatio)} · {instalmentCount} × £{instalmentCount === 12 ? currentPrice.monthlyPrice : instalmentAmount(monthlyTotal, instalmentCount, longPlanRatio)}</div>
+                        <div className="mt-1.5 text-[11px] text-blue-700">Total £{instalmentScheduleTotal(monthlyTotal, instalmentCount, longPlanRatio)} · {instalmentCount} × £{instalmentAmount(monthlyTotal, instalmentCount, longPlanRatio)}</div>
                         {instalmentCount !== 12 && (
                           <div className="mt-1 text-[11px] font-semibold text-amber-700">Must be set up on the Bumper {instalmentCount}-month plan</div>
                         )}
@@ -6956,7 +6963,7 @@ Questions? Call 0330 229 5040`;
                       <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
                         <div className="text-[11px] font-bold uppercase tracking-wide text-slate-500">This quote</div>
                         <div className="mt-1 text-2xl font-extrabold leading-none text-slate-800">
-                          £{instalmentPlanTotal(gridTotal, instalmentCount, longPlanRatio)}
+                          £{instalmentScheduleTotal(gridTotal, instalmentCount, longPlanRatio)}
                         </div>
                         <div className="mt-1.5 text-[11px] text-slate-600">
                           Claim £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} · Labour £{labourRate}/hr
@@ -6966,7 +6973,7 @@ Questions? Call 0330 229 5040`;
                         </div>
                         {instalmentCount !== 12 && (
                           <div className="mt-1 text-[11px] font-semibold text-amber-700">
-                            +£{instalmentPlanTotal(gridTotal, instalmentCount, longPlanRatio) - gridTotal} vs 12-instalment plan
+                            +£{instalmentScheduleTotal(gridTotal, instalmentCount, longPlanRatio) - instalmentScheduleTotal(gridTotal, 12, longPlanRatio)} vs 12-instalment plan
                           </div>
                         )}
                         {priceMatchMode && priceMatchCompetitorPrice && (
