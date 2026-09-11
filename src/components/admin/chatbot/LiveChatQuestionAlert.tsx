@@ -124,18 +124,25 @@ export const LiveChatQuestionAlert: React.FC = () => {
   const visible = useMemo(() => rows.filter((r) => !dismissed.has(r.id)), [rows, dismissed]);
   const shouldBeep = allowed && !muted && waitingCount > 0 && openNow.current;
 
+  // The beep switches itself off after 20 seconds — staff can mute it sooner
+  // with the speaker button above. A NEW customer waiting re-arms the beep.
   useEffect(() => {
     if (!shouldBeep) {
       stopPhoneRing();
       return;
     }
     playPhoneRing();
-    const t = window.setInterval(() => playPhoneRing(), BEEP_MS);
+    const beepTimer = window.setInterval(() => playPhoneRing(), BEEP_MS);
+    const silenceTimer = window.setTimeout(() => {
+      window.clearInterval(beepTimer);
+      stopPhoneRing();
+    }, AUTO_SILENCE_MS);
     return () => {
-      window.clearInterval(t);
+      window.clearInterval(beepTimer);
+      window.clearTimeout(silenceTimer);
       stopPhoneRing();
     };
-  }, [shouldBeep]);
+  }, [shouldBeep, waitingThreadId]);
 
   const toggleMute = () => {
     setMuted((prev) => {
