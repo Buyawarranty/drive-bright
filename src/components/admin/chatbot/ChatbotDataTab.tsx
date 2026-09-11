@@ -314,10 +314,11 @@ export default function ChatbotDataTab() {
         className="max-w-md"
       />
 
-      <Tabs defaultValue="queue">
+      <Tabs defaultValue={deepLinkThread ? 'conversations' : 'queue'}>
         <TabsList>
           <TabsTrigger value="queue">Action queue</TabsTrigger>
           <TabsTrigger value="conversations">Conversations &amp; leads</TabsTrigger>
+          <TabsTrigger value="response">Reply times &amp; missed chats</TabsTrigger>
           <TabsTrigger value="library">Answer library</TabsTrigger>
           <TabsTrigger value="improve">Needs improvement</TabsTrigger>
           <TabsTrigger value="wants">What customers want</TabsTrigger>
