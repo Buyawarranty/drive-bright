@@ -13,6 +13,7 @@ import ChatConversationsPanel from './ChatConversationsPanel';
 import ChatActionQueuePanel from './ChatActionQueuePanel';
 import ChatbotImprovementPanel from './ChatbotImprovementPanel';
 import ChatbotAnswerLibraryPanel from './ChatbotAnswerLibraryPanel';
+import ChatResponseStatsPanel from './ChatResponseStatsPanel';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 
