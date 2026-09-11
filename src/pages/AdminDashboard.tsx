@@ -1344,6 +1344,8 @@ const AdminDashboardInner: React.FC<{
       <div className={sidebarCollapsed ? 'lg:pl-14' : 'lg:pl-64'}>
       {/* Live chat opening-hours bar — every member of staff, claims included */}
       <LiveChatHoursBanner />
+      {/* Top-left chat pop-ups for the named people responsible for chat */}
+      <LiveChatQuestionAlert />
 
 
 
