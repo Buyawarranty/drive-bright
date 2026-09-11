@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Gavel, CheckCircle2, Paperclip, Mail, Scale, ExternalLink } from 'lucide-react';
+import { Gavel, CheckCircle2, Paperclip, Mail, Scale, ExternalLink, X } from 'lucide-react';
 import { ReturnedAppeal } from '@/hooks/useReturnedAppeals';
 import { useNavigate } from 'react-router-dom';
 
@@ -38,6 +38,7 @@ interface AppealsInboxPanelProps {
   appeals: ReturnedAppeal[];
   loading?: boolean;
   onMarkAsRead: (id: string) => void;
+  onCloseAppeal?: (appealId: string) => void;
   onOpenAppealDialog?: () => void;
 }
 
@@ -56,6 +57,7 @@ export const AppealsInboxPanel: React.FC<AppealsInboxPanelProps> = ({
   appeals,
   loading,
   onMarkAsRead,
+  onCloseAppeal,
   onOpenAppealDialog,
 }) => {
   const navigate = useNavigate();
@@ -230,6 +232,17 @@ export const AppealsInboxPanel: React.FC<AppealsInboxPanelProps> = ({
                 {!a.isRead && (
                   <Button size="sm" variant="outline" onClick={() => onMarkAsRead(a.id)}>
                     <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Mark as read
+                  </Button>
+                )}
+                {onCloseAppeal && a.appealId && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800"
+                    onClick={() => onCloseAppeal(a.appealId!)}
+                    title="Close this appeal"
+                  >
+                    <X className="h-4 w-4" />
                   </Button>
                 )}
               </div>

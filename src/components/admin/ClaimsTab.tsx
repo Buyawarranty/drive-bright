@@ -132,6 +132,7 @@ export const ClaimsTab = ({
     unreadCount: appealsUnreadCount,
     totalCount: appealsTotalCount,
     markAsRead: markAppealAsRead,
+    closeAppeal: closeAppealAction,
     refetch: refetchAppeals,
   } = useReturnedAppeals();
 
@@ -620,6 +621,7 @@ export const ClaimsTab = ({
                 appeals={returnedAppeals}
                 loading={appealsLoading}
                 onMarkAsRead={markAppealAsRead}
+                onCloseAppeal={closeAppealAction}
                 onOpenAppealDialog={() => setShowAppealDialog(true)}
               />
             </WidgetErrorBoundary>
