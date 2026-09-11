@@ -65,4 +65,4 @@
 - [ ] Open Round Robin: plan safe merge into New Leads (sandbox only, no live impact)
 
 ## Chatbot answer library (Sep 11)
-- [ ] Managers write/approve answers in Chatbot data tab; Miles reuses them for same/similar questions
+- [x] Managers write/approve answers in Chatbot data tab; Miles reuses them for same/similar questions
