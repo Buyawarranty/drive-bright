@@ -117,7 +117,7 @@ export default function SiteChatWidget({
     <>
       {/* Launcher — closed state: panda avatar with a clear "chat with us" label */}
       {!open && (
-        <div className="fixed bottom-48 right-4 z-40 sm:bottom-6 sm:right-6">
+        <div className="fixed bottom-52 right-4 z-40 sm:bottom-6 sm:right-6">
           <button
             onClick={openChat}
             aria-label="Chat with Miles, our AI warranty assistant"
