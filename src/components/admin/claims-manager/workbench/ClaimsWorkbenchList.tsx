@@ -55,6 +55,7 @@ export const deriveSimpleStatus = (c: Claim): SimpleStatus => {
   if (raw === 'canceled') return 'cancelled';
   if (raw === 'complaint') return 'complaint_submitted';
   if (raw === 'not_customer' || raw === 'no_policy' || raw === 'not a customer') return 'not_a_customer';
+  if (raw === 'no_response' || raw === 'not responded' || raw === 'no response' || raw === 'unresponsive') return 'not_responded';
   return 'in_review';
 };
 
