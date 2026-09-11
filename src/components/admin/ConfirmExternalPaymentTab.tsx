@@ -5,6 +5,7 @@ import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 import { getNetPayableFloor } from '@/lib/pricing/netFloor';
 import { getSoldVsReference } from '@/lib/pricing/soldVsReference';
 import { resolveHighestQuotedTotal } from '@/lib/pricing/quotedTotalLookup';
+import { isPayBetterSale, PAYBETTER_TARGET_NOTE } from '@/lib/payBetterSales';
 
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
