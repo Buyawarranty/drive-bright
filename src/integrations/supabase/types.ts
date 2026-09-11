@@ -6351,6 +6351,59 @@ export type Database = {
           },
         ]
       }
+      dealer_quote_templates: {
+        Row: {
+          claim_limit: number
+          created_at: string
+          dealer_id: string
+          excess: number
+          id: string
+          labour: number
+          name: string
+          parts: string
+          plan_type: string
+          price: number | null
+          term_months: number
+          updated_at: string
+        }
+        Insert: {
+          claim_limit?: number
+          created_at?: string
+          dealer_id: string
+          excess?: number
+          id?: string
+          labour?: number
+          name: string
+          parts?: string
+          plan_type?: string
+          price?: number | null
+          term_months?: number
+          updated_at?: string
+        }
+        Update: {
+          claim_limit?: number
+          created_at?: string
+          dealer_id?: string
+          excess?: number
+          id?: string
+          labour?: number
+          name?: string
+          parts?: string
+          plan_type?: string
+          price?: number | null
+          term_months?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealer_quote_templates_dealer_id_fkey"
+            columns: ["dealer_id"]
+            isOneToOne: false
+            referencedRelation: "dealers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dealer_quotes: {
         Row: {
           created_at: string
