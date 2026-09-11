@@ -114,6 +114,8 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso }: { 
       return;
     }
     const rows = (data ?? []) as Message[];
+    seenIdsRef.current = new Set(rows.map((m) => m.id));
+    setNewCustomerReplies(0);
     setMessages(rows);
     const found = detect(rows);
     setForm({ name: '', ...found });
