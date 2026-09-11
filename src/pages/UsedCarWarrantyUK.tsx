@@ -1,9 +1,10 @@
-import React, { useState, lazy, Suspense } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HomepageAlt from '@/components/HomepageAlt';
 
-// Live test of the Miles chat widget on this page only (not the homepage yet).
-const SiteChatWidget = lazy(() => import('@/components/ai-sandbox/SiteChatWidget'));
+// The Miles chat is now mounted site-wide (see GlobalSiteChat) with the
+// checkout, payment, lead-form and quote-flow pages excluded.
+
 
 interface VehicleData {
   registration: string;
@@ -28,9 +29,6 @@ const UsedCarWarrantyUK = () => {
   return (
     <div>
       <HomepageAlt onRegistrationSubmit={handleRegistrationSubmit} />
-      <Suspense fallback={null}>
-        <SiteChatWidget source="used-car-warranty-uk" greeting="Hi - need any help?" />
-      </Suspense>
     </div>
   );
 };
