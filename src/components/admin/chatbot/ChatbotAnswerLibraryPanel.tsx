@@ -290,13 +290,23 @@ export default function ChatbotAnswerLibraryPanel({ fromIso, toIso }: { fromIso?
                 <Button size="sm" onClick={() => saveAnswer(a.question, drafts[a.question] ?? '', a.threadId)} disabled={saving}>
                   <Check className="mr-1 h-4 w-4" /> Save and use this answer
                 </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-violet-300 text-violet-800"
+                  onClick={() => suggestAnswer(a)}
+                  disabled={draftingFor === a.question}
+                >
+                  <Wand2 className={`mr-1 h-4 w-4 ${draftingFor === a.question ? 'animate-pulse' : ''}`} />
+                  {draftingFor === a.question ? 'Drafting…' : 'Suggest an answer'}
+                </Button>
                 {a.milesSaid && (
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => setDrafts((d) => ({ ...d, [a.question]: a.milesSaid! }))}
                   >
-                    <Wand2 className="mr-1 h-4 w-4" /> Start from what Miles said
+                    Start from what Miles said
                   </Button>
                 )}
               </div>
