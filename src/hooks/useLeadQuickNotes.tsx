@@ -107,23 +107,48 @@ const NOTE_SAVE_TIMEOUT_MS = 8000;
  */
 const DUPLICATE_WINDOW_MS = 5 * 60 * 1000;
 
-const findRecentDuplicateNote = async (leadId: string, noteText: string) => {
+/**
+ * Finds a note on the same lead, written moments ago, that is really the SAME
+ * note the agent is still writing:
+ *  - identical text (a repeated save), or
+ *  - a shorter fragment of the new text ("wants" then "wants to mull it over"),
+ *    which happens when the panel auto-saves mid-typing, or
+ *  - a longer note that already contains the fragment being saved.
+ * Returns the existing row plus whether it should be extended to the new text.
+ */
+const findRecentRelatedNote = async (
+  leadId: string,
+  noteText: string,
+  authorId?: string,
+): Promise<{ note: any; shouldExtend: boolean } | null> => {
   try {
     const since = new Date(Date.now() - DUPLICATE_WINDOW_MS).toISOString();
-    const { data } = await supabase
+    let query = supabase
       .from('lead_quick_notes')
       .select('*')
       .eq('lead_id', leadId)
-      .eq('note_text', noteText)
       .gte('created_at', since)
       .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    return data || null;
+      .limit(10);
+    if (authorId) query = query.eq('created_by', authorId);
+
+    const { data } = await query;
+    const candidates = (data || []) as any[];
+    const target = noteText.trim();
+
+    for (const row of candidates) {
+      const existing = String(row.note_text || '').trim();
+      if (!existing) continue;
+      if (existing === target) return { note: row, shouldExtend: false };
+      if (target.startsWith(existing)) return { note: row, shouldExtend: true };
+      if (existing.startsWith(target)) return { note: row, shouldExtend: false };
+    }
+    return null;
   } catch {
     return null;
   }
 };
+
 
 
 
@@ -443,8 +468,25 @@ export const useLeadQuickNotes = (leadId: string) => {
 
             if (updateError) throw updateError;
           } else {
-            const alreadySaved = await findRecentDuplicateNote(queuedLeadId, queuedNote.noteText.trim());
-            if (!alreadySaved) {
+            const related = await findRecentRelatedNote(
+              queuedLeadId,
+              queuedNote.noteText.trim(),
+              adminUser.id,
+            );
+
+            if (related?.shouldExtend) {
+              // The queued text continues a fragment already saved — extend it
+              // rather than leaving two half-written notes on the lead.
+              const { error: extendError } = await withTimeout<any>(
+                supabase
+                  .from('lead_quick_notes')
+                  .update({ note_text: queuedNote.noteText.trim() })
+                  .eq('id', related.note.id),
+                NOTE_SAVE_TIMEOUT_MS,
+                'Queued note save timed out'
+              );
+              if (extendError) throw extendError;
+            } else if (!related) {
               const { error: insertError } = await withTimeout<any>(
                 supabase
                   .from('lead_quick_notes')
@@ -459,6 +501,7 @@ export const useLeadQuickNotes = (leadId: string) => {
 
               if (insertError) throw insertError;
             }
+
           }
 
 
@@ -522,35 +565,50 @@ export const useLeadQuickNotes = (leadId: string) => {
         fetchNotes(true).catch(e => console.warn('[addNote] Background refetch error:', e));
         return { id: `cart_note_${actualId}`, note_text: updatedNotes };
       } else {
-        // If the same note is already on the lead from moments ago, reuse it
-        // instead of writing a second copy.
-        const existing = await findRecentDuplicateNote(leadId, noteText.trim());
+        // If this text is the same note the agent is still writing (a repeat
+        // save or a mid-typing auto-save fragment), reuse that row — extending
+        // it when the new text carries on from the fragment.
+        const related = await findRecentRelatedNote(leadId, noteText.trim(), adminUser.id);
 
-        const { data, error } = existing
-          ? { data: existing, error: null }
-          : await supabase
-              .from('lead_quick_notes')
-              .insert({
-                lead_id: leadId,
-                note_text: noteText.trim(),
-                created_by: adminUser.id
-              })
-              .select()
-              .maybeSingle();
+        let data: any = null;
+        let saveError: any = null;
 
-        if (error) throw error;
+        if (related?.shouldExtend) {
+          const res = await supabase
+            .from('lead_quick_notes')
+            .update({ note_text: noteText.trim() })
+            .eq('id', related.note.id)
+            .select()
+            .maybeSingle();
+          data = res.data || { ...related.note, note_text: noteText.trim() };
+          saveError = res.error;
+        } else if (related) {
+          data = related.note;
+        } else {
+          const res = await supabase
+            .from('lead_quick_notes')
+            .insert({
+              lead_id: leadId,
+              note_text: noteText.trim(),
+              created_by: adminUser.id
+            })
+            .select()
+            .maybeSingle();
+          data = res.data;
+          saveError = res.error;
+        }
 
+        if (saveError) throw saveError;
 
-        // CRITICAL: Update local state immediately with the new note
-        // This ensures the note appears instantly without waiting for refetch
         const newNote: QuickNote = {
-          ...data,
+          ...(data || {}),
           author: {
             first_name: adminUser.first_name,
             last_name: adminUser.last_name,
             email: adminUser.email
           }
         };
+
         updateNotes(prev => {
           const withoutOptimistic = prev.filter(
             n => n.id !== optimisticNote.id && n.id !== newNote.id
@@ -559,6 +617,7 @@ export const useLeadQuickNotes = (leadId: string) => {
           const unpinned = withoutOptimistic.filter(n => !n.is_pinned);
           return [...pinned, newNote, ...unpinned];
         });
+
 
 
         touchLeadActivity(leadId);
