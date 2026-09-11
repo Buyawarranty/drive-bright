@@ -13,6 +13,7 @@ import {
   type PricingVersionSnapshot,
 } from '@/lib/pricing/historicalPricing';
 import { getRecordedOrderDiscount, discountBandClass } from '@/lib/pricing/orderDiscount';
+import { useIsManagement } from '@/hooks/useIsManagement';
 
 /**
  * Customer management cell: what the system said this cover should cost on the
@@ -24,6 +25,7 @@ import { getRecordedOrderDiscount, discountBandClass } from '@/lib/pricing/order
  */
 export const ReferencePriceCell: React.FC<{ order: SoldOrderLike | null | undefined }> = ({ order }) => {
   const [versions, setVersions] = React.useState<PricingVersionSnapshot[]>([]);
+  const { isManagement } = useIsManagement();
 
   React.useEffect(() => {
     let alive = true;
@@ -55,6 +57,34 @@ export const ReferencePriceCell: React.FC<{ order: SoldOrderLike | null | undefi
       <Gauge className="mr-1 h-3 w-3" />
       Price match override
     </Badge>
+  ) : null;
+
+  // Date and time the quote was actually given. Agents dispute discounts weeks
+  // later, so the timestamp is always shown; only managers additionally see the
+  // price model that was live at that moment (checked in Price Updates).
+  const quotedAtRaw = (order as any)?.sale_quoted_at || null;
+  const quotedAt = quotedAtRaw ? new Date(quotedAtRaw) : null;
+  const priceModelLabel = (order as any)?.sale_pricing_version_label || null;
+  const quoteGivenAt = quotedAt && !Number.isNaN(quotedAt.getTime()) ? (
+    <div className="flex flex-col text-[11px] leading-tight text-slate-500">
+      <span title="Date and time the agent gave this quote">
+        Quote given{' '}
+        <span className="font-medium text-slate-700">
+          {quotedAt.toLocaleString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </span>
+      </span>
+      {isManagement && priceModelLabel && (
+        <span title="Price model that was live in Price Updates when the quote was given">
+          Price model: <span className="font-medium text-slate-700">{priceModelLabel}</span>
+        </span>
+      )}
+    </div>
   ) : null;
 
   const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
@@ -94,6 +124,7 @@ export const ReferencePriceCell: React.FC<{ order: SoldOrderLike | null | undefi
           Quoted <span className="font-semibold text-slate-900">{gbp(recorded.quoted)}</span> → sold{' '}
           <span className="font-semibold text-emerald-700">{gbp(recorded.paid)}</span>
         </div>
+        {quoteGivenAt}
         <Badge
           variant="outline"
           className={`text-xs whitespace-nowrap ${
@@ -137,6 +168,7 @@ export const ReferencePriceCell: React.FC<{ order: SoldOrderLike | null | undefi
       <div className="text-[11px] text-slate-600">
         Sold <span className="font-semibold text-emerald-700">{gbp(ref.sold)}</span>
       </div>
+      {quoteGivenAt}
       <Badge
         variant="outline"
         className={`text-xs whitespace-nowrap ${referenceGapClass(ref)}`}

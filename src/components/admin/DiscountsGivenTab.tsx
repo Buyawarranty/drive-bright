@@ -19,6 +19,7 @@ import { DiscountCapManagerDialog } from './quote/DiscountCapManagerDialog';
 import { PriceOverridesPanel } from './pricing/PriceOverridesPanel';
 import { DiscountsByMonthAgentTable } from './discounts/DiscountsByMonthAgentTable';
 import { getRecordedOrderDiscount } from '@/lib/pricing/orderDiscount';
+import { useIsManagement } from '@/hooks/useIsManagement';
 import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 
@@ -47,6 +48,10 @@ interface CustomerRecord {
   discount_amount: number | null;
   original_amount?: number | null;
   price_match_applied?: boolean | null;
+  /** When the agent gave the quote (point-of-sale audit trail). */
+  sale_quoted_at?: string | null;
+  /** Price model that was live when the quote was given (managers only). */
+  sale_pricing_version_label?: string | null;
   vehicle_make: string | null;
   vehicle_model: string | null;
   vehicle_year: string | null;
@@ -287,6 +292,8 @@ const computeRange = (key: QuickRange): DateRange | undefined => {
 };
 
 export const DiscountsGivenTab: React.FC = () => {
+  // Only managers get to see which price model was live when the quote was given.
+  const { isManagement } = useIsManagement();
   const { user, userRole } = useAuth();
   const [customers, setCustomers] = useState<CustomerRecord[]>([]);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
@@ -332,7 +339,7 @@ export const DiscountsGivenTab: React.FC = () => {
         fetchAllRows(() =>
           supabase
             .from('customers')
-            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, purchase_source, is_manual_entry, signup_date, status, discount_code, discount_amount, original_amount, price_match_applied, sale_quoted_total, sale_discount_amount, sale_discount_pct, sale_price_basis, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
+            .select('id, name, email, registration_plate, plan_type, payment_type, final_amount, voluntary_excess, claim_limit, labour_rate, assigned_to, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, purchase_source, is_manual_entry, signup_date, status, discount_code, discount_amount, original_amount, price_match_applied, sale_quoted_total, sale_discount_amount, sale_discount_pct, sale_price_basis, sale_quoted_at, sale_pricing_version_label, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, mileage, tyre_cover, wear_tear, europe_cover, transfer_cover, breakdown_recovery, vehicle_rental, mot_fee, mot_repair, lost_key, consequential, warranty_reference_number')
             // Every agent-worked sale counts, whichever route the money came in on:
             // Quotes & Orders orders, Confirm External Payment, or a website payment
             // on a sale that Customer Management credits to a sales agent.
@@ -1136,6 +1143,7 @@ export const DiscountsGivenTab: React.FC = () => {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Date</TableHead>
+                  <TableHead>Quote given</TableHead>
                   <TableHead>Reg</TableHead>
                   <TableHead>Vehicle</TableHead>
                   <TableHead>Plan</TableHead>
@@ -1180,7 +1188,7 @@ export const DiscountsGivenTab: React.FC = () => {
               <TableBody>
                 {enrichedCustomers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={17} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={18} className="text-center py-8 text-muted-foreground">
                       No transactions found for the selected filters
                     </TableCell>
                   </TableRow>
@@ -1196,6 +1204,23 @@ export const DiscountsGivenTab: React.FC = () => {
                         <TableRow key={c.id} className={rowClass}>
                           <TableCell className="font-medium text-sm whitespace-nowrap">{c.name}</TableCell>
                           <TableCell className="text-xs whitespace-nowrap">{format(new Date(c.signup_date), 'dd/MM/yyyy')}</TableCell>
+                          <TableCell className="text-xs whitespace-nowrap">
+                            {c.sale_quoted_at ? (
+                              <div className="flex flex-col leading-tight">
+                                <span className="font-medium">{format(new Date(c.sale_quoted_at), 'dd/MM/yyyy HH:mm')}</span>
+                                {isManagement && c.sale_pricing_version_label && (
+                                  <span
+                                    className="text-[11px] text-muted-foreground"
+                                    title="Price model that was live in Price Updates when this quote was given"
+                                  >
+                                    {c.sale_pricing_version_label}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">Not logged</span>
+                            )}
+                          </TableCell>
                           <TableCell>
                             {c.registration_plate ? (
                               <span className="inline-block bg-[#FFD307] text-black font-bold font-mono text-xs px-2 py-1 rounded border border-black/20 tracking-wider uppercase">

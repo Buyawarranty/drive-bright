@@ -3,6 +3,7 @@ import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, inst
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
 import { getNetPayableFloor } from '@/lib/pricing/netFloor';
+import { quoteAuditStamp } from '@/lib/pricing/historicalPricing';
 import { getSoldVsReference } from '@/lib/pricing/soldVsReference';
 import { resolveHighestQuotedTotal } from '@/lib/pricing/quotedTotalLookup';
 import { isPayBetterSale, PAYBETTER_TARGET_NOTE } from '@/lib/payBetterSales';
@@ -929,6 +930,9 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
               // Point-of-sale record used for commissions and the Customers tab
               // discount column — never re-derived from a later price change.
               sale_quoted_total: effectiveQuoted,
+              // Date/time the quote was given + the price model live at that
+              // moment, so a disputed discount can always be verified later.
+              ...(await quoteAuditStamp()),
               sale_discount_amount: givenAway,
               sale_discount_pct: effectiveQuoted > 0 ? Math.round((givenAway / effectiveQuoted) * 1000) / 10 : 0,
 

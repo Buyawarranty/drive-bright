@@ -9,6 +9,8 @@ import {
 
 export interface PricingVersionSnapshot {
   id: string;
+  /** Name the model was saved under in Price Updates (shown to managers only). */
+  label: string;
   publishedAt: number; // epoch ms
   matrix: PricingMatrixShape;
   step3DiscountPct: number;
@@ -24,7 +26,7 @@ export interface PricingVersionSnapshot {
 export async function loadPricingVersionHistory(): Promise<PricingVersionSnapshot[]> {
   const { data, error } = await supabase
     .from('pricing_matrix_versions')
-    .select('id, published_at, admin_matrix, step3_discount_pct, labour_rate_factors')
+    .select('id, label, published_at, admin_matrix, step3_discount_pct, labour_rate_factors')
     .not('published_at', 'is', null)
     .order('published_at', { ascending: false });
 
@@ -34,6 +36,7 @@ export async function loadPricingVersionHistory(): Promise<PricingVersionSnapsho
     .filter(v => !!v.admin_matrix)
     .map(v => ({
       id: v.id,
+      label: (v as any).label || 'Unnamed price model',
       publishedAt: new Date(v.published_at as string).getTime(),
       matrix: v.admin_matrix as unknown as PricingMatrixShape,
       step3DiscountPct: Number(v.step3_discount_pct ?? 10),
@@ -84,4 +87,30 @@ let historyPromise: Promise<PricingVersionSnapshot[]> | null = null;
 export function getPricingVersionHistoryCached(): Promise<PricingVersionSnapshot[]> {
   if (!historyPromise) historyPromise = loadPricingVersionHistory();
   return historyPromise;
+}
+
+/**
+ * Point-of-sale audit stamp: the exact moment a quote was given plus the price
+ * model that was live at that moment.
+ *
+ * Sales staff and managers argue about discounts weeks later, so every sale
+ * records when the quote was produced. Managers can then line that timestamp up
+ * against the price model in Price Updates that was live at the time.
+ */
+export async function quoteAuditStamp(when: Date = new Date()): Promise<{
+  sale_quoted_at: string;
+  sale_pricing_version_id: string | null;
+  sale_pricing_version_label: string | null;
+}> {
+  let version: PricingVersionSnapshot | null = null;
+  try {
+    version = pricingVersionAsOf(await getPricingVersionHistoryCached(), when);
+  } catch {
+    version = null;
+  }
+  return {
+    sale_quoted_at: when.toISOString(),
+    sale_pricing_version_id: version?.id ?? null,
+    sale_pricing_version_label: version?.label ?? null,
+  };
 }
