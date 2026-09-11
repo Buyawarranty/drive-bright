@@ -5519,7 +5519,18 @@ Buyawarranty.co.uk`,
                         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" largeCloseButton>
                           <DialogHeader>
                             <div className="flex items-center justify-between">
-                              <DialogTitle>Manage Customer: {selectedCustomer?.name}</DialogTitle>
+                               <DialogTitle className="flex items-center gap-2">
+                                 Manage Customer: {selectedCustomer?.name}
+                                 {isPayBetterSale((selectedCustomer as any)?.purchase_source) && (
+                                   <Badge
+                                     variant="outline"
+                                     className="bg-violet-100 text-violet-800 border-violet-300 text-[11px] font-semibold"
+                                     title={PAYBETTER_TARGET_NOTE}
+                                   >
+                                     PayBetter sale · 1-year equivalent to target
+                                   </Badge>
+                                 )}
+                               </DialogTitle>
                               {selectedCustomer && (
                                 <div className="flex items-center gap-2">
                                   {canRaiseSaveDeal && (
