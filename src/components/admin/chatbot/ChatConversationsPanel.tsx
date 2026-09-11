@@ -120,6 +120,54 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso }: { 
 
   const selected = threads.find((t) => t.id === selectedId) ?? null;
 
+  // ---- Live reply: type here and the customer sees it in their chat box ----
+  const [reply, setReply] = useState('');
+  const [replying, setReplying] = useState(false);
+
+  const refreshMessages = async (threadId: string) => {
+    const { data } = await supabase
+      .from('ai_sandbox_messages')
+      .select('id, role, content, parts, created_at')
+      .eq('thread_id', threadId)
+      .order('created_at', { ascending: true });
+    setMessages((data ?? []) as Message[]);
+  };
+
+  // Keep the open conversation up to date so a customer's new message appears
+  // while the agent is reading it.
+  useEffect(() => {
+    if (!selectedId) return;
+    const t = window.setInterval(() => void refreshMessages(selectedId), 6000);
+    return () => window.clearInterval(t);
+  }, [selectedId]);
+
+  const sendReply = async () => {
+    const text = reply.trim();
+    if (!selected || !text) return;
+    setReplying(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('chat-live-reply', {
+        body: { action: 'send', threadId: selected.id, text },
+      });
+      if (error) throw error;
+      if ((data as any)?.ok === false) throw new Error((data as any).error || 'Could not send');
+      setReply('');
+      await refreshMessages(selected.id);
+      toast.success('Sent — the customer sees it in their chat box');
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not send that reply');
+    } finally {
+      setReplying(false);
+    }
+  };
+
+  const lastCustomerAt = useMemo(() => {
+    const customer = messages.filter((m) => m.role === 'user');
+    return customer.length ? new Date(customer[customer.length - 1].created_at) : null;
+  }, [messages]);
+  const customerLikelyLive =
+    lastCustomerAt !== null && Date.now() - lastCustomerAt.getTime() < 15 * 60 * 1000;
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return threads;
