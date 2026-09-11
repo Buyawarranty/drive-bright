@@ -666,6 +666,70 @@ export function SandboxChatWindow({
 
 
 
+  // Website visitor: keep listening for replies typed by a real person in the
+  // CRM. Whatever a specialist sends there drops straight into this chat box
+  // while the visitor is still here, so the conversation carries on live.
+  const seenAgentIdsRef = useRef<Set<string>>(new Set());
+  const lastAgentAtRef = useRef<string | null>(null);
+  const [specialistJoined, setSpecialistJoined] = useState(false);
+
+  useEffect(() => {
+    if (!isGuest || !guestToken) return;
+    let active = true;
+
+    const poll = async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-live-reply`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'poll',
+              guestToken,
+              since: lastAgentAtRef.current,
+            }),
+          },
+        );
+        const data = await res.json().catch(() => null);
+        if (!active || !data?.ok || !Array.isArray(data.messages)) return;
+        const fresh = (data.messages as Array<{ id: string; text: string; created_at: string }>)
+          .filter((m) => m.text && !seenAgentIdsRef.current.has(m.id));
+        if (fresh.length === 0) return;
+        for (const m of fresh) {
+          seenAgentIdsRef.current.add(m.id);
+          if (!lastAgentAtRef.current || m.created_at > lastAgentAtRef.current) {
+            lastAgentAtRef.current = m.created_at;
+          }
+        }
+        setSpecialistJoined(true);
+        setHoldState((prev) => (prev === 'on_hold' || prev === 'connecting' ? 'joined' : prev));
+        setMessages((prev) => [
+          ...prev,
+          ...fresh.map(
+            (m) =>
+              ({
+                id: `agent-${m.id}`,
+                role: 'assistant',
+                parts: [{ type: 'text', text: m.text }],
+                metadata: { sender: 'agent' as Sender },
+              }) as UIMessage,
+          ),
+        ]);
+      } catch {
+        /* transient — try again on the next tick */
+      }
+    };
+
+    void poll();
+    const t = window.setInterval(poll, 5000);
+    return () => {
+      active = false;
+      window.clearInterval(t);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isGuest, guestToken]);
+
   useEffect(() => {
     if (isGuest || !threadId) return;
     let active = true;
