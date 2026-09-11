@@ -59,7 +59,7 @@ const detect = (messages: Message[]) => {
  * Every customer conversation with Miles, in full, with a one-click
  * "Send as new lead" that writes the whole chat into the lead's notes.
  */
-export default function ChatConversationsPanel({ rangeDays, fromIso, toIso }: { rangeDays: string; fromIso?: string | null; toIso?: string | null }) {
+export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, initialThreadId }: { rangeDays: string; fromIso?: string | null; toIso?: string | null; initialThreadId?: string | null }) {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -98,6 +98,17 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso }: { 
     void loadThreads();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rangeDays, fromIso, toIso]);
+
+  // Arrived from a chat pop-up — open that conversation straight away.
+  const openedDeepLink = useRef(false);
+  useEffect(() => {
+    if (openedDeepLink.current || !initialThreadId || threads.length === 0) return;
+    const match = threads.find((t) => t.id === initialThreadId);
+    if (!match) return;
+    openedDeepLink.current = true;
+    void openThread(match);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialThreadId, threads]);
 
   const openThread = async (thread: Thread) => {
     setSelectedId(thread.id);

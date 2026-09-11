@@ -26,6 +26,7 @@ import { DailyCrmSurveyPrompt } from '@/components/admin/feedback/DailyCrmSurvey
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import LiveChatHoursBanner from '@/components/admin/LiveChatHoursBanner';
+import LiveChatQuestionAlert from '@/components/admin/chatbot/LiveChatQuestionAlert';
 
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
@@ -1344,6 +1345,8 @@ const AdminDashboardInner: React.FC<{
       <div className={sidebarCollapsed ? 'lg:pl-14' : 'lg:pl-64'}>
       {/* Live chat opening-hours bar — every member of staff, claims included */}
       <LiveChatHoursBanner />
+      {/* Top-left chat pop-ups for the named people responsible for chat */}
+      <LiveChatQuestionAlert />
 
 
 

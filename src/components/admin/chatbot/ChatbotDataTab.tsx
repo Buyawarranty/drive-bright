@@ -13,6 +13,7 @@ import ChatConversationsPanel from './ChatConversationsPanel';
 import ChatActionQueuePanel from './ChatActionQueuePanel';
 import ChatbotImprovementPanel from './ChatbotImprovementPanel';
 import ChatbotAnswerLibraryPanel from './ChatbotAnswerLibraryPanel';
+import ChatResponseStatsPanel from './ChatResponseStatsPanel';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 
@@ -69,6 +70,14 @@ export default function ChatbotDataTab() {
   const fromIso = activeRange?.from ? new Date(new Date(activeRange.from).setHours(0, 0, 0, 0)).toISOString() : null;
   const toIso = activeRange?.to ? new Date(new Date(activeRange.to).setHours(23, 59, 59, 999)).toISOString() : null;
   const [search, setSearch] = useState('');
+  // Opened straight from a chat pop-up: land on the conversation itself.
+  const deepLinkThread = useMemo(() => {
+    try {
+      return new URLSearchParams(window.location.search).get('chatThread');
+    } catch {
+      return null;
+    }
+  }, []);
 
   const load = async () => {
     setLoading(true);
@@ -314,10 +323,11 @@ export default function ChatbotDataTab() {
         className="max-w-md"
       />
 
-      <Tabs defaultValue="queue">
+      <Tabs defaultValue={deepLinkThread ? 'conversations' : 'queue'}>
         <TabsList>
           <TabsTrigger value="queue">Action queue</TabsTrigger>
           <TabsTrigger value="conversations">Conversations &amp; leads</TabsTrigger>
+          <TabsTrigger value="response">Reply times &amp; missed chats</TabsTrigger>
           <TabsTrigger value="library">Answer library</TabsTrigger>
           <TabsTrigger value="improve">Needs improvement</TabsTrigger>
           <TabsTrigger value="wants">What customers want</TabsTrigger>
@@ -330,8 +340,19 @@ export default function ChatbotDataTab() {
         </TabsContent>
 
         <TabsContent value="conversations" className="pt-4">
-          <ChatConversationsPanel rangeDays="all" fromIso={fromIso} toIso={toIso} />
+          <ChatConversationsPanel
+            rangeDays="all"
+            fromIso={fromIso}
+            toIso={toIso}
+            initialThreadId={deepLinkThread}
+          />
         </TabsContent>
+
+        <TabsContent value="response" className="pt-4">
+          <ChatResponseStatsPanel fromIso={fromIso} toIso={toIso} />
+        </TabsContent>
+
+
 
 
         <TabsContent value="library" className="pt-4">
