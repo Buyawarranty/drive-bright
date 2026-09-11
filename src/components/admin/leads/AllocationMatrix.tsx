@@ -1407,6 +1407,15 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                         <span className={`text-[10px] font-bold uppercase rounded px-1.5 py-0.5 ${strictEnabled ? 'bg-emerald-600 text-white' : 'bg-emerald-200 text-emerald-800'}`}>
                           {strictEnabled ? 'On' : 'Off'}
                         </span>
+                        <button
+                          type="button"
+                          onClick={() => setShowSources(v => !v)}
+                          title={showSources ? 'Hide lead sources (H)' : 'Show lead sources (S)'}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide bg-purple-600 text-white hover:bg-purple-700 transition-colors"
+                        >
+                          {showSources ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                          {showSources ? 'H' : 'S'}
+                        </button>
                       </h3>
                       <p className="text-[11px] font-medium text-emerald-900 bg-emerald-200/70 border border-emerald-400/50 rounded px-2 py-1">
                         RR agents get leads sent to them automatically. ORR agents grab their own from the pool. Both can coexist — this toggle only affects RR agents.
