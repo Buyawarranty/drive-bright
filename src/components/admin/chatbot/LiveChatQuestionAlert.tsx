@@ -42,17 +42,29 @@ const text = (m: Row) => {
  * never be left sitting there.
  */
 export const LiveChatQuestionAlert: React.FC = () => {
-  const { allowed } = useChatAlertRecipient();
+  const { allowed, isSuperAdmin } = useChatAlertRecipient();
   const [rows, setRows] = useState<Row[]>([]);
   const [waitingCount, setWaitingCount] = useState(0);
+  const [waitingThreadId, setWaitingThreadId] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
-  const [muted, setMuted] = useState<boolean>(() => {
+  // Super admin starts on mute (he is always busy); everyone else with access
+  // hears the beep unless they mute it themselves.
+  const [muted, setMuted] = useState<boolean>(false);
+  const muteInit = useRef(false);
+
+  useEffect(() => {
+    if (muteInit.current || !allowed) return;
+    muteInit.current = true;
+    let stored: string | null = null;
     try {
-      return localStorage.getItem(MUTE_KEY) === '1';
+      stored = localStorage.getItem(MUTE_KEY);
     } catch {
-      return false;
+      stored = null;
     }
-  });
+    if (stored === '1') setMuted(true);
+    else if (stored === '0') setMuted(false);
+    else setMuted(isSuperAdmin);
+  }, [allowed, isSuperAdmin]);
   const [collapsed, setCollapsed] = useState(false);
   const openNow = useRef(isTeamOpenNow());
 
@@ -98,6 +110,7 @@ export const LiveChatQuestionAlert: React.FC = () => {
       return !replied;
     });
     setWaitingCount(stillWaiting.length);
+    setWaitingThreadId(stillWaiting.length ? String(stillWaiting[0]) : null);
     openNow.current = isTeamOpenNow();
   }, []);
 
@@ -177,6 +190,15 @@ export const LiveChatQuestionAlert: React.FC = () => {
                 <Headset className="h-3.5 w-3.5" />
                 Someone has asked for a real person — reply now, the beeping stops once you do.
               </div>
+            )}
+            {waitingCount > 0 && waitingThreadId && (
+              <Button
+                size="sm"
+                className="h-8 w-full text-xs"
+                onClick={() => openChat(waitingThreadId)}
+              >
+                Go to the chat and reply now
+              </Button>
             )}
             {visible.map((q) => (
               <div key={q.id} className="rounded border border-border bg-card p-2">

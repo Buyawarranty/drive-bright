@@ -25,6 +25,7 @@ export const CHAT_ALERT_ROLES = [
 
 export function useChatAlertRecipient() {
   const [allowed, setAllowed] = useState<boolean | null>(null);
+  const [role, setRole] = useState<string>('');
 
   useEffect(() => {
     let mounted = true;
@@ -44,6 +45,7 @@ export function useChatAlertRecipient() {
         if (!mounted) return;
         const email = String(data?.email ?? '').trim().toLowerCase();
         const role = String(data?.role ?? '');
+        setRole(role);
         setAllowed(
           (CHAT_ALERT_EMAILS as readonly string[]).includes(email) ||
             (CHAT_ALERT_ROLES as readonly string[]).includes(role),
@@ -57,5 +59,10 @@ export function useChatAlertRecipient() {
     };
   }, []);
 
-  return { allowed: allowed === true, loading: allowed === null };
+  return {
+    allowed: allowed === true,
+    loading: allowed === null,
+    role,
+    isSuperAdmin: role === 'super_admin',
+  };
 }
