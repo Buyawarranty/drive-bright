@@ -383,6 +383,7 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso }: { 
                       No messages saved for this conversation.
                     </p>
                   )}
+                  <div ref={bottomRef} />
                 </div>
               </ScrollArea>
 
@@ -398,6 +399,22 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso }: { 
                   ) : (
                     <Badge variant="outline">May have left the chat</Badge>
                   )}
+                  {newCustomerReplies > 0 && (
+                    <Badge className="border-amber-200 bg-amber-100 text-amber-900">
+                      {newCustomerReplies} new {newCustomerReplies === 1 ? 'reply' : 'replies'} from the customer
+                    </Badge>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => {
+                      setNewCustomerReplies(0);
+                      void refreshMessages(selected.id, false);
+                    }}
+                  >
+                    <RefreshCw className="mr-1 h-3 w-3" /> Check for a reply
+                  </Button>
                 </div>
                 <Textarea
                   value={reply}
