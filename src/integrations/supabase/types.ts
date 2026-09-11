@@ -1475,6 +1475,60 @@ export type Database = {
           },
         ]
       }
+      ai_chat_answer_library: {
+        Row: {
+          answer: string
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          keywords: string[]
+          last_used_at: string | null
+          normalized_question: string | null
+          notes: string | null
+          question: string
+          source_thread_id: string | null
+          status: string
+          times_used: number
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          keywords?: string[]
+          last_used_at?: string | null
+          normalized_question?: string | null
+          notes?: string | null
+          question: string
+          source_thread_id?: string | null
+          status?: string
+          times_used?: number
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          keywords?: string[]
+          last_used_at?: string | null
+          normalized_question?: string | null
+          notes?: string | null
+          question?: string
+          source_thread_id?: string | null
+          status?: string
+          times_used?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_chat_events: {
         Row: {
           created_at: string

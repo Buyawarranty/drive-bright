@@ -11,6 +11,7 @@ import { Bot, MessageSquare, Car, PoundSterling, PhoneCall, UserPlus, RefreshCw,
 import ChatConversationsPanel from './ChatConversationsPanel';
 import ChatActionQueuePanel from './ChatActionQueuePanel';
 import ChatbotImprovementPanel from './ChatbotImprovementPanel';
+import ChatbotAnswerLibraryPanel from './ChatbotAnswerLibraryPanel';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
 import type { DateRange } from 'react-day-picker';
 
@@ -283,6 +284,7 @@ export default function ChatbotDataTab() {
         <TabsList>
           <TabsTrigger value="queue">Action queue</TabsTrigger>
           <TabsTrigger value="conversations">Conversations &amp; leads</TabsTrigger>
+          <TabsTrigger value="library">Answer library</TabsTrigger>
           <TabsTrigger value="improve">Needs improvement</TabsTrigger>
           <TabsTrigger value="wants">What customers want</TabsTrigger>
           <TabsTrigger value="vehicles">Vehicles &amp; prices</TabsTrigger>
@@ -297,6 +299,10 @@ export default function ChatbotDataTab() {
           <ChatConversationsPanel rangeDays="all" fromIso={fromIso} toIso={toIso} />
         </TabsContent>
 
+
+        <TabsContent value="library" className="pt-4">
+          <ChatbotAnswerLibraryPanel fromIso={fromIso} toIso={toIso} />
+        </TabsContent>
 
         <TabsContent value="improve" className="pt-4">
           <ChatbotImprovementPanel rangeDays="all" fromIso={fromIso} toIso={toIso} />

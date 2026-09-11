@@ -7,6 +7,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createLovableAiGatewayProvider } from "../_shared/ai-gateway.ts";
 import { retrieveGrounded } from "./knowledge.ts";
+import { matchLibrary, libraryPromptBlock } from "./answer-library.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -318,6 +319,37 @@ Deno.serve(async (req) => {
           .eq("id", threadId);
       }
     }
+
+    // Answers our own team has written for questions like this one. They count
+    // as approved material, so Miles reuses that wording next time round.
+    const lastUserText = (lastMessage?.role === "user" ? (lastMessage.parts ?? []) : [])
+      .filter((p: any) => p?.type === "text")
+      .map((p: any) => p.text)
+      .join("\n");
+
+    let libraryBlock = "";
+    try {
+      if (lastUserText.trim().length > 3) {
+        const { data: libraryRows } = await admin
+          .from("ai_chat_answer_library")
+          .select("id, question, answer, keywords, times_used")
+          .eq("status", "approved")
+          .limit(500);
+        const matches = matchLibrary(lastUserText, (libraryRows ?? []) as any);
+        libraryBlock = libraryPromptBlock(matches);
+        if (matches.length > 0) {
+          const best = matches[0].row;
+          await admin
+            .from("ai_chat_answer_library")
+            .update({ times_used: (Number((best as any).times_used) || 0) + 1, last_used_at: new Date().toISOString() })
+            .eq("id", best.id);
+        }
+      }
+    } catch (e) {
+      console.error("[ai-sandbox-chat] answer library lookup failed", e);
+    }
+
+
 
     /** Log a learning signal for the admin "Chatbot data" section. Never throws. */
     const logEvent = async (row: Record<string, unknown>) => {
@@ -948,7 +980,7 @@ Deno.serve(async (req) => {
 
     const result = streamText({
       model: gateway(MODEL),
-      system: SYSTEM_PROMPT + liveContext,
+      system: SYSTEM_PROMPT + liveContext + libraryBlock,
       messages: modelMessages,
       tools,
       stopWhen: stepCountIs(50),
