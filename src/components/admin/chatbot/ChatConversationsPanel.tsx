@@ -182,7 +182,20 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
       const { data, error } = await supabase.functions.invoke('chat-live-reply', {
         body: { action: 'send', threadId: selected.id, text },
       });
-      if (error) throw error;
+      // The gateway hides the real reason behind "non-2xx status code" — read it.
+      if (error) {
+        let reason = '';
+        try {
+          const ctx: any = (error as any)?.context;
+          if (ctx && typeof ctx.text === 'function') {
+            const raw = await ctx.text();
+            reason = JSON.parse(raw || '{}')?.error || raw;
+          }
+        } catch {
+          /* keep the generic message */
+        }
+        throw new Error(reason ? `Could not send: ${reason}` : (error as any).message);
+      }
       if ((data as any)?.ok === false) throw new Error((data as any).error || 'Could not send');
       setReply('');
       await refreshMessages(selected.id);
