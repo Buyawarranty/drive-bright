@@ -73,14 +73,11 @@ export const WeekendLeadsStatsPanel: React.FC<Props> = ({ dateRange: externalRan
         isWeekend: arrival.day === 'Sat' || arrival.day === 'Sun',
         converted: (r.status || '') === 'converted' && !!converted,
         convDay: convDay?.day || null,
-        convDate: convDate(convDay?.date),
         sameDay: convDay ? convDay.date === arrival.date : false,
         days: converted ? (converted.getTime() - created.getTime()) / 86400000 : null,
         assigned: !!r.assigned_to,
       };
     });
-
-    function convDate(v?: string) { return v || null; }
 
     // Per arrival weekday
     const byDay = DAY_ORDER.map(day => {
