@@ -146,9 +146,9 @@ export default function SiteChatWidget({
       {/* Chat panel — kept mounted after first open so minimising keeps history */}
       {everOpened && (
         <div
-          className={`fixed z-[70] flex flex-col overflow-hidden border border-border bg-background shadow-2xl ${
+          className={`fixed z-[70] flex w-full max-w-full flex-col overflow-hidden border border-border bg-background shadow-2xl ${
             open ? 'flex' : 'hidden'
-          } inset-0 rounded-none sm:inset-auto sm:bottom-6 sm:right-6 sm:max-h-[calc(100vh-3rem)] sm:max-w-[calc(100vw-3rem)] sm:rounded-2xl ${
+          } inset-0 h-[100dvh] rounded-none sm:inset-auto sm:bottom-6 sm:right-6 sm:h-auto sm:max-h-[calc(100vh-3rem)] sm:max-w-[calc(100vw-3rem)] sm:rounded-2xl ${
             expanded ? 'sm:h-[860px] sm:w-[680px]' : 'sm:h-[calc(100vh-6rem)] sm:w-[480px]'
 
           }`}
@@ -201,8 +201,8 @@ export default function SiteChatWidget({
 
           </div>
 
-          <div className="min-h-0 flex-1">
-            <SandboxChatWindow key={sessionKey} guestToken={tokenRef.current!} source={source} compact autoFocus={false} />
+          <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
+            <SandboxChatWindow key={sessionKey} guestToken={tokenRef.current ?? undefined} source={source} compact autoFocus={false} />
           </div>
         </div>
       )}

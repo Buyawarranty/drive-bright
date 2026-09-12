@@ -243,11 +243,11 @@ function RegQuickStart({
   const valid = clean.length >= 5;
 
   return (
-    <div className="w-full rounded-2xl border border-border bg-card p-3.5 text-left shadow-sm sm:p-4">
+    <div className="w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-card p-3.5 text-left shadow-sm sm:p-4">
       <p className="text-base font-bold tracking-tight text-foreground">Get your price in seconds</p>
 
       <form
-        className="mt-3 flex w-full items-stretch gap-2"
+        className="mt-3 grid w-full min-w-0 grid-cols-1 items-stretch gap-2 min-[360px]:grid-cols-[minmax(0,1fr)_auto]"
         onSubmit={(e) => {
           e.preventDefault();
           if (valid && !disabled) onSubmit(clean.toUpperCase());
@@ -272,7 +272,7 @@ function RegQuickStart({
         <Button
           type="submit"
           disabled={!valid || disabled}
-          className="h-auto shrink-0 whitespace-nowrap rounded-lg bg-[#EF6C33] px-3 text-sm font-bold text-white shadow-sm transition-transform hover:bg-[#DC5F27] hover:scale-[1.02] disabled:hover:scale-100"
+          className="h-11 w-full whitespace-nowrap rounded-lg bg-[#EF6C33] px-3 text-sm font-bold text-white shadow-sm transition-transform hover:bg-[#DC5F27] hover:scale-[1.02] disabled:hover:scale-100 min-[360px]:w-auto"
         >
           Get my price
         </Button>
@@ -380,7 +380,7 @@ function PriceOptionsPanel({
   const quoted = priceRequested ? extractPrice(lastAssistantText) : null;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 text-left shadow-sm">
+    <div className="w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-card p-3.5 text-left shadow-sm sm:p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-base font-semibold text-foreground">Build your price</p>
@@ -416,7 +416,7 @@ function PriceOptionsPanel({
         <div className="mt-3 rounded-xl border border-[#FF6B00]/30 bg-[#FF6B00]/10 p-3">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-[#B34A08]">Your price</p>
           <p className="mt-0.5 text-2xl font-extrabold leading-none text-foreground">{quoted.total}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">
             {combo}
             {quoted.monthly ? ` · or ${quoted.monthly}/month over 12 instalments at 0% APR` : ''}
           </p>
@@ -432,7 +432,7 @@ function PriceOptionsPanel({
         </div>
       )}
 
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-3 flex min-w-0 flex-wrap gap-2">
         <Button
           size="sm"
           disabled={disabled}
@@ -451,7 +451,7 @@ function PriceOptionsPanel({
 
 
         {priceRequested && !pending && (
-          <div className="mt-3 space-y-3">
+          <div className="mt-3 w-full min-w-0 space-y-3">
             <p className="text-sm text-foreground">
               <strong>Happy with the price?</strong> Pay in full and you save <strong>10%</strong>, or spread it over <strong>12 monthly instalments</strong> at <strong>0% APR</strong>.
             </p>
@@ -462,7 +462,7 @@ function PriceOptionsPanel({
                 size="sm"
                 disabled={disabled}
                 onClick={() => setPending('monthly')}
-                className="h-11 justify-between bg-[#FF6B00] px-4 font-bold text-white shadow-sm hover:bg-[#E85F00]"
+                className="h-auto min-h-11 w-full min-w-0 justify-between gap-2 whitespace-normal bg-[#FF6B00] px-4 py-2.5 font-bold text-white shadow-sm hover:bg-[#E85F00]"
               >
                 <span className="text-left leading-tight">
                   <span className="block text-sm">Pay monthly — 0% APR</span>
@@ -475,11 +475,11 @@ function PriceOptionsPanel({
                 asChild
                 size="sm"
                 disabled={disabled || !checkoutHref}
-                className="h-11 justify-between bg-[#0BA360] px-4 font-bold text-white shadow-sm hover:bg-[#099455]"
+                className="h-auto min-h-11 w-full min-w-0 justify-between gap-2 whitespace-normal bg-[#0BA360] px-4 py-2.5 font-bold text-white shadow-sm hover:bg-[#099455]"
               >
                 <a href={checkoutHref || undefined}>
                   <span className="text-left leading-tight">
-                    <span className="block text-sm">Continue to checkout →</span>
+                    <span className="block text-sm">Continue to checkout</span>
                   </span>
                   <ArrowRight className="h-5 w-5 shrink-0 text-white" strokeWidth={2.5} />
                 </a>
@@ -1027,7 +1027,7 @@ export function SandboxChatWindow({
   const leadCaptured = handover?.kind === 'out_of_hours_lead' || handover?.kind === 'callback_request';
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="flex h-full min-h-0 w-full min-w-0 max-w-full flex-col overflow-hidden">
       {/* Who you are talking to */}
       {agentMode ? (
         <div className="flex flex-wrap items-center gap-2 border-b border-primary/30 bg-primary/10 px-4 py-2 text-sm text-primary">
@@ -1162,13 +1162,13 @@ export function SandboxChatWindow({
       )}
 
       <Conversation
-        className="flex-1"
+        className="min-w-0 max-w-full flex-1 overflow-x-hidden"
         initial={messages.some((m) => m.role === 'user') ? 'smooth' : false}
         resize="smooth"
       >
-        <ConversationContent className={compact ? 'w-full px-3' : 'mx-auto w-full max-w-3xl'}>
+        <ConversationContent className={compact ? 'w-full min-w-0 max-w-full overflow-x-hidden px-3' : 'mx-auto w-full min-w-0 max-w-3xl overflow-x-hidden'}>
           <div>
-            <Message from="assistant" className="flex-row items-start gap-2">
+            <Message from="assistant" className="min-w-0 max-w-full flex-row items-start gap-2">
               <ChatAvatar sender="ai" />
               <MessageContent className="rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-foreground">
                 <SenderLabel sender="ai" />
@@ -1227,8 +1227,8 @@ export function SandboxChatWindow({
                 <MessageContent
                   className={
                     message.role === 'user'
-                      ? 'rounded-2xl rounded-br-sm bg-primary px-4 py-3 text-primary-foreground shadow-sm'
-                      : 'rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-foreground'
+                       ? 'max-w-[calc(100vw-2rem)] break-words rounded-2xl rounded-br-sm bg-primary px-4 py-3 text-primary-foreground shadow-sm [overflow-wrap:anywhere] sm:max-w-full'
+                       : 'break-words rounded-2xl rounded-tl-sm bg-muted px-4 py-3 text-foreground [overflow-wrap:anywhere]'
                   }
                 >
 
@@ -1338,7 +1338,7 @@ export function SandboxChatWindow({
           })}
 
           {!agentMode && hasPriceQuote && pricePanelOpen && (
-            <div className="px-2 pb-2">
+            <div className="w-full min-w-0 max-w-full px-0 pb-2 sm:px-2">
               <PriceOptionsPanel
                 disabled={busy}
                 onSend={send}
@@ -1385,7 +1385,7 @@ export function SandboxChatWindow({
 
 
       <div
-        className={`${compact ? 'w-full p-3' : 'mx-auto w-full max-w-3xl p-4'} border-t border-border bg-background`}
+        className={`${compact ? 'w-full min-w-0 max-w-full px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3' : 'mx-auto w-full min-w-0 max-w-3xl p-4'} border-t border-border bg-background`}
         ref={composerRef}
       >
 
