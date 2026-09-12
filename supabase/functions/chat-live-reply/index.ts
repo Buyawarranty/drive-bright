@@ -86,11 +86,17 @@ Deno.serve(async (req) => {
     if (text.length > 2000) return json({ ok: false, error: "too_long" }, 400);
 
     // Only real staff accounts may speak to a customer as a specialist.
-    const { data: staff } = await admin
+    const { data: staffRows, error: staffError } = await admin
       .from("admin_users")
-      .select("id, role, is_active, name")
+      .select("id, role, is_active, first_name, last_name")
       .eq("user_id", user.id)
-      .maybeSingle();
+      .order("is_active", { ascending: false })
+      .limit(1);
+    if (staffError) {
+      console.error("[chat-live-reply] staff lookup failed", staffError);
+      return json({ ok: false, error: "staff_lookup_failed" }, 500);
+    }
+    const staff = staffRows?.[0];
     if (!staff || staff.is_active === false) return json({ ok: false, error: "not_staff" }, 403);
 
     const content = `${AGENT_PREFIX} ${text}`;
