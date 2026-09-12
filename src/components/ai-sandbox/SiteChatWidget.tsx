@@ -194,9 +194,9 @@ export default function SiteChatWidget({
             <button
               onClick={endChat}
               aria-label="Close chat"
-              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="rounded-md p-2 text-black transition-colors hover:bg-muted"
             >
-              <X className="h-4 w-4" />
+              <X className="h-8 w-8" strokeWidth={3} />
             </button>
 
           </div>
