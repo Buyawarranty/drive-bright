@@ -13,6 +13,7 @@ import { pipelineClass, pipelineLabel, type WhatsAppPipelineStatus } from '@/lib
 import WhatsAppPipelineBar from './WhatsAppPipelineBar';
 import WhatsAppTagPicker from './WhatsAppTagPicker';
 import type { WhatsAppConversation } from '@/hooks/useWhatsAppConversations';
+import { matchQuickReplies, slashQuery } from '@/lib/whatsappQuickReplies';
 
 interface Props {
   conversation: WhatsAppConversation;
