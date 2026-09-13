@@ -607,6 +607,8 @@ export function SandboxChatWindow({
 
   const open = isTeamOpenNow();
   const { liveNames } = useSandboxSpecialistPresence();
+  // Weekends: only show the phone line when an agent is genuinely live.
+  const showPhoneLine = useSalesLineAvailable();
 
 
 
