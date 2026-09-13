@@ -1483,9 +1483,6 @@ export const UserPermissionsTab = () => {
           </Button>
         </div>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Select which admin panel tabs this user can access
-      </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto border rounded-lg p-4">
         {[...ADMIN_TABS].sort((a, b) => a.label.localeCompare(b.label)).map((tab) => {
           const permKey = `tab_${tab.id}`;
@@ -1516,9 +1513,6 @@ export const UserPermissionsTab = () => {
                   >
                     {tab.label}
                   </Label>
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                    {tab.description}
-                  </p>
                 </div>
               </div>
               
@@ -1542,7 +1536,6 @@ export const UserPermissionsTab = () => {
                           <Label 
                             htmlFor={`${isEditing ? 'edit' : 'invite'}-${gPermKey}`}
                             className="text-xs cursor-pointer"
-                            title={gPerm.description}
                           >
                             {gPerm.label}
                           </Label>
@@ -1734,7 +1727,7 @@ export const UserPermissionsTab = () => {
                   onChange={(e) => setInviteData(prev => ({ ...prev, email: e.target.value }))}
                   placeholder="user@example.com"
                 />
-                <p className="text-xs text-muted-foreground mt-1">This email will be used as the login username</p>
+                
               </div>
               
               <div>
@@ -1746,9 +1739,6 @@ export const UserPermissionsTab = () => {
                   onChange={(e) => setInviteData(prev => ({ ...prev, password: e.target.value }))}
                   placeholder="Leave empty to auto-generate"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Set a custom password or leave empty to auto-generate a secure one
-                </p>
               </div>
 
               <div>
@@ -1787,10 +1777,6 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="claims_manager">Claims Manager - Claims tab only (incl. Vehicle Intelligence)</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {(inviteData.role === 'admin' || inviteData.role === 'super_admin') && 'Full access to all tabs (Super Admin can restrict Administrator access)'}
-                  {!['admin', 'super_admin'].includes(inviteData.role) && 'Select which tabs this user can access below'}
-                </p>
               </div>
 
               <div>
@@ -1816,9 +1802,6 @@ export const UserPermissionsTab = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Optional. Sets the lead team this agent will appear in (e.g. Red, Blue, Green). You can change this any time from Lead Allocation.
-                </p>
               </div>
 
               <div>
@@ -1836,16 +1819,10 @@ export const UserPermissionsTab = () => {
                       />
                       <Label htmlFor={`invite-ws-${ws.key}`} className="text-sm font-normal leading-tight cursor-pointer">
                         {ws.label}
-                        <span className="block text-xs text-muted-foreground">{ws.hint}</span>
                       </Label>
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {(!inviteData.teamId || inviteData.teamId === '__all__')
-                    ? 'Pick a single team above first — lead types belong to a team.'
-                    : 'Leave all unticked and they start with no leads. Tick only Recontact Leads for a recontact-only agent.'}
-                </p>
               </div>
 
 
