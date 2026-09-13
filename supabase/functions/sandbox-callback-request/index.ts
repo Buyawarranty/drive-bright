@@ -94,12 +94,22 @@ Deno.serve(async (req) => {
     const threadId = typeof body?.threadId === "string" ? body.threadId : null;
     const quotedPrice = Number.isFinite(Number(body?.quotedPrice)) ? Number(body.quotedPrice) : null;
 
+    const TOPIC_LABELS: Record<string, string> = {
+      warranty_purchase: "Warranty purchase",
+      general: "General enquiry",
+      existing_policy: "Existing policy question",
+      other: "Something else",
+    };
+    const topic = String(body?.topic ?? "other");
+    const topicLabel = TOPIC_LABELS[topic] ?? "Something else";
+
     const plan = schedule();
     const tail9 = phone.slice(-9);
     const nameParts = name.split(/\s+/).filter(Boolean);
 
     const noteLines = [
       `[${new Date().toLocaleString("en-GB", { timeZone: "Europe/London" })} - System] Message me back requested from website chat (${source}).`,
+      `Query type: ${topicLabel}.`,
       contactPreference === "whatsapp"
         ? "Customer prefers a WHATSAPP message back on this number."
         : "Customer prefers a PHONE CALL back on this number.",
