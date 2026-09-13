@@ -934,6 +934,23 @@ export function SandboxChatWindow({
   const waiting = handover?.status === 'waiting' && handover.kind === 'live_handover';
   const leadCaptured = handover?.kind === 'out_of_hours_lead' || handover?.kind === 'callback_request';
 
+  // "Can I speak to a human / live agent?" shows the contact card inline.
+  // Miles marks those replies with [[CONTACT_CARD]]; a plain-English ask in the
+  // customer's own words triggers it too, so the card never depends on the model.
+  const contactCardWanted = !leadCaptured && (() => {
+    for (const m of messages) {
+      if (m.role !== 'user') {
+        for (const p of m.parts ?? []) {
+          if (p.type === 'text' && typeof p.text === 'string' && p.text.includes(CONTACT_CARD_MARKER)) return true;
+        }
+      }
+    }
+    const lastUser = [...messages].reverse().find((m) => m.role === 'user');
+    if (!lastUser) return false;
+    const txt = (lastUser.parts ?? []).map((p) => (p.type === 'text' ? p.text : '')).join(' ');
+    return HUMAN_INTENT.test(txt);
+  })();
+
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 max-w-full flex-col overflow-hidden">
       {/* Who you are talking to */}
