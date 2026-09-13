@@ -195,14 +195,22 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
         </p>
       )}
 
-      <Tabs defaultValue={isManagement ? 'broadcast' : 'queue'}>
+      <Tabs defaultValue={isManagement ? 'import' : 'queue'}>
         <TabsList className="flex-wrap h-auto rounded-lg border bg-muted/30 p-1">
+          {isManagement && (
+            <TabsTrigger
+              value="import"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm border-r border-border/50 last:border-r-0 px-4 py-2"
+            >
+              Import leads
+            </TabsTrigger>
+          )}
           {isManagement && (
             <TabsTrigger
               value="broadcast"
               className="data-[state=active]:bg-background data-[state=active]:shadow-sm border-r border-border/50 last:border-r-0 px-4 py-2"
             >
-              Import leads
+              Send message
             </TabsTrigger>
           )}
           <TabsTrigger
