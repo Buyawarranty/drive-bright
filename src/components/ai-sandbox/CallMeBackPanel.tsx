@@ -129,8 +129,8 @@ export function CallMeBackPanel({
       return (
         <button
           type="button"
-          onClick={() => setStep('number')}
-          title={open ? 'Leave your number for a call or WhatsApp back' : `Leave your number — we get back to you ${nextOpeningLabel()}`}
+          onClick={() => setStep('topic')}
+          title="All our agents are busy — leave your number and we'll call or WhatsApp you back"
           className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
         >
           <MessageCircle className="h-4 w-4 shrink-0 text-[#B4501F]" />
