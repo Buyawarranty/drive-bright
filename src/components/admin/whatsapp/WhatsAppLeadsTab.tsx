@@ -195,20 +195,54 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
         </p>
       )}
 
-      <Tabs defaultValue="queue">
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="queue">
+      <Tabs defaultValue={isManagement ? 'broadcast' : 'queue'}>
+        <TabsList className="flex-wrap h-auto rounded-lg border bg-muted/30 p-1">
+          {isManagement && (
+            <TabsTrigger
+              value="broadcast"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm border-r border-border/50 last:border-r-0 px-4 py-2"
+            >
+              Import leads
+            </TabsTrigger>
+          )}
+          <TabsTrigger
+            value="queue"
+            className="data-[state=active]:bg-background data-[state=active]:shadow-sm border-r border-border/50 last:border-r-0 px-4 py-2"
+          >
             Available leads
             {available.length > 0 && <Badge className="ml-2">{available.length}</Badge>}
           </TabsTrigger>
-          <TabsTrigger value="mine">
+          <TabsTrigger
+            value="mine"
+            className="data-[state=active]:bg-background data-[state=active]:shadow-sm border-r border-border/50 last:border-r-0 px-4 py-2"
+          >
             My WhatsApp leads
             {mine.length > 0 && <Badge className="ml-2">{mine.length}</Badge>}
           </TabsTrigger>
-          {isManagement && <TabsTrigger value="dashboard">Dashboard</TabsTrigger>}
-          {isManagement && <TabsTrigger value="broadcast">Send templates &amp; import</TabsTrigger>}
-          {isManagement && <TabsTrigger value="autoreply">Out-of-hours reply</TabsTrigger>}
-          {isManagement && <TabsTrigger value="analytics">Analytics</TabsTrigger>}
+          {isManagement && (
+            <TabsTrigger
+              value="dashboard"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm border-r border-border/50 last:border-r-0 px-4 py-2"
+            >
+              Dashboard
+            </TabsTrigger>
+          )}
+          {isManagement && (
+            <TabsTrigger
+              value="autoreply"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm border-r border-border/50 last:border-r-0 px-4 py-2"
+            >
+              Out-of-hours reply
+            </TabsTrigger>
+          )}
+          {isManagement && (
+            <TabsTrigger
+              value="analytics"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm px-4 py-2"
+            >
+              Analytics
+            </TabsTrigger>
+          )}
         </TabsList>
 
 
