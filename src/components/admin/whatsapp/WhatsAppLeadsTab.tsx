@@ -14,7 +14,6 @@ import { tagChipClass, useTagsByConversation, useWhatsAppTagList } from '@/hooks
 import WhatsAppConversationPanel from './WhatsAppConversationPanel';
 import WhatsAppManagerDashboard from './WhatsAppManagerDashboard';
 import WhatsAppHotLeadAlerts from './WhatsAppHotLeadAlerts';
-import WhatsAppAutoMessageSettings from './WhatsAppAutoMessageSettings';
 import WhatsAppLeadImport from './WhatsAppLeadImport';
 import WhatsAppBulkTemplateSend from './WhatsAppBulkTemplateSend';
 
@@ -162,7 +161,6 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
         </p>
       )}
 
-      {isManagement && <WhatsAppAutoMessageSettings />}
       {isManagement && <WhatsAppBulkTemplateSend />}
       {isManagement && <WhatsAppLeadImport />}
 

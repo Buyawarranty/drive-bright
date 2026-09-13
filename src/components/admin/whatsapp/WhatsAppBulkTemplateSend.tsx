@@ -5,10 +5,17 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { Loader2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import WhatsAppTemplateSelect from './WhatsAppTemplateSelect';
+
+interface AutoSettings {
+  id: string;
+  is_enabled: boolean;
+  template_name: string;
+}
 
 interface LeadRow {
   id: string;
@@ -59,6 +66,61 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [autoSettings, setAutoSettings] = useState<AutoSettings | null>(null);
+  const [autoCounts, setAutoCounts] = useState({ pending: 0, sent: 0, failed: 0 });
+  const [autoSaving, setAutoSaving] = useState(false);
+
+  const loadAuto = async () => {
+    const { data } = await supabase
+      .from('whatsapp_auto_message_settings')
+      .select('id, is_enabled, template_name')
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      setAutoSettings(data as AutoSettings);
+      setTemplate((prev) => prev || data.template_name);
+    }
+
+    const { data: rows } = await supabase
+      .from('whatsapp_auto_message_queue')
+      .select('status')
+      .order('created_at', { ascending: false })
+      .limit(500);
+    if (rows) {
+      setAutoCounts({
+        pending: rows.filter((r) => r.status === 'pending').length,
+        sent: rows.filter((r) => r.status === 'sent').length,
+        failed: rows.filter((r) => r.status === 'failed').length,
+      });
+    }
+  };
+
+  const toggleAuto = async (enabled: boolean) => {
+    if (!autoSettings) return;
+    if (enabled && !template.trim()) {
+      toast.error('Choose a WhatsApp template first.');
+      return;
+    }
+    setAutoSaving(true);
+    const patch = enabled
+      ? { is_enabled: true, template_name: template.trim() }
+      : { is_enabled: false };
+    const { error } = await supabase
+      .from('whatsapp_auto_message_settings')
+      .update(patch)
+      .eq('id', autoSettings.id);
+    setAutoSaving(false);
+    if (error) {
+      toast.error('Could not save that change.');
+      return;
+    }
+    setAutoSettings({ ...autoSettings, ...patch });
+    toast.success(
+      enabled
+        ? `Every new lead will now get "${template.trim()}" automatically.`
+        : 'Automatic messages switched off.',
+    );
+  };
 
   const load = async () => {
     setLoading(true);
@@ -96,6 +158,11 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preset, since]);
+
+  useEffect(() => {
+    void loadAuto();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const sendable = useMemo(
     () => leads.filter((l) => hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status))),
@@ -136,6 +203,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
       `${data.queued} message${data.queued === 1 ? '' : 's'} on their way (${data.templateName}).`,
     );
     void load();
+    void loadAuto();
   };
 
   const presets: { key: Preset; label: string }[] = [
@@ -154,6 +222,37 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <WhatsAppTemplateSelect value={template} onChange={setTemplate} id="wa-bulk-template" />
+
+        {autoSettings && (
+          <div className="space-y-2 rounded-md border border-border p-3">
+            <div className="flex items-center justify-between gap-4">
+              <Label htmlFor="wa-auto-toggle" className="font-medium">
+                Automatically send this template to every new lead
+              </Label>
+              <Switch
+                id="wa-auto-toggle"
+                checked={autoSettings.is_enabled}
+                disabled={autoSaving}
+                onCheckedChange={(v) => void toggleAuto(v)}
+              />
+            </div>
+            {autoSettings.is_enabled &&
+              autoSettings.template_name !== template.trim() &&
+              template.trim() && (
+                <p className="text-xs text-muted-foreground">
+                  Automatic messages currently use "{autoSettings.template_name}". Switch this off
+                  and back on to use "{template.trim()}" instead.
+                </p>
+              )}
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary">Waiting to send: {autoCounts.pending}</Badge>
+              <Badge variant="secondary">Sent: {autoCounts.sent}</Badge>
+              <Badge variant={autoCounts.failed ? 'destructive' : 'secondary'}>
+                Not delivered: {autoCounts.failed}
+              </Badge>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-2">
           {presets.map((p) => (
