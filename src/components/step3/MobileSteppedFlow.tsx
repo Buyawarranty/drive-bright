@@ -27,6 +27,7 @@ import CheckoutFAQ from './CheckoutFAQ';
 import TrustAndInfoAccordion from './TrustAndInfoAccordion';
 import EmailQuoteDialog from './EmailQuoteDialog';
 import { useAppliedPromos, calcPromoDiscount, clearAppliedPromos, promoPriceFloor } from '@/lib/promoStorage';
+import { getNetPayableFloor } from '@/lib/pricing/netFloor';
 import { toast } from 'sonner';
 
 type PaymentType = '12months' | '24months' | '36months';
@@ -150,8 +151,18 @@ const MobileSteppedFlow: React.FC<MobileSteppedFlowProps> = ({
   const appliedPromos = useAppliedPromos();
   const promoCode = appliedPromos[0];
   const baseAnnualPrice = currentMonthlyPrice * 12;
-  const promoDiscount = calcPromoDiscount(baseAnnualPrice, appliedPromos);
-  const discountedAnnualPrice = Math.max(promoPriceFloor(appliedPromos), baseAnnualPrice - promoDiscount);
+  // Promo codes may never take a sale below the net sell floor for this term
+  // (£399/£769/£1,099, halved for motorbikes) — matches the server-side floor.
+  const promoTermFloor = getNetPayableFloor({
+    paymentPeriod: (paymentType || '12months') as PaymentType,
+    voluntaryExcess: voluntaryExcess ?? 100,
+    claimLimit: selectedClaimLimit ?? undefined,
+    labourRate: selectedLabourRate,
+    isMotorbike: /motor\s*(bike|cycle)|\bbike\b/i.test(String((vehicleData as any)?.vehicleType || '')),
+    surface: 'admin',
+  });
+  const promoDiscount = calcPromoDiscount(baseAnnualPrice, appliedPromos, promoTermFloor);
+  const discountedAnnualPrice = Math.max(promoPriceFloor(appliedPromos, promoTermFloor), baseAnnualPrice - promoDiscount);
   const discountedMonthlyPrice = promoDiscount > 0
     ? Math.max(1, Math.ceil(discountedAnnualPrice / 12))
     : currentMonthlyPrice;
