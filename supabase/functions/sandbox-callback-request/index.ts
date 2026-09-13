@@ -216,16 +216,16 @@ Deno.serve(async (req) => {
 
     }
 
-    // Every live-chat callback is tagged, whether it is a brand new lead or a
+    // Every chatbot callback is tagged, whether it is a brand new lead or a
     // returning caller matched by phone.
     if (leadId) {
       try {
-        const { data: tag } = await admin.from("lead_tags").select("id").eq("name", "Live chat").maybeSingle();
+        const { data: tag } = await admin.from("lead_tags").select("id").eq("name", "Chatbot lead").maybeSingle();
         let tagId = tag?.id as string | undefined;
         if (!tagId) {
           const { data: created } = await admin
             .from("lead_tags")
-            .insert({ name: "Live chat", color: "#F97316" })
+            .insert({ name: "Chatbot lead", color: "#F97316" })
             .select("id")
             .single();
           tagId = created?.id;
