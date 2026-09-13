@@ -1098,6 +1098,14 @@ const AdminDashboard = () => {
           />
         );
       case 'whatsapp-leads':
+        // Hard-restricted to management only (admin, super_admin, sales_manager)
+        if (!['admin', 'super_admin', 'sales_manager'].includes(effectiveUserRole || '')) {
+          return (
+            <div className="p-8 text-center text-muted-foreground">
+              You don't have access to WhatsApp Leads. This area is for management only.
+            </div>
+          );
+        }
         return <WhatsAppLeadsTab userRole={effectiveUserRole} />;
       case 'recontact-leads':
       case 'goldmine-leads':
