@@ -2222,16 +2222,10 @@ export const UserPermissionsTab = () => {
                       />
                       <Label htmlFor={`edit-ws-${ws.key}`} className="text-sm font-normal leading-tight cursor-pointer">
                         {ws.label}
-                        <span className="block text-xs text-muted-foreground">{ws.hint}</span>
                       </Label>
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {(!editingTeamId || editingTeamId === '__all__')
-                    ? 'Pick a single team above first — lead types belong to a team.'
-                    : 'Leave all unticked and they get no leads. Tick only Recontact Leads for an agent who should work older leads only. Same setting as the Lead Allocation page.'}
-                </p>
               </div>
 
 
@@ -2254,11 +2248,6 @@ export const UserPermissionsTab = () => {
               {/* Show tab permissions tickboxes for all editable roles (including Admin so super admins can restrict access) */}
               {editingUser.role !== 'super_admin' && editingUser.role !== 'dev_tester' && (
                 <>
-                  {editingUser.role === 'admin' && (
-                    <p className="text-xs text-muted-foreground -mb-2">
-                      Administrators have access to all tabs by default. Untick to revoke access to specific tabs.
-                    </p>
-                  )}
                   {renderTabPermissionsSection(editingUser.permissions, true, editingUser.role)}
                 </>
               )}
