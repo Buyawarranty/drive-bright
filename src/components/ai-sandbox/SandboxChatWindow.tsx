@@ -404,12 +404,23 @@ function PriceOptionsPanel({
     <div className="w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-card p-3.5 text-left shadow-sm sm:p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-base font-semibold text-foreground">Build your price</p>
+          <p className="text-base font-semibold text-foreground">
+            {priceRequested ? 'Your quote' : 'Build your price'}
+          </p>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {optionsOpen ? "Pick your options and I'll show you the price." : combo}
+            {priceRequested ? combo : "Pick your options and I'll show you the price."}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          {priceRequested && (
+            <button
+              type="button"
+              onClick={() => setOptionsOpen((v) => !v)}
+              className="text-sm font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
+            >
+              {optionsOpen ? 'Hide options' : 'Change cover'}
+            </button>
+          )}
           {onClose && (
             <button
               type="button"
@@ -423,17 +434,6 @@ function PriceOptionsPanel({
           )}
         </div>
       </div>
-
-      {quoted && (
-        <div className="mt-3 rounded-xl border border-[#FF6B00]/30 bg-[#FF6B00]/10 p-3">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-[#B34A08]">Your price</p>
-          <p className="mt-0.5 text-2xl font-extrabold leading-none text-foreground">{quoted.total}</p>
-          <p className="mt-1 break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">
-            {combo}
-            {quoted.monthly ? ` · or ${quoted.monthly}/month over 12 instalments at 0% APR` : ''}
-          </p>
-        </div>
-      )}
 
       {optionsOpen && (
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
