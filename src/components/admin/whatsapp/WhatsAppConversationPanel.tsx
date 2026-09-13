@@ -13,6 +13,7 @@ import { pipelineClass, pipelineLabel, type WhatsAppPipelineStatus } from '@/lib
 import WhatsAppPipelineBar from './WhatsAppPipelineBar';
 import WhatsAppTagPicker from './WhatsAppTagPicker';
 import type { WhatsAppConversation } from '@/hooks/useWhatsAppConversations';
+import { matchQuickReplies, slashQuery } from '@/lib/whatsappQuickReplies';
 
 interface Props {
   conversation: WhatsAppConversation;
@@ -39,7 +40,19 @@ export const WhatsAppConversationPanel: React.FC<Props> = ({
 }) => {
   const { messages, sending, sendMessage } = useWhatsAppMessages(conversation.id);
   const [draft, setDraft] = useState('');
+  const [highlight, setHighlight] = useState(0);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const suggestions = useMemo(() => {
+    const q = slashQuery(draft);
+    return q === null ? [] : matchQuickReplies(q).slice(0, 8);
+  }, [draft]);
+
+  const applyQuickReply = (body: string) => {
+    setDraft(body);
+    setHighlight(0);
+    textareaRef.current?.focus();
+  };
   const agentIds = useMemo(
     () => Array.from(new Set(messages.map((m) => m.sent_by_admin_id).filter(Boolean))) as string[],
     [messages],
@@ -173,23 +186,73 @@ export const WhatsAppConversationPanel: React.FC<Props> = ({
         </div>
 
         {canReply ? (
-          <div className="flex items-end gap-2">
-            <Textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder="Type your WhatsApp reply…"
-              rows={2}
-              className="resize-none"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  void handleSend();
-                }
-              }}
-            />
-            <Button onClick={handleSend} disabled={sending || !draft.trim()}>
-              <Send className="mr-1 h-4 w-4" /> {sending ? 'Sending…' : 'Send'}
-            </Button>
+          <div className="space-y-1">
+            <div className="relative flex items-end gap-2">
+              {suggestions.length > 0 && (
+                <div className="absolute bottom-full left-0 z-30 mb-2 max-h-64 w-full max-w-xl overflow-y-auto rounded-md border border-border bg-popover p-1 shadow-lg">
+                  {suggestions.map((r, i) => (
+                    <button
+                      key={r.command}
+                      type="button"
+                      onMouseEnter={() => setHighlight(i)}
+                      onClick={() => applyQuickReply(r.body)}
+                      className={`block w-full rounded px-2 py-1.5 text-left ${
+                        i === highlight ? 'bg-accent' : ''
+                      }`}
+                    >
+                      <span className="text-sm font-semibold">/{r.command}</span>
+                      <span className="ml-2 text-xs text-muted-foreground">{r.label}</span>
+                      <span className="mt-0.5 block truncate text-xs text-muted-foreground">{r.body}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              <Textarea
+                ref={textareaRef}
+                value={draft}
+                onChange={(e) => {
+                  setDraft(e.target.value);
+                  setHighlight(0);
+                }}
+                placeholder="Type your WhatsApp reply… or / for a template reply"
+                rows={2}
+                className="resize-none"
+                onKeyDown={(e) => {
+                  if (suggestions.length > 0) {
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      setHighlight((h) => (h + 1) % suggestions.length);
+                      return;
+                    }
+                    if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      setHighlight((h) => (h - 1 + suggestions.length) % suggestions.length);
+                      return;
+                    }
+                    if (e.key === 'Escape') {
+                      e.preventDefault();
+                      setDraft('');
+                      return;
+                    }
+                    if (e.key === 'Enter' || e.key === 'Tab') {
+                      e.preventDefault();
+                      applyQuickReply(suggestions[highlight].body);
+                      return;
+                    }
+                  }
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    void handleSend();
+                  }
+                }}
+              />
+              <Button onClick={handleSend} disabled={sending || !draft.trim()}>
+                <Send className="mr-1 h-4 w-4" /> {sending ? 'Sending…' : 'Send'}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Type <span className="font-semibold">/</span> to pick a template reply, then edit before sending.
+            </p>
           </div>
         ) : (
           <p className="rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
