@@ -420,17 +420,85 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
             })}
         </div>
 
-        <Button
-          onClick={() => void handleSend()}
-          disabled={sending || !template.trim() || chosenCount === 0}
-        >
-          {sending ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Send className="mr-2 h-4 w-4" />
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="wa-send-later" className="text-xs text-muted-foreground">
+                Send later (optional)
+              </Label>
+              <Input
+                id="wa-send-later"
+                type="datetime-local"
+                className="w-56"
+                value={sendLater}
+                min={toLocalInput(new Date())}
+                onChange={(e) => setSendLater(e.target.value)}
+              />
+            </div>
+            <Button
+              onClick={() => void handleSend()}
+              disabled={sending || !template.trim() || chosenCount === 0}
+            >
+              {sending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : sendLater && new Date(sendLater).getTime() > Date.now() ? (
+                <CalendarClock className="mr-2 h-4 w-4" />
+              ) : (
+                <Send className="mr-2 h-4 w-4" />
+              )}
+              {sendLater && new Date(sendLater).getTime() > Date.now()
+                ? `Schedule for ${chosenCount} lead${chosenCount === 1 ? '' : 's'}`
+                : `Send to ${chosenCount} lead${chosenCount === 1 ? '' : 's'}`}
+            </Button>
+            {sendLater && (
+              <Button size="sm" variant="ghost" onClick={() => setSendLater('')}>
+                Clear time
+              </Button>
+            )}
+          </div>
+          {sendLater && new Date(sendLater).getTime() > Date.now() && (
+            <p className="text-xs text-muted-foreground">
+              Goes out at {new Date(sendLater).toLocaleString('en-GB')} — you can cancel it below
+              any time before then.
+            </p>
           )}
-          Send to {chosenCount} lead{chosenCount === 1 ? '' : 's'}
-        </Button>
+        </div>
+
+        {scheduled.length > 0 && (
+          <div className="space-y-2 rounded-md border border-border p-3">
+            <p className="text-sm font-medium">Scheduled sends</p>
+            <div className="divide-y divide-border">
+              {scheduled.map((batch) => (
+                <div
+                  key={batch.batch_label}
+                  className="flex flex-wrap items-center gap-3 py-2 text-sm"
+                >
+                  <CalendarClock className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span className="min-w-0 flex-1 truncate">
+                    {batch.template_name || 'Template'} to {batch.count} lead
+                    {batch.count === 1 ? '' : 's'}
+                  </span>
+                  <span className="shrink-0 text-muted-foreground">
+                    {new Date(batch.send_at).toLocaleString('en-GB', {
+                      day: '2-digit',
+                      month: 'short',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void cancelScheduled(batch.batch_label)}
+                  >
+                    <X className="mr-1 h-3.5 w-3.5" />
+                    Cancel
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
