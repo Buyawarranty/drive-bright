@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
         method: 'POST',
         headers: { Authorization: auth, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          template_name: settings.template_name,
+          template_name: rowTemplate,
           broadcast_name: `crm_new_lead_${new Date().toISOString().slice(0, 10)}`,
           parameters: [{ name: 'name', value: firstName }],
         }),
@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
       const watiMessageId = String(
         body?.message?.whatsappMessageId || body?.message?.id || `auto-${row.id}`,
       );
-      const preview = `Automatic WhatsApp message sent (${settings.template_name})`;
+      const preview = `Automatic WhatsApp message sent (${rowTemplate})`;
 
       await supabase.from('whatsapp_messages').upsert(
         {
