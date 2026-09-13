@@ -203,6 +203,7 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
                     taking={taking === c.id}
                     onTake={() => void handleTake(c.id)}
                     onOpen={() => setSelectedId(c.id)}
+                    tags={cardTags(c.id)}
                   />
                 ))}
               </CardContent>
@@ -246,6 +247,7 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
                     canTake={false}
                     onTake={() => undefined}
                     onOpen={() => setSelectedId(c.id)}
+                    tags={cardTags(c.id)}
                   />
                 ))}
               </CardContent>
