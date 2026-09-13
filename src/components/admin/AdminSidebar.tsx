@@ -46,7 +46,7 @@ export interface Tab {
   id: string;
   label: string;
   icon: React.ComponentType<any>;
-  description: string;
+  description?: string;
 }
 
 interface AdminSidebarProps {
@@ -133,7 +133,6 @@ const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick, colla
         }`} />
         <div className="min-w-0 flex-1">
           <div className="font-medium text-sm lg:text-base">{tab.label}</div>
-          <div className="text-xs text-gray-500 mt-1 hidden lg:block">{tab.description}</div>
         </div>
         {showFreshBubble && <FreshLeadBubble />}
       </button>
@@ -882,7 +881,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
             <div className="flex items-start justify-between gap-2">
               <div>
                 <h2 className="text-lg lg:text-xl font-bold text-gray-800">Admin Panel</h2>
-                <p className="text-sm text-gray-600">Manage your warranty business</p>
               </div>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
