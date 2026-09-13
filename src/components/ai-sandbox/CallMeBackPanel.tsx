@@ -150,6 +150,7 @@ export function CallMeBackPanel({
   const pickMethod = (key: Preference) => {
     setPreference(key);
     setError(null);
+    setTouched(false);
     setStep('number');
   };
 
@@ -388,6 +389,7 @@ export function CallMeBackPanel({
                   onClick={() => {
                     setPreference(key);
                     setError(null);
+                    setTouched(false);
                   }}
                   aria-pressed={preference === key}
                   className={`flex h-16 flex-col items-center justify-center gap-1 rounded-xl border px-1 text-xs font-bold transition-colors ${
