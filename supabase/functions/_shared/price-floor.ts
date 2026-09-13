@@ -208,7 +208,15 @@ export async function validateCheckoutPrice(
     ? await isLiveDiscountCode(supabase, discountCode!)
     : false;
   const termFloor = getTermFloorGBP(paymentType, input.isMotorbike);
-  const absoluteFloor = bypass ? TEST_MIN_GBP : termFloor;
+  // HARD £299 backstop (13 Sep 2026): no non-motorbike sale may complete below
+  // £299 under any circumstances. Website motorbikes (half-price floor) are the
+  // only exception. Genuine live TEST codes keep the £1 QA floor.
+  const HARD_MIN_GBP = 299;
+  const absoluteFloor = bypass
+    ? TEST_MIN_GBP
+    : input.isMotorbike === true
+      ? termFloor
+      : Math.max(termFloor, HARD_MIN_GBP);
 
 
   // 1. Absolute floor — fast reject
