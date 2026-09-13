@@ -154,6 +154,7 @@ Updated: just now
 - [Trustpilot Automations](mem://integrations/trustpilot-automation-v2) — BCC timing and trigger blocking
 - [Bumper Credentials](mem://integrations/bumper-agent-credentials) — Agent specific integration variables
 - [Save Cancellation Rescue Leads](mem://features/admin/save-cancellation-rescue-leads) — Cancellations tab "Save this deal" creates an unassigned £15-reward urgent lead in New Leads
+- [WhatsApp (WATI) Leads](mem://features/admin/whatsapp-wati-leads) — WhatsApp Leads tab, hot scoring, Take Lead claiming, WATI webhook/send functions
 - [Dealer Portal](mem://features/dealer-portal) — Dealer sub-app with auth, quotes, warranties at /dealer-portal/
 - [AI Sandbox Tone & Handover](mem://features/ai-sandbox-tone-and-handover) — Ruby semi-casual voice, never claims to be human, specialist on-duty presence, ringing manager alert
 
