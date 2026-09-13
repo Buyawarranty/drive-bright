@@ -12,6 +12,7 @@ import {
   Lock,
   ArrowRight,
   ChevronRight,
+  Check,
   CheckCheck,
   X,
   Smile,
@@ -403,12 +404,23 @@ function PriceOptionsPanel({
     <div className="w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-card p-3.5 text-left shadow-sm sm:p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-base font-semibold text-foreground">Build your price</p>
+          <p className="text-base font-semibold text-foreground">
+            {priceRequested ? 'Your quote' : 'Build your price'}
+          </p>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {optionsOpen ? "Pick your options and I'll show you the price." : combo}
+            {priceRequested ? combo : "Pick your options and I'll show you the price."}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          {priceRequested && (
+            <button
+              type="button"
+              onClick={() => setOptionsOpen((v) => !v)}
+              className="text-sm font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
+            >
+              {optionsOpen ? 'Hide options' : 'Change cover'}
+            </button>
+          )}
           {onClose && (
             <button
               type="button"
@@ -422,17 +434,6 @@ function PriceOptionsPanel({
           )}
         </div>
       </div>
-
-      {quoted && (
-        <div className="mt-3 rounded-xl border border-[#FF6B00]/30 bg-[#FF6B00]/10 p-3">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-[#B34A08]">Your price</p>
-          <p className="mt-0.5 text-2xl font-extrabold leading-none text-foreground">{quoted.total}</p>
-          <p className="mt-1 break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">
-            {combo}
-            {quoted.monthly ? ` · or ${quoted.monthly}/month over 12 instalments at 0% APR` : ''}
-          </p>
-        </div>
-      )}
 
       {optionsOpen && (
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -483,70 +484,81 @@ function PriceOptionsPanel({
 
       {priceRequested && !pending && (
         <div className="mt-4 w-full min-w-0 space-y-4">
-          <div className="flex items-start justify-between gap-3">
-            <p className="text-base font-semibold text-black">
-              Happy with the price? Pay in full and you save <strong>10%</strong>, or spread it over <strong>12 monthly instalments</strong> at <strong>0% APR</strong>.
-            </p>
-            <button
-              type="button"
-              onClick={() => setOptionsOpen((v) => !v)}
-              className="shrink-0 text-sm font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
-            >
-              Update my price
-            </button>
+          {/* Price summary */}
+          <div className="rounded-xl border border-border bg-muted/30 p-4">
+            <p className="text-xs font-medium text-muted-foreground">Total price</p>
+            <p className="text-3xl font-extrabold leading-none text-foreground">{quoted?.total ?? '—'}</p>
+            {quoted?.monthly && (
+              <p className="mt-1.5 text-sm text-muted-foreground">
+                Or <strong className="text-foreground">{quoted.monthly}</strong>/month over 12 interest-free instalments
+              </p>
+            )}
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-2">
-            {/* Option 1 — Pay monthly */}
-            <Button
-              size="sm"
-              disabled={disabled}
-              onClick={() => setPending('monthly')}
-              className="h-auto min-h-11 w-full min-w-0 justify-between gap-2 whitespace-normal bg-[#FF6B00] px-4 py-2.5 font-bold text-white shadow-sm hover:bg-[#E85F00]"
-            >
-              <span className="text-left leading-tight">
-                <span className="block text-sm">Pay monthly — 0% APR</span>
-              </span>
-              <ArrowRight className="h-5 w-5 shrink-0 text-white" strokeWidth={2.5} />
-            </Button>
+          {/* What's included */}
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">What's included</p>
+            <ul className="space-y-2">
+              <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0BA360]" />
+                <span>{termLabel(term)} mechanical breakdown cover</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0BA360]" />
+                <span>Up to <strong className="text-foreground">£{limit.toLocaleString()}</strong> per claim (parts & labour)</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0BA360]" />
+                <span><strong className="text-foreground">£{excess}</strong> excess per claim</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0BA360]" />
+                <span><strong className="text-foreground">£{labour}/hr</strong> labour rate</span>
+              </li>
+            </ul>
+          </div>
 
-            {/* Option 2 — Continue to checkout */}
-            <Button
-              asChild
-              size="sm"
-              disabled={disabled || !checkoutHref}
-              className="h-auto min-h-11 w-full min-w-0 justify-between gap-2 whitespace-normal bg-[#0BA360] px-4 py-2.5 font-bold text-white shadow-sm hover:bg-[#099455]"
-            >
-              <a href={checkoutHref || undefined}>
+          {/* Payment options */}
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Choose how to pay</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Button
+                size="sm"
+                disabled={disabled}
+                onClick={() => setPending('monthly')}
+                className="h-auto min-h-11 w-full min-w-0 justify-between gap-2 whitespace-normal bg-[#FF6B00] px-4 py-2.5 font-bold text-white shadow-sm hover:bg-[#E85F00]"
+              >
                 <span className="text-left leading-tight">
-                  <span className="block text-sm">Continue to checkout</span>
+                  <span className="block text-sm">Pay monthly — 0% APR</span>
+                  {quoted?.monthly && <span className="block text-xs font-normal opacity-90">{quoted.monthly}/month</span>}
                 </span>
                 <ArrowRight className="h-5 w-5 shrink-0 text-white" strokeWidth={2.5} />
-              </a>
-            </Button>
+              </Button>
+
+              <Button
+                asChild
+                size="sm"
+                disabled={disabled || !checkoutHref}
+                className="h-auto min-h-11 w-full min-w-0 justify-between gap-2 whitespace-normal bg-[#0BA360] px-4 py-2.5 font-bold text-white shadow-sm hover:bg-[#099455]"
+              >
+                <a href={checkoutHref || undefined}>
+                  <span className="text-left leading-tight">
+                    <span className="block text-sm">Continue to checkout</span>
+                    {quoted?.total && <span className="block text-xs font-normal opacity-90">Pay in full today</span>}
+                  </span>
+                  <ArrowRight className="h-5 w-5 shrink-0 text-white" strokeWidth={2.5} />
+                </a>
+              </Button>
+            </div>
           </div>
 
+          {/* Continue on website */}
           <div className="rounded-xl border border-dashed border-border bg-muted/40 p-4">
             <p className="text-sm font-semibold text-foreground">Or continue on our website</p>
             <p className="mt-1.5 text-xs text-muted-foreground">
               Open your quote on buyawarranty.co.uk with <strong className="text-foreground">{reg || 'your car'}</strong> already filled in — choose your cover and pay securely there. This chat stays open if you need help.
             </p>
           </div>
-
-          <ul className="space-y-2 text-xs text-muted-foreground">
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 text-[#0BA360]">✓</span>
-              <span><strong className="text-foreground">Pay in full</strong> and save <strong className="text-foreground">10%</strong></span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 text-[#FF6B00]">✓</span>
-              <span><strong className="text-foreground">Pay monthly</strong> over 12 instalments at <strong className="text-foreground">0% APR</strong></span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 text-[#0BA360]">✓</span>
-              <span>Secure checkout with instant cover</span>
-            </li>
-          </ul>
         </div>
       )}
 
