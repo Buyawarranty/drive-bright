@@ -453,12 +453,19 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base flex flex-wrap items-center gap-2">
-            <span>{selected ? selected.title || 'Website chat' : 'Pick a conversation'}</span>
-            {selected && topics.get(selected.id) && (
-              <Badge className={topics.get(selected.id)!.className}>
-                {topics.get(selected.id)!.label}
-              </Badge>
+          <CardTitle className="text-base flex flex-wrap items-center justify-between gap-2">
+            <span className="flex flex-wrap items-center gap-2">
+              <span>{selected ? selected.title || 'Website chat' : 'Pick a conversation'}</span>
+              {selected && topics.get(selected.id) && (
+                <Badge className={topics.get(selected.id)!.className}>
+                  {topics.get(selected.id)!.label}
+                </Badge>
+              )}
+            </span>
+            {selected && (
+              <Button variant="ghost" size="icon-sm" onClick={closeThread} aria-label="Close conversation">
+                <X className="h-4 w-4" />
+              </Button>
             )}
           </CardTitle>
         </CardHeader>
