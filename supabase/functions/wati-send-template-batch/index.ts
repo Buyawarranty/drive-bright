@@ -53,7 +53,12 @@ Deno.serve(async (req) => {
   const { data: canManage } = await admin.rpc('can_manage_lead_routing', { _user_id: userId });
   if (canManage !== true) return json({ error: 'forbidden' }, 403);
 
-  let payload: { leadIds?: string[]; templateName?: string; batchLabel?: string };
+  let payload: {
+    leadIds?: string[];
+    templateName?: string;
+    batchLabel?: string;
+    sendAfter?: string;
+  };
   try {
     payload = await req.json();
   } catch {
@@ -64,9 +69,21 @@ Deno.serve(async (req) => {
   const templateName = String(payload.templateName || '').trim();
   if (!leadIds.length) return json({ error: 'no_leads' }, 400);
   if (!templateName) return json({ error: 'template_required' }, 400);
+
+  // Optional scheduling: hold the batch in the queue until the chosen time.
+  let sendAfter: Date | null = null;
+  if (payload.sendAfter) {
+    const parsed = new Date(payload.sendAfter);
+    if (Number.isNaN(parsed.getTime())) return json({ error: 'invalid_send_after' }, 400);
+    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+    if (parsed.getTime() > Date.now() + thirtyDays)
+      return json({ error: 'send_after_too_far' }, 400);
+    if (parsed.getTime() > Date.now()) sendAfter = parsed;
+  }
+
   const batchLabel =
     String(payload.batchLabel || '').trim() ||
-    `Send ${new Date().toISOString().slice(0, 16).replace('T', ' ')}`;
+    `${sendAfter ? 'Scheduled' : 'Send'} ${(sendAfter || new Date()).toISOString().slice(0, 16).replace('T', ' ')}`;
 
   const { data: leads, error: leadsErr } = await admin
     .from('sales_leads')
