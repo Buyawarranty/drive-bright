@@ -218,7 +218,7 @@ serve(async (req) => {
     // Allows legitimate discounts (promo + 10% pay-in-full + voluntary excess) but rejects
     // anything below 50% of the recomputed plan price OR below the absolute floor.
     const priceCheck = await validateCheckoutPrice(
-      { planId, paymentType, voluntaryExcess, finalAmount: Number(totalAmount), discountCode, authHeader: req.headers.get("Authorization") },
+      { planId, paymentType, voluntaryExcess, claimLimit, finalAmount: Number(totalAmount), discountCode, authHeader: req.headers.get("Authorization"), isMotorbike: /motor\s*(bike|cycle)|\bbike\b/i.test(String(vehicleData?.vehicleType || "")) },
       supabaseService,
     );
     if (!priceCheck.ok) {

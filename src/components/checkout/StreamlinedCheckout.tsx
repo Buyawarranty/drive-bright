@@ -47,6 +47,7 @@ import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 import DesktopPlanHeader from '@/components/checkout/DesktopPlanHeader';
 import EditVehicleDialog from '@/components/EditVehicleDialog';
 import { minimumPriceForCodes } from '@/lib/testPromoBypass';
+import { getNetPayableFloor } from '@/lib/pricing/netFloor';
 
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
@@ -898,10 +899,25 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const stripeTotalPrice = bumperTotalPrice - stripeSavingsBase;
 
   // Calculate discounts with minimum price floor (Stripe requires minimum £0.50, we use £1 for safety)
-  // Hard £120 floor — mirrors ABSOLUTE_MIN_GBP in supabase/functions/_shared/price-floor.ts.
-  // Manager test codes (SAVE99GOLDEN / TEST*) drop the floor to £1 so 99%-off QA runs work;
-  // the server only honours that bypass for an authenticated manager JWT.
-  const MINIMUM_PRICE = minimumPriceForCodes(appliedDiscountCodes);
+  // Hard floor = the net sell floor for this term (£399/£769/£1,099 for
+  // 12/24/36 months, halved for motorbikes) — promo codes may NOT take a sale
+  // below it. Mirrors supabase/functions/_shared/price-floor.ts, which rejects
+  // any charge under the same floor server-side.
+  // Manager test codes (SAVE99GOLDEN / TEST*) drop the floor to £1 so 99%-off QA runs work.
+  const checkoutPeriod = String(paymentType || '').includes('36')
+    ? '36months'
+    : String(paymentType || '').includes('24')
+      ? '24months'
+      : '12months';
+  const checkoutTermFloor = getNetPayableFloor({
+    paymentPeriod: checkoutPeriod as '12months' | '24months' | '36months',
+    voluntaryExcess: updatedPricingData.voluntaryExcess ?? 100,
+    claimLimit: updatedPricingData.claimLimit || 2000,
+    labourRate: pricingData.labourRate || 50,
+    isMotorbike: /motor\s*(bike|cycle)|\bbike\b/i.test(String((vehicleData as any)?.vehicleType || '')),
+    surface: 'admin',
+  });
+  const MINIMUM_PRICE = minimumPriceForCodes(appliedDiscountCodes, checkoutTermFloor);
   const hasValidDiscountCodes = appliedDiscountCodes.length > 0;
 
   

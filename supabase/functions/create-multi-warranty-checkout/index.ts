@@ -52,6 +52,7 @@ serve(async (req) => {
           voluntaryExcess: item.voluntaryExcess,
           finalAmount: submittedPrice,
           discountCode,
+          isMotorbike: /motor\s*(bike|cycle)|\bbike\b/i.test(String(item.vehicleData?.vehicleType || "")),
           authHeader: req.headers.get("Authorization"),
         },
         supabaseService,

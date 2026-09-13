@@ -17,6 +17,7 @@ export interface PriceFloorInput {
   finalAmount: number;        // £ - what the client says the customer should pay
   discountCode?: string;      // Optional - test codes (TEST*) bypass the floor for anyone
   authHeader?: string | null; // Optional - retained for backwards compatibility; no longer used for gating
+  isMotorbike?: boolean;      // Optional - motorbike floors are exactly half
 }
 
 // Test discount codes that bypass the £120 absolute floor and 50% plan floor.
@@ -45,30 +46,27 @@ export interface PriceFloorResult {
   minimumAllowed?: number;
 }
 
-// Hard absolute floor — raised to track the agreed NET sell floor
-// (£399 / £659 / £938 for 12 / 24 / 36 months, see src/lib/pricing/netFloor.ts).
+// Hard absolute floor — the agreed NET sell floor
+// (£399 / £769 / £1,099 for 12 / 24 / 36 months, see src/lib/pricing/netFloor.ts).
 //
-// Website promo codes (SAVE25, cart recovery, 10% pay-in-full) are deliberately
-// allowed to breach the net floor, so the server backstop sits at
-// NET_FLOOR_BACKSTOP_PCT of it — high enough to kill the "set finalAmount to £1"
-// attack class, low enough that a legitimate stacked promo still goes through.
-// Motorbikes are half price, so the term floor is halved before the % is applied.
+// 13 Sep 2026: promo codes are NO LONGER allowed to take a charge below this
+// floor — a SAVE25 on a £480 quote produced a £360 Stripe sale. Every checkout
+// (Stripe, Bumper, Payment Assist, multi-warranty) must now respect the full
+// term net floor. Only genuine live TEST*/SAVE99GOLDEN codes keep the £1 floor.
+// Motorbikes are half price, so the term floor is halved when the caller tells
+// us the vehicle is a motorbike.
 export const NET_SELL_FLOOR_GBP: Record<"yearly" | "two_yearly" | "three_yearly" | "monthly", number> = {
   monthly: 399,
   yearly: 399,
-  two_yearly: 659,
-  three_yearly: 938,
+  two_yearly: 769,
+  three_yearly: 1099,
 };
 
-const NET_FLOOR_BACKSTOP_PCT = 0.6;
-
-/** Server backstop for a term: 60% of the net sell floor, floored to whole pounds. */
-export function getTermFloorGBP(paymentType: string): number {
+/** Server floor for a term: the full net sell floor (halved for motorbikes). */
+export function getTermFloorGBP(paymentType: string, isMotorbike?: boolean): number {
   const term = normalizePaymentType(paymentType);
   const netFloor = NET_SELL_FLOOR_GBP[term] ?? NET_SELL_FLOOR_GBP.yearly;
-  // Halve for motorbike-priced policies — we cannot see vehicle type here, so the
-  // halved figure is used as the safe lower bound for every term.
-  return Math.floor((netFloor / 2) * NET_FLOOR_BACKSTOP_PCT);
+  return isMotorbike === true ? netFloor / 2 : netFloor;
 }
 
 // Retained for callers that need a single hard number with no term context.
@@ -209,7 +207,7 @@ export async function validateCheckoutPrice(
   const bypass = isTestBypassCode(discountCode)
     ? await isLiveDiscountCode(supabase, discountCode!)
     : false;
-  const termFloor = getTermFloorGBP(paymentType);
+  const termFloor = getTermFloorGBP(paymentType, input.isMotorbike);
   const absoluteFloor = bypass ? TEST_MIN_GBP : termFloor;
 
 

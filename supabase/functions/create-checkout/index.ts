@@ -132,6 +132,7 @@ serve(async (req) => {
         finalAmount: Number(totalAmount),
         discountCode,
         authHeader: req.headers.get("Authorization"),
+        isMotorbike: /motor\s*(bike|cycle)|\bbike\b/i.test(String(vehicleData?.vehicleType || "")),
       },
       supabaseService,
     );

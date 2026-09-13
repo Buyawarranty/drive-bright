@@ -14,7 +14,7 @@ import {
   getExcessBracketBasis,
   type PaymentPeriod,
 } from '@/lib/pricingMatrix';
-import { applyWebsiteSellFloor } from '@/lib/pricing/netFloor';
+import { applyWebsiteSellFloor, getNetPayableFloor } from '@/lib/pricing/netFloor';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import ClaimLimitDetails from './ClaimLimitDetails';
@@ -254,14 +254,26 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
   // Doing it any other way (e.g. promo-then-10%) caused Step 3 to show different
   // savings/pay-in-full vs Step 4 (£927/£103 vs £922/£158).
   const appliedPromos = useAppliedPromos();
+  // Promo codes may never take a sale below the net sell floor for this term
+  // (£399/£769/£1,099, halved for motorbikes) — matches the server-side floor.
+  const promoTermFloor = getNetPayableFloor({
+    paymentPeriod: (paymentType || '12months') as PaymentPeriod,
+    voluntaryExcess: voluntaryExcess ?? 100,
+    claimLimit: selectedClaimLimit ?? undefined,
+    labourRate: selectedLabourRate,
+    isMotorbike: isMotorbikeAdjustment(
+      calculateVehiclePriceAdjustment(vehicleData as any, paymentType === '24months' ? 2 : paymentType === '36months' ? 3 : 1),
+    ),
+    surface: 'admin',
+  });
   const stripeBeforePromo = rawMonthlyTotal - Math.floor(rawMonthlyTotal * 0.10);
-  const bumperPromoAmt = calcPromoDiscount(rawMonthlyTotal, appliedPromos);
-  const stripePromoAmt = calcPromoDiscount(stripeBeforePromo, appliedPromos);
-  const monthlyTotal = Math.max(promoPriceFloor(appliedPromos), rawMonthlyTotal - bumperPromoAmt);
+  const bumperPromoAmt = calcPromoDiscount(rawMonthlyTotal, appliedPromos, promoTermFloor);
+  const stripePromoAmt = calcPromoDiscount(stripeBeforePromo, appliedPromos, promoTermFloor);
+  const monthlyTotal = Math.max(promoPriceFloor(appliedPromos, promoTermFloor), rawMonthlyTotal - bumperPromoAmt);
   const displayedMonthlyPrice = bumperPromoAmt > 0
     ? Math.max(1, Math.ceil(monthlyTotal / 12))
     : monthlyPrice;
-  const payInFull = Math.max(promoPriceFloor(appliedPromos), stripeBeforePromo - stripePromoAmt);
+  const payInFull = Math.max(promoPriceFloor(appliedPromos, promoTermFloor), stripeBeforePromo - stripePromoAmt);
   const savings = Math.max(0, rawMonthlyTotal - payInFull);
 
   const selectedTier = CLAIM_LIMIT_TIERS.find(t => t.value === selectedClaimLimit);

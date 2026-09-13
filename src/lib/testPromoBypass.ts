@@ -80,8 +80,13 @@ export function isTestBypassCode(code?: string | null): boolean {
 /**
  * Returns the price floor to apply given the currently applied promo codes.
  * Test/QA bypass codes drop the floor to £1 for anyone; all other codes keep
- * the standard £120 public floor.
+ * at least the standard £120 public floor — and never below the term net sell
+ * floor (£399 / £769 / £1,099 for 12/24/36mo, halved for motorbikes) when the
+ * caller passes it. 13 Sep 2026: promo codes may no longer take a sale below
+ * the net floor (a SAVE25 on a £480 quote produced a £360 Stripe sale).
  */
-export function minimumPriceForCodes(codes: Array<{ code: string }> = []): number {
-  return codes.some((c) => isTestBypassCode(c?.code)) ? TEST_MINIMUM_PRICE : STANDARD_MINIMUM_PRICE;
+export function minimumPriceForCodes(codes: Array<{ code: string }> = [], termFloorGBP?: number): number {
+  if (codes.some((c) => isTestBypassCode(c?.code))) return TEST_MINIMUM_PRICE;
+  const termFloor = Number.isFinite(termFloorGBP) && (termFloorGBP ?? 0) > 0 ? Math.ceil(termFloorGBP as number) : 0;
+  return Math.max(STANDARD_MINIMUM_PRICE, termFloor);
 }

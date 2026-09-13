@@ -182,3 +182,5 @@ Updated: just now
 - [Deactivated Agent Leaves Distribution](mem://admin/leads/deactivated-agent-leaves-distribution) — Inactive/archived staff auto-paused, workstreams cleared, hidden from New Leads and Allocation lists
 - [Scoreboard Reconciliation Credit](mem://admin/scoreboard/reconciliation-uses-resolve-sale-credit) — Reconciliation and scoreboard must both use resolve_sale_credit; back-office confirmations fall through to the sales agent
 - Warranties 2000 / Warranties Register API is permanently off — never send them data or restore any function, cron or test call. See mem://constraints/warranties-2000-api-permanently-off
+
+- [No Sale Below Net Floor](mem://pricing/no-sale-below-net-floor-any-surface) — Promo codes can never take any sale below £399/£769/£1,099 (13 Sep 2026); server + client floors enforce it
