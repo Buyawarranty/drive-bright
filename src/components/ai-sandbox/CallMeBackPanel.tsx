@@ -18,8 +18,23 @@ function prettyPhone(raw: string): string {
   return raw;
 }
 
-type Step = 'closed' | 'number' | 'confirm' | 'done';
+type Step = 'closed' | 'topic' | 'claimsInfo' | 'number' | 'confirm' | 'done';
 type Preference = 'call' | 'whatsapp';
+type Topic = 'warranty_purchase' | 'general' | 'existing_policy' | 'other';
+
+const TOPICS: { key: Topic; label: string }[] = [
+  { key: 'warranty_purchase', label: 'Warranty purchase' },
+  { key: 'general', label: 'General enquiry' },
+  { key: 'existing_policy', label: 'Existing policy question' },
+  { key: 'other', label: 'Something else' },
+];
+
+const TOPIC_LABELS: Record<Topic, string> = {
+  warranty_purchase: 'Warranty purchase',
+  general: 'General enquiry',
+  existing_policy: 'Existing policy question',
+  other: 'Something else',
+};
 
 export function CallMeBackPanel({
   guestToken,
