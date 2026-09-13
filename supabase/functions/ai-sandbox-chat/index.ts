@@ -842,7 +842,7 @@ Deno.serve(async (req) => {
 
       check_availability: tool({
         description:
-          "Check the team's opening hours and whether they are open right now. There is no live chat handover — use this only to tell the customer when the team will call or WhatsApp them back.",
+          "Check the team's opening hours and whether they are open right now. There is no live chat handover — use this only to tell the customer when the team will call, WhatsApp or email them back.",
         inputSchema: z.object({}),
         execute: async () => {
           const state = availability();
@@ -850,8 +850,8 @@ Deno.serve(async (req) => {
             ...state,
             can_connect_live_now: false,
             instruction: state.is_open
-              ? "We are OPEN. Never say a specialist is joining the chat. Offer the sales line 0330 229 5040, or take a phone number (and whether they prefer a call or WhatsApp) and call capture_lead."
-              : `We are CLOSED (back ${state.next_open}). Take a phone number or email, note whether they prefer a call or WhatsApp, and call capture_lead.`,
+              ? "We are OPEN. Never say a specialist is joining the chat. Offer the sales line 0330 229 5040, or take a phone number or email (and whether they prefer a call, WhatsApp or email) and call capture_lead."
+              : `We are CLOSED (back ${state.next_open}). Take a phone number or email, note whether they prefer a call, WhatsApp or email, and call capture_lead.`,
           });
         },
       }),
