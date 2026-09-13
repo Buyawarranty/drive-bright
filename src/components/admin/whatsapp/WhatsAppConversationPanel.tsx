@@ -14,6 +14,7 @@ import WhatsAppPipelineBar from './WhatsAppPipelineBar';
 import WhatsAppTagPicker from './WhatsAppTagPicker';
 import type { WhatsAppConversation } from '@/hooks/useWhatsAppConversations';
 import { matchQuickReplies, slashQuery } from '@/lib/whatsappQuickReplies';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Props {
   conversation: WhatsAppConversation;
@@ -44,6 +45,8 @@ export const WhatsAppConversationPanel: React.FC<Props> = ({
   const { messages, sending, sendMessage } = useWhatsAppMessages(conversation.id);
   const [draft, setDraft] = useState('');
   const [highlight, setHighlight] = useState(0);
+  const [chosenButtons, setChosenButtons] = useState<string[]>([]);
+  const [sendingButtons, setSendingButtons] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const suggestions = useMemo(() => {
