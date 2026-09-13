@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useStickToBottomContext } from 'use-stick-to-bottom';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import {
@@ -394,14 +395,25 @@ function PriceOptionsPanel({
     ? `/?step=3&from=chat&reg=${encodeURIComponent(reg)}${mileage ? `&mileage=${encodeURIComponent(mileage)}` : ''}`
     : null;
 
+  const panelRef = useRef<HTMLDivElement>(null);
+  const { stopScroll } = useStickToBottomContext();
 
+  // Keep the top of the price panel in view when the quote first appears,
+  // otherwise the chat auto-scrolls to the bottom of the tall panel and
+  // customers miss the total price.
+  useEffect(() => {
+    if (priceRequested && panelRef.current) {
+      stopScroll();
+      panelRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [priceRequested, stopScroll]);
 
   const termLabel = (v: number) => (v % 12 === 0 ? `${v / 12} year${v / 12 > 1 ? 's' : ''}` : `${v} months`);
   const combo = `${termLabel(term)} cover, £${limit.toLocaleString()} claim limit, £${excess} excess, £${labour}/hr labour rate`;
   const quoted = priceRequested ? extractPrice(lastAssistantText) : null;
 
   return (
-    <div className="w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-card p-3.5 text-left shadow-sm sm:p-4">
+    <div ref={panelRef} className="w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-card p-3.5 text-left shadow-sm sm:p-4 scroll-mt-4">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-base font-semibold text-foreground">
