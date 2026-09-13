@@ -10,6 +10,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { useIsManagement } from '@/hooks/useIsManagement';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import WhatsAppLeadCard from './WhatsAppLeadCard';
+import { tagChipClass, useTagsByConversation, useWhatsAppTagList } from '@/hooks/useWhatsAppTags';
 import WhatsAppConversationPanel from './WhatsAppConversationPanel';
 import WhatsAppManagerDashboard from './WhatsAppManagerDashboard';
 import WhatsAppHotLeadAlerts from './WhatsAppHotLeadAlerts';
@@ -48,17 +49,26 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
   );
   const agents = useAllAdminUsersMap(agentIds);
 
+  const conversationIds = useMemo(() => conversations.map((c) => c.id), [conversations]);
+  const tagsByConversation = useTagsByConversation(conversationIds);
+  const { tags: allTags } = useWhatsAppTagList();
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
+  const cardTags = (id: string) =>
+    allTags.filter((t) => (tagsByConversation[id] || []).includes(t.id));
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return conversations;
     const digits = q.replace(/[^\d]/g, '');
-    return conversations.filter(
-      (c) =>
+    return conversations.filter((c) => {
+      if (tagFilter && !(tagsByConversation[c.id] || []).includes(tagFilter)) return false;
+      if (!q) return true;
+      return (
         (c.display_name || '').toLowerCase().includes(q) ||
         (c.last_message_preview || '').toLowerCase().includes(q) ||
-        (digits.length >= 4 && c.phone_normalized.includes(digits.slice(-9))),
-    );
-  }, [conversations, search]);
+        (digits.length >= 4 && c.phone_normalized.includes(digits.slice(-9)))
+      );
+    });
+  }, [conversations, search, tagFilter, tagsByConversation]);
 
   const available = filtered.filter((c) => !c.assigned_to && c.is_open);
   const mine = filtered.filter((c) => c.assigned_to === adminId);
@@ -122,6 +132,30 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
         />
       </div>
 
+      {allTags.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs text-muted-foreground">Filter by tag</span>
+          <button type="button" onClick={() => setTagFilter(null)}>
+            <Badge variant={tagFilter ? 'outline' : 'default'}>All</Badge>
+          </button>
+          {allTags.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTagFilter(tagFilter === t.id ? null : t.id)}
+            >
+              <Badge
+                className={
+                  tagFilter === t.id ? tagChipClass(t.color) : 'bg-muted text-foreground border-border'
+                }
+              >
+                {t.name}
+              </Badge>
+            </button>
+          ))}
+        </div>
+      )}
+
       {error && (
         <p className="rounded-md border border-destructive bg-destructive/10 p-3 text-sm">
           WhatsApp leads could not be loaded. Nothing has been lost - try again in a moment.
@@ -169,6 +203,7 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
                     taking={taking === c.id}
                     onTake={() => void handleTake(c.id)}
                     onOpen={() => setSelectedId(c.id)}
+                    tags={cardTags(c.id)}
                   />
                 ))}
               </CardContent>
@@ -212,6 +247,7 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
                     canTake={false}
                     onTake={() => undefined}
                     onOpen={() => setSelectedId(c.id)}
+                    tags={cardTags(c.id)}
                   />
                 ))}
               </CardContent>
