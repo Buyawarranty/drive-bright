@@ -149,7 +149,7 @@ export function CallMeBackPanel({
         >
           <MessageCircle className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
           <span className="flex-1 truncate text-xs font-bold text-foreground">
-            Prefer to talk? Leave your number for a call or WhatsApp
+            All our agents are busy — leave your number and we'll call you back
           </span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
         </button>
@@ -160,7 +160,7 @@ export function CallMeBackPanel({
       <div className="mx-3 mb-2 flex items-center gap-3 rounded-2xl bg-[#FDEBDF] px-3.5 py-3">
         <MessageCircle className="h-5 w-5 shrink-0 text-[#B4501F]" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-foreground">Prefer to talk?</p>
+          <p className="text-sm font-bold text-foreground">All our agents are busy right now</p>
           <p className="text-xs text-muted-foreground">
             {open
               ? 'Leave your number and a UK specialist will call or WhatsApp you back.'
@@ -177,7 +177,7 @@ export function CallMeBackPanel({
           )}
         </div>
         <Button
-          onClick={() => setStep('number')}
+          onClick={() => setStep('topic')}
           variant="outline"
           className="h-10 shrink-0 rounded-xl border-border bg-background text-sm font-bold shadow-sm hover:bg-muted"
         >
