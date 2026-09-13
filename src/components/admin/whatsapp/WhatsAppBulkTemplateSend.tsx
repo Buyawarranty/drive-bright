@@ -210,7 +210,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
             <p className="p-4 text-sm text-muted-foreground">No leads match that choice.</p>
           )}
           {!loading &&
-            leads.map((l) => {
+            leads.map((l, i) => {
               const canSend = hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status));
               const name = [l.first_name, l.last_name].filter(Boolean).join(' ') || 'No name';
               return (
@@ -218,6 +218,9 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
                   key={l.id}
                   className="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm hover:bg-muted/50"
                 >
+                  <span className="w-6 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
+                    {i + 1}.
+                  </span>
                   <Checkbox
                     checked={selected.has(l.id)}
                     disabled={!canSend}
