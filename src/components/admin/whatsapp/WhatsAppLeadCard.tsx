@@ -6,6 +6,7 @@ import { heatBadge, prettyWhatsAppPhone } from '@/lib/whatsappHeat';
 import { pipelineClass, pipelineLabel } from '@/lib/whatsappPipeline';
 import type { WhatsAppConversation } from '@/hooks/useWhatsAppConversations';
 import type { AdminUserLite } from '@/hooks/useAllAdminUsersMap';
+import { tagChipClass } from '@/hooks/useWhatsAppTags';
 
 const timeAgo = (iso: string | null) => {
   if (!iso) return '';
@@ -38,6 +39,7 @@ export const WhatsAppLeadCard: React.FC<Props> = ({
   onTake,
   onOpen,
   showSource = true,
+  tags = [],
 }) => {
   const heat = heatBadge(conversation.heat);
   const overdue =
@@ -84,6 +86,16 @@ export const WhatsAppLeadCard: React.FC<Props> = ({
           </Button>
         )}
       </div>
+
+      {tags.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {tags.map((t) => (
+            <Badge key={t.id} className={`text-xs ${tagChipClass(t.color)}`}>
+              {t.name}
+            </Badge>
+          ))}
+        </div>
+      )}
 
       <p className="mt-2 flex items-start gap-1 text-sm text-foreground/80">
         <MessageSquare className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
