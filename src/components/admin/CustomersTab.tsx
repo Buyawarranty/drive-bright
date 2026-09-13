@@ -7096,27 +7096,31 @@ Please log in and change your password after first login.`;
                         const pathTip = path === 'direct'
                           ? 'Direct sale — customer bought online themselves'
                           : 'Lead sale — closed by an agent from a lead';
-                        const pathBadge = (
-                          <span className={`ml-1 text-[9px] px-1 rounded border ${path === 'direct' ? 'bg-white/70 text-gray-700 border-gray-300' : 'bg-orange-50 text-orange-700 border-orange-200'}`}>
-                            {path === 'direct' ? 'direct' : 'lead'}
-                          </span>
-                        );
-                        const wrap = (badge: React.ReactNode) => (
-                          <div className="flex items-center flex-wrap">{badge}{pathBadge}</div>
+                        const sourceLabel = (channelName: string) => `${channelName} ${path === 'direct' ? 'direct sale' : 'lead'}`;
+                        const wrap = (label: string, title: string, className: string) => (
+                          <Badge title={`${title} ${pathLabel}\n${pathTip}${utmTip}`} className={`text-[10px] ${cursor} ${className}`}>
+                            {label}
+                          </Badge>
                         );
                         if (channel === 'google_ads') {
-                          return wrap(<Badge title={`Google Ads ${pathLabel}\n${pathTip}${utmTip}`} className={`bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px] ${cursor}`}>Google</Badge>);
+                          return wrap(sourceLabel('Google'), 'Google Ads', 'bg-emerald-100 text-emerald-800 border-emerald-200');
                         }
                         if (channel === 'facebook_ads') {
-                          return wrap(<Badge title={`Facebook Ads ${pathLabel}\n${pathTip}${utmTip}`} className={`bg-blue-100 text-blue-700 border-blue-200 text-[10px] ${cursor}`}>Facebook</Badge>);
+                          return wrap(sourceLabel('Facebook'), 'Facebook Ads', 'bg-blue-100 text-blue-700 border-blue-200');
+                        }
+                        if (channel === 'bing_ads') {
+                          return wrap(sourceLabel('Bing'), 'Bing Ads', 'bg-cyan-100 text-cyan-800 border-cyan-200');
+                        }
+                        if (channel === 'tiktok_ads') {
+                          return wrap(sourceLabel('TikTok'), 'TikTok Ads', 'bg-zinc-100 text-zinc-800 border-zinc-200');
                         }
                         if (channel === 'website') {
-                          return wrap(<Badge title={`Direct/Website ${pathLabel}\n${pathTip}${utmTip}`} className={`bg-gray-100 text-gray-700 border-gray-200 text-[10px] ${cursor}`}>Direct/Website</Badge>);
+                          return wrap(sourceLabel('Website'), 'Website', 'bg-gray-100 text-gray-700 border-gray-200');
                         }
                         if (channel === 'manual') {
-                          return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[10px]" title="Manual back-office sale — no marketing source recorded">Manual</Badge>;
+                          return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[10px]" title="Manual back-office sale — no marketing source recorded">Manual sale</Badge>;
                         }
-                        return wrap(<Badge title={`Unknown ${pathLabel}\n${pathTip}${utmTip}`} className={`bg-gray-100 text-gray-500 border-gray-200 text-[10px] ${cursor}`}>Unknown</Badge>);
+                        return wrap(sourceLabel('Unknown source'), 'Unknown source', 'bg-gray-100 text-gray-500 border-gray-200');
 
                       })()}
                     </TableCell>

@@ -23,10 +23,10 @@ export type SourceLetter = 'G' | 'F' | 'B' | 'T' | 'O' | 'R' | 'P' | 'Q';
 /** Map a lead_source / acquisition value to its single source letter. */
 export function sourceLetterFromLeadSource(leadSource?: string | null): SourceLetter {
   const s = (leadSource || '').toLowerCase().trim();
-  if (s === 'google_ad' || s === 'google' || s === 'google ads') return 'G';
-  if (s === 'social_ad' || s === 'facebook' || s === 'facebook_ad' || s === 'meta') return 'F';
-  if (s === 'bing_ad' || s === 'bing') return 'B';
-  if (s === 'tiktok_ad' || s === 'tiktok') return 'T';
+  if (s === 'google_ad' || s === 'google_ads' || s === 'google' || s === 'google ads') return 'G';
+  if (s === 'social_ad' || s === 'facebook' || s === 'facebook_ad' || s === 'facebook_ads' || s === 'meta') return 'F';
+  if (s === 'bing_ad' || s === 'bing_ads' || s === 'bing') return 'B';
+  if (s === 'tiktok_ad' || s === 'tiktok_ads' || s === 'tiktok') return 'T';
   if (s === 'referral' || s === 'partner') return 'R';
   if (s === 'phone' || s === 'email') return 'P';
   if (s === 'live_quote' || s === 'quote') return 'Q';
@@ -63,6 +63,27 @@ export function saleSubjectPrefix(opts: {
   const channel = opts.letter === 'Q' ? null : opts.letter;
   const core = opts.isQuote ? (channel ? `Q/${channel}` : 'Q') : opts.letter;
   return opts.isAgentSale ? `S-${core}` : core;
+}
+
+/** Clear wording for email subjects; avoids ambiguous codes such as G/F/O. */
+export function saleSubjectKind(opts: {
+  letter: SourceLetter;
+  isAgentSale?: boolean;
+  isQuote?: boolean;
+}): string {
+  const channel: Record<SourceLetter, string> = {
+    G: 'Google',
+    F: 'Facebook',
+    B: 'Bing',
+    T: 'TikTok',
+    O: 'Website',
+    R: 'Referral',
+    P: 'Phone',
+    Q: 'Live quote',
+  };
+  const channelName = channel[opts.letter];
+  if (opts.isQuote) return `${channelName === 'Live quote' ? '' : `${channelName} `}quote sale`.trim();
+  return opts.isAgentSale ? `${channelName} lead sale` : `${channelName} direct sale`;
 }
 
 /** Human label for the letter, for use inside the email body. */

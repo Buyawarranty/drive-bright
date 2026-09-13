@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sendInternalNotification } from "../_shared/send-internal-notification.ts";
-import { sourceLetterFromLeadSource, saleSubjectPrefix } from "../_shared/saleSubjectPrefix.ts";
+import { sourceLetterFromLeadSource, saleSubjectKind, saleSubjectPrefix } from "../_shared/saleSubjectPrefix.ts";
 import { formatClaimLimit } from "../_shared/claim-limit-display.ts";
 
 
@@ -345,14 +345,15 @@ serve(async (req: Request) => {
       ? (rawChannel ? sourceLetterFromLeadSource(rawChannel) : 'Q')
       : letter;
     const sourcePrefix = saleSubjectPrefix({ letter: channelLetter, isAgentSale: true, isQuote: isQuoteSale });
+    const subjectKind = saleSubjectKind({ letter: channelLetter, isAgentSale: true, isQuote: isQuoteSale });
 
     const amountPart = saleValue ? ` - ${saleValueDisplay}` : '';
     const paymentPart = paymentType ? ` via ${paymentType}` : '';
     const subject = isPaymentPending
       ? `Lead converted — awaiting payment ${sourcePrefix}: ${regPlate} (${agentName})`
       : paymentConfirmed
-        ? `Confirmed payment ${sourcePrefix}: ${regPlate}${amountPart}${paymentPart} (${agentName})`
-        : `New Sale ${sourcePrefix}: ${regPlate}${amountPart}${paymentPart}`;
+        ? `Confirmed payment — ${subjectKind}: ${regPlate}${amountPart}${paymentPart} (${agentName})`
+        : `New ${subjectKind}: ${regPlate}${amountPart}${paymentPart}`;
     // The sales agent who converted the lead is always copied in, alongside
     // the internal ops mailboxes.
     const recipients = ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"];

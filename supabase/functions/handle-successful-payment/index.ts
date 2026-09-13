@@ -1,7 +1,8 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { sourceLetterFromLeadSource, sourceLetterFromAdSource, saleSubjectPrefix } from "../_shared/saleSubjectPrefix.ts";
+import { sourceLetterFromLeadSource, sourceLetterFromAdSource, saleSubjectKind } from "../_shared/saleSubjectPrefix.ts";
+import { sendInternalNotification } from "../_shared/send-internal-notification.ts";
 import { formatClaimLimit } from "../_shared/claim-limit-display.ts";
 
 const INTERNAL_NOTIFICATION_FROM =
@@ -861,7 +862,9 @@ serve(async (req) => {
       .from('customer_policies')
       .select('id')
       .eq('customer_id', customerData2.id)
-      .single();
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
     policy = policyData;
         
       if (policy?.id) {
@@ -945,8 +948,10 @@ serve(async (req) => {
     logStep("Skipping Warranties Register registration (integration removed)");
 
 
-    // Send sales notification to sales manager
-    if (customerData2?.id && policy?.id) {
+    // Send the internal sale notification whenever the completed payment has
+    // produced a customer record. Do not make it depend on the separate policy
+    // lookup: an insert race or multiple-policy customer must never hide a sale.
+    if (customerData2?.id) {
       try {
         logStep("Sending sales notification to sales manager");
         
@@ -1069,46 +1074,26 @@ serve(async (req) => {
           </div>
         `;
 
-        const saleSubject = `New Sale ${saleSubjectPrefix({ letter: sourceLetterFromAdSource(detectedAdSource), isQuote: metadata?.source === 'live_quote' })}: ${regPlate} - ${saleValueDisplay} via ${paymentMethod}`;
+        const persistedChannel = customerData2?.acquisition_source || customerData2?.purchase_source || customerRecord.purchase_source;
+        const directLetter = detectedAdSource
+          ? sourceLetterFromAdSource(detectedAdSource)
+          : sourceLetterFromLeadSource(persistedChannel);
+        const saleSubject = `New ${saleSubjectKind({ letter: directLetter, isQuote: metadata?.source === 'live_quote' })}: ${regPlate} - ${saleValueDisplay} via ${paymentMethod}`;
         const saleRecipients = ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'];
         try {
-          const sendResult = await resend.emails.send({
-            from: INTERNAL_NOTIFICATION_FROM,
+          const sendResult = await sendInternalNotification({
             to: saleRecipients,
             subject: saleSubject,
-            html: salesEmailHtml
+            html: salesEmailHtml,
+            template: 'sale_notification',
+            sourceFunction: 'handle-successful-payment',
+            metadata: { customer_id: customerData2?.id ?? null, reg: regPlate, ad_source: detectedAdSource },
           });
 
-          if ((sendResult as any)?.error) {
-            throw new Error(JSON.stringify((sendResult as any).error));
-          }
-
-          for (const rcpt of saleRecipients) {
-            await supabaseClient.from('email_logs').insert({
-              recipient_email: rcpt,
-              subject: saleSubject,
-              status: 'sent',
-              delivery_status: 'sent',
-              sent_at: new Date().toISOString(),
-              customer_id: customerData2?.id ?? null,
-              metadata: { source: 'handle-successful-payment', kind: 'new_sale_notification', reg: regPlate, ad_source: detectedAdSource },
-            });
-          }
+          if (!sendResult.ok) throw new Error(sendResult.error || 'Sale notification failed');
           logStep("Sales notification sent successfully");
         } catch (emailError: any) {
           logStep("Warning: Failed to send sales notification", { error: emailError?.message || String(emailError) });
-          for (const rcpt of saleRecipients) {
-            await supabaseClient.from('email_logs').insert({
-              recipient_email: rcpt,
-              subject: saleSubject,
-              status: 'failed',
-              delivery_status: 'failed',
-              error_message: emailError?.message || String(emailError),
-              failed_reason: emailError?.message || String(emailError),
-              customer_id: customerData2?.id ?? null,
-              metadata: { source: 'handle-successful-payment', kind: 'new_sale_notification', reg: regPlate, ad_source: detectedAdSource },
-            });
-          }
           // Don't fail the payment process if notification fails
         }
       } catch (outerEmailError) {
@@ -1175,8 +1160,6 @@ serve(async (req) => {
           const leadSource = matchedLead.lead_source || 'unknown';
           const leadLetter = sourceLetterFromLeadSource(leadSource);
           const agentLetter = leadLetter === 'O' ? sourceLetterFromAdSource(detectedAdSource) : leadLetter;
-          const sourcePrefix = saleSubjectPrefix({ letter: agentLetter, isAgentSale: true });
-
           const leadCreatedAt = (matchedLead as any).created_at
             ? new Date((matchedLead as any).created_at).toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
             : '';
@@ -1227,7 +1210,7 @@ serve(async (req) => {
             </div>
           `;
 
-          const agentSubject = `New Sale ${sourcePrefix}: ${regPlate} - ${saleValueDisplay} via ${paymentMethod}`;
+          const agentSubject = `New ${saleSubjectKind({ letter: agentLetter, isAgentSale: true })}: ${regPlate} - ${saleValueDisplay} via ${paymentMethod}`;
           const agentRecipients = ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'];
           try {
             const agentResult = await resend.emails.send({
