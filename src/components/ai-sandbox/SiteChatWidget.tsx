@@ -65,7 +65,11 @@ export default function SiteChatWidget({
   const [expanded, setExpanded] = useState(false);
   // Bumped when a conversation is ended so the chat window remounts empty.
   const [sessionKey, setSessionKey] = useState(0);
-  const [showNudge, setShowNudge] = useState(false);
+  // The panda circle expands into the "Need help? Chat with us" pill only
+  // briefly — after 15s or a meaningful scroll — then collapses again.
+  const [promptExpanded, setPromptExpanded] = useState(false);
+  const expansionsRef = useRef(0);
+  const timersRef = useRef<number[]>([]);
   const tokenRef = useRef<string | null>(null);
   if (tokenRef.current === null) tokenRef.current = getGuestToken();
 
