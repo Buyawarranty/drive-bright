@@ -1,7 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { Resend } from "https://esm.sh/resend@2.0.0";
-import { sourceLetterFromLeadSource, saleSubjectPrefix } from "../_shared/saleSubjectPrefix.ts";
+import { sourceLetterFromLeadSource, saleSubjectKind, saleSubjectPrefix } from "../_shared/saleSubjectPrefix.ts";
+import { sendInternalNotification } from "../_shared/send-internal-notification.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -330,12 +331,15 @@ serve(async (req) => {
           </div>
         `;
 
-        await resend.emails.send({
-          from: INTERNAL_NOTIFICATION_FROM,
+        const directNotification = await sendInternalNotification({
           to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
-          subject: `New Sale ${saleType}: ${regPlate} - ${saleValue} via ${paymentMethod}`,
+          subject: `New ${saleSubjectKind({ letter: saleType })}: ${regPlate} - ${saleValue} via ${paymentMethod}`,
           html: salesEmailHtml,
+          template: 'sale_notification',
+          sourceFunction: 'process-payment-assist-success',
+          metadata: { customer_id: customer?.id ?? null, reg: regPlate, sale_type: saleType },
         });
+        if (!directNotification.ok) throw new Error(directNotification.error || 'Sale notification failed');
         logStep("Sale notification email sent successfully");
 
         // Check for agent-attributed sale (New Sale S)
@@ -405,12 +409,15 @@ serve(async (req) => {
             </div>
           `;
 
-          await resend.emails.send({
-            from: INTERNAL_NOTIFICATION_FROM,
+          const agentNotification = await sendInternalNotification({
             to: ['info@buyawarranty.co.uk', 'accounts@buyawarranty.co.uk'],
-            subject: `New Sale ${sourcePrefix}: ${regPlate} - ${saleValue} via ${paymentMethod}`,
+            subject: `New ${saleSubjectKind({ letter: agentLetter, isAgentSale: true })}: ${regPlate} - ${saleValue} via ${paymentMethod}`,
             html: agentSaleHtml,
+            template: 'agent_sale_notification',
+            sourceFunction: 'process-payment-assist-success',
+            metadata: { customer_id: customer?.id ?? null, reg: regPlate, agent: agentName },
           });
+          if (!agentNotification.ok) throw new Error(agentNotification.error || 'Agent sale notification failed');
           logStep("Agent sale notification (New Sale S) sent", { agent: agentName });
         }
       } else {

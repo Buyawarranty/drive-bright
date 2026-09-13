@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sendInternalNotification } from "../_shared/send-internal-notification.ts";
-import { sourceLetterFromLeadSource, saleSubjectPrefix } from "../_shared/saleSubjectPrefix.ts";
+import { sourceLetterFromLeadSource, saleSubjectKind, saleSubjectPrefix } from "../_shared/saleSubjectPrefix.ts";
 import { formatClaimLimit } from "../_shared/claim-limit-display.ts";
 
 
@@ -300,7 +300,8 @@ serve(async (req: Request) => {
     // @buyawarranty.co.uk mailboxes isn't dropped by same-domain anti-spoof.
     const agentSubjectPart = isAgentSale ? ` — Agent: ${resolvedAgentName || 'Unknown Agent'}` : '';
     const priceMatchSubjectPart = isPriceMatch ? ' [Price match]' : '';
-    const subject = `New Sale ${subjectSource}: ${reg} - ${saleValueDisplay} via ${payment}${agentSubjectPart}${priceMatchSubjectPart}`;
+    const subjectKind = saleSubjectKind({ letter: channelLetter, isAgentSale: !!isAgentSale, isQuote: isQuoteSale });
+    const subject = `New ${subjectKind}: ${reg} - ${saleValueDisplay} via ${payment}${agentSubjectPart}${priceMatchSubjectPart}`;
     const notifyResult = await sendInternalNotification({
       to: ["info@buyawarranty.co.uk", "accounts@buyawarranty.co.uk"],
       subject,
