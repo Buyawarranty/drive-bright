@@ -251,7 +251,18 @@ export const WhatsAppConversationPanel: React.FC<Props> = ({
           <div ref={bottomRef} />
         </div>
 
-        {canReply ? (
+        {conversation.opted_out_at ? (
+          <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3">
+            <p className="text-sm font-semibold text-destructive">
+              This customer asked to stop receiving WhatsApp messages
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              They replied “{conversation.opt_out_reason || 'STOP'}” on{' '}
+              {new Date(conversation.opted_out_at).toLocaleDateString('en-GB')}. Nothing further can be
+              sent to this number until they message “START”.
+            </p>
+          </div>
+        ) : canReply ? (
           <div className="space-y-1">
             <div className="relative flex items-end gap-2">
               {suggestions.length > 0 && (
