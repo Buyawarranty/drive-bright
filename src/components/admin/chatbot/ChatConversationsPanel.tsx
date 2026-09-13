@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageSquare, UserPlus, RefreshCw, Search, CheckCircle2, Send } from 'lucide-react';
+import { MessageSquare, UserPlus, RefreshCw, Search, CheckCircle2, Send, X } from 'lucide-react';
 import { classifyChatTopic, type ChatTopicTag } from '@/lib/chatTopicTags';
 
 type Thread = {
@@ -238,6 +238,20 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
     setForm({ name: '', ...found });
   };
 
+  const closeThread = () => {
+    setSelectedId(null);
+    setMessages([]);
+    setReply('');
+    setNewCustomerReplies(0);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('chatThread');
+      window.history.replaceState({}, '', url.toString());
+    } catch {
+      // ignore
+    }
+  };
+
   const selected = threads.find((t) => t.id === selectedId) ?? null;
 
   // ---- Live reply: type here and the customer sees it in their chat box ----
@@ -439,12 +453,19 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base flex flex-wrap items-center gap-2">
-            <span>{selected ? selected.title || 'Website chat' : 'Pick a conversation'}</span>
-            {selected && topics.get(selected.id) && (
-              <Badge className={topics.get(selected.id)!.className}>
-                {topics.get(selected.id)!.label}
-              </Badge>
+          <CardTitle className="text-base flex flex-wrap items-center justify-between gap-2">
+            <span className="flex flex-wrap items-center gap-2">
+              <span>{selected ? selected.title || 'Website chat' : 'Pick a conversation'}</span>
+              {selected && topics.get(selected.id) && (
+                <Badge className={topics.get(selected.id)!.className}>
+                  {topics.get(selected.id)!.label}
+                </Badge>
+              )}
+            </span>
+            {selected && (
+              <Button variant="ghost" size="icon-sm" onClick={closeThread} aria-label="Close conversation">
+                <X className="h-4 w-4" />
+              </Button>
             )}
           </CardTitle>
         </CardHeader>
