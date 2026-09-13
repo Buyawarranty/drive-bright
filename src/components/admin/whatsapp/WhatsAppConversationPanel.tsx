@@ -71,6 +71,34 @@ export const WhatsAppConversationPanel: React.FC<Props> = ({
     ? new Date(conversation.next_follow_up_at).toISOString().slice(0, 16)
     : '';
 
+  const toggleButton = (label: string) =>
+    setChosenButtons((prev) =>
+      prev.includes(label) ? prev.filter((b) => b !== label) : prev.length >= 3 ? prev : [...prev, label],
+    );
+
+  const handleSendButtons = async () => {
+    const text = draft.trim();
+    if (!text || chosenButtons.length === 0) return;
+    setSendingButtons(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('wati-send-buttons', {
+        body: { conversationId: conversation.id, message: text, buttons: chosenButtons },
+      });
+      if (error || (data as any)?.error) throw new Error(String((data as any)?.error || error?.message));
+      setDraft('');
+      setChosenButtons([]);
+      toast.success('Sent with buttons.');
+    } catch (e: any) {
+      toast.error(
+        String(e?.message || '').includes('wati_not_configured')
+          ? 'WhatsApp sending is not switched on yet - add the WATI details first.'
+          : 'That message could not be sent. Please try again.',
+      );
+    } finally {
+      setSendingButtons(false);
+    }
+  };
+
   const handleSend = async () => {
     const text = draft.trim();
     if (!text) return;
