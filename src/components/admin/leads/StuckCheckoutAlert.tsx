@@ -159,7 +159,7 @@ export const StuckCheckoutAlert: React.FC = () => {
           >
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
             <div className="min-w-0">
-              <p className="text-sm font-bold leading-tight">
+              <p className="text-sm font-bold leading-tight text-white">
                 {live.length === 1 ? 'Customer stuck on checkout' : `${live.length} customers stuck on checkout`}
               </p>
               <p className="text-[11px] text-white">{readyToCall} ready to call now</p>
