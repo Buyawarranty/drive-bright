@@ -14,6 +14,7 @@ import WhatsAppConversationPanel from './WhatsAppConversationPanel';
 import WhatsAppManagerDashboard from './WhatsAppManagerDashboard';
 import WhatsAppHotLeadAlerts from './WhatsAppHotLeadAlerts';
 import WhatsAppAutoMessageSettings from './WhatsAppAutoMessageSettings';
+import WhatsAppLeadImport from './WhatsAppLeadImport';
 
 import type { WhatsAppPipelineStatus } from '@/lib/whatsappPipeline';
 
@@ -127,6 +128,9 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
       )}
 
       {isManagement && <WhatsAppAutoMessageSettings />}
+      {isManagement && <WhatsAppLeadImport />}
+
+
 
 
       <Tabs defaultValue="queue">
