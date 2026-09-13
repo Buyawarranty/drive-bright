@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, oneYearRatio, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
 import { getVehiclePriceFactor } from '@/lib/pricing/vehicleFactorModel';
 import { logPriceOverride } from '@/lib/pricing/logPriceOverride';
-import { getNetPayableFloor } from '@/lib/pricing/netFloor';
+import { getNetPayableFloor, isUnderHardAbsoluteMin } from '@/lib/pricing/netFloor';
 import { quoteAuditStamp } from '@/lib/pricing/historicalPricing';
 import { getSoldVsReference } from '@/lib/pricing/soldVsReference';
 import { resolveHighestQuotedTotal } from '@/lib/pricing/quotedTotalLookup';
@@ -769,6 +769,20 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const handleConfirmPayment = async () => {
     // Prevent double-click race condition
     if (isConfirming) return;
+
+    // HARD £299 floor (13 Sep 2026): nobody — not even management, an approved
+    // authorisation or an evidenced price match — may confirm a non-motorbike
+    // sale below £299.
+    const hardAmount = parseFloat(paymentAmount);
+    const isMotorbikeSale = /motor\s*(bike|cycle)|\bbike\b/i.test(String((vehicleData as any)?.vehicleType || ''));
+    if (isUnderHardAbsoluteMin(hardAmount, isMotorbikeSale)) {
+      toast({
+        title: "£299 absolute minimum",
+        description: "No sale can be confirmed below £299 under any circumstances. Only website motorbike warranties may go lower.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Minimum customer record: full name, email and phone.
     if (!editableFirstName.trim() || !editableLastName.trim() || !editableCustomerEmail.trim() || !editableCustomerPhone.trim()) {

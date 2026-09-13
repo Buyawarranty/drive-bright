@@ -29,6 +29,23 @@ import { getAbsoluteMinimumTotal, type PaymentPeriod, type PricingSurface } from
  */
 export const GLOBAL_ABSOLUTE_MIN_TOTAL = 399;
 
+/**
+ * HARD absolute minimum (13 Sep 2026): no sale, on any surface, confirmed by
+ * anyone — including management overrides, approved authorisations and
+ * evidenced price matches — may ever complete below £299. The ONLY exception
+ * is motorbikes on the website (half-price floor £199.50).
+ */
+export const HARD_ABSOLUTE_MIN_TOTAL = 299;
+
+/** True when a non-motorbike sale amount breaches the hard £299 absolute minimum. */
+export function isUnderHardAbsoluteMin(amount: unknown, isMotorbike?: boolean): boolean {
+  if (isMotorbike) return false;
+  const v = typeof amount === 'number'
+    ? amount
+    : parseFloat(String(amount ?? '').replace(/[^0-9.]/g, ''));
+  return Number.isFinite(v) && v > 0 && v < HARD_ABSOLUTE_MIN_TOTAL - 0.01;
+}
+
 /** Flat net floor by term, before option shaping and motorbike halving. */
 export const NET_FLOOR_BY_PERIOD: Record<PaymentPeriod, number> = {
   '12months': 399,

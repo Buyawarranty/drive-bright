@@ -27,3 +27,13 @@ Enforcement points (all must stay in sync):
 
 Management override below the floor still exists ONLY on the admin
 Confirm External Payment path (logged to `price_override_audit`).
+
+**Hard £299 absolute minimum (13 Sep 2026):** no non-motorbike sale may
+complete below £299 under ANY circumstances — management overrides, approved
+authorisations and price matches included. Only website motorbikes are exempt
+(half-price floor £199.50). Enforced by `HARD_ABSOLUTE_MIN_TOTAL` /
+`isUnderHardAbsoluteMin` in `src/lib/pricing/netFloor.ts`, gated at the top of
+`handleConfirmPayment` in `ConfirmExternalPaymentTab.tsx` and the confirm
+handler in `GetQuoteTab.tsx`, and as a backstop in
+`supabase/functions/_shared/price-floor.ts`. Live manager TEST codes keep the
+£1 QA floor.
