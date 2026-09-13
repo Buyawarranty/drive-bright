@@ -221,8 +221,8 @@ export function CallMeBackPanel({
             : step === 'claimsInfo'
               ? 'Making a claim'
               : step === 'number'
-                ? 'Leave us your number'
-                : 'Confirm your number'}
+                ? 'Leave us your number or email'
+                : 'Confirm your details'}
         </p>
         <button
           onClick={() => {
