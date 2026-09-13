@@ -127,7 +127,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
       const [agentsRes, teamRes, eventsRes] = await Promise.all([
         supabase
           .from('admin_users')
-          .select('id, first_name, last_name, email, role, sip_extension')
+          .select('id, first_name, last_name, email, role, sip_extension, is_active')
           .in('role', ['sales', 'sales_lead']),
         supabase
           .from('lead_team_members')
