@@ -215,20 +215,36 @@ Deno.serve(async (req) => {
     );
     if (msgErr) console.error('message insert failed:', msgErr.message);
 
-    // ---- out-of-hours automatic reply --------------------------------------
-    let awayReplySent = false;
+    // ---- opt out / opt back in ---------------------------------------------
+    let optOut: 'out' | 'in' | null = null;
     try {
-      awayReplySent = await maybeSendAwayReply(supabase, {
+      optOut = await handleOptOutKeywords(supabase, {
         conversationId,
-        phoneNormalized,
-        lastAwayReplyAt: existing?.last_away_reply_at ?? null,
+        leadId: (existing?.lead_id as string | null) ?? null,
+        body,
+        alreadyOptedOut: Boolean(existing?.opted_out_at),
       });
     } catch (e: any) {
-      console.error('away reply failed:', e?.message || e);
+      console.error('opt-out handling failed:', e?.message || e);
+    }
+
+    // ---- out-of-hours automatic reply --------------------------------------
+    let awayReplySent = false;
+    if (optOut !== 'out' && !(existing?.opted_out_at && optOut !== 'in')) {
+      try {
+        awayReplySent = await maybeSendAwayReply(supabase, {
+          conversationId,
+          phoneNormalized,
+          lastAwayReplyAt: existing?.last_away_reply_at ?? null,
+        });
+      } catch (e: any) {
+        console.error('away reply failed:', e?.message || e);
+      }
     }
 
     return json({
       away_reply_sent: awayReplySent,
+      opt_out: optOut,
       ok: true,
       conversation_id: conversationId,
       heat: scored.heat,
