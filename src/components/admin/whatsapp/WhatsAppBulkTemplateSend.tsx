@@ -159,6 +159,11 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preset, since]);
 
+  useEffect(() => {
+    void loadAuto();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const sendable = useMemo(
     () => leads.filter((l) => hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status))),
     [leads],
