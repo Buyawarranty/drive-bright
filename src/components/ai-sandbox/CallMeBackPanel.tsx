@@ -169,7 +169,7 @@ export function CallMeBackPanel({
       return (
         <button
           type="button"
-          onClick={() => setStep('topic')}
+          onClick={() => setStep('number')}
           title="All our agents are busy - leave your number or email and we'll call, WhatsApp or email you back"
           className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
         >
@@ -217,7 +217,7 @@ export function CallMeBackPanel({
           )}
         </div>
         <Button
-          onClick={() => setStep('topic')}
+          onClick={() => setStep('number')}
           variant="outline"
           className="h-10 shrink-0 rounded-xl border-border bg-background text-sm font-bold shadow-sm hover:bg-muted"
         >
@@ -243,7 +243,7 @@ export function CallMeBackPanel({
         <p className="flex items-center gap-2 text-base font-bold text-foreground">
           <MessageCircle className="h-4 w-4 shrink-0 text-primary" />
           {step === 'topic'
-            ? 'All our agents are busy right now'
+            ? "What's it about? (optional)"
             : step === 'claimsInfo'
               ? 'Making a claim'
               : step === 'number'
