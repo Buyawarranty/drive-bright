@@ -5,10 +5,17 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { Loader2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import WhatsAppTemplateSelect from './WhatsAppTemplateSelect';
+
+interface AutoSettings {
+  id: string;
+  is_enabled: boolean;
+  template_name: string;
+}
 
 interface LeadRow {
   id: string;
