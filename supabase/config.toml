@@ -338,3 +338,6 @@ verify_jwt = false
 
 [functions.wati-webhook]
 verify_jwt = false
+
+[functions.wati-auto-message]
+verify_jwt = false
