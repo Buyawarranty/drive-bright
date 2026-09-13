@@ -78,9 +78,18 @@ Deno.serve(async (req) => {
       let conversationId: string | null = null;
       const { data: existing } = await supabase
         .from('whatsapp_conversations')
-        .select('id')
+        .select('id, opted_out_at')
         .eq('phone_normalized', phone)
         .maybeSingle();
+
+      // Never message someone who replied STOP.
+      if (existing?.opted_out_at) {
+        await supabase
+          .from('whatsapp_auto_message_queue')
+          .update({ status: 'skipped', last_error: 'Customer opted out of WhatsApp messages' })
+          .eq('id', row.id);
+        continue;
+      }
 
       if (existing?.id) {
         conversationId = existing.id;
