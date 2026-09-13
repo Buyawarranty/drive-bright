@@ -12,6 +12,7 @@ import {
   Lock,
   ArrowRight,
   ChevronRight,
+  Check,
   CheckCheck,
   X,
   Smile,
