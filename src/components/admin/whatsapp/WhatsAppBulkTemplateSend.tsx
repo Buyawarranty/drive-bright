@@ -222,6 +222,37 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
       <CardContent className="space-y-4">
         <WhatsAppTemplateSelect value={template} onChange={setTemplate} id="wa-bulk-template" />
 
+        {autoSettings && (
+          <div className="space-y-2 rounded-md border border-border p-3">
+            <div className="flex items-center justify-between gap-4">
+              <Label htmlFor="wa-auto-toggle" className="font-medium">
+                Automatically send this template to every new lead
+              </Label>
+              <Switch
+                id="wa-auto-toggle"
+                checked={autoSettings.is_enabled}
+                disabled={autoSaving}
+                onCheckedChange={(v) => void toggleAuto(v)}
+              />
+            </div>
+            {autoSettings.is_enabled &&
+              autoSettings.template_name !== template.trim() &&
+              template.trim() && (
+                <p className="text-xs text-muted-foreground">
+                  Automatic messages currently use "{autoSettings.template_name}". Switch this off
+                  and back on to use "{template.trim()}" instead.
+                </p>
+              )}
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary">Waiting to send: {autoCounts.pending}</Badge>
+              <Badge variant="secondary">Sent: {autoCounts.sent}</Badge>
+              <Badge variant={autoCounts.failed ? 'destructive' : 'secondary'}>
+                Not delivered: {autoCounts.failed}
+              </Badge>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-wrap gap-2">
           {presets.map((p) => (
             <Button
