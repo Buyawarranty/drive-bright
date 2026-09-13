@@ -206,8 +206,7 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
             {mine.length > 0 && <Badge className="ml-2">{mine.length}</Badge>}
           </TabsTrigger>
           {isManagement && <TabsTrigger value="dashboard">Dashboard</TabsTrigger>}
-          {isManagement && <TabsTrigger value="broadcast">Send templates</TabsTrigger>}
-          {isManagement && <TabsTrigger value="import">Import leads</TabsTrigger>}
+          {isManagement && <TabsTrigger value="broadcast">Send templates &amp; import</TabsTrigger>}
           {isManagement && <TabsTrigger value="autoreply">Out-of-hours reply</TabsTrigger>}
           {isManagement && <TabsTrigger value="analytics">Analytics</TabsTrigger>}
         </TabsList>
@@ -310,13 +309,8 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
         )}
 
         {isManagement && (
-          <TabsContent value="broadcast" className="mt-3">
+          <TabsContent value="broadcast" className="mt-3 space-y-3">
             <WhatsAppBulkTemplateSend />
-          </TabsContent>
-        )}
-
-        {isManagement && (
-          <TabsContent value="import" className="mt-3">
             <WhatsAppLeadImport />
           </TabsContent>
         )}
