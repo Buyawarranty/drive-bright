@@ -60,21 +60,22 @@ export function clearAppliedPromos() {
 }
 
 /** Discount amount (in pounds, integer) for a given base price. */
-export function calcPromoDiscount(basePrice: number, codes: PersistedPromoCode[] = readAppliedPromos()): number {
+export function calcPromoDiscount(basePrice: number, codes: PersistedPromoCode[] = readAppliedPromos(), termFloorGBP?: number): number {
   if (!codes.length || basePrice <= 0) return 0;
   const raw = codes.reduce((sum, c) => {
     const amt = c.type === 'percentage' ? basePrice * (c.value / 100) : c.value;
     return sum + (Number.isFinite(amt) ? amt : 0);
   }, 0);
-  // Cap so we never go below the applicable price floor (£120 normally,
-  // £1 for manager TEST codes) — keeps Step 3 and Step 4 totals identical.
-  const floor = promoPriceFloor(codes);
+  // Cap so we never go below the applicable price floor (the term net sell
+  // floor — £399/£769/£1,099 — when passed, £120 otherwise, £1 for manager
+  // TEST codes) — keeps Step 3 and Step 4 totals identical.
+  const floor = promoPriceFloor(codes, termFloorGBP);
   return Math.min(Math.floor(raw), Math.max(0, basePrice - floor));
 }
 
 /** Price floor that applies given the persisted promo codes. */
-export function promoPriceFloor(codes: PersistedPromoCode[] = readAppliedPromos()): number {
-  return minimumPriceForCodes(codes as Array<{ code: string }>);
+export function promoPriceFloor(codes: PersistedPromoCode[] = readAppliedPromos(), termFloorGBP?: number): number {
+  return minimumPriceForCodes(codes as Array<{ code: string }>, termFloorGBP);
 }
 
 /** React hook: re-renders when the persisted promo changes (incl. cross-tab). */
