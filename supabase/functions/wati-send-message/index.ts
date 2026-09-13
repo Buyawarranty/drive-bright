@@ -51,10 +51,16 @@ Deno.serve(async (req) => {
 
   const { data: conv } = await admin
     .from('whatsapp_conversations')
-    .select('id, phone_normalized, assigned_to, last_message_at, last_agent_reply_at, first_response_seconds')
+    .select('id, phone_normalized, assigned_to, opted_out_at, last_message_at, last_agent_reply_at, first_response_seconds')
     .eq('id', conversationId)
     .maybeSingle();
   if (!conv) return json({ error: 'conversation_not_found' }, 404);
+  if (conv.opted_out_at) {
+    return json(
+      { error: 'opted_out', details: 'This customer asked to stop receiving WhatsApp messages.' },
+      403,
+    );
+  }
 
   const { data: canManage } = await admin.rpc('can_manage_lead_routing', { _user_id: userId });
   if (conv.assigned_to !== adminUser.id && canManage !== true) {
