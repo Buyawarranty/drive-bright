@@ -36,9 +36,14 @@ export function lazyWithRetry<T extends ComponentType<any>>(
       }
     }
     // A stale build can never be fixed by retrying the same (now missing) file —
-    // drop the cached app and come back on the new one.
+    // drop the cached app and come back on the new one. Render a quiet
+    // placeholder instead of throwing, so the page never goes blank while the
+    // cache-busted reload is on its way.
     if (isStaleBuildError(lastError)) {
       void recoverFromStaleBuild();
+      const Placeholder = () =>
+        createElement('div', { className: 'min-h-[300px]', 'aria-hidden': true });
+      return { default: Placeholder as unknown as T };
     }
     throw lastError;
   });
