@@ -76,6 +76,55 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
   const [autoSettings, setAutoSettings] = useState<AutoSettings | null>(null);
   const [autoCounts, setAutoCounts] = useState({ pending: 0, sent: 0, failed: 0 });
   const [autoSaving, setAutoSaving] = useState(false);
+  const [sendLater, setSendLater] = useState('');
+  const [scheduled, setScheduled] = useState<ScheduledBatch[]>([]);
+
+  const loadScheduled = async () => {
+    const { data } = await supabase
+      .from('whatsapp_auto_message_queue')
+      .select('batch_label, template_name, next_attempt_at')
+      .eq('status', 'pending')
+      .gt('next_attempt_at', new Date(Date.now() + 60 * 1000).toISOString())
+      .order('next_attempt_at', { ascending: true })
+      .limit(1000);
+    if (!data) return;
+    const grouped = new Map<string, ScheduledBatch>();
+    for (const row of data as {
+      batch_label: string | null;
+      template_name: string | null;
+      next_attempt_at: string;
+    }[]) {
+      const key = row.batch_label || '';
+      const existing = grouped.get(key);
+      if (existing) {
+        existing.count += 1;
+        if (row.next_attempt_at < existing.send_at) existing.send_at = row.next_attempt_at;
+      } else {
+        grouped.set(key, {
+          batch_label: key,
+          template_name: row.template_name,
+          send_at: row.next_attempt_at,
+          count: 1,
+        });
+      }
+    }
+    setScheduled(Array.from(grouped.values()).sort((a, b) => (a.send_at < b.send_at ? -1 : 1)));
+  };
+
+  const cancelScheduled = async (batchLabel: string) => {
+    const { error } = await supabase
+      .from('whatsapp_auto_message_queue')
+      .delete()
+      .eq('status', 'pending')
+      .eq('batch_label', batchLabel);
+    if (error) {
+      toast.error('That scheduled batch could not be cancelled.');
+      return;
+    }
+    toast.success('Scheduled batch cancelled — nothing will be sent.');
+    void loadScheduled();
+    void loadAuto();
+  };
 
   const loadAuto = async () => {
     const { data } = await supabase
