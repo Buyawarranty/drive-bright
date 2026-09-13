@@ -440,6 +440,24 @@ function PriceOptionsPanel({
           <OptionRow label="Claim limit" options={LIMIT_OPTIONS} value={limit} onChange={setLimit} format={(v) => `£${v.toLocaleString()}`} />
           <OptionRow label="Excess" options={EXCESS_OPTIONS} value={excess} onChange={setExcess} format={(v) => `£${v}`} />
           <OptionRow label="Labour rate" options={LABOUR_OPTIONS} value={labour} onChange={setLabour} format={(v) => `£${v}/hr`} />
+          {priceRequested && (
+            <div className="col-span-full flex justify-end">
+              <Button
+                size="sm"
+                disabled={disabled}
+                className="gap-2 bg-[#001F3F] font-bold text-white shadow-sm hover:bg-[#002a55]"
+                onClick={() => {
+                  setOptionsOpen(false);
+                  onSend(
+                    `Update my price for: ${combo}. Reply with the total price in £ on the first line, and the monthly amount if paying over 12 instalments.`,
+                  );
+                }}
+              >
+                Update my price
+                <ArrowRight className="h-4 w-4 shrink-0 text-white" />
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
