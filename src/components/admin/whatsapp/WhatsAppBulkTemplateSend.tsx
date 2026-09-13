@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Send } from 'lucide-react';
+import { CalendarClock, Loader2, Send, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import WhatsAppTemplateSelect from './WhatsAppTemplateSelect';
@@ -25,6 +25,13 @@ interface LeadRow {
   status: string | null;
   lead_source: string | null;
   created_at: string;
+}
+
+interface ScheduledBatch {
+  batch_label: string;
+  template_name: string | null;
+  send_at: string;
+  count: number;
 }
 
 type Preset = 'newest20' | 'newest50' | 'newest100' | 'since6pm' | 'today' | 'custom';
