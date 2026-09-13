@@ -36,20 +36,24 @@ Deno.serve(async (req) => {
     .limit(1)
     .maybeSingle();
 
-  if (!settings || settings.is_enabled !== true) {
-    return json({ ok: true, skipped: 'auto_messaging_off' });
-  }
+  // Imported batches are sent even when automatic messaging for new website
+  // leads is switched off, because someone asked for them by hand.
+  const autoOn = settings?.is_enabled === true;
 
   const endpoint = (Deno.env.get('WATI_API_ENDPOINT') || '').replace(/\/+$/, '');
   const token = Deno.env.get('WATI_ACCESS_TOKEN');
   if (!endpoint || !token) return json({ error: 'wati_not_configured' }, 503);
   const auth = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
-  const { data: queued, error: queueErr } = await supabase
+  let query = supabase
     .from('whatsapp_auto_message_queue')
-    .select('id, lead_id, phone_normalized, display_name, attempts')
+    .select('id, lead_id, phone_normalized, display_name, attempts, template_name, force_send')
     .eq('status', 'pending')
-    .lte('next_attempt_at', new Date().toISOString())
+    .lte('next_attempt_at', new Date().toISOString());
+
+  if (!autoOn) query = query.eq('force_send', true);
+
+  const { data: queued, error: queueErr } = await query
     .order('created_at', { ascending: true })
     .limit(20);
 
@@ -63,6 +67,11 @@ Deno.serve(async (req) => {
     const phone = row.phone_normalized;
     const localPhone = phone.startsWith('44') ? `0${phone.slice(2)}` : phone;
     const firstName = (row.display_name || '').split(/\s+/)[0] || 'there';
+    const rowTemplate = (row.template_name || settings?.template_name || '').trim();
+    if (!rowTemplate) {
+      failed += 1;
+      continue;
+    }
 
     try {
       // ---- find or create the conversation so the thread is visible in the CRM
@@ -102,7 +111,7 @@ Deno.serve(async (req) => {
         method: 'POST',
         headers: { Authorization: auth, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          template_name: settings.template_name,
+          template_name: rowTemplate,
           broadcast_name: `crm_new_lead_${new Date().toISOString().slice(0, 10)}`,
           parameters: [{ name: 'name', value: firstName }],
         }),
@@ -123,7 +132,7 @@ Deno.serve(async (req) => {
       const watiMessageId = String(
         body?.message?.whatsappMessageId || body?.message?.id || `auto-${row.id}`,
       );
-      const preview = `Automatic WhatsApp message sent (${settings.template_name})`;
+      const preview = `Automatic WhatsApp message sent (${rowTemplate})`;
 
       await supabase.from('whatsapp_messages').upsert(
         {
