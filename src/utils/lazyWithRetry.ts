@@ -1,4 +1,4 @@
-import { lazy, type ComponentType } from 'react';
+import { lazy, createElement, type ComponentType } from 'react';
 
 /**
  * Lazy loader that survives a flaky or stale chunk fetch.
