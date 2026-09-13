@@ -19,6 +19,10 @@ function prettyPhone(raw: string): string {
   return raw;
 }
 
+function validEmail(raw: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw.trim());
+}
+
 type Step = 'closed' | 'topic' | 'claimsInfo' | 'number' | 'confirm' | 'done';
 type Preference = 'call' | 'whatsapp';
 type Topic = 'warranty_purchase' | 'general' | 'existing_policy' | 'other';
