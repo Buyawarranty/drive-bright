@@ -64,7 +64,7 @@ import {
 import { getExcessMonthlyDelta } from '@/lib/pricingMatrix';
 import { JOURNEY_EXCESS_OPTIONS } from '@/lib/pricing/journeyOptions';
 import { MIN_BASE_PRICE_BY_PERIOD } from '@/lib/pricingMatrix';
-import { getNetPayableFloor, NET_FLOOR_BY_PERIOD } from '@/lib/pricing/netFloor';
+import { getNetPayableFloor, isUnderHardAbsoluteMin, NET_FLOOR_BY_PERIOD } from '@/lib/pricing/netFloor';
 import { BaseFloorNotice } from '@/components/admin/pricing/BaseFloorNotice';
 
 import { priceFromPricingModel } from './pricing/modelQuoteEngine';
@@ -3534,6 +3534,17 @@ Questions? Call 0330 229 5040`;
 
     // Price validation - allow override, just show warning in UI (no blocking)
     const confirmedAmount = parseFloat(paymentAmount);
+
+    // HARD £299 floor (13 Sep 2026): no sale below £299 under any circumstances
+    // — management overrides and price matches included. Website motorbikes excepted.
+    if (isUnderHardAbsoluteMin(confirmedAmount, isMotorbikeQuote)) {
+      toast({
+        title: "£299 absolute minimum",
+        description: "No sale can be confirmed below £299 under any circumstances. Only website motorbike warranties may go lower.",
+        variant: "destructive",
+      });
+      return;
+    }
     // Pre-discount list price for this sale = the grid total. The discount is
     // everything given away from that list price, whether it came from a pushed
     // quote or from typing a lower figure in the confirm box, so the CRM, the
