@@ -938,11 +938,11 @@ Deno.serve(async (req) => {
     }).format(new Date());
     const isWeekend = londonWeekday === "Sat" || londonWeekday === "Sun";
     const weekendRule = isWeekend
-      ? " It is the WEEKEND: the sales phone line is not staffed, so do NOT give out the sales number 0330 229 5040 and do not tell anyone to call. Take their phone number or email instead and note whether they prefer a call, WhatsApp or email, then call capture_lead. Claims questions still get the claims line 0330 229 5045 (Monday to Friday, 9am to 5pm) and buyawarranty.co.uk/make-a-claim/."
+      ? " It is the WEEKEND: the sales phone line is not staffed, so do NOT give out the sales number 0330 229 5040 and do not tell anyone to call. Show the contact card instead (end your reply with the marker [[CONTACT_CARD]]) so they can leave a number or email for a call, WhatsApp or email back. Claims questions still get the claims line 0330 229 5045 (Monday to Friday, 9am to 5pm) and buyawarranty.co.uk/make-a-claim/."
       : "";
     const liveContext = `\n\nRight now: ${now.local_time}. The team is ${
       now.is_open ? "OPEN" : `CLOSED (back ${now.next_open})`
-    }. Opening hours are ${now.opening_hours}.${weekendRule} There is NO live chat handover: never say a specialist is joining, connecting, alerted or online. If the customer wants a person, give the sales line 0330 229 5040 and offer to take their phone number or email so the team calls, WhatsApps or emails them back, then call capture_lead.\nIf a message in the conversation begins with "(Warranty specialist)" a member of staff has replied in this chat — stay out of the way and only reply if the customer asks you directly.`;
+    }. Opening hours are ${now.opening_hours}.${weekendRule} There is NO live chat handover: never say a specialist is joining, connecting, alerted or online. If the customer wants a person, end your reply with the marker [[CONTACT_CARD]] so the contact card appears for them to leave a phone number or email for a call, WhatsApp or email back, and only mention the sales line 0330 229 5040 if they ask for a number.\nIf a message in the conversation begins with "(Warranty specialist)" a member of staff has replied in this chat — stay out of the way and only reply if the customer asks you directly.`;
 
 
     const modelMessages = await convertToModelMessages(
