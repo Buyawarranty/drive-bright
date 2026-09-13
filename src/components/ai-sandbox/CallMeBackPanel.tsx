@@ -62,7 +62,7 @@ export function CallMeBackPanel({
   /** Render expanded straight away at the topic step (inline in the chat stream). */
   autoOpen?: boolean;
 }) {
-  const [step, setStep] = useState<Step>(autoOpen ? 'topic' : 'closed');
+  const [step, setStep] = useState<Step>(autoOpen ? 'number' : 'closed');
   const [collapsed, setCollapsed] = useState(!autoOpen);
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -120,23 +120,46 @@ export function CallMeBackPanel({
   };
 
   if (step === 'done') {
-    const contactLabel = isEmail ? 'Email' : isWhatsApp ? 'WhatsApp' : 'Call';
+    const contactLabel = isEmail ? 'Email' : isWhatsApp ? 'WhatsApp number' : 'Number';
     const destination = isEmail ? email : prettyPhone(phone);
     return (
-      <div className={`${asChip ? '' : 'mx-3'} mb-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-900`}>
-        <p className="flex items-center gap-1.5 font-semibold">
-          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600">
-            <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
+      <div className={`${asChip ? '' : 'mx-3'} mb-2 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3.5 text-emerald-900`}>
+        <p className="flex items-center gap-2 text-sm font-bold">
+          <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-600">
+            <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
           </span>
-          {contactLabel} saved for {destination}
+          All sorted - {contactLabel.toLowerCase()} saved
         </p>
-        <p className="mt-1 leading-relaxed">
+        <p className="mt-2 text-xs leading-relaxed">
+          <span className="font-semibold">{destination}</span>
+          {topic ? ` · ${TOPIC_LABELS[topic]}` : ''}
+        </p>
+        <p className="mt-1.5 text-xs leading-relaxed">
           {isEmail
-            ? `A UK warranty specialist will email you ${open ? whenLabel : `${nextOpeningLabel()} and you're first in the queue`} (${openingHoursLabel}).`
+            ? `A UK warranty specialist will email you ${open ? whenLabel : `${nextOpeningLabel()} - you're first in the queue`} (${openingHoursLabel}).`
             : open
               ? `A UK warranty specialist will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} ${whenLabel}. Have any competitor quote handy - we'll beat it.`
-              : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you back ${nextOpeningLabel()} and you're first in the queue (${openingHoursLabel}).`}
+              : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you back ${nextOpeningLabel()} - you're first in the queue (${openingHoursLabel}).`}
         </p>
+        <div className="mt-3 flex gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              setStep('number');
+            }}
+            className="flex h-9 flex-1 items-center justify-center rounded-xl border border-emerald-400 bg-background text-xs font-bold text-emerald-900 transition-colors hover:bg-emerald-100"
+          >
+            Update details
+          </button>
+          <button
+            type="button"
+            onClick={() => setStep('closed')}
+            className="flex h-9 flex-1 items-center justify-center rounded-xl bg-emerald-600 text-xs font-bold text-white transition-colors hover:bg-emerald-700"
+          >
+            Continue chatting
+          </button>
+        </div>
       </div>
     );
   }
