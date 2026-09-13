@@ -86,7 +86,8 @@ export function CallMeBackPanel({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone,
+          phone: isEmail ? '' : phone,
+          email: isEmail ? email.trim() : '',
           name,
           contactPreference: preference,
           topic: topic ?? 'other',
