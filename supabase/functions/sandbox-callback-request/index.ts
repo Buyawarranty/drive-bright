@@ -182,7 +182,7 @@ Deno.serve(async (req) => {
           phone,
           vehicle_reg: registration || null,
           quote_amount: quotedPrice,
-          status: "urgent_callback",
+          status: "new",
           is_callback: true,
           next_action_type: "call",
           next_action_at: plan.callAt.toISOString(),
@@ -242,7 +242,7 @@ Deno.serve(async (req) => {
         await admin.from("ai_sandbox_handovers").insert({
           thread_id: resolvedThread,
           kind: "callback_request",
-          reason: `${plan.isOpen ? "message_me_back_now" : "message_me_back_next_opening"} (${contactPreference})`,
+          reason: `${plan.isOpen ? "message_me_back_now" : "message_me_back_next_opening"} (${contactPreference}, ${topicLabel})`,
           customer_name: name || null,
           customer_email: email || null,
           customer_phone: phone,
