@@ -142,6 +142,23 @@ function stripPrefix(text: string) {
   return text.startsWith(AGENT_PREFIX) ? text.slice(AGENT_PREFIX.length).trim() : text;
 }
 
+// Streamdown links full https:// URLs automatically. Convert plain domains
+// such as buyawarranty.co.uk/make-a-claim/ into safe Markdown links too.
+function linkifyChatUrls(text: string) {
+  const bareUrl = /(^|[\s(])((?:www\.)?(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}(?:\/[^\s<]*)?)/gi;
+
+  return text.replace(bareUrl, (match, prefix: string, rawUrl: string, offset: number) => {
+    const domainOffset = offset + prefix.length;
+    if (text.slice(Math.max(0, domainOffset - 2), domainOffset) === '](') return match;
+
+    const trailing = rawUrl.match(/[),.!?;:]+$/)?.[0] ?? '';
+    const url = trailing ? rawUrl.slice(0, -trailing.length) : rawUrl;
+    if (!url) return match;
+
+    return `${prefix}[${url}](https://${url})${trailing}`;
+  });
+}
+
 
 
 function rowsToUIMessages(
@@ -1112,20 +1129,20 @@ export function SandboxChatWindow({
                       if (message.role !== 'user') {
                         const clean = agentMode ? text : sanitizeForCustomer(text);
                         if (!clean) return null;
-                        const { body, question } = splitTrailingQuestion(clean);
+                        const { body, question } = splitTrailingQuestion(linkifyChatUrls(clean));
                         return (
 
                           <div key={i}>
-                            {body && <MessageResponse className={CHAT_TEXT}>{body}</MessageResponse>}
+                            {body && <MessageResponse className={`${CHAT_TEXT} [&_a]:font-semibold [&_a]:text-primary [&_a]:underline`}>{body}</MessageResponse>}
                             {question && (
-                              <p className="mt-2 border-l-2 border-primary pl-3 text-base font-semibold leading-relaxed text-primary">
+                              <MessageResponse className="mt-2 border-l-2 border-primary pl-3 text-base font-semibold leading-relaxed text-primary [&_a]:underline">
                                 {question}
-                              </p>
+                              </MessageResponse>
                             )}
                           </div>
                         );
                       }
-                      return <MessageResponse key={i} className={`${CHAT_TEXT} text-primary-foreground [&_p]:text-primary-foreground`}>{text}</MessageResponse>;
+                      return <MessageResponse key={i} className={`${CHAT_TEXT} text-primary-foreground [&_a]:font-semibold [&_a]:text-primary-foreground [&_a]:underline [&_p]:text-primary-foreground`}>{linkifyChatUrls(text)}</MessageResponse>;
                     }
 
                     // Photos the visitor attached, shown WhatsApp-style inside
