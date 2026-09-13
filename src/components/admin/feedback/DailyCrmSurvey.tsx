@@ -502,7 +502,7 @@ export const DailyCrmSurveyPrompt: React.FC<{
   return (
     <>
       <Dialog open={!formOpen} onOpenChange={(o) => !o && dismiss()}>
-        <DialogContent className="crm-survey-theme max-w-md overflow-hidden border-primary/20 p-0 font-crm-body">
+        <DialogContent className="crm-survey-theme max-w-md overflow-hidden border-primary/20 p-0 font-crm-body" largeCloseButton>
           <div className="h-2 bg-accent" />
           <div className="space-y-5 p-6">
           <DialogHeader>
