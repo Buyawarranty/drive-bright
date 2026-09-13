@@ -13,6 +13,8 @@ import WhatsAppLeadCard from './WhatsAppLeadCard';
 import WhatsAppConversationPanel from './WhatsAppConversationPanel';
 import WhatsAppManagerDashboard from './WhatsAppManagerDashboard';
 import WhatsAppHotLeadAlerts from './WhatsAppHotLeadAlerts';
+import WhatsAppAutoMessageSettings from './WhatsAppAutoMessageSettings';
+
 import type { WhatsAppPipelineStatus } from '@/lib/whatsappPipeline';
 
 interface Props {
