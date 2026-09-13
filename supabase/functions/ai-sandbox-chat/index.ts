@@ -923,7 +923,7 @@ Deno.serve(async (req) => {
             lead_id: data.id,
             pipeline_lead: pipeline,
             next_open: state.next_open,
-            note: "Lead saved. Confirm to the customer when a specialist will be in touch and offer to finish the purchase now with a test payment link.",
+            note: "Details saved. Tell the customer the team will call or WhatsApp them back (shortly if open, otherwise at the next opening time) and offer to keep helping here meanwhile.",
           });
         },
 
@@ -932,17 +932,9 @@ Deno.serve(async (req) => {
 
 
     const now = availability();
-    const onlineNow = await specialistsOnline();
-    const liveContext = `\n\nRight now: ${now.local_time}. Live chat is ${
-      now.is_open ? "OPEN and available for a live handover" : `CLOSED (the team reopens ${now.next_open})`
-    }. Opening hours are ${now.opening_hours}. Specialists ONLINE RIGHT NOW in live chat: ${onlineNow}${
-      onlineNow > 0
-        ? " — a real person can pick this chat up within seconds, so offer that whenever the customer hesitates or wants to buy."
-        : now.is_open
-          ? " — nobody is sat in live chat this second, but WE ARE OPEN: never say we are closed or give a reopen time. If they ask for a human, call connect_live_agent anyway — it rings every manager and staff member in the CRM — and also take their phone number as a backup."
-          : " — nobody is sat in live chat this second, so do not promise an instant human; offer a callback or keep helping yourself."
-
-    }.\nIf a message in the conversation begins with "(Warranty specialist)" a human has joined this chat — stay out of the way and only reply if the customer asks you directly.`;
+    const liveContext = `\n\nRight now: ${now.local_time}. The team is ${
+      now.is_open ? "OPEN" : `CLOSED (back ${now.next_open})`
+    }. Opening hours are ${now.opening_hours}. There is NO live chat handover: never say a specialist is joining, connecting, alerted or online. If the customer wants a person, give the sales line 0330 229 5040 and offer to take their phone number so the team calls or WhatsApps them back, then call capture_lead.\nIf a message in the conversation begins with "(Warranty specialist)" a member of staff has replied in this chat — stay out of the way and only reply if the customer asks you directly.`;
 
 
     const modelMessages = await convertToModelMessages(
