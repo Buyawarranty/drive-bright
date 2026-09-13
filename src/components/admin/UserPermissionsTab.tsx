@@ -1859,7 +1859,6 @@ export const UserPermissionsTab = () => {
                               <Label htmlFor={permission.permission_key} className="text-sm font-medium">
                                 {permission.permission_name}
                               </Label>
-                              <p className="text-xs text-muted-foreground">{permission.description}</p>
                             </div>
                           </div>
                         ))}
