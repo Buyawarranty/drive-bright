@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageSquare, UserPlus, RefreshCw, Search, CheckCircle2, Send } from 'lucide-react';
+import { classifyChatTopic, type ChatTopicTag } from '@/lib/chatTopicTags';
 
 type Thread = {
   id: string;
