@@ -351,9 +351,14 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
         )}
 
         {isManagement && (
-          <TabsContent value="broadcast" className="mt-3 space-y-3">
-            <WhatsAppBulkTemplateSend />
+          <TabsContent value="import" className="mt-3">
             <WhatsAppLeadImport />
+          </TabsContent>
+        )}
+
+        {isManagement && (
+          <TabsContent value="broadcast" className="mt-3">
+            <WhatsAppBulkTemplateSend />
           </TabsContent>
         )}
 
