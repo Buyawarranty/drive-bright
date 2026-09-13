@@ -650,7 +650,7 @@ export function SandboxChatWindow({
           }
         }
         setSpecialistJoined(true);
-        setHoldState((prev) => (prev === 'on_hold' || prev === 'connecting' ? 'joined' : prev));
+        
         setMessages((prev) => [
           ...prev,
           ...fresh.map(
