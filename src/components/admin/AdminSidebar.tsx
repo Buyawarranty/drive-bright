@@ -757,6 +757,11 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     ]);
     const priceUpdatesAllowed = !!userRole && PRICE_UPDATES_ROLES.has(userRole);
     let base = priceUpdatesAllowed ? withPerms : withPerms.filter(t => t.id !== 'price-updates');
+    // WhatsApp Leads is hard-restricted to management only (admin, super_admin,
+    // sales_manager), regardless of any per-user tab permission grant.
+    const WHATSAPP_LEADS_ROLES = new Set(['admin', 'super_admin', 'sales_manager']);
+    const whatsappLeadsAllowed = !!userRole && WHATSAPP_LEADS_ROLES.has(userRole);
+    if (!whatsappLeadsAllowed) base = base.filter(t => t.id !== 'whatsapp-leads');
     if (!workstreamFlags) return base;
     return base.filter(t => {
 
