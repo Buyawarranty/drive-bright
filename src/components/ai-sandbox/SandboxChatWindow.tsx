@@ -409,15 +409,6 @@ function PriceOptionsPanel({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          {priceRequested && (
-            <button
-              type="button"
-              onClick={() => setOptionsOpen((v) => !v)}
-              className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted"
-            >
-              {optionsOpen ? 'Hide options' : 'Change options'}
-            </button>
-          )}
           {onClose && (
             <button
               type="button"
@@ -449,87 +440,115 @@ function PriceOptionsPanel({
           <OptionRow label="Claim limit" options={LIMIT_OPTIONS} value={limit} onChange={setLimit} format={(v) => `£${v.toLocaleString()}`} />
           <OptionRow label="Excess" options={EXCESS_OPTIONS} value={excess} onChange={setExcess} format={(v) => `£${v}`} />
           <OptionRow label="Labour rate" options={LABOUR_OPTIONS} value={labour} onChange={setLabour} format={(v) => `£${v}/hr`} />
-        </div>
-      )}
-
-      <div className="mt-3 flex min-w-0 justify-end">
-        <Button
-          size="sm"
-          disabled={disabled}
-          className="gap-2 bg-[#001F3F] font-bold text-white shadow-sm hover:bg-[#002a55]"
-          onClick={() => {
-            setPriceRequested(true);
-            setOptionsOpen(false);
-            onSend(
-              `Price this for me: ${combo}. Reply with the total price in £ on the first line, and the monthly amount if paying over 12 instalments.`,
-            );
-          }}
-        >
-          {priceRequested ? 'Update my price' : 'Show my price'}
-          <ArrowRight className="h-4 w-4 shrink-0 text-white" />
-        </Button>
-
-
-
-        {priceRequested && !pending && (
-          <div className="mt-3 w-full min-w-0 space-y-3">
-            <p className="text-sm text-foreground">
-              <strong>Happy with the price?</strong> Pay in full and you save <strong>10%</strong>, or spread it over <strong>12 monthly instalments</strong> at <strong>0% APR</strong>.
-            </p>
-
-            <div className="grid gap-2 sm:grid-cols-2">
-              {/* Option 1 — Pay monthly */}
+          {priceRequested && (
+            <div className="col-span-full flex justify-end">
               <Button
                 size="sm"
                 disabled={disabled}
-                onClick={() => setPending('monthly')}
-                className="h-auto min-h-11 w-full min-w-0 justify-between gap-2 whitespace-normal bg-[#FF6B00] px-4 py-2.5 font-bold text-white shadow-sm hover:bg-[#E85F00]"
+                className="gap-2 bg-[#001F3F] font-bold text-white shadow-sm hover:bg-[#002a55]"
+                onClick={() => {
+                  setOptionsOpen(false);
+                  onSend(
+                    `Update my price for: ${combo}. Reply with the total price in £ on the first line, and the monthly amount if paying over 12 instalments.`,
+                  );
+                }}
               >
+                Update my price
+                <ArrowRight className="h-4 w-4 shrink-0 text-white" />
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {!priceRequested && (
+        <div className="mt-4 flex justify-end">
+          <Button
+            size="sm"
+            disabled={disabled}
+            className="gap-2 bg-[#001F3F] font-bold text-white shadow-sm hover:bg-[#002a55]"
+            onClick={() => {
+              setPriceRequested(true);
+              setOptionsOpen(false);
+              onSend(
+                `Price this for me: ${combo}. Reply with the total price in £ on the first line, and the monthly amount if paying over 12 instalments.`,
+              );
+            }}
+          >
+            Show my price
+            <ArrowRight className="h-4 w-4 shrink-0 text-white" />
+          </Button>
+        </div>
+      )}
+
+      {priceRequested && !pending && (
+        <div className="mt-4 w-full min-w-0 space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-base font-semibold text-black">
+              Happy with the price? Pay in full and you save <strong>10%</strong>, or spread it over <strong>12 monthly instalments</strong> at <strong>0% APR</strong>.
+            </p>
+            <button
+              type="button"
+              onClick={() => setOptionsOpen((v) => !v)}
+              className="shrink-0 text-sm font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
+            >
+              Update my price
+            </button>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-2">
+            {/* Option 1 — Pay monthly */}
+            <Button
+              size="sm"
+              disabled={disabled}
+              onClick={() => setPending('monthly')}
+              className="h-auto min-h-11 w-full min-w-0 justify-between gap-2 whitespace-normal bg-[#FF6B00] px-4 py-2.5 font-bold text-white shadow-sm hover:bg-[#E85F00]"
+            >
+              <span className="text-left leading-tight">
+                <span className="block text-sm">Pay monthly — 0% APR</span>
+              </span>
+              <ArrowRight className="h-5 w-5 shrink-0 text-white" strokeWidth={2.5} />
+            </Button>
+
+            {/* Option 2 — Continue to checkout */}
+            <Button
+              asChild
+              size="sm"
+              disabled={disabled || !checkoutHref}
+              className="h-auto min-h-11 w-full min-w-0 justify-between gap-2 whitespace-normal bg-[#0BA360] px-4 py-2.5 font-bold text-white shadow-sm hover:bg-[#099455]"
+            >
+              <a href={checkoutHref || undefined}>
                 <span className="text-left leading-tight">
-                  <span className="block text-sm">Pay monthly — 0% APR</span>
+                  <span className="block text-sm">Continue to checkout</span>
                 </span>
                 <ArrowRight className="h-5 w-5 shrink-0 text-white" strokeWidth={2.5} />
-              </Button>
-
-              {/* Option 2 — Continue to checkout */}
-              <Button
-                asChild
-                size="sm"
-                disabled={disabled || !checkoutHref}
-                className="h-auto min-h-11 w-full min-w-0 justify-between gap-2 whitespace-normal bg-[#0BA360] px-4 py-2.5 font-bold text-white shadow-sm hover:bg-[#099455]"
-              >
-                <a href={checkoutHref || undefined}>
-                  <span className="text-left leading-tight">
-                    <span className="block text-sm">Continue to checkout</span>
-                  </span>
-                  <ArrowRight className="h-5 w-5 shrink-0 text-white" strokeWidth={2.5} />
-                </a>
-              </Button>
-            </div>
-
-            <div className="rounded-xl border border-dashed border-border bg-muted/40 p-3">
-              <p className="text-xs font-semibold text-foreground">Prefer to finish it yourself?</p>
-              <p className="mt-1.5 text-[11px] text-muted-foreground">
-                I'll open your cart with <strong className="text-foreground">{reg || 'FOR3'}</strong> already filled in — pick your plan and pay securely on site. This chat stays open if you need me.
-              </p>
-            </div>
-
-            <ul className="space-y-1 text-xs text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 text-[#0BA360]">✓</span>
-                <span><strong className="text-foreground">Pay in full</strong> and save <strong className="text-foreground">10%</strong></span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 text-[#FF6B00]">✓</span>
-                <span><strong className="text-foreground">Pay monthly</strong> over 12 instalments at <strong className="text-foreground">0% APR</strong></span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 text-[#0BA360]">✓</span>
-                <span>Secure checkout with instant cover</span>
-              </li>
-            </ul>
+              </a>
+            </Button>
           </div>
-        )}
+
+          <div className="rounded-xl border border-dashed border-border bg-muted/40 p-4">
+            <p className="text-sm font-semibold text-foreground">Prefer to finish it yourself?</p>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              I'll open your cart with <strong className="text-foreground">{reg || 'FOR3'}</strong> already filled in — pick your plan and pay securely on site. This chat stays open if you need me.
+            </p>
+          </div>
+
+          <ul className="space-y-2 text-xs text-muted-foreground">
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 text-[#0BA360]">✓</span>
+              <span><strong className="text-foreground">Pay in full</strong> and save <strong className="text-foreground">10%</strong></span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 text-[#FF6B00]">✓</span>
+              <span><strong className="text-foreground">Pay monthly</strong> over 12 instalments at <strong className="text-foreground">0% APR</strong></span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 text-[#0BA360]">✓</span>
+              <span>Secure checkout with instant cover</span>
+            </li>
+          </ul>
+        </div>
+      )}
 
         {pending === 'full' && (
           <div className="mt-3 space-y-2">
@@ -582,7 +601,6 @@ function PriceOptionsPanel({
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }
