@@ -97,14 +97,10 @@ Deno.serve(async (req) => {
     }
 
     const name = String(body?.name ?? "").trim().slice(0, 80);
-    const email = String(body?.email ?? "").trim().toLowerCase().slice(0, 160);
     const registration = String(body?.registration ?? "").toUpperCase().replace(/\s/g, "").slice(0, 12);
     const source = String(body?.source ?? "website-chat").slice(0, 80);
     const guestToken = String(body?.guestToken ?? "").slice(0, 64);
-    const contactPreference = ["whatsapp", "email"].includes(body?.contactPreference)
-      ? body.contactPreference
-      : "call";
-    const isEmailPreference = contactPreference === "email";
+    const contactPreference = rawPreference;
     const threadId = typeof body?.threadId === "string" ? body.threadId : null;
     const quotedPrice = Number.isFinite(Number(body?.quotedPrice)) ? Number(body.quotedPrice) : null;
 
