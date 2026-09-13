@@ -176,10 +176,19 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
     return Array.from(set.values());
   }, [teamByAgent]);
 
+  // Agents whose staff access has been removed (switched off / archived) keep
+  // their historic call data, but it lives in the archive view only.
+  const archivedCount = useMemo(() => {
+    const allowed = restrictToAgentIds ? new Set(restrictToAgentIds) : null;
+    return (agents || []).filter(a => a.is_active === false && (!allowed || allowed.has(a.id))).length;
+  }, [agents, restrictToAgentIds]);
+
   const filteredAgents = useMemo(() => {
     const allowed = restrictToAgentIds ? new Set(restrictToAgentIds) : null;
     return (agents || []).filter(a => {
       if (allowed && !allowed.has(a.id)) return false;
+      const archived = a.is_active === false;
+      if (showArchived ? !archived : archived) return false;
       const team = teamByAgent[a.id];
       const teamName = team?.name?.toLowerCase() || '';
       if (teamFilter === 'all') return true;
@@ -187,7 +196,8 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
       if (teamFilter === 'unassigned') return !team;
       return teamName === teamFilter || teamName.includes(teamFilter);
     });
-  }, [agents, teamByAgent, teamFilter, restrictToAgentIds]);
+  }, [agents, teamByAgent, teamFilter, restrictToAgentIds, showArchived]);
+
 
   const eventsByAgent = useMemo(() => {
     const map: Record<string, CallEvent[]> = {};
