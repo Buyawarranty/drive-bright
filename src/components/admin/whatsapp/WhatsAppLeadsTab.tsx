@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, MessageCircle } from 'lucide-react';
+import { Loader2, MessageCircle, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWhatsAppConversations } from '@/hooks/useWhatsAppConversations';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
