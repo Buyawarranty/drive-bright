@@ -11184,6 +11184,7 @@ export type Database = {
           vehicle_reg: string | null
           vehicle_type: string | null
           vehicle_year: string | null
+          whatsapp_conversation_id: string | null
         }
         Insert: {
           abandoned_cart_id?: string | null
@@ -11306,6 +11307,7 @@ export type Database = {
           vehicle_reg?: string | null
           vehicle_type?: string | null
           vehicle_year?: string | null
+          whatsapp_conversation_id?: string | null
         }
         Update: {
           abandoned_cart_id?: string | null
@@ -11428,6 +11430,7 @@ export type Database = {
           vehicle_reg?: string | null
           vehicle_type?: string | null
           vehicle_year?: string | null
+          whatsapp_conversation_id?: string | null
         }
         Relationships: [
           {
@@ -13634,6 +13637,102 @@ export type Database = {
           },
         ]
       }
+      whatsapp_conversations: {
+        Row: {
+          assigned_to: string | null
+          claimed_at: string | null
+          claimed_by: string | null
+          created_at: string
+          customer_id: string | null
+          display_name: string | null
+          first_response_seconds: number | null
+          heat: string
+          heat_reason: string | null
+          id: string
+          is_open: boolean
+          last_agent_reply_at: string | null
+          last_direction: string | null
+          last_message_at: string | null
+          last_message_preview: string | null
+          lead_id: string | null
+          lead_source: string | null
+          next_follow_up_at: string | null
+          phone: string
+          phone_normalized: string
+          pipeline_status: string
+          unread_count: number
+          updated_at: string
+          wati_contact_id: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
+          created_at?: string
+          customer_id?: string | null
+          display_name?: string | null
+          first_response_seconds?: number | null
+          heat?: string
+          heat_reason?: string | null
+          id?: string
+          is_open?: boolean
+          last_agent_reply_at?: string | null
+          last_direction?: string | null
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          lead_id?: string | null
+          lead_source?: string | null
+          next_follow_up_at?: string | null
+          phone: string
+          phone_normalized: string
+          pipeline_status?: string
+          unread_count?: number
+          updated_at?: string
+          wati_contact_id?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
+          created_at?: string
+          customer_id?: string | null
+          display_name?: string | null
+          first_response_seconds?: number | null
+          heat?: string
+          heat_reason?: string | null
+          id?: string
+          is_open?: boolean
+          last_agent_reply_at?: string | null
+          last_direction?: string | null
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          lead_id?: string | null
+          lead_source?: string | null
+          next_follow_up_at?: string | null
+          phone?: string
+          phone_normalized?: string
+          pipeline_status?: string
+          unread_count?: number
+          updated_at?: string
+          wati_contact_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_conversations_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_conversations_claimed_by_fkey"
+            columns: ["claimed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       whatsapp_message_log: {
         Row: {
           abandoned_cart_id: string | null
@@ -13684,6 +13783,110 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "sales_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_messages: {
+        Row: {
+          body: string | null
+          conversation_id: string
+          created_at: string
+          direction: string
+          id: string
+          media_type: string | null
+          media_url: string | null
+          raw: Json | null
+          sent_by_admin_id: string | null
+          status: string | null
+          wati_message_id: string | null
+          wati_timestamp: string | null
+        }
+        Insert: {
+          body?: string | null
+          conversation_id: string
+          created_at?: string
+          direction: string
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+          raw?: Json | null
+          sent_by_admin_id?: string | null
+          status?: string | null
+          wati_message_id?: string | null
+          wati_timestamp?: string | null
+        }
+        Update: {
+          body?: string | null
+          conversation_id?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+          raw?: Json | null
+          sent_by_admin_id?: string | null
+          status?: string | null
+          wati_message_id?: string | null
+          wati_timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_messages_sent_by_admin_id_fkey"
+            columns: ["sent_by_admin_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_status_events: {
+        Row: {
+          changed_by: string | null
+          conversation_id: string
+          created_at: string
+          from_assigned_to: string | null
+          from_status: string | null
+          id: string
+          note: string | null
+          to_assigned_to: string | null
+          to_status: string | null
+        }
+        Insert: {
+          changed_by?: string | null
+          conversation_id: string
+          created_at?: string
+          from_assigned_to?: string | null
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          to_assigned_to?: string | null
+          to_status?: string | null
+        }
+        Update: {
+          changed_by?: string | null
+          conversation_id?: string
+          created_at?: string
+          from_assigned_to?: string | null
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          to_assigned_to?: string | null
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_status_events_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_conversations"
             referencedColumns: ["id"]
           },
         ]
@@ -13938,6 +14141,41 @@ export type Database = {
         Returns: {
           claimed_id: string
         }[]
+      }
+      claim_whatsapp_conversation: {
+        Args: { _agent_id: string; _conversation_id: string }
+        Returns: {
+          assigned_to: string | null
+          claimed_at: string | null
+          claimed_by: string | null
+          created_at: string
+          customer_id: string | null
+          display_name: string | null
+          first_response_seconds: number | null
+          heat: string
+          heat_reason: string | null
+          id: string
+          is_open: boolean
+          last_agent_reply_at: string | null
+          last_direction: string | null
+          last_message_at: string | null
+          last_message_preview: string | null
+          lead_id: string | null
+          lead_source: string | null
+          next_follow_up_at: string | null
+          phone: string
+          phone_normalized: string
+          pipeline_status: string
+          unread_count: number
+          updated_at: string
+          wati_contact_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "whatsapp_conversations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       count_recontact_leads_available: {
         Args: never
@@ -14698,6 +14936,41 @@ export type Database = {
       publish_pricing_version: {
         Args: { _version_id: string }
         Returns: undefined
+      }
+      reassign_whatsapp_conversation: {
+        Args: { _agent_id: string; _conversation_id: string }
+        Returns: {
+          assigned_to: string | null
+          claimed_at: string | null
+          claimed_by: string | null
+          created_at: string
+          customer_id: string | null
+          display_name: string | null
+          first_response_seconds: number | null
+          heat: string
+          heat_reason: string | null
+          id: string
+          is_open: boolean
+          last_agent_reply_at: string | null
+          last_direction: string | null
+          last_message_at: string | null
+          last_message_preview: string | null
+          lead_id: string | null
+          lead_source: string | null
+          next_follow_up_at: string | null
+          phone: string
+          phone_normalized: string
+          pipeline_status: string
+          unread_count: number
+          updated_at: string
+          wati_contact_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "whatsapp_conversations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       recompute_sales_lead_call_count: {
         Args: { p_lead_id: string }
