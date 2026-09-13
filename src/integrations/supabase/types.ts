@@ -13637,6 +13637,78 @@ export type Database = {
           },
         ]
       }
+      whatsapp_auto_message_queue: {
+        Row: {
+          attempts: number
+          conversation_id: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          last_error: string | null
+          lead_id: string
+          next_attempt_at: string
+          phone_normalized: string
+          sent_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          conversation_id?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          last_error?: string | null
+          lead_id: string
+          next_attempt_at?: string
+          phone_normalized: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          conversation_id?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          last_error?: string | null
+          lead_id?: string
+          next_attempt_at?: string
+          phone_normalized?: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      whatsapp_auto_message_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_enabled: boolean
+          template_language: string
+          template_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          template_language?: string
+          template_name?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          template_language?: string
+          template_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       whatsapp_conversations: {
         Row: {
           assigned_to: string | null
