@@ -33,7 +33,9 @@ interface AgentRow {
   email: string;
   role: string | null;
   sip_extension: string | null;
+  is_active?: boolean | null;
 }
+
 
 interface TeamMember {
   admin_user_id: string;
