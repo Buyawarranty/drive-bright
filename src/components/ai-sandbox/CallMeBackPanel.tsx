@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { PhoneCall, Phone, Check, Loader2, X, Clock, ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isTeamOpenNow, nextOpeningLabel, openingHoursLabel } from '@/lib/aiSandbox/openingHours';
+import { useSalesLineAvailable } from '@/hooks/useSalesLineAvailable';
 
 const CALLBACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-callback-request`;
 
@@ -65,6 +66,8 @@ export function CallMeBackPanel({
   const [whenLabel, setWhenLabel] = useState<string>('');
 
   const open = isTeamOpenNow();
+  // Weekends: the phone line only shows while an agent is genuinely live.
+  const showPhoneLine = useSalesLineAvailable();
   const isValid = useMemo(() => validUkPhone(phone), [phone]);
   const isWhatsApp = preference === 'whatsapp';
 
@@ -166,7 +169,7 @@ export function CallMeBackPanel({
               ? 'Leave your number and a UK specialist will call or WhatsApp you back.'
               : `Leave your number - we'll call or WhatsApp you ${nextOpeningLabel()} (${openingHoursLabel}).`}
           </p>
-          {open && (
+          {open && showPhoneLine && (
             <a
               href="tel:03302295040"
               className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-[#B4501F] underline underline-offset-2"

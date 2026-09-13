@@ -41,6 +41,7 @@ import milesAvatar from '@/assets/miles-avatar.png.asset.json';
 import milesCalls from '@/assets/miles-calls.png.asset.json';
 import { isTeamOpenNow, openingHoursLabel, nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
 import { useSandboxSpecialistPresence } from '@/hooks/useSandboxSpecialistPresence';
+import { useSalesLineAvailable } from '@/hooks/useSalesLineAvailable';
 import { CallMeBackPanel } from '@/components/ai-sandbox/CallMeBackPanel';
 import {
   prepareAttachment,
@@ -607,6 +608,8 @@ export function SandboxChatWindow({
 
   const open = isTeamOpenNow();
   const { liveNames } = useSandboxSpecialistPresence();
+  // Weekends: only show the phone line when an agent is genuinely live.
+  const showPhoneLine = useSalesLineAvailable();
 
 
 
@@ -963,14 +966,16 @@ export function SandboxChatWindow({
               A warranty specialist has replied in this chat.
             </p>
           ) : (
-            <div className="grid grid-cols-2 gap-2">
-              <a
-                href="tel:03302295040"
-                className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-primary/10"
-              >
-                <PhoneCall className="h-4 w-4 shrink-0 text-primary" />
-                <span className="truncate">Call 0330 229 5040</span>
-              </a>
+            <div className={showPhoneLine ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-1 gap-2'}>
+              {showPhoneLine && (
+                <a
+                  href="tel:03302295040"
+                  className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-primary/10"
+                >
+                  <PhoneCall className="h-4 w-4 shrink-0 text-primary" />
+                  <span className="truncate">Call 0330 229 5040</span>
+                </a>
+              )}
               <CallMeBackPanel
                 asChip
                 guestToken={guestToken}

@@ -294,6 +294,9 @@ verify_jwt = false
 [functions.sandbox-callback-request]
 verify_jwt = false
 
+[functions.sales-line-availability]
+verify_jwt = false
+
 [functions.sandbox-live-agent-request]
 verify_jwt = false
 
