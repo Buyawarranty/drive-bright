@@ -113,7 +113,7 @@ export const LeadBackupRecoveryTab: React.FC = () => {
   const getFakeReason = (contact: BackupContact): string | null => {
     const fakeStatuses = ['fake_lead', 'fake'];
     const testNames = ['kamran', 'prajwal', 'praj', 'test'];
-    const testPhones = ['07960111131', '07000000000', '07777777777'];
+    const testPhones = ['07000000000', '07777777777'];
     
     if (fakeStatuses.includes(contact.status?.toLowerCase() || '')) return 'Manually marked as fake by admin';
     const name = (contact.first_name || contact.full_name || '').toLowerCase();
