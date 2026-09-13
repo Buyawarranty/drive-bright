@@ -957,50 +957,8 @@ export function SandboxChatWindow({
     sendMessage({ text: trimmed });
   };
 
-
-  /**
-   * Quick link: connect to a live agent. Puts the visitor on hold in the chat
-   * and rings the admin / super admin dashboards until someone takes the chat.
-   */
-  const requestLiveAgent = async () => {
-    if (holdState === 'connecting' || holdState === 'on_hold') return;
-    setHoldState('connecting');
-    setHoldError(null);
-    // Make sure there's a conversation for staff to pick up.
-    if (messages.length === 0) sendMessage({ text: 'Please can I speak to a live agent?' });
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-live-agent-request`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            guestToken: guestToken ?? null,
-            threadId: threadId ?? null,
-            source: source ?? 'website-chat',
-            registration: detectedReg,
-          }),
-        },
-      );
-      const data = await res.json().catch(() => null);
-      if (!res.ok || !data?.ok) {
-        setHoldError(data?.message ?? "We couldn't connect you — please call 0330 229 5040.");
-        setHoldState('failed');
-        return;
-      }
-      setHoldHandoverId(data.handover_id ?? null);
-      setHoldSince(Date.now());
-      setHoldState('on_hold');
-      loadHandover();
-
-    } catch {
-      setHoldError('Network problem — please call us on 0330 229 5040.');
-      setHoldState('failed');
-    }
-  };
-
-  void holdTick; // re-renders the hold timer each second
-  const holdSeconds = holdSince ? Math.max(0, Math.round((Date.now() - holdSince) / 1000)) : 0;
+  // There is no live-agent handover: customers either call us, or leave a
+  // number and the team calls or WhatsApps them back (CallMeBackPanel).
 
 
 
