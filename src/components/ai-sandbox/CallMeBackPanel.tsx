@@ -66,6 +66,8 @@ export function CallMeBackPanel({
   const [whenLabel, setWhenLabel] = useState<string>('');
 
   const open = isTeamOpenNow();
+  // Weekends: the phone line only shows while an agent is genuinely live.
+  const showPhoneLine = useSalesLineAvailable();
   const isValid = useMemo(() => validUkPhone(phone), [phone]);
   const isWhatsApp = preference === 'whatsapp';
 
