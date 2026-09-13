@@ -307,13 +307,42 @@ export function CallMeBackPanel({
         >
           <p className="text-sm leading-relaxed text-muted-foreground">
             {open
-              ? 'Leave your number or email and a UK warranty specialist will get back to you shortly - by call, WhatsApp or email, whichever you prefer.'
-              : `A warranty specialist will be back ${nextOpeningLabel()} - leave your number or email and you are first in the queue.`}
+              ? 'A UK warranty specialist will get back to you shortly, whichever way you prefer.'
+              : `A warranty specialist will be back ${nextOpeningLabel()} - leave your details and you are first in the queue.`}
           </p>
+
+          <div className="space-y-2">
+            <span className="block text-sm font-bold text-foreground">How would you like us to contact you?</span>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { key: 'call' as Preference, label: 'Call me', Icon: PhoneCall },
+                { key: 'whatsapp' as Preference, label: 'WhatsApp me', Icon: MessageCircle },
+                { key: 'email' as Preference, label: 'Email me', Icon: Mail },
+              ]).map(({ key, label, Icon }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => {
+                    setPreference(key);
+                    setError(null);
+                  }}
+                  aria-pressed={preference === key}
+                  className={`flex h-12 items-center justify-center gap-1.5 rounded-xl border px-1 text-xs font-bold transition-colors sm:text-sm ${
+                    preference === key
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-input bg-background text-foreground hover:border-primary/40 hover:bg-muted'
+                  }`}
+                >
+                  <Icon className={`h-4 w-4 shrink-0 ${key === 'whatsapp' && preference !== key ? 'text-emerald-600' : ''}`} />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div className="space-y-1.5">
             <label htmlFor={isEmail ? 'cb-email' : 'cb-phone'} className="block text-xs font-semibold text-foreground">
-              {isEmail ? 'Email address' : 'Phone number'}
+              {isEmail ? 'Email address' : isWhatsApp ? 'WhatsApp number' : 'Phone number'}
             </label>
             {isEmail ? (
               <input
@@ -344,36 +373,15 @@ export function CallMeBackPanel({
                   setError(null);
                 }}
                 placeholder="07960 123456"
-                aria-label="Your phone number"
+                aria-label={isWhatsApp ? 'Your WhatsApp number' : 'Your phone number'}
                 className="h-12 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             )}
-          </div>
-
-          <div className="space-y-1.5">
-            <span className="block text-xs font-semibold text-foreground">How should we get back to you?</span>
-            <div className="grid grid-cols-3 gap-2">
-              {([
-                { key: 'call' as Preference, label: 'Phone call', Icon: PhoneCall },
-                { key: 'whatsapp' as Preference, label: 'WhatsApp', Icon: MessageCircle },
-                { key: 'email' as Preference, label: 'Email', Icon: Mail },
-              ]).map(({ key, label, Icon }) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setPreference(key)}
-                  aria-pressed={preference === key}
-                  className={`flex h-11 items-center justify-center gap-1.5 rounded-xl border text-xs font-bold transition-colors ${
-                    preference === key
-                      ? 'border-primary bg-primary/10 text-foreground'
-                      : 'border-input bg-background text-muted-foreground hover:bg-muted'
-                  }`}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {label}
-                </button>
-              ))}
-            </div>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {isEmail
+                ? `We'll pass this to the team and they'll email you ${open ? 'shortly' : `when we're back ${nextOpeningLabel()}`}.`
+                : `We'll pass this to the team and they'll ${isWhatsApp ? 'message you' : 'call you'} ${open ? 'shortly' : `when we're back ${nextOpeningLabel()}`}.`}
+            </p>
           </div>
 
           <div className="space-y-1.5">
