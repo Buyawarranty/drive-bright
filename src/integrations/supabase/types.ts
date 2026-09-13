@@ -13793,6 +13793,8 @@ export type Database = {
           lead_id: string | null
           lead_source: string | null
           next_follow_up_at: string | null
+          opt_out_reason: string | null
+          opted_out_at: string | null
           phone: string
           phone_normalized: string
           pipeline_status: string
@@ -13820,6 +13822,8 @@ export type Database = {
           lead_id?: string | null
           lead_source?: string | null
           next_follow_up_at?: string | null
+          opt_out_reason?: string | null
+          opted_out_at?: string | null
           phone: string
           phone_normalized: string
           pipeline_status?: string
@@ -13847,6 +13851,8 @@ export type Database = {
           lead_id?: string | null
           lead_source?: string | null
           next_follow_up_at?: string | null
+          opt_out_reason?: string | null
+          opted_out_at?: string | null
           phone?: string
           phone_normalized?: string
           pipeline_status?: string
@@ -14332,6 +14338,8 @@ export type Database = {
           lead_id: string | null
           lead_source: string | null
           next_follow_up_at: string | null
+          opt_out_reason: string | null
+          opted_out_at: string | null
           phone: string
           phone_normalized: string
           pipeline_status: string
@@ -15128,6 +15136,8 @@ export type Database = {
           lead_id: string | null
           lead_source: string | null
           next_follow_up_at: string | null
+          opt_out_reason: string | null
+          opted_out_at: string | null
           phone: string
           phone_normalized: string
           pipeline_status: string
