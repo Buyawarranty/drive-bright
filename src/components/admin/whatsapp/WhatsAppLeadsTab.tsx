@@ -121,41 +121,73 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
         onTake={(id) => void handleTake(id)}
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="flex items-center gap-2 text-xl font-bold">
-          <MessageCircle className="h-5 w-5 text-emerald-600" /> WhatsApp Leads
-        </h2>
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search name, number or message"
-          className="h-9 w-full max-w-xs"
-        />
-      </div>
-
-      {allTags.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-xs text-muted-foreground">Filter by tag</span>
-          <button type="button" onClick={() => setTagFilter(null)}>
-            <Badge variant={tagFilter ? 'outline' : 'default'}>All</Badge>
-          </button>
-          {allTags.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setTagFilter(tagFilter === t.id ? null : t.id)}
-            >
-              <Badge
-                className={
-                  tagFilter === t.id ? tagChipClass(t.color) : 'bg-muted text-foreground border-border'
-                }
-              >
-                {t.name}
-              </Badge>
-            </button>
-          ))}
+      <div className="rounded-xl border bg-card p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="flex items-center gap-2 text-xl font-bold">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                <MessageCircle className="h-4 w-4" />
+              </span>
+              WhatsApp Leads &amp; Messaging
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Chat with customers about their warranty and keep the sales team in the loop.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search name, number or message"
+                className="h-9 w-full min-w-[240px] pl-8"
+              />
+            </div>
+          </div>
         </div>
-      )}
+
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
+          <Badge variant="outline" className="gap-1 font-normal">
+            Waiting <span className="font-semibold">{available.length}</span>
+          </Badge>
+          <Badge variant="outline" className="gap-1 font-normal">
+            Mine <span className="font-semibold">{mine.length}</span>
+          </Badge>
+          <Badge variant="outline" className="gap-1 font-normal">
+            Unread{' '}
+            <span className="font-semibold">
+              {conversations.reduce((n, c) => n + (c.unread_count > 0 ? 1 : 0), 0)}
+            </span>
+          </Badge>
+        </div>
+
+        {allTags.length > 0 && (
+          <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t pt-3">
+            <span className="text-xs text-muted-foreground">Filter by tag</span>
+            <button type="button" onClick={() => setTagFilter(null)}>
+              <Badge variant={tagFilter ? 'outline' : 'default'}>All</Badge>
+            </button>
+            {allTags.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTagFilter(tagFilter === t.id ? null : t.id)}
+              >
+                <Badge
+                  className={
+                    tagFilter === t.id
+                      ? tagChipClass(t.color)
+                      : 'bg-muted text-foreground border-border'
+                  }
+                >
+                  {t.name}
+                </Badge>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {error && (
         <p className="rounded-md border border-destructive bg-destructive/10 p-3 text-sm">
@@ -163,16 +195,8 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
         </p>
       )}
 
-      {isManagement && <WhatsAppBulkTemplateSend />}
-      {isManagement && <WhatsAppAwayReply />}
-      {isManagement && <WhatsAppLeadImport />}
-      {isManagement && <WhatsAppTemplateStats />}
-
-
-
-
       <Tabs defaultValue="queue">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="queue">
             Available leads
             {available.length > 0 && <Badge className="ml-2">{available.length}</Badge>}
@@ -182,7 +206,12 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
             {mine.length > 0 && <Badge className="ml-2">{mine.length}</Badge>}
           </TabsTrigger>
           {isManagement && <TabsTrigger value="dashboard">Dashboard</TabsTrigger>}
+          {isManagement && <TabsTrigger value="broadcast">Send templates</TabsTrigger>}
+          {isManagement && <TabsTrigger value="import">Import leads</TabsTrigger>}
+          {isManagement && <TabsTrigger value="autoreply">Out-of-hours reply</TabsTrigger>}
+          {isManagement && <TabsTrigger value="analytics">Analytics</TabsTrigger>}
         </TabsList>
+
 
         <TabsContent value="queue" className="mt-3">
           <div className="grid gap-3 lg:grid-cols-[minmax(0,380px)_1fr]">
