@@ -606,60 +606,7 @@ export function SandboxChatWindow({
   };
 
   const open = isTeamOpenNow();
-  const { liveCount, liveNames } = useSandboxSpecialistPresence();
-  // A live agent is only offered when the team is open and a specialist is
-  // actually signed in — otherwise the option is hidden entirely.
-  const liveAgentAvailable = open && liveCount > 0;
-
-  // "Speak to a live agent" — puts the visitor on hold and rings the CRM.
-  const [holdState, setHoldState] = useState<
-    'idle' | 'connecting' | 'on_hold' | 'failed' | 'joined' | 'missed'
-  >('idle');
-  const [holdError, setHoldError] = useState<string | null>(null);
-  const [holdSince, setHoldSince] = useState<number | null>(null);
-  const [holdTick, setHoldTick] = useState(0);
-  const [holdHandoverId, setHoldHandoverId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (holdState !== 'on_hold') return;
-    const t = window.setInterval(() => setHoldTick((n) => n + 1), 1000);
-    return () => window.clearInterval(t);
-  }, [holdState]);
-
-  /**
-   * While the visitor is on hold we poll the handover. If a specialist takes the
-   * chat we say so; if nobody answers within the grace window we stop pretending
-   * someone is coming, close the ring and raise an urgent callback instead.
-   */
-  useEffect(() => {
-    if (holdState !== 'on_hold' || !holdHandoverId) return;
-    let active = true;
-    const poll = async () => {
-      const waited = holdSince ? Math.round((Date.now() - holdSince) / 1000) : 0;
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-handover-status`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ handoverId: holdHandoverId, markMissed: waited >= 90 }),
-          },
-        );
-        const data = await res.json().catch(() => null);
-        if (!active || !data?.ok) return;
-        if (data.status === 'accepted') setHoldState('joined');
-        else if (data.status === 'missed') setHoldState('missed');
-      } catch {
-        /* transient — keep waiting */
-      }
-    };
-    void poll();
-    const t = window.setInterval(poll, 10000);
-    return () => {
-      active = false;
-      window.clearInterval(t);
-    };
-  }, [holdState, holdHandoverId, holdSince]);
+  const { liveNames } = useSandboxSpecialistPresence();
 
 
 
@@ -703,7 +650,7 @@ export function SandboxChatWindow({
           }
         }
         setSpecialistJoined(true);
-        setHoldState((prev) => (prev === 'on_hold' || prev === 'connecting' ? 'joined' : prev));
+        
         setMessages((prev) => [
           ...prev,
           ...fresh.map(
@@ -957,50 +904,8 @@ export function SandboxChatWindow({
     sendMessage({ text: trimmed });
   };
 
-
-  /**
-   * Quick link: connect to a live agent. Puts the visitor on hold in the chat
-   * and rings the admin / super admin dashboards until someone takes the chat.
-   */
-  const requestLiveAgent = async () => {
-    if (holdState === 'connecting' || holdState === 'on_hold') return;
-    setHoldState('connecting');
-    setHoldError(null);
-    // Make sure there's a conversation for staff to pick up.
-    if (messages.length === 0) sendMessage({ text: 'Please can I speak to a live agent?' });
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-live-agent-request`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            guestToken: guestToken ?? null,
-            threadId: threadId ?? null,
-            source: source ?? 'website-chat',
-            registration: detectedReg,
-          }),
-        },
-      );
-      const data = await res.json().catch(() => null);
-      if (!res.ok || !data?.ok) {
-        setHoldError(data?.message ?? "We couldn't connect you — please call 0330 229 5040.");
-        setHoldState('failed');
-        return;
-      }
-      setHoldHandoverId(data.handover_id ?? null);
-      setHoldSince(Date.now());
-      setHoldState('on_hold');
-      loadHandover();
-
-    } catch {
-      setHoldError('Network problem — please call us on 0330 229 5040.');
-      setHoldState('failed');
-    }
-  };
-
-  void holdTick; // re-renders the hold timer each second
-  const holdSeconds = holdSince ? Math.max(0, Math.round((Date.now() - holdSince) / 1000)) : 0;
+  // There is no live-agent handover: customers either call us, or leave a
+  // number and the team calls or WhatsApps them back (CallMeBackPanel).
 
 
 
@@ -1049,76 +954,23 @@ export function SandboxChatWindow({
         </div>
       )}
 
-      {/* Compact top action row — one line, two options, out of the chat's way. */}
+      {/* Compact top action row — call us, or leave a number for a call / WhatsApp back. */}
       {!agentMode && (
         <div className="border-b border-border bg-background px-3 py-2.5">
-          {holdState === 'missed' ? (
-            /* Nobody picked the chat up — stop implying someone is coming and
-               give the visitor a real next step. An urgent callback has already
-               been raised in the CRM by this point. */
-            <div className="space-y-2">
-              <p className="text-xs font-semibold text-foreground">
-                Sorry — our specialists are all tied up right now. We've flagged this as urgent so
-                someone calls you straight back.
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                <a
-                  href="tel:03302295040"
-                  className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-primary/10"
-                >
-                  <PhoneCall className="h-4 w-4 shrink-0 text-primary" />
-                  <span className="truncate">Call 0330 229 5040</span>
-                </a>
-                <CallMeBackPanel
-                  asChip
-                  guestToken={guestToken}
-                  threadId={threadId}
-                  source={source}
-                  compact={compact}
-                  registration={detectedReg}
-                  liveAgentAvailable={false}
-                />
-              </div>
-            </div>
-          ) : holdState === 'joined' || specialistJoined ? (
+          {specialistJoined ? (
             <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
               <Headset className="h-3.5 w-3.5 shrink-0 text-primary" />
-              A warranty specialist has joined this chat.
-            </p>
-          ) : holdState === 'on_hold' || waiting ? (
-            <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
-              <span className="relative flex h-2 w-2 shrink-0">
-                <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-primary opacity-70" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-              </span>
-              {open
-                ? holdSeconds >= 20
-                  ? `Our specialists are busy with other customers right now — you're next in line (${holdSeconds}s). Keep chatting with me meanwhile, or give us a call.`
-                  : `Connecting you to a live agent${holdSeconds ? ` (${holdSeconds}s)` : ''} — keep chatting meanwhile`
-                : `Your request is with the team — a specialist picks this up ${nextOpeningLabel()}`}
-              {open && (
-                <a href="tel:03302295040" className="ml-auto shrink-0 font-bold text-primary underline underline-offset-2">
-                  Call 0330 229 5040
-                </a>
-              )}
+              A warranty specialist has replied in this chat.
             </p>
           ) : (
-
-            /* Live agent only shows when the team is open AND someone is actually
-               online. Otherwise the call back panel gets the full width. */
-            <div className={liveAgentAvailable ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-1 gap-2'}>
-              {liveAgentAvailable && (
-                <button
-                  type="button"
-                  onClick={requestLiveAgent}
-                  disabled={holdState === 'connecting'}
-                  title="We'll put you on hold and ring the team"
-                  className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-primary/10 disabled:opacity-60"
-                >
-                  <Headset className="h-4 w-4 shrink-0 text-primary" />
-                  <span className="truncate">{holdState === 'connecting' ? 'Connecting…' : 'Live agent'}</span>
-                </button>
-              )}
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href="tel:03302295040"
+                className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-primary/10"
+              >
+                <PhoneCall className="h-4 w-4 shrink-0 text-primary" />
+                <span className="truncate">Call 0330 229 5040</span>
+              </a>
               <CallMeBackPanel
                 asChip
                 guestToken={guestToken}
@@ -1126,13 +978,9 @@ export function SandboxChatWindow({
                 source={source}
                 compact={compact}
                 registration={detectedReg}
-                liveAgentAvailable={liveAgentAvailable}
-                onConnectLiveAgent={requestLiveAgent}
               />
-              {holdError && <p className="col-span-full text-xs font-medium text-destructive">{holdError}</p>}
             </div>
           )}
-
         </div>
       )}
 

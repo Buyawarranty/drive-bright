@@ -90,6 +90,7 @@ Deno.serve(async (req) => {
     const registration = String(body?.registration ?? "").toUpperCase().replace(/\s/g, "").slice(0, 12);
     const source = String(body?.source ?? "website-chat").slice(0, 80);
     const guestToken = String(body?.guestToken ?? "").slice(0, 64);
+    const contactPreference = body?.contactPreference === "whatsapp" ? "whatsapp" : "call";
     const threadId = typeof body?.threadId === "string" ? body.threadId : null;
     const quotedPrice = Number.isFinite(Number(body?.quotedPrice)) ? Number(body.quotedPrice) : null;
 
@@ -98,9 +99,14 @@ Deno.serve(async (req) => {
     const nameParts = name.split(/\s+/).filter(Boolean);
 
     const noteLines = [
-      `[${new Date().toLocaleString("en-GB", { timeZone: "Europe/London" })} - System] Call me back requested from live chat (${source}).`,
+      `[${new Date().toLocaleString("en-GB", { timeZone: "Europe/London" })} - System] Message me back requested from website chat (${source}).`,
+      contactPreference === "whatsapp"
+        ? "Customer prefers a WHATSAPP message back on this number."
+        : "Customer prefers a PHONE CALL back on this number.",
       plan.isOpen
-        ? "Team is OPEN — ring straight away."
+        ? contactPreference === "whatsapp"
+          ? "Team is OPEN — WhatsApp them straight away."
+          : "Team is OPEN — ring straight away."
         : `Requested out of hours — call ${plan.label}.`,
       registration ? `Reg given: ${registration}` : null,
       quotedPrice ? `Price discussed: £${Math.round(quotedPrice)}` : null,
@@ -226,7 +232,7 @@ Deno.serve(async (req) => {
         await admin.from("ai_sandbox_handovers").insert({
           thread_id: resolvedThread,
           kind: "callback_request",
-          reason: plan.isOpen ? "call_me_back_now" : "call_me_back_next_opening",
+          reason: `${plan.isOpen ? "message_me_back_now" : "message_me_back_next_opening"} (${contactPreference})`,
           customer_name: name || null,
           customer_email: email || null,
           customer_phone: phone,
@@ -246,6 +252,7 @@ Deno.serve(async (req) => {
       is_open: plan.isOpen,
       call_at: plan.callAt.toISOString(),
       when_label: plan.label,
+      contact_preference: contactPreference,
       phone,
     });
   } catch (e) {

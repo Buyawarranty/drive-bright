@@ -115,14 +115,13 @@ The sales journey — follow it in order:
 3. Recommend: suggest the cover level, term, claim limit, excess and labour rate that suits, say why in a sentence, then call get_indicative_price and give the price plainly — "Your cover starts from **£32.50 a month**." Offer a cheaper and a stronger option if it helps them decide, and let them choose without pressure.
 4. Answer their questions ONLY from search_site_knowledge — direct, specific, easy to scan, and clear about exclusions. Never imply a claim will be accepted. If it is not grounded there, say you'd rather have it confirmed than guess and move to step 5 with reason not_in_approved_material.
 
-5. Hand over at buying intent, hesitation, OR any question the approved material does not answer. Buying intent: "how do I buy", "can I pay monthly", "I'll take it". Hesitation: price worries, comparing competitors, "let me think", repeated questions.
-   - First call check_availability.
-   - If open: offer it plainly — "Would you like me to connect you to a warranty specialist now?" — and only when they say yes, call connect_live_agent. Tell them a human specialist is joining and that the specialist can see the whole chat, so they will not need to repeat anything.
-   - If the customer ASKS for a human at all — "speak to a human", "talk to a person", "real agent", or anything close, including typos and misspellings — and the live context says OPEN, call connect_live_agent IMMEDIATELY with reason customer_asked. Do not ask them to confirm, do not ask for a phone number first, do not check how many specialists are sat in chat, and never give a reopen time. Say a specialist is being connected now and that it rings on their side.
-   - If closed: keep it to two short sentences — when the team is back in **bold**, then one question, e.g. "Specialists are back **tomorrow at 9am**. Want me to sort it here, or book a callback?" Don't list hours, don't ask for four details at once — ask for the **phone number** first, then anything else one at a time. As soon as you have EITHER a phone number OR an email, call capture_lead — a name is optional, never block on it.
-   - CRITICAL: "open" and "someone sat in live chat" are two different things. If the live context says live chat is OPEN, we are open — NEVER say the team is closed, away, or "back at 9am", and never give a reopen time. Zero specialists showing online is NOT a reason to refuse a handover: connect_live_agent rings every manager and staff member in the CRM, so still call it, then also take the **phone number** as a backup and call capture_lead. Only ever mention a reopen time when the live context says CLOSED.
+5. There is NO live chat handover and no way to put a customer through to a person in this chat. Never say a specialist is joining, being connected, on their way, or has been alerted. Never say anyone is online now.
+   - When someone wants a person — at buying intent, hesitation, or any question the approved material does not answer — give them the two real routes in two short sentences: call the sales team on **0330 229 5040** (Monday to Saturday, **9am to 6pm**), or leave a phone number and the team will call or WhatsApp them back.
+   - Ask for the **phone number** first, one detail at a time, and say whether they would prefer a **call or WhatsApp**. As soon as you have a phone number (or an email), call capture_lead with that preference in the notes. A name is optional, never block on it.
+   - Then confirm plainly when they will hear back: within opening hours say the team will be in touch shortly; outside them, say the team will message them back when they are next open (use check_availability for the time).
+   - Anything claims-related still goes to the claim form, **0330 229 5045** or **claims@buyawarranty.co.uk**, Monday to Friday, **9am to 5pm**. Never say claims details have been passed on.
 
-6. Never promise a callback time beyond the next opening hours, and never claim to be a human.`;
+6. Never promise a time beyond the next opening hours, never claim to be a human, and never promise an instant reply from a person.`;
 
 function toolResultText(value: unknown) {
   return value;
@@ -843,105 +842,23 @@ Deno.serve(async (req) => {
 
       check_availability: tool({
         description:
-          "Check whether the warranty specialists are available right now (opening hours plus how many specialists are actually on duty in live chat). Always call this before offering a live handover.",
+          "Check the team's opening hours and whether they are open right now. There is no live chat handover — use this only to tell the customer when the team will call or WhatsApp them back.",
         inputSchema: z.object({}),
         execute: async () => {
           const state = availability();
-          const online = await specialistsOnline();
           return toolResultText({
             ...state,
-            specialists_online_now: online,
-            can_connect_live_now: state.is_open,
+            can_connect_live_now: false,
             instruction: state.is_open
-              ? "We are OPEN. If the customer wants a human, call connect_live_agent now — it rings every manager and staff member in the CRM even when nobody shows as online. Never give a reopen time."
-              : `We are CLOSED. Take a phone number or email and call capture_lead. The team is back ${state.next_open}.`,
-          });
-        },
-      }),
-
-
-      connect_live_agent: tool({
-        description:
-          "Hand the chat over to a human warranty specialist — this rings every manager and staff member in the CRM. Call it as soon as the customer asks for a human (or says yes to being connected) while check_availability says the team is open. It does NOT need any specialist to be showing online.",
-
-        inputSchema: z.object({
-          reason: z
-            .enum([
-              "buying_intent",
-              "price_objection",
-              "comparing_quotes",
-              "hesitation",
-              "complex_question",
-              "not_in_approved_material",
-              "customer_asked",
-            ])
-            .describe(
-              "Why the handover is happening. Use not_in_approved_material when the approved website, product or terms material did not clearly answer their question.",
-            ),
-          customer_name: z.string().nullable(),
-          customer_email: z.string().nullable(),
-          customer_phone: z.string().nullable(),
-          registration: z.string().nullable(),
-          cover_summary: z.string().nullable().describe("Term, claim limit, excess and labour rate discussed"),
-          quoted_price: z.number().nullable(),
-        }),
-        execute: async (args) => {
-          const state = availability();
-          if (!state.is_open) {
-            return toolResultText({
-              ok: false,
-              is_open: false,
-              ...state,
-              note: "The team is closed — capture the lead with capture_lead instead and keep helping the customer yourself.",
-            });
-          }
-          const { data, error } = await admin
-            .from("ai_sandbox_handovers")
-            .insert({
-              thread_id: threadId,
-              created_by: userId,
-              kind: "live_handover",
-              reason: args.reason,
-              customer_name: args.customer_name,
-              customer_email: args.customer_email,
-              customer_phone: args.customer_phone,
-              registration: args.registration,
-              cover_summary: args.cover_summary,
-              quoted_price: args.quoted_price,
-              transcript: messages,
-              status: "waiting",
-            })
-            .select("id")
-            .single();
-
-          if (error) {
-            console.error("[ai-sandbox-chat] handover insert failed", error);
-            return toolResultText({
-              ok: false,
-              note: "The handover could not be created. Offer the team's number 0330 229 5040 instead.",
-            });
-          }
-
-          await logEvent({
-            event_type: "handover",
-            topic: args.reason ?? null,
-            registration: args.registration ?? null,
-            quoted_price: args.quoted_price ?? null,
-            detail: args.cover_summary ?? null,
-          });
-
-          return toolResultText({
-            ok: true,
-            handover_id: data.id,
-            status: "waiting",
-            note: "A warranty specialist has been alerted and can see the full chat. Tell the customer a human is joining and stay quiet unless they ask you something directly.",
+              ? "We are OPEN. Never say a specialist is joining the chat. Offer the sales line 0330 229 5040, or take a phone number (and whether they prefer a call or WhatsApp) and call capture_lead."
+              : `We are CLOSED (back ${state.next_open}). Take a phone number or email, note whether they prefer a call or WhatsApp, and call capture_lead.`,
           });
         },
       }),
 
       capture_lead: tool({
         description:
-          "Capture the customer's details as a lead so a warranty specialist can pick it up at the next opening time. Use this outside opening hours, or when the customer prefers a callback.",
+          "Save the customer's details so the team calls or WhatsApps them back. Use it whenever the customer wants a person, inside or outside opening hours. Put their contact preference (call or WhatsApp) in the notes.",
         inputSchema: z.object({
           customer_name: z.string().nullable(),
           customer_email: z.string().nullable(),
@@ -1006,7 +923,7 @@ Deno.serve(async (req) => {
             lead_id: data.id,
             pipeline_lead: pipeline,
             next_open: state.next_open,
-            note: "Lead saved. Confirm to the customer when a specialist will be in touch and offer to finish the purchase now with a test payment link.",
+            note: "Details saved. Tell the customer the team will call or WhatsApp them back (shortly if open, otherwise at the next opening time) and offer to keep helping here meanwhile.",
           });
         },
 
@@ -1015,17 +932,9 @@ Deno.serve(async (req) => {
 
 
     const now = availability();
-    const onlineNow = await specialistsOnline();
-    const liveContext = `\n\nRight now: ${now.local_time}. Live chat is ${
-      now.is_open ? "OPEN and available for a live handover" : `CLOSED (the team reopens ${now.next_open})`
-    }. Opening hours are ${now.opening_hours}. Specialists ONLINE RIGHT NOW in live chat: ${onlineNow}${
-      onlineNow > 0
-        ? " — a real person can pick this chat up within seconds, so offer that whenever the customer hesitates or wants to buy."
-        : now.is_open
-          ? " — nobody is sat in live chat this second, but WE ARE OPEN: never say we are closed or give a reopen time. If they ask for a human, call connect_live_agent anyway — it rings every manager and staff member in the CRM — and also take their phone number as a backup."
-          : " — nobody is sat in live chat this second, so do not promise an instant human; offer a callback or keep helping yourself."
-
-    }.\nIf a message in the conversation begins with "(Warranty specialist)" a human has joined this chat — stay out of the way and only reply if the customer asks you directly.`;
+    const liveContext = `\n\nRight now: ${now.local_time}. The team is ${
+      now.is_open ? "OPEN" : `CLOSED (back ${now.next_open})`
+    }. Opening hours are ${now.opening_hours}. There is NO live chat handover: never say a specialist is joining, connecting, alerted or online. If the customer wants a person, give the sales line 0330 229 5040 and offer to take their phone number so the team calls or WhatsApps them back, then call capture_lead.\nIf a message in the conversation begins with "(Warranty specialist)" a member of staff has replied in this chat — stay out of the way and only reply if the customer asks you directly.`;
 
 
     const modelMessages = await convertToModelMessages(
