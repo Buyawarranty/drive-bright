@@ -90,7 +90,7 @@ export function CallMeBackPanel({
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) {
-        setError(data?.message ?? "We couldn't save that — please call 0330 229 5040.");
+        setError(data?.message ?? "We couldn't save that - please call 0330 229 5040.");
         return;
       }
       if (data.suppressed) {
@@ -100,7 +100,7 @@ export function CallMeBackPanel({
       setWhenLabel(data.when_label ?? (open ? 'shortly' : `from 9am ${nextOpeningLabel()}`));
       setStep('done');
     } catch {
-      setError('Network problem — please try again, or call 0330 229 5040.');
+      setError('Network problem - please try again, or call 0330 229 5040.');
     } finally {
       setSubmitting(false);
     }
@@ -117,7 +117,7 @@ export function CallMeBackPanel({
         </p>
         <p className="mt-1 leading-relaxed">
           {open
-            ? `A UK warranty specialist will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} ${whenLabel}. Have any competitor quote handy — we'll beat it.`
+            ? `A UK warranty specialist will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} ${whenLabel}. Have any competitor quote handy - we'll beat it.`
             : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you back ${nextOpeningLabel()} and you're first in the queue (${openingHoursLabel}).`}
         </p>
       </div>
@@ -130,7 +130,7 @@ export function CallMeBackPanel({
         <button
           type="button"
           onClick={() => setStep('topic')}
-          title="All our agents are busy — leave your number and we'll call or WhatsApp you back"
+          title="All our agents are busy - leave your number and we'll call or WhatsApp you back"
           className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
         >
           <MessageCircle className="h-4 w-4 shrink-0 text-[#B4501F]" />
@@ -149,7 +149,7 @@ export function CallMeBackPanel({
         >
           <MessageCircle className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
           <span className="flex-1 truncate text-xs font-bold text-foreground">
-            All our agents are busy — leave your number and we'll call you back
+            All our agents are busy - leave your number and we'll call you back
           </span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
         </button>
@@ -164,7 +164,7 @@ export function CallMeBackPanel({
           <p className="text-xs text-muted-foreground">
             {open
               ? 'Leave your number and a UK specialist will call or WhatsApp you back.'
-              : `Leave your number — we'll call or WhatsApp you ${nextOpeningLabel()} (${openingHoursLabel}).`}
+              : `Leave your number - we'll call or WhatsApp you ${nextOpeningLabel()} (${openingHoursLabel}).`}
           </p>
           {open && (
             <a
@@ -290,8 +290,8 @@ export function CallMeBackPanel({
         >
           <p className="text-sm leading-relaxed text-muted-foreground">
             {open
-              ? 'Leave your number and a UK warranty specialist will get back to you shortly — by call or WhatsApp, whichever you prefer.'
-              : `A warranty specialist will be back ${nextOpeningLabel()} — leave your number and you are first in the queue.`}
+              ? 'Leave your number and a UK warranty specialist will get back to you shortly - by call or WhatsApp, whichever you prefer.'
+              : `A warranty specialist will be back ${nextOpeningLabel()} - leave your number and you are first in the queue.`}
           </p>
 
           <div className="space-y-1.5">
@@ -384,8 +384,8 @@ export function CallMeBackPanel({
           )}
           <p className="text-sm leading-relaxed text-muted-foreground">
             {open
-              ? `We will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} shortly — a UK specialist, no premium numbers.`
-              : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you ${nextOpeningLabel()} — you will be first in the queue.`}
+              ? `We will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} shortly - a UK specialist, no premium numbers.`
+              : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you ${nextOpeningLabel()} - you will be first in the queue.`}
           </p>
           {error && <p className="text-xs font-medium text-destructive">{error}</p>}
           <div className="flex gap-2">
