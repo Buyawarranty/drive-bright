@@ -100,7 +100,9 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
   const [teamFilter, setTeamFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('inshift-desc');
   const [agents, setAgents] = useState<AgentRow[]>([]);
+  const [showArchived, setShowArchived] = useState(false);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+
   const [events, setEvents] = useState<CallEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
