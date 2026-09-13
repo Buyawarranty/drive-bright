@@ -173,10 +173,16 @@ export const LiveChatQuestionAlert: React.FC = () => {
     });
   };
 
-  if (!allowed || (visible.length === 0 && waitingCount === 0)) return null;
+  if (!allowed || closed || (visible.length === 0 && waitingCount === 0)) return null;
 
   const openChat = (threadId: string) => {
     window.location.href = `/admin-dashboard/?tab=chatbot-data&chatThread=${threadId}`;
+  };
+
+  const closeAlert = () => {
+    setClosed(true);
+    closedFor.current = waitingThreadId;
+    stopPhoneRing();
   };
 
   return (
