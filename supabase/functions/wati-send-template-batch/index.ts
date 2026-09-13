@@ -119,6 +119,7 @@ Deno.serve(async (req) => {
       force_send: true,
       batch_label: batchLabel,
       status: 'pending',
+      ...(sendAfter ? { next_attempt_at: sendAfter.toISOString() } : {}),
     });
   }
 
@@ -130,15 +131,25 @@ Deno.serve(async (req) => {
   }
 
   // The sender works through 20 numbers per run; the hourly job clears the rest.
+  // Scheduled batches wait in the queue until their chosen time instead.
   let sendRuns = 0;
-  const runs = Math.min(Math.ceil(queueRows.length / 20), 15);
-  for (let r = 0; r < runs; r += 1) {
+  if (!sendAfter) {
+    const runs = Math.min(Math.ceil(queueRows.length / 20), 15);
+    for (let r = 0; r < runs; r += 1) {
+      try {
+        await admin.functions.invoke('wati-auto-message', { body: { trigger: 'batch_send' } });
+        sendRuns += 1;
+      } catch (error) {
+        console.error('auto-message invoke failed', error);
+        break;
+      }
+    }
+  } else {
+    // One kick in case the time has nearly arrived by the time queueing finished.
     try {
       await admin.functions.invoke('wati-auto-message', { body: { trigger: 'batch_send' } });
-      sendRuns += 1;
     } catch (error) {
       console.error('auto-message invoke failed', error);
-      break;
     }
   }
 
@@ -150,5 +161,6 @@ Deno.serve(async (req) => {
     queued: queueRows.length,
     skipped,
     sendRuns,
+    scheduledFor: sendAfter ? sendAfter.toISOString() : null,
   });
 });
