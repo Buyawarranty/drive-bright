@@ -24,7 +24,7 @@ function validEmail(raw: string): boolean {
 }
 
 type Step = 'closed' | 'topic' | 'claimsInfo' | 'number' | 'confirm' | 'done';
-type Preference = 'call' | 'whatsapp';
+type Preference = 'call' | 'whatsapp' | 'email';
 type Topic = 'warranty_purchase' | 'general' | 'existing_policy' | 'other';
 
 const TOPICS: { key: Topic; label: string }[] = [
