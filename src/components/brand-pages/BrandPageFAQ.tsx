@@ -65,7 +65,7 @@ const rightColumnFAQs = [
   {
     id: '30-day-wait',
     question: 'Is there a waiting period before I can claim?',
-    answer: "No - your cover begins immediately. As long as there are no pre‑existing faults on the vehicle, you're protected from the moment your warranty starts. The only things we can't cover are issues that were already present before the plan began."
+    answer: "Your cover starts immediately, and you can make your first claim after 14 days. The only things we can't cover are faults that were already present before the plan began."
   }
 ];
 

@@ -318,7 +318,7 @@ const FAQ = () => {
         {
           id: 'thirty-day-wait',
           question: 'Is there a waiting period before I can claim?',
-          answer: 'No - your cover begins immediately. As long as there are no pre‑existing faults on the vehicle, you\'re protected from the moment your warranty starts. The only things we can\'t cover are issues that were already present before the plan began.'
+          answer: 'Your cover starts immediately, and you can make your first claim after 14 days. The only things we can\'t cover are faults that were already present before the plan began.'
         }
       ]
     },
@@ -842,7 +842,7 @@ const FAQ = () => {
     { question: "Is a vehicle inspection necessary before I can make a claim?", answer: "In certain situations, we may need to inspect your vehicle before validating your claim." },
     { question: "When can I make my first claim?", answer: "You can make your first claim 30 days after you buy your plan, unless you already had an active warranty with us. If you're renewing or moving from one of our plans to another with continuous cover, you can claim straight away. For example: If you buy your plan today and a warning light appears after one week, you'll be able to make a claim once 30 days have passed." },
     { question: "What if I don't have a full service history?", answer: "No problem. If you don't have a complete service history, you can get a full service done now and then contact us about your claim. This way, you're still eligible for cover and can claim with confidence." },
-    { question: "Is there a waiting period before I can claim?", answer: "No - your cover begins immediately. As long as there are no pre‑existing faults on the vehicle, you're protected from the moment your warranty starts. The only things we can't cover are issues that were already present before the plan began." },
+    { question: "Is there a waiting period before I can claim?", answer: "Your cover starts immediately, and you can make your first claim after 14 days. The only things we can't cover are faults that were already present before the plan began." },
     { question: "What's covered in my warranty?", answer: "At Buy-a-Warranty, we like to keep things simple. One solid plan that works for cars, vans, and motorbikes, whether you're driving electric, hybrid, petrol, or diesel. We keep things simple with no confusing packages, you won't encounter any unexpected rejections, and we offer straightforward cover without the hassle." },
     { question: "What's included in my warranty?", answer: "Our Platinum Plan comes as standard and includes: all mechanical and electrical parts covered, labour costs included, fault diagnostics, consequential damage cover, and access to trusted repair centres or your own garage." },
     { question: "What components are covered?", answer: "Our warranty covers a wide range of parts and systems, including: engine, gearbox, drivetrain, turbocharger, fuel systems, cooling, exhaust, brakes, suspension, steering, air conditioning, electrical systems, ECUs, sensors, lighting, multimedia, driver assistance, safety systems, hybrid/PHEV components, electric vehicle systems, and motorcycles. For full details, please see our 'What's covered' section." },
