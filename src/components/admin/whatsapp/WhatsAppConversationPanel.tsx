@@ -14,6 +14,7 @@ import WhatsAppPipelineBar from './WhatsAppPipelineBar';
 import WhatsAppTagPicker from './WhatsAppTagPicker';
 import type { WhatsAppConversation } from '@/hooks/useWhatsAppConversations';
 import { matchQuickReplies, slashQuery } from '@/lib/whatsappQuickReplies';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Props {
   conversation: WhatsAppConversation;
@@ -22,6 +23,9 @@ interface Props {
   onStatusChange: (status: WhatsAppPipelineStatus) => void;
   onFollowUpChange: (whenIso: string | null) => void;
 }
+
+/** Ready-made tappable button labels (WhatsApp allows 20 characters each). */
+const BUTTON_CHOICES = ['Get a quote', 'Make a claim', 'Call me back', 'Yes please', 'Not right now'];
 
 const StatusTicks: React.FC<{ status: string | null }> = ({ status }) => {
   if (status === 'read') return <CheckCheck className="h-3 w-3 text-sky-600" aria-label="Read" />;
@@ -41,6 +45,8 @@ export const WhatsAppConversationPanel: React.FC<Props> = ({
   const { messages, sending, sendMessage } = useWhatsAppMessages(conversation.id);
   const [draft, setDraft] = useState('');
   const [highlight, setHighlight] = useState(0);
+  const [chosenButtons, setChosenButtons] = useState<string[]>([]);
+  const [sendingButtons, setSendingButtons] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const suggestions = useMemo(() => {
@@ -67,6 +73,34 @@ export const WhatsAppConversationPanel: React.FC<Props> = ({
   const followUpValue = conversation.next_follow_up_at
     ? new Date(conversation.next_follow_up_at).toISOString().slice(0, 16)
     : '';
+
+  const toggleButton = (label: string) =>
+    setChosenButtons((prev) =>
+      prev.includes(label) ? prev.filter((b) => b !== label) : prev.length >= 3 ? prev : [...prev, label],
+    );
+
+  const handleSendButtons = async () => {
+    const text = draft.trim();
+    if (!text || chosenButtons.length === 0) return;
+    setSendingButtons(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('wati-send-buttons', {
+        body: { conversationId: conversation.id, message: text, buttons: chosenButtons },
+      });
+      if (error || (data as any)?.error) throw new Error(String((data as any)?.error || error?.message));
+      setDraft('');
+      setChosenButtons([]);
+      toast.success('Sent with buttons.');
+    } catch (e: any) {
+      toast.error(
+        String(e?.message || '').includes('wati_not_configured')
+          ? 'WhatsApp sending is not switched on yet - add the WATI details first.'
+          : 'That message could not be sent. Please try again.',
+      );
+    } finally {
+      setSendingButtons(false);
+    }
+  };
 
   const handleSend = async () => {
     const text = draft.trim();
@@ -253,6 +287,41 @@ export const WhatsAppConversationPanel: React.FC<Props> = ({
             <p className="text-xs text-muted-foreground">
               Type <span className="font-semibold">/</span> to pick a template reply, then edit before sending.
             </p>
+            <div className="rounded-md border border-border bg-muted/30 p-3">
+              <p className="text-xs font-semibold">Add tappable buttons (up to 3)</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {BUTTON_CHOICES.map((label) => {
+                  const on = chosenButtons.includes(label);
+                  return (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => toggleButton(label)}
+                      className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                        on
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-border bg-background hover:bg-accent'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleSendButtons}
+                  disabled={sendingButtons || !draft.trim() || chosenButtons.length === 0}
+                >
+                  {sendingButtons ? 'Sending…' : 'Send with buttons'}
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  Your message above is sent with these buttons underneath.
+                </span>
+              </div>
+            </div>
           </div>
         ) : (
           <p className="rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
