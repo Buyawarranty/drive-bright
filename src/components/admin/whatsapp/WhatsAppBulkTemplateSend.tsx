@@ -217,6 +217,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
 
   useEffect(() => {
     void loadAuto();
+    void loadScheduled();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -238,11 +239,14 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
 
   const handleSend = async () => {
     if (!template.trim() || chosenCount === 0) return;
+    const sendAfter = sendLater ? new Date(sendLater) : null;
+    const isScheduled = !!sendAfter && sendAfter.getTime() > Date.now();
     setSending(true);
     const { data, error } = await supabase.functions.invoke('wati-send-template-batch', {
       body: {
         leadIds: sendable.filter((l) => selected.has(l.id)).map((l) => l.id),
         templateName: template.trim(),
+        ...(isScheduled ? { sendAfter: sendAfter!.toISOString() } : {}),
       },
     });
     setSending(false);
@@ -255,11 +259,26 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
       );
       return;
     }
-    toast.success(
-      `${data.queued} message${data.queued === 1 ? '' : 's'} on their way (${data.templateName}).`,
-    );
+    if (data.scheduledFor) {
+      toast.success(
+        `${data.queued} message${data.queued === 1 ? '' : 's'} scheduled for ${new Date(
+          data.scheduledFor,
+        ).toLocaleString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit',
+        })} (${data.templateName}).`,
+      );
+    } else {
+      toast.success(
+        `${data.queued} message${data.queued === 1 ? '' : 's'} on their way (${data.templateName}).`,
+      );
+    }
+    setSendLater('');
     void load();
     void loadAuto();
+    void loadScheduled();
   };
 
   const presets: { key: Preset; label: string }[] = [
