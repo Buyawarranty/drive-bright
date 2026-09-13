@@ -80,17 +80,27 @@ Deno.serve(async (req) => {
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
     const body = await req.json().catch(() => ({}));
 
+    const rawPreference = ["whatsapp", "email"].includes(body?.contactPreference)
+      ? body.contactPreference
+      : "call";
+    const isEmailPreference = rawPreference === "email";
+
     const phone = normalisePhone(String(body?.phone ?? ""));
-    if (!phone) {
+    const email = String(body?.email ?? "").trim().toLowerCase().slice(0, 160);
+
+    if (isEmailPreference) {
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return json({ ok: false, error: "invalid_email", message: "Enter a valid email address." }, 400);
+      }
+    } else if (!phone) {
       return json({ ok: false, error: "invalid_phone", message: "Enter a valid UK mobile or landline number." }, 400);
     }
 
     const name = String(body?.name ?? "").trim().slice(0, 80);
-    const email = String(body?.email ?? "").trim().toLowerCase().slice(0, 160);
     const registration = String(body?.registration ?? "").toUpperCase().replace(/\s/g, "").slice(0, 12);
     const source = String(body?.source ?? "website-chat").slice(0, 80);
     const guestToken = String(body?.guestToken ?? "").slice(0, 64);
-    const contactPreference = body?.contactPreference === "whatsapp" ? "whatsapp" : "call";
+    const contactPreference = rawPreference;
     const threadId = typeof body?.threadId === "string" ? body.threadId : null;
     const quotedPrice = Number.isFinite(Number(body?.quotedPrice)) ? Number(body.quotedPrice) : null;
 
@@ -107,16 +117,21 @@ Deno.serve(async (req) => {
     const tail9 = phone.slice(-9);
     const nameParts = name.split(/\s+/).filter(Boolean);
 
+    const preferenceLine = isEmailPreference
+      ? `Customer prefers an EMAIL back to ${email}.`
+      : contactPreference === "whatsapp"
+        ? "Customer prefers a WHATSAPP message back on this number."
+        : "Customer prefers a PHONE CALL back on this number.";
     const noteLines = [
       `[${new Date().toLocaleString("en-GB", { timeZone: "Europe/London" })} - System] Message me back requested from website chat (${source}).`,
       `Query type: ${topicLabel}.`,
-      contactPreference === "whatsapp"
-        ? "Customer prefers a WHATSAPP message back on this number."
-        : "Customer prefers a PHONE CALL back on this number.",
+      preferenceLine,
       plan.isOpen
-        ? contactPreference === "whatsapp"
-          ? "Team is OPEN — WhatsApp them straight away."
-          : "Team is OPEN — ring straight away."
+        ? isEmailPreference
+          ? "Team is OPEN — email them straight away."
+          : contactPreference === "whatsapp"
+            ? "Team is OPEN — WhatsApp them straight away."
+            : "Team is OPEN — ring straight away."
         : `Requested out of hours — call ${plan.label}.`,
       registration ? `Reg given: ${registration}` : null,
       quotedPrice ? `Price discussed: £${Math.round(quotedPrice)}` : null,

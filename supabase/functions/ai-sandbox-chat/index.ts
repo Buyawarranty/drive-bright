@@ -62,7 +62,7 @@ GROUNDING — THE MOST IMPORTANT RULE:
 - PRICE MATCHING — keep it short and confident, in bullets, never a long explanation. If a customer mentions a competitor price or asks to match/beat a price, reply with a short line plus three bullets, roughly:
   "Good news — we can match any like-for-like price and beat it."
   • Give us a call on 0330 229 5040, or
-  • Leave your name, number, email and reg and we'll call you back
+  • Leave your name, number or email and reg and we'll call, WhatsApp or email you back
   • We'll beat the price you've been quoted
   Then call capture_lead as soon as you have a phone number or email. Never say you "can't match or discount prices", never explain that system prices are fixed, and never write more than those bullets.
 
@@ -91,7 +91,7 @@ These are management-approved facts. They do NOT need search_site_knowledge and 
 - Are you regulated or registered? / Who regulates you? / FCA authorisation? → Buy a Warranty is an **appointed representative** of an FCA-authorised firm, and we are currently working towards full **FCA authorisation**. In the meantime, the cover is provided under that appointed-representative arrangement, so you are fully protected.
 - Will I get bombarded with calls and texts if I get a quote? → No. They can see their price here in the chat without giving a phone number, and we only call or text if they ask us to. Nothing is passed to third parties for marketing.
 - Are you the provider or a middleman / broker? → We are the warranty provider. Buy a Warranty administers the plan and handles claims with our own UK claims team, so they deal with us directly, not a middleman passing it on.
-- Can I speak to a real person? / I want a human now (mid-purchase or otherwise) → Never argue or delay. Follow step 5's human-handover rule immediately: connect a specialist when live chat is open, or take their phone number for a callback when it is closed.
+- Can I speak to a real person? / I want a human now (mid-purchase or otherwise) → Never argue or delay. Follow step 5's human-handover rule immediately: give them the sales line or take their phone number or email for a callback when it is closed.
 - Why not just save the money myself instead of buying cover? → Fair question, and a sensible one. The difference is a single failure, a gearbox, turbo or hybrid battery, can run into thousands, and cover spreads that into a small fixed amount with our UK claims team, approved repairs and labour paid up to the chosen rate. If they would rather self-fund a small repair, they can pick a lower claim limit and a higher excess to keep the price down.
 - What's the best price you can do today? → Be warm and direct, never say prices are fixed. Quote their actual price with get_indicative_price, mention the pay in full saving, then use the PRICE MATCHING bullets so a specialist can beat any like-for-like quote.
 - Why are you more expensive than X? / How do you compare to Warrantywise or another provider? → Never criticise a competitor or quote their terms. Say cover levels differ, so it is worth comparing like for like: our claim limits, labour rate up to their chosen rate, £0 excess option, UK claims team, and claims usually reviewed in 2 to 3 working days. Then offer the price match bullets, we match any like-for-like price and beat it.
@@ -116,8 +116,8 @@ The sales journey — follow it in order:
 4. Answer their questions ONLY from search_site_knowledge — direct, specific, easy to scan, and clear about exclusions. Never imply a claim will be accepted. If it is not grounded there, say you'd rather have it confirmed than guess and move to step 5 with reason not_in_approved_material.
 
 5. There is NO live chat handover and no way to put a customer through to a person in this chat. Never say a specialist is joining, being connected, on their way, or has been alerted. Never say anyone is online now.
-   - When someone wants a person — at buying intent, hesitation, or any question the approved material does not answer — give them the two real routes in two short sentences: call the sales team on **0330 229 5040** (Monday to Saturday, **9am to 6pm**), or leave a phone number and the team will call or WhatsApp them back.
-   - Ask for the **phone number** first, one detail at a time, and say whether they would prefer a **call or WhatsApp**. As soon as you have a phone number (or an email), call capture_lead with that preference in the notes. A name is optional, never block on it.
+   - When someone wants a person — at buying intent, hesitation, or any question the approved material does not answer — give them the real routes in two short sentences: call the sales team on **0330 229 5040** (Monday to Saturday, **9am to 6pm**), or leave a phone number or email and the team will call, WhatsApp or email them back.
+   - Ask for the **phone number or email** first, one detail at a time, and say whether they would prefer a **call, WhatsApp or email**. As soon as you have a phone number or an email, call capture_lead with that preference in the notes. A name is optional, never block on it.
    - Then confirm plainly when they will hear back: within opening hours say the team will be in touch shortly; outside them, say the team will message them back when they are next open (use check_availability for the time).
    - Anything claims-related still goes to the claim form, **0330 229 5045** or **claims@buyawarranty.co.uk**, Monday to Friday, **9am to 5pm**. Never say claims details have been passed on.
 
@@ -842,7 +842,7 @@ Deno.serve(async (req) => {
 
       check_availability: tool({
         description:
-          "Check the team's opening hours and whether they are open right now. There is no live chat handover — use this only to tell the customer when the team will call or WhatsApp them back.",
+          "Check the team's opening hours and whether they are open right now. There is no live chat handover — use this only to tell the customer when the team will call, WhatsApp or email them back.",
         inputSchema: z.object({}),
         execute: async () => {
           const state = availability();
@@ -850,15 +850,15 @@ Deno.serve(async (req) => {
             ...state,
             can_connect_live_now: false,
             instruction: state.is_open
-              ? "We are OPEN. Never say a specialist is joining the chat. Offer the sales line 0330 229 5040, or take a phone number (and whether they prefer a call or WhatsApp) and call capture_lead."
-              : `We are CLOSED (back ${state.next_open}). Take a phone number or email, note whether they prefer a call or WhatsApp, and call capture_lead.`,
+              ? "We are OPEN. Never say a specialist is joining the chat. Offer the sales line 0330 229 5040, or take a phone number or email (and whether they prefer a call, WhatsApp or email) and call capture_lead."
+              : `We are CLOSED (back ${state.next_open}). Take a phone number or email, note whether they prefer a call, WhatsApp or email, and call capture_lead.`,
           });
         },
       }),
 
       capture_lead: tool({
         description:
-          "Save the customer's details so the team calls or WhatsApps them back. Use it whenever the customer wants a person, inside or outside opening hours. Put their contact preference (call or WhatsApp) in the notes.",
+          "Save the customer's details so the team calls, WhatsApps or emails them back. Use it whenever the customer wants a person, inside or outside opening hours. Put their contact preference (call, WhatsApp or email) in the notes.",
         inputSchema: z.object({
           customer_name: z.string().nullable(),
           customer_email: z.string().nullable(),
@@ -872,7 +872,7 @@ Deno.serve(async (req) => {
           if (!args.customer_email && !args.customer_phone) {
             return toolResultText({
               ok: false,
-              note: "Ask for a phone number (or an email) first — a name is optional.",
+              note: "Ask for a phone number or an email first — a name is optional.",
             });
           }
           const state = availability();
@@ -923,7 +923,7 @@ Deno.serve(async (req) => {
             lead_id: data.id,
             pipeline_lead: pipeline,
             next_open: state.next_open,
-            note: "Details saved. Tell the customer the team will call or WhatsApp them back (shortly if open, otherwise at the next opening time) and offer to keep helping here meanwhile.",
+            note: "Details saved. Tell the customer the team will call, WhatsApp or email them back (shortly if open, otherwise at the next opening time) and offer to keep helping here meanwhile.",
           });
         },
 
@@ -938,11 +938,11 @@ Deno.serve(async (req) => {
     }).format(new Date());
     const isWeekend = londonWeekday === "Sat" || londonWeekday === "Sun";
     const weekendRule = isWeekend
-      ? " It is the WEEKEND: the sales phone line is not staffed, so do NOT give out the sales number 0330 229 5040 and do not tell anyone to call. Take their phone number instead and note whether they prefer a call or WhatsApp, then call capture_lead. Claims questions still get the claims line 0330 229 5045 (Monday to Friday, 9am to 5pm) and buyawarranty.co.uk/make-a-claim/."
+      ? " It is the WEEKEND: the sales phone line is not staffed, so do NOT give out the sales number 0330 229 5040 and do not tell anyone to call. Take their phone number or email instead and note whether they prefer a call, WhatsApp or email, then call capture_lead. Claims questions still get the claims line 0330 229 5045 (Monday to Friday, 9am to 5pm) and buyawarranty.co.uk/make-a-claim/."
       : "";
     const liveContext = `\n\nRight now: ${now.local_time}. The team is ${
       now.is_open ? "OPEN" : `CLOSED (back ${now.next_open})`
-    }. Opening hours are ${now.opening_hours}.${weekendRule} There is NO live chat handover: never say a specialist is joining, connecting, alerted or online. If the customer wants a person, give the sales line 0330 229 5040 and offer to take their phone number so the team calls or WhatsApps them back, then call capture_lead.\nIf a message in the conversation begins with "(Warranty specialist)" a member of staff has replied in this chat — stay out of the way and only reply if the customer asks you directly.`;
+    }. Opening hours are ${now.opening_hours}.${weekendRule} There is NO live chat handover: never say a specialist is joining, connecting, alerted or online. If the customer wants a person, give the sales line 0330 229 5040 and offer to take their phone number or email so the team calls, WhatsApps or emails them back, then call capture_lead.\nIf a message in the conversation begins with "(Warranty specialist)" a member of staff has replied in this chat — stay out of the way and only reply if the customer asks you directly.`;
 
 
     const modelMessages = await convertToModelMessages(

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { PhoneCall, Phone, Check, Loader2, X, Clock, ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
+import { PhoneCall, Phone, Check, Loader2, X, Clock, ChevronDown, ChevronUp, MessageCircle, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isTeamOpenNow, nextOpeningLabel, openingHoursLabel } from '@/lib/aiSandbox/openingHours';
 import { useSalesLineAvailable } from '@/hooks/useSalesLineAvailable';
@@ -19,8 +19,12 @@ function prettyPhone(raw: string): string {
   return raw;
 }
 
+function validEmail(raw: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw.trim());
+}
+
 type Step = 'closed' | 'topic' | 'claimsInfo' | 'number' | 'confirm' | 'done';
-type Preference = 'call' | 'whatsapp';
+type Preference = 'call' | 'whatsapp' | 'email';
 type Topic = 'warranty_purchase' | 'general' | 'existing_policy' | 'other';
 
 const TOPICS: { key: Topic; label: string }[] = [
@@ -58,6 +62,7 @@ export function CallMeBackPanel({
   const [step, setStep] = useState<Step>('closed');
   const [collapsed, setCollapsed] = useState(true);
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [preference, setPreference] = useState<Preference>('call');
   const [topic, setTopic] = useState<Topic | null>(null);
@@ -68,8 +73,9 @@ export function CallMeBackPanel({
   const open = isTeamOpenNow();
   // Weekends: the phone line only shows while an agent is genuinely live.
   const showPhoneLine = useSalesLineAvailable();
-  const isValid = useMemo(() => validUkPhone(phone), [phone]);
+  const isEmail = preference === 'email';
   const isWhatsApp = preference === 'whatsapp';
+  const isValid = useMemo(() => (isEmail ? validEmail(email) : validUkPhone(phone)), [isEmail, email, phone]);
 
   const submit = async () => {
     if (!isValid || submitting) return;
@@ -80,7 +86,8 @@ export function CallMeBackPanel({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone,
+          phone: isEmail ? '' : phone,
+          email: isEmail ? email.trim() : '',
           name,
           contactPreference: preference,
           topic: topic ?? 'other',
@@ -110,18 +117,22 @@ export function CallMeBackPanel({
   };
 
   if (step === 'done') {
+    const contactLabel = isEmail ? 'Email' : isWhatsApp ? 'WhatsApp' : 'Call';
+    const destination = isEmail ? email : prettyPhone(phone);
     return (
       <div className={`${asChip ? '' : 'mx-3'} mb-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-900`}>
         <p className="flex items-center gap-1.5 font-semibold">
           <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600">
             <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
           </span>
-          {isWhatsApp ? 'WhatsApp' : 'Call'} saved for {prettyPhone(phone)}
+          {contactLabel} saved for {destination}
         </p>
         <p className="mt-1 leading-relaxed">
-          {open
-            ? `A UK warranty specialist will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} ${whenLabel}. Have any competitor quote handy - we'll beat it.`
-            : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you back ${nextOpeningLabel()} and you're first in the queue (${openingHoursLabel}).`}
+          {isEmail
+            ? `A UK warranty specialist will email you ${open ? whenLabel : `${nextOpeningLabel()} and you're first in the queue`} (${openingHoursLabel}).`
+            : open
+              ? `A UK warranty specialist will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} ${whenLabel}. Have any competitor quote handy - we'll beat it.`
+              : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you back ${nextOpeningLabel()} and you're first in the queue (${openingHoursLabel}).`}
         </p>
       </div>
     );
@@ -133,7 +144,7 @@ export function CallMeBackPanel({
         <button
           type="button"
           onClick={() => setStep('topic')}
-          title="All our agents are busy - leave your number and we'll call or WhatsApp you back"
+          title="All our agents are busy - leave your number or email and we'll call, WhatsApp or email you back"
           className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
         >
           <MessageCircle className="h-4 w-4 shrink-0 text-[#B4501F]" />
@@ -152,7 +163,7 @@ export function CallMeBackPanel({
         >
           <MessageCircle className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
           <span className="flex-1 truncate text-xs font-bold text-foreground">
-            All our agents are busy - leave your number and we'll call you back
+            All our agents are busy - leave your number or email and we'll get back to you
           </span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
         </button>
@@ -166,8 +177,8 @@ export function CallMeBackPanel({
           <p className="text-sm font-bold text-foreground">All our agents are busy right now</p>
           <p className="text-xs text-muted-foreground">
             {open
-              ? 'Leave your number and a UK specialist will call or WhatsApp you back.'
-              : `Leave your number - we'll call or WhatsApp you ${nextOpeningLabel()} (${openingHoursLabel}).`}
+              ? 'Leave your number or email and a UK specialist will call, WhatsApp or email you back.'
+              : `Leave your number or email - we'll call, WhatsApp or email you ${nextOpeningLabel()} (${openingHoursLabel}).`}
           </p>
           {open && showPhoneLine && (
             <a
@@ -210,8 +221,8 @@ export function CallMeBackPanel({
             : step === 'claimsInfo'
               ? 'Making a claim'
               : step === 'number'
-                ? 'Leave us your number'
-                : 'Confirm your number'}
+                ? 'Leave us your number or email'
+                : 'Confirm your details'}
         </p>
         <button
           onClick={() => {
@@ -228,7 +239,7 @@ export function CallMeBackPanel({
       {step === 'topic' ? (
         <div className="space-y-3">
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Leave your number and we'll call or WhatsApp you back. First, what's your query about?
+            Leave your number or email and we'll call, WhatsApp or email you back. First, what's your query about?
           </p>
           <div className="grid grid-cols-2 gap-2">
             {TOPICS.map(({ key, label }) => (
@@ -287,50 +298,69 @@ export function CallMeBackPanel({
           onSubmit={(e) => {
             e.preventDefault();
             if (isValid) setStep('confirm');
-            else setError('Enter a valid UK mobile or landline number');
+            else setError(isEmail ? 'Enter a valid email address' : 'Enter a valid UK mobile or landline number');
           }}
           className="space-y-3"
         >
           <p className="text-sm leading-relaxed text-muted-foreground">
             {open
-              ? 'Leave your number and a UK warranty specialist will get back to you shortly - by call or WhatsApp, whichever you prefer.'
-              : `A warranty specialist will be back ${nextOpeningLabel()} - leave your number and you are first in the queue.`}
+              ? 'Leave your number or email and a UK warranty specialist will get back to you shortly - by call, WhatsApp or email, whichever you prefer.'
+              : `A warranty specialist will be back ${nextOpeningLabel()} - leave your number or email and you are first in the queue.`}
           </p>
 
           <div className="space-y-1.5">
-            <label htmlFor="cb-phone" className="block text-xs font-semibold text-foreground">
-              Phone number
+            <label htmlFor={isEmail ? 'cb-email' : 'cb-phone'} className="block text-xs font-semibold text-foreground">
+              {isEmail ? 'Email address' : 'Phone number'}
             </label>
-            <input
-              id="cb-phone"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              autoFocus
-              value={phone}
-              onChange={(e) => {
-                setPhone(e.target.value.replace(/[^\d +]/g, '').slice(0, 16));
-                setError(null);
-              }}
-              placeholder="07960 123456"
-              aria-label="Your phone number"
-              className="h-12 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
+            {isEmail ? (
+              <input
+                id="cb-email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                autoFocus
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value.slice(0, 160));
+                  setError(null);
+                }}
+                placeholder="alex@example.com"
+                aria-label="Your email address"
+                className="h-12 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            ) : (
+              <input
+                id="cb-phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                autoFocus
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value.replace(/[^\d +]/g, '').slice(0, 16));
+                  setError(null);
+                }}
+                placeholder="07960 123456"
+                aria-label="Your phone number"
+                className="h-12 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            )}
           </div>
 
           <div className="space-y-1.5">
             <span className="block text-xs font-semibold text-foreground">How should we get back to you?</span>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {([
                 { key: 'call' as Preference, label: 'Phone call', Icon: PhoneCall },
                 { key: 'whatsapp' as Preference, label: 'WhatsApp', Icon: MessageCircle },
+                { key: 'email' as Preference, label: 'Email', Icon: Mail },
               ]).map(({ key, label, Icon }) => (
                 <button
                   key={key}
                   type="button"
                   onClick={() => setPreference(key)}
                   aria-pressed={preference === key}
-                  className={`flex h-11 items-center justify-center gap-2 rounded-xl border text-sm font-bold transition-colors ${
+                  className={`flex h-11 items-center justify-center gap-1.5 rounded-xl border text-xs font-bold transition-colors ${
                     preference === key
                       ? 'border-primary bg-primary/10 text-foreground'
                       : 'border-input bg-background text-muted-foreground hover:bg-muted'
@@ -377,8 +407,11 @@ export function CallMeBackPanel({
       ) : (
         <div className="space-y-3">
           <p className="text-base text-foreground">
-            Is <span className="font-bold">{prettyPhone(phone)}</span> the right number
-            {name ? `, ${name}` : ''}?
+            {isEmail ? (
+              <>Is <span className="font-bold">{email}</span> the right email{name ? `, ${name}` : ''}?</>
+            ) : (
+              <>Is <span className="font-bold">{prettyPhone(phone)}</span> the right number{name ? `, ${name}` : ''}?</>
+            )}
           </p>
           {topic && (
             <p className="text-xs font-semibold text-muted-foreground">
@@ -386,9 +419,11 @@ export function CallMeBackPanel({
             </p>
           )}
           <p className="text-sm leading-relaxed text-muted-foreground">
-            {open
-              ? `We will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} shortly - a UK specialist, no premium numbers.`
-              : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you ${nextOpeningLabel()} - you will be first in the queue.`}
+            {isEmail
+              ? `We will email you ${open ? 'shortly' : `${nextOpeningLabel()} - you will be first in the queue`} - a UK specialist, no premium numbers.`
+              : open
+                ? `We will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} shortly - a UK specialist, no premium numbers.`
+                : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you ${nextOpeningLabel()} - you will be first in the queue.`}
           </p>
           {error && <p className="text-xs font-medium text-destructive">{error}</p>}
           <div className="flex gap-2">
