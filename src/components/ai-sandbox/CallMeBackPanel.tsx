@@ -20,7 +20,29 @@ const CALLBACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-
 function validUkPhone(raw: string): boolean {
   let digits = raw.replace(/\D/g, '');
   if (digits.startsWith('44')) digits = `0${digits.slice(2)}`;
-  return /^07\d{9}$/.test(digits) || /^0[12]\d{8,9}$/.test(digits) || /^03\d{9}$/.test(digits);
+  if (!/^07\d{9}$/.test(digits) && !/^0[12]\d{8,9}$/.test(digits) && !/^03\d{9}$/.test(digits)) return false;
+  // Reject obvious junk: the same digit repeated 5+ times in a row.
+  if (/(\d)\1{4,}/.test(digits)) return false;
+  return true;
+}
+
+/** Keep typing sane: digits/spaces/+, capped at a normal UK length. */
+function capUkPhone(raw: string): string {
+  const cleaned = raw.replace(/[^\d +]/g, '');
+  const digits = cleaned.replace(/\D/g, '');
+  const max = digits.startsWith('44') || cleaned.trim().startsWith('+') ? 13 : 11;
+  if (digits.length <= max) return cleaned;
+  // Trim trailing digits beyond the cap, preserving spacing roughly.
+  let kept = '';
+  let count = 0;
+  for (const ch of cleaned) {
+    if (/\d/.test(ch)) {
+      if (count >= max) continue;
+      count += 1;
+    }
+    kept += ch;
+  }
+  return kept;
 }
 
 function prettyPhone(raw: string): string {
@@ -30,7 +52,11 @@ function prettyPhone(raw: string): string {
 }
 
 function validEmail(raw: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw.trim());
+  const v = raw.trim();
+  // Sensible shape: local part, @, domain labels, alphabetic TLD of 2+ chars.
+  if (!/^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9][A-Za-z0-9.-]{0,253}\.[A-Za-z]{2,24}$/.test(v)) return false;
+  if (v.includes('..')) return false;
+  return true;
 }
 
 type Step = 'closed' | 'method' | 'claimsInfo' | 'number' | 'done';
@@ -68,6 +94,7 @@ export function CallMeBackPanel({
 }) {
   const [step, setStep] = useState<Step>(autoOpen ? 'method' : 'closed');
   const [collapsed, setCollapsed] = useState(!autoOpen);
+  const [touched, setTouched] = useState(false);
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [preference, setPreference] = useState<Preference>('call');
@@ -123,6 +150,7 @@ export function CallMeBackPanel({
   const pickMethod = (key: Preference) => {
     setPreference(key);
     setError(null);
+    setTouched(false);
     setStep('number');
   };
 
@@ -361,6 +389,7 @@ export function CallMeBackPanel({
                   onClick={() => {
                     setPreference(key);
                     setError(null);
+                    setTouched(false);
                   }}
                   aria-pressed={preference === key}
                   className={`flex h-16 flex-col items-center justify-center gap-1 rounded-xl border px-1 text-xs font-bold transition-colors ${
@@ -380,52 +409,76 @@ export function CallMeBackPanel({
             <label htmlFor={isEmail ? 'cb-email' : 'cb-phone'} className="block text-sm font-bold text-foreground">
               {isEmail ? 'Please enter your email address' : 'Please enter your phone number'}
             </label>
-            {isEmail ? (
-              <div className="relative">
-                <input
-                  id="cb-email"
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  autoFocus
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value.slice(0, 160));
-                    setError(null);
-                  }}
-                  placeholder="alex@example.com"
-                  aria-label="Your email address"
-                  className="h-12 w-full rounded-xl border border-input bg-background px-3 pr-10 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
-                />
-                {isValid && (
-                  <Check className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-600" strokeWidth={3} />
-                )}
-              </div>
-            ) : (
-              <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base" aria-hidden>
-                  🇬🇧
-                </span>
-                <input
-                  id="cb-phone"
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  autoFocus
-                  value={phone}
-                  onChange={(e) => {
-                    setPhone(e.target.value.replace(/[^\d +]/g, '').slice(0, 16));
-                    setError(null);
-                  }}
-                  placeholder="07123 456789"
-                  aria-label={isWhatsApp ? 'Your WhatsApp number' : 'Your phone number'}
-                  className="h-12 w-full rounded-xl border border-input bg-background pl-10 pr-10 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
-                />
-                {isValid && (
-                  <Check className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-600" strokeWidth={3} />
-                )}
-              </div>
-            )}
+            {(() => {
+              const fieldValue = isEmail ? email : phone;
+              const showInvalid = touched && fieldValue.trim().length > 0 && !isValid;
+              const fieldClass = `h-12 w-full rounded-xl border bg-background pr-10 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:ring-2 ${
+                isValid
+                  ? 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/20'
+                  : showInvalid
+                    ? 'border-destructive focus:border-destructive focus:ring-destructive/20'
+                    : 'border-input focus:border-primary focus:ring-primary/20'
+              }`;
+              return (
+                <>
+                  {isEmail ? (
+                    <div className="relative">
+                      <input
+                        id="cb-email"
+                        type="email"
+                        inputMode="email"
+                        autoComplete="email"
+                        autoFocus
+                        value={email}
+                        onChange={(e) => {
+                          setEmail(e.target.value.slice(0, 160));
+                          setError(null);
+                        }}
+                        onBlur={() => setTouched(true)}
+                        placeholder="alex@example.com"
+                        aria-label="Your email address"
+                        aria-invalid={showInvalid}
+                        className={`${fieldClass} px-3`}
+                      />
+                      {isValid && (
+                        <Check className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-600" strokeWidth={3} />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base" aria-hidden>
+                        🇬🇧
+                      </span>
+                      <input
+                        id="cb-phone"
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        autoFocus
+                        value={phone}
+                        onChange={(e) => {
+                          setPhone(capUkPhone(e.target.value));
+                          setError(null);
+                        }}
+                        onBlur={() => setTouched(true)}
+                        placeholder="07123 456789"
+                        aria-label={isWhatsApp ? 'Your WhatsApp number' : 'Your phone number'}
+                        aria-invalid={showInvalid}
+                        className={`${fieldClass} pl-10`}
+                      />
+                      {isValid && (
+                        <Check className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-600" strokeWidth={3} />
+                      )}
+                    </div>
+                  )}
+                  {showInvalid && (
+                    <p className="text-xs font-medium text-destructive">
+                      {isEmail ? 'That email address doesn\'t look right - check it and try again.' : 'Enter a valid UK mobile or landline number.'}
+                    </p>
+                  )}
+                </>
+              );
+            })()}
             <p className="text-xs leading-relaxed text-muted-foreground">
               {isEmail
                 ? "We'll use this email to get back to you."
