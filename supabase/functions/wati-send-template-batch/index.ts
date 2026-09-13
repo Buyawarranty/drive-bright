@@ -91,6 +91,13 @@ Deno.serve(async (req) => {
     .in('id', leadIds);
   if (leadsErr) return json({ error: 'leads_read_failed', details: leadsErr.message }, 500);
 
+  // Numbers that have replied STOP are never messaged again.
+  const { data: optedOutRows } = await admin
+    .from('whatsapp_conversations')
+    .select('phone_normalized')
+    .not('opted_out_at', 'is', null);
+  const optedOut = new Set((optedOutRows || []).map((r: any) => String(r.phone_normalized)));
+
   const skipped: { leadId: string; name: string; reason: string }[] = [];
   const queueRows: Record<string, unknown>[] = [];
   const seen = new Set<string>();
@@ -108,6 +115,10 @@ Deno.serve(async (req) => {
     }
     if (seen.has(phone)) {
       skipped.push({ leadId: lead.id, name, reason: 'Same number as another lead in this batch' });
+      continue;
+    }
+    if (optedOut.has(phone)) {
+      skipped.push({ leadId: lead.id, name, reason: 'Asked to stop WhatsApp messages' });
       continue;
     }
     seen.add(phone);
