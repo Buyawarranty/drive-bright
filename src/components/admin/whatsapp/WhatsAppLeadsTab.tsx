@@ -15,6 +15,7 @@ import WhatsAppManagerDashboard from './WhatsAppManagerDashboard';
 import WhatsAppHotLeadAlerts from './WhatsAppHotLeadAlerts';
 import WhatsAppAutoMessageSettings from './WhatsAppAutoMessageSettings';
 import WhatsAppLeadImport from './WhatsAppLeadImport';
+import WhatsAppBulkTemplateSend from './WhatsAppBulkTemplateSend';
 
 import type { WhatsAppPipelineStatus } from '@/lib/whatsappPipeline';
 
@@ -128,6 +129,7 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
       )}
 
       {isManagement && <WhatsAppAutoMessageSettings />}
+      {isManagement && <WhatsAppBulkTemplateSend />}
       {isManagement && <WhatsAppLeadImport />}
 
 
