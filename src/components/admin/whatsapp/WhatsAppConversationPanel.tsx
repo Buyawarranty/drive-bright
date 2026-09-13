@@ -23,6 +23,9 @@ interface Props {
   onFollowUpChange: (whenIso: string | null) => void;
 }
 
+/** Ready-made tappable button labels (WhatsApp allows 20 characters each). */
+const BUTTON_CHOICES = ['Get a quote', 'Make a claim', 'Call me back', 'Yes please', 'Not right now'];
+
 const StatusTicks: React.FC<{ status: string | null }> = ({ status }) => {
   if (status === 'read') return <CheckCheck className="h-3 w-3 text-sky-600" aria-label="Read" />;
   if (status === 'delivered') return <CheckCheck className="h-3 w-3 opacity-70" aria-label="Delivered" />;
