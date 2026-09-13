@@ -116,8 +116,14 @@ Deno.serve(async (req) => {
       contentType: file.type || 'application/octet-stream',
       upsert: false,
     });
-  if (upload.error) console.error('attachment upload failed:', upload.error.message);
-  else publicUrl = admin.storage.from('whatsapp-attachments').getPublicUrl(path).data.publicUrl;
+  if (upload.error) {
+    console.error('attachment upload failed:', upload.error.message);
+  } else {
+    const signed = await admin.storage
+      .from('whatsapp-attachments')
+      .createSignedUrl(path, 60 * 60 * 24 * 365);
+    publicUrl = signed.data?.signedUrl ?? null;
+  }
 
   const now = new Date().toISOString();
   const watiMessageId =
