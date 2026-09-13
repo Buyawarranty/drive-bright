@@ -202,7 +202,13 @@ export function CallMeBackPanel({
       <div className="mb-1 flex items-start justify-between gap-2">
         <p className="flex items-center gap-2 text-base font-bold text-foreground">
           <MessageCircle className="h-4 w-4 shrink-0 text-primary" />
-          {step === 'number' ? 'Leave us your number' : 'Confirm your number'}
+          {step === 'topic'
+            ? 'All our agents are busy right now'
+            : step === 'claimsInfo'
+              ? 'Making a claim'
+              : step === 'number'
+                ? 'Leave us your number'
+                : 'Confirm your number'}
         </p>
         <button
           onClick={() => {
@@ -216,7 +222,64 @@ export function CallMeBackPanel({
         </button>
       </div>
 
-      {step === 'number' ? (
+      {step === 'topic' ? (
+        <div className="space-y-3">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Leave your number and we'll call or WhatsApp you back. First, what's your query about?
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {TOPICS.map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => {
+                  setTopic(key);
+                  setError(null);
+                  setStep('number');
+                }}
+                className="flex h-11 items-center justify-center rounded-xl border border-input bg-background px-2 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+              >
+                {label}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setStep('claimsInfo')}
+              className="col-span-2 flex h-11 items-center justify-center rounded-xl border border-input bg-background px-2 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+            >
+              Claims
+            </button>
+          </div>
+        </div>
+      ) : step === 'claimsInfo' ? (
+        <div className="space-y-3">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Our Claims team is open <span className="font-semibold text-foreground">Monday to Friday, 9am to 5pm</span>.
+            The quickest way to start a claim is online:
+          </p>
+          <a
+            href="https://buyawarranty.co.uk/make-a-claim/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-12 w-full items-center justify-center rounded-xl bg-primary text-base font-bold text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Make a claim online
+          </a>
+          <div className="space-y-1.5 text-sm">
+            <a href="tel:03302295045" className="flex items-center gap-2 font-bold text-[#B4501F] underline underline-offset-2">
+              <Phone className="h-4 w-4 shrink-0" />
+              Claims line: 0330 229 5045
+            </a>
+            <a href="mailto:claims@buyawarranty.co.uk" className="flex items-center gap-2 font-bold text-[#B4501F] underline underline-offset-2">
+              <MessageCircle className="h-4 w-4 shrink-0" />
+              claims@buyawarranty.co.uk
+            </a>
+          </div>
+          <Button variant="outline" className="h-10 w-full rounded-xl font-semibold" onClick={() => setStep('topic')}>
+            Back
+          </Button>
+        </div>
+      ) : step === 'number' ? (
         <form
           onSubmit={(e) => {
             e.preventDefault();
