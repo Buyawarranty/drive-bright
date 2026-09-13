@@ -61,6 +61,8 @@ const detect = (messages: Message[]) => {
  */
 export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, initialThreadId }: { rangeDays: string; fromIso?: string | null; toIso?: string | null; initialThreadId?: string | null }) {
   const [threads, setThreads] = useState<Thread[]>([]);
+  const [pendingThreadIds, setPendingThreadIds] = useState<Set<string>>(new Set());
+  const [pendingOnly, setPendingOnly] = useState(true);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -84,12 +86,73 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
       from.setDate(from.getDate() - Number(rangeDays));
       query = query.gte('created_at', from.toISOString());
     }
-    const { data, error } = await query;
-    if (error) {
-      toast.error(`Could not load conversations: ${error.message}`);
+    const [{ data, error }, { data: handoverData, error: handoverError }] = await Promise.all([
+      query,
+      supabase
+        .from('ai_sandbox_handovers')
+        .select('thread_id')
+        .eq('kind', 'live_handover')
+        .not('thread_id', 'is', null)
+        .limit(1000),
+    ]);
+    if (error || handoverError) {
+      toast.error(`Could not load conversations: ${(error || handoverError)?.message}`);
       setThreads([]);
+      setPendingThreadIds(new Set());
     } else {
-      setThreads((data ?? []) as Thread[]);
+      const handoverIds = [...new Set((handoverData ?? []).map((row: any) => String(row.thread_id)).filter(Boolean))];
+      let pendingIds = new Set<string>();
+
+      if (handoverIds.length > 0) {
+        const { data: replyRows, error: repliesError } = await supabase
+          .from('ai_sandbox_messages')
+          .select('thread_id, role, created_at')
+          .in('thread_id', handoverIds)
+          .in('role', ['user', 'agent'])
+          .order('created_at', { ascending: true })
+          .limit(10000);
+
+        if (repliesError) {
+          toast.error(`Could not check pending replies: ${repliesError.message}`);
+        } else {
+          const lastCustomer = new Map<string, number>();
+          const lastAgent = new Map<string, number>();
+          (replyRows ?? []).forEach((row: any) => {
+            const at = new Date(row.created_at).getTime();
+            if (row.role === 'user') lastCustomer.set(String(row.thread_id), at);
+            if (row.role === 'agent') lastAgent.set(String(row.thread_id), at);
+          });
+          pendingIds = new Set(
+            handoverIds.filter((id) => {
+              const customerAt = lastCustomer.get(id);
+              return customerAt !== undefined && (lastAgent.get(id) ?? 0) < customerAt;
+            }),
+          );
+        }
+      }
+
+      const baseThreads = (data ?? []) as Thread[];
+      const loadedIds = new Set(baseThreads.map((thread) => thread.id));
+      const extraIds = [...pendingIds].filter((id) => !loadedIds.has(id));
+      if (initialThreadId && !loadedIds.has(initialThreadId) && !extraIds.includes(initialThreadId)) {
+        extraIds.push(initialThreadId);
+      }
+
+      let extraThreads: Thread[] = [];
+      if (extraIds.length > 0) {
+        const { data: extraData } = await supabase
+          .from('ai_sandbox_threads')
+          .select('id, title, source, created_at, updated_at, sales_lead_id, guest_token')
+          .in('id', extraIds);
+        extraThreads = (extraData ?? []) as Thread[];
+      }
+
+      setPendingThreadIds(pendingIds);
+      setThreads(
+        [...baseThreads, ...extraThreads]
+          .filter((thread, index, all) => all.findIndex((candidate) => candidate.id === thread.id) === index)
+          .sort((a, b) => +new Date(b.updated_at || b.created_at) - +new Date(a.updated_at || a.created_at)),
+      );
     }
     setLoading(false);
   };
@@ -216,11 +279,12 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return threads;
-    return threads.filter((t) =>
-      [t.title, t.source].filter(Boolean).some((v) => String(v).toLowerCase().includes(q)),
-    );
-  }, [threads, search]);
+    return threads.filter((t) => {
+      if (pendingOnly && !pendingThreadIds.has(t.id)) return false;
+      if (!q) return true;
+      return [t.title, t.source].filter(Boolean).some((v) => String(v).toLowerCase().includes(q));
+    });
+  }, [threads, search, pendingOnly, pendingThreadIds]);
 
   const sendAsLead = async () => {
     if (!selected) return;
@@ -263,6 +327,22 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              size="sm"
+              variant={pendingOnly ? 'default' : 'outline'}
+              onClick={() => setPendingOnly(true)}
+            >
+              Pending human replies ({pendingThreadIds.size})
+            </Button>
+            <Button
+              size="sm"
+              variant={!pendingOnly ? 'default' : 'outline'}
+              onClick={() => setPendingOnly(false)}
+            >
+              All conversations
+            </Button>
+          </div>
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -284,6 +364,9 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate font-medium">{t.title || 'Website chat'}</span>
+                    {pendingThreadIds.has(t.id) && (
+                      <Badge variant="destructive" className="shrink-0">Pending reply</Badge>
+                    )}
                     {t.sales_lead_id && (
                       <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 shrink-0">
                         Lead
@@ -297,7 +380,9 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
                 </button>
               ))}
               {!loading && filtered.length === 0 && (
-                <p className="text-sm text-muted-foreground">No conversations in this period.</p>
+                <p className="text-sm text-muted-foreground">
+                  {pendingOnly ? 'No customers are waiting for a human reply.' : 'No conversations in this period.'}
+                </p>
               )}
             </div>
           </ScrollArea>
