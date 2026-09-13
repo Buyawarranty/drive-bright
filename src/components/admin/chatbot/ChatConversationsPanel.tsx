@@ -90,8 +90,7 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
       query,
       supabase
         .from('ai_sandbox_handovers')
-        .select('thread_id')
-        .eq('kind', 'live_handover')
+        .select('thread_id, kind, reason')
         .not('thread_id', 'is', null)
         .limit(1000),
     ]);
