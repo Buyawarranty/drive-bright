@@ -606,60 +606,7 @@ export function SandboxChatWindow({
   };
 
   const open = isTeamOpenNow();
-  const { liveCount, liveNames } = useSandboxSpecialistPresence();
-  // A live agent is only offered when the team is open and a specialist is
-  // actually signed in — otherwise the option is hidden entirely.
-  const liveAgentAvailable = open && liveCount > 0;
-
-  // "Speak to a live agent" — puts the visitor on hold and rings the CRM.
-  const [holdState, setHoldState] = useState<
-    'idle' | 'connecting' | 'on_hold' | 'failed' | 'joined' | 'missed'
-  >('idle');
-  const [holdError, setHoldError] = useState<string | null>(null);
-  const [holdSince, setHoldSince] = useState<number | null>(null);
-  const [holdTick, setHoldTick] = useState(0);
-  const [holdHandoverId, setHoldHandoverId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (holdState !== 'on_hold') return;
-    const t = window.setInterval(() => setHoldTick((n) => n + 1), 1000);
-    return () => window.clearInterval(t);
-  }, [holdState]);
-
-  /**
-   * While the visitor is on hold we poll the handover. If a specialist takes the
-   * chat we say so; if nobody answers within the grace window we stop pretending
-   * someone is coming, close the ring and raise an urgent callback instead.
-   */
-  useEffect(() => {
-    if (holdState !== 'on_hold' || !holdHandoverId) return;
-    let active = true;
-    const poll = async () => {
-      const waited = holdSince ? Math.round((Date.now() - holdSince) / 1000) : 0;
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-handover-status`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ handoverId: holdHandoverId, markMissed: waited >= 90 }),
-          },
-        );
-        const data = await res.json().catch(() => null);
-        if (!active || !data?.ok) return;
-        if (data.status === 'accepted') setHoldState('joined');
-        else if (data.status === 'missed') setHoldState('missed');
-      } catch {
-        /* transient — keep waiting */
-      }
-    };
-    void poll();
-    const t = window.setInterval(poll, 10000);
-    return () => {
-      active = false;
-      window.clearInterval(t);
-    };
-  }, [holdState, holdHandoverId, holdSince]);
+  const { liveNames } = useSandboxSpecialistPresence();
 
 
 
