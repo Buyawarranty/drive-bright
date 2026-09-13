@@ -59,6 +59,7 @@ export function CallMeBackPanel({
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [preference, setPreference] = useState<Preference>('call');
+  const [topic, setTopic] = useState<Topic | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [whenLabel, setWhenLabel] = useState<string>('');
