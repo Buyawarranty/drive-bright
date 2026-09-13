@@ -7,6 +7,16 @@ import { loadGuestChatOpen, saveGuestChatOpen, clearGuestChat } from '@/componen
 
 
 const TOKEN_KEY = 'baw_chat_guest_token';
+// Once the visitor has opened the chat, the launcher never auto-expands again.
+const QUIET_KEY = 'baw_chat_launcher_quiet';
+
+function launcherQuiet(): boolean {
+  try {
+    return window.localStorage.getItem(QUIET_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
 
 /**
  * The random per-browser token that owns a website visitor's conversation.
@@ -55,7 +65,11 @@ export default function SiteChatWidget({
   const [expanded, setExpanded] = useState(false);
   // Bumped when a conversation is ended so the chat window remounts empty.
   const [sessionKey, setSessionKey] = useState(0);
-  const [showNudge, setShowNudge] = useState(false);
+  // The panda circle expands into the "Need help? Chat with us" pill only
+  // briefly — after 15s or a meaningful scroll — then collapses again.
+  const [promptExpanded, setPromptExpanded] = useState(false);
+  const expansionsRef = useRef(0);
+  const timersRef = useRef<number[]>([]);
   const tokenRef = useRef<string | null>(null);
   if (tokenRef.current === null) tokenRef.current = getGuestToken();
 
@@ -70,10 +84,41 @@ export default function SiteChatWidget({
 
 
 
+  // Auto-expansion: circle only on load; expand to the pill after 15s or a
+  // meaningful scroll, hold ~5s, collapse. Mobile gets one expansion; desktop
+  // can afford two. Once the visitor opens the chat, this never fires again.
   useEffect(() => {
-    if (everOpened) return;
-    const t = window.setTimeout(() => setShowNudge(true), 6000);
-    return () => window.clearTimeout(t);
+    if (everOpened || launcherQuiet()) return;
+    const desktop = window.matchMedia('(min-width: 640px)').matches;
+    const maxExpansions = desktop ? 2 : 1;
+    const holdMs = desktop ? 6000 : 5000;
+
+    const expand = () => {
+      if (expansionsRef.current >= maxExpansions) return;
+      expansionsRef.current += 1;
+      setPromptExpanded(true);
+      timersRef.current.push(window.setTimeout(() => setPromptExpanded(false), holdMs));
+    };
+
+    timersRef.current.push(window.setTimeout(expand, 15000));
+
+    let scrolled = false;
+    const onScroll = () => {
+      if (scrolled || window.scrollY < 500) return;
+      scrolled = true;
+      expand();
+      window.removeEventListener('scroll', onScroll);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // Desktop second chance: if they ignored the first expansion, one more later.
+    if (desktop) timersRef.current.push(window.setTimeout(expand, 90000));
+
+    return () => {
+      timersRef.current.forEach((t) => window.clearTimeout(t));
+      timersRef.current = [];
+      window.removeEventListener('scroll', onScroll);
+    };
   }, [everOpened]);
 
   // Lock background scroll while the mobile sheet is open.
@@ -91,7 +136,14 @@ export default function SiteChatWidget({
   const openChat = () => {
     setOpen(true);
     setEverOpened(true);
-    setShowNudge(false);
+    setPromptExpanded(false);
+    timersRef.current.forEach((t) => window.clearTimeout(t));
+    timersRef.current = [];
+    try {
+      window.localStorage.setItem(QUIET_KEY, '1');
+    } catch {
+      /* ignore */
+    }
     saveGuestChatOpen(true);
   };
 
@@ -115,25 +167,31 @@ export default function SiteChatWidget({
 
   return (
     <>
-      {/* Launcher — closed state: panda avatar with a clear "chat with us" label */}
+      {/* Launcher — closed state: panda circle; the "Need help? Chat with us"
+          pill only expands briefly (15s timer / scroll prompt) then collapses. */}
       {!open && (
         <div className="fixed bottom-52 right-4 z-40 sm:bottom-6 sm:right-6">
           <button
             onClick={openChat}
             aria-label="Chat with Miles, our AI warranty assistant"
-            className="group flex items-center gap-3 rounded-full border border-border bg-background/95 pl-4 pr-1.5 py-1.5 shadow-lg shadow-black/10 backdrop-blur transition-all hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            className="group flex items-center rounded-full border border-border bg-background/95 p-1.5 shadow-lg shadow-black/10 backdrop-blur transition-shadow hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <span className="flex items-center gap-2 whitespace-nowrap text-sm font-medium text-foreground">
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            <span
+              className={`flex items-center gap-2 overflow-hidden whitespace-nowrap text-sm font-medium text-foreground transition-all duration-300 ease-in-out ${
+                promptExpanded ? 'max-w-[220px] pl-3 pr-1 opacity-100' : 'max-w-0 p-0 opacity-0'
+              }`}
+              aria-hidden={!promptExpanded}
+            >
+              <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
               Need help? Chat with us
             </span>
             <span className="relative shrink-0">
-              <span className="block h-11 w-11 overflow-hidden rounded-full ring-1 ring-border">
+              <span className="block h-12 w-12 overflow-hidden rounded-full ring-1 ring-border">
                 <img
                   src={milesAvatar.url}
                   alt="Miles the panda"
-                  width={44}
-                  height={44}
+                  width={48}
+                  height={48}
                   className="h-full w-full scale-[1.35] object-cover object-center"
                 />
               </span>
