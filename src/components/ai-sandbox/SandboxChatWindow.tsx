@@ -1209,6 +1209,19 @@ export function SandboxChatWindow({
 
           })}
 
+          {contactCardWanted && (
+            <div className="w-full min-w-0 max-w-full px-0 pb-2 sm:px-2">
+              <CallMeBackPanel
+                autoOpen
+                guestToken={guestToken}
+                threadId={threadId}
+                source={source}
+                compact={compact}
+                registration={detectedReg}
+              />
+            </div>
+          )}
+
           {!agentMode && hasPriceQuote && pricePanelOpen && (
             <div className="w-full min-w-0 max-w-full px-0 pb-2 sm:px-2">
               <PriceOptionsPanel
