@@ -66,6 +66,61 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [autoSettings, setAutoSettings] = useState<AutoSettings | null>(null);
+  const [autoCounts, setAutoCounts] = useState({ pending: 0, sent: 0, failed: 0 });
+  const [autoSaving, setAutoSaving] = useState(false);
+
+  const loadAuto = async () => {
+    const { data } = await supabase
+      .from('whatsapp_auto_message_settings')
+      .select('id, is_enabled, template_name')
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      setAutoSettings(data as AutoSettings);
+      setTemplate((prev) => prev || data.template_name);
+    }
+
+    const { data: rows } = await supabase
+      .from('whatsapp_auto_message_queue')
+      .select('status')
+      .order('created_at', { ascending: false })
+      .limit(500);
+    if (rows) {
+      setAutoCounts({
+        pending: rows.filter((r) => r.status === 'pending').length,
+        sent: rows.filter((r) => r.status === 'sent').length,
+        failed: rows.filter((r) => r.status === 'failed').length,
+      });
+    }
+  };
+
+  const toggleAuto = async (enabled: boolean) => {
+    if (!autoSettings) return;
+    if (enabled && !template.trim()) {
+      toast.error('Choose a WhatsApp template first.');
+      return;
+    }
+    setAutoSaving(true);
+    const patch = enabled
+      ? { is_enabled: true, template_name: template.trim() }
+      : { is_enabled: false };
+    const { error } = await supabase
+      .from('whatsapp_auto_message_settings')
+      .update(patch)
+      .eq('id', autoSettings.id);
+    setAutoSaving(false);
+    if (error) {
+      toast.error('Could not save that change.');
+      return;
+    }
+    setAutoSettings({ ...autoSettings, ...patch });
+    toast.success(
+      enabled
+        ? `Every new lead will now get "${template.trim()}" automatically.`
+        : 'Automatic messages switched off.',
+    );
+  };
 
   const load = async () => {
     setLoading(true);
