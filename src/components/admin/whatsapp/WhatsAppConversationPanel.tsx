@@ -39,7 +39,19 @@ export const WhatsAppConversationPanel: React.FC<Props> = ({
 }) => {
   const { messages, sending, sendMessage } = useWhatsAppMessages(conversation.id);
   const [draft, setDraft] = useState('');
+  const [highlight, setHighlight] = useState(0);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const suggestions = useMemo(() => {
+    const q = slashQuery(draft);
+    return q === null ? [] : matchQuickReplies(q).slice(0, 8);
+  }, [draft]);
+
+  const applyQuickReply = (body: string) => {
+    setDraft(body);
+    setHighlight(0);
+    textareaRef.current?.focus();
+  };
   const agentIds = useMemo(
     () => Array.from(new Set(messages.map((m) => m.sent_by_admin_id).filter(Boolean))) as string[],
     [messages],
