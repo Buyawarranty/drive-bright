@@ -11,6 +11,7 @@ import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { heatBadge, prettyWhatsAppPhone } from '@/lib/whatsappHeat';
 import { pipelineClass, pipelineLabel, type WhatsAppPipelineStatus } from '@/lib/whatsappPipeline';
 import WhatsAppPipelineBar from './WhatsAppPipelineBar';
+import WhatsAppTagPicker from './WhatsAppTagPicker';
 import type { WhatsAppConversation } from '@/hooks/useWhatsAppConversations';
 
 interface Props {
@@ -95,6 +96,7 @@ export const WhatsAppConversationPanel: React.FC<Props> = ({
           disabled={!canReply}
           onChange={onStatusChange}
         />
+        <WhatsAppTagPicker conversationId={conversation.id} />
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="flex items-center gap-1 text-muted-foreground">
             <Clock className="h-3 w-3" /> Next follow-up

@@ -26,6 +26,7 @@ interface Props {
   onTake: () => void;
   onOpen: () => void;
   showSource?: boolean;
+  tags?: { id: string; name: string; color: string }[];
 }
 
 export const WhatsAppLeadCard: React.FC<Props> = ({
