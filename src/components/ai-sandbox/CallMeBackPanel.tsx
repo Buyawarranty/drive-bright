@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { PhoneCall, Phone, Check, Loader2, X, Clock, ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
+import { PhoneCall, Phone, Check, Loader2, X, Clock, ChevronDown, ChevronUp, MessageCircle, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isTeamOpenNow, nextOpeningLabel, openingHoursLabel } from '@/lib/aiSandbox/openingHours';
 import { useSalesLineAvailable } from '@/hooks/useSalesLineAvailable';
