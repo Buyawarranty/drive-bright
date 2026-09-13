@@ -62,6 +62,7 @@ export function CallMeBackPanel({
   const [step, setStep] = useState<Step>('closed');
   const [collapsed, setCollapsed] = useState(true);
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [preference, setPreference] = useState<Preference>('call');
   const [topic, setTopic] = useState<Topic | null>(null);
@@ -72,8 +73,9 @@ export function CallMeBackPanel({
   const open = isTeamOpenNow();
   // Weekends: the phone line only shows while an agent is genuinely live.
   const showPhoneLine = useSalesLineAvailable();
-  const isValid = useMemo(() => validUkPhone(phone), [phone]);
+  const isEmail = preference === 'email';
   const isWhatsApp = preference === 'whatsapp';
+  const isValid = useMemo(() => (isEmail ? validEmail(email) : validUkPhone(phone)), [isEmail, email, phone]);
 
   const submit = async () => {
     if (!isValid || submitting) return;
