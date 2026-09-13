@@ -1,6 +1,16 @@
 import { useMemo, useState } from 'react';
-import { PhoneCall, Phone, Check, Loader2, X, Clock, ChevronDown, ChevronUp, MessageCircle, Mail } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import {
+  PhoneCall,
+  Phone,
+  Check,
+  Loader2,
+  X,
+  Clock,
+  ChevronDown,
+  MessageCircle,
+  Mail,
+  Pencil,
+} from 'lucide-react';
 import { isTeamOpenNow, nextOpeningLabel, openingHoursLabel } from '@/lib/aiSandbox/openingHours';
 import { useSalesLineAvailable } from '@/hooks/useSalesLineAvailable';
 
@@ -23,22 +33,15 @@ function validEmail(raw: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw.trim());
 }
 
-type Step = 'closed' | 'topic' | 'claimsInfo' | 'number' | 'confirm' | 'done';
+type Step = 'closed' | 'method' | 'claimsInfo' | 'number' | 'done';
 type Preference = 'call' | 'whatsapp' | 'email';
 type Topic = 'warranty_purchase' | 'general' | 'existing_policy' | 'other';
 
-const TOPICS: { key: Topic; label: string }[] = [
-  { key: 'warranty_purchase', label: 'Warranty purchase' },
-  { key: 'general', label: 'General enquiry' },
-  { key: 'existing_policy', label: 'Existing policy question' },
-  { key: 'other', label: 'Something else' },
-];
-
-const TOPIC_LABELS: Record<Topic, string> = {
-  warranty_purchase: 'Warranty purchase',
-  general: 'General enquiry',
-  existing_policy: 'Existing policy question',
-  other: 'Something else',
+const TOPIC_SENTENCE: Record<Topic, string> = {
+  warranty_purchase: 'warranty purchase',
+  general: 'general enquiry',
+  existing_policy: 'existing policy question',
+  other: '',
 };
 
 export function CallMeBackPanel({
@@ -47,7 +50,7 @@ export function CallMeBackPanel({
   source,
   registration,
   quotedPrice,
-  compact = false,
+  compact: _compact = false,
   asChip = false,
   autoOpen = false,
 }: {
@@ -56,22 +59,21 @@ export function CallMeBackPanel({
   source?: string;
   registration?: string | null;
   quotedPrice?: number | null;
+  /** Accepted for backwards compatibility; layout is always compact. */
   compact?: boolean;
   /** Render the idle state as a small one-line chip (for the top action row). */
   asChip?: boolean;
-  /** Render expanded straight away at the topic step (inline in the chat stream). */
+  /** Render expanded straight away (inline in the chat stream). */
   autoOpen?: boolean;
 }) {
-  const [step, setStep] = useState<Step>(autoOpen ? 'number' : 'closed');
+  const [step, setStep] = useState<Step>(autoOpen ? 'method' : 'closed');
   const [collapsed, setCollapsed] = useState(!autoOpen);
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
   const [preference, setPreference] = useState<Preference>('call');
   const [topic, setTopic] = useState<Topic | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [whenLabel, setWhenLabel] = useState<string>('');
 
   const open = isTeamOpenNow();
   // Weekends: the phone line only shows while an agent is genuinely live.
@@ -91,7 +93,7 @@ export function CallMeBackPanel({
         body: JSON.stringify({
           phone: isEmail ? '' : phone,
           email: isEmail ? email.trim() : '',
-          name,
+          name: '',
           contactPreference: preference,
           topic: topic ?? 'other',
           registration: registration ?? null,
@@ -107,10 +109,9 @@ export function CallMeBackPanel({
         return;
       }
       if (data.suppressed) {
-        setError(data.message ?? 'Please give us a ring on 0330 229 5040 and we\'ll help straight away.');
+        setError(data.message ?? "Please give us a ring on 0330 229 5040 and we'll help straight away.");
         return;
       }
-      setWhenLabel(data.when_label ?? (open ? 'shortly' : `from 9am ${nextOpeningLabel()}`));
       setStep('done');
     } catch {
       setError('Network problem - please try again, or call 0330 229 5040.');
@@ -119,44 +120,105 @@ export function CallMeBackPanel({
     }
   };
 
+  const pickMethod = (key: Preference) => {
+    setPreference(key);
+    setError(null);
+    setStep('number');
+  };
+
+  const methodList = (
+    <div className="space-y-2">
+      <p className="text-sm font-bold text-foreground">How would you like to get in touch?</p>
+      {open && showPhoneLine && (
+        <a
+          href="tel:03302295040"
+          className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+        >
+          <Phone className="h-4 w-4 shrink-0 text-[#B4501F]" />
+          Call 0330 229 5040
+        </a>
+      )}
+      <button
+        type="button"
+        onClick={() => pickMethod('call')}
+        className="flex h-12 w-full items-center gap-3 rounded-xl border border-primary/50 bg-[#FDEBDF] px-4 text-sm font-bold text-foreground transition-colors hover:bg-[#FBE0CE]"
+      >
+        <PhoneCall className="h-4 w-4 shrink-0 text-[#B4501F]" />
+        Request a callback
+      </button>
+      <button
+        type="button"
+        onClick={() => pickMethod('whatsapp')}
+        className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+      >
+        <MessageCircle className="h-4 w-4 shrink-0 text-emerald-600" />
+        Request a WhatsApp
+      </button>
+      <button
+        type="button"
+        onClick={() => pickMethod('email')}
+        className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+      >
+        <Mail className="h-4 w-4 shrink-0 text-foreground" />
+        Request an email
+      </button>
+      <p className="flex items-start gap-1.5 pt-1 text-xs leading-relaxed text-muted-foreground">
+        <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        <span>
+          {open
+            ? `Our team is available now (${openingHoursLabel}).`
+            : `Our team is available ${openingHoursLabel}. We'll be in touch ${nextOpeningLabel()}.`}
+        </span>
+      </p>
+    </div>
+  );
+
   if (step === 'done') {
-    const contactLabel = isEmail ? 'Email' : isWhatsApp ? 'WhatsApp number' : 'Number';
     const destination = isEmail ? email : prettyPhone(phone);
+    const topicBit = topic && TOPIC_SENTENCE[topic] ? ` about your ${TOPIC_SENTENCE[topic]}` : '';
+    const actionSentence = isEmail
+      ? `email you at ${destination}${topicBit}`
+      : `${isWhatsApp ? 'message you on WhatsApp' : 'call you'} on ${destination}${topicBit}`;
     return (
-      <div className={`${asChip ? '' : 'mx-3'} mb-2 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3.5 text-emerald-900`}>
-        <p className="flex items-center gap-2 text-sm font-bold">
-          <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-600">
-            <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
+      <div className={`${asChip ? 'col-span-full w-full' : 'mx-3'} mb-2 space-y-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-6 text-center`}>
+        <div className="flex flex-col items-center gap-3">
+          <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600">
+            <Check className="h-7 w-7 text-white" strokeWidth={3} />
           </span>
-          All sorted - {contactLabel.toLowerCase()} saved
-        </p>
-        <p className="mt-2 text-xs leading-relaxed">
-          <span className="font-semibold">{destination}</span>
-          {topic ? ` · ${TOPIC_LABELS[topic]}` : ''}
-        </p>
-        <p className="mt-1.5 text-xs leading-relaxed">
-          {isEmail
-            ? `A UK warranty specialist will email you ${open ? whenLabel : `${nextOpeningLabel()} - you're first in the queue`} (${openingHoursLabel}).`
-            : open
-              ? `A UK warranty specialist will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} ${whenLabel}. Have any competitor quote handy - we'll beat it.`
-              : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you back ${nextOpeningLabel()} - you're first in the queue (${openingHoursLabel}).`}
-        </p>
-        <div className="mt-3 flex gap-2">
+          <p className="text-lg font-bold text-foreground">Thanks! We've got it.</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            One of our team will {actionSentence}.
+          </p>
+        </div>
+        <div className="border-t border-emerald-200 pt-4">
+          <p className="flex items-start justify-center gap-2 text-xs leading-relaxed text-muted-foreground">
+            <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-700" />
+            <span>
+              Our team is available <span className="font-semibold text-foreground">{openingHoursLabel}</span>.
+              <br />
+              We'll be in touch as soon as possible.
+            </span>
+          </p>
+        </div>
+        <div className="space-y-2 border-t border-emerald-200 pt-4 text-left">
+          <p className="text-xs font-bold text-foreground">Need to change anything?</p>
           <button
             type="button"
             onClick={() => {
               setError(null);
               setStep('number');
             }}
-            className="flex h-9 flex-1 items-center justify-center rounded-xl border border-emerald-400 bg-background text-xs font-bold text-emerald-900 transition-colors hover:bg-emerald-100"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-primary/50 bg-background text-sm font-bold text-foreground transition-colors hover:bg-[#FDEBDF]"
           >
-            Update details
+            <Pencil className="h-4 w-4 shrink-0 text-[#B4501F]" />
+            Update my details
           </button>
           <button
             type="button"
             onClick={() => setStep('closed')}
-            className="flex h-9 flex-1 items-center justify-center rounded-xl bg-emerald-600 text-xs font-bold text-white transition-colors hover:bg-emerald-700"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-input bg-background text-sm font-bold text-foreground transition-colors hover:bg-muted"
           >
+            <MessageCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
             Continue chatting
           </button>
         </div>
@@ -169,7 +231,7 @@ export function CallMeBackPanel({
       return (
         <button
           type="button"
-          onClick={() => setStep('number')}
+          onClick={() => setStep('method')}
           title="All our agents are busy - leave your number or email and we'll call, WhatsApp or email you back"
           className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
         >
@@ -197,39 +259,14 @@ export function CallMeBackPanel({
     }
 
     return (
-      <div className="mx-3 mb-2 flex items-center gap-3 rounded-2xl bg-[#FDEBDF] px-3.5 py-3">
-        <MessageCircle className="h-5 w-5 shrink-0 text-[#B4501F]" />
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-foreground">All our agents are busy right now</p>
-          <p className="text-xs text-muted-foreground">
-            {open
-              ? 'Leave your number or email and a UK specialist will call, WhatsApp or email you back.'
-              : `Leave your number or email - we'll call, WhatsApp or email you ${nextOpeningLabel()} (${openingHoursLabel}).`}
-          </p>
-          {open && showPhoneLine && (
-            <a
-              href="tel:03302295040"
-              className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-[#B4501F] underline underline-offset-2"
-            >
-              <Phone className="h-3 w-3" />
-              Or call us now on 0330 229 5040
-            </a>
-          )}
-        </div>
-        <Button
-          onClick={() => setStep('number')}
-          variant="outline"
-          className="h-10 shrink-0 rounded-xl border-border bg-background text-sm font-bold shadow-sm hover:bg-muted"
-        >
-          Message me back
-        </Button>
+      <div className="mx-3 mb-2 rounded-2xl bg-[#FDEBDF] px-3.5 py-3">
+        {methodList}
         <button
           type="button"
           onClick={() => setCollapsed(true)}
-          aria-label="Collapse message back prompt"
-          className="shrink-0 rounded p-0.5 text-[#B4501F] hover:text-foreground"
+          className="mt-2 w-full text-center text-xs font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground"
         >
-          <ChevronUp className="h-4 w-4" />
+          Hide
         </button>
       </div>
     );
@@ -242,13 +279,11 @@ export function CallMeBackPanel({
       <div className="mb-1 flex items-start justify-between gap-2">
         <p className="flex items-center gap-2 text-base font-bold text-foreground">
           <MessageCircle className="h-4 w-4 shrink-0 text-primary" />
-          {step === 'topic'
-            ? "What's it about? (optional)"
+          {step === 'method'
+            ? 'Get in touch'
             : step === 'claimsInfo'
               ? 'Making a claim'
-              : step === 'number'
-                ? 'Leave us your number or email'
-                : 'Confirm your details'}
+              : 'No problem!'}
         </p>
         <button
           onClick={() => {
@@ -262,46 +297,8 @@ export function CallMeBackPanel({
         </button>
       </div>
 
-      {step === 'topic' ? (
-        <div className="space-y-3">
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Nearly done. What's your query about? It helps the right specialist get back to you, but you can skip it.
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            {TOPICS.map(({ key, label }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => {
-                  setTopic(key);
-                  setError(null);
-                  setStep('confirm');
-                }}
-                className="flex h-11 items-center justify-center rounded-xl border border-input bg-background px-2 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
-              >
-                {label}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => setStep('claimsInfo')}
-              className="col-span-2 flex h-11 items-center justify-center rounded-xl border border-input bg-background px-2 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
-            >
-              Claims
-            </button>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setTopic(null);
-              setError(null);
-              setStep('confirm');
-            }}
-            className="w-full text-center text-xs font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground"
-          >
-            Skip this step
-          </button>
-        </div>
+      {step === 'method' ? (
+        methodList
       ) : step === 'claimsInfo' ? (
         <div className="space-y-3">
           <p className="text-sm leading-relaxed text-muted-foreground">
@@ -322,27 +319,32 @@ export function CallMeBackPanel({
               Claims line: 0330 229 5045
             </a>
             <a href="mailto:claims@buyawarranty.co.uk" className="flex items-center gap-2 font-bold text-[#B4501F] underline underline-offset-2">
-              <MessageCircle className="h-4 w-4 shrink-0" />
+              <Mail className="h-4 w-4 shrink-0" />
               claims@buyawarranty.co.uk
             </a>
           </div>
-          <Button variant="outline" className="h-10 w-full rounded-xl font-semibold" onClick={() => setStep('topic')}>
+          <button
+            type="button"
+            onClick={() => setStep('number')}
+            className="h-10 w-full rounded-xl border border-input bg-background text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+          >
             Back
-          </Button>
+          </button>
         </div>
-      ) : step === 'number' ? (
+      ) : (
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (isValid) setStep('topic');
-            else setError(isEmail ? 'Enter a valid email address' : 'Enter a valid UK mobile or landline number');
+            if (!isValid) {
+              setError(isEmail ? 'Enter a valid email address' : 'Enter a valid UK mobile or landline number');
+              return;
+            }
+            void submit();
           }}
           className="space-y-3"
         >
           <p className="text-sm leading-relaxed text-muted-foreground">
-            {open
-              ? 'A UK warranty specialist will get back to you shortly, whichever way you prefer.'
-              : `A warranty specialist will be back ${nextOpeningLabel()} - leave your details and you are first in the queue.`}
+            I can arrange for a specialist to get back to you.
           </p>
 
           <div className="space-y-2">
@@ -361,13 +363,13 @@ export function CallMeBackPanel({
                     setError(null);
                   }}
                   aria-pressed={preference === key}
-                  className={`flex h-12 items-center justify-center gap-1.5 rounded-xl border px-1 text-xs font-bold transition-colors sm:text-sm ${
+                  className={`flex h-16 flex-col items-center justify-center gap-1 rounded-xl border px-1 text-xs font-bold transition-colors ${
                     preference === key
                       ? 'border-primary bg-primary text-primary-foreground'
                       : 'border-input bg-background text-foreground hover:border-primary/40 hover:bg-muted'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 shrink-0 ${key === 'whatsapp' && preference !== key ? 'text-emerald-600' : ''}`} />
+                  <Icon className={`h-5 w-5 shrink-0 ${key === 'whatsapp' && preference !== key ? 'text-emerald-600' : ''}`} />
                   {label}
                 </button>
               ))}
@@ -375,116 +377,143 @@ export function CallMeBackPanel({
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor={isEmail ? 'cb-email' : 'cb-phone'} className="block text-xs font-semibold text-foreground">
-              {isEmail ? 'Email address' : isWhatsApp ? 'WhatsApp number' : 'Phone number'}
+            <label htmlFor={isEmail ? 'cb-email' : 'cb-phone'} className="block text-sm font-bold text-foreground">
+              {isEmail ? 'Please enter your email address' : 'Please enter your phone number'}
             </label>
             {isEmail ? (
-              <input
-                id="cb-email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                autoFocus
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value.slice(0, 160));
-                  setError(null);
-                }}
-                placeholder="alex@example.com"
-                aria-label="Your email address"
-                className="h-12 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
+              <div className="relative">
+                <input
+                  id="cb-email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  autoFocus
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value.slice(0, 160));
+                    setError(null);
+                  }}
+                  placeholder="alex@example.com"
+                  aria-label="Your email address"
+                  className="h-12 w-full rounded-xl border border-input bg-background px-3 pr-10 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+                {isValid && (
+                  <Check className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-600" strokeWidth={3} />
+                )}
+              </div>
             ) : (
-              <input
-                id="cb-phone"
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                autoFocus
-                value={phone}
-                onChange={(e) => {
-                  setPhone(e.target.value.replace(/[^\d +]/g, '').slice(0, 16));
-                  setError(null);
-                }}
-                placeholder="07960 123456"
-                aria-label={isWhatsApp ? 'Your WhatsApp number' : 'Your phone number'}
-                className="h-12 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base" aria-hidden>
+                  🇬🇧
+                </span>
+                <input
+                  id="cb-phone"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  autoFocus
+                  value={phone}
+                  onChange={(e) => {
+                    setPhone(e.target.value.replace(/[^\d +]/g, '').slice(0, 16));
+                    setError(null);
+                  }}
+                  placeholder="07123 456789"
+                  aria-label={isWhatsApp ? 'Your WhatsApp number' : 'Your phone number'}
+                  className="h-12 w-full rounded-xl border border-input bg-background pl-10 pr-10 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+                {isValid && (
+                  <Check className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-600" strokeWidth={3} />
+                )}
+              </div>
             )}
             <p className="text-xs leading-relaxed text-muted-foreground">
               {isEmail
-                ? `We'll pass this to the team and they'll email you ${open ? 'shortly' : `when we're back ${nextOpeningLabel()}`}.`
-                : `We'll pass this to the team and they'll ${isWhatsApp ? 'message you' : 'call you'} ${open ? 'shortly' : `when we're back ${nextOpeningLabel()}`}.`}
+                ? "We'll use this email to get back to you."
+                : `We'll use this number to ${isWhatsApp ? 'message' : 'call'} you back.`}
             </p>
           </div>
 
-          <div className="space-y-1.5">
-            <label htmlFor="cb-name" className="block text-xs font-semibold text-foreground">
-              First name <span className="font-normal text-muted-foreground">(optional)</span>
-            </label>
-            <input
-              id="cb-name"
-              type="text"
-              autoComplete="given-name"
-              value={name}
-              onChange={(e) => setName(e.target.value.slice(0, 60))}
-              placeholder="Alex"
-              aria-label="Your first name"
-              className="h-12 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
-          </div>
-
-          {error && <p className="text-xs font-medium text-destructive">{error}</p>}
-
-          <Button type="submit" disabled={!isValid} className="h-12 w-full rounded-xl text-base font-bold">
-            Continue
-          </Button>
-
-          <p className="flex items-start gap-1.5 text-xs leading-relaxed text-muted-foreground">
-            <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            <span>
-              {open
-                ? `A warranty specialist is available now (${openingHoursLabel}).`
-                : `Opening hours ${openingHoursLabel}.`}
+          <div className="space-y-2">
+            <span className="block text-sm font-bold text-foreground">
+              What can we help you with? <span className="font-normal text-muted-foreground">(optional)</span>
             </span>
-          </p>
-        </form>
-      ) : (
-        <div className="space-y-3">
-          <p className="text-base text-foreground">
-            {isEmail ? (
-              <>Is <span className="font-bold">{email}</span> the right email{name ? `, ${name}` : ''}?</>
-            ) : (
-              <>Is <span className="font-bold">{prettyPhone(phone)}</span> the right number{name ? `, ${name}` : ''}?</>
-            )}
-          </p>
-          {topic && (
-            <p className="text-xs font-semibold text-muted-foreground">
-              Query: <span className="text-foreground">{TOPIC_LABELS[topic]}</span>
-            </p>
-          )}
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {isEmail
-              ? `We will email you ${open ? 'shortly' : `${nextOpeningLabel()} - you will be first in the queue`} - a UK specialist, no premium numbers.`
-              : open
-                ? `We will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} shortly - a UK specialist, no premium numbers.`
-                : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you ${nextOpeningLabel()} - you will be first in the queue.`}
-          </p>
-          {error && <p className="text-xs font-medium text-destructive">{error}</p>}
-          <div className="flex gap-2">
-            <Button onClick={submit} disabled={submitting} className="h-12 flex-1 rounded-xl text-base font-bold">
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Submit'}
-            </Button>
-            <Button
-              variant="outline"
-              className="h-12 rounded-xl font-semibold"
-              disabled={submitting}
-              onClick={() => setStep('number')}
+            <button
+              type="button"
+              onClick={() => setTopic(topic === 'warranty_purchase' ? null : 'warranty_purchase')}
+              aria-pressed={topic === 'warranty_purchase'}
+              className={`flex h-11 w-full items-center justify-center rounded-xl border px-3 text-sm font-bold transition-colors ${
+                topic === 'warranty_purchase'
+                  ? 'border-primary/50 bg-[#FDEBDF] text-foreground'
+                  : 'border-input bg-background text-foreground hover:border-primary/40 hover:bg-muted'
+              }`}
             >
-              Change
-            </Button>
+              Warranty purchase
+            </button>
+            <button
+              type="button"
+              onClick={() => setTopic(topic === 'existing_policy' ? null : 'existing_policy')}
+              aria-pressed={topic === 'existing_policy'}
+              className={`flex h-11 w-full items-center justify-center rounded-xl border px-3 text-sm font-bold transition-colors ${
+                topic === 'existing_policy'
+                  ? 'border-primary/50 bg-[#FDEBDF] text-foreground'
+                  : 'border-input bg-background text-foreground hover:border-primary/40 hover:bg-muted'
+              }`}
+            >
+              Existing policy question
+            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setStep('claimsInfo')}
+                className="flex h-11 items-center justify-center rounded-xl border border-input bg-background px-3 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+              >
+                Claims
+              </button>
+              <button
+                type="button"
+                onClick={() => setTopic(topic === 'general' ? null : 'general')}
+                aria-pressed={topic === 'general'}
+                className={`flex h-11 items-center justify-center rounded-xl border px-3 text-sm font-bold transition-colors ${
+                  topic === 'general'
+                    ? 'border-primary/50 bg-[#FDEBDF] text-foreground'
+                    : 'border-input bg-background text-foreground hover:border-primary/40 hover:bg-muted'
+                }`}
+              >
+                General enquiry
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setTopic(topic === 'other' ? null : 'other')}
+              aria-pressed={topic === 'other'}
+              className={`flex h-11 w-full items-center justify-center rounded-xl border px-3 text-sm font-bold transition-colors ${
+                topic === 'other'
+                  ? 'border-primary/50 bg-[#FDEBDF] text-foreground'
+                  : 'border-input bg-background text-foreground hover:border-primary/40 hover:bg-muted'
+              }`}
+            >
+              Something else
+            </button>
           </div>
-        </div>
+
+          {error && <p className="text-xs font-medium text-destructive">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={!isValid || submitting}
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary text-base font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {submitting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : isEmail ? (
+              'Request my email'
+            ) : isWhatsApp ? (
+              'Request my WhatsApp'
+            ) : (
+              'Request my callback'
+            )}
+          </button>
+        </form>
       )}
     </div>
   );
