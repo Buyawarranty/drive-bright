@@ -99,6 +99,19 @@ const WhatsAppLeadImport: React.FC<Props> = ({ defaultTemplate, onImported }) =>
   const [result, setResult] = useState<ImportResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Start from the saved default template so managers rarely have to type it.
+  useEffect(() => {
+    if (defaultTemplate) return;
+    void (async () => {
+      const { data } = await supabase
+        .from('whatsapp_auto_message_settings')
+        .select('template_name')
+        .limit(1)
+        .maybeSingle();
+      if (data?.template_name) setTemplate((prev) => prev || data.template_name);
+    })();
+  }, [defaultTemplate]);
+
   const rows = useMemo(() => parseText(text), [text]);
   const ready = rows.filter((r) => r.valid);
   const unusable = rows.filter((r) => !r.valid);
