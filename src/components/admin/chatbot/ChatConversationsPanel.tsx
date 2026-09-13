@@ -238,6 +238,20 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
     setForm({ name: '', ...found });
   };
 
+  const closeThread = () => {
+    setSelectedId(null);
+    setMessages([]);
+    setReply('');
+    setNewCustomerReplies(0);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('chatThread');
+      window.history.replaceState({}, '', url.toString());
+    } catch {
+      // ignore
+    }
+  };
+
   const selected = threads.find((t) => t.id === selectedId) ?? null;
 
   // ---- Live reply: type here and the customer sees it in their chat box ----
