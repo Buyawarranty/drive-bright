@@ -1049,76 +1049,23 @@ export function SandboxChatWindow({
         </div>
       )}
 
-      {/* Compact top action row — one line, two options, out of the chat's way. */}
+      {/* Compact top action row — call us, or leave a number for a call / WhatsApp back. */}
       {!agentMode && (
         <div className="border-b border-border bg-background px-3 py-2.5">
-          {holdState === 'missed' ? (
-            /* Nobody picked the chat up — stop implying someone is coming and
-               give the visitor a real next step. An urgent callback has already
-               been raised in the CRM by this point. */
-            <div className="space-y-2">
-              <p className="text-xs font-semibold text-foreground">
-                Sorry — our specialists are all tied up right now. We've flagged this as urgent so
-                someone calls you straight back.
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                <a
-                  href="tel:03302295040"
-                  className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-primary/10"
-                >
-                  <PhoneCall className="h-4 w-4 shrink-0 text-primary" />
-                  <span className="truncate">Call 0330 229 5040</span>
-                </a>
-                <CallMeBackPanel
-                  asChip
-                  guestToken={guestToken}
-                  threadId={threadId}
-                  source={source}
-                  compact={compact}
-                  registration={detectedReg}
-                  liveAgentAvailable={false}
-                />
-              </div>
-            </div>
-          ) : holdState === 'joined' || specialistJoined ? (
+          {specialistJoined ? (
             <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
               <Headset className="h-3.5 w-3.5 shrink-0 text-primary" />
-              A warranty specialist has joined this chat.
-            </p>
-          ) : holdState === 'on_hold' || waiting ? (
-            <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
-              <span className="relative flex h-2 w-2 shrink-0">
-                <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-primary opacity-70" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-              </span>
-              {open
-                ? holdSeconds >= 20
-                  ? `Our specialists are busy with other customers right now — you're next in line (${holdSeconds}s). Keep chatting with me meanwhile, or give us a call.`
-                  : `Connecting you to a live agent${holdSeconds ? ` (${holdSeconds}s)` : ''} — keep chatting meanwhile`
-                : `Your request is with the team — a specialist picks this up ${nextOpeningLabel()}`}
-              {open && (
-                <a href="tel:03302295040" className="ml-auto shrink-0 font-bold text-primary underline underline-offset-2">
-                  Call 0330 229 5040
-                </a>
-              )}
+              A warranty specialist has replied in this chat.
             </p>
           ) : (
-
-            /* Live agent only shows when the team is open AND someone is actually
-               online. Otherwise the call back panel gets the full width. */
-            <div className={liveAgentAvailable ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-1 gap-2'}>
-              {liveAgentAvailable && (
-                <button
-                  type="button"
-                  onClick={requestLiveAgent}
-                  disabled={holdState === 'connecting'}
-                  title="We'll put you on hold and ring the team"
-                  className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-primary/10 disabled:opacity-60"
-                >
-                  <Headset className="h-4 w-4 shrink-0 text-primary" />
-                  <span className="truncate">{holdState === 'connecting' ? 'Connecting…' : 'Live agent'}</span>
-                </button>
-              )}
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href="tel:03302295040"
+                className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-primary/10"
+              >
+                <PhoneCall className="h-4 w-4 shrink-0 text-primary" />
+                <span className="truncate">Call 0330 229 5040</span>
+              </a>
               <CallMeBackPanel
                 asChip
                 guestToken={guestToken}
@@ -1126,13 +1073,9 @@ export function SandboxChatWindow({
                 source={source}
                 compact={compact}
                 registration={detectedReg}
-                liveAgentAvailable={liveAgentAvailable}
-                onConnectLiveAgent={requestLiveAgent}
               />
-              {holdError && <p className="col-span-full text-xs font-medium text-destructive">{holdError}</p>}
             </div>
           )}
-
         </div>
       )}
 
