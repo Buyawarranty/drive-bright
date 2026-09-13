@@ -13693,25 +13693,40 @@ export type Database = {
       }
       whatsapp_auto_message_settings: {
         Row: {
+          away_reply_enabled: boolean
+          away_reply_text: string
+          away_weekends_closed: boolean
           created_at: string
           id: string
           is_enabled: boolean
+          office_close_time: string
+          office_open_time: string
           template_language: string
           template_name: string
           updated_at: string
         }
         Insert: {
+          away_reply_enabled?: boolean
+          away_reply_text?: string
+          away_weekends_closed?: boolean
           created_at?: string
           id?: string
           is_enabled?: boolean
+          office_close_time?: string
+          office_open_time?: string
           template_language?: string
           template_name?: string
           updated_at?: string
         }
         Update: {
+          away_reply_enabled?: boolean
+          away_reply_text?: string
+          away_weekends_closed?: boolean
           created_at?: string
           id?: string
           is_enabled?: boolean
+          office_close_time?: string
+          office_open_time?: string
           template_language?: string
           template_name?: string
           updated_at?: string
@@ -13771,6 +13786,7 @@ export type Database = {
           id: string
           is_open: boolean
           last_agent_reply_at: string | null
+          last_away_reply_at: string | null
           last_direction: string | null
           last_message_at: string | null
           last_message_preview: string | null
@@ -13797,6 +13813,7 @@ export type Database = {
           id?: string
           is_open?: boolean
           last_agent_reply_at?: string | null
+          last_away_reply_at?: string | null
           last_direction?: string | null
           last_message_at?: string | null
           last_message_preview?: string | null
@@ -13823,6 +13840,7 @@ export type Database = {
           id?: string
           is_open?: boolean
           last_agent_reply_at?: string | null
+          last_away_reply_at?: string | null
           last_direction?: string | null
           last_message_at?: string | null
           last_message_preview?: string | null
@@ -14307,6 +14325,7 @@ export type Database = {
           id: string
           is_open: boolean
           last_agent_reply_at: string | null
+          last_away_reply_at: string | null
           last_direction: string | null
           last_message_at: string | null
           last_message_preview: string | null
@@ -15102,6 +15121,7 @@ export type Database = {
           id: string
           is_open: boolean
           last_agent_reply_at: string | null
+          last_away_reply_at: string | null
           last_direction: string | null
           last_message_at: string | null
           last_message_preview: string | null

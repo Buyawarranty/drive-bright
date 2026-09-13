@@ -215,7 +215,20 @@ Deno.serve(async (req) => {
     );
     if (msgErr) console.error('message insert failed:', msgErr.message);
 
+    // ---- out-of-hours automatic reply --------------------------------------
+    let awayReplySent = false;
+    try {
+      awayReplySent = await maybeSendAwayReply(supabase, {
+        conversationId,
+        phoneNormalized,
+        lastAwayReplyAt: existing?.last_away_reply_at ?? null,
+      });
+    } catch (e: any) {
+      console.error('away reply failed:', e?.message || e);
+    }
+
     return json({
+      away_reply_sent: awayReplySent,
       ok: true,
       conversation_id: conversationId,
       heat: scored.heat,
@@ -227,3 +240,99 @@ Deno.serve(async (req) => {
     return json({ error: 'unexpected_error', details: String(error?.message || error) }, 500);
   }
 });
+
+/** Minutes since midnight in UK time, plus the weekday (0 = Sunday). */
+function ukNow(): { minutes: number; weekday: number } {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    hour: '2-digit',
+    minute: '2-digit',
+    weekday: 'short',
+    hour12: false,
+  }).formatToParts(new Date());
+  const get = (t: string) => parts.find((p) => p.type === t)?.value || '';
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  return {
+    minutes: Number(get('hour')) * 60 + Number(get('minute')),
+    weekday: Math.max(0, days.indexOf(get('weekday'))),
+  };
+}
+
+const toMinutes = (t: string): number => {
+  const [h, m] = String(t || '').split(':');
+  return Number(h || 0) * 60 + Number(m || 0);
+};
+
+/**
+ * Sends the out-of-hours reply when the office is closed and this customer has
+ * not already had one in the last 12 hours. Returns true when a reply went out.
+ */
+async function maybeSendAwayReply(
+  supabase: any,
+  args: { conversationId: string; phoneNormalized: string; lastAwayReplyAt: string | null },
+): Promise<boolean> {
+  const { data: settings } = await supabase
+    .from('whatsapp_auto_message_settings')
+    .select('away_reply_enabled, away_reply_text, office_open_time, office_close_time, away_weekends_closed')
+    .limit(1)
+    .maybeSingle();
+
+  const text = String(settings?.away_reply_text || '').trim();
+  if (!settings?.away_reply_enabled || !text) return false;
+
+  const { minutes, weekday } = ukNow();
+  const open = toMinutes(settings.office_open_time || '09:00');
+  const close = toMinutes(settings.office_close_time || '17:00');
+  const weekendClosed = settings.away_weekends_closed !== false && (weekday === 0 || weekday === 6);
+  const withinHours = minutes >= open && minutes < close;
+  if (!weekendClosed && withinHours) return false;
+
+  if (args.lastAwayReplyAt) {
+    const hours = (Date.now() - new Date(args.lastAwayReplyAt).getTime()) / 3_600_000;
+    if (hours < 12) return false;
+  }
+
+  const endpoint = (Deno.env.get('WATI_API_ENDPOINT') || '').replace(/\/+$/, '');
+  const token = Deno.env.get('WATI_ACCESS_TOKEN');
+  if (!endpoint || !token) return false;
+
+  const url = `${endpoint}/api/v1/sendSessionMessage/${args.phoneNormalized}?messageText=${encodeURIComponent(text)}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}` },
+  });
+  const raw = await res.text();
+  let body: any = null;
+  try {
+    body = JSON.parse(raw);
+  } catch {
+    body = { raw };
+  }
+  if (!res.ok || body?.ok === false || body?.result === false) {
+    console.error(`away reply send failed [${res.status}]: ${raw}`);
+    return false;
+  }
+
+  const now = new Date().toISOString();
+  await supabase.from('whatsapp_messages').insert({
+    conversation_id: args.conversationId,
+    wati_message_id: String(body?.message?.whatsappMessageId || body?.message?.id || `away-${args.conversationId}-${Date.now()}`),
+    direction: 'outbound',
+    body: text,
+    status: 'sent',
+    wati_timestamp: now,
+    raw: body,
+  });
+
+  await supabase
+    .from('whatsapp_conversations')
+    .update({
+      last_away_reply_at: now,
+      last_message_at: now,
+      last_message_preview: text.slice(0, 180),
+      last_direction: 'outbound',
+    })
+    .eq('id', args.conversationId);
+
+  return true;
+}
