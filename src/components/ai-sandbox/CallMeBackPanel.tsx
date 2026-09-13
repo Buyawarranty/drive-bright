@@ -377,6 +377,11 @@ export function CallMeBackPanel({
             Is <span className="font-bold">{prettyPhone(phone)}</span> the right number
             {name ? `, ${name}` : ''}?
           </p>
+          {topic && (
+            <p className="text-xs font-semibold text-muted-foreground">
+              Query: <span className="text-foreground">{TOPIC_LABELS[topic]}</span>
+            </p>
+          )}
           <p className="text-sm leading-relaxed text-muted-foreground">
             {open
               ? `We will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} shortly — a UK specialist, no premium numbers.`
