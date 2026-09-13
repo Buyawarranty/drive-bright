@@ -99,7 +99,23 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
       setThreads([]);
       setPendingThreadIds(new Set());
     } else {
-      const handoverIds = [...new Set((handoverData ?? []).map((row: any) => String(row.thread_id)).filter(Boolean))];
+      const handoverRows = (handoverData ?? []) as any[];
+      const handoverIds = [
+        ...new Set(
+          handoverRows
+            .filter((row) => String(row.kind) === 'live_handover')
+            .map((row: any) => String(row.thread_id))
+            .filter(Boolean),
+        ),
+      ];
+      // What the customer picked in the "Message me back" form, per conversation.
+      const hints = new Map<string, string>();
+      handoverRows.forEach((row: any) => {
+        const id = String(row.thread_id || '');
+        if (!id) return;
+        const hint = [row.reason, row.kind].filter(Boolean).join(' ');
+        if (hint && !hints.has(id)) hints.set(id, hint);
+      });
       let pendingIds = new Set<string>();
 
       if (handoverIds.length > 0) {
@@ -147,11 +163,37 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
       }
 
       setPendingThreadIds(pendingIds);
-      setThreads(
-        [...baseThreads, ...extraThreads]
-          .filter((thread, index, all) => all.findIndex((candidate) => candidate.id === thread.id) === index)
-          .sort((a, b) => +new Date(b.updated_at || b.created_at) - +new Date(a.updated_at || a.created_at)),
-      );
+      const allThreads = [...baseThreads, ...extraThreads]
+        .filter((thread, index, all) => all.findIndex((candidate) => candidate.id === thread.id) === index)
+        .sort((a, b) => +new Date(b.updated_at || b.created_at) - +new Date(a.updated_at || a.created_at));
+      setThreads(allThreads);
+
+      // Tag each conversation with what it is about, from what the customer typed.
+      const tagIds = allThreads.slice(0, 200).map((thread) => thread.id);
+      const nextTopics = new Map<string, ChatTopicTag>();
+      if (tagIds.length > 0) {
+        const { data: customerRows } = await supabase
+          .from('ai_sandbox_messages')
+          .select('thread_id, content, parts, created_at')
+          .in('thread_id', tagIds)
+          .eq('role', 'user')
+          .order('created_at', { ascending: true })
+          .limit(6000);
+        const byThread = new Map<string, string[]>();
+        (customerRows ?? []).forEach((row: any) => {
+          const id = String(row.thread_id);
+          const list = byThread.get(id) ?? [];
+          if (list.length < 4) {
+            const text = messageText(row as Message);
+            if (text) list.push(text);
+          }
+          byThread.set(id, list);
+        });
+        tagIds.forEach((id) => {
+          nextTopics.set(id, classifyChatTopic((byThread.get(id) ?? []).join('\n'), hints.get(id)));
+        });
+      }
+      setTopics(nextTopics);
     }
     setLoading(false);
   };
