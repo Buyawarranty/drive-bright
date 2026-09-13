@@ -67,6 +67,11 @@ Deno.serve(async (req) => {
     const phone = row.phone_normalized;
     const localPhone = phone.startsWith('44') ? `0${phone.slice(2)}` : phone;
     const firstName = (row.display_name || '').split(/\s+/)[0] || 'there';
+    const rowTemplate = (row.template_name || settings?.template_name || '').trim();
+    if (!rowTemplate) {
+      failed += 1;
+      continue;
+    }
 
     try {
       // ---- find or create the conversation so the thread is visible in the CRM
