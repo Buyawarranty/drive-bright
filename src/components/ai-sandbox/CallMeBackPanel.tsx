@@ -298,50 +298,69 @@ export function CallMeBackPanel({
           onSubmit={(e) => {
             e.preventDefault();
             if (isValid) setStep('confirm');
-            else setError('Enter a valid UK mobile or landline number');
+            else setError(isEmail ? 'Enter a valid email address' : 'Enter a valid UK mobile or landline number');
           }}
           className="space-y-3"
         >
           <p className="text-sm leading-relaxed text-muted-foreground">
             {open
-              ? 'Leave your number and a UK warranty specialist will get back to you shortly - by call or WhatsApp, whichever you prefer.'
-              : `A warranty specialist will be back ${nextOpeningLabel()} - leave your number and you are first in the queue.`}
+              ? 'Leave your number or email and a UK warranty specialist will get back to you shortly - by call, WhatsApp or email, whichever you prefer.'
+              : `A warranty specialist will be back ${nextOpeningLabel()} - leave your number or email and you are first in the queue.`}
           </p>
 
           <div className="space-y-1.5">
-            <label htmlFor="cb-phone" className="block text-xs font-semibold text-foreground">
-              Phone number
+            <label htmlFor={isEmail ? 'cb-email' : 'cb-phone'} className="block text-xs font-semibold text-foreground">
+              {isEmail ? 'Email address' : 'Phone number'}
             </label>
-            <input
-              id="cb-phone"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              autoFocus
-              value={phone}
-              onChange={(e) => {
-                setPhone(e.target.value.replace(/[^\d +]/g, '').slice(0, 16));
-                setError(null);
-              }}
-              placeholder="07960 123456"
-              aria-label="Your phone number"
-              className="h-12 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
+            {isEmail ? (
+              <input
+                id="cb-email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                autoFocus
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value.slice(0, 160));
+                  setError(null);
+                }}
+                placeholder="alex@example.com"
+                aria-label="Your email address"
+                className="h-12 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            ) : (
+              <input
+                id="cb-phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                autoFocus
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value.replace(/[^\d +]/g, '').slice(0, 16));
+                  setError(null);
+                }}
+                placeholder="07960 123456"
+                aria-label="Your phone number"
+                className="h-12 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            )}
           </div>
 
           <div className="space-y-1.5">
             <span className="block text-xs font-semibold text-foreground">How should we get back to you?</span>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {([
                 { key: 'call' as Preference, label: 'Phone call', Icon: PhoneCall },
                 { key: 'whatsapp' as Preference, label: 'WhatsApp', Icon: MessageCircle },
+                { key: 'email' as Preference, label: 'Email', Icon: Mail },
               ]).map(({ key, label, Icon }) => (
                 <button
                   key={key}
                   type="button"
                   onClick={() => setPreference(key)}
                   aria-pressed={preference === key}
-                  className={`flex h-11 items-center justify-center gap-2 rounded-xl border text-sm font-bold transition-colors ${
+                  className={`flex h-11 items-center justify-center gap-1.5 rounded-xl border text-xs font-bold transition-colors ${
                     preference === key
                       ? 'border-primary bg-primary/10 text-foreground'
                       : 'border-input bg-background text-muted-foreground hover:bg-muted'
