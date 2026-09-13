@@ -239,7 +239,7 @@ export function CallMeBackPanel({
       {step === 'topic' ? (
         <div className="space-y-3">
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Leave your number and we'll call or WhatsApp you back. First, what's your query about?
+            Leave your number or email and we'll call, WhatsApp or email you back. First, what's your query about?
           </p>
           <div className="grid grid-cols-2 gap-2">
             {TOPICS.map(({ key, label }) => (
