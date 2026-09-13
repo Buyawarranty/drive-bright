@@ -352,3 +352,81 @@ async function maybeSendAwayReply(
 
   return true;
 }
+
+const OPT_OUT_WORDS = ['stop', 'unsubscribe', 'opt out', 'optout', 'remove me', 'do not contact', 'dont contact', "don't contact", 'no more messages', 'leave me alone'];
+const OPT_IN_WORDS = ['start', 'unstop', 'subscribe', 'opt in', 'optin', 'resume'];
+
+/**
+ * Honours "STOP" style replies: the conversation is flagged, tagged and the
+ * lead is marked unsubscribed so no further WhatsApp messages go out. "START"
+ * puts them back on.
+ */
+async function handleOptOutKeywords(
+  supabase: any,
+  args: { conversationId: string; leadId: string | null; body: string; alreadyOptedOut: boolean },
+): Promise<'out' | 'in' | null> {
+  const text = (args.body || '').toLowerCase().replace(/[^a-z' ]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!text || text.length > 60) return null;
+
+  const matched = (list: string[]) => list.find((w) => text === w || text.startsWith(`${w} `) || text.endsWith(` ${w}`));
+  const outWord = matched(OPT_OUT_WORDS);
+  const inWord = outWord ? undefined : matched(OPT_IN_WORDS);
+  if (!outWord && !inWord) return null;
+
+  let leadId = args.leadId;
+  if (!leadId) {
+    const { data: conv } = await supabase
+      .from('whatsapp_conversations')
+      .select('lead_id')
+      .eq('id', args.conversationId)
+      .maybeSingle();
+    leadId = conv?.lead_id ?? null;
+  }
+
+  // Make sure the tag exists so it shows on the conversation list.
+  let tagId: string | null = null;
+  const { data: tag } = await supabase
+    .from('whatsapp_tags')
+    .select('id')
+    .eq('name', 'Opted out')
+    .maybeSingle();
+  if (tag?.id) tagId = tag.id;
+  else {
+    const { data: created } = await supabase
+      .from('whatsapp_tags')
+      .insert({ name: 'Opted out', color: '#DC2626', sort_order: 99 })
+      .select('id')
+      .maybeSingle();
+    tagId = created?.id ?? null;
+  }
+
+  if (outWord) {
+    await supabase
+      .from('whatsapp_conversations')
+      .update({ opted_out_at: new Date().toISOString(), opt_out_reason: args.body.slice(0, 180) })
+      .eq('id', args.conversationId);
+
+    if (tagId) {
+      await supabase
+        .from('whatsapp_conversation_tags')
+        .upsert({ conversation_id: args.conversationId, tag_id: tagId }, { onConflict: 'conversation_id,tag_id' });
+    }
+    if (leadId) {
+      await supabase.from('sales_leads').update({ status: 'unsubscribed' }).eq('id', leadId);
+    }
+    return 'out';
+  }
+
+  await supabase
+    .from('whatsapp_conversations')
+    .update({ opted_out_at: null, opt_out_reason: null })
+    .eq('id', args.conversationId);
+  if (tagId) {
+    await supabase
+      .from('whatsapp_conversation_tags')
+      .delete()
+      .eq('conversation_id', args.conversationId)
+      .eq('tag_id', tagId);
+  }
+  return 'in';
+}
