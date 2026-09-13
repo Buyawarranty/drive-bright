@@ -80,8 +80,19 @@ Deno.serve(async (req) => {
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
     const body = await req.json().catch(() => ({}));
 
+    const rawPreference = ["whatsapp", "email"].includes(body?.contactPreference)
+      ? body.contactPreference
+      : "call";
+    const isEmailPreference = rawPreference === "email";
+
     const phone = normalisePhone(String(body?.phone ?? ""));
-    if (!phone) {
+    const email = String(body?.email ?? "").trim().toLowerCase().slice(0, 160);
+
+    if (isEmailPreference) {
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return json({ ok: false, error: "invalid_email", message: "Enter a valid email address." }, 400);
+      }
+    } else if (!phone) {
       return json({ ok: false, error: "invalid_phone", message: "Enter a valid UK mobile or landline number." }, 400);
     }
 
