@@ -16,6 +16,7 @@ import WhatsAppManagerDashboard from './WhatsAppManagerDashboard';
 import WhatsAppHotLeadAlerts from './WhatsAppHotLeadAlerts';
 import WhatsAppLeadImport from './WhatsAppLeadImport';
 import WhatsAppBulkTemplateSend from './WhatsAppBulkTemplateSend';
+import WhatsAppAwayReply from './WhatsAppAwayReply';
 
 import type { WhatsAppPipelineStatus } from '@/lib/whatsappPipeline';
 
