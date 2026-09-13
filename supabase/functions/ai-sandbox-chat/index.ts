@@ -858,7 +858,7 @@ Deno.serve(async (req) => {
 
       capture_lead: tool({
         description:
-          "Save the customer's details so the team calls or WhatsApps them back. Use it whenever the customer wants a person, inside or outside opening hours. Put their contact preference (call or WhatsApp) in the notes.",
+          "Save the customer's details so the team calls, WhatsApps or emails them back. Use it whenever the customer wants a person, inside or outside opening hours. Put their contact preference (call, WhatsApp or email) in the notes.",
         inputSchema: z.object({
           customer_name: z.string().nullable(),
           customer_email: z.string().nullable(),
@@ -872,7 +872,7 @@ Deno.serve(async (req) => {
           if (!args.customer_email && !args.customer_phone) {
             return toolResultText({
               ok: false,
-              note: "Ask for a phone number (or an email) first — a name is optional.",
+              note: "Ask for a phone number or an email first — a name is optional.",
             });
           }
           const state = availability();
@@ -923,7 +923,7 @@ Deno.serve(async (req) => {
             lead_id: data.id,
             pipeline_lead: pipeline,
             next_open: state.next_open,
-            note: "Details saved. Tell the customer the team will call or WhatsApp them back (shortly if open, otherwise at the next opening time) and offer to keep helping here meanwhile.",
+            note: "Details saved. Tell the customer the team will call, WhatsApp or email them back (shortly if open, otherwise at the next opening time) and offer to keep helping here meanwhile.",
           });
         },
 
