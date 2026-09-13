@@ -527,9 +527,9 @@ function PriceOptionsPanel({
           </div>
 
           <div className="rounded-xl border border-dashed border-border bg-muted/40 p-4">
-            <p className="text-sm font-semibold text-foreground">Prefer to finish it yourself?</p>
+            <p className="text-sm font-semibold text-foreground">Or continue on our website</p>
             <p className="mt-1.5 text-xs text-muted-foreground">
-              I'll open your cart with <strong className="text-foreground">{reg || 'FOR3'}</strong> already filled in — pick your plan and pay securely on site. This chat stays open if you need me.
+              Open your quote on buyawarranty.co.uk with <strong className="text-foreground">{reg || 'your car'}</strong> already filled in — choose your cover and pay securely there. This chat stays open if you need help.
             </p>
           </div>
 
