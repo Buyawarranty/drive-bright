@@ -24,11 +24,13 @@ export interface WhatsAppConversation {
   next_follow_up_at: string | null;
   lead_source: string | null;
   is_open: boolean;
+  opted_out_at: string | null;
+  opt_out_reason: string | null;
   created_at: string;
 }
 
 const SELECT =
-  'id, phone, phone_normalized, display_name, lead_id, customer_id, assigned_to, claimed_by, claimed_at, heat, heat_reason, pipeline_status, unread_count, last_message_at, last_message_preview, last_direction, last_agent_reply_at, first_response_seconds, next_follow_up_at, lead_source, is_open, created_at';
+  'id, phone, phone_normalized, display_name, lead_id, customer_id, assigned_to, claimed_by, claimed_at, heat, heat_reason, pipeline_status, unread_count, last_message_at, last_message_preview, last_direction, last_agent_reply_at, first_response_seconds, next_follow_up_at, lead_source, is_open, opted_out_at, opt_out_reason, created_at';
 
 /** Hottest first, then overdue follow-ups, then the newest customer reply. */
 export function sortConversations(rows: WhatsAppConversation[]): WhatsAppConversation[] {
