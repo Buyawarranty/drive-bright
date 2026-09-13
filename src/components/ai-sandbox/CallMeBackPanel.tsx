@@ -80,6 +80,7 @@ export function CallMeBackPanel({
           phone,
           name,
           contactPreference: preference,
+          topic: topic ?? 'other',
           registration: registration ?? null,
           quotedPrice: quotedPrice ?? null,
           guestToken: guestToken ?? null,
