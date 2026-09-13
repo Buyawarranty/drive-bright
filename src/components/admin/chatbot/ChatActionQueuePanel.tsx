@@ -246,6 +246,13 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
         const lastCustomer = customerMsgs.slice(-1)[0];
         const lastMsg = msgs.slice(-1)[0];
         const awaitingReply = !!lastMsg && lastMsg.role === 'user';
+        const lastAgent = msgs.filter((m) => m.role === 'agent').slice(-1)[0];
+        const liveHandoverAsked = ho.some((h) => h.kind === 'live_handover');
+        const pendingHumanReply = Boolean(
+          liveHandoverAsked &&
+          lastCustomer &&
+          (!lastAgent || new Date(lastAgent.created_at).getTime() < new Date(lastCustomer.created_at).getTime()),
+        );
 
         let band: Band = 'none';
         let reason = 'Browsed and left — nothing to action';
@@ -255,10 +262,14 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
           band = 'none';
           reason = 'Already in New Leads';
           nextAction = 'Work it in New Leads';
-        } else if (handoverOpen || (callbackAsked && (phone || email))) {
+        } else if (pendingHumanReply || handoverOpen || (callbackAsked && (phone || email))) {
           band = 'urgent';
-          reason = handoverOpen ? 'Asked to speak to a person — nobody has picked it up' : 'Callback requested';
-          nextAction = phone ? `Ring ${phone}` : 'Reply by email';
+          reason = pendingHumanReply
+            ? 'Pending human reply — no staff member has answered this customer yet'
+            : handoverOpen
+              ? 'Asked to speak to a person — nobody has picked it up'
+              : 'Callback requested';
+          nextAction = pendingHumanReply ? 'Open the chat and reply' : phone ? `Ring ${phone}` : 'Reply by email';
         } else if (awaitingReply && (phone || email || registration)) {
           band = 'urgent';
           reason = 'Customer left a message and gave their details';

@@ -336,7 +336,7 @@ export default function ChatbotDataTab() {
         </TabsList>
 
         <TabsContent value="queue" className="pt-4">
-          <ChatActionQueuePanel rangeDays="all" fromIso={fromIso} toIso={toIso} />
+          <ChatActionQueuePanel rangeDays="all" />
         </TabsContent>
 
         <TabsContent value="conversations" className="pt-4">

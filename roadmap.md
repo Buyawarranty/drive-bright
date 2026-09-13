@@ -1,5 +1,6 @@
 # Roadmap
 
+- [x] Chatbot data: show every live-chat request still awaiting a human reply in one all-time pending list
 - [x] Customer Management: replace confusing split source/path tags with clear labels such as Google lead and Google direct sale
 - [x] Direct-sale notifications: reliably email every completed website sale and name the channel clearly in the subject
 - [x] Recontact leads: default the date filter to All time so 60-day-old assigned leads do not open as a blank list
