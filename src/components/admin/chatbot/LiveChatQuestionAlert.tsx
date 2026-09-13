@@ -68,7 +68,21 @@ export const LiveChatQuestionAlert: React.FC = () => {
     else setMuted(isSuperAdmin);
   }, [allowed, isSuperAdmin]);
   const [collapsed, setCollapsed] = useState(false);
+  const [closed, setClosed] = useState(false);
+  const closedFor = useRef<string | null>(null);
   const openNow = useRef(isTeamOpenNow());
+
+  // Re-open the alert automatically when a different customer starts waiting.
+  useEffect(() => {
+    if (!waitingThreadId) {
+      setClosed(false);
+      closedFor.current = null;
+      return;
+    }
+    if (closed && closedFor.current !== waitingThreadId) {
+      setClosed(false);
+    }
+  }, [waitingThreadId, closed]);
 
   const load = useCallback(async () => {
     const since = new Date(Date.now() - WINDOW_MINUTES * 60 * 1000).toISOString();
