@@ -210,6 +210,14 @@ export const LiveChatQuestionAlert: React.FC = () => {
           >
             {collapsed ? 'Show' : 'Hide'}
           </button>
+          <button
+            type="button"
+            onClick={closeAlert}
+            title="Close alert"
+            className="rounded p-1 text-white/90 hover:bg-white/20"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
 
         {!collapsed && (
