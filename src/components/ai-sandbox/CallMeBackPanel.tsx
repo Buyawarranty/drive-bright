@@ -169,7 +169,7 @@ export function CallMeBackPanel({
               ? 'Leave your number and a UK specialist will call or WhatsApp you back.'
               : `Leave your number - we'll call or WhatsApp you ${nextOpeningLabel()} (${openingHoursLabel}).`}
           </p>
-          {open && (
+          {open && showPhoneLine && (
             <a
               href="tel:03302295040"
               className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-[#B4501F] underline underline-offset-2"
