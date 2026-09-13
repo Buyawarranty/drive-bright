@@ -68,7 +68,21 @@ export const LiveChatQuestionAlert: React.FC = () => {
     else setMuted(isSuperAdmin);
   }, [allowed, isSuperAdmin]);
   const [collapsed, setCollapsed] = useState(false);
+  const [closed, setClosed] = useState(false);
+  const closedFor = useRef<string | null>(null);
   const openNow = useRef(isTeamOpenNow());
+
+  // Re-open the alert automatically when a different customer starts waiting.
+  useEffect(() => {
+    if (!waitingThreadId) {
+      setClosed(false);
+      closedFor.current = null;
+      return;
+    }
+    if (closed && closedFor.current !== waitingThreadId) {
+      setClosed(false);
+    }
+  }, [waitingThreadId, closed]);
 
   const load = useCallback(async () => {
     const since = new Date(Date.now() - WINDOW_MINUTES * 60 * 1000).toISOString();
@@ -159,10 +173,16 @@ export const LiveChatQuestionAlert: React.FC = () => {
     });
   };
 
-  if (!allowed || (visible.length === 0 && waitingCount === 0)) return null;
+  if (!allowed || closed || (visible.length === 0 && waitingCount === 0)) return null;
 
   const openChat = (threadId: string) => {
     window.location.href = `/admin-dashboard/?tab=chatbot-data&chatThread=${threadId}`;
+  };
+
+  const closeAlert = () => {
+    setClosed(true);
+    closedFor.current = waitingThreadId;
+    stopPhoneRing();
   };
 
   return (
@@ -189,6 +209,14 @@ export const LiveChatQuestionAlert: React.FC = () => {
             className="rounded px-1.5 text-xs font-bold text-white/90 hover:bg-white/20"
           >
             {collapsed ? 'Show' : 'Hide'}
+          </button>
+          <button
+            type="button"
+            onClick={closeAlert}
+            title="Close alert"
+            className="rounded p-1 text-white/90 hover:bg-white/20"
+          >
+            <X className="h-4 w-4" />
           </button>
         </div>
 
