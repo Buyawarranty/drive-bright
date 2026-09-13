@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageSquare, UserPlus, RefreshCw, Search, CheckCircle2, Send } from 'lucide-react';
+import { classifyChatTopic, type ChatTopicTag } from '@/lib/chatTopicTags';
 
 type Thread = {
   id: string;
@@ -63,6 +64,7 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
   const [threads, setThreads] = useState<Thread[]>([]);
   const [pendingThreadIds, setPendingThreadIds] = useState<Set<string>>(new Set());
   const [pendingOnly, setPendingOnly] = useState(true);
+  const [topics, setTopics] = useState<Map<string, ChatTopicTag>>(new Map());
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -90,8 +92,7 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
       query,
       supabase
         .from('ai_sandbox_handovers')
-        .select('thread_id')
-        .eq('kind', 'live_handover')
+        .select('thread_id, kind, reason')
         .not('thread_id', 'is', null)
         .limit(1000),
     ]);
@@ -100,7 +101,23 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
       setThreads([]);
       setPendingThreadIds(new Set());
     } else {
-      const handoverIds = [...new Set((handoverData ?? []).map((row: any) => String(row.thread_id)).filter(Boolean))];
+      const handoverRows = (handoverData ?? []) as any[];
+      const handoverIds = [
+        ...new Set(
+          handoverRows
+            .filter((row) => String(row.kind) === 'live_handover')
+            .map((row: any) => String(row.thread_id))
+            .filter(Boolean),
+        ),
+      ];
+      // What the customer picked in the "Message me back" form, per conversation.
+      const hints = new Map<string, string>();
+      handoverRows.forEach((row: any) => {
+        const id = String(row.thread_id || '');
+        if (!id) return;
+        const hint = [row.reason, row.kind].filter(Boolean).join(' ');
+        if (hint && !hints.has(id)) hints.set(id, hint);
+      });
       let pendingIds = new Set<string>();
 
       if (handoverIds.length > 0) {
@@ -148,11 +165,37 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
       }
 
       setPendingThreadIds(pendingIds);
-      setThreads(
-        [...baseThreads, ...extraThreads]
-          .filter((thread, index, all) => all.findIndex((candidate) => candidate.id === thread.id) === index)
-          .sort((a, b) => +new Date(b.updated_at || b.created_at) - +new Date(a.updated_at || a.created_at)),
-      );
+      const allThreads = [...baseThreads, ...extraThreads]
+        .filter((thread, index, all) => all.findIndex((candidate) => candidate.id === thread.id) === index)
+        .sort((a, b) => +new Date(b.updated_at || b.created_at) - +new Date(a.updated_at || a.created_at));
+      setThreads(allThreads);
+
+      // Tag each conversation with what it is about, from what the customer typed.
+      const tagIds = allThreads.slice(0, 200).map((thread) => thread.id);
+      const nextTopics = new Map<string, ChatTopicTag>();
+      if (tagIds.length > 0) {
+        const { data: customerRows } = await supabase
+          .from('ai_sandbox_messages')
+          .select('thread_id, content, parts, created_at')
+          .in('thread_id', tagIds)
+          .eq('role', 'user')
+          .order('created_at', { ascending: true })
+          .limit(6000);
+        const byThread = new Map<string, string[]>();
+        (customerRows ?? []).forEach((row: any) => {
+          const id = String(row.thread_id);
+          const list = byThread.get(id) ?? [];
+          if (list.length < 4) {
+            const text = messageText(row as Message);
+            if (text) list.push(text);
+          }
+          byThread.set(id, list);
+        });
+        tagIds.forEach((id) => {
+          nextTopics.set(id, classifyChatTopic((byThread.get(id) ?? []).join('\n'), hints.get(id)));
+        });
+      }
+      setTopics(nextTopics);
     }
     setLoading(false);
   };
@@ -373,7 +416,12 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
                       </Badge>
                     )}
                   </div>
-                  <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    {topics.get(t.id) && (
+                      <Badge className={`shrink-0 text-[11px] ${topics.get(t.id)!.className}`}>
+                        {topics.get(t.id)!.label}
+                      </Badge>
+                    )}
                     <span>{new Date(t.updated_at || t.created_at).toLocaleString('en-GB')}</span>
                     {t.source && <Badge variant="outline" className="text-[10px]">{t.source}</Badge>}
                   </div>
@@ -391,8 +439,13 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">
-            {selected ? selected.title || 'Website chat' : 'Pick a conversation'}
+          <CardTitle className="text-base flex flex-wrap items-center gap-2">
+            <span>{selected ? selected.title || 'Website chat' : 'Pick a conversation'}</span>
+            {selected && topics.get(selected.id) && (
+              <Badge className={topics.get(selected.id)!.className}>
+                {topics.get(selected.id)!.label}
+              </Badge>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
