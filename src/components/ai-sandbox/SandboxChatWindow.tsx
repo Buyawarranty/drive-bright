@@ -55,6 +55,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-chat`;
 
 const AGENT_PREFIX = '(Warranty specialist)';
+const CONTACT_CARD_MARKER = '[[CONTACT_CARD]]';
+const HUMAN_INTENT = /\b(speak|talk|chat)\b[^.!?]{0,30}\b(human|agent|person|someone|advisor|specialist)\b|\blive agent\b|\breal person\b|\bsomeone real\b|\ba human\b|\bhuman please\b/i;
 
 // Pulls a short trailing question off the end of a reply so it can be
 // highlighted separately from the guidance above it.
@@ -1106,7 +1108,7 @@ export function SandboxChatWindow({
 
                   {message.parts.map((part, i) => {
                     if (part.type === 'text') {
-                      const text = stripPrefix(part.text);
+                      const text = stripPrefix(part.text).split(CONTACT_CARD_MARKER).join('').trim();
                       if (message.role !== 'user') {
                         const clean = agentMode ? text : sanitizeForCustomer(text);
                         if (!clean) return null;
