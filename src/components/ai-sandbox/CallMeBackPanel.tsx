@@ -18,8 +18,23 @@ function prettyPhone(raw: string): string {
   return raw;
 }
 
-type Step = 'closed' | 'number' | 'confirm' | 'done';
+type Step = 'closed' | 'topic' | 'claimsInfo' | 'number' | 'confirm' | 'done';
 type Preference = 'call' | 'whatsapp';
+type Topic = 'warranty_purchase' | 'general' | 'existing_policy' | 'other';
+
+const TOPICS: { key: Topic; label: string }[] = [
+  { key: 'warranty_purchase', label: 'Warranty purchase' },
+  { key: 'general', label: 'General enquiry' },
+  { key: 'existing_policy', label: 'Existing policy question' },
+  { key: 'other', label: 'Something else' },
+];
+
+const TOPIC_LABELS: Record<Topic, string> = {
+  warranty_purchase: 'Warranty purchase',
+  general: 'General enquiry',
+  existing_policy: 'Existing policy question',
+  other: 'Something else',
+};
 
 export function CallMeBackPanel({
   guestToken,
@@ -44,6 +59,7 @@ export function CallMeBackPanel({
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [preference, setPreference] = useState<Preference>('call');
+  const [topic, setTopic] = useState<Topic | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [whenLabel, setWhenLabel] = useState<string>('');
@@ -64,6 +80,7 @@ export function CallMeBackPanel({
           phone,
           name,
           contactPreference: preference,
+          topic: topic ?? 'other',
           registration: registration ?? null,
           quotedPrice: quotedPrice ?? null,
           guestToken: guestToken ?? null,
@@ -112,8 +129,8 @@ export function CallMeBackPanel({
       return (
         <button
           type="button"
-          onClick={() => setStep('number')}
-          title={open ? 'Leave your number for a call or WhatsApp back' : `Leave your number — we get back to you ${nextOpeningLabel()}`}
+          onClick={() => setStep('topic')}
+          title="All our agents are busy — leave your number and we'll call or WhatsApp you back"
           className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
         >
           <MessageCircle className="h-4 w-4 shrink-0 text-[#B4501F]" />
@@ -132,7 +149,7 @@ export function CallMeBackPanel({
         >
           <MessageCircle className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
           <span className="flex-1 truncate text-xs font-bold text-foreground">
-            Prefer to talk? Leave your number for a call or WhatsApp
+            All our agents are busy — leave your number and we'll call you back
           </span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
         </button>
@@ -143,7 +160,7 @@ export function CallMeBackPanel({
       <div className="mx-3 mb-2 flex items-center gap-3 rounded-2xl bg-[#FDEBDF] px-3.5 py-3">
         <MessageCircle className="h-5 w-5 shrink-0 text-[#B4501F]" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-foreground">Prefer to talk?</p>
+          <p className="text-sm font-bold text-foreground">All our agents are busy right now</p>
           <p className="text-xs text-muted-foreground">
             {open
               ? 'Leave your number and a UK specialist will call or WhatsApp you back.'
@@ -160,7 +177,7 @@ export function CallMeBackPanel({
           )}
         </div>
         <Button
-          onClick={() => setStep('number')}
+          onClick={() => setStep('topic')}
           variant="outline"
           className="h-10 shrink-0 rounded-xl border-border bg-background text-sm font-bold shadow-sm hover:bg-muted"
         >
@@ -185,7 +202,13 @@ export function CallMeBackPanel({
       <div className="mb-1 flex items-start justify-between gap-2">
         <p className="flex items-center gap-2 text-base font-bold text-foreground">
           <MessageCircle className="h-4 w-4 shrink-0 text-primary" />
-          {step === 'number' ? 'Leave us your number' : 'Confirm your number'}
+          {step === 'topic'
+            ? 'All our agents are busy right now'
+            : step === 'claimsInfo'
+              ? 'Making a claim'
+              : step === 'number'
+                ? 'Leave us your number'
+                : 'Confirm your number'}
         </p>
         <button
           onClick={() => {
@@ -199,7 +222,64 @@ export function CallMeBackPanel({
         </button>
       </div>
 
-      {step === 'number' ? (
+      {step === 'topic' ? (
+        <div className="space-y-3">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Leave your number and we'll call or WhatsApp you back. First, what's your query about?
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {TOPICS.map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => {
+                  setTopic(key);
+                  setError(null);
+                  setStep('number');
+                }}
+                className="flex h-11 items-center justify-center rounded-xl border border-input bg-background px-2 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+              >
+                {label}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setStep('claimsInfo')}
+              className="col-span-2 flex h-11 items-center justify-center rounded-xl border border-input bg-background px-2 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+            >
+              Claims
+            </button>
+          </div>
+        </div>
+      ) : step === 'claimsInfo' ? (
+        <div className="space-y-3">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Our Claims team is open <span className="font-semibold text-foreground">Monday to Friday, 9am to 5pm</span>.
+            The quickest way to start a claim is online:
+          </p>
+          <a
+            href="https://buyawarranty.co.uk/make-a-claim/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-12 w-full items-center justify-center rounded-xl bg-primary text-base font-bold text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Make a claim online
+          </a>
+          <div className="space-y-1.5 text-sm">
+            <a href="tel:03302295045" className="flex items-center gap-2 font-bold text-[#B4501F] underline underline-offset-2">
+              <Phone className="h-4 w-4 shrink-0" />
+              Claims line: 0330 229 5045
+            </a>
+            <a href="mailto:claims@buyawarranty.co.uk" className="flex items-center gap-2 font-bold text-[#B4501F] underline underline-offset-2">
+              <MessageCircle className="h-4 w-4 shrink-0" />
+              claims@buyawarranty.co.uk
+            </a>
+          </div>
+          <Button variant="outline" className="h-10 w-full rounded-xl font-semibold" onClick={() => setStep('topic')}>
+            Back
+          </Button>
+        </div>
+      ) : step === 'number' ? (
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -297,6 +377,11 @@ export function CallMeBackPanel({
             Is <span className="font-bold">{prettyPhone(phone)}</span> the right number
             {name ? `, ${name}` : ''}?
           </p>
+          {topic && (
+            <p className="text-xs font-semibold text-muted-foreground">
+              Query: <span className="text-foreground">{TOPIC_LABELS[topic]}</span>
+            </p>
+          )}
           <p className="text-sm leading-relaxed text-muted-foreground">
             {open
               ? `We will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} shortly — a UK specialist, no premium numbers.`
