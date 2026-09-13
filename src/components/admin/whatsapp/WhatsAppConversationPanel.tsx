@@ -136,14 +136,20 @@ export const WhatsAppConversationPanel: React.FC<Props> = ({
                       : 'border border-border bg-card text-foreground'
                   }`}
                 >
-                  {mine && <p className="mb-0.5 text-[10px] font-semibold opacity-80">{agentName}</p>}
-                  {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
+                  {mine && (
+                    <p className="mb-0.5 text-[10px] font-semibold text-primary-foreground opacity-80">
+                      {agentName}
+                    </p>
+                  )}
+                  {m.body && (
+                    <p className="whitespace-pre-wrap break-words text-primary-foreground">{m.body}</p>
+                  )}
                   {m.media_url && (
                     <a
                       href={m.media_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs font-semibold underline"
+                      className="text-xs font-semibold text-primary-foreground underline"
                     >
                       {m.media_type || 'attachment'}
                     </a>
