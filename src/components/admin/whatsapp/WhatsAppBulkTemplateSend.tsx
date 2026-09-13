@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Send } from 'lucide-react';
+import { CalendarClock, Loader2, Send, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import WhatsAppTemplateSelect from './WhatsAppTemplateSelect';
@@ -25,6 +25,13 @@ interface LeadRow {
   status: string | null;
   lead_source: string | null;
   created_at: string;
+}
+
+interface ScheduledBatch {
+  batch_label: string;
+  template_name: string | null;
+  send_at: string;
+  count: number;
 }
 
 type Preset = 'newest20' | 'newest50' | 'newest100' | 'since6pm' | 'today' | 'custom';
@@ -69,6 +76,55 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
   const [autoSettings, setAutoSettings] = useState<AutoSettings | null>(null);
   const [autoCounts, setAutoCounts] = useState({ pending: 0, sent: 0, failed: 0 });
   const [autoSaving, setAutoSaving] = useState(false);
+  const [sendLater, setSendLater] = useState('');
+  const [scheduled, setScheduled] = useState<ScheduledBatch[]>([]);
+
+  const loadScheduled = async () => {
+    const { data } = await supabase
+      .from('whatsapp_auto_message_queue')
+      .select('batch_label, template_name, next_attempt_at')
+      .eq('status', 'pending')
+      .gt('next_attempt_at', new Date(Date.now() + 60 * 1000).toISOString())
+      .order('next_attempt_at', { ascending: true })
+      .limit(1000);
+    if (!data) return;
+    const grouped = new Map<string, ScheduledBatch>();
+    for (const row of data as {
+      batch_label: string | null;
+      template_name: string | null;
+      next_attempt_at: string;
+    }[]) {
+      const key = row.batch_label || '';
+      const existing = grouped.get(key);
+      if (existing) {
+        existing.count += 1;
+        if (row.next_attempt_at < existing.send_at) existing.send_at = row.next_attempt_at;
+      } else {
+        grouped.set(key, {
+          batch_label: key,
+          template_name: row.template_name,
+          send_at: row.next_attempt_at,
+          count: 1,
+        });
+      }
+    }
+    setScheduled(Array.from(grouped.values()).sort((a, b) => (a.send_at < b.send_at ? -1 : 1)));
+  };
+
+  const cancelScheduled = async (batchLabel: string) => {
+    const { error } = await supabase
+      .from('whatsapp_auto_message_queue')
+      .delete()
+      .eq('status', 'pending')
+      .eq('batch_label', batchLabel);
+    if (error) {
+      toast.error('That scheduled batch could not be cancelled.');
+      return;
+    }
+    toast.success('Scheduled batch cancelled — nothing will be sent.');
+    void loadScheduled();
+    void loadAuto();
+  };
 
   const loadAuto = async () => {
     const { data } = await supabase
@@ -161,6 +217,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
 
   useEffect(() => {
     void loadAuto();
+    void loadScheduled();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -182,11 +239,14 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
 
   const handleSend = async () => {
     if (!template.trim() || chosenCount === 0) return;
+    const sendAfter = sendLater ? new Date(sendLater) : null;
+    const isScheduled = !!sendAfter && sendAfter.getTime() > Date.now();
     setSending(true);
     const { data, error } = await supabase.functions.invoke('wati-send-template-batch', {
       body: {
         leadIds: sendable.filter((l) => selected.has(l.id)).map((l) => l.id),
         templateName: template.trim(),
+        ...(isScheduled ? { sendAfter: sendAfter!.toISOString() } : {}),
       },
     });
     setSending(false);
@@ -199,11 +259,26 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
       );
       return;
     }
-    toast.success(
-      `${data.queued} message${data.queued === 1 ? '' : 's'} on their way (${data.templateName}).`,
-    );
+    if (data.scheduledFor) {
+      toast.success(
+        `${data.queued} message${data.queued === 1 ? '' : 's'} scheduled for ${new Date(
+          data.scheduledFor,
+        ).toLocaleString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit',
+        })} (${data.templateName}).`,
+      );
+    } else {
+      toast.success(
+        `${data.queued} message${data.queued === 1 ? '' : 's'} on their way (${data.templateName}).`,
+      );
+    }
+    setSendLater('');
     void load();
     void loadAuto();
+    void loadScheduled();
   };
 
   const presets: { key: Preset; label: string }[] = [
@@ -345,17 +420,85 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
             })}
         </div>
 
-        <Button
-          onClick={() => void handleSend()}
-          disabled={sending || !template.trim() || chosenCount === 0}
-        >
-          {sending ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Send className="mr-2 h-4 w-4" />
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="wa-send-later" className="text-xs text-muted-foreground">
+                Send later (optional)
+              </Label>
+              <Input
+                id="wa-send-later"
+                type="datetime-local"
+                className="w-56"
+                value={sendLater}
+                min={toLocalInput(new Date())}
+                onChange={(e) => setSendLater(e.target.value)}
+              />
+            </div>
+            <Button
+              onClick={() => void handleSend()}
+              disabled={sending || !template.trim() || chosenCount === 0}
+            >
+              {sending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : sendLater && new Date(sendLater).getTime() > Date.now() ? (
+                <CalendarClock className="mr-2 h-4 w-4" />
+              ) : (
+                <Send className="mr-2 h-4 w-4" />
+              )}
+              {sendLater && new Date(sendLater).getTime() > Date.now()
+                ? `Schedule for ${chosenCount} lead${chosenCount === 1 ? '' : 's'}`
+                : `Send to ${chosenCount} lead${chosenCount === 1 ? '' : 's'}`}
+            </Button>
+            {sendLater && (
+              <Button size="sm" variant="ghost" onClick={() => setSendLater('')}>
+                Clear time
+              </Button>
+            )}
+          </div>
+          {sendLater && new Date(sendLater).getTime() > Date.now() && (
+            <p className="text-xs text-muted-foreground">
+              Goes out at {new Date(sendLater).toLocaleString('en-GB')} — you can cancel it below
+              any time before then.
+            </p>
           )}
-          Send to {chosenCount} lead{chosenCount === 1 ? '' : 's'}
-        </Button>
+        </div>
+
+        {scheduled.length > 0 && (
+          <div className="space-y-2 rounded-md border border-border p-3">
+            <p className="text-sm font-medium">Scheduled sends</p>
+            <div className="divide-y divide-border">
+              {scheduled.map((batch) => (
+                <div
+                  key={batch.batch_label}
+                  className="flex flex-wrap items-center gap-3 py-2 text-sm"
+                >
+                  <CalendarClock className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span className="min-w-0 flex-1 truncate">
+                    {batch.template_name || 'Template'} to {batch.count} lead
+                    {batch.count === 1 ? '' : 's'}
+                  </span>
+                  <span className="shrink-0 text-muted-foreground">
+                    {new Date(batch.send_at).toLocaleString('en-GB', {
+                      day: '2-digit',
+                      month: 'short',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void cancelScheduled(batch.batch_label)}
+                  >
+                    <X className="mr-1 h-3.5 w-3.5" />
+                    Cancel
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
