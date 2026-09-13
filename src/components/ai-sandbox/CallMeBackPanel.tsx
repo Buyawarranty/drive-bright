@@ -265,7 +265,7 @@ export function CallMeBackPanel({
       {step === 'topic' ? (
         <div className="space-y-3">
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Leave your number or email and we'll call, WhatsApp or email you back. First, what's your query about?
+            Nearly done. What's your query about? It helps the right specialist get back to you, but you can skip it.
           </p>
           <div className="grid grid-cols-2 gap-2">
             {TOPICS.map(({ key, label }) => (
@@ -275,7 +275,7 @@ export function CallMeBackPanel({
                 onClick={() => {
                   setTopic(key);
                   setError(null);
-                  setStep('number');
+                  setStep('confirm');
                 }}
                 className="flex h-11 items-center justify-center rounded-xl border border-input bg-background px-2 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
               >
@@ -290,6 +290,17 @@ export function CallMeBackPanel({
               Claims
             </button>
           </div>
+          <button
+            type="button"
+            onClick={() => {
+              setTopic(null);
+              setError(null);
+              setStep('confirm');
+            }}
+            className="w-full text-center text-xs font-semibold text-muted-foreground underline underline-offset-2 hover:text-foreground"
+          >
+            Skip this step
+          </button>
         </div>
       ) : step === 'claimsInfo' ? (
         <div className="space-y-3">
@@ -323,7 +334,7 @@ export function CallMeBackPanel({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (isValid) setStep('confirm');
+            if (isValid) setStep('topic');
             else setError(isEmail ? 'Enter a valid email address' : 'Enter a valid UK mobile or landline number');
           }}
           className="space-y-3"
