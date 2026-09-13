@@ -2429,7 +2429,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   const stripeSavings = Math.floor(payInFull * 0.10);
                   // Promo codes never take a sale below the net sell floor for this term.
                   const promoTermFloor = getNetPayableFloor({
-                    paymentPeriod: (paymentType || selectedPaymentType) as PaymentPeriod,
+                    paymentPeriod: (paymentType || '24months') as PaymentPeriod,
                     voluntaryExcess: voluntaryExcess ?? 100,
                     claimLimit: selectedClaimLimit,
                     labourRate: selectedLabourRate,
@@ -2515,7 +2515,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   const rawPayInFull = displayMonthlyPrice * 12;
                   // Promo codes never take a sale below the net sell floor for this term.
                   const promoTermFloor = getNetPayableFloor({
-                    paymentPeriod: (paymentType || selectedPaymentType) as PaymentPeriod,
+                    paymentPeriod: (paymentType || '24months') as PaymentPeriod,
                     voluntaryExcess: voluntaryExcess ?? 100,
                     claimLimit: selectedClaimLimit,
                     labourRate: selectedLabourRate,
