@@ -163,6 +163,7 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
       )}
 
       {isManagement && <WhatsAppBulkTemplateSend />}
+      {isManagement && <WhatsAppAwayReply />}
       {isManagement && <WhatsAppLeadImport />}
 
 

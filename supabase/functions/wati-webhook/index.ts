@@ -215,7 +215,20 @@ Deno.serve(async (req) => {
     );
     if (msgErr) console.error('message insert failed:', msgErr.message);
 
+    // ---- out-of-hours automatic reply --------------------------------------
+    let awayReplySent = false;
+    try {
+      awayReplySent = await maybeSendAwayReply(supabase, {
+        conversationId,
+        phoneNormalized,
+        lastAwayReplyAt: existing?.last_away_reply_at ?? null,
+      });
+    } catch (e: any) {
+      console.error('away reply failed:', e?.message || e);
+    }
+
     return json({
+      away_reply_sent: awayReplySent,
       ok: true,
       conversation_id: conversationId,
       heat: scored.heat,
