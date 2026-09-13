@@ -261,7 +261,9 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
     voluntaryExcess: voluntaryExcess ?? 100,
     claimLimit: selectedClaimLimit ?? undefined,
     labourRate: selectedLabourRate,
-    isMotorbike: isMotorbikeAdjustment(vehicleAdjustment),
+    isMotorbike: isMotorbikeAdjustment(
+      calculateVehiclePriceAdjustment(vehicleData as any, paymentType === '24months' ? 2 : paymentType === '36months' ? 3 : 1),
+    ),
     surface: 'admin',
   });
   const stripeBeforePromo = rawMonthlyTotal - Math.floor(rawMonthlyTotal * 0.10);
