@@ -583,7 +583,6 @@ function PriceOptionsPanel({
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }
