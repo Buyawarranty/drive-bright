@@ -177,8 +177,8 @@ export function CallMeBackPanel({
           <p className="text-sm font-bold text-foreground">All our agents are busy right now</p>
           <p className="text-xs text-muted-foreground">
             {open
-              ? 'Leave your number and a UK specialist will call or WhatsApp you back.'
-              : `Leave your number - we'll call or WhatsApp you ${nextOpeningLabel()} (${openingHoursLabel}).`}
+              ? 'Leave your number or email and a UK specialist will call, WhatsApp or email you back.'
+              : `Leave your number or email - we'll call, WhatsApp or email you ${nextOpeningLabel()} (${openingHoursLabel}).`}
           </p>
           {open && showPhoneLine && (
             <a
