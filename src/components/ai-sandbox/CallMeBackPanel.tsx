@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { PhoneCall, Phone, Check, Loader2, X, Clock, ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isTeamOpenNow, nextOpeningLabel, openingHoursLabel } from '@/lib/aiSandbox/openingHours';
+import { useSalesLineAvailable } from '@/hooks/useSalesLineAvailable';
 
 const CALLBACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-callback-request`;
 
