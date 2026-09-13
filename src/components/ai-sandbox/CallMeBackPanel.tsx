@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { PhoneCall, Phone, Check, Loader2, X, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { PhoneCall, Phone, Check, Loader2, X, Clock, ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isTeamOpenNow, nextOpeningLabel, openingHoursLabel } from '@/lib/aiSandbox/openingHours';
 
@@ -19,6 +19,7 @@ function prettyPhone(raw: string): string {
 }
 
 type Step = 'closed' | 'number' | 'confirm' | 'done';
+type Preference = 'call' | 'whatsapp';
 
 export function CallMeBackPanel({
   guestToken,
@@ -28,8 +29,6 @@ export function CallMeBackPanel({
   quotedPrice,
   compact = false,
   asChip = false,
-  liveAgentAvailable = false,
-  onConnectLiveAgent,
 }: {
   guestToken?: string;
   threadId?: string;
@@ -39,21 +38,19 @@ export function CallMeBackPanel({
   compact?: boolean;
   /** Render the idle state as a small one-line chip (for the top action row). */
   asChip?: boolean;
-  /** True when the team is open and a specialist is signed in right now. */
-  liveAgentAvailable?: boolean;
-  /** Called after a booking when a specialist is online, so the visitor is put through. */
-  onConnectLiveAgent?: () => void;
 }) {
   const [step, setStep] = useState<Step>('closed');
   const [collapsed, setCollapsed] = useState(true);
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
+  const [preference, setPreference] = useState<Preference>('call');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [whenLabel, setWhenLabel] = useState<string>('');
 
   const open = isTeamOpenNow();
   const isValid = useMemo(() => validUkPhone(phone), [phone]);
+  const isWhatsApp = preference === 'whatsapp';
 
   const submit = async () => {
     if (!isValid || submitting) return;
@@ -66,6 +63,7 @@ export function CallMeBackPanel({
         body: JSON.stringify({
           phone,
           name,
+          contactPreference: preference,
           registration: registration ?? null,
           quotedPrice: quotedPrice ?? null,
           guestToken: guestToken ?? null,
@@ -82,11 +80,8 @@ export function CallMeBackPanel({
         setError(data.message ?? 'Please give us a ring on 0330 229 5040 and we\'ll help straight away.');
         return;
       }
-      setWhenLabel(data.when_label ?? (open ? 'in the next few minutes' : `from 9am ${nextOpeningLabel()}`));
+      setWhenLabel(data.when_label ?? (open ? 'shortly' : `from 9am ${nextOpeningLabel()}`));
       setStep('done');
-      // A specialist is online during office hours — put the visitor straight
-      // through to them instead of leaving them waiting for the call.
-      if (liveAgentAvailable && onConnectLiveAgent) onConnectLiveAgent();
     } catch {
       setError('Network problem — please try again, or call 0330 229 5040.');
     } finally {
@@ -97,17 +92,16 @@ export function CallMeBackPanel({
   if (step === 'done') {
     return (
       <div className={`${asChip ? '' : 'mx-3'} mb-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-900`}>
-
         <p className="flex items-center gap-1.5 font-semibold">
           <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600">
             <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
           </span>
-          Call booked for {prettyPhone(phone)}
+          {isWhatsApp ? 'WhatsApp' : 'Call'} saved for {prettyPhone(phone)}
         </p>
         <p className="mt-1 leading-relaxed">
           {open
-            ? `A UK warranty specialist will ring you ${whenLabel}. Have any competitor quote handy — we'll beat it.`
-            : `A warranty specialist will be back ${nextOpeningLabel()} and you're first in the queue (${openingHoursLabel}).`}
+            ? `A UK warranty specialist will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} ${whenLabel}. Have any competitor quote handy — we'll beat it.`
+            : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you back ${nextOpeningLabel()} and you're first in the queue (${openingHoursLabel}).`}
         </p>
       </div>
     );
@@ -119,11 +113,11 @@ export function CallMeBackPanel({
         <button
           type="button"
           onClick={() => setStep('number')}
-          title={open ? 'Request a call back' : `Request a call back — we ring you ${nextOpeningLabel()}`}
+          title={open ? 'Leave your number for a call or WhatsApp back' : `Leave your number — we get back to you ${nextOpeningLabel()}`}
           className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
         >
-          <PhoneCall className="h-4 w-4 shrink-0 text-[#B4501F]" />
-          <span className="truncate">Call me back</span>
+          <MessageCircle className="h-4 w-4 shrink-0 text-[#B4501F]" />
+          <span className="truncate">Message me back</span>
         </button>
       );
     }
@@ -136,9 +130,9 @@ export function CallMeBackPanel({
           className="mx-3 mb-2 flex w-[calc(100%-1.5rem)] items-center gap-2 rounded-xl bg-[#FDEBDF] px-3 py-1.5 text-left transition-colors hover:bg-[#FBE0CE]"
           aria-expanded={false}
         >
-          <PhoneCall className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
+          <MessageCircle className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
           <span className="flex-1 truncate text-xs font-bold text-foreground">
-            Prefer to talk? Request a call back
+            Prefer to talk? Leave your number for a call or WhatsApp
           </span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
         </button>
@@ -147,13 +141,13 @@ export function CallMeBackPanel({
 
     return (
       <div className="mx-3 mb-2 flex items-center gap-3 rounded-2xl bg-[#FDEBDF] px-3.5 py-3">
-        <PhoneCall className="h-5 w-5 shrink-0 text-[#B4501F]" />
+        <MessageCircle className="h-5 w-5 shrink-0 text-[#B4501F]" />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold text-foreground">Prefer to talk?</p>
           <p className="text-xs text-muted-foreground">
             {open
-              ? 'Request a call back and a UK specialist rings you in minutes.'
-              : `Request a call back — we'll ring you ${nextOpeningLabel()} (${openingHoursLabel}).`}
+              ? 'Leave your number and a UK specialist will call or WhatsApp you back.'
+              : `Leave your number — we'll call or WhatsApp you ${nextOpeningLabel()} (${openingHoursLabel}).`}
           </p>
           {open && (
             <a
@@ -170,12 +164,12 @@ export function CallMeBackPanel({
           variant="outline"
           className="h-10 shrink-0 rounded-xl border-border bg-background text-sm font-bold shadow-sm hover:bg-muted"
         >
-          Call me back
+          Message me back
         </Button>
         <button
           type="button"
           onClick={() => setCollapsed(true)}
-          aria-label="Collapse call back prompt"
+          aria-label="Collapse message back prompt"
           className="shrink-0 rounded p-0.5 text-[#B4501F] hover:text-foreground"
         >
           <ChevronUp className="h-4 w-4" />
@@ -184,23 +178,21 @@ export function CallMeBackPanel({
     );
   }
 
-
-
   return (
     <div
       className={`${asChip ? 'col-span-full w-full' : 'mx-3'} mb-2 rounded-2xl border border-primary/40 bg-card p-4 shadow-sm`}
     >
       <div className="mb-1 flex items-start justify-between gap-2">
         <p className="flex items-center gap-2 text-base font-bold text-foreground">
-          <PhoneCall className="h-4 w-4 shrink-0 text-primary" />
-          {step === 'number' ? 'Request a call back' : 'Confirm your number'}
+          <MessageCircle className="h-4 w-4 shrink-0 text-primary" />
+          {step === 'number' ? 'Leave us your number' : 'Confirm your number'}
         </p>
         <button
           onClick={() => {
             setStep('closed');
             setError(null);
           }}
-          aria-label="Close call back request"
+          aria-label="Close message back request"
           className="-mr-1 -mt-1 shrink-0 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <X className="h-4 w-4" />
@@ -217,11 +209,9 @@ export function CallMeBackPanel({
           className="space-y-3"
         >
           <p className="text-sm leading-relaxed text-muted-foreground">
-            {liveAgentAvailable
-              ? 'A warranty specialist is online now — leave your number and we will put you straight through.'
-              : open
-                ? 'Leave your number and a UK warranty specialist will ring you shortly.'
-                : `A warranty specialist will be back ${nextOpeningLabel()} — leave your number and you are first in the queue.`}
+            {open
+              ? 'Leave your number and a UK warranty specialist will get back to you shortly — by call or WhatsApp, whichever you prefer.'
+              : `A warranty specialist will be back ${nextOpeningLabel()} — leave your number and you are first in the queue.`}
           </p>
 
           <div className="space-y-1.5">
@@ -243,6 +233,31 @@ export function CallMeBackPanel({
               aria-label="Your phone number"
               className="h-12 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
+          </div>
+
+          <div className="space-y-1.5">
+            <span className="block text-xs font-semibold text-foreground">How should we get back to you?</span>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { key: 'call' as Preference, label: 'Phone call', Icon: PhoneCall },
+                { key: 'whatsapp' as Preference, label: 'WhatsApp', Icon: MessageCircle },
+              ]).map(({ key, label, Icon }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setPreference(key)}
+                  aria-pressed={preference === key}
+                  className={`flex h-11 items-center justify-center gap-2 rounded-xl border text-sm font-bold transition-colors ${
+                    preference === key
+                      ? 'border-primary bg-primary/10 text-foreground'
+                      : 'border-input bg-background text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -277,18 +292,15 @@ export function CallMeBackPanel({
           </p>
         </form>
       ) : (
-
         <div className="space-y-3">
           <p className="text-base text-foreground">
             Is <span className="font-bold">{prettyPhone(phone)}</span> the right number
             {name ? `, ${name}` : ''}?
           </p>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            {liveAgentAvailable
-              ? 'A specialist is online now — we will connect you in the chat and ring you straight away.'
-              : open
-                ? 'We will ring you straight away — a UK specialist, no premium numbers.'
-                : `A warranty specialist will be back ${nextOpeningLabel()} — you will be first in the queue.`}
+            {open
+              ? `We will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} shortly — a UK specialist, no premium numbers.`
+              : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you ${nextOpeningLabel()} — you will be first in the queue.`}
           </p>
           {error && <p className="text-xs font-medium text-destructive">{error}</p>}
           <div className="flex gap-2">
@@ -305,7 +317,6 @@ export function CallMeBackPanel({
             </Button>
           </div>
         </div>
-
       )}
     </div>
   );
