@@ -513,7 +513,7 @@ function PriceOptionsPanel({
             <ul className="space-y-2">
               <li className="flex items-start gap-2 text-sm text-muted-foreground">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0BA360]" />
-                <span>{termLabel(term)} mechanical breakdown cover</span>
+                <span>{termLabel(term)} comprehensive warranty cover</span>
               </li>
               <li className="flex items-start gap-2 text-sm text-muted-foreground">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0BA360]" />
