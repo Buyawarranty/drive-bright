@@ -161,6 +161,12 @@ export const defaultTabs: Tab[] = [
     description: 'Manage sales pipeline and lead assignments'
   },
   {
+    id: 'whatsapp-leads',
+    label: 'WhatsApp Leads',
+    icon: MessageSquare,
+    description: 'Inbound WhatsApp enquiries, hot leads and agent chats'
+  },
+  {
     id: 'call-tracking',
     label: 'Call rail',
     icon: PhoneCall,
@@ -629,7 +635,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
     
     if (userRole === 'sales_lead') {
-      const salesLeadTabIds = ['new-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'agent-feedback', 'staff-system-reports', 'unsubscribe', 'account'];
+      const salesLeadTabIds = ['new-leads', 'whatsapp-leads', 'call-tracking', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'customers', 'collect-payments', 'analytics', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'agent-feedback', 'staff-system-reports', 'unsubscribe', 'account'];
       return defaultTabs.filter(tab => salesLeadTabIds.includes(tab.id));
     }
 
@@ -645,7 +651,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         );
       }
 
-      const baseIds = new Set(['overview', 'concessions', 'new-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'social-analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'open-round-robin', 'orr-test-lab', 'orr-sandbox', 'price-updates', 'sms-tracking', 'user-permissions', 'claims', 'chatbot-data', 'semrush-seo', 'unsubscribe', 'account']);
+      const baseIds = new Set(['overview', 'concessions', 'new-leads', 'whatsapp-leads', 'call-tracking', 'call-stats', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'sales-agent-targets', 'customers', 'collect-payments', 'analytics', 'social-analytics', 'vehicle-stats', 'selling-tips', 'discount-codes', 'timesheets', 'hr', 'staff-hub', 'lead-teams', 'agent-feedback', 'open-round-robin', 'orr-test-lab', 'orr-sandbox', 'price-updates', 'sms-tracking', 'user-permissions', 'claims', 'chatbot-data', 'semrush-seo', 'unsubscribe', 'account']);
       return defaultTabs.filter(tab => baseIds.has(tab.id));
     }
 
@@ -677,7 +683,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     if (userRole === 'sales') {
       // Default sales agent tabs — concessions settings are management-only, but free months
       // buttons remain available in Quotes & Orders for sales agents who have allowance.
-      const defaultSalesTabIds = ['overview', 'new-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'agent-feedback', 'staff-system-reports', 'unsubscribe', 'account'];
+      const defaultSalesTabIds = ['overview', 'new-leads', 'whatsapp-leads', 'recontact-leads', 'get-quote', 'sales-scoreboard', 'selling-tips', 'discount-codes', 'timesheets', 'staff-hub', 'agent-feedback', 'staff-system-reports', 'unsubscribe', 'account'];
 
 
       if (userPermissions && Object.keys(userPermissions).length > 0) {
