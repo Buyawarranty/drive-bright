@@ -84,10 +84,41 @@ export default function SiteChatWidget({
 
 
 
+  // Auto-expansion: circle only on load; expand to the pill after 15s or a
+  // meaningful scroll, hold ~5s, collapse. Mobile gets one expansion; desktop
+  // can afford two. Once the visitor opens the chat, this never fires again.
   useEffect(() => {
-    if (everOpened) return;
-    const t = window.setTimeout(() => setShowNudge(true), 6000);
-    return () => window.clearTimeout(t);
+    if (everOpened || launcherQuiet()) return;
+    const desktop = window.matchMedia('(min-width: 640px)').matches;
+    const maxExpansions = desktop ? 2 : 1;
+    const holdMs = desktop ? 6000 : 5000;
+
+    const expand = () => {
+      if (expansionsRef.current >= maxExpansions) return;
+      expansionsRef.current += 1;
+      setPromptExpanded(true);
+      timersRef.current.push(window.setTimeout(() => setPromptExpanded(false), holdMs));
+    };
+
+    timersRef.current.push(window.setTimeout(expand, 15000));
+
+    let scrolled = false;
+    const onScroll = () => {
+      if (scrolled || window.scrollY < 500) return;
+      scrolled = true;
+      expand();
+      window.removeEventListener('scroll', onScroll);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // Desktop second chance: if they ignored the first expansion, one more later.
+    if (desktop) timersRef.current.push(window.setTimeout(expand, 90000));
+
+    return () => {
+      timersRef.current.forEach((t) => window.clearTimeout(t));
+      timersRef.current = [];
+      window.removeEventListener('scroll', onScroll);
+    };
   }, [everOpened]);
 
   // Lock background scroll while the mobile sheet is open.
@@ -105,7 +136,14 @@ export default function SiteChatWidget({
   const openChat = () => {
     setOpen(true);
     setEverOpened(true);
-    setShowNudge(false);
+    setPromptExpanded(false);
+    timersRef.current.forEach((t) => window.clearTimeout(t));
+    timersRef.current = [];
+    try {
+      window.localStorage.setItem(QUIET_KEY, '1');
+    } catch {
+      /* ignore */
+    }
     saveGuestChatOpen(true);
   };
 
