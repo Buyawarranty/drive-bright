@@ -51,6 +51,7 @@
 - [ ] Payment Assist monthly checkout fails for S17DRW: PA API rejects telephone (invalid telephone) — normalise UK phone before send
 - [x] Renewals tab: New Leads column order + previous-warranty hover popover (price, duration, excess, claim limit, add-ons); latest note moved into the note popover
 ## Open
+- [ ] WhatsApp Leads: Import leads first, Send message second, with split tabs and slight dividers
 - [x] Renewals assignment order: seller-first confirmed in DB function; preview panel added
 - [x] Sandbox mockup: RenewalAssignmentFlowPanel in Engine & settings
 - [ ] Payment Assist browser-flow verification (S17DRW / RV19OWW)
