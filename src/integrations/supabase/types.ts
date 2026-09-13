@@ -13640,9 +13640,11 @@ export type Database = {
       whatsapp_auto_message_queue: {
         Row: {
           attempts: number
+          batch_label: string | null
           conversation_id: string | null
           created_at: string
           display_name: string | null
+          force_send: boolean
           id: string
           last_error: string | null
           lead_id: string
@@ -13650,13 +13652,16 @@ export type Database = {
           phone_normalized: string
           sent_at: string | null
           status: string
+          template_name: string | null
           updated_at: string
         }
         Insert: {
           attempts?: number
+          batch_label?: string | null
           conversation_id?: string | null
           created_at?: string
           display_name?: string | null
+          force_send?: boolean
           id?: string
           last_error?: string | null
           lead_id: string
@@ -13664,13 +13669,16 @@ export type Database = {
           phone_normalized: string
           sent_at?: string | null
           status?: string
+          template_name?: string | null
           updated_at?: string
         }
         Update: {
           attempts?: number
+          batch_label?: string | null
           conversation_id?: string | null
           created_at?: string
           display_name?: string | null
+          force_send?: boolean
           id?: string
           last_error?: string | null
           lead_id?: string
@@ -13678,6 +13686,7 @@ export type Database = {
           phone_normalized?: string
           sent_at?: string | null
           status?: string
+          template_name?: string | null
           updated_at?: string
         }
         Relationships: []
