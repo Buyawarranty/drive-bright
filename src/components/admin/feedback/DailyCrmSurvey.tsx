@@ -350,8 +350,7 @@ export const DailyCrmSurveyBanner: React.FC<{ adminUserId: string | null }> = ({
 
   if (!adminUserId || doneToday === null) return null;
   if (doneToday) return null;
-  // Only allow hiding the "opens later" reminder; once open it stays until sent.
-  if (phase === 'before' && snoozedFor === now.date) return null;
+  if (snoozedFor === now.date) return null;
 
   const tone =
     phase === 'before'
@@ -383,17 +382,16 @@ export const DailyCrmSurveyBanner: React.FC<{ adminUserId: string | null }> = ({
         <Button size="sm" variant={phase === 'before' ? 'outline' : 'default'} onClick={() => setOpen(true)}>
           {phase === 'before' ? 'Fill in early' : 'Fill in now'}
         </Button>
-        {phase === 'before' && (
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-7 w-7"
-            aria-label="Hide until it opens"
-            onClick={() => setSnoozedFor(now.date)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
+        <Button
+          size="icon"
+          variant="ghost"
+          className="h-7 w-7"
+          aria-label="Hide for today"
+          title="Hide for today"
+          onClick={() => setSnoozedFor(now.date)}
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -504,7 +502,7 @@ export const DailyCrmSurveyPrompt: React.FC<{
   return (
     <>
       <Dialog open={!formOpen} onOpenChange={(o) => !o && dismiss()}>
-        <DialogContent className="crm-survey-theme max-w-md overflow-hidden border-primary/20 p-0 font-crm-body">
+        <DialogContent className="crm-survey-theme max-w-md overflow-hidden border-primary/20 p-0 font-crm-body" largeCloseButton>
           <div className="h-2 bg-accent" />
           <div className="space-y-5 p-6">
           <DialogHeader>
