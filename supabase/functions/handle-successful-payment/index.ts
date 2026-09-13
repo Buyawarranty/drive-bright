@@ -948,8 +948,10 @@ serve(async (req) => {
     logStep("Skipping Warranties Register registration (integration removed)");
 
 
-    // Send sales notification to sales manager
-    if (customerData2?.id && policy?.id) {
+    // Send the internal sale notification whenever the completed payment has
+    // produced a customer record. Do not make it depend on the separate policy
+    // lookup: an insert race or multiple-policy customer must never hide a sale.
+    if (customerData2?.id) {
       try {
         logStep("Sending sales notification to sales manager");
         

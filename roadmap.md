@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] Customer Management: replace confusing split source/path tags with clear labels such as Google lead and Google direct sale
-- [ ] Direct-sale notifications: reliably email every completed website sale and name the channel clearly in the subject
+- [x] Customer Management: replace confusing split source/path tags with clear labels such as Google lead and Google direct sale
+- [x] Direct-sale notifications: reliably email every completed website sale and name the channel clearly in the subject
 - [x] Recontact leads: default the date filter to All time so 60-day-old assigned leads do not open as a blank list
 - [x] Daily CRM survey: hyper-focused blue/orange agent and manager views with one-tap answers, progress, today's completion and urgent-problem visibility
 - [x] Discounts given: de-duplicate repeated manual price override rows (same agent/customer/price seconds apart)
