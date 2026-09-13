@@ -124,6 +124,9 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
         </p>
       )}
 
+      {isManagement && <WhatsAppAutoMessageSettings />}
+
+
       <Tabs defaultValue="queue">
         <TabsList>
           <TabsTrigger value="queue">
