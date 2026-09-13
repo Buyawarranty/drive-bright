@@ -50,6 +50,7 @@ export function CallMeBackPanel({
   source,
   registration,
   quotedPrice,
+  compact: _compact = false,
   asChip = false,
   autoOpen = false,
 }: {
@@ -58,6 +59,8 @@ export function CallMeBackPanel({
   source?: string;
   registration?: string | null;
   quotedPrice?: number | null;
+  /** Accepted for backwards compatibility; layout is always compact. */
+  compact?: boolean;
   /** Render the idle state as a small one-line chip (for the top action row). */
   asChip?: boolean;
   /** Render expanded straight away (inline in the chat stream). */
@@ -76,7 +79,7 @@ export function CallMeBackPanel({
   // Weekends: the phone line only shows while an agent is genuinely live.
   const showPhoneLine = useSalesLineAvailable();
   const isEmail = preference === 'email';
-  const isWhatsApp = preference = 'whatsapp';
+  const isWhatsApp = preference === 'whatsapp';
   const isValid = useMemo(() => (isEmail ? validEmail(email) : validUkPhone(phone)), [isEmail, email, phone]);
 
   const submit = async () => {
