@@ -326,7 +326,7 @@ function OptionRow({
 }) {
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-xs font-bold uppercase tracking-wide text-foreground">{label}</p>
       <div className="mt-1 flex flex-wrap gap-2">
         {options.map((o) => (
           <button
@@ -452,11 +452,11 @@ function PriceOptionsPanel({
         </div>
       )}
 
-      <div className="mt-3 flex min-w-0 flex-wrap gap-2">
+      <div className="mt-3 flex min-w-0 justify-end">
         <Button
           size="sm"
           disabled={disabled}
-          className="bg-[#FF6B00] font-bold text-white shadow-sm hover:bg-[#E85F00]"
+          className="gap-2 bg-[#001F3F] font-bold text-white shadow-sm hover:bg-[#002a55]"
           onClick={() => {
             setPriceRequested(true);
             setOptionsOpen(false);
@@ -466,6 +466,7 @@ function PriceOptionsPanel({
           }}
         >
           {priceRequested ? 'Update my price' : 'Show my price'}
+          <ArrowRight className="h-4 w-4 shrink-0 text-white" />
         </Button>
 
 
