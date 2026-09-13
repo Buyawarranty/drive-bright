@@ -33,7 +33,9 @@ interface AgentRow {
   email: string;
   role: string | null;
   sip_extension: string | null;
+  is_active?: boolean | null;
 }
+
 
 interface TeamMember {
   admin_user_id: string;
@@ -98,7 +100,9 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
   const [teamFilter, setTeamFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('inshift-desc');
   const [agents, setAgents] = useState<AgentRow[]>([]);
+  const [showArchived, setShowArchived] = useState(false);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+
   const [events, setEvents] = useState<CallEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -123,7 +127,7 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
       const [agentsRes, teamRes, eventsRes] = await Promise.all([
         supabase
           .from('admin_users')
-          .select('id, first_name, last_name, email, role, sip_extension')
+          .select('id, first_name, last_name, email, role, sip_extension, is_active')
           .in('role', ['sales', 'sales_lead']),
         supabase
           .from('lead_team_members')
@@ -172,10 +176,19 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
     return Array.from(set.values());
   }, [teamByAgent]);
 
+  // Agents whose staff access has been removed (switched off / archived) keep
+  // their historic call data, but it lives in the archive view only.
+  const archivedCount = useMemo(() => {
+    const allowed = restrictToAgentIds ? new Set(restrictToAgentIds) : null;
+    return (agents || []).filter(a => a.is_active === false && (!allowed || allowed.has(a.id))).length;
+  }, [agents, restrictToAgentIds]);
+
   const filteredAgents = useMemo(() => {
     const allowed = restrictToAgentIds ? new Set(restrictToAgentIds) : null;
     return (agents || []).filter(a => {
       if (allowed && !allowed.has(a.id)) return false;
+      const archived = a.is_active === false;
+      if (showArchived ? !archived : archived) return false;
       const team = teamByAgent[a.id];
       const teamName = team?.name?.toLowerCase() || '';
       if (teamFilter === 'all') return true;
@@ -183,7 +196,8 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
       if (teamFilter === 'unassigned') return !team;
       return teamName === teamFilter || teamName.includes(teamFilter);
     });
-  }, [agents, teamByAgent, teamFilter, restrictToAgentIds]);
+  }, [agents, teamByAgent, teamFilter, restrictToAgentIds, showArchived]);
+
 
   const eventsByAgent = useMemo(() => {
     const map: Record<string, CallEvent[]> = {};
@@ -410,9 +424,18 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            Per-agent breakdown
+          <CardTitle className="text-base flex flex-wrap items-center gap-2">
+            {showArchived ? 'Archived agents (past call data)' : 'Per-agent breakdown'}
             <Badge variant="secondary" className="text-[10px]">{rows.length} agents</Badge>
+            {(archivedCount > 0 || showArchived) && (
+              <button
+                type="button"
+                onClick={() => setShowArchived(v => !v)}
+                className="ml-auto text-xs font-medium text-muted-foreground underline hover:text-foreground"
+              >
+                {showArchived ? 'Back to current agents' : `View archived agents (${archivedCount})`}
+              </button>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -422,9 +445,10 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
             </div>
           ) : rows.length === 0 ? (
             <div className="text-sm text-muted-foreground text-center py-8 border border-dashed rounded-md">
-              No agents match the selected filter.
+              {showArchived ? 'No archived agents to show.' : 'No agents match the selected filter.'}
             </div>
           ) : (
+
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-muted/40 text-xs text-muted-foreground">
