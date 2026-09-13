@@ -13,6 +13,8 @@ import WhatsAppLeadCard from './WhatsAppLeadCard';
 import WhatsAppConversationPanel from './WhatsAppConversationPanel';
 import WhatsAppManagerDashboard from './WhatsAppManagerDashboard';
 import WhatsAppHotLeadAlerts from './WhatsAppHotLeadAlerts';
+import WhatsAppAutoMessageSettings from './WhatsAppAutoMessageSettings';
+
 import type { WhatsAppPipelineStatus } from '@/lib/whatsappPipeline';
 
 interface Props {
@@ -123,6 +125,9 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
           WhatsApp leads could not be loaded. Nothing has been lost - try again in a moment.
         </p>
       )}
+
+      {isManagement && <WhatsAppAutoMessageSettings />}
+
 
       <Tabs defaultValue="queue">
         <TabsList>
