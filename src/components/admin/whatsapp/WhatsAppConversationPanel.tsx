@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, CheckCheck, Send, Clock } from 'lucide-react';
+import { Check, CheckCheck, Send, Clock, Paperclip } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWhatsAppMessages } from '@/hooks/useWhatsAppMessages';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
@@ -47,6 +47,8 @@ export const WhatsAppConversationPanel: React.FC<Props> = ({
   const [highlight, setHighlight] = useState(0);
   const [chosenButtons, setChosenButtons] = useState<string[]>([]);
   const [sendingButtons, setSendingButtons] = useState(false);
+  const [sendingFile, setSendingFile] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const suggestions = useMemo(() => {
@@ -73,6 +75,36 @@ export const WhatsAppConversationPanel: React.FC<Props> = ({
   const followUpValue = conversation.next_follow_up_at
     ? new Date(conversation.next_follow_up_at).toISOString().slice(0, 16)
     : '';
+
+  /** Sends the chosen file to WhatsApp, using the draft text as its caption. */
+  const handleSendFile = async (file: File) => {
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error('That file is too big — please keep it under 15MB.');
+      return;
+    }
+    setSendingFile(true);
+    try {
+      const form = new FormData();
+      form.append('conversationId', conversation.id);
+      form.append('caption', draft.trim());
+      form.append('file', file);
+      const { data, error } = await supabase.functions.invoke('wati-send-file', { body: form });
+      if (error || (data as any)?.error) throw new Error(String((data as any)?.error || error?.message));
+      setDraft('');
+      toast.success('Attachment sent.');
+    } catch (e: any) {
+      const reason = String(e?.message || '');
+      toast.error(
+        reason.includes('wati_not_configured')
+          ? 'WhatsApp sending is not switched on yet - add the WATI details first.'
+          : reason.includes('file_type_not_allowed')
+            ? 'That kind of file cannot be sent on WhatsApp.'
+            : 'That attachment could not be sent. Please try again.',
+      );
+    } finally {
+      setSendingFile(false);
+    }
+  };
 
   const toggleButton = (label: string) =>
     setChosenButtons((prev) =>
@@ -284,9 +316,31 @@ export const WhatsAppConversationPanel: React.FC<Props> = ({
                 <Send className="mr-1 h-4 w-4" /> {sending ? 'Sending…' : 'Send'}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Type <span className="font-semibold">/</span> to pick a template reply, then edit before sending.
-            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-xs text-muted-foreground">
+                Type <span className="font-semibold">/</span> to pick a template reply, then edit before sending.
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,audio/mpeg,audio/ogg,video/mp4"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  e.target.value = '';
+                  if (f) void handleSendFile(f);
+                }}
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={sendingFile}
+              >
+                <Paperclip className="mr-1 h-4 w-4" />
+                {sendingFile ? 'Sending…' : 'Send a photo or PDF'}
+              </Button>
+            </div>
             <div className="rounded-md border border-border bg-muted/30 p-3">
               <p className="text-xs font-semibold">Add tappable buttons (up to 3)</p>
               <div className="mt-2 flex flex-wrap gap-2">
