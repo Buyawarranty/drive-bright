@@ -132,6 +132,30 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
         />
       </div>
 
+      {allTags.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs text-muted-foreground">Filter by tag</span>
+          <button type="button" onClick={() => setTagFilter(null)}>
+            <Badge variant={tagFilter ? 'outline' : 'default'}>All</Badge>
+          </button>
+          {allTags.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTagFilter(tagFilter === t.id ? null : t.id)}
+            >
+              <Badge
+                className={
+                  tagFilter === t.id ? tagChipClass(t.color) : 'bg-muted text-foreground border-border'
+                }
+              >
+                {t.name}
+              </Badge>
+            </button>
+          ))}
+        </div>
+      )}
+
       {error && (
         <p className="rounded-md border border-destructive bg-destructive/10 p-3 text-sm">
           WhatsApp leads could not be loaded. Nothing has been lost - try again in a moment.
