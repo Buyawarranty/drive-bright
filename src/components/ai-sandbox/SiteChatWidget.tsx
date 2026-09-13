@@ -167,25 +167,31 @@ export default function SiteChatWidget({
 
   return (
     <>
-      {/* Launcher — closed state: panda avatar with a clear "chat with us" label */}
+      {/* Launcher — closed state: panda circle; the "Need help? Chat with us"
+          pill only expands briefly (15s timer / scroll prompt) then collapses. */}
       {!open && (
         <div className="fixed bottom-52 right-4 z-40 sm:bottom-6 sm:right-6">
           <button
             onClick={openChat}
             aria-label="Chat with Miles, our AI warranty assistant"
-            className="group flex items-center gap-3 rounded-full border border-border bg-background/95 pl-4 pr-1.5 py-1.5 shadow-lg shadow-black/10 backdrop-blur transition-all hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            className="group flex items-center rounded-full border border-border bg-background/95 p-1.5 shadow-lg shadow-black/10 backdrop-blur transition-shadow hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <span className="flex items-center gap-2 whitespace-nowrap text-sm font-medium text-foreground">
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            <span
+              className={`flex items-center gap-2 overflow-hidden whitespace-nowrap text-sm font-medium text-foreground transition-all duration-300 ease-in-out ${
+                promptExpanded ? 'max-w-[220px] pl-3 pr-1 opacity-100' : 'max-w-0 p-0 opacity-0'
+              }`}
+              aria-hidden={!promptExpanded}
+            >
+              <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
               Need help? Chat with us
             </span>
             <span className="relative shrink-0">
-              <span className="block h-11 w-11 overflow-hidden rounded-full ring-1 ring-border">
+              <span className="block h-12 w-12 overflow-hidden rounded-full ring-1 ring-border">
                 <img
                   src={milesAvatar.url}
                   alt="Miles the panda"
-                  width={44}
-                  height={44}
+                  width={48}
+                  height={48}
                   className="h-full w-full scale-[1.35] object-cover object-center"
                 />
               </span>
