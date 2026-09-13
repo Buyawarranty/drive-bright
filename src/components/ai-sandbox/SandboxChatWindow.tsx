@@ -326,7 +326,7 @@ function OptionRow({
 }) {
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-xs font-bold uppercase tracking-wide text-foreground">{label}</p>
       <div className="mt-1 flex flex-wrap gap-2">
         {options.map((o) => (
           <button
