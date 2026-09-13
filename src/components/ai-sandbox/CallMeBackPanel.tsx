@@ -144,7 +144,7 @@ export function CallMeBackPanel({
         <button
           type="button"
           onClick={() => setStep('topic')}
-          title="All our agents are busy - leave your number and we'll call or WhatsApp you back"
+          title="All our agents are busy - leave your number or email and we'll call, WhatsApp or email you back"
           className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
         >
           <MessageCircle className="h-4 w-4 shrink-0 text-[#B4501F]" />
@@ -163,7 +163,7 @@ export function CallMeBackPanel({
         >
           <MessageCircle className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
           <span className="flex-1 truncate text-xs font-bold text-foreground">
-            All our agents are busy - leave your number and we'll call you back
+            All our agents are busy - leave your number or email and we'll get back to you
           </span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
         </button>
