@@ -407,8 +407,11 @@ export function CallMeBackPanel({
       ) : (
         <div className="space-y-3">
           <p className="text-base text-foreground">
-            Is <span className="font-bold">{prettyPhone(phone)}</span> the right number
-            {name ? `, ${name}` : ''}?
+            {isEmail ? (
+              <>Is <span className="font-bold">{email}</span> the right email{name ? `, ${name}` : ''}?</>
+            ) : (
+              <>Is <span className="font-bold">{prettyPhone(phone)}</span> the right number{name ? `, ${name}` : ''}?</>
+            )}
           </p>
           {topic && (
             <p className="text-xs font-semibold text-muted-foreground">
@@ -416,9 +419,11 @@ export function CallMeBackPanel({
             </p>
           )}
           <p className="text-sm leading-relaxed text-muted-foreground">
-            {open
-              ? `We will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} shortly - a UK specialist, no premium numbers.`
-              : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you ${nextOpeningLabel()} - you will be first in the queue.`}
+            {isEmail
+              ? `We will email you ${open ? 'shortly' : `${nextOpeningLabel()} - you will be first in the queue`} - a UK specialist, no premium numbers.`
+              : open
+                ? `We will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} shortly - a UK specialist, no premium numbers.`
+                : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you ${nextOpeningLabel()} - you will be first in the queue.`}
           </p>
           {error && <p className="text-xs font-medium text-destructive">{error}</p>}
           <div className="flex gap-2">
