@@ -13654,6 +13654,7 @@ export type Database = {
           status: string
           template_name: string | null
           updated_at: string
+          wati_message_id: string | null
         }
         Insert: {
           attempts?: number
@@ -13671,6 +13672,7 @@ export type Database = {
           status?: string
           template_name?: string | null
           updated_at?: string
+          wati_message_id?: string | null
         }
         Update: {
           attempts?: number
@@ -13688,6 +13690,7 @@ export type Database = {
           status?: string
           template_name?: string | null
           updated_at?: string
+          wati_message_id?: string | null
         }
         Relationships: []
       }
@@ -14614,6 +14617,20 @@ export type Database = {
         }[]
       }
       get_user_permissions: { Args: { p_user_id: string }; Returns: Json }
+      get_whatsapp_template_stats: {
+        Args: { _from?: string; _to?: string }
+        Returns: {
+          delivered: number
+          failed: number
+          last_sent_at: string
+          queued: number
+          read_count: number
+          replied: number
+          sent: number
+          skipped: number
+          template_name: string
+        }[]
+      }
       has_admin_permission: {
         Args: { permission_key: string; user_id: string }
         Returns: boolean

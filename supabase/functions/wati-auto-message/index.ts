@@ -178,6 +178,7 @@ Deno.serve(async (req) => {
           status: 'sent',
           sent_at: now,
           conversation_id: conversationId,
+          wati_message_id: watiMessageId,
           attempts: (row.attempts || 0) + 1,
           last_error: null,
         })
