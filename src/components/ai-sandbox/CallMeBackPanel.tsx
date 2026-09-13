@@ -20,7 +20,29 @@ const CALLBACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-
 function validUkPhone(raw: string): boolean {
   let digits = raw.replace(/\D/g, '');
   if (digits.startsWith('44')) digits = `0${digits.slice(2)}`;
-  return /^07\d{9}$/.test(digits) || /^0[12]\d{8,9}$/.test(digits) || /^03\d{9}$/.test(digits);
+  if (!/^07\d{9}$/.test(digits) && !/^0[12]\d{8,9}$/.test(digits) && !/^03\d{9}$/.test(digits)) return false;
+  // Reject obvious junk: the same digit repeated 6+ times in a row.
+  if (/(\d)\1{5,}/.test(digits)) return false;
+  return true;
+}
+
+/** Keep typing sane: digits/spaces/+, capped at a normal UK length. */
+function capUkPhone(raw: string): string {
+  const cleaned = raw.replace(/[^\d +]/g, '');
+  const digits = cleaned.replace(/\D/g, '');
+  const max = digits.startsWith('44') || cleaned.trim().startsWith('+') ? 13 : 11;
+  if (digits.length <= max) return cleaned;
+  // Trim trailing digits beyond the cap, preserving spacing roughly.
+  let kept = '';
+  let count = 0;
+  for (const ch of cleaned) {
+    if (/\d/.test(ch)) {
+      if (count >= max) continue;
+      count += 1;
+    }
+    kept += ch;
+  }
+  return kept;
 }
 
 function prettyPhone(raw: string): string {
@@ -30,7 +52,11 @@ function prettyPhone(raw: string): string {
 }
 
 function validEmail(raw: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw.trim());
+  const v = raw.trim();
+  // Sensible shape: local part, @, domain labels, alphabetic TLD of 2+ chars.
+  if (!/^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9][A-Za-z0-9.-]{0,253}\.[A-Za-z]{2,24}$/.test(v)) return false;
+  if (v.includes('..')) return false;
+  return true;
 }
 
 type Step = 'closed' | 'method' | 'claimsInfo' | 'number' | 'done';
