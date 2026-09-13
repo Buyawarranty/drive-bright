@@ -203,6 +203,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
       `${data.queued} message${data.queued === 1 ? '' : 's'} on their way (${data.templateName}).`,
     );
     void load();
+    void loadAuto();
   };
 
   const presets: { key: Preset; label: string }[] = [
