@@ -7,6 +7,16 @@ import { loadGuestChatOpen, saveGuestChatOpen, clearGuestChat } from '@/componen
 
 
 const TOKEN_KEY = 'baw_chat_guest_token';
+// Once the visitor has opened the chat, the launcher never auto-expands again.
+const QUIET_KEY = 'baw_chat_launcher_quiet';
+
+function launcherQuiet(): boolean {
+  try {
+    return window.localStorage.getItem(QUIET_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
 
 /**
  * The random per-browser token that owns a website visitor's conversation.
