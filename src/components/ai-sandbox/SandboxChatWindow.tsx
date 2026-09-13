@@ -556,7 +556,7 @@ function PriceOptionsPanel({
                 <a href={checkoutHref || undefined}>
                   <span className="text-left leading-tight">
                     <span className="block text-sm">Continue to checkout</span>
-                    {quoted?.total && <span className="block text-xs font-normal opacity-90">Pay in full today</span>}
+                    {quoted?.total && <span className="block text-xs font-normal opacity-90">Pay in full today — {quoted.total}</span>}
                   </span>
                   <ArrowRight className="h-5 w-5 shrink-0 text-white" strokeWidth={2.5} />
                 </a>
