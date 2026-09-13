@@ -1,17 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { Resend } from "https://esm.sh/resend@2.0.0";
-import { sourceLetterFromLeadSource, saleSubjectKind, saleSubjectPrefix } from "../_shared/saleSubjectPrefix.ts";
+import { sourceLetterFromLeadSource, saleSubjectKind } from "../_shared/saleSubjectPrefix.ts";
 import { sendInternalNotification } from "../_shared/send-internal-notification.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-const INTERNAL_NOTIFICATION_FROM =
-  Deno.env.get("INTERNAL_NOTIFICATION_FROM") ||
-  "Buyawarranty Alerts <alerts@notify.buyawarranty.co.uk>";
 
 console.log("[PROCESS-PAYMENT-ASSIST-SUCCESS] Function loaded");
 
@@ -258,7 +253,6 @@ serve(async (req) => {
     try {
       const resendApiKey = Deno.env.get("RESEND_API_KEY");
       if (resendApiKey) {
-        const resend = new Resend(resendApiKey);
         const customerName = customer?.name || `${customerData.first_name || ''} ${customerData.last_name || ''}`.trim() || 'Unknown';
         const userEmail = customerData.email;
         const regPlate = vehicleData?.regNumber || vehicleData?.registration || customerData?.vehicle_reg || 'Unknown';
@@ -376,8 +370,6 @@ serve(async (req) => {
           const agentLetter = sourceLetterFromLeadSource(leadSource) === 'O'
             ? saleType
             : sourceLetterFromLeadSource(leadSource);
-          const sourcePrefix = saleSubjectPrefix({ letter: agentLetter, isAgentSale: true });
-
           const agentSaleHtml = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <h2 style="color: #16a34a; border-bottom: 2px solid #16a34a; padding-bottom: 10px;">🎯 New Agent Sale - Lead Converted</h2>

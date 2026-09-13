@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { sourceLetterFromLeadSource, sourceLetterFromAdSource, saleSubjectKind, saleSubjectPrefix } from "../_shared/saleSubjectPrefix.ts";
+import { sourceLetterFromLeadSource, sourceLetterFromAdSource, saleSubjectKind } from "../_shared/saleSubjectPrefix.ts";
 import { sendInternalNotification } from "../_shared/send-internal-notification.ts";
 import { formatClaimLimit } from "../_shared/claim-limit-display.ts";
 
@@ -1160,8 +1160,6 @@ serve(async (req) => {
           const leadSource = matchedLead.lead_source || 'unknown';
           const leadLetter = sourceLetterFromLeadSource(leadSource);
           const agentLetter = leadLetter === 'O' ? sourceLetterFromAdSource(detectedAdSource) : leadLetter;
-          const sourcePrefix = saleSubjectPrefix({ letter: agentLetter, isAgentSale: true });
-
           const leadCreatedAt = (matchedLead as any).created_at
             ? new Date((matchedLead as any).created_at).toLocaleString('en-GB', { timeZone: 'Europe/London', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
             : '';
