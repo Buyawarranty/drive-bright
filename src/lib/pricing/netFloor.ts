@@ -15,8 +15,9 @@
  *   - Management (admin / super_admin / sales_manager) may go below, logged
  *     to `price_override_audit`.
  *   - Evidenced price matches (competitor quote uploaded) may go below.
- *   - Website promo codes (SAVE25, cart recovery, pay-in-full 10%) are allowed
- *     to breach it — marketing keeps full effect on the public journey.
+ *   - Website promo codes were once allowed to breach it — REVOKED 13 Sep 2026.
+ *     No sale, on any surface, may complete below the term floor; promo
+ *     discounts are capped at the floor (only live TEST codes keep a £1 floor).
  */
 import { getAbsoluteMinimumTotal, type PaymentPeriod, type PricingSurface } from '@/lib/pricingMatrix';
 
@@ -111,8 +112,8 @@ export function clampWebToNetFloor(amount: number, params: NetFloorParams): numb
  * Agreed 18/08/2026: the public journey uses the SAME £399 / £769 / £1,099
  * shaped floor as Quotes & Orders — no "minus the web gap" version — so the
  * site can never publish or sell a warranty below the minimum sellable price
- * for that cover. Promo codes (SAVE25, cart recovery, pay-in-full 10%) are
- * still allowed to discount below it; they are applied AFTER this clamp.
+ * for that cover. Since 13/09/2026 promo codes (SAVE25, cart recovery,
+ * pay-in-full 10%) are also capped at this floor — no sale completes below it.
  */
 export function applyWebsiteSellFloor(total: number, params: Omit<NetFloorParams, 'surface'>): number {
   const floor = getNetPayableFloor({ ...params, surface: 'admin' });
