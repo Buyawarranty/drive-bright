@@ -90,7 +90,7 @@ export function CallMeBackPanel({
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) {
-        setError(data?.message ?? "We couldn't save that — please call 0330 229 5040.");
+        setError(data?.message ?? "We couldn't save that - please call 0330 229 5040.");
         return;
       }
       if (data.suppressed) {
@@ -100,7 +100,7 @@ export function CallMeBackPanel({
       setWhenLabel(data.when_label ?? (open ? 'shortly' : `from 9am ${nextOpeningLabel()}`));
       setStep('done');
     } catch {
-      setError('Network problem — please try again, or call 0330 229 5040.');
+      setError('Network problem - please try again, or call 0330 229 5040.');
     } finally {
       setSubmitting(false);
     }
@@ -149,7 +149,7 @@ export function CallMeBackPanel({
         >
           <MessageCircle className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
           <span className="flex-1 truncate text-xs font-bold text-foreground">
-            All our agents are busy — leave your number and we'll call you back
+            All our agents are busy - leave your number and we'll call you back
           </span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[#B4501F]" />
         </button>
@@ -164,7 +164,7 @@ export function CallMeBackPanel({
           <p className="text-xs text-muted-foreground">
             {open
               ? 'Leave your number and a UK specialist will call or WhatsApp you back.'
-              : `Leave your number — we'll call or WhatsApp you ${nextOpeningLabel()} (${openingHoursLabel}).`}
+              : `Leave your number - we'll call or WhatsApp you ${nextOpeningLabel()} (${openingHoursLabel}).`}
           </p>
           {open && (
             <a
