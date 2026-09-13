@@ -49,6 +49,7 @@ export function CallMeBackPanel({
   quotedPrice,
   compact = false,
   asChip = false,
+  autoOpen = false,
 }: {
   guestToken?: string;
   threadId?: string;
@@ -58,9 +59,11 @@ export function CallMeBackPanel({
   compact?: boolean;
   /** Render the idle state as a small one-line chip (for the top action row). */
   asChip?: boolean;
+  /** Render expanded straight away at the topic step (inline in the chat stream). */
+  autoOpen?: boolean;
 }) {
-  const [step, setStep] = useState<Step>('closed');
-  const [collapsed, setCollapsed] = useState(true);
+  const [step, setStep] = useState<Step>(autoOpen ? 'topic' : 'closed');
+  const [collapsed, setCollapsed] = useState(!autoOpen);
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');

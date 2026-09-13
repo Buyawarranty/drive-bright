@@ -55,6 +55,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-chat`;
 
 const AGENT_PREFIX = '(Warranty specialist)';
+const CONTACT_CARD_MARKER = '[[CONTACT_CARD]]';
+const HUMAN_INTENT = /\b(speak|talk|chat)\b[^.!?]{0,30}\b(human|agent|person|someone|advisor|specialist)\b|\blive agent\b|\breal person\b|\bsomeone real\b|\ba human\b|\bhuman please\b/i;
 
 // Pulls a short trailing question off the end of a reply so it can be
 // highlighted separately from the guidance above it.
@@ -934,6 +936,23 @@ export function SandboxChatWindow({
   const waiting = handover?.status === 'waiting' && handover.kind === 'live_handover';
   const leadCaptured = handover?.kind === 'out_of_hours_lead' || handover?.kind === 'callback_request';
 
+  // "Can I speak to a human / live agent?" shows the contact card inline.
+  // Miles marks those replies with [[CONTACT_CARD]]; a plain-English ask in the
+  // customer's own words triggers it too, so the card never depends on the model.
+  const contactCardWanted = !leadCaptured && (() => {
+    for (const m of messages) {
+      if (m.role !== 'user') {
+        for (const p of m.parts ?? []) {
+          if (p.type === 'text' && typeof p.text === 'string' && p.text.includes(CONTACT_CARD_MARKER)) return true;
+        }
+      }
+    }
+    const lastUser = [...messages].reverse().find((m) => m.role === 'user');
+    if (!lastUser) return false;
+    const txt = (lastUser.parts ?? []).map((p) => (p.type === 'text' ? p.text : '')).join(' ');
+    return HUMAN_INTENT.test(txt);
+  })();
+
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 max-w-full flex-col overflow-hidden">
       {/* Who you are talking to */}
@@ -1089,7 +1108,7 @@ export function SandboxChatWindow({
 
                   {message.parts.map((part, i) => {
                     if (part.type === 'text') {
-                      const text = stripPrefix(part.text);
+                      const text = stripPrefix(part.text).split(CONTACT_CARD_MARKER).join('').trim();
                       if (message.role !== 'user') {
                         const clean = agentMode ? text : sanitizeForCustomer(text);
                         if (!clean) return null;
@@ -1189,6 +1208,19 @@ export function SandboxChatWindow({
             );
 
           })}
+
+          {contactCardWanted && (
+            <div className="w-full min-w-0 max-w-full px-0 pb-2 sm:px-2">
+              <CallMeBackPanel
+                autoOpen
+                guestToken={guestToken}
+                threadId={threadId}
+                source={source}
+                compact={compact}
+                registration={detectedReg}
+              />
+            </div>
+          )}
 
           {!agentMode && hasPriceQuote && pricePanelOpen && (
             <div className="w-full min-w-0 max-w-full px-0 pb-2 sm:px-2">

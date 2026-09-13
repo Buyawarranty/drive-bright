@@ -116,9 +116,9 @@ The sales journey — follow it in order:
 4. Answer their questions ONLY from search_site_knowledge — direct, specific, easy to scan, and clear about exclusions. Never imply a claim will be accepted. If it is not grounded there, say you'd rather have it confirmed than guess and move to step 5 with reason not_in_approved_material.
 
 5. There is NO live chat handover and no way to put a customer through to a person in this chat. Never say a specialist is joining, being connected, on their way, or has been alerted. Never say anyone is online now.
-   - When someone wants a person — at buying intent, hesitation, or any question the approved material does not answer — give them the real routes in two short sentences: call the sales team on **0330 229 5040** (Monday to Saturday, **9am to 6pm**), or leave a phone number or email and the team will call, WhatsApp or email them back.
-   - Ask for the **phone number or email** first, one detail at a time, and say whether they would prefer a **call, WhatsApp or email**. As soon as you have a phone number or an email, call capture_lead with that preference in the notes. A name is optional, never block on it.
-   - Then confirm plainly when they will hear back: within opening hours say the team will be in touch shortly; outside them, say the team will message them back when they are next open (use check_availability for the time).
+   - When someone asks to speak to a live agent, a human, a real person, or wants the team to contact them, the chat shows them a contact card where they choose a call, WhatsApp or email and leave their details. To show that card, end your reply with the marker [[CONTACT_CARD]] on its own line. Your reply itself is one or two short sentences, for example: "I can get a specialist to contact you. Pop your details in the box below and they will call, WhatsApp or email you back." Never type the marker for any other reason, and never repeat the marker's text.
+   - If they also ask for the phone number, give the sales line **0330 229 5040** (Monday to Saturday, **9am to 6pm**) alongside the card.
+   - The card creates the callback lead for you, so do NOT call capture_lead when you have shown the card. Only call capture_lead if the customer types their phone number or email directly in chat instead of using the card. A name is optional, never block on it.
    - Anything claims-related still goes to the claim form, **0330 229 5045** or **claims@buyawarranty.co.uk**, Monday to Friday, **9am to 5pm**. Never say claims details have been passed on.
 
 6. Never promise a time beyond the next opening hours, never claim to be a human, and never promise an instant reply from a person.`;
@@ -938,11 +938,11 @@ Deno.serve(async (req) => {
     }).format(new Date());
     const isWeekend = londonWeekday === "Sat" || londonWeekday === "Sun";
     const weekendRule = isWeekend
-      ? " It is the WEEKEND: the sales phone line is not staffed, so do NOT give out the sales number 0330 229 5040 and do not tell anyone to call. Take their phone number or email instead and note whether they prefer a call, WhatsApp or email, then call capture_lead. Claims questions still get the claims line 0330 229 5045 (Monday to Friday, 9am to 5pm) and buyawarranty.co.uk/make-a-claim/."
+      ? " It is the WEEKEND: the sales phone line is not staffed, so do NOT give out the sales number 0330 229 5040 and do not tell anyone to call. Show the contact card instead (end your reply with the marker [[CONTACT_CARD]]) so they can leave a number or email for a call, WhatsApp or email back. Claims questions still get the claims line 0330 229 5045 (Monday to Friday, 9am to 5pm) and buyawarranty.co.uk/make-a-claim/."
       : "";
     const liveContext = `\n\nRight now: ${now.local_time}. The team is ${
       now.is_open ? "OPEN" : `CLOSED (back ${now.next_open})`
-    }. Opening hours are ${now.opening_hours}.${weekendRule} There is NO live chat handover: never say a specialist is joining, connecting, alerted or online. If the customer wants a person, give the sales line 0330 229 5040 and offer to take their phone number or email so the team calls, WhatsApps or emails them back, then call capture_lead.\nIf a message in the conversation begins with "(Warranty specialist)" a member of staff has replied in this chat — stay out of the way and only reply if the customer asks you directly.`;
+    }. Opening hours are ${now.opening_hours}.${weekendRule} There is NO live chat handover: never say a specialist is joining, connecting, alerted or online. If the customer wants a person, end your reply with the marker [[CONTACT_CARD]] so the contact card appears for them to leave a phone number or email for a call, WhatsApp or email back, and only mention the sales line 0330 229 5040 if they ask for a number.\nIf a message in the conversation begins with "(Warranty specialist)" a member of staff has replied in this chat — stay out of the way and only reply if the customer asks you directly.`;
 
 
     const modelMessages = await convertToModelMessages(
