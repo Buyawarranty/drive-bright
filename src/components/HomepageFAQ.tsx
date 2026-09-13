@@ -99,7 +99,7 @@ const HomepageFAQ = () => {
     },
     {
       id: '30-day-wait',
-      question: 'Is there a 30‑day wait for new customers?',
+      question: 'Is there a waiting period before I can claim?',
       answer: "No - your cover begins immediately. As long as there are no pre‑existing faults on the vehicle, you're protected from the moment your warranty starts. The only things we can't cover are issues that were already present before the plan began."
     }
   ];
