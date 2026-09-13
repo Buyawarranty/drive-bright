@@ -335,3 +335,6 @@ verify_jwt = false
 
 [functions.submit-appeal]
 verify_jwt = false
+
+[functions.wati-webhook]
+verify_jwt = false
