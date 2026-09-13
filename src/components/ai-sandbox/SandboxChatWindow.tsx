@@ -41,6 +41,7 @@ import milesAvatar from '@/assets/miles-avatar.png.asset.json';
 import milesCalls from '@/assets/miles-calls.png.asset.json';
 import { isTeamOpenNow, openingHoursLabel, nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
 import { useSandboxSpecialistPresence } from '@/hooks/useSandboxSpecialistPresence';
+import { useSalesLineAvailable } from '@/hooks/useSalesLineAvailable';
 import { CallMeBackPanel } from '@/components/ai-sandbox/CallMeBackPanel';
 import {
   prepareAttachment,
