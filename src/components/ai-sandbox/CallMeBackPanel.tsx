@@ -117,18 +117,22 @@ export function CallMeBackPanel({
   };
 
   if (step === 'done') {
+    const contactLabel = isEmail ? 'Email' : isWhatsApp ? 'WhatsApp' : 'Call';
+    const destination = isEmail ? email : prettyPhone(phone);
     return (
       <div className={`${asChip ? '' : 'mx-3'} mb-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-900`}>
         <p className="flex items-center gap-1.5 font-semibold">
           <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600">
             <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
           </span>
-          {isWhatsApp ? 'WhatsApp' : 'Call'} saved for {prettyPhone(phone)}
+          {contactLabel} saved for {destination}
         </p>
         <p className="mt-1 leading-relaxed">
-          {open
-            ? `A UK warranty specialist will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} ${whenLabel}. Have any competitor quote handy - we'll beat it.`
-            : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you back ${nextOpeningLabel()} and you're first in the queue (${openingHoursLabel}).`}
+          {isEmail
+            ? `A UK warranty specialist will email you ${open ? whenLabel : `${nextOpeningLabel()} and you're first in the queue`} (${openingHoursLabel}).`
+            : open
+              ? `A UK warranty specialist will ${isWhatsApp ? 'message you on WhatsApp' : 'ring you'} ${whenLabel}. Have any competitor quote handy - we'll beat it.`
+              : `A warranty specialist will ${isWhatsApp ? 'WhatsApp' : 'call'} you back ${nextOpeningLabel()} and you're first in the queue (${openingHoursLabel}).`}
         </p>
       </div>
     );
