@@ -416,7 +416,12 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
                       </Badge>
                     )}
                   </div>
-                  <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    {topics.get(t.id) && (
+                      <Badge className={`shrink-0 text-[11px] ${topics.get(t.id)!.className}`}>
+                        {topics.get(t.id)!.label}
+                      </Badge>
+                    )}
                     <span>{new Date(t.updated_at || t.created_at).toLocaleString('en-GB')}</span>
                     {t.source && <Badge variant="outline" className="text-[10px]">{t.source}</Badge>}
                   </div>
