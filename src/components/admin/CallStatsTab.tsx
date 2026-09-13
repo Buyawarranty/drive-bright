@@ -424,9 +424,18 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            Per-agent breakdown
+          <CardTitle className="text-base flex flex-wrap items-center gap-2">
+            {showArchived ? 'Archived agents (past call data)' : 'Per-agent breakdown'}
             <Badge variant="secondary" className="text-[10px]">{rows.length} agents</Badge>
+            {(archivedCount > 0 || showArchived) && (
+              <button
+                type="button"
+                onClick={() => setShowArchived(v => !v)}
+                className="ml-auto text-xs font-medium text-muted-foreground underline hover:text-foreground"
+              >
+                {showArchived ? 'Back to current agents' : `View archived agents (${archivedCount})`}
+              </button>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -436,9 +445,10 @@ export const CallStatsTab: React.FC<CallStatsTabProps> = ({ userRole, restrictTo
             </div>
           ) : rows.length === 0 ? (
             <div className="text-sm text-muted-foreground text-center py-8 border border-dashed rounded-md">
-              No agents match the selected filter.
+              {showArchived ? 'No archived agents to show.' : 'No agents match the selected filter.'}
             </div>
           ) : (
+
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-muted/40 text-xs text-muted-foreground">
