@@ -21,8 +21,8 @@ function validUkPhone(raw: string): boolean {
   let digits = raw.replace(/\D/g, '');
   if (digits.startsWith('44')) digits = `0${digits.slice(2)}`;
   if (!/^07\d{9}$/.test(digits) && !/^0[12]\d{8,9}$/.test(digits) && !/^03\d{9}$/.test(digits)) return false;
-  // Reject obvious junk: the same digit repeated 6+ times in a row.
-  if (/(\d)\1{5,}/.test(digits)) return false;
+  // Reject obvious junk: the same digit repeated 5+ times in a row.
+  if (/(\d)\1{4,}/.test(digits)) return false;
   return true;
 }
 
