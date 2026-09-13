@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import WhatsAppTemplateSelect from './WhatsAppTemplateSelect';
 
 interface ParsedRow {
   name: string;
@@ -170,13 +171,11 @@ const WhatsAppLeadImport: React.FC<Props> = ({ defaultTemplate, onImported }) =>
         </p>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-          <div className="flex-1 space-y-1">
-            <Label htmlFor="wa-import-template">WhatsApp template name</Label>
-            <Input
+          <div className="flex-1">
+            <WhatsAppTemplateSelect
               id="wa-import-template"
               value={template}
-              onChange={(e) => setTemplate(e.target.value)}
-              placeholder={defaultTemplate || 'james_hi'}
+              onChange={setTemplate}
             />
           </div>
           <div className="flex-1 space-y-1">
