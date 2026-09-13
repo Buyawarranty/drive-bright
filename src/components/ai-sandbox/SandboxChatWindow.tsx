@@ -409,15 +409,6 @@ function PriceOptionsPanel({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          {priceRequested && (
-            <button
-              type="button"
-              onClick={() => setOptionsOpen((v) => !v)}
-              className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted"
-            >
-              {optionsOpen ? 'Hide options' : 'Change options'}
-            </button>
-          )}
           {onClose && (
             <button
               type="button"
