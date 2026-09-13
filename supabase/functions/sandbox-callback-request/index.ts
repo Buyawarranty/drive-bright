@@ -110,16 +110,21 @@ Deno.serve(async (req) => {
     const tail9 = phone.slice(-9);
     const nameParts = name.split(/\s+/).filter(Boolean);
 
+    const preferenceLine = isEmailPreference
+      ? `Customer prefers an EMAIL back to ${email}.`
+      : contactPreference === "whatsapp"
+        ? "Customer prefers a WHATSAPP message back on this number."
+        : "Customer prefers a PHONE CALL back on this number.";
     const noteLines = [
       `[${new Date().toLocaleString("en-GB", { timeZone: "Europe/London" })} - System] Message me back requested from website chat (${source}).`,
       `Query type: ${topicLabel}.`,
-      contactPreference === "whatsapp"
-        ? "Customer prefers a WHATSAPP message back on this number."
-        : "Customer prefers a PHONE CALL back on this number.",
+      preferenceLine,
       plan.isOpen
-        ? contactPreference === "whatsapp"
-          ? "Team is OPEN — WhatsApp them straight away."
-          : "Team is OPEN — ring straight away."
+        ? isEmailPreference
+          ? "Team is OPEN — email them straight away."
+          : contactPreference === "whatsapp"
+            ? "Team is OPEN — WhatsApp them straight away."
+            : "Team is OPEN — ring straight away."
         : `Requested out of hours — call ${plan.label}.`,
       registration ? `Reg given: ${registration}` : null,
       quotedPrice ? `Price discussed: £${Math.round(quotedPrice)}` : null,
