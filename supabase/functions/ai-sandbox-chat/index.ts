@@ -842,105 +842,23 @@ Deno.serve(async (req) => {
 
       check_availability: tool({
         description:
-          "Check whether the warranty specialists are available right now (opening hours plus how many specialists are actually on duty in live chat). Always call this before offering a live handover.",
+          "Check the team's opening hours and whether they are open right now. There is no live chat handover — use this only to tell the customer when the team will call or WhatsApp them back.",
         inputSchema: z.object({}),
         execute: async () => {
           const state = availability();
-          const online = await specialistsOnline();
           return toolResultText({
             ...state,
-            specialists_online_now: online,
-            can_connect_live_now: state.is_open,
+            can_connect_live_now: false,
             instruction: state.is_open
-              ? "We are OPEN. If the customer wants a human, call connect_live_agent now — it rings every manager and staff member in the CRM even when nobody shows as online. Never give a reopen time."
-              : `We are CLOSED. Take a phone number or email and call capture_lead. The team is back ${state.next_open}.`,
-          });
-        },
-      }),
-
-
-      connect_live_agent: tool({
-        description:
-          "Hand the chat over to a human warranty specialist — this rings every manager and staff member in the CRM. Call it as soon as the customer asks for a human (or says yes to being connected) while check_availability says the team is open. It does NOT need any specialist to be showing online.",
-
-        inputSchema: z.object({
-          reason: z
-            .enum([
-              "buying_intent",
-              "price_objection",
-              "comparing_quotes",
-              "hesitation",
-              "complex_question",
-              "not_in_approved_material",
-              "customer_asked",
-            ])
-            .describe(
-              "Why the handover is happening. Use not_in_approved_material when the approved website, product or terms material did not clearly answer their question.",
-            ),
-          customer_name: z.string().nullable(),
-          customer_email: z.string().nullable(),
-          customer_phone: z.string().nullable(),
-          registration: z.string().nullable(),
-          cover_summary: z.string().nullable().describe("Term, claim limit, excess and labour rate discussed"),
-          quoted_price: z.number().nullable(),
-        }),
-        execute: async (args) => {
-          const state = availability();
-          if (!state.is_open) {
-            return toolResultText({
-              ok: false,
-              is_open: false,
-              ...state,
-              note: "The team is closed — capture the lead with capture_lead instead and keep helping the customer yourself.",
-            });
-          }
-          const { data, error } = await admin
-            .from("ai_sandbox_handovers")
-            .insert({
-              thread_id: threadId,
-              created_by: userId,
-              kind: "live_handover",
-              reason: args.reason,
-              customer_name: args.customer_name,
-              customer_email: args.customer_email,
-              customer_phone: args.customer_phone,
-              registration: args.registration,
-              cover_summary: args.cover_summary,
-              quoted_price: args.quoted_price,
-              transcript: messages,
-              status: "waiting",
-            })
-            .select("id")
-            .single();
-
-          if (error) {
-            console.error("[ai-sandbox-chat] handover insert failed", error);
-            return toolResultText({
-              ok: false,
-              note: "The handover could not be created. Offer the team's number 0330 229 5040 instead.",
-            });
-          }
-
-          await logEvent({
-            event_type: "handover",
-            topic: args.reason ?? null,
-            registration: args.registration ?? null,
-            quoted_price: args.quoted_price ?? null,
-            detail: args.cover_summary ?? null,
-          });
-
-          return toolResultText({
-            ok: true,
-            handover_id: data.id,
-            status: "waiting",
-            note: "A warranty specialist has been alerted and can see the full chat. Tell the customer a human is joining and stay quiet unless they ask you something directly.",
+              ? "We are OPEN. Never say a specialist is joining the chat. Offer the sales line 0330 229 5040, or take a phone number (and whether they prefer a call or WhatsApp) and call capture_lead."
+              : `We are CLOSED (back ${state.next_open}). Take a phone number or email, note whether they prefer a call or WhatsApp, and call capture_lead.`,
           });
         },
       }),
 
       capture_lead: tool({
         description:
-          "Capture the customer's details as a lead so a warranty specialist can pick it up at the next opening time. Use this outside opening hours, or when the customer prefers a callback.",
+          "Save the customer's details so the team calls or WhatsApps them back. Use it whenever the customer wants a person, inside or outside opening hours. Put their contact preference (call or WhatsApp) in the notes.",
         inputSchema: z.object({
           customer_name: z.string().nullable(),
           customer_email: z.string().nullable(),
