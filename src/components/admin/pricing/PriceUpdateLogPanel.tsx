@@ -272,9 +272,18 @@ export default function PriceUpdateLogPanel({
               }`}
             >
               {isBest && (
-                <div className="-mx-3 -mt-3 mb-3 flex items-center gap-2 bg-success px-3 py-2 text-sm font-bold text-success-foreground">
+                <div className="-mx-3 -mt-3 mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 bg-success px-3 py-2 text-sm font-bold text-success-foreground">
                   <Trophy className="h-4 w-4 shrink-0" />
-                  Best converting — recommended
+                  {isLive ? (
+                    <span>Best converting — and it is live now</span>
+                  ) : (
+                    <>
+                      <span>Best converting — but NOT live now</span>
+                      <span className="font-medium opacity-90">
+                        Press “Revert price” to make these prices live again
+                      </span>
+                    </>
+                  )}
                 </div>
               )}
               {isLive && !isBest && salesGap !== null && (
