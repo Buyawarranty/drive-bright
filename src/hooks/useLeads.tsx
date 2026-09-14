@@ -1132,6 +1132,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
         setLeads(leadsWithTags as Lead[]);
       }
       networkRetryCountRef.current = 0;
+      jwtRetryCountRef.current = 0;
     } catch (error) {
       if (fetchToken !== latestFetchTokenRef.current) {
         // Even on stale token, ensure loading is cleared to prevent infinite spinner
