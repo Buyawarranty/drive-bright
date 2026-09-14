@@ -290,6 +290,13 @@ export const useLeads = (options?: UseLeadsOptions) => {
   const pendingFetchRef = useRef(false);
   const latestFetchTokenRef = useRef(0);
   const networkRetryCountRef = useRef(0);
+  /**
+   * A long-open CRM tab can wake up with an access token that expired while the
+   * laptop was asleep, so the first read comes back "JWT expired" and staff saw
+   * a red "Failed to load leads" toast on a blank list. We quietly renew the
+   * session and load again instead.
+   */
+  const jwtRetryCountRef = useRef(0);
   const networkRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [filter, setFilter] = useState<LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'callbacks' | 'recovered'>('all_leads');
 
