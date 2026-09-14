@@ -14295,6 +14295,7 @@ export type Database = {
       }
       can_manage_claim_reminders: { Args: never; Returns: boolean }
       can_manage_lead_routing: { Args: { _user_id: string }; Returns: boolean }
+      can_view_chatbot_data: { Args: { _user_id: string }; Returns: boolean }
       can_view_staff_hub_doc: {
         Args: { _allowed_roles: string[]; _allowed_team_ids: string[] }
         Returns: boolean
