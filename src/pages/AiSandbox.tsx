@@ -158,7 +158,7 @@ export default function AiSandbox() {
   return (
     <div className="flex h-screen min-h-0 bg-background">
       <Helmet>
-        <title>AI assistant sandbox | Buyawarranty</title>
+        <title>Miles — customer assistant | Buyawarranty</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
@@ -166,9 +166,9 @@ export default function AiSandbox() {
         <div className="flex items-center gap-2 p-4">
           <img src={milesAvatar.url} alt="Miles the panda" width={28} height={28} className="h-7 w-7 rounded-full" loading="lazy" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">AI sandbox</p>
-            <Badge variant="outline" className="mt-0.5 text-[10px]">
-              Not live
+            <p className="truncate text-sm font-semibold">Miles chat</p>
+            <Badge variant="outline" className="mt-0.5 border-emerald-600/40 text-[10px] text-emerald-700">
+              Live
             </Badge>
           </div>
         </div>
@@ -232,7 +232,7 @@ export default function AiSandbox() {
 
       <main className="flex min-h-0 min-w-0 flex-1 flex-col">
         <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2.5">
-          <h1 className="text-sm font-semibold">Miles — customer assistant (sandbox)</h1>
+          <h1 className="text-sm font-semibold">Miles — customer assistant</h1>
           <div className="flex items-center gap-2">
             <div
               className={`flex items-center gap-2 rounded-full border px-2.5 py-1 ${
