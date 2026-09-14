@@ -18,6 +18,7 @@ export type QueueKey =
   | 'appealed'
   | 'overdue'
   | 'high_priority'
+  | 'bumper_paybetter'
   | 'my_claims';
 
 export interface QueueDef {
