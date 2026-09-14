@@ -259,7 +259,7 @@ export default function SiteChatWidget({
 
           </div>
 
-          <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
+          <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden">
             <SandboxChatWindow key={sessionKey} guestToken={tokenRef.current ?? undefined} source={source} compact autoFocus={false} />
           </div>
         </div>
