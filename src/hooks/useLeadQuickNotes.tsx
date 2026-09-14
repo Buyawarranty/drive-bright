@@ -110,6 +110,10 @@ const NOTE_SAVE_TIMEOUT_MS = 8000;
  * the last few minutes. If one exists we treat the save as already done.
  */
 const DUPLICATE_WINDOW_MS = 5 * 60 * 1000;
+/** A second press of Save on identical text within this window is the same save. */
+const REPEAT_SAVE_WINDOW_MS = 90 * 1000;
+/** Only a note written this recently can be a half-typed version of the new text. */
+const EXTEND_WINDOW_MS = 45 * 1000;
 
 /**
  * Finds a note on the same lead, written moments ago, that is really the SAME
@@ -140,16 +144,22 @@ const findRecentRelatedNote = async (
     const candidates = (data || []) as any[];
     const target = noteText.trim();
 
-    for (const row of candidates) {
-      const existing = String(row.note_text || '').trim();
-      if (!existing) continue;
-      // Exactly the same note text = a repeated save, nothing new to write.
-      if (existing === target) return { note: row, shouldExtend: false };
-      // The agent carried on typing after a mid-typing auto-save — extend it.
-      if (target.startsWith(existing)) return { note: row, shouldExtend: true };
-      // Anything else is genuinely new text and MUST be saved as its own note,
-      // otherwise a shorter follow-up note is silently thrown away.
+    // Only the newest note by this author can be the one still being written.
+    const newest = candidates[0];
+    if (!newest) return null;
+    const existing = String(newest.note_text || '').trim();
+    if (!existing) return null;
+    const ageMs = Date.now() - new Date(newest.created_at).getTime();
+
+    // A duplicate press of Save on the very same text.
+    if (existing === target) {
+      return ageMs <= REPEAT_SAVE_WINDOW_MS ? { note: newest, shouldExtend: false } : null;
     }
+    // Mid-typing auto-save followed moments later by the finished text.
+    if (ageMs <= EXTEND_WINDOW_MS && target.startsWith(existing)) {
+      return { note: newest, shouldExtend: true };
+    }
+    // Anything else is a genuinely new note and MUST be saved as its own row.
     return null;
   } catch {
     return null;
