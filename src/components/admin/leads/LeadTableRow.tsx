@@ -6,7 +6,7 @@ import { CommissionClaimDialog } from './CommissionClaimDialog';
 import { useLeadCommissionClaim } from '@/hooks/useLeadCommissionClaims';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
 import { SentQuote } from '@/hooks/useLeadQuotes';
-import { detectSuspiciousLead, isSuspicious } from '@/utils/suspiciousLeadDetection';
+import { detectSuspiciousLead } from '@/utils/suspiciousLeadDetection';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -592,7 +592,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   
   // Suspicious lead detection
   const suspiciousFlags = useMemo(() => detectSuspiciousLead(lead), [lead.phone, lead.email, lead.first_name, lead.vehicle_reg]);
-  const isSuspiciousLead = isSuspicious(suspiciousFlags);
   const isTestLead = suspiciousFlags.some((flag) => flag.type === 'test_account');
   const hasNonTestWarning = suspiciousFlags.some((flag) => flag.type !== 'test_account');
   // Paid lead lock: only lock Google Ads paid leads (New Sale G) for non-admin users
