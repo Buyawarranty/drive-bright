@@ -3082,6 +3082,26 @@ Questions? Call 0330 229 5040`;
     }
   }, [step, customerEmail, customerName, vehicleData, quoteGenerated, quoteLink]);
 
+  // Watchdog: never leave the agent staring at "Generating quote link…".
+  // If the mint hasn't finished in 30s, clear the spinner so the
+  // "Retry Link Generation" button comes back.
+  useEffect(() => {
+    if (!isGeneratingQuoteLink) return;
+    const timer = setTimeout(() => {
+      quoteGenInFlightRef.current = false;
+      quoteGenPromiseRef.current = null;
+      setIsGeneratingQuoteLink(false);
+      toast({
+        title: 'Quote link took too long',
+        description: 'Please tap “Retry Link Generation”.',
+        variant: 'destructive',
+      });
+    }, 30000);
+    return () => clearTimeout(timer);
+  }, [isGeneratingQuoteLink]);
+
+
+
 
   const generateQuoteLink = async (): Promise<string | null> => {
     if (!customerEmail || !customerName || !vehicleData) return null;
