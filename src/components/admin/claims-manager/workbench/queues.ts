@@ -39,6 +39,13 @@ export const QUEUES: QueueDef[] = [
   { key: 'unassigned', label: 'Unassigned', group: 'work', match: (c) => c.assignee === 'unassigned' && c.status !== 'closed' },
   { key: 'overdue', label: 'Overdue SLA', group: 'work', match: (c) => computeSla(c).tone === 'overdue' && c.status !== 'closed' },
   { key: 'high_priority', label: 'High Priority', group: 'work', match: (c) => (c.priority === 'critical' || c.priority === 'high') && c.status !== 'closed' },
+  {
+    key: 'bumper_paybetter',
+    label: 'Bumper PayBetter',
+    description: 'Claims on warranties paid through Bumper PayBetter — Bumper honours claimed warranties, so the money is kept even if payments stop or the policy is cancelled.',
+    group: 'work',
+    match: (c) => c.paidWithBumper === true,
+  },
   { key: 'my_claims', label: 'My Claims', group: 'work', match: (c, ctx) => !!ctx.currentUserName && c.assignee === ctx.currentUserName },
 
   { key: 'evidence_needed', label: 'Evidence Needed', group: 'workflow', match: (c) => deriveStage(c) === 'evidence_needed' },
