@@ -358,10 +358,10 @@ export default function PriceUpdateLogPanel({
                     {salesGap !== null && bestVersion && bestStats && currentStats && (
                       <Badge
                         variant="outline"
-                        title={`${v.label} made ${currentStats.salesPerDay.toFixed(1)} sales/day. ${bestVersion.label} made ${bestStats.salesPerDay.toFixed(1)} sales/day.`}
+                        title={`${v.label} made ${currentStats.salesPerDay.toFixed(1)} sales/day. The best-performing model, ${bestVersion.label}, made ${bestStats.salesPerDay.toFixed(1)} sales/day.`}
                         className="border-primary/40 bg-primary/10 text-foreground"
                       >
-                        Conversion: {Math.abs(salesGap)}% below {bestVersion.label}
+                        {Math.abs(salesGap)}% fewer sales/day than the best model: {bestVersion.label}
                       </Badge>
                     )}
                   </div>
