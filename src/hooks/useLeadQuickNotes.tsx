@@ -140,16 +140,22 @@ const findRecentRelatedNote = async (
     const candidates = (data || []) as any[];
     const target = noteText.trim();
 
-    for (const row of candidates) {
-      const existing = String(row.note_text || '').trim();
-      if (!existing) continue;
-      // Exactly the same note text = a repeated save, nothing new to write.
-      if (existing === target) return { note: row, shouldExtend: false };
-      // The agent carried on typing after a mid-typing auto-save — extend it.
-      if (target.startsWith(existing)) return { note: row, shouldExtend: true };
-      // Anything else is genuinely new text and MUST be saved as its own note,
-      // otherwise a shorter follow-up note is silently thrown away.
+    // Only the newest note by this author can be the one still being written.
+    const newest = candidates[0];
+    if (!newest) return null;
+    const existing = String(newest.note_text || '').trim();
+    if (!existing) return null;
+    const ageMs = Date.now() - new Date(newest.created_at).getTime();
+
+    // A duplicate press of Save on the very same text.
+    if (existing === target) {
+      return ageMs <= REPEAT_SAVE_WINDOW_MS ? { note: newest, shouldExtend: false } : null;
     }
+    // Mid-typing auto-save followed moments later by the finished text.
+    if (ageMs <= EXTEND_WINDOW_MS && target.startsWith(existing)) {
+      return { note: newest, shouldExtend: true };
+    }
+    // Anything else is a genuinely new note and MUST be saved as its own row.
     return null;
   } catch {
     return null;
