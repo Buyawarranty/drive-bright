@@ -337,10 +337,37 @@ export const useLeadQuickNotes = (leadId: string) => {
         
         const notesWithAuthors = quickNotes.map((note: any) => ({
           ...note,
-          author: note.created_by ? authorsMap[note.created_by] || null : null
+          // Fall back to the name stored on the note itself, so notes written by
+          // someone who has since left still show who wrote them.
+          author: note.created_by
+            ? authorsMap[note.created_by] || (note.author_name
+                ? { first_name: note.author_name, last_name: null, email: '' }
+                : null)
+            : (note.author_name
+                ? { first_name: note.author_name, last_name: null, email: '' }
+                : null)
         }));
 
-        let allNotes = notesWithAuthors as QuickNote[];
+        const callNotes: QuickNote[] = ((callLogResult?.data as any[]) || []).map((c: any) => {
+          const outcome = String(c.outcome || 'call')
+            .replace(/_/g, ' ')
+            .replace(/^\w/, (m: string) => m.toUpperCase());
+          const detail = String(c.notes || '').trim();
+          return {
+            id: `call_${c.id}`,
+            lead_id: leadId,
+            note_text: detail ? `📞 ${outcome} — ${detail}` : `📞 ${outcome}`,
+            is_pinned: false,
+            created_by: '',
+            created_at: c.created_at,
+            updated_at: c.created_at,
+            author_name: c.agent_name || null,
+            is_call_log: true,
+            author: c.agent_name ? { first_name: c.agent_name, last_name: null, email: '' } : null,
+          };
+        });
+
+        let allNotes = [...(notesWithAuthors as QuickNote[]), ...callNotes];
         
         if (leadResult.data?.notes && leadResult.data.notes.trim()) {
           const legacyNote: QuickNote = {
