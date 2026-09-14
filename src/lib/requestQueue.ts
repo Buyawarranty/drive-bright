@@ -153,6 +153,42 @@ function shouldBypass(url: string): boolean {
   );
 }
 
+/**
+ * In-flight read de-duplication.
+ *
+ * Dozens of panels and table rows mount at once and independently ask for the
+ * SAME rows. Those identical reads used to each take a socket, so the page the
+ * agent is waiting for queued behind copies of itself. Now the first one goes
+ * out and every later caller shares its response until it settles.
+ *
+ * Only plain GET/HEAD reads with no abort signal are shared, so nothing can be
+ * cancelled out from under another caller, and writes are never merged.
+ */
+const inflightReads = new Map<string, Promise<Response>>();
+
+function headerValue(input: RequestInfo | URL, init: RequestInit | undefined, name: string) {
+  try {
+    const h = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
+    return h.get(name) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function readDedupeKey(
+  url: string,
+  input: RequestInfo | URL,
+  init: RequestInit | undefined,
+  method: string,
+): string | null {
+  if (!['GET', 'HEAD'].includes(method.toUpperCase())) return null;
+  if (init?.signal || (input instanceof Request && input.signal)) return null;
+  const parts = ['authorization', 'apikey', 'range', 'prefer', 'accept', 'accept-profile'].map(
+    (h) => headerValue(input, init, h),
+  );
+  return `${method} ${url} ${parts.join('|')}`;
+}
+
 /** Drop-in `fetch` that paces Supabase data requests. */
 export const queuedFetch: typeof fetch = async (input, init) => {
   const url =
@@ -175,19 +211,44 @@ export const queuedFetch: typeof fetch = async (input, init) => {
       ? 'background'
       : 'normal';
 
+  const dedupeKey = readDedupeKey(url, input, init, method);
+  if (dedupeKey) {
+    const shared = inflightReads.get(dedupeKey);
+    if (shared) {
+      try {
+        return (await shared).clone();
+      } catch {
+        /* the shared read failed — fall through and try our own */
+      }
+    }
+  }
+
   try {
     await acquire(lane);
   } catch {
     return fetch(input as any, init);
   }
-  try {
-    return await fetch(input as any, init);
-  } finally {
+
+  const run = (async () => {
     try {
-      release(lane);
-    } catch {
-      /* keep the queue alive even if a listener misbehaves */
+      return await fetch(input as any, init);
+    } finally {
+      try {
+        release(lane);
+      } catch {
+        /* keep the queue alive even if a listener misbehaves */
+      }
     }
+  })();
+
+  if (!dedupeKey) return run;
+
+  inflightReads.set(dedupeKey, run);
+  try {
+    const response = await run;
+    return response.clone();
+  } finally {
+    inflightReads.delete(dedupeKey);
   }
 };
 

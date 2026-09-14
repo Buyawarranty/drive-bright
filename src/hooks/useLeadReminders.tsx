@@ -2,6 +2,11 @@ import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { addDays, addWeeks, startOfTomorrow, endOfDay, setHours, setMinutes } from 'date-fns';
+import {
+  getCachedAdminUserId,
+  getMyPendingReminders,
+  invalidateReminderCache,
+} from '@/lib/leadReminderCache';
 
 export interface LeadReminder {
   id: string;
@@ -29,18 +34,9 @@ export const useLeadReminders = (leadId?: string) => {
   const [loading, setLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Get current admin user ID
+  // Get current admin user ID (resolved once per tab, then reused)
   const getCurrentUserId = useCallback(async () => {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) return null;
-    
-    const { data: adminUser } = await supabase
-      .from('admin_users')
-      .select('id')
-      .eq('user_id', userData.user.id)
-      .maybeSingle();
-    
-    return adminUser?.id || null;
+    return getCachedAdminUserId();
   }, []);
 
   // Fetch all reminders for current user (for global list)
@@ -193,25 +189,23 @@ export const useLeadReminders = (leadId?: string) => {
     }
   }, [getCurrentUserId]);
 
-  // Fetch reminder for a specific lead
-  const fetchLeadReminder = useCallback(async () => {
+  /**
+   * Reminder for one lead row.
+   *
+   * Reads from the shared per-agent reminder map instead of firing its own
+   * query, so a 50-row page makes ONE reminder read rather than fifty.
+   */
+  const fetchLeadReminder = useCallback(async (force = false) => {
     if (!leadId) return;
-    
+
     try {
       const userId = await getCurrentUserId();
       if (!userId) return;
       setCurrentUserId(userId);
 
-      const { data, error } = await (supabase
-        .from('lead_reminders' as any)
-        .select('*')
-        .eq('lead_id', leadId)
-        .eq('user_id', userId)
-        .in('status', ['pending', 'snoozed'])
-        .maybeSingle() as any);
+      const byLead = await getMyPendingReminders(force);
+      const data = byLead.get(leadId);
 
-      if (error) throw error;
-      
       if (data) {
         setCurrentReminder({
           ...data,
@@ -306,7 +300,8 @@ export const useLeadReminders = (leadId?: string) => {
 
       toast.success('Reminder set');
       if (leadId) {
-        await fetchLeadReminder();
+        invalidateReminderCache();
+        await fetchLeadReminder(true);
       } else {
         await fetchAllReminders();
       }
@@ -337,7 +332,8 @@ export const useLeadReminders = (leadId?: string) => {
 
       toast.success('Reminder snoozed');
       if (leadId) {
-        await fetchLeadReminder();
+        invalidateReminderCache();
+        await fetchLeadReminder(true);
       } else {
         await fetchAllReminders();
       }
@@ -359,7 +355,8 @@ export const useLeadReminders = (leadId?: string) => {
       toast.success('Reminder dismissed');
       if (leadId) {
         setCurrentReminder(null);
-        await fetchLeadReminder();
+        invalidateReminderCache();
+        await fetchLeadReminder(true);
       } else {
         await fetchAllReminders();
       }
@@ -381,7 +378,8 @@ export const useLeadReminders = (leadId?: string) => {
       toast.success('Reminder completed');
       if (leadId) {
         setCurrentReminder(null);
-        await fetchLeadReminder();
+        invalidateReminderCache();
+        await fetchLeadReminder(true);
       } else {
         await fetchAllReminders();
       }
@@ -403,7 +401,8 @@ export const useLeadReminders = (leadId?: string) => {
       toast.success('Reminder deleted');
       if (leadId) {
         setCurrentReminder(null);
-        await fetchLeadReminder();
+        invalidateReminderCache();
+        await fetchLeadReminder(true);
       } else {
         await fetchAllReminders();
       }
