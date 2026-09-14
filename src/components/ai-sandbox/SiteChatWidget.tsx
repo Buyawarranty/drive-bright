@@ -167,17 +167,23 @@ export default function SiteChatWidget({
 
   return (
     <>
-      {/* Launcher — closed state: panda circle; the "Need help? Chat with us"
-          pill only expands briefly (15s timer / scroll prompt) then collapses. */}
+      {/* Launcher — closed state: panda circle on mobile, larger labelled pill on desktop */}
       {!open && (
         <div className="fixed bottom-52 right-4 z-40 sm:bottom-6 sm:right-6">
           <button
             onClick={openChat}
             aria-label="Chat with Miles, our AI warranty assistant"
-            className="group flex items-center rounded-full border border-border bg-background/95 p-1.5 shadow-lg shadow-black/10 backdrop-blur transition-shadow hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            className="group flex items-center rounded-full border border-border bg-background/95 p-1.5 shadow-lg shadow-black/10 backdrop-blur transition-shadow hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:gap-3 sm:pl-4 sm:pr-3"
           >
+            {/* Desktop label — always visible */}
+            <span className="hidden items-center gap-2 text-base font-semibold text-foreground sm:flex">
+              <MessageSquare className="h-5 w-5 shrink-0 text-primary" />
+              Chat with Miles
+            </span>
+
+            {/* Mobile prompt — expands briefly */}
             <span
-              className={`flex items-center gap-2 overflow-hidden whitespace-nowrap text-sm font-medium text-foreground transition-all duration-300 ease-in-out ${
+              className={`flex items-center gap-2 overflow-hidden whitespace-nowrap text-sm font-medium text-foreground transition-all duration-300 ease-in-out sm:hidden ${
                 promptExpanded ? 'max-w-[220px] pl-3 pr-1 opacity-100' : 'max-w-0 p-0 opacity-0'
               }`}
               aria-hidden={!promptExpanded}
@@ -185,8 +191,9 @@ export default function SiteChatWidget({
               <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
               Need help? Chat with us
             </span>
+
             <span className="relative shrink-0">
-              <span className="block h-12 w-12 overflow-hidden rounded-full ring-1 ring-border">
+              <span className="block h-12 w-12 overflow-hidden rounded-full ring-1 ring-border sm:h-14 sm:w-14">
                 <img
                   src={milesAvatar.url}
                   alt="Miles the panda"
@@ -195,7 +202,7 @@ export default function SiteChatWidget({
                   className="h-full w-full scale-[1.35] object-cover object-center"
                 />
               </span>
-              <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
+              <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background bg-green-500 sm:h-3.5 sm:w-3.5" />
             </span>
           </button>
         </div>
