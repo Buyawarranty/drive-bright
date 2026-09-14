@@ -1020,15 +1020,25 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                               PINNED
                             </span>
                           )}
+                          {isCallLog && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/50 text-blue-800 dark:text-blue-200 text-[10px] font-semibold">
+                              CALL
+                            </span>
+                          )}
                           {isOptimistic && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                           <span className="text-muted-foreground text-[11px] font-mono tabular-nums">
                             {datePrefix} · {timeStr}
                           </span>
+                          {authorLabel && (
+                            <span className="text-muted-foreground text-[11px] truncate">
+                              · {authorLabel}
+                            </span>
+                          )}
                         </div>
                         <p className="text-sm leading-relaxed break-words">{note.note_text}</p>
                       </div>
 
-                      {!isOptimistic && (
+                      {!isOptimistic && !isCallLog && (
                         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex-shrink-0">
                           {!isAbandonedCart && (
                             <button
