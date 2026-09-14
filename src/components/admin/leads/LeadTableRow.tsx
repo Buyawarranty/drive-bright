@@ -862,7 +862,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   isTestLead && !hasNonTestWarning ? "bg-amber-500 text-amber-950" : "bg-red-500 text-white",
                 )}>
                   {hasNonTestWarning && <AlertTriangle className="h-3 w-3" />}
-                  {isTestLead && !hasNonTestWarning ? 'TEST' : 'CHECK'}
+                  {isTestLead ? 'TEST' : 'CHECK'}
                 </Badge>
               </TooltipTrigger>
               <TooltipContent side="top" className="text-xs max-w-[250px]">
@@ -1618,7 +1618,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   isTestLead && !hasNonTestWarning ? "bg-amber-500 text-amber-950" : "bg-red-500 text-white",
                 )}>
                   {hasNonTestWarning && <AlertTriangle className="h-3 w-3" />}
-                  {isTestLead && !hasNonTestWarning ? 'TEST' : 'CHECK'}
+                  {isTestLead ? 'TEST' : 'CHECK'}
                 </Badge>
               </TooltipTrigger>
               <TooltipContent side="top" className="text-xs max-w-[250px]">
