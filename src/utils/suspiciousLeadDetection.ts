@@ -21,6 +21,9 @@ const DUMMY_PHONES = [
   '07000000000', '07777777777',
 ];
 
+// Valid QA numbers are allowed through every customer journey, but labelled in New Leads.
+const TEST_PHONES = new Set(['07960111131']);
+
 // Junk name patterns
 const JUNK_NAMES = ['test', 'blank', 'na', 'n/a', 'asdf', 'qwerty', 'xxx', 'zzz'];
 
@@ -42,9 +45,14 @@ export function detectSuspiciousLead(lead: {
   // 2. Check phone number validity
   if (lead.phone) {
     const cleanPhone = lead.phone.replace(/\D/g, '');
+    const localPhone = cleanPhone.startsWith('44') ? `0${cleanPhone.slice(2)}` : cleanPhone;
     
+    // Known QA numbers remain callable and are never treated as invalid.
+    if (TEST_PHONES.has(localPhone)) {
+      flags.push({ type: 'test_account', reason: 'Test number' });
+    }
     // Check dummy numbers
-    if (DUMMY_PHONES.includes(lead.phone.replace(/\s/g, '')) || DUMMY_PHONES.includes(cleanPhone)) {
+    else if (DUMMY_PHONES.includes(lead.phone.replace(/\s/g, '')) || DUMMY_PHONES.includes(cleanPhone)) {
       flags.push({ type: 'invalid_phone', reason: 'Known dummy number' });
     }
     // UK mobiles starting with 07 must be exactly 11 digits
