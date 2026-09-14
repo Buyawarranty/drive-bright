@@ -110,6 +110,10 @@ const NOTE_SAVE_TIMEOUT_MS = 8000;
  * the last few minutes. If one exists we treat the save as already done.
  */
 const DUPLICATE_WINDOW_MS = 5 * 60 * 1000;
+/** A second press of Save on identical text within this window is the same save. */
+const REPEAT_SAVE_WINDOW_MS = 90 * 1000;
+/** Only a note written this recently can be a half-typed version of the new text. */
+const EXTEND_WINDOW_MS = 45 * 1000;
 
 /**
  * Finds a note on the same lead, written moments ago, that is really the SAME
