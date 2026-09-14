@@ -1300,7 +1300,7 @@ export function SandboxChatWindow({
 
 
       <div
-        className={`${compact ? 'w-full min-w-0 max-w-full px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3' : 'mx-auto w-full min-w-0 max-w-3xl p-4'} border-t border-border bg-background`}
+        className={`${compact ? 'w-full min-w-0 max-w-full px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3' : 'mx-auto w-full min-w-0 max-w-3xl p-4'} shrink-0 border-t border-border bg-background`}
         ref={composerRef}
       >
 
