@@ -31,6 +31,10 @@ export interface QuickNote {
   created_by: string;
   created_at: string;
   updated_at: string;
+  /** Name of whoever wrote it, kept on the note itself so it survives staff leaving. */
+  author_name?: string | null;
+  /** True for call-outcome entries pulled from the call log (read-only). */
+  is_call_log?: boolean;
   author?: {
     first_name: string | null;
     last_name: string | null;
