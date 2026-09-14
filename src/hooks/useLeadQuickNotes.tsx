@@ -140,7 +140,11 @@ const findRecentRelatedNote = async (
       .limit(10);
     if (authorId) query = query.eq('created_by', authorId);
 
-    const { data } = await query;
+    const { data } = await withTimeout<any>(
+      query,
+      NOTE_SAVE_TIMEOUT_MS,
+      'Note check timed out'
+    );
     const candidates = (data || []) as any[];
     const target = noteText.trim();
 
@@ -206,6 +210,7 @@ export const useLeadQuickNotes = (leadId: string) => {
   const [notes, setNotes] = useState<QuickNote[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [saving, setSaving] = useState(false);
   const hasFetchedRef = useRef(false);
   const notesRef = useRef<QuickNote[]>([]);
   const isSavingRef = useRef(false);
@@ -397,7 +402,12 @@ export const useLeadQuickNotes = (leadId: string) => {
           }
         }
 
-        updateNotes(allNotes);
+        // A background refresh can finish while an insert is still in flight.
+        // Keep its optimistic row until the save either confirms or fails.
+        updateNotes(prev => {
+          const pending = prev.filter(note => String(note.id).startsWith('temp_'));
+          return pending.length > 0 ? [...pending, ...allNotes] : allNotes;
+        });
       }
       
       hasFetchedRef.current = true;
@@ -457,11 +467,19 @@ export const useLeadQuickNotes = (leadId: string) => {
     }
 
     // Single getUser() call — validates server-side
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await withTimeout<any>(
+      supabase.auth.getUser(),
+      NOTE_SAVE_TIMEOUT_MS,
+      'Session check timed out'
+    );
     
     if (!user) {
       // Try refresh once
-      const { data: refreshData } = await supabase.auth.refreshSession();
+      const { data: refreshData } = await withTimeout<any>(
+        supabase.auth.refreshSession(),
+        NOTE_SAVE_TIMEOUT_MS,
+        'Session refresh timed out'
+      );
       if (!refreshData.session?.user) {
         toast.error('Session expired — please log in again.');
         throw new Error('Session expired');
@@ -474,11 +492,15 @@ export const useLeadQuickNotes = (leadId: string) => {
       throw new Error('Session expired');
     }
 
-    const { data: adminData, error: adminError } = await supabase
-      .from('admin_users')
-      .select('id, first_name, last_name, email')
-      .eq('user_id', userId)
-      .maybeSingle();
+    const { data: adminData, error: adminError } = await withTimeout<any>(
+      supabase
+        .from('admin_users')
+        .select('id, first_name, last_name, email')
+        .eq('user_id', userId)
+        .maybeSingle(),
+      NOTE_SAVE_TIMEOUT_MS,
+      'Staff account check timed out'
+    );
 
     if (adminError || !adminData) {
       throw new Error('Admin user not found');
@@ -594,10 +616,14 @@ export const useLeadQuickNotes = (leadId: string) => {
   };
 
   const addNote = async (noteText: string) => {
+    if (isSavingRef.current) {
+      throw new Error('A note is already saving');
+    }
     const optimisticNote = makeTempNote(leadId, noteText);
 
     try {
       isSavingRef.current = true;
+      setSaving(true);
       updateNotes(prev => [optimisticNote, ...prev]);
       const adminUser = await getAuthenticatedAdmin();
       
@@ -613,10 +639,14 @@ export const useLeadQuickNotes = (leadId: string) => {
           ? `${existingNotes}\n\n${newNoteEntry}` 
           : newNoteEntry;
 
-        const { error } = await supabase
-          .from('abandoned_carts')
-          .update({ contact_notes: updatedNotes, updated_at: new Date().toISOString() })
-          .eq('id', actualId);
+        const { error } = await withTimeout<any>(
+          supabase
+            .from('abandoned_carts')
+            .update({ contact_notes: updatedNotes, updated_at: new Date().toISOString() })
+            .eq('id', actualId),
+          NOTE_SAVE_TIMEOUT_MS,
+          'Note save timed out'
+        );
 
         if (error) throw error;
 
@@ -646,31 +676,40 @@ export const useLeadQuickNotes = (leadId: string) => {
         let saveError: any = null;
 
         if (related?.shouldExtend) {
-          const res = await supabase
-            .from('lead_quick_notes')
-            .update({ note_text: noteText.trim() })
-            .eq('id', related.note.id)
-            .select()
-            .maybeSingle();
+          const res = await withTimeout<any>(
+            supabase
+              .from('lead_quick_notes')
+              .update({ note_text: noteText.trim() })
+              .eq('id', related.note.id)
+              .select()
+              .single(),
+            NOTE_SAVE_TIMEOUT_MS,
+            'Note save timed out'
+          );
           data = res.data || { ...related.note, note_text: noteText.trim() };
           saveError = res.error;
         } else if (related) {
           data = related.note;
         } else {
-          const res = await supabase
-            .from('lead_quick_notes')
-            .insert({
-              lead_id: leadId,
-              note_text: noteText.trim(),
-              created_by: adminUser.id
-            })
-            .select()
-            .maybeSingle();
+          const res = await withTimeout<any>(
+            supabase
+              .from('lead_quick_notes')
+              .insert({
+                lead_id: leadId,
+                note_text: noteText.trim(),
+                created_by: adminUser.id
+              })
+              .select()
+              .single(),
+            NOTE_SAVE_TIMEOUT_MS,
+            'Note save timed out'
+          );
           data = res.data;
           saveError = res.error;
         }
 
         if (saveError) throw saveError;
+        if (!data?.id) throw new Error('The note was not confirmed as saved');
 
         const newNote: QuickNote = {
           ...(data || {}),
@@ -704,6 +743,7 @@ export const useLeadQuickNotes = (leadId: string) => {
       throw error;
     } finally {
       isSavingRef.current = false;
+      setSaving(false);
     }
   };
 
@@ -819,7 +859,7 @@ export const useLeadQuickNotes = (leadId: string) => {
       return fetchNotes(true);
     },
     isAbandonedCart,
-    isSaving: isSavingRef.current,
+    isSaving: saving,
     flushPendingQuickNotes: flushAllPendingQuickNotes
   };
 };
