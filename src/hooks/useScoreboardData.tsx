@@ -119,8 +119,6 @@ export const useScoreboardData = (): ScoreboardData => {
         .from('admin_users')
         .select('id, first_name, last_name, email, role, is_active, sip_extension')
         .in('role', ['sales', 'sales_lead'])
-        .eq('is_active', true)
-        .is('archived_at', null)));
 
       if (!adminUsers?.length) {
         setAgents([]);
