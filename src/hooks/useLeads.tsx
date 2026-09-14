@@ -290,6 +290,13 @@ export const useLeads = (options?: UseLeadsOptions) => {
   const pendingFetchRef = useRef(false);
   const latestFetchTokenRef = useRef(0);
   const networkRetryCountRef = useRef(0);
+  /**
+   * A long-open CRM tab can wake up with an access token that expired while the
+   * laptop was asleep, so the first read comes back "JWT expired" and staff saw
+   * a red "Failed to load leads" toast on a blank list. We quietly renew the
+   * session and load again instead.
+   */
+  const jwtRetryCountRef = useRef(0);
   const networkRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [filter, setFilter] = useState<LeadStatus | 'all' | 'all_leads' | 'live' | 'high_priority' | 'fake' | 'lost' | 'quote_sent' | 'urgent_callback' | 'callbacks' | 'recovered'>('all_leads');
 
@@ -1125,6 +1132,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
         setLeads(leadsWithTags as Lead[]);
       }
       networkRetryCountRef.current = 0;
+      jwtRetryCountRef.current = 0;
     } catch (error) {
       if (fetchToken !== latestFetchTokenRef.current) {
         // Even on stale token, ensure loading is cleared to prevent infinite spinner
@@ -1146,7 +1154,26 @@ export const useLeads = (options?: UseLeadsOptions) => {
         lowered.includes('aborterror') ||
         lowered.includes('timed out');
 
-      if (isTransientNetwork && networkRetryCountRef.current < 2) {
+      const isJwtExpired =
+        lowered.includes('jwt expired') ||
+        lowered.includes('jwt is expired') ||
+        (error as any)?.code === 'PGRST301';
+
+      if (isJwtExpired && jwtRetryCountRef.current < 2) {
+        jwtRetryCountRef.current += 1;
+        console.warn('[Leads] JWT expired — renewing session and retrying');
+        try {
+          const { error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError) throw refreshError;
+          if (networkRetryTimerRef.current) clearTimeout(networkRetryTimerRef.current);
+          networkRetryTimerRef.current = setTimeout(() => {
+            networkRetryTimerRef.current = null;
+            fetchLeadsRef.current?.();
+          }, 300);
+        } catch {
+          toast.error('Your session expired — please sign in again to see your leads.');
+        }
+      } else if (isTransientNetwork && networkRetryCountRef.current < 2) {
         // Browser was offline / tab throttled / transient fetch failure —
         // silently retry instead of nagging the user with a red toast.
         networkRetryCountRef.current += 1;
