@@ -1001,7 +1001,7 @@ export function SandboxChatWindow({
   })();
 
   return (
-    <div className="flex h-full max-h-full min-h-0 w-full min-w-0 max-w-full flex-col overflow-hidden">
+    <div className="flex h-0 min-h-0 w-full min-w-0 max-w-full flex-1 flex-col overflow-hidden">
       {/* Who you are talking to */}
       {agentMode ? (
         <div className="flex flex-wrap items-center gap-2 border-b border-primary/30 bg-primary/10 px-4 py-2 text-sm text-primary">
