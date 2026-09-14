@@ -291,7 +291,7 @@ export const useLeadQuickNotes = (leadId: string) => {
           updateNotes([]);
         }
       } else {
-        const [quickNotesResult, leadResult] = await Promise.all([
+        const [quickNotesResult, leadResult, callLogResult] = await Promise.all([
           supabase
             .from('lead_quick_notes')
             .select('*')
@@ -302,7 +302,15 @@ export const useLeadQuickNotes = (leadId: string) => {
             .from('sales_leads')
             .select('notes, updated_at')
             .eq('id', leadId)
-            .maybeSingle()
+            .maybeSingle(),
+          // Call outcomes belong in the same list — agents shouldn't have to
+          // look in two places for what was said on the phone.
+          supabase
+            .from('lead_call_logs')
+            .select('id, outcome, notes, agent_name, created_at, attempt_number')
+            .eq('lead_id', leadId)
+            .order('created_at', { ascending: false })
+            .limit(50)
         ]);
 
         if (quickNotesResult.error) throw quickNotesResult.error;
