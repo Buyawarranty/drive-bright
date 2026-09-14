@@ -1,3 +1,4 @@
+import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
 import React from 'react';
 import { Users, RefreshCw, ArrowLeftRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,7 +58,7 @@ export const OrrFallbackToRoundRobinPanel: React.FC<{ isManagement: boolean }> =
     if (!isManagement) return;
     setWaiting(null);
     loadCount();
-    const t = setInterval(loadCount, 60_000);
+    const t = setInterval(() => { if (shouldSkipPoll()) return; loadCount(); }, 60_000);
     return () => clearInterval(t);
   }, [isManagement, loadCount]);
 

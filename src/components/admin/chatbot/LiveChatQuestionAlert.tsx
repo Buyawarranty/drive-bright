@@ -1,3 +1,4 @@
+import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
@@ -133,7 +134,10 @@ export const LiveChatQuestionAlert: React.FC = () => {
   useEffect(() => {
     if (!allowed) return;
     void load();
-    const t = window.setInterval(() => void load(), 8000);
+    const t = window.setInterval(() => {
+      if (shouldSkipPoll()) return;
+      void load();
+    }, 15000);
     return () => window.clearInterval(t);
   }, [allowed, load]);
 

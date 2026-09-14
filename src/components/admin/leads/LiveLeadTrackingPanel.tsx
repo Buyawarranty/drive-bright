@@ -1,3 +1,4 @@
+import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
@@ -192,7 +193,7 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
     if (!canSee || !includesToday) return;
-    const t = setInterval(load, 60000);
+    const t = setInterval(() => { if (shouldSkipPoll()) return; load(); }, 60000);
     return () => clearInterval(t);
   }, [canSee, load, includesToday]);
   useEffect(() => {

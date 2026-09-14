@@ -186,3 +186,13 @@ export function subscribeCrmTabState(fn: (s: CrmTabState) => void): () => void {
 export function isSecondaryCrmTab(): boolean {
   return state.tabCount > 1 && !state.isPrimary;
 }
+
+/**
+ * PERFORMANCE: shared guard for background refresh timers. Background tabs and
+ * duplicate CRM tabs were each re-running every poll, multiplying database
+ * traffic per agent and queueing the reads staff are actually waiting for.
+ */
+export function shouldSkipPoll(): boolean {
+  if (typeof document !== 'undefined' && document.hidden) return true;
+  return isSecondaryCrmTab();
+}

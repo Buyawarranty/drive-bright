@@ -1,3 +1,4 @@
+import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, ChevronDown, ChevronUp, Loader2, RefreshCw, Users, Zap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -224,8 +225,8 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
   useEffect(() => {
     loadCount();
     loadAgentCounts();
-    const t = setInterval(loadCount, 30_000);
-    const t2 = setInterval(loadAgentCounts, 30_000);
+    const t = setInterval(() => { if (shouldSkipPoll()) return; loadCount(); }, 30_000);
+    const t2 = setInterval(() => { if (shouldSkipPoll()) return; loadAgentCounts(); }, 60_000);
     return () => {
       clearInterval(t);
       clearInterval(t2);

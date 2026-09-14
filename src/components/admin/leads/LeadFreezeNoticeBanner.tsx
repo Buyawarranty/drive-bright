@@ -1,3 +1,4 @@
+import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
 import React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
@@ -38,7 +39,7 @@ export const LeadFreezeNoticeBanner: React.FC<Props> = ({ adminUserId }) => {
       });
     };
     load();
-    const t = setInterval(load, 120000);
+    const t = setInterval(() => { if (shouldSkipPoll()) return; load(); }, 120000);
     return () => {
       cancelled = true;
       clearInterval(t);

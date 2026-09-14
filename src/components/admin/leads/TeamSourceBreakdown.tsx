@@ -1,3 +1,4 @@
+import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { TEAM_COLOR_CLASSES, type AgentTeam } from '@/hooks/useAgentTeams';
@@ -116,7 +117,7 @@ export const TeamSourceBreakdown = ({ teams, agentTeamMap }: Props) => {
       setLoading(false);
     };
     load();
-    const refresh = setInterval(load, 60_000);
+    const refresh = setInterval(() => { if (shouldSkipPoll()) return; load(); }, 60_000);
     const reRender = setInterval(() => setTick(t => t + 1), 30_000);
     return () => { cancelled = true; clearInterval(refresh); clearInterval(reRender); };
   }, [teams, agentTeamMap]);
