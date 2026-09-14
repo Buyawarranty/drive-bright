@@ -304,8 +304,8 @@ export default function PriceUpdateLogPanel({
                         <Check className="h-3 w-3" /> Live now
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="capitalize">
-                        {v.status}
+                      <Badge variant="outline" className="border-muted-foreground/40 text-muted-foreground">
+                        Not live now
                       </Badge>
                     )}
                     {move !== null && (
