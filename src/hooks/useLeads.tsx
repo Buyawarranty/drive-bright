@@ -1153,7 +1153,26 @@ export const useLeads = (options?: UseLeadsOptions) => {
         lowered.includes('aborterror') ||
         lowered.includes('timed out');
 
-      if (isTransientNetwork && networkRetryCountRef.current < 2) {
+      const isJwtExpired =
+        lowered.includes('jwt expired') ||
+        lowered.includes('jwt is expired') ||
+        (error as any)?.code === 'PGRST301';
+
+      if (isJwtExpired && jwtRetryCountRef.current < 2) {
+        jwtRetryCountRef.current += 1;
+        console.warn('[Leads] JWT expired — renewing session and retrying');
+        try {
+          const { error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError) throw refreshError;
+          if (networkRetryTimerRef.current) clearTimeout(networkRetryTimerRef.current);
+          networkRetryTimerRef.current = setTimeout(() => {
+            networkRetryTimerRef.current = null;
+            fetchLeadsRef.current?.();
+          }, 300);
+        } catch {
+          toast.error('Your session expired — please sign in again to see your leads.');
+        }
+      } else if (isTransientNetwork && networkRetryCountRef.current < 2) {
         // Browser was offline / tab throttled / transient fetch failure —
         // silently retry instead of nagging the user with a red toast.
         networkRetryCountRef.current += 1;
