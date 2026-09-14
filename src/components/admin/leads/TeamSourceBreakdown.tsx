@@ -1,3 +1,4 @@
+import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { TEAM_COLOR_CLASSES, type AgentTeam } from '@/hooks/useAgentTeams';

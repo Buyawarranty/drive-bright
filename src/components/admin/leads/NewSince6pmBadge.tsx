@@ -1,3 +1,4 @@
+import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
 import { useCallback, useEffect, useState } from 'react';
 import { Sunrise, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';

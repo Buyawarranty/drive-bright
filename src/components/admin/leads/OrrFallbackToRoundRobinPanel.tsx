@@ -1,3 +1,4 @@
+import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
 import React from 'react';
 import { Users, RefreshCw, ArrowLeftRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';

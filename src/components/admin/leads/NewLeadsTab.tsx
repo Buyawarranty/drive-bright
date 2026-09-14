@@ -1,3 +1,4 @@
+import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { isToday, isPast } from 'date-fns';
 import { useSearchParams } from 'react-router-dom';
