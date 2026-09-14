@@ -29,18 +29,9 @@ export const useLeadReminders = (leadId?: string) => {
   const [loading, setLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Get current admin user ID
+  // Get current admin user ID (resolved once per tab, then reused)
   const getCurrentUserId = useCallback(async () => {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) return null;
-    
-    const { data: adminUser } = await supabase
-      .from('admin_users')
-      .select('id')
-      .eq('user_id', userData.user.id)
-      .maybeSingle();
-    
-    return adminUser?.id || null;
+    return getCachedAdminUserId();
   }, []);
 
   // Fetch all reminders for current user (for global list)
