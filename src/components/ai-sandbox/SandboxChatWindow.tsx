@@ -473,9 +473,7 @@ function PriceOptionsPanel({
                 className="gap-2 bg-[#001F3F] font-bold text-white shadow-sm hover:bg-[#002a55]"
                 onClick={() => {
                   setOptionsOpen(false);
-                  onSend(
-                    `Update my price for: ${combo}. Reply with the total price in £ on the first line, and the monthly amount if paying over 12 instalments.`,
-                  );
+                  onSend(`Update my price for ${combo}.`);
                 }}
               >
                 Update my price
@@ -495,9 +493,7 @@ function PriceOptionsPanel({
             onClick={() => {
               setPriceRequested(true);
               setOptionsOpen(false);
-              onSend(
-                `Price this for me: ${combo}. Reply with the total price in £ on the first line, and the monthly amount if paying over 12 instalments.`,
-              );
+              onSend(`Show me the price for ${combo}.`);
             }}
           >
             Show my price
