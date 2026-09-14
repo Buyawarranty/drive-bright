@@ -106,7 +106,9 @@ export const SalesScoreboardTab: React.FC = () => {
     }
     if (selectedTeamId === 'all') return agents;
     const memberIds = new Set(teamMembers.filter(m => m.team_id === selectedTeamId).map(m => m.admin_user_id));
-    const filtered = agents.filter(a => memberIds.has(a.id));
+    // Former agents are removed from live team allocation when they leave, but
+    // their completed sales must remain visible in historical scoreboards.
+    const filtered = agents.filter(a => memberIds.has(a.id) || (!a.isActive && a.salesCount > 0));
     return filtered
       .slice()
       .sort((a, b) => b.salesCount - a.salesCount || b.revenue - a.revenue)
