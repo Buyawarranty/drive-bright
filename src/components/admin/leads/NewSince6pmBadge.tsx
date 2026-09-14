@@ -55,7 +55,7 @@ export function NewSince6pmBadge({ className }: Props) {
 
   useEffect(() => {
     load();
-    const t = setInterval(load, 60_000);
+    const t = setInterval(() => { if (shouldSkipPoll()) return; load(); }, 60_000);
     return () => clearInterval(t);
   }, [load]);
 

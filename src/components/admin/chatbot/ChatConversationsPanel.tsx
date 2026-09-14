@@ -284,7 +284,10 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
   // while the agent is reading it, and stays a two-way conversation here.
   useEffect(() => {
     if (!selectedId) return;
-    const t = window.setInterval(() => void refreshMessages(selectedId), 3000);
+    const t = window.setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      void refreshMessages(selectedId);
+    }, 6000);
     return () => window.clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);

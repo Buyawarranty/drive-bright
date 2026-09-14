@@ -192,7 +192,7 @@ export const LiveLeadTrackingPanel: React.FC<Props> = ({ userRole }) => {
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
     if (!canSee || !includesToday) return;
-    const t = setInterval(load, 60000);
+    const t = setInterval(() => { if (shouldSkipPoll()) return; load(); }, 60000);
     return () => clearInterval(t);
   }, [canSee, load, includesToday]);
   useEffect(() => {
