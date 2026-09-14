@@ -206,7 +206,7 @@ export default function SiteChatWidget({
         <div
           className={`fixed z-[70] flex w-full max-w-full flex-col overflow-hidden border border-border bg-background shadow-2xl ${
             open ? 'flex' : 'hidden'
-          } inset-0 h-[100dvh] rounded-none sm:inset-auto sm:bottom-6 sm:right-6 sm:h-auto sm:max-h-[calc(100vh-3rem)] sm:max-w-[calc(100vw-3rem)] sm:rounded-2xl ${
+          } inset-0 h-[100dvh] rounded-none sm:inset-auto sm:bottom-6 sm:right-6 sm:max-h-[calc(100vh-3rem)] sm:max-w-[calc(100vw-3rem)] sm:rounded-2xl ${
             expanded ? 'sm:h-[860px] sm:w-[680px]' : 'sm:h-[calc(100vh-6rem)] sm:w-[480px]'
 
           }`}
