@@ -211,19 +211,44 @@ export const queuedFetch: typeof fetch = async (input, init) => {
       ? 'background'
       : 'normal';
 
+  const dedupeKey = readDedupeKey(url, input, init, method);
+  if (dedupeKey) {
+    const shared = inflightReads.get(dedupeKey);
+    if (shared) {
+      try {
+        return (await shared).clone();
+      } catch {
+        /* the shared read failed — fall through and try our own */
+      }
+    }
+  }
+
   try {
     await acquire(lane);
   } catch {
     return fetch(input as any, init);
   }
-  try {
-    return await fetch(input as any, init);
-  } finally {
+
+  const run = (async () => {
     try {
-      release(lane);
-    } catch {
-      /* keep the queue alive even if a listener misbehaves */
+      return await fetch(input as any, init);
+    } finally {
+      try {
+        release(lane);
+      } catch {
+        /* keep the queue alive even if a listener misbehaves */
+      }
     }
+  })();
+
+  if (!dedupeKey) return run;
+
+  inflightReads.set(dedupeKey, run);
+  try {
+    const response = await run;
+    return response.clone();
+  } finally {
+    inflightReads.delete(dedupeKey);
   }
 };
 
