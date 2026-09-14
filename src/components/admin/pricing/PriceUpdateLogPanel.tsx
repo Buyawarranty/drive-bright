@@ -248,6 +248,39 @@ export default function PriceUpdateLogPanel({
           <p className="text-sm text-muted-foreground">No price models recorded yet.</p>
         )}
 
+        {(() => {
+          const bestVersion = bestId ? rows.find(row => row.id === bestId) : null;
+          const bestStats = bestId ? statsById[bestId] : null;
+          if (!bestVersion || !bestStats) return null;
+          const bestIsLive = bestVersion.status === 'live';
+          return (
+            <div className="rounded-lg border-2 border-success bg-success/10 p-3">
+              <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-foreground">
+                <Trophy className="h-4 w-4 shrink-0 text-success" />
+                <span>Most successful price model so far: {bestVersion.label}</span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-bold ${
+                    bestIsLive ? 'bg-success text-success-foreground' : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {bestIsLive ? 'Live now' : 'Not live now'}
+                </span>
+              </div>
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-foreground">
+                <span className="font-semibold">{bestStats.salesPerDay.toFixed(1)} sales/day</span>
+                <span className="font-semibold">{bestStats.orders} sales over {bestStats.daysLive} days</span>
+                <span className="font-semibold">{money(bestStats.revenue)} revenue</span>
+                <span className="font-semibold">AOV {money(bestStats.aov)}</span>
+              </div>
+              <p className="mt-2 text-sm font-medium text-foreground">
+                {bestIsLive
+                  ? 'Recommended: keep this model live — it converts better than every other model tried.'
+                  : `Recommended: press “Revert price” on the ${bestVersion.label} row below to make these prices live again.`}
+              </p>
+            </div>
+          );
+        })()}
+
         {rows.map((v, i) => {
           const isLive = v.status === 'live';
           const sample = sampleGridPrice(v);
