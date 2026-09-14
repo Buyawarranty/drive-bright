@@ -188,6 +188,7 @@ export const useClaims = (): UseClaimsResult => {
       const startByReg: Record<string, string> = {};
       const cancelled = new Set<string>();
       const liveActiveRegs = new Set<string>();
+      const bumper = new Set<string>();
       const infoByReg: Record<string, CustomerVehicleInfo> = {};
       (customerRows || []).forEach((c: any) => {
         const reg = normReg(c.registration_plate);
@@ -245,6 +246,7 @@ export const useClaims = (): UseClaimsResult => {
       // If any live record for the reg is still active, the vehicle is covered.
       liveActiveRegs.forEach((reg) => cancelled.delete(reg));
       setCancelledRegs(cancelled);
+      setBumperRegs(bumper);
 
       setComplaintsByReg(cRegMap);
       setComplaintsByEmail(cEmailMap);
@@ -352,6 +354,7 @@ export const useClaims = (): UseClaimsResult => {
         voluntaryExcess: customerInfoByReg[normReg(reg)]?.voluntaryExcess ?? null,
         labourRate: customerInfoByReg[normReg(reg)]?.labourRate ?? null,
         hasCancellation: cancelledRegs.has(normReg(reg)),
+        paidWithBumper: bumperRegs.has(normReg(reg)),
         hasMatchingPolicy: !!customerInfoByReg[normReg(reg)],
         reviewSentiment: (r.review_sentiment === 'positive' || r.review_sentiment === 'negative') ? r.review_sentiment : null,
         claimedAmount: r.claimed_amount != null ? Number(r.claimed_amount) : (r.payment_amount != null ? Number(r.payment_amount) : null),
@@ -366,7 +369,7 @@ export const useClaims = (): UseClaimsResult => {
           null,
       };
     });
-  }, [rows, staffById, customerMileageByReg, customerStartByReg, customerInfoByReg, cancelledRegs, complaintsByReg, complaintsByEmail]);
+  }, [rows, staffById, customerMileageByReg, customerStartByReg, customerInfoByReg, cancelledRegs, bumperRegs, complaintsByReg, complaintsByEmail]);
 
   return { claims, loading, error, refetch: fetchAll };
 };
