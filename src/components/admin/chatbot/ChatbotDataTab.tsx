@@ -270,7 +270,7 @@ export default function ChatbotDataTab() {
             <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} /> Refresh
           </Button>
           <Button size="sm" onClick={copyBrief} disabled={!filtered.length}>
-            <ClipboardCopy className="h-4 w-4 mr-1" /> Copy brief for Lovable
+            <ClipboardCopy className="h-4 w-4 mr-1" /> Copy brief for Devs
           </Button>
           <Button size="sm" variant="outline" onClick={downloadBrief} disabled={!filtered.length}>
             <FileText className="h-4 w-4 mr-1" /> Download brief
