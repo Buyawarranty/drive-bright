@@ -5035,8 +5035,8 @@ Buyawarranty.co.uk`,
                         )}
                         {adminUsers
                           .filter(u => ['sales', 'sales_lead', 'sales_manager', 'admin', 'super_admin'].includes(u.role))
-                          // Keep archived agents that still hold sales credit so commissions stay traceable
-                          .filter(u => u.is_active !== false || (agentDealCounts[u.id]?.sales || 0) > 0 || (agentDealCounts[u.id]?.cancelled || 0) > 0)
+                          // Always keep former agents selectable. Their historical sales must
+                          // remain findable even when the current date range has no deals.
                           .sort((a, b) => Number(a.is_active === false) - Number(b.is_active === false))
                           .map(user => {
                             const stats = agentDealCounts[user.id] || { sales: 0, cancelled: 0 };
