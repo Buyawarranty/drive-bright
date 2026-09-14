@@ -125,7 +125,9 @@ interface LeadsFiltersProps {
   onBulkRestore?: () => void;
 }
 
-// Status pill configuration — compact, color-coded for instant recognition
+// Status pill configuration — compact, color-coded for instant recognition.
+// Terminal / closed statuses (Lost, Not interested, Fake) are deliberately
+// omitted from the New Leads feed; they live in their own dedicated sections.
 const STATUS_PILLS: { 
   value: string; 
   label: string; 
@@ -155,8 +157,6 @@ const STATUS_PILLS: {
   { value: 'bought_elsewhere', label: 'Bought elsewhere', icon: '🛒', colorClass: 'data-[state=active]:bg-zinc-600 data-[state=active]:text-white', countKey: 'bought_elsewhere' },
   { value: 'vehicle_sold', label: 'Vehicle sold', icon: '🚗', colorClass: 'data-[state=active]:bg-stone-600 data-[state=active]:text-white', countKey: 'vehicle_sold' },
   { value: 'do_not_contact', label: 'Do not contact', icon: '⛔', colorClass: 'data-[state=active]:bg-red-800 data-[state=active]:text-white', countKey: 'do_not_contact' },
-  { value: 'lost', label: 'Lost', icon: '💀', colorClass: 'data-[state=active]:bg-gray-700 data-[state=active]:text-white', countKey: 'lost' },
-  { value: 'fake', label: 'Fake 404', icon: '🚫', colorClass: 'data-[state=active]:bg-red-900 data-[state=active]:text-white', countKey: 'fake' },
   { value: 'reminders', label: 'Reminders', icon: '⏰', colorClass: 'data-[state=active]:bg-amber-600 data-[state=active]:text-white', countKey: 'reminders' },
   { value: 'due_today', label: 'Due Today', icon: '🔔', colorClass: 'data-[state=active]:bg-orange-500 data-[state=active]:text-white', countKey: 'due_today' },
   { value: 'overnight_queue', label: 'Overnight queue', icon: '🌙', colorClass: 'data-[state=active]:bg-indigo-600 data-[state=active]:text-white', countKey: 'overnight_queue' },

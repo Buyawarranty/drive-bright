@@ -734,27 +734,23 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
   }, [selectedFilters, reminderLeadIds, reminderTimesMap, notSpokenLeadIds, overnightIds, isRepeatActivityInRange]);
 
-  // Hard-exclude fake_lead, lost, and not_interested everywhere unless the user
-  // is explicitly viewing that pill (or All Leads). Prior versions only filtered
-  // these at pill predicates, so search fallbacks, team filters and workstream
-  // views leaked them back into the table after they were marked. Lost / not
-  // interested leads must NEVER resurface in New Leads regardless of team.
+  // Hard-exclude fake_lead, lost, and not_interested from the New Leads feed.
+  // These are terminal / closed statuses and live in their own dedicated sections
+  // (Lost Leads, Fake Leads audit, etc.). They must NEVER resurface in New Leads
+  // regardless of team, search fallback, or workstream view.
   // NOTE: 'all' / 'all_leads' must NOT unhide these. Sales agents default to the
   // 'all_leads' pill, which previously leaked every lost / not-interested lead
-  // back into the main list. They now only show on their own pill.
-  const showFakeLeads = selectedFilters.has('fake');
-  const showLostLeads = selectedFilters.has('lost');
-  const showNotInterested = selectedFilters.has('not_interested');
+  // back into the main list.
   const visibleLeads = useMemo(
     () => leads.filter(lead => {
       const s = lead.status as string;
       if (s === 'archived') return false;
-      if (!showFakeLeads && s === 'fake_lead') return false;
-      if (!showLostLeads && s === 'lost') return false;
-      if (!showNotInterested && s === 'not_interested') return false;
+      if (s === 'fake_lead') return false;
+      if (s === 'lost') return false;
+      if (s === 'not_interested') return false;
       return true;
     }),
-    [leads, showFakeLeads, showLostLeads, showNotInterested]
+    [leads]
   );
 
 
@@ -994,7 +990,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     });
 
     return result;
-  }, [statusFilteredLeads, visibleLeads, leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, ageWindow, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter, showFakeLeads, selectedFilters, wasContactedInRange, hideSandboxLeads, isSandboxTestLead]);
+  }, [statusFilteredLeads, visibleLeads, leads, debouncedSearchTerm, dateRange, assignmentFilter, agentFilter, sortOption, sourceFilter, ageWindow, reminderTimesMap, getLeadSubmissionDate, getLeadSortDate, filter, selectedFilters, wasContactedInRange, hideSandboxLeads, isSandboxTestLead]);
   const isRecoveredLead = useCallback((lead: Lead) => {
     // A lead is "recovered/unworked" only if it came from an abandoned cart,
     // was never assigned to any agent, and never completed step 2
