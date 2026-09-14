@@ -5,9 +5,8 @@ import { DefaultChatTransport, type UIMessage } from 'ai';
 import {
   Headset,
   PhoneCall,
-  Clock,
   ShieldCheck,
-  CalendarDays,
+  CarFront,
   UserRound,
   FileText,
   Lock,
@@ -40,10 +39,7 @@ import { Shimmer } from '@/components/ai-elements/shimmer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
-import milesCalls from '@/assets/miles-calls.png.asset.json';
-import { isTeamOpenNow, openingHoursLabel, nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
-import { useSandboxSpecialistPresence } from '@/hooks/useSandboxSpecialistPresence';
-import { useSalesLineAvailable } from '@/hooks/useSalesLineAvailable';
+import { nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
 import { CallMeBackPanel } from '@/components/ai-sandbox/CallMeBackPanel';
 import {
   prepareAttachment,
@@ -88,18 +84,17 @@ const CHAT_TEXT = [
 ].join(' ');
 
 const OPENING_LINE = [
-
-  "Hi, I'm Miles. How can I help?",
+  "Hi, I’m Miles. How can I help today?",
   '',
-  'I can get you a quote, check what\'s covered, or help with a claim.',
+  'You can choose an option below or ask me anything.',
 ].join('\n');
 
 
-const STARTERS: Array<{ text: string; Icon: LucideIcon }> = [
-  { text: 'Get my price', Icon: CalendarDays },
-  { text: "Check what's covered", Icon: ShieldCheck },
-  { text: 'Make a claim', Icon: FileText },
-  { text: 'Speak to someone', Icon: UserRound },
+const STARTERS: Array<{ text: string; description: string; Icon: LucideIcon; action: 'quote' | 'message' }> = [
+  { text: 'Get a quote', description: 'Find your price in seconds', Icon: CarFront, action: 'quote' },
+  { text: "Check what’s covered", description: "See what’s included", Icon: ShieldCheck, action: 'message' },
+  { text: 'Make a claim', description: 'Get help with your claim', Icon: FileText, action: 'message' },
+  { text: 'Speak to the team', description: 'Request a call, WhatsApp or email', Icon: UserRound, action: 'message' },
 ];
 
 
@@ -657,6 +652,7 @@ export function SandboxChatWindow({
   const [handover, setHandover] = useState<Handover | null>(null);
   const [agentMode, setAgentMode] = useState(false);
   const [pricePanelOpen, setPricePanelOpen] = useState(true);
+  const [quoteStartOpen, setQuoteStartOpen] = useState(false);
   const composerRef = useRef<HTMLDivElement | null>(null);
   // Keeps a stable "sent at" time per message so stamps don't jump on re-render.
   const stampsRef = useRef<Map<string, Date>>(new Map());
@@ -667,15 +663,6 @@ export function SandboxChatWindow({
     stampsRef.current.set(id, now);
     return now;
   };
-
-  const open = isTeamOpenNow();
-  const { liveNames } = useSandboxSpecialistPresence();
-  // Weekends: only show the phone line when an agent is genuinely live.
-  const showPhoneLine = useSalesLineAvailable();
-
-
-
-
 
 
   // Website visitor: keep listening for replies typed by a real person in the
@@ -1036,37 +1023,14 @@ export function SandboxChatWindow({
         </div>
       )}
 
-      {/* Compact top action row — call us, or leave a number for a call / WhatsApp back. */}
-      {!agentMode && (
-        <div className="border-b border-border bg-background px-3 py-2.5">
-          {specialistJoined ? (
-            <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
-              <Headset className="h-3.5 w-3.5 shrink-0 text-primary" />
-              A warranty specialist has replied in this chat.
-            </p>
-          ) : (
-            <div className={showPhoneLine ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-1 gap-2'}>
-              {showPhoneLine && (
-                <a
-                  href="tel:03302295040"
-                  className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-3 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-primary/10"
-                >
-                  <PhoneCall className="h-4 w-4 shrink-0 text-primary" />
-                  <span className="truncate">Call 0330 229 5040</span>
-                </a>
-              )}
-              <CallMeBackPanel
-                asChip
-                guestToken={guestToken}
-                threadId={threadId}
-                source={source}
-                compact={compact}
-                registration={detectedReg}
-              />
-            </div>
-          )}
-        </div>
-      )}
+       {!agentMode && specialistJoined && (
+         <div className="border-b border-border bg-background px-4 py-2.5">
+           <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
+             <Headset className="h-3.5 w-3.5 shrink-0 text-primary" />
+             A warranty specialist has replied in this chat.
+           </p>
+         </div>
+       )}
 
       {(waiting || leadCaptured) && (
         <div className="flex flex-wrap items-center gap-2 border-b border-amber-300 bg-amber-50 px-4 py-2 text-xs text-amber-900">
@@ -1112,33 +1076,39 @@ export function SandboxChatWindow({
 
 
           {messages.length === 0 && (
-            <div className="flex flex-col gap-3 py-2">
-              {!compact && <img
-                src={milesCalls.url}
-                alt="Miles the panda in a buyawarranty polo with a headset, saying hi and offering to check your coverage, file a claim or get answers"
-                width={760}
-                height={512}
-                className="mx-auto h-auto w-full max-w-[220px]"
-                loading="lazy"
-              />}
-
-              <RegQuickStart disabled={busy} onSubmit={(reg) => send(`My reg is ${reg} — what would my warranty cost?`)} />
-
-              <div className="flex flex-col gap-2">
-                {STARTERS.map(({ text, Icon }) => (
-                  <button
+            <div className="flex flex-col gap-3 py-1">
+              <div className="flex flex-col gap-2.5">
+                {STARTERS.map(({ text, description, Icon, action }, index) => (
+                  <Button
                     key={text}
-                    onClick={() => send(text)}
-                    className="group flex w-full items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-3 text-left text-sm font-semibold text-foreground shadow-sm transition-all hover:border-primary/50 hover:bg-primary/5"
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      if (action === 'quote') {
+                        setQuoteStartOpen(true);
+                        return;
+                      }
+                      send(text === 'Speak to the team' ? 'I would like to speak to a warranty specialist' : text);
+                    }}
+                    className={`group h-auto w-full justify-start gap-3 rounded-xl px-3.5 py-3 text-left shadow-none transition-all hover:border-primary/60 hover:bg-primary/5 ${index === 0 ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}
                   >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted transition-colors group-hover:bg-primary/10">
-                      <Icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${index === 0 ? 'bg-primary/10' : 'bg-muted group-hover:bg-primary/10'}`}>
+                      <Icon className={`h-5 w-5 transition-colors ${index === 0 ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`} />
                     </span>
-                    <span className="min-w-0 flex-1">{text}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-base font-bold leading-tight text-foreground">{text}</span>
+                      <span className="mt-0.5 block whitespace-normal text-sm font-normal leading-tight text-muted-foreground">{description}</span>
+                    </span>
                     <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
-                  </button>
+                  </Button>
                 ))}
               </div>
+
+              {quoteStartOpen && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+                  <RegQuickStart disabled={busy} onSubmit={(reg) => send(`My reg is ${reg} — what would my warranty cost?`)} />
+                </div>
+              )}
             </div>
           )}
 
@@ -1378,7 +1348,7 @@ export function SandboxChatWindow({
             placeholder={
               agentMode
                 ? 'Reply as the warranty specialist…'
-                : 'Ask about cover, pricing, claims…'
+                 : 'Ask Miles anything…'
             }
           />
           <PromptInputFooter className="items-center justify-between gap-2 border-0 pt-0">
