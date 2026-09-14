@@ -3082,6 +3082,26 @@ Questions? Call 0330 229 5040`;
     }
   }, [step, customerEmail, customerName, vehicleData, quoteGenerated, quoteLink]);
 
+  // Watchdog: never leave the agent staring at "Generating quote link…".
+  // If the mint hasn't finished in 30s, clear the spinner so the
+  // "Retry Link Generation" button comes back.
+  useEffect(() => {
+    if (!isGeneratingQuoteLink) return;
+    const timer = setTimeout(() => {
+      quoteGenInFlightRef.current = false;
+      quoteGenPromiseRef.current = null;
+      setIsGeneratingQuoteLink(false);
+      toast({
+        title: 'Quote link took too long',
+        description: 'Please tap “Retry Link Generation”.',
+        variant: 'destructive',
+      });
+    }, 30000);
+    return () => clearTimeout(timer);
+  }, [isGeneratingQuoteLink]);
+
+
+
 
   const generateQuoteLink = async (): Promise<string | null> => {
     if (!customerEmail || !customerName || !vehicleData) return null;
@@ -3100,13 +3120,13 @@ Questions? Call 0330 229 5040`;
   const runGenerateQuoteLink = async (): Promise<string | null> => {
     setIsGeneratingQuoteLink(true);
 
-
-    
-    const displayClaimLimit = boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit);
-    const contractTotal = currentPrice.monthlyPrice * 12; // Use monthly × 12 for consistency
-    const payInFullPrice = currentPrice.payInFullPrice || Math.ceil(contractTotal * 0.90);
-    
     try {
+      // Kept inside the try: when any of this threw (missing price, odd claim
+      // limit) the spinner used to hang on "Generating quote link..." forever
+      // because the in-flight guard never cleared.
+      const contractTotal = (currentPrice?.monthlyPrice || 0) * 12; // monthly × 12 for consistency
+      const payInFullPrice = currentPrice?.payInFullPrice || Math.ceil(contractTotal * 0.90);
+
       const { data, error } = await invokeWithFreshSession<any>('create-live-quote', {
           customerName,
           customerEmail,
