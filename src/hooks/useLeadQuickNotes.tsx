@@ -31,6 +31,10 @@ export interface QuickNote {
   created_by: string;
   created_at: string;
   updated_at: string;
+  /** Name of whoever wrote it, kept on the note itself so it survives staff leaving. */
+  author_name?: string | null;
+  /** True for call-outcome entries pulled from the call log (read-only). */
+  is_call_log?: boolean;
   author?: {
     first_name: string | null;
     last_name: string | null;
@@ -139,9 +143,12 @@ const findRecentRelatedNote = async (
     for (const row of candidates) {
       const existing = String(row.note_text || '').trim();
       if (!existing) continue;
+      // Exactly the same note text = a repeated save, nothing new to write.
       if (existing === target) return { note: row, shouldExtend: false };
+      // The agent carried on typing after a mid-typing auto-save — extend it.
       if (target.startsWith(existing)) return { note: row, shouldExtend: true };
-      if (existing.startsWith(target)) return { note: row, shouldExtend: false };
+      // Anything else is genuinely new text and MUST be saved as its own note,
+      // otherwise a shorter follow-up note is silently thrown away.
     }
     return null;
   } catch {
@@ -284,7 +291,7 @@ export const useLeadQuickNotes = (leadId: string) => {
           updateNotes([]);
         }
       } else {
-        const [quickNotesResult, leadResult] = await Promise.all([
+        const [quickNotesResult, leadResult, callLogResult] = await Promise.all([
           supabase
             .from('lead_quick_notes')
             .select('*')
@@ -295,7 +302,15 @@ export const useLeadQuickNotes = (leadId: string) => {
             .from('sales_leads')
             .select('notes, updated_at')
             .eq('id', leadId)
-            .maybeSingle()
+            .maybeSingle(),
+          // Call outcomes belong in the same list — agents shouldn't have to
+          // look in two places for what was said on the phone.
+          supabase
+            .from('lead_call_logs')
+            .select('id, outcome, notes, agent_name, created_at, attempt_number')
+            .eq('lead_id', leadId)
+            .order('created_at', { ascending: false })
+            .limit(50)
         ]);
 
         if (quickNotesResult.error) throw quickNotesResult.error;
@@ -322,10 +337,37 @@ export const useLeadQuickNotes = (leadId: string) => {
         
         const notesWithAuthors = quickNotes.map((note: any) => ({
           ...note,
-          author: note.created_by ? authorsMap[note.created_by] || null : null
+          // Fall back to the name stored on the note itself, so notes written by
+          // someone who has since left still show who wrote them.
+          author: note.created_by
+            ? authorsMap[note.created_by] || (note.author_name
+                ? { first_name: note.author_name, last_name: null, email: '' }
+                : null)
+            : (note.author_name
+                ? { first_name: note.author_name, last_name: null, email: '' }
+                : null)
         }));
 
-        let allNotes = notesWithAuthors as QuickNote[];
+        const callNotes: QuickNote[] = ((callLogResult?.data as any[]) || []).map((c: any) => {
+          const outcome = String(c.outcome || 'call')
+            .replace(/_/g, ' ')
+            .replace(/^\w/, (m: string) => m.toUpperCase());
+          const detail = String(c.notes || '').trim();
+          return {
+            id: `call_${c.id}`,
+            lead_id: leadId,
+            note_text: detail ? `📞 ${outcome} — ${detail}` : `📞 ${outcome}`,
+            is_pinned: false,
+            created_by: '',
+            created_at: c.created_at,
+            updated_at: c.created_at,
+            author_name: c.agent_name || null,
+            is_call_log: true,
+            author: c.agent_name ? { first_name: c.agent_name, last_name: null, email: '' } : null,
+          };
+        });
+
+        let allNotes = [...(notesWithAuthors as QuickNote[]), ...callNotes];
         
         if (leadResult.data?.notes && leadResult.data.notes.trim()) {
           const legacyNote: QuickNote = {

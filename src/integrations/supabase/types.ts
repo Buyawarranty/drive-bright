@@ -8361,6 +8361,7 @@ export type Database = {
       }
       lead_quick_notes: {
         Row: {
+          author_name: string | null
           created_at: string | null
           created_by: string
           id: string
@@ -8370,6 +8371,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          author_name?: string | null
           created_at?: string | null
           created_by: string
           id?: string
@@ -8379,6 +8381,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          author_name?: string | null
           created_at?: string | null
           created_by?: string
           id?: string
@@ -8406,6 +8409,7 @@ export type Database = {
       }
       lead_quick_notes_backup: {
         Row: {
+          author_name: string | null
           backed_up_at: string
           backup_id: string
           created_by: string | null
@@ -8418,6 +8422,7 @@ export type Database = {
           operation: string
         }
         Insert: {
+          author_name?: string | null
           backed_up_at?: string
           backup_id?: string
           created_by?: string | null
@@ -8430,6 +8435,7 @@ export type Database = {
           operation: string
         }
         Update: {
+          author_name?: string | null
           backed_up_at?: string
           backup_id?: string
           created_by?: string | null
@@ -15229,6 +15235,10 @@ export type Database = {
         Returns: Json
       }
       restore_customer: { Args: { customer_uuid: string }; Returns: undefined }
+      restore_lead_notes_from_backup: {
+        Args: { p_lead_id: string }
+        Returns: number
+      }
       restore_lead_to_snapshot: {
         Args: { p_changelog_id: string; p_restored_by?: string }
         Returns: Json

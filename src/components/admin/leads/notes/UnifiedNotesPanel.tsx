@@ -969,6 +969,13 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
             {sortedNotes.map((note) => {
               const isEditing = editingNoteId === note.id;
               const isOptimistic = note.id.startsWith('temp_');
+              const isCallLog = note.is_call_log === true;
+              const authorLabel =
+                note.author_name ||
+                (note.author
+                  ? [note.author.first_name, note.author.last_name].filter(Boolean).join(' ') ||
+                    (note.author.email ? note.author.email.split('@')[0] : '')
+                  : '');
               const noteDate = new Date(note.created_at);
               const datePrefix = format(noteDate, 'dd/MM');
               const timeStr = format(noteDate, 'HH:mm');
@@ -1013,15 +1020,25 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                               PINNED
                             </span>
                           )}
+                          {isCallLog && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/50 text-blue-800 dark:text-blue-200 text-[10px] font-semibold">
+                              CALL
+                            </span>
+                          )}
                           {isOptimistic && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                           <span className="text-muted-foreground text-[11px] font-mono tabular-nums">
                             {datePrefix} · {timeStr}
                           </span>
+                          {authorLabel && (
+                            <span className="text-muted-foreground text-[11px] truncate">
+                              · {authorLabel}
+                            </span>
+                          )}
                         </div>
                         <p className="text-sm leading-relaxed break-words">{note.note_text}</p>
                       </div>
 
-                      {!isOptimistic && (
+                      {!isOptimistic && !isCallLog && (
                         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex-shrink-0">
                           {!isAbandonedCart && (
                             <button
