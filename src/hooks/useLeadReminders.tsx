@@ -300,7 +300,8 @@ export const useLeadReminders = (leadId?: string) => {
 
       toast.success('Reminder set');
       if (leadId) {
-        await fetchLeadReminder();
+        invalidateReminderCache();
+        await fetchLeadReminder(true);
       } else {
         await fetchAllReminders();
       }
@@ -331,7 +332,8 @@ export const useLeadReminders = (leadId?: string) => {
 
       toast.success('Reminder snoozed');
       if (leadId) {
-        await fetchLeadReminder();
+        invalidateReminderCache();
+        await fetchLeadReminder(true);
       } else {
         await fetchAllReminders();
       }
@@ -353,7 +355,8 @@ export const useLeadReminders = (leadId?: string) => {
       toast.success('Reminder dismissed');
       if (leadId) {
         setCurrentReminder(null);
-        await fetchLeadReminder();
+        invalidateReminderCache();
+        await fetchLeadReminder(true);
       } else {
         await fetchAllReminders();
       }
@@ -375,7 +378,8 @@ export const useLeadReminders = (leadId?: string) => {
       toast.success('Reminder completed');
       if (leadId) {
         setCurrentReminder(null);
-        await fetchLeadReminder();
+        invalidateReminderCache();
+        await fetchLeadReminder(true);
       } else {
         await fetchAllReminders();
       }
@@ -397,7 +401,8 @@ export const useLeadReminders = (leadId?: string) => {
       toast.success('Reminder deleted');
       if (leadId) {
         setCurrentReminder(null);
-        await fetchLeadReminder();
+        invalidateReminderCache();
+        await fetchLeadReminder(true);
       } else {
         await fetchAllReminders();
       }
