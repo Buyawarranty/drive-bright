@@ -139,9 +139,12 @@ const findRecentRelatedNote = async (
     for (const row of candidates) {
       const existing = String(row.note_text || '').trim();
       if (!existing) continue;
+      // Exactly the same note text = a repeated save, nothing new to write.
       if (existing === target) return { note: row, shouldExtend: false };
+      // The agent carried on typing after a mid-typing auto-save — extend it.
       if (target.startsWith(existing)) return { note: row, shouldExtend: true };
-      if (existing.startsWith(target)) return { note: row, shouldExtend: false };
+      // Anything else is genuinely new text and MUST be saved as its own note,
+      // otherwise a shorter follow-up note is silently thrown away.
     }
     return null;
   } catch {
