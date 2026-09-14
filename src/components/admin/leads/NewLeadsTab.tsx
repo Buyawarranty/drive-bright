@@ -739,10 +739,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // these at pill predicates, so search fallbacks, team filters and workstream
   // views leaked them back into the table after they were marked. Lost / not
   // interested leads must NEVER resurface in New Leads regardless of team.
-  const showAll = selectedFilters.has('all') || selectedFilters.has('all_leads');
-  const showFakeLeads = showAll || selectedFilters.has('fake');
-  const showLostLeads = showAll || selectedFilters.has('lost');
-  const showNotInterested = showAll || selectedFilters.has('not_interested');
+  // NOTE: 'all' / 'all_leads' must NOT unhide these. Sales agents default to the
+  // 'all_leads' pill, which previously leaked every lost / not-interested lead
+  // back into the main list. They now only show on their own pill.
+  const showFakeLeads = selectedFilters.has('fake');
+  const showLostLeads = selectedFilters.has('lost');
+  const showNotInterested = selectedFilters.has('not_interested');
   const visibleLeads = useMemo(
     () => leads.filter(lead => {
       const s = lead.status as string;
