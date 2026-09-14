@@ -59,7 +59,7 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
   const [teamStats, setTeamStats] = useState<TeamStats | null>(null);
   const [userBadges, setUserBadges] = useState<Badge[]>([]);
   const [allBadges, setAllBadges] = useState<Badge[]>([]);
-  const [salesUsers, setSalesUsers] = useState<{ id: string; first_name: string | null; last_name: string | null; email: string; role: string }[]>([]);
+  const [salesUsers, setSalesUsers] = useState<{ id: string; first_name: string | null; last_name: string | null; email: string; role: string; is_active?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchPersonalStats = useCallback(async (adminUserId: string) => {
@@ -159,7 +159,7 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
 
   const fetchTeamStats = useCallback(async (filters?: TeamFilters) => {
     try {
-      // Get all leads (for lead counts, status breakdowns, tags) — paginated to bypass 1000-row default
+      // Get all leads
       const buildLeadsQuery = () => {
         let q = supabase.from('sales_leads').select('id, status, assigned_to, call_count, last_contacted_at, created_at, priority, lead_source, converted_at, lost_at, lost_reason');
         if (filters?.dateFrom) {
@@ -185,17 +185,16 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
       const { data: leads } = await fetchAllRows<any>(buildLeadsQuery, { background: true });
       const leadsData = leads || [];
 
-      // Get only sales-role users (sales agents and sales leads) — same as scoreboard
+      // Get sales-role users (including archived for historical reporting)
       const { data: users } = await withBackgroundPriority(() => Promise.resolve(supabase
         .from('admin_users')
-        .select('id, first_name, last_name, email, role')
-        .eq('is_active', true)
+        .select('id, first_name, last_name, email, role, is_active')
         .in('role', ['sales', 'sales_lead'])));
 
       setSalesUsers(users || []);
       const userIds = (users || []).map(u => u.id);
 
-      // Fetch customers data (same source as scoreboard for revenue/deals) — paginated
+      // Fetch customers data
       const buildCustomersQuery = () => {
         let q = supabase
           .from('customers')
@@ -224,21 +223,16 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
         : { data: [] as any[] };
       const customersData = (filters?.agentId === 'unassigned') ? [] : (customers || []);
 
-      // Calculate leaderboard using customers for revenue/deals (matches scoreboard)
+      // Calculate leaderboard
       const leaderboard: SalespersonStats[] = (users || []).map((user) => {
         const userLeads = leadsData.filter(l => l.assigned_to === user.id);
         const userCustomers = customersData.filter(c => c.assigned_to === user.id);
         
         const converted = userCustomers.length;
         const revenue = userCustomers.reduce((sum, c) => sum + (c.final_amount || 0), 0);
-
-        // Calls made per agent
         const totalCalls = userLeads.reduce((sum, l) => sum + (l.call_count || 0), 0);
-
-        // Avg policy value
         const avgPolicyValue = converted > 0 ? revenue / converted : 0;
 
-        // Speed-to-lead per agent
         const stlValues = userLeads
           .filter(l => l.last_contacted_at && l.created_at)
           .map(l => {
@@ -270,15 +264,19 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
         };
       });
 
-      // Sort by revenue (same as scoreboard)
-      leaderboard.sort((a, b) => b.totalRevenue - a.totalRevenue);
+      // Filter out inactive users with no sales to keep view clean, but preserve historical hits
+      const filteredLeaderboard = leaderboard.filter(s => {
+        const user = (users || []).find(u => u.id === s.userId);
+        return s.totalRevenue > 0 || user?.is_active !== false;
+      });
 
-      // Calculate totals using customers table (matches scoreboard)
+      // Sort by revenue
+      filteredLeaderboard.sort((a, b) => b.totalRevenue - a.totalRevenue);
+
       const totalConverted = customersData.length;
       const totalLost = leadsData.filter(l => l.status === 'lost').length;
       const totalRevenue = customersData.reduce((sum, c) => sum + (c.final_amount || 0), 0);
 
-      // Leads by source
       const sourceMap = new Map<string, number>();
       leadsData.forEach(l => {
         const source = l.lead_source || 'unknown';
@@ -288,7 +286,6 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
         .map(([source, count]) => ({ source, count }))
         .sort((a, b) => b.count - a.count);
 
-      // Leads by status
       const statusMap = new Map<string, number>();
       leadsData.forEach(l => {
         const status = l.status || 'new';
@@ -298,7 +295,6 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
         .map(([status, count]) => ({ status, count }))
         .sort((a, b) => b.count - a.count);
 
-      // Tag distribution
       const { data: tagAssignments } = await fetchAllRows<any>(() =>
         supabase.from('lead_tag_assignments').select('tag_id, lead_tags(name, color)')
       , { background: true });
@@ -325,7 +321,7 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
         overallConversionRate: leadsData.length > 0 ? (totalConverted / leadsData.length) * 100 : 0,
         unassignedLeads: leadsData.filter(l => !l.assigned_to).length,
         avgConversionTime: null,
-        leaderboard,
+        leaderboard: filteredLeaderboard,
         leadsBySource,
         leadsByStatus,
         tagDistribution
@@ -340,25 +336,19 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
 
   const fetchBadges = useCallback(async (adminUserId?: string) => {
     try {
-      // Get all badges
       const { data: badges } = await withBackgroundPriority(() => Promise.resolve(supabase
         .from('sales_badges')
         .select('*')));
-
       setAllBadges(badges || []);
-
       if (adminUserId) {
-        // Get user's earned badges
         const { data: earned } = await withBackgroundPriority(() => Promise.resolve(supabase
           .from('user_badges')
           .select('badge_id, earned_at, sales_badges(*)')
           .eq('user_id', adminUserId)));
-
         const userBadgeList = (earned || []).map((e: any) => ({
           ...e.sales_badges,
           earned_at: e.earned_at
         }));
-
         setUserBadges(userBadgeList);
       }
     } catch (error) {
@@ -370,23 +360,17 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
     try {
       const stats = await fetchPersonalStats(adminUserId);
       if (!stats) return;
-
       const { data: badges } = await withBackgroundPriority(() => Promise.resolve(supabase
         .from('sales_badges')
         .select('*')));
-
       const { data: earnedBadges } = await withBackgroundPriority(() => Promise.resolve(supabase
         .from('user_badges')
         .select('badge_id')
         .eq('user_id', adminUserId)));
-
       const earnedIds = new Set((earnedBadges || []).map(e => e.badge_id));
-
       for (const badge of badges || []) {
         if (earnedIds.has(badge.id)) continue;
-
         let shouldAward = false;
-
         switch (badge.criteria_type) {
           case 'deals_closed':
             shouldAward = stats.convertedLeads >= badge.criteria_value;
@@ -398,7 +382,6 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
             shouldAward = stats.conversionRate >= badge.criteria_value;
             break;
         }
-
         if (shouldAward) {
           await supabase
             .from('user_badges')
@@ -416,20 +399,16 @@ export const useSalesStats = (userId?: string, teamFilters?: TeamFilters) => {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      
       if (userId) {
         const stats = await fetchPersonalStats(userId);
         setPersonalStats(stats);
         await fetchBadges(userId);
         await checkAndAwardBadges(userId);
       }
-
       const team = await fetchTeamStats(teamFilters);
       setTeamStats(team);
-      
       setLoading(false);
     };
-
     loadData();
   }, [userId, teamFilters?.dateFrom?.getTime(), teamFilters?.dateTo?.getTime(), teamFilters?.agentId, fetchPersonalStats, fetchTeamStats, fetchBadges, checkAndAwardBadges]);
 

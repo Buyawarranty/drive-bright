@@ -20,11 +20,12 @@ export const useAgentScoresForMonth = (month: Date) => {
         const start = startOfMonth(month);
         const end = endOfMonth(month);
 
-        // Only active, non-archived agents appear on the scoreboard.
+        // Fetch all sales agents, including archived/inactive ones, so historical
+        // reporting (e.g. Freddie in September) stays accurate.
         const { data: adminUsers } = await supabase
           .from('admin_users')
           .select('id, first_name, last_name, email, role, is_active, sip_extension')
-          .in('role', ['sales', 'sales_lead'])
+          .in('role', ['sales', 'sales_lead']);
 
         if (!adminUsers?.length) {
           if (!cancelled) { setAgents([]); setLoading(false); }
@@ -140,7 +141,10 @@ export const useAgentScoresForMonth = (month: Date) => {
         scores.sort((a, b) => b.salesCount - a.salesCount || b.revenue - a.revenue);
         scores.forEach((s, i) => { s.rank = i + 1; });
 
-        if (!cancelled) setAgents(scores);
+        // Keep historical performers (with sales) even if now inactive
+        const filteredScores = scores.filter(s => s.salesCount > 0 || s.isActive);
+
+        if (!cancelled) setAgents(filteredScores);
       } catch (e) {
         console.error('useAgentScoresForMonth error', e);
       } finally {
