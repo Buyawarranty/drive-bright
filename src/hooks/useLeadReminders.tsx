@@ -189,25 +189,23 @@ export const useLeadReminders = (leadId?: string) => {
     }
   }, [getCurrentUserId]);
 
-  // Fetch reminder for a specific lead
-  const fetchLeadReminder = useCallback(async () => {
+  /**
+   * Reminder for one lead row.
+   *
+   * Reads from the shared per-agent reminder map instead of firing its own
+   * query, so a 50-row page makes ONE reminder read rather than fifty.
+   */
+  const fetchLeadReminder = useCallback(async (force = false) => {
     if (!leadId) return;
-    
+
     try {
       const userId = await getCurrentUserId();
       if (!userId) return;
       setCurrentUserId(userId);
 
-      const { data, error } = await (supabase
-        .from('lead_reminders' as any)
-        .select('*')
-        .eq('lead_id', leadId)
-        .eq('user_id', userId)
-        .in('status', ['pending', 'snoozed'])
-        .maybeSingle() as any);
+      const byLead = await getMyPendingReminders(force);
+      const data = byLead.get(leadId);
 
-      if (error) throw error;
-      
       if (data) {
         setCurrentReminder({
           ...data,
