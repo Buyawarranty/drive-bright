@@ -1058,7 +1058,7 @@ export function SandboxChatWindow({
       )}
 
       <Conversation
-        className="min-w-0 max-w-full flex-1 overflow-x-hidden"
+        className="min-h-0 min-w-0 max-w-full flex-1 overflow-x-hidden"
         initial={messages.some((m) => m.role === 'user') ? 'smooth' : false}
         resize="smooth"
       >
