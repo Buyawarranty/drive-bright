@@ -969,6 +969,13 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
             {sortedNotes.map((note) => {
               const isEditing = editingNoteId === note.id;
               const isOptimistic = note.id.startsWith('temp_');
+              const isCallLog = note.is_call_log === true;
+              const authorLabel =
+                note.author_name ||
+                (note.author
+                  ? [note.author.first_name, note.author.last_name].filter(Boolean).join(' ') ||
+                    (note.author.email ? note.author.email.split('@')[0] : '')
+                  : '');
               const noteDate = new Date(note.created_at);
               const datePrefix = format(noteDate, 'dd/MM');
               const timeStr = format(noteDate, 'HH:mm');
