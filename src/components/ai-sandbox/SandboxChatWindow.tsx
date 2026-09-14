@@ -407,6 +407,22 @@ function PriceOptionsPanel({
   const combo = `${termLabel(term)} cover, £${limit.toLocaleString()} claim limit, £${excess} excess, £${labour}/hr labour rate`;
   const quoted = priceRequested ? extractPrice(lastAssistantText) : null;
 
+  const continueToCheckout = () => {
+    if (!checkoutHref) return;
+    localStorage.setItem(
+      'buyawarranty_quotePlanSettings',
+      JSON.stringify({
+        paymentType: `${term}months`,
+        claimLimit: limit,
+        labourRate: labour,
+        voluntaryExcess: excess,
+        boostAddon: false,
+        addOns: [],
+      }),
+    );
+    window.location.assign(checkoutHref);
+  };
+
   return (
     <div ref={panelRef} className="w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-card p-3.5 text-left shadow-sm sm:p-4 scroll-mt-4">
       <div className="flex items-start justify-between gap-2">
@@ -603,16 +619,11 @@ function PriceOptionsPanel({
             <div className="flex flex-wrap gap-2">
               <Button
                 size="sm"
-                disabled={disabled}
+                disabled={disabled || !checkoutHref}
                 className="bg-[#FF6B00] font-bold text-white hover:bg-[#E85F00]"
-                onClick={() => {
-                  onSend(
-                    `Yes — I'll pay monthly for ${combo}. Please confirm the monthly amount and the 12-instalment total (0% APR), then send me a secure monthly payment link.`,
-                  );
-                  setPending(null);
-                }}
+                onClick={continueToCheckout}
               >
-                Yes, send my payment link
+                Yes, continue securely
               </Button>
               <Button size="sm" variant="ghost" disabled={disabled} onClick={() => setPending(null)}>
                 No, go back
