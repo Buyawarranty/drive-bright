@@ -6,6 +6,7 @@ Updated: just now
 
 
 ## Core
+- 07960 111131 is always accepted website-wide; label its New Leads row TEST without disabling phone/actions. See mem://admin/leads/test-phone-visible-not-blocked
 - "Management" = admin, super_admin, sales_manager ONLY. Sales_lead is NOT management.
 - Normalize dates to UTC midnight (`Date.UTC`) before storage. Use `date.setDate(1)` before month math.
 - Never use negative wording ("won't pay"). Use explanatory phrasing ("designed for"). Sentence case headings.
@@ -31,6 +32,7 @@ Updated: just now
 - Alert pop-ups play ONE two-tone beep per session then stay permanently silent; guard every sound with consumeAlertSound(). See mem://admin/alerts-single-opening-beep
 
 ## Memories
+- [Test Phone Visible, Never Blocked](mem://admin/leads/test-phone-visible-not-blocked) — 07960 111131 works across website/chat and shows TEST in New Leads without disabled actions
 - [ORR Column Parity](mem://admin/leads/orr-column-parity-time-to-lead) — RR and ORR share identical columns; ORR only adds the Time to Lead countdown column; distribution rule is a separate functional difference
 - [ORR Has Distribution Rule](mem://admin/leads/orr-has-distribution-rule) — ORR uses its own distribution rule (furthest behind → longest waiting → caps-page order); RR does not
 - [ORR Merged Flow](mem://admin/leads/orr-merged-flow-both-lead-types) — ORR New Leads section is one list with both ORR and RR lead rows together
