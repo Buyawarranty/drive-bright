@@ -48,6 +48,7 @@ import {
   type ChatAttachment,
 } from '@/components/ai-sandbox/chatAttachments';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import TrustAndInfoAccordion from '@/components/step3/TrustAndInfoAccordion';
 
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-chat`;
@@ -539,6 +540,12 @@ function PriceOptionsPanel({
                 <span><strong className="text-foreground">£{labour}/hr</strong> labour rate</span>
               </li>
             </ul>
+          </div>
+
+          {/* The same reassurance and policy information shown on Step 3. */}
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">More information</p>
+            <TrustAndInfoAccordion variant="mobile" />
           </div>
 
           {/* Payment options */}
