@@ -131,6 +131,7 @@ export const useClaims = (): UseClaimsResult => {
   const [customerStartByReg, setCustomerStartByReg] = useState<Record<string, string>>({});
   const [customerInfoByReg, setCustomerInfoByReg] = useState<Record<string, CustomerVehicleInfo>>({});
   const [cancelledRegs, setCancelledRegs] = useState<Set<string>>(new Set());
+  const [bumperRegs, setBumperRegs] = useState<Set<string>>(new Set());
   const [complaintsByReg, setComplaintsByReg] = useState<Record<string, Claim['complaint']>>({});
   const [complaintsByEmail, setComplaintsByEmail] = useState<Record<string, Claim['complaint']>>({});
   const [loading, setLoading] = useState(true);
@@ -153,7 +154,7 @@ export const useClaims = (): UseClaimsResult => {
           .eq('is_active', true),
         supabase
           .from('customers')
-          .select('id, registration_plate, mileage, status, is_deleted, vehicle_make, vehicle_model, claim_limit, voluntary_excess, labour_rate')
+          .select('id, registration_plate, mileage, status, is_deleted, vehicle_make, vehicle_model, claim_limit, voluntary_excess, labour_rate, purchase_source, payment_type, bumper_order_id')
           .not('registration_plate', 'is', null)
           .limit(5000),
         supabase
