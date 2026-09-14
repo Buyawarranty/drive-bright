@@ -3100,13 +3100,13 @@ Questions? Call 0330 229 5040`;
   const runGenerateQuoteLink = async (): Promise<string | null> => {
     setIsGeneratingQuoteLink(true);
 
-
-    
-    const displayClaimLimit = boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit);
-    const contractTotal = currentPrice.monthlyPrice * 12; // Use monthly × 12 for consistency
-    const payInFullPrice = currentPrice.payInFullPrice || Math.ceil(contractTotal * 0.90);
-    
     try {
+      // Kept inside the try: when any of this threw (missing price, odd claim
+      // limit) the spinner used to hang on "Generating quote link..." forever
+      // because the in-flight guard never cleared.
+      const contractTotal = (currentPrice?.monthlyPrice || 0) * 12; // monthly × 12 for consistency
+      const payInFullPrice = currentPrice?.payInFullPrice || Math.ceil(contractTotal * 0.90);
+
       const { data, error } = await invokeWithFreshSession<any>('create-live-quote', {
           customerName,
           customerEmail,
