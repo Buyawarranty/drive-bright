@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import { History, RotateCcw, Check, StickyNote, Loader2, BarChart3 } from 'lucide-react';
+import { History, RotateCcw, Check, StickyNote, Loader2, BarChart3, Trophy, Radio } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -239,11 +239,8 @@ export default function PriceUpdateLogPanel({
           price they were sold at.
         </p>
         <p className="text-xs text-muted-foreground">
-          <strong>How to read the tags:</strong> “±% price vs previous” is just how much the price
-          moved against the model saved before it. <strong>“Best performer so far”</strong> names
-          the single model that made the most sales per day while live (at least 2 days and 3 sales,
-          so one lucky afternoon can't win), and every other row shows its sales-per-day gap to that
-          best one.
+          The green model converted best while live. Price changes are shown separately and do not
+          decide the winner. A model needs at least 2 days and 3 sales to be ranked.
         </p>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -256,11 +253,39 @@ export default function PriceUpdateLogPanel({
           const sample = sampleGridPrice(v);
           const move = pctVsPrevious(v, rows[i + 1]);
           const stats = windowStats(v, rows[i - 1]);
+          const isBest = bestId === v.id;
+          const bestVersion = bestId ? rows.find(row => row.id === bestId) : null;
+          const bestStats = bestId ? statsById[bestId] : null;
+          const currentStats = statsById[v.id];
+          const salesGap = !isBest && currentStats && bestStats && bestStats.salesPerDay > 0
+            ? Math.round(((currentStats.salesPerDay - bestStats.salesPerDay) / bestStats.salesPerDay) * 100)
+            : null;
           return (
             <div
               key={v.id}
-              className={`rounded-lg border p-3 ${isLive ? 'border-primary bg-primary/5' : 'bg-card'}`}
+              className={`overflow-hidden rounded-lg border-2 p-3 ${
+                isBest
+                  ? 'border-success bg-success/5 shadow-sm'
+                  : isLive
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border bg-card'
+              }`}
             >
+              {isBest && (
+                <div className="-mx-3 -mt-3 mb-3 flex items-center gap-2 bg-success px-3 py-2 text-sm font-bold text-success-foreground">
+                  <Trophy className="h-4 w-4 shrink-0" />
+                  Best converting — recommended
+                </div>
+              )}
+              {isLive && !isBest && salesGap !== null && (
+                <div className="-mx-3 -mt-3 mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 border-b-2 border-primary bg-primary/10 px-3 py-2 text-sm font-bold text-foreground">
+                  <Radio className="h-4 w-4 shrink-0 text-primary" />
+                  <span>Live now — converting {Math.abs(salesGap)}% below the best model</span>
+                  {bestVersion && (
+                    <span className="font-medium text-muted-foreground">Best: {bestVersion.label}</span>
+                  )}
+                </div>
+              )}
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
@@ -278,41 +303,24 @@ export default function PriceUpdateLogPanel({
                       <Badge
                         variant="outline"
                         title="How the average Quotes & Orders price moved compared with the price model saved before this one"
-                        className={
-                          move > 0
-                            ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                            : move < 0
-                              ? 'border-orange-300 bg-orange-50 text-orange-800'
-                              : 'text-muted-foreground'
-                        }
+                        className="border-border bg-muted text-muted-foreground"
                       >
-                        {move > 0 ? '+' : move < 0 ? '−' : ''}
-                        {Math.abs(move)}% price {move === 0 ? 'no change' : 'vs previous'}
+                        Price change only: {move === 0 ? 'same as previous' : `${Math.abs(move)}% ${move > 0 ? 'higher' : 'lower'} than previous`}
                       </Badge>
                     )}
-                    {bestId === v.id && (
-                      <Badge className="gap-1 bg-emerald-600 hover:bg-emerald-600">
-                        Best performer so far
+                    {isBest && (
+                      <Badge className="gap-1 bg-success text-success-foreground hover:bg-success">
+                        <Trophy className="h-3 w-3" /> Best conversion rate
                       </Badge>
                     )}
-                    {bestId && bestId !== v.id && statsById[v.id] && statsById[bestId] && statsById[bestId].salesPerDay > 0 && (
-                      (() => {
-                        const gap = Math.round(((statsById[v.id].salesPerDay - statsById[bestId].salesPerDay) / statsById[bestId].salesPerDay) * 100);
-                        return (
-                          <Badge
-                            variant="outline"
-                            title={`This model made ${statsById[v.id].salesPerDay.toFixed(1)} sales/day while live. The best performer (${rows.find(r => r.id === bestId)?.label || 'best'}) made ${statsById[bestId].salesPerDay.toFixed(1)} sales/day.`}
-                            className={
-                              gap >= 0
-                                ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                                : 'border-orange-300 bg-orange-50 text-orange-800'
-                            }
-                          >
-                            {gap >= 0 ? '+' : '−'}
-                            {Math.abs(gap)}% sales/day vs best
-                          </Badge>
-                        );
-                      })()
+                    {salesGap !== null && bestVersion && bestStats && currentStats && (
+                      <Badge
+                        variant="outline"
+                        title={`${v.label} made ${currentStats.salesPerDay.toFixed(1)} sales/day. ${bestVersion.label} made ${bestStats.salesPerDay.toFixed(1)} sales/day.`}
+                        className="border-primary/40 bg-primary/10 text-foreground"
+                      >
+                        Conversion: {Math.abs(salesGap)}% below {bestVersion.label}
+                      </Badge>
                     )}
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
