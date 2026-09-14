@@ -1001,7 +1001,7 @@ export function SandboxChatWindow({
   })();
 
   return (
-    <div className="flex h-full min-h-0 w-full min-w-0 max-w-full flex-col overflow-hidden">
+    <div className="absolute inset-0 flex min-h-0 w-full min-w-0 max-w-full flex-col overflow-hidden">
       {/* Who you are talking to */}
       {agentMode ? (
         <div className="flex flex-wrap items-center gap-2 border-b border-primary/30 bg-primary/10 px-4 py-2 text-sm text-primary">
@@ -1058,7 +1058,7 @@ export function SandboxChatWindow({
       )}
 
       <Conversation
-        className="min-w-0 max-w-full flex-1 overflow-x-hidden"
+        className="min-h-0 min-w-0 max-w-full flex-1 overflow-x-hidden"
         initial={messages.some((m) => m.role === 'user') ? 'smooth' : false}
         resize="smooth"
       >
@@ -1300,7 +1300,7 @@ export function SandboxChatWindow({
 
 
       <div
-        className={`${compact ? 'w-full min-w-0 max-w-full px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3' : 'mx-auto w-full min-w-0 max-w-3xl p-4'} border-t border-border bg-background`}
+        className={`${compact ? 'w-full min-w-0 max-w-full px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3' : 'mx-auto w-full min-w-0 max-w-3xl p-4'} shrink-0 border-t border-border bg-background`}
         ref={composerRef}
       >
 
