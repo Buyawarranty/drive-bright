@@ -305,8 +305,12 @@ const App = () => {
                     <Route path="/auth/" element={<Auth />} />
                     <Route path="/sales-login/" element={<SalesLogin />} />
                     <Route path="/admin/" element={<AdminShellErrorBoundary><AdminDashboard /></AdminShellErrorBoundary>} />
+                    {/* ScrollToTop rewrites every path to a trailing slash, so the
+                        sandbox needs both forms or "Take the chat" lands on a blank page. */}
                     <Route path="/ai-sandbox" element={<AiSandbox />} />
+                    <Route path="/ai-sandbox/" element={<AiSandbox />} />
                     <Route path="/ai-sandbox/:threadId" element={<AiSandbox />} />
+                    <Route path="/ai-sandbox/:threadId/" element={<AiSandbox />} />
                     <Route path="/admin-dashboard/" element={<AdminShellErrorBoundary><AdminDashboard /></AdminShellErrorBoundary>} />
                     <Route path="/admin/claims/:id" element={<AdminShellErrorBoundary><AdminClaimDetail /></AdminShellErrorBoundary>} />
                     <Route path="/admin/claims/:id/" element={<AdminShellErrorBoundary><AdminClaimDetail /></AdminShellErrorBoundary>} />
