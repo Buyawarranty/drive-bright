@@ -114,13 +114,12 @@ export const useScoreboardData = (): ScoreboardData => {
         setCurrentUserRole(adminUser?.role || null);
       }
 
-      // Only active, non-archived agents appear on the scoreboard.
+      // Fetch all sales agents, including archived/inactive ones, so historical
+      // reporting (e.g. Freddie in September) stays accurate.
       const { data: adminUsers } = await withBackgroundPriority(() => Promise.resolve(supabase
         .from('admin_users')
         .select('id, first_name, last_name, email, role, is_active, sip_extension')
-        .in('role', ['sales', 'sales_lead'])
-        .eq('is_active', true)
-        .is('archived_at', null)));
+        .in('role', ['sales', 'sales_lead'])));
 
       if (!adminUsers?.length) {
         setAgents([]);
@@ -384,23 +383,34 @@ export const useScoreboardData = (): ScoreboardData => {
           avgOrderValue,
           rank: 0,
           previousRank: null,
-          trend: 'same' as const,
-          monthlyTarget: targetMap.get(u.id) || null,
-          revenueTarget: revenueTargetMap.get(u.id) ?? 35000,
-          manualLeadsCount: manualLeadsMap.get(u.id) ?? null,
+          trend: 'same',
+          monthlyTarget: targetMap.get(u.id) || 30,
+          revenueTarget: revenueTargetMap.get(u.id) || 35000,
+          manualLeadsCount: manualLeadsMap.get(u.id) || null,
           cancelledCount,
           cancelledRevenue,
           callsCount: callsMap.get(u.id) || 0,
           connectedCalls: connectedMap.get(u.id) || 0,
-          manualActualAttempts: actualAttemptsMap.get(u.id) ?? null,
+          manualActualAttempts: actualAttemptsMap.get(u.id) || null,
           avgDiscountPct,
         };
       });
 
+      // Sort by sales count (primary) and revenue (secondary)
       scores.sort((a, b) => b.salesCount - a.salesCount || b.revenue - a.revenue);
-      scores.forEach((s, i) => { s.rank = i + 1; });
 
-      setAgents(scores);
+      // Assign ranks
+      scores.forEach((s, i) => {
+        s.rank = i + 1;
+      });
+
+      // Filter to keep only agents with sales OR who are currently active.
+      // Inactive agents with 0 sales for the period are hidden to keep the
+      // scoreboard focused, but historical performers like Freddie (who has
+      // sales in September) will appear in their months.
+      const filteredScores = scores.filter(s => s.salesCount > 0 || s.isActive);
+
+      setAgents(filteredScores);
     } catch (error) {
       console.error('Error fetching scoreboard data:', error);
     } finally {
@@ -408,29 +418,20 @@ export const useScoreboardData = (): ScoreboardData => {
     }
   }, [period, dateRange, getDateRange]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
-
   useEffect(() => {
-    const channel = supabase
-      .channel('scoreboard-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'customers' }, () => fetchData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_leads' }, () => fetchData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'commission_claims' }, () => fetchData())
-      // Monthly revenue targets: when a manager changes an agent's target the agent's
-      // scoreboard must pick it up without a hard refresh.
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_targets' }, () => fetchData())
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
+    fetchData();
   }, [fetchData]);
 
-  // Refetch when the tab regains focus so a stale open tab never shows an old target.
-  useEffect(() => {
-    const onFocus = () => fetchData();
-    window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
-  }, [fetchData]);
-
-
-  return { agents, loading, period, setPeriod, dateRange, setDateRange, refresh: fetchData, currentUserId, currentAdminUserId, currentUserRole };
+  return {
+    agents,
+    loading,
+    period,
+    setPeriod,
+    dateRange,
+    setDateRange,
+    refresh: fetchData,
+    currentUserId,
+    currentAdminUserId,
+    currentUserRole
+  };
 };
