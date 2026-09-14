@@ -301,13 +301,15 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   }, [leadId, commitNote]);
 
 
-  // Safety reset: if isSaving is stuck for >10s, auto-reset
+  // Last-resort UI release. Database operations normally time out first, but
+  // never leave the editor permanently locked if the browser drops a promise.
   useEffect(() => {
     if (isSaving) {
       savingTimerRef.current = setTimeout(() => {
+        isSavingRef.current = false;
         setIsSaving(false);
-        setIsSaving(false);
-      }, 10000);
+        toast.error('The note did not finish saving — your text is still here. Please try again.');
+      }, 12000);
     } else {
       if (savingTimerRef.current) {
         clearTimeout(savingTimerRef.current);
