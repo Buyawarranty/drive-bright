@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
-import pandaMechanicImage from '@/assets/panda-mechanic-car.png';
+import pandaMechanicImage from '@/assets/panda-mechanic-car.webp';
 import QuoteFormInline from '@/components/QuoteFormInline';
 import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
 import { getVehicleIdentificationGap } from '@/lib/vehicleIdentification';
