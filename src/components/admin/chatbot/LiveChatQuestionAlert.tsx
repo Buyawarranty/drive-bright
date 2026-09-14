@@ -73,14 +73,11 @@ export const LiveChatQuestionAlert: React.FC = () => {
   const closedFor = useRef<string | null>(null);
   const openNow = useRef(isTeamOpenNow());
 
-  // Re-open the alert automatically when a different customer starts waiting.
+  // Re-open the alert automatically only when a DIFFERENT customer starts
+  // waiting. When nobody is waiting we leave the closed state alone, so the
+  // X button actually closes the pop-up instead of it bouncing back open.
   useEffect(() => {
-    if (!waitingThreadId) {
-      setClosed(false);
-      closedFor.current = null;
-      return;
-    }
-    if (closed && closedFor.current !== waitingThreadId) {
+    if (waitingThreadId && closed && closedFor.current !== waitingThreadId) {
       setClosed(false);
     }
   }, [waitingThreadId, closed]);
