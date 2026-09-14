@@ -593,6 +593,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   // Suspicious lead detection
   const suspiciousFlags = useMemo(() => detectSuspiciousLead(lead), [lead.phone, lead.email, lead.first_name, lead.vehicle_reg]);
   const isSuspiciousLead = isSuspicious(suspiciousFlags);
+  const isTestLead = suspiciousFlags.some((flag) => flag.type === 'test_account');
+  const hasNonTestWarning = suspiciousFlags.some((flag) => flag.type !== 'test_account');
   // Paid lead lock: only lock Google Ads paid leads (New Sale G) for non-admin users
   const isGoogleAdsPaid = lead.is_paid && lead.lead_source === 'google_ad';
   const isLocked = isPaidLocked && isGoogleAdsPaid && !hasApprovedAccess;
@@ -645,7 +647,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       getRowUrgencyClass(lead, reminderTime, recontactMode, currentAdminId),
       isFakeLead && "opacity-50 bg-red-50 hover:bg-red-100/60 pointer-events-auto",
       isLocked && "opacity-70",
-      isSuspiciousLead && !isFakeLead && "bg-red-50/50 hover:bg-red-100/40",
+      isTestLead && !hasNonTestWarning && !isFakeLead && "bg-amber-50/60 hover:bg-amber-100/50",
+      hasNonTestWarning && !isFakeLead && "bg-red-50/50 hover:bg-red-100/40",
       // Do not contact: grey out the entire row and reduce interactivity.
       isDoNotContact && "bg-gray-100/60 opacity-70 cursor-not-allowed",
       // Open Lead Pool: pinned reserved row — clearer left rail (6px) + slightly stronger mint tint.
@@ -855,13 +858,18 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           {suspiciousFlags.length > 0 && !isFakeLead && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
-                <Badge className="text-[10px] px-1.5 py-0.5 border-0 flex items-center gap-0.5 flex-shrink-0 bg-red-500 text-white cursor-help">
-                  <AlertTriangle className="h-3 w-3" />
-                  CHECK
+                <Badge className={cn(
+                  "text-[10px] px-1.5 py-0.5 border-0 flex items-center gap-0.5 flex-shrink-0 cursor-help",
+                  isTestLead && !hasNonTestWarning ? "bg-amber-500 text-amber-950" : "bg-red-500 text-white",
+                )}>
+                  {hasNonTestWarning && <AlertTriangle className="h-3 w-3" />}
+                  {isTestLead && !hasNonTestWarning ? 'TEST' : 'CHECK'}
                 </Badge>
               </TooltipTrigger>
               <TooltipContent side="top" className="text-xs max-w-[250px]">
-                <div className="font-semibold mb-1">⚠️ Suspicious lead detected:</div>
+                <div className="font-semibold mb-1">
+                  {isTestLead && !hasNonTestWarning ? 'Test lead — number remains usable' : '⚠️ Suspicious lead detected:'}
+                </div>
                 <ul className="list-disc pl-3 space-y-0.5">
                   {suspiciousFlags.map((f, i) => (
                     <li key={i}>{f.reason}</li>
@@ -1606,13 +1614,18 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
           {suspiciousFlags.length > 0 && !isFakeLead && (
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
-                <Badge className="text-[10px] px-1.5 py-0.5 border-0 flex items-center gap-0.5 flex-shrink-0 bg-red-500 text-white cursor-help">
-                  <AlertTriangle className="h-3 w-3" />
-                  CHECK
+                <Badge className={cn(
+                  "text-[10px] px-1.5 py-0.5 border-0 flex items-center gap-0.5 flex-shrink-0 cursor-help",
+                  isTestLead && !hasNonTestWarning ? "bg-amber-500 text-amber-950" : "bg-red-500 text-white",
+                )}>
+                  {hasNonTestWarning && <AlertTriangle className="h-3 w-3" />}
+                  {isTestLead && !hasNonTestWarning ? 'TEST' : 'CHECK'}
                 </Badge>
               </TooltipTrigger>
               <TooltipContent side="top" className="text-xs max-w-[250px]">
-                <div className="font-semibold mb-1">⚠️ Suspicious lead detected:</div>
+                <div className="font-semibold mb-1">
+                  {isTestLead && !hasNonTestWarning ? 'Test lead — number remains usable' : '⚠️ Suspicious lead detected:'}
+                </div>
                 <ul className="list-disc pl-3 space-y-0.5">
                   {suspiciousFlags.map((f, i) => (
                     <li key={i}>{f.reason}</li>
