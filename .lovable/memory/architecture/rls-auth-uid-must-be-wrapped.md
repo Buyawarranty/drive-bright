@@ -10,6 +10,10 @@ those as volatile per-row calls, so a query over `sales_leads_changelog` (635k r
 hundreds of thousands of auth lookups. Mean query time climbed to 50–2100ms and the whole
 CRM contended on CPU (~2M calls/day across the dashboard).
 
+Sep 2026: all 622 public policies were swept and every `auth.uid()/jwt()/role()` is now wrapped
+as `( SELECT auth.uid() )` (including ones passed as function args, e.g.
+`can_manage_lead_routing(( SELECT auth.uid() ))`). Keep it that way — 0 bare calls is the baseline.
+
 Rules:
 - ALWAYS write `(SELECT auth.uid())` inside policy USING/WITH CHECK expressions.
 - Never write a correlated `EXISTS (SELECT 1 FROM admin_users au WHERE au.user_id = auth.uid() AND au.id = <table>.col)`.
