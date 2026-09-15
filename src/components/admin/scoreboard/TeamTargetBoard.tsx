@@ -74,7 +74,15 @@ const initial = (name: string) => (name || '?').trim().charAt(0).toUpperCase();
  *  - Exact £ monthly target: only for the agent themselves (and management)
  *  - Team target progress: visible to all agents on the team
  */
-export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) => {
+export const TeamTargetBoard: React.FC<{
+  monthDate?: Date;
+  /**
+   * Management-only narrowing: when a manager picks a single team (or "Only me"),
+   * pass the allowed admin_user_ids. `null`/undefined = every agent.
+   * Sales agents always see only their own card regardless of this prop.
+   */
+  allowedAgentIds?: string[] | null;
+}> = ({ monthDate, allowedAgentIds }) => {
   const { isManagement } = useIsManagement();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,6 +90,7 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
   const [training, setTraining] = useState<Set<string>>(new Set());
 
   const month = monthDate ?? new Date();
+  const allowedKey = allowedAgentIds ? allowedAgentIds.slice().sort().join(',') : '';
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -96,13 +105,16 @@ export const TeamTargetBoard: React.FC<{ monthDate?: Date }> = ({ monthDate }) =
       // Sales agents see only their own card, not the whole team.
       if (!isManagement) {
         list = list.filter(r => r.is_self);
+      } else if (allowedKey) {
+        const allow = new Set(allowedKey.split(','));
+        list = list.filter(r => allow.has(r.admin_user_id));
       }
       setRows(list);
       setTraining(await fetchTrainingFlags(list.map(r => r.admin_user_id)));
     }
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [month.getFullYear(), month.getMonth(), isManagement]);
+  }, [month.getFullYear(), month.getMonth(), isManagement, allowedKey]);
 
   useEffect(() => { load(); }, [load]);
 
