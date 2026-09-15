@@ -332,9 +332,9 @@ const ContactUs = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-8 items-center">
+            <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 sm:gap-10 lg:gap-14">
               {/* Panda Image */}
-              <div className="flex flex-col items-center lg:items-center order-2 lg:order-1 space-y-4">
+              <div className="flex flex-col items-center order-2 lg:order-1 space-y-4 shrink-0">
                 <img
                   src={pandaSupport.url}
                   alt="BuyA Warranty UK customer support panda answering the phone — friendly car warranty help and advice team"
@@ -349,7 +349,7 @@ const ContactUs = () => {
               </div>
 
               {/* Contact Options */}
-              <div className="space-y-6 sm:space-y-8 order-1 lg:order-2">
+              <div className="space-y-6 sm:space-y-8 order-1 lg:order-2 w-full max-w-xl lg:max-w-none lg:flex-1">
                 {contactOptions.map((option) => (
                   <div key={option.title} className="space-y-3 sm:space-y-4">
                     <div className="flex items-center gap-3">
