@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { MessageCircle, Mail, Clock, Upload, Menu, X, ArrowRight, Phone, MapPin } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { MessageCircle, Mail, Clock, Upload, X, ArrowRight, Phone, MapPin, HeartHandshake, Timer, ShieldCheck, Milestone } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 
 import { SEOHead } from '@/components/SEOHead';
@@ -8,16 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { OptimizedImage } from '@/components/OptimizedImage';
 import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
+import { SALES_PHONE, SALES_PHONE_TEL, CLAIMS_PHONE, CLAIMS_PHONE_TEL, SUPPORT_EMAIL, CLAIMS_EMAIL, WHATSAPP_URL } from '@/constants/contact';
 
 const ContactUs = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  
+
   const navigateToQuoteForm = () => {
     navigate('/');
     setTimeout(() => {
@@ -27,7 +26,7 @@ const ContactUs = () => {
       }
     }, 100);
   };
-  
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -36,12 +35,11 @@ const ContactUs = () => {
   });
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [showCallbackModal, setShowCallbackModal] = useState(false);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
+
     // For phone field, only allow numbers, spaces, dashes, and plus sign
     if (name === 'phone') {
       const filteredValue = value.replace(/[^\d\s\-+]/g, '');
@@ -113,7 +111,7 @@ const ContactUs = () => {
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
       const droppedFile = files[0];
-      
+
       // Validate file size (20MB max)
       if (droppedFile.size > 20 * 1024 * 1024) {
         toast({
@@ -141,7 +139,7 @@ const ContactUs = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.email) {
       toast({
         title: "Missing Information",
@@ -152,10 +150,10 @@ const ContactUs = () => {
     }
 
     setIsSubmitting(true);
-    
+
     try {
       let fileData = null;
-      
+
       if (file) {
         // Convert file to base64
         const reader = new FileReader();
@@ -201,7 +199,7 @@ const ContactUs = () => {
         message: ''
       });
       setFile(null);
-      
+
     } catch (error: any) {
       console.error('Submission error:', error);
       toast({
@@ -214,6 +212,103 @@ const ContactUs = () => {
     }
   };
 
+  const contactOptions = [
+    {
+      icon: <Mail size={20} className="sm:w-6 sm:h-6" />,
+      title: 'Customer Sales and Support',
+      body: (
+        <div className="space-y-2">
+          <div className="text-sm sm:text-base">
+            <span className="font-medium text-gray-700">Email:</span>
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="font-bold text-brand-orange hover:underline"> {SUPPORT_EMAIL}</a>
+          </div>
+          <div className="text-sm sm:text-base">
+            <span className="font-medium text-gray-700">Phone:</span>
+            <a href={SALES_PHONE_TEL} className="font-bold text-brand-orange hover:underline"> {SALES_PHONE}</a>
+          </div>
+        </div>
+      ),
+    },
+    {
+      icon: <Phone size={20} className="sm:w-6 sm:h-6" />,
+      title: 'Claims and Repairs',
+      body: (
+        <div className="space-y-2">
+          <div className="text-sm sm:text-base">
+            <span className="font-medium text-gray-700">Email:</span>
+            <a href={`mailto:${CLAIMS_EMAIL}`} className="font-bold text-brand-orange hover:underline"> {CLAIMS_EMAIL}</a>
+          </div>
+          <div className="text-sm sm:text-base">
+            <span className="font-medium text-gray-700">Phone:</span>
+            <a href={CLAIMS_PHONE_TEL} className="font-bold text-brand-orange hover:underline"> {CLAIMS_PHONE}</a>
+          </div>
+        </div>
+      ),
+    },
+    {
+      icon: <MessageCircle size={20} className="sm:w-6 sm:h-6" />,
+      title: 'Chat With Us On WhatsApp',
+      body: (
+        <div className="space-y-3">
+          <p className="text-gray-600 text-sm sm:text-base">Quick question? Send us a message on WhatsApp and we'll be right with you.</p>
+          <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer nofollow">
+            <button className="bg-green-500 hover:bg-green-600 text-white px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base">
+              WhatsApp Us ✓
+            </button>
+          </a>
+        </div>
+      ),
+    },
+    {
+      icon: <Clock size={20} className="sm:w-6 sm:h-6" />,
+      title: 'Opening Hours',
+      body: (
+        <p className="text-gray-600 text-sm sm:text-base">Monday – Saturday : 9am to 5pm</p>
+      ),
+    },
+    {
+      icon: <MapPin size={20} className="sm:w-6 sm:h-6" />,
+      title: 'Our Address',
+      body: (
+        <div>
+          <address className="not-italic text-gray-600 text-sm sm:text-base leading-relaxed">
+            Buy A Warranty Limited<br />
+            Warranty House<br />
+            62 Berkhamsted Avenue<br />
+            Wembley, London, HA9 6DT<br />
+            United Kingdom
+          </address>
+          <p className="mt-2 text-gray-500 text-xs sm:text-sm">
+            We cover vehicles across the whole of the UK — cover is arranged online or over the phone.
+          </p>
+        </div>
+      ),
+    },
+  ];
+
+  const features = [
+    {
+      icon: <HeartHandshake className="w-8 h-8 text-brand-orange" />,
+      title: 'Friendly UK Support Team',
+      text: 'Real people based in the UK, ready to help with quotes, cover and claims.',
+    },
+    {
+      icon: <Timer className="w-8 h-8 text-brand-orange" />,
+      title: 'Quick Response Times',
+      text: 'Fast answers by phone, email or WhatsApp — so you are never left waiting.',
+    },
+    {
+      icon: <ShieldCheck className="w-8 h-8 text-brand-orange" />,
+      title: 'Trusted by Thousands',
+      text: 'Thousands of UK drivers protect their vehicles with us every year.',
+    },
+    {
+      icon: <Milestone className="w-8 h-8 text-brand-orange" />,
+      title: 'Here for the Long Journey',
+      text: 'From your first quote to any claim, we stick with you for the miles ahead.',
+    },
+  ];
+
   return (
     <>
       <SEOHead
@@ -223,183 +318,65 @@ const ContactUs = () => {
       />
 
       <div className="min-h-screen bg-white">
-        {/* Top Section - Get In Touch With Us */}
-        <section className="bg-white py-8 sm:py-12 lg:py-16 px-4">
+        {/* Hero - Contact Us / We're Here to Help */}
+        <section className="bg-gray-50 py-10 sm:py-14 lg:py-20 px-4">
           <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
+            <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
+              <p className="text-brand-orange text-base sm:text-lg font-bold mb-2">Contact Us</p>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4">
+                We're Here to <span className="text-brand-orange">Help</span>
+              </h1>
+              <p className="text-gray-600 text-base sm:text-lg leading-relaxed">
+                Whether you have a question, need to make a claim, or just want to chat about your warranty options — our friendly team is ready to help.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-14 items-center">
               {/* Panda Image */}
               <div className="flex flex-col items-center lg:items-start order-2 lg:order-1 space-y-4">
-                <img 
-                  src="/car-warranty-uk-suv-warranty-uk.png" 
-                  alt="Car warranty UK SUV warranty - Panda mascot with cars vans motorcycles and savings jar showing affordable protection" 
+                <img
+                  src="/car-warranty-uk-suv-warranty-uk.png"
+                  alt="Car warranty UK SUV warranty - Panda mascot with cars vans motorcycles and savings jar showing affordable protection"
                   className="w-full max-w-md sm:max-w-lg lg:max-w-2xl h-auto"
+                  loading="lazy"
                 />
-                
                 {/* Trustpilot Section */}
                 <TrustpilotMicroStarWidget className="max-w-xs" />
               </div>
-              
-              {/* Contact Information */}
+
+              {/* Contact Options */}
               <div className="space-y-6 sm:space-y-8 order-1 lg:order-2">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 sm:mb-6 lg:mb-8 text-center lg:text-left">
-                  Get In Touch With Us
-                </h1>
-                
-                {/* Customer Sales and Support Section */}
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-primary text-white rounded-full p-2">
-                      <Mail size={20} className="sm:w-6 sm:h-6" />
+                {contactOptions.map((option) => (
+                  <div key={option.title} className="space-y-3 sm:space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-primary text-white rounded-full p-2">
+                        {option.icon}
+                      </div>
+                      <h2 className="text-lg sm:text-xl font-semibold text-gray-900">{option.title}</h2>
                     </div>
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Customer Sales and Support</h2>
-                  </div>
-                  <div className="ml-11 sm:ml-14 space-y-2">
-                    <div className="text-sm sm:text-base">
-                      <span className="font-medium text-gray-700">Email:</span>
-                      <span className="font-bold text-brand-orange"> support@buyawarranty.co.uk</span>
-                    </div>
-                    <div className="text-sm sm:text-base">
-                      <span className="font-medium text-gray-700">Phone:</span>
-                      <span className="font-bold text-brand-orange"> 0330 229 5040</span>
+                    <div className="ml-11 sm:ml-14">
+                      {option.body}
                     </div>
                   </div>
-                </div>
-                
-                {/* Claims and Repairs Section */}
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-primary text-white rounded-full p-2">
-                      <Mail size={20} className="sm:w-6 sm:h-6" />
-                    </div>
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Claims and Repairs</h2>
-                  </div>
-                  <div className="ml-11 sm:ml-14 space-y-2">
-                    <div className="text-sm sm:text-base">
-                      <span className="font-medium text-gray-700">Email:</span>
-                      <span className="font-bold text-brand-orange"> claims@buyawarranty.co.uk</span>
-                    </div>
-                    <div className="text-sm sm:text-base">
-                      <span className="font-medium text-gray-700">Phone:</span>
-                      <span className="font-bold text-brand-orange"> 0330 229 5045</span>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* WhatsApp Section */}
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-primary text-white rounded-full p-2">
-                      <MessageCircle size={20} className="sm:w-6 sm:h-6" />
-                    </div>
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Chat With Us On WhatsApp:</h2>
-                  </div>
-                  <div className="ml-11 sm:ml-14 space-y-3">
-                    <p className="text-gray-600 text-sm sm:text-base">Quick question? Send us a message on WhatsApp and we'll be right with you.</p>
-                    <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer nofollow">
-                      <button className="bg-green-500 hover:bg-green-600 text-white px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base">
-                        WhatsApp Us ✓
-                      </button>
-                    </a>
-                  </div>
-                </div>
-                
-                {/* Opening Hours Section */}
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-primary text-white rounded-full p-2">
-                      <Clock size={20} className="sm:w-6 sm:h-6" />
-                    </div>
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Opening Hours:</h2>
-                  </div>
-                  <div className="ml-11 sm:ml-14">
-                    <p className="text-gray-600 text-sm sm:text-base">Monday – Saturday : 9am to 5pm</p>
-                  </div>
-                </div>
-
-                {/* Address Section — keep identical to the Google Business Profile listing */}
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-primary text-white rounded-full p-2">
-                      <MapPin size={20} className="sm:w-6 sm:h-6" />
-                    </div>
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Our Address:</h2>
-                  </div>
-                  <div className="ml-11 sm:ml-14">
-                    <address className="not-italic text-gray-600 text-sm sm:text-base leading-relaxed">
-                      Buy A Warranty Limited<br />
-                      Warranty House<br />
-                      62 Berkhamsted Avenue<br />
-                      Wembley, London, HA9 6DT<br />
-                      United Kingdom
-                    </address>
-                    <p className="mt-2 text-gray-500 text-xs sm:text-sm">
-                      We cover vehicles across the whole of the UK — cover is arranged online or over the phone.
-                    </p>
-                    <a
-                      href="https://www.google.com/maps/search/?api=1&query=Warranty+House+62+Berkhamsted+Avenue+Wembley+HA9+6DT"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-brand-orange hover:underline"
-                    >
-                      View on Google Maps
-                      <ArrowRight className="w-4 h-4" />
-                    </a>
-                  </div>
-                </div>
-
-
-                {/* Quick Callback Card - Prominent */}
-                <div className="bg-brand-orange/5 border-2 border-brand-orange/20 rounded-xl p-5 sm:p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-brand-orange/10 flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-6 h-6 text-brand-orange" />
-                    </div>
-                    <div className="flex-1 space-y-2">
-                      <h3 className="text-lg font-bold text-foreground">Want us to call you?</h3>
-                      <p className="text-sm text-muted-foreground">Leave your number and we'll call you right back — no waiting on hold.</p>
-                      <button
-                        onClick={() => setShowCallbackModal(true)}
-                        className="mt-2 inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-brand-orange/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 text-sm"
-                      >
-                        <Phone className="w-4 h-4" />
-                        Request a callback
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
         </section>
-        
-        {/* Contact Form Section */}
-        <section className="py-8 sm:py-12 lg:py-16 px-4 bg-gray-100">
+
+        {/* Send Us a Message - Form + Callback */}
+        <section className="py-10 sm:py-14 lg:py-20 px-4 bg-white">
           <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
-              {/* Left Side - Image and Text */}
-              <div className="space-y-4 sm:space-y-6 order-2 lg:order-1">
-                <div className="text-center lg:text-left">
-                  <p className="text-primary text-base sm:text-lg font-bold mb-2">Contact Us</p>
-                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-                    Get in Touch With Our <span className="text-primary">Support</span> Team!
-                  </h2>
-                </div>
-                
-                <div className="flex justify-center mt-12">
-                  <img 
-                    src="/car-warranty-uk-petrol-car-warranty.png" 
-                    alt="Car warranty UK petrol car warranty - Volkswagen Golf GTI with buyawarranty branding showing professional coverage" 
-                    className="w-full max-w-[320px] sm:max-w-[384px] lg:max-w-[448px] h-auto"
-                  />
-                </div>
-              </div>
-              
-              {/* Right Side - Form */}
-              <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8 order-1 lg:order-2">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 sm:mb-8 text-center lg:text-left">
-                  How Can We Help You Today?
-                </h3>
-                
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-start">
+              {/* Left Side - Form */}
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 lg:p-8 order-1">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 text-center lg:text-left">
+                  Send Us a <span className="text-brand-orange">Message</span>
+                </h2>
+                <p className="text-gray-600 text-sm sm:text-base mb-6 sm:mb-8 text-center lg:text-left">
+                  Fill in the form below and our team will get back to you within 1-2 business days.
+                </p>
+
                 <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                   {/* Name Field */}
                   <div>
@@ -417,7 +394,7 @@ const ContactUs = () => {
                       className="mt-1"
                     />
                   </div>
-                  
+
                   {/* Email and Phone Row */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -451,7 +428,7 @@ const ContactUs = () => {
                       />
                     </div>
                   </div>
-                  
+
                   {/* File Upload */}
                   <div>
                     <Label htmlFor="file-upload" className="text-gray-700 font-medium text-sm sm:text-base">
@@ -460,14 +437,14 @@ const ContactUs = () => {
                     <p className="text-gray-500 text-xs sm:text-sm mb-2">
                       Documents, photos, or files (Max 20MB)
                     </p>
-                    
+
                     {!file ? (
                       <div className="mt-1">
                         <label htmlFor="file-upload" className="cursor-pointer">
-                          <div 
+                          <div
                             className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                              isDragging 
-                                ? 'border-primary bg-primary/5' 
+                              isDragging
+                                ? 'border-primary bg-primary/5'
                                 : 'border-gray-300 hover:border-primary'
                             }`}
                             onDragOver={handleDragOver}
@@ -517,7 +494,7 @@ const ContactUs = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Message Field */}
                   <div>
                     <Label htmlFor="message" className="text-gray-700 font-medium">
@@ -533,13 +510,13 @@ const ContactUs = () => {
                       className="mt-1"
                     />
                   </div>
-                  
+
                   {/* Submit Button */}
                   <div className="flex justify-end">
-                    <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       disabled={isSubmitting}
-                      className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-lg disabled:opacity-50 flex items-center gap-2"
+                      className="bg-brand-orange hover:bg-brand-orange/90 text-white px-8 py-3 text-lg disabled:opacity-50 flex items-center gap-2"
                     >
                       {isSubmitting ? 'Submitting...' : (
                         <>
@@ -551,13 +528,94 @@ const ContactUs = () => {
                   </div>
                 </form>
               </div>
+
+              {/* Right Side - Callback Card */}
+              <div className="order-2 space-y-6">
+                <div className="bg-brand-orange/5 border-2 border-brand-orange/20 rounded-2xl p-5 sm:p-6 lg:p-8">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-full bg-brand-orange/10 flex items-center justify-center flex-shrink-0">
+                      <Phone className="w-6 h-6 text-brand-orange" />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <h3 className="text-lg sm:text-xl font-bold text-foreground">Want us to call you?</h3>
+                      <p className="text-sm text-muted-foreground">Leave your number and we'll call you right back — no waiting on hold.</p>
+                      <button
+                        onClick={() => setShowCallbackModal(true)}
+                        className="mt-2 inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-brand-orange/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 text-sm"
+                      >
+                        <Phone className="w-4 h-4" />
+                        Request a callback
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 sm:p-6 lg:p-8">
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Prefer to talk now?</h3>
+                  <div className="space-y-3">
+                    <a href={SALES_PHONE_TEL} className="flex items-center gap-3 text-gray-700 hover:text-brand-orange transition-colors">
+                      <Phone className="w-5 h-5 text-brand-orange flex-shrink-0" />
+                      <span className="text-sm sm:text-base"><span className="font-medium">Sales &amp; support:</span> <span className="font-bold">{SALES_PHONE}</span></span>
+                    </a>
+                    <a href={CLAIMS_PHONE_TEL} className="flex items-center gap-3 text-gray-700 hover:text-brand-orange transition-colors">
+                      <Phone className="w-5 h-5 text-brand-orange flex-shrink-0" />
+                      <span className="text-sm sm:text-base"><span className="font-medium">Claims &amp; repairs:</span> <span className="font-bold">{CLAIMS_PHONE}</span></span>
+                    </a>
+                    <p className="text-gray-500 text-xs sm:text-sm pt-1">Monday – Saturday, 9am to 5pm</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
-        
-      </div>
 
-      
+        {/* Features Row */}
+        <section className="bg-gray-50 py-10 sm:py-14 lg:py-16 px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+              {features.map((feature) => (
+                <div key={feature.title} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
+                  <div className="flex justify-center mb-4">
+                    <div className="w-14 h-14 rounded-full bg-brand-orange/10 flex items-center justify-center">
+                      {feature.icon}
+                    </div>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">{feature.title}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">{feature.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Band */}
+        <section className="bg-[#11253E] py-12 sm:py-16 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-4">
+              Ready to Protect Your Vehicle?
+            </h2>
+            <p className="text-white/80 text-base sm:text-lg mb-8">
+              Get a quote in under 60 seconds — or call our team and we'll find the right cover for you.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button
+                onClick={navigateToQuoteForm}
+                className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-8 py-3 text-lg rounded-xl shadow-lg shadow-brand-orange/25"
+              >
+                Get my quote
+                <ArrowRight className="w-5 h-5 ml-2" strokeWidth={3} />
+              </Button>
+              <a
+                href={SALES_PHONE_TEL}
+                className="inline-flex items-center gap-2 text-white font-bold text-lg sm:text-xl hover:text-white/80 transition-colors"
+              >
+                <Phone className="w-5 h-5" />
+                {SALES_PHONE}
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
 
       <RequestCallbackModal
         isOpen={showCallbackModal}
