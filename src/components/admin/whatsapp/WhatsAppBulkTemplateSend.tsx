@@ -240,8 +240,8 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
     );
   };
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true);
     let query = supabase
       .from('sales_leads')
       .select('id, first_name, last_name, phone, status, lead_source, created_at, assigned_to')
