@@ -104,6 +104,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
+  const [lastSynced, setLastSynced] = useState<Date | null>(null);
   const [sending, setSending] = useState(false);
   const [autoSettings, setAutoSettings] = useState<AutoSettings | null>(null);
   const [autoCounts, setAutoCounts] = useState({ pending: 0, sent: 0, failed: 0 });
