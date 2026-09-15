@@ -415,6 +415,19 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
               {p.label}
             </Button>
           ))}
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-9 w-44">
+              <SelectValue placeholder="All statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              {statusOptions.map(([s, count]) => (
+                <SelectItem key={s} value={s}>
+                  {STATUS_LABELS[s] || s} ({count})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={agentFilter} onValueChange={setAgentFilter}>
             <SelectTrigger className="h-9 w-44">
               <SelectValue placeholder="All agents" />
