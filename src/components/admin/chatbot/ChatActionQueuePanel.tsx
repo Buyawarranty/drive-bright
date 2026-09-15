@@ -14,7 +14,19 @@ import {
   ExternalLink,
   PhoneCall,
   MessageSquare,
+  Trash2,
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useIsManagement } from '@/hooks/useIsManagement';
 
 /**
  * Chatbot action queue — every website chat shown as a New Leads style row,
