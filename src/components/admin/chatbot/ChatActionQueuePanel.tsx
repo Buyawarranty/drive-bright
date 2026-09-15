@@ -681,7 +681,6 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
               {deleting ? 'Deleting…' : 'Delete chat'}
             </AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
