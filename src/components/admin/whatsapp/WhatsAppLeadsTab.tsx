@@ -196,11 +196,11 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
       )}
 
       <Tabs defaultValue={isManagement ? 'import' : 'queue'}>
-        <TabsList className="flex-wrap h-auto rounded-lg border bg-muted/30 p-1">
+        <TabsList className="flex-wrap h-auto gap-1.5 rounded-xl border bg-muted/40 p-1.5">
           {isManagement && (
             <TabsTrigger
               value="import"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm border-r border-border/50 last:border-r-0 px-4 py-2"
+              className="rounded-lg border bg-background text-foreground/80 shadow-sm px-4 py-2 hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/40 data-[state=active]:font-semibold"
             >
               Import leads
             </TabsTrigger>
@@ -208,21 +208,21 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
           {isManagement && (
             <TabsTrigger
               value="broadcast"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm border-r border-border/50 last:border-r-0 px-4 py-2"
+              className="rounded-lg border bg-background text-foreground/80 shadow-sm px-4 py-2 hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/40 data-[state=active]:font-semibold"
             >
               Send message
             </TabsTrigger>
           )}
           <TabsTrigger
             value="queue"
-            className="data-[state=active]:bg-background data-[state=active]:shadow-sm border-r border-border/50 last:border-r-0 px-4 py-2"
+            className="rounded-lg border bg-background text-foreground/80 shadow-sm px-4 py-2 hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/40 data-[state=active]:font-semibold"
           >
             Available leads
             {available.length > 0 && <Badge className="ml-2">{available.length}</Badge>}
           </TabsTrigger>
           <TabsTrigger
             value="mine"
-            className="data-[state=active]:bg-background data-[state=active]:shadow-sm border-r border-border/50 last:border-r-0 px-4 py-2"
+            className="rounded-lg border bg-background text-foreground/80 shadow-sm px-4 py-2 hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/40 data-[state=active]:font-semibold"
           >
             My WhatsApp leads
             {mine.length > 0 && <Badge className="ml-2">{mine.length}</Badge>}
@@ -230,7 +230,7 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
           {isManagement && (
             <TabsTrigger
               value="dashboard"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm border-r border-border/50 last:border-r-0 px-4 py-2"
+              className="rounded-lg border bg-background text-foreground/80 shadow-sm px-4 py-2 hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/40 data-[state=active]:font-semibold"
             >
               Dashboard
             </TabsTrigger>
@@ -238,7 +238,7 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
           {isManagement && (
             <TabsTrigger
               value="autoreply"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm border-r border-border/50 last:border-r-0 px-4 py-2"
+              className="rounded-lg border bg-background text-foreground/80 shadow-sm px-4 py-2 hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/40 data-[state=active]:font-semibold"
             >
               Out-of-hours reply
             </TabsTrigger>
@@ -246,7 +246,7 @@ export const WhatsAppLeadsTab: React.FC<Props> = ({ userRole }) => {
           {isManagement && (
             <TabsTrigger
               value="analytics"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm px-4 py-2"
+              className="rounded-lg border bg-background text-foreground/80 shadow-sm px-4 py-2 hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/40 data-[state=active]:font-semibold"
             >
               Analytics
             </TabsTrigger>
