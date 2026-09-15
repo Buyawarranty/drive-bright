@@ -581,6 +581,16 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
                           >
                             <MessageSquare className="mr-1 h-3 w-3" /> Chat
                           </Button>
+                          {isManagement && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 px-2 text-xs text-destructive hover:bg-destructive/10"
+                              onClick={() => setDeleteRow(r)}
+                            >
+                              <Trash2 className="mr-1 h-3 w-3" /> Delete
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
