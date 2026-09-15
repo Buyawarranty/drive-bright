@@ -65,6 +65,7 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
   const [pendingThreadIds, setPendingThreadIds] = useState<Set<string>>(new Set());
   const [pendingOnly, setPendingOnly] = useState(true);
   const [topics, setTopics] = useState<Map<string, ChatTopicTag>>(new Map());
+  const [customerStatus, setCustomerStatus] = useState<Map<string, 'existing' | 'new'>>(new Map());
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -194,6 +195,71 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
         tagIds.forEach((id) => {
           nextTopics.set(id, classifyChatTopic((byThread.get(id) ?? []).join('\n'), hints.get(id)));
         });
+
+        // Work out which conversations are from an existing customer — matched on
+        // email, phone (last 9 digits) or registration against the customers table.
+        const contactByThread = new Map<string, { email: string; phone: string; registration: string }>();
+        tagIds.forEach((id) => {
+          const text = (byThread.get(id) ?? []).join('\n');
+          const email = text.match(/[\w.+-]+@[\w-]+\.[\w.-]{2,}/)?.[0]?.toLowerCase() ?? '';
+          const phone = text.match(/(?:(?:\+44|0)\s?\d[\d\s-]{8,13})/)?.[0]?.replace(/[\s-]/g, '') ?? '';
+          const registration =
+            text.match(/\b[A-Z]{2}\d{2}\s?[A-Z]{3}\b|\b[A-Z]\d{1,3}\s?[A-Z]{3}\b/i)?.[0]?.toUpperCase().replace(/\s/g, '') ?? '';
+          if (email || phone || registration) contactByThread.set(id, { email, phone, registration });
+        });
+
+        const nextStatus = new Map<string, 'existing' | 'new'>();
+        if (contactByThread.size > 0) {
+          const emails = [...new Set([...contactByThread.values()].map((c) => c.email).filter(Boolean))];
+          const phones = [...new Set([...contactByThread.values()].map((c) => c.phone.slice(-9)).filter((p) => p.length >= 9))];
+          const regs = [...new Set([...contactByThread.values()].map((c) => c.registration).filter(Boolean))];
+
+          const matchedEmails = new Set<string>();
+          const matchedPhones = new Set<string>();
+          const matchedRegs = new Set<string>();
+          try {
+            const orParts: string[] = [];
+            if (emails.length) orParts.push(`email.in.(${emails.map((e) => `"${e}"`).join(',')})`);
+            if (regs.length) orParts.push(`registration_plate.in.(${regs.map((r) => `"${r}"`).join(',')})`);
+            if (orParts.length) {
+              const { data: custRows } = await supabase
+                .from('customers')
+                .select('email, phone, registration_plate')
+                .or(orParts.join(','))
+                .limit(500);
+              (custRows ?? []).forEach((c: any) => {
+                if (c.email) matchedEmails.add(String(c.email).toLowerCase());
+                if (c.registration_plate) matchedRegs.add(String(c.registration_plate).toUpperCase().replace(/\s/g, ''));
+                const digits = String(c.phone ?? '').replace(/\D/g, '');
+                if (digits.length >= 9) matchedPhones.add(digits.slice(-9));
+              });
+            }
+            if (phones.length) {
+              const { data: phoneRows } = await supabase
+                .from('customers')
+                .select('phone')
+                .or(phones.map((p) => `phone.ilike.%${p}`).join(','))
+                .limit(500);
+              (phoneRows ?? []).forEach((c: any) => {
+                const digits = String(c.phone ?? '').replace(/\D/g, '');
+                if (digits.length >= 9) matchedPhones.add(digits.slice(-9));
+              });
+            }
+          } catch {
+            // Matching is best-effort — never block the conversation list.
+          }
+
+          contactByThread.forEach((c, id) => {
+            const isExisting =
+              (c.email && matchedEmails.has(c.email)) ||
+              (c.registration && matchedRegs.has(c.registration)) ||
+              (c.phone.length >= 9 && matchedPhones.has(c.phone.replace(/\D/g, '').slice(-9)));
+            nextStatus.set(id, isExisting ? 'existing' : 'new');
+          });
+        }
+        setCustomerStatus(nextStatus);
+      } else {
+        setCustomerStatus(new Map());
       }
       setTopics(nextTopics);
     }
@@ -434,6 +500,16 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
                     )}
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    {customerStatus.get(t.id) === 'existing' && (
+                      <Badge className="shrink-0 text-[11px] bg-blue-100 text-blue-800 border-blue-200">
+                        Existing customer
+                      </Badge>
+                    )}
+                    {customerStatus.get(t.id) === 'new' && (
+                      <Badge className="shrink-0 text-[11px] bg-orange-100 text-orange-800 border-orange-200">
+                        New customer
+                      </Badge>
+                    )}
                     {topics.get(t.id) && (
                       <Badge className={`shrink-0 text-[11px] ${topics.get(t.id)!.className}`}>
                         {topics.get(t.id)!.label}
@@ -459,6 +535,12 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
           <CardTitle className="text-base flex flex-wrap items-center justify-between gap-2">
             <span className="flex flex-wrap items-center gap-2">
               <span>{selected ? selected.title || 'Website chat' : 'Pick a conversation'}</span>
+              {selected && customerStatus.get(selected.id) === 'existing' && (
+                <Badge className="bg-blue-100 text-blue-800 border-blue-200">Existing customer</Badge>
+              )}
+              {selected && customerStatus.get(selected.id) === 'new' && (
+                <Badge className="bg-orange-100 text-orange-800 border-orange-200">New customer</Badge>
+              )}
               {selected && topics.get(selected.id) && (
                 <Badge className={topics.get(selected.id)!.className}>
                   {topics.get(selected.id)!.label}
