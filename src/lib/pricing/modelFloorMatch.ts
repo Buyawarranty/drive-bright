@@ -105,8 +105,9 @@ function scoreFloor<T extends MatchableFloor>(
   if (ruleTokens.length === 0) return null;
 
   const matchedTokens = ruleTokens.filter(token =>
-    vehicleTokenList.some(vt => vt === token || vt.startsWith(token) || token.startsWith(vt))
+    vehicleTokenList.some(vt => tokensMatch(vt, token))
   );
+
   if (matchedTokens.length === 0) return null;
 
   // A multi-token rule must match its leading (make) token to count, so
