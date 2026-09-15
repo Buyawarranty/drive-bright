@@ -363,7 +363,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {presets.map((p) => (
             <Button
               key={p.key}
@@ -374,6 +374,21 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
               {p.label}
             </Button>
           ))}
+          <Select value={agentFilter} onValueChange={setAgentFilter}>
+            <SelectTrigger className="h-9 w-44">
+              <SelectValue placeholder="All agents" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All agents</SelectItem>
+              <SelectItem value="unassigned">Unassigned</SelectItem>
+              {agentOptions.map((a) => (
+                <SelectItem key={a.id} value={a.id}>
+                  {a.label}
+                  {a.inactive ? ' (left)' : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {preset === 'custom' && (
