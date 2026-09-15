@@ -160,7 +160,7 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
         className="bg-purple-600 hover:bg-purple-700 text-white"
         title={canSelfAssign === false
           ? 'Self-assigning is switched off for you — ask a manager to enable it'
-          : 'Claim the next 200 oldest unassigned recontact leads (60+ days old)'}
+          : 'Claim the next 200 newest recontact leads (60+ days old, untouched for 60 days)'}
       >
         {loading ? (
           <Loader2 className="h-4 w-4 mr-1 animate-spin" />
