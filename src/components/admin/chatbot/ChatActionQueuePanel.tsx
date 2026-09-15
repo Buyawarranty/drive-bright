@@ -425,6 +425,25 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
     }
   };
 
+  const confirmDelete = async () => {
+    if (!deleteRow) return;
+    setDeleting(true);
+    try {
+      const { error } = await (supabase.rpc as any)('delete_chat_thread', {
+        _thread_id: deleteRow.thread.id,
+      });
+      if (error) throw error;
+      setRows((prev) => prev.filter((r) => r.thread.id !== deleteRow.thread.id));
+      if (expanded === deleteRow.thread.id) setExpanded(null);
+      toast.success('Chat deleted');
+      setDeleteRow(null);
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not delete this chat');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
