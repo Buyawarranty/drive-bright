@@ -112,6 +112,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
   const [scheduled, setScheduled] = useState<ScheduledBatch[]>([]);
   const agents = useAllAdminUsersMap(leads.map((l) => l.assigned_to));
   const [agentFilter, setAgentFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const agentLabel = (id: string | null): string | null => {
     if (!id) return null;
