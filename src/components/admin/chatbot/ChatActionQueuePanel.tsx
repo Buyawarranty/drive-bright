@@ -658,6 +658,32 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteRow} onOpenChange={(o) => !o && setDeleteRow(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this chat?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteRow
+                ? `The whole conversation${deleteRow.registration ? ` for ${deleteRow.registration}` : ''}${deleteRow.name ? ` from ${deleteRow.name}` : ''} will be removed for good, including its messages and recorded details. Any lead already created from it is kept.`
+                : ''}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Keep it</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                void confirmDelete();
+              }}
+              disabled={deleting}
+            >
+              {deleting ? 'Deleting…' : 'Delete chat'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
