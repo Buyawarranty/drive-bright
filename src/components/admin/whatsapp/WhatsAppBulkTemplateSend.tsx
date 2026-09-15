@@ -80,6 +80,15 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
   const [autoSaving, setAutoSaving] = useState(false);
   const [sendLater, setSendLater] = useState('');
   const [scheduled, setScheduled] = useState<ScheduledBatch[]>([]);
+  const agents = useAllAdminUsersMap(leads.map((l) => l.assigned_to));
+
+  const agentLabel = (id: string | null): string | null => {
+    if (!id) return null;
+    const a = agents.get(id);
+    if (!a) return 'Agent';
+    const name = [a.first_name, a.last_name].filter(Boolean).join(' ').trim();
+    return name || a.email || 'Agent';
+  };
 
   const loadScheduled = async () => {
     const { data } = await supabase
@@ -184,7 +193,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
     setLoading(true);
     let query = supabase
       .from('sales_leads')
-      .select('id, first_name, last_name, phone, status, lead_source, created_at')
+      .select('id, first_name, last_name, phone, status, lead_source, created_at, assigned_to')
       .order('created_at', { ascending: false });
 
     if (preset === 'since6pm') query = query.gte('created_at', sixPmYesterday().toISOString());
