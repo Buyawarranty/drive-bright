@@ -59,14 +59,23 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
    * name searches ("darren") come back empty for sales agents.
    */
   const rpcSearch = React.useCallback(async (term: string): Promise<LeadData[] | null> => {
-    const { data, error } = await (supabase as any).rpc('search_import_leads', {
+    // Never let a stalled request leave the agent on a spinner: give up after
+    // 12s and fall through to the backup search paths below.
+    const call = (supabase as any).rpc('search_import_leads', {
       p_term: term,
       p_limit: 25,
     });
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<{ data: null; error: Error }>((resolve) => {
+      timer = setTimeout(() => resolve({ data: null, error: new Error('Search timed out') }), 12000);
+    });
+    const { data, error } = (await Promise.race([Promise.resolve(call), timeout])) as any;
+    if (timer) clearTimeout(timer);
     if (error) {
       console.error('[LeadSearch] RPC search failed:', error);
       return null;
     }
+
     const rows = (data as any[]) || [];
     const seen = new Set<string>();
     const out: LeadData[] = [];
