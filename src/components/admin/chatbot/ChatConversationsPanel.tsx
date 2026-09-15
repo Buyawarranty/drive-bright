@@ -500,6 +500,16 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
                     )}
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    {customerStatus.get(t.id) === 'existing' && (
+                      <Badge className="shrink-0 text-[11px] bg-blue-100 text-blue-800 border-blue-200">
+                        Existing customer
+                      </Badge>
+                    )}
+                    {customerStatus.get(t.id) === 'new' && (
+                      <Badge className="shrink-0 text-[11px] bg-orange-100 text-orange-800 border-orange-200">
+                        New customer
+                      </Badge>
+                    )}
                     {topics.get(t.id) && (
                       <Badge className={`shrink-0 text-[11px] ${topics.get(t.id)!.className}`}>
                         {topics.get(t.id)!.label}
@@ -525,6 +535,12 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
           <CardTitle className="text-base flex flex-wrap items-center justify-between gap-2">
             <span className="flex flex-wrap items-center gap-2">
               <span>{selected ? selected.title || 'Website chat' : 'Pick a conversation'}</span>
+              {selected && customerStatus.get(selected.id) === 'existing' && (
+                <Badge className="bg-blue-100 text-blue-800 border-blue-200">Existing customer</Badge>
+              )}
+              {selected && customerStatus.get(selected.id) === 'new' && (
+                <Badge className="bg-orange-100 text-orange-800 border-orange-200">New customer</Badge>
+              )}
               {selected && topics.get(selected.id) && (
                 <Badge className={topics.get(selected.id)!.className}>
                   {topics.get(selected.id)!.label}
