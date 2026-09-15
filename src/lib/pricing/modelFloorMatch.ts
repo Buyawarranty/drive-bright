@@ -93,6 +93,22 @@ export type FloorMatch<T extends MatchableFloor = MatchableFloor> = {
 };
 
 /**
+ * Do a vehicle token and a rule token refer to the same thing?
+ *
+ * Exact matches always count. Loose prefix matching is only allowed between two
+ * longer words (4+ letters), so a short token like "x" in "tesla x" or "t" in
+ * "T6 Recharge" can no longer make an unrelated vehicle (VOLVO XC60 T6) look
+ * like a match for a "not covered" rule.
+ */
+function tokensMatch(vehicleToken: string, ruleToken: string): boolean {
+  if (vehicleToken === ruleToken) return true;
+  if (vehicleToken.length < 4 || ruleToken.length < 4) return false;
+  if (/\d/.test(vehicleToken) || /\d/.test(ruleToken)) return false;
+  return vehicleToken.startsWith(ruleToken) || ruleToken.startsWith(vehicleToken);
+}
+
+/**
+
  * Score one rule against a vehicle description.
  * A rule matches when the vehicle text contains at least one of its tokens,
  * and rules that match more of their own tokens score higher.
