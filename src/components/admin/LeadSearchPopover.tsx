@@ -233,13 +233,18 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         timer = setTimeout(() => resolve({ data: null, error: new Error('Search timed out') }), ms);
       });
       try {
-        return await withPriority(
-          async () => (await Promise.race([Promise.resolve(p), timeout])) as any,
-        );
+        // The timeout must race the queued work itself: if the request lane is
+        // busy the queued task may never start, and waiting inside it left the
+        // agent on a spinner that never stopped.
+        return (await Promise.race([
+          withPriority(async () => (await Promise.resolve(p)) as any),
+          timeout,
+        ])) as any;
       } finally {
         if (timer) clearTimeout(timer);
       }
     };
+
 
 
     const fetchLeads = async () => {
