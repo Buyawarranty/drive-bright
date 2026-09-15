@@ -350,7 +350,19 @@ export const SalesScoreboardTab: React.FC = () => {
         </div>
 
             </div>
-            <TeamTargetBoard monthDate={dateRange?.from ?? new Date()} />
+            <TeamTargetBoard
+              monthDate={dateRange?.from ?? new Date()}
+              allowedAgentIds={
+                !isManagement
+                  ? null // agents are already limited to their own card
+                  : focusOnlyMe && currentAdminUserId
+                    ? [currentAdminUserId]
+                    : selectedTeamId === 'all'
+                      ? null
+                      : teamMembers.filter(m => m.team_id === selectedTeamId).map(m => m.admin_user_id)
+              }
+            />
+
           </AccordionContent>
         </AccordionItem>
 
