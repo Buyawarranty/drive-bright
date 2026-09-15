@@ -256,24 +256,47 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
       preset === 'newest20' ? 20 : preset === 'newest50' ? 50 : preset === 'newest100' ? 100 : 500;
 
     const { data, error } = await query.limit(limit);
-    setLoading(false);
+    if (!silent) setLoading(false);
     if (error) {
-      toast.error('Those leads could not be loaded.');
+      if (!silent) toast.error('Those leads could not be loaded.');
       return;
     }
     const rows = (data || []) as LeadRow[];
-    setLeads(rows);
-    setSelected(
-      new Set(
-        rows
-          .filter((l) => hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status)))
-          .map((l) => l.id),
-      ),
-    );
+    const sendableIds = rows
+      .filter((l) => hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status)))
+      .map((l) => l.id);
+    if (silent) {
+      setLeads((prev) => {
+        const known = new Set(prev.map((l) => l.id));
+        const fresh = sendableIds.filter((id) => !known.has(id));
+        if (fresh.length) setSelected((s) => new Set([...s, ...fresh]));
+        return rows;
+      });
+    } else {
+      setLeads(rows);
+      setSelected(new Set(sendableIds));
+    }
+    setLastSynced(new Date());
   };
 
   useEffect(() => {
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preset, since]);
+
+  // Keep the list in step with WATI without the user reloading the page.
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (document.visibilityState === 'visible') void load(true);
+    }, 45000);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void load(true);
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preset, since]);
 
