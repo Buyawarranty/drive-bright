@@ -64,6 +64,16 @@ export const WhatsAppReplyAlerts = () => {
   }, [adminId, load]);
 
   const visible = useMemo(() => replies.slice(0, 3), [replies]);
+  const [opened, setOpened] = useState<Set<string>>(new Set());
+
+  const markOpened = (messageId: string) => {
+    setOpened((current) => {
+      if (current.has(messageId)) return current;
+      const next = new Set(current);
+      next.add(messageId);
+      return next;
+    });
+  };
 
   const dismiss = (messageId: string) => {
     dismissedRef.current.add(messageId);
@@ -74,6 +84,7 @@ export const WhatsAppReplyAlerts = () => {
   };
 
   const openLead = (reply: ReplyAlert) => {
+    markOpened(reply.message_id);
     dismiss(reply.message_id);
     const query = encodeURIComponent(reply.phone || reply.customer_name);
     window.location.href = `/admin-dashboard/?tab=new-leads&q=${query}`;
@@ -81,19 +92,31 @@ export const WhatsAppReplyAlerts = () => {
 
   if (!adminId || visible.length === 0) return null;
 
+  const unreadNumbers = new Map<string, number>();
+  visible.forEach((reply) => {
+    if (!opened.has(reply.message_id)) {
+      unreadNumbers.set(reply.message_id, unreadNumbers.size + 1);
+    }
+  });
+
   return (
     <section aria-label="WhatsApp reply notifications" className="space-y-2">
-        {visible.map((reply, index) => (
+        {visible.map((reply) => (
           <div
             key={reply.message_id}
-            className="relative rounded-lg border-2 border-destructive bg-whatsapp p-3 text-whatsapp-foreground shadow-sm"
+            onClick={() => markOpened(reply.message_id)}
+            className={`relative rounded-lg border-2 bg-whatsapp p-3 text-whatsapp-foreground shadow-sm ${
+              opened.has(reply.message_id) ? 'border-whatsapp-foreground/25' : 'border-destructive'
+            }`}
           >
-            <Badge
-              aria-label={`Unread WhatsApp reply ${index + 1}`}
-              className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-background bg-destructive px-1.5 text-xs font-bold text-destructive-foreground shadow-sm"
-            >
-              {index + 1}
-            </Badge>
+            {!opened.has(reply.message_id) && (
+              <Badge
+                aria-label={`Unread WhatsApp reply ${unreadNumbers.get(reply.message_id)}`}
+                className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-background bg-destructive px-1.5 text-xs font-bold text-destructive-foreground shadow-sm"
+              >
+                {unreadNumbers.get(reply.message_id)}
+              </Badge>
+            )}
             <div className="flex items-start gap-2">
               <MessageCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <div className="min-w-0 flex-1">
