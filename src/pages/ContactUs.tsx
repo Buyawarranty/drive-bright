@@ -332,9 +332,9 @@ const ContactUs = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-14 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-8 items-center">
               {/* Panda Image */}
-              <div className="flex flex-col items-center lg:items-start order-2 lg:order-1 space-y-4">
+              <div className="flex flex-col items-center lg:items-center order-2 lg:order-1 space-y-4">
                 <img
                   src={pandaSupport.url}
                   alt="BuyA Warranty UK customer support panda answering the phone — friendly car warranty help and advice team"
