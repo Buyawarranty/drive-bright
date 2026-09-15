@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
 import { SALES_PHONE, SALES_PHONE_TEL, CLAIMS_PHONE, CLAIMS_PHONE_TEL, SUPPORT_EMAIL, CLAIMS_EMAIL, WHATSAPP_URL } from '@/constants/contact';
+import pandaSupport from '@/assets/buyawarranty-customer-support-panda.asset.json';
 
 const ContactUs = () => {
   const { toast } = useToast();
