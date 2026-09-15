@@ -180,7 +180,7 @@ Deno.serve(async (req) => {
         last_direction: 'outbound',
         last_agent_reply_at: now,
         unread_count: 0,
-        lead_id: conv ? lead.id : lead.id,
+        lead_id: lead.id,
         display_name: displayName,
         first_response_seconds: firstResponse,
       })

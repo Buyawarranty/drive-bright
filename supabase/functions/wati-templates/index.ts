@@ -32,8 +32,14 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     { auth: { persistSession: false } },
   );
-  const { data: canManage } = await admin.rpc('can_manage_lead_routing', { _user_id: userId });
-  if (canManage !== true) return json({ error: 'forbidden' }, 403);
+  // Any active staff member can read the template list so agents can pick one
+  // when messaging a lead; sending is still checked separately.
+  const { data: adminUser } = await admin
+    .from('admin_users')
+    .select('id, is_active')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (!adminUser?.id || adminUser.is_active === false) return json({ error: 'forbidden' }, 403);
 
   const endpoint = (Deno.env.get('WATI_API_ENDPOINT') || '').replace(/\/+$/, '');
   const token = Deno.env.get('WATI_ACCESS_TOKEN');
