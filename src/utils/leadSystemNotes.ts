@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Inserts a timestamped, attributed system note into lead_quick_notes (or abandoned_carts.contact_notes).
- * Fire-and-forget — errors are logged but never thrown.
+ * Returns whether the database confirmed the save.
  */
 export const addSystemNote = async (
   leadId: string,
@@ -60,22 +60,22 @@ export const addSystemNote = async (
       const existing = cart?.contact_notes || '';
       const updated = existing ? `${existing}\n\n${formattedNote}` : formattedNote;
 
-      await supabase
+      const { error } = await supabase
         .from('abandoned_carts')
         .update({ contact_notes: updated, updated_at: new Date().toISOString() })
         .eq('id', actualId);
+      if (error) throw error;
     } else {
-      // Insert into lead_quick_notes
-      await supabase
-        .from('lead_quick_notes')
-        .insert({
-          lead_id: actualId,
-          note_text: formattedNote,
-          created_by: resolvedAdminId || '00000000-0000-0000-0000-000000000000',
-          is_pinned: false,
-        });
+      const { data, error } = await (supabase.rpc as any)('save_lead_quick_note', {
+        p_lead_id: actualId,
+        p_note_text: formattedNote,
+      });
+      if (error) throw error;
+      if (!data?.id) throw new Error('System note was not confirmed as saved');
     }
+    return true;
   } catch (err) {
     console.warn('[addSystemNote] Failed to write system note:', err);
+    return false;
   }
 };

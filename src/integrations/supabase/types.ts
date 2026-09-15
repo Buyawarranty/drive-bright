@@ -15274,6 +15274,25 @@ export type Database = {
       }
       rota_sync_in_progress: { Args: never; Returns: boolean }
       run_renewal_milestones: { Args: never; Returns: number }
+      save_lead_quick_note: {
+        Args: { p_lead_id: string; p_note_text: string }
+        Returns: {
+          author_name: string | null
+          created_at: string | null
+          created_by: string
+          id: string
+          is_pinned: boolean | null
+          lead_id: string
+          note_text: string
+          updated_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "lead_quick_notes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       search_import_leads: {
         Args: { p_limit?: number; p_term: string }
         Returns: {

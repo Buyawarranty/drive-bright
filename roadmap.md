@@ -1,5 +1,6 @@
 # Roadmap
 
+- [x] New Leads notes: replace the multi-read save path with one confirmed atomic save, stop every mounted row replaying the whole recovery queue, and retry failed drafts safely
 - [x] Chatbot data: show every live-chat request still awaiting a human reply in one all-time pending list
 - [x] Customer Management: replace confusing split source/path tags with clear labels such as Google lead and Google direct sale
 - [x] Direct-sale notifications: reliably email every completed website sale and name the channel clearly in the subject

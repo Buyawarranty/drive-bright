@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.save_lead_quick_note(uuid, text) FROM anon;
