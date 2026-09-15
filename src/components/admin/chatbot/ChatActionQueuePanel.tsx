@@ -14,7 +14,19 @@ import {
   ExternalLink,
   PhoneCall,
   MessageSquare,
+  Trash2,
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useIsManagement } from '@/hooks/useIsManagement';
 
 /**
  * Chatbot action queue — every website chat shown as a New Leads style row,
@@ -143,6 +155,9 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
   const [expanded, setExpanded] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<MessageRow[]>([]);
   const [sendingId, setSendingId] = useState<string | null>(null);
+  const [deleteRow, setDeleteRow] = useState<QueueRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const { isManagement } = useIsManagement();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -410,6 +425,25 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
     }
   };
 
+  const confirmDelete = async () => {
+    if (!deleteRow) return;
+    setDeleting(true);
+    try {
+      const { error } = await (supabase.rpc as any)('delete_chat_thread', {
+        _thread_id: deleteRow.thread.id,
+      });
+      if (error) throw error;
+      setRows((prev) => prev.filter((r) => r.thread.id !== deleteRow.thread.id));
+      if (expanded === deleteRow.thread.id) setExpanded(null);
+      toast.success('Chat deleted');
+      setDeleteRow(null);
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not delete this chat');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -547,6 +581,16 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
                           >
                             <MessageSquare className="mr-1 h-3 w-3" /> Chat
                           </Button>
+                          {isManagement && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 px-2 text-xs text-destructive hover:bg-destructive/10"
+                              onClick={() => setDeleteRow(r)}
+                            >
+                              <Trash2 className="mr-1 h-3 w-3" /> Delete
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -614,6 +658,31 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteRow} onOpenChange={(o) => !o && setDeleteRow(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this chat?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteRow
+                ? `The whole conversation${deleteRow.registration ? ` for ${deleteRow.registration}` : ''}${deleteRow.name ? ` from ${deleteRow.name}` : ''} will be removed for good, including its messages and recorded details. Any lead already created from it is kept.`
+                : ''}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Keep it</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                void confirmDelete();
+              }}
+              disabled={deleting}
+            >
+              {deleting ? 'Deleting…' : 'Delete chat'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
