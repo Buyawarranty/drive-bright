@@ -335,10 +335,13 @@ const ContactUs = () => {
               {/* Panda Image */}
               <div className="flex flex-col items-center lg:items-start order-2 lg:order-1 space-y-4">
                 <img
-                  src="/car-warranty-uk-suv-warranty-uk.png"
-                  alt="Car warranty UK SUV warranty - Panda mascot with cars vans motorcycles and savings jar showing affordable protection"
-                  className="w-full max-w-md sm:max-w-lg lg:max-w-2xl h-auto"
-                  loading="lazy"
+                  src={pandaSupport.url}
+                  alt="BuyA Warranty UK customer support panda answering the phone — friendly car warranty help and advice team"
+                  width={384}
+                  height={480}
+                  className="w-52 sm:w-60 lg:w-72 h-auto"
+                  loading="eager"
+                  fetchPriority="high"
                 />
                 {/* Trustpilot Section */}
                 <TrustpilotMicroStarWidget className="max-w-xs" />
