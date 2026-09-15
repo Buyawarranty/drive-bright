@@ -47,6 +47,29 @@ type Preset = 'newest20' | 'newest50' | 'newest100' | 'since6pm' | 'today' | 'cu
 
 const BLOCKED = ['do_not_contact', 'unsubscribed', 'fake_lead'];
 
+/** Same status values and labels as the New Leads table. */
+const STATUS_LABELS: Record<string, string> = {
+  new: 'Not spoken to',
+  contacted: 'Spoken to',
+  follow_up: 'Follow-up',
+  quote_sent: 'Quote sent',
+  negotiating: 'Negotiating',
+  converted: 'Converted',
+  lost: 'Lost',
+  not_interested: 'Not interested',
+  fake_lead: 'Fake / 404',
+  urgent_callback: 'Urgent call-back',
+  no_answer: 'No answer',
+  left_voicemail: 'Left voicemail',
+  wrong_number: 'Wrong number',
+  callback_booked: 'Callback booked',
+  bought_elsewhere: 'Bought elsewhere',
+  vehicle_sold: 'Vehicle sold',
+  do_not_contact: 'Do not contact',
+  not_eligible: 'Not eligible',
+  unsubscribed: 'Unsubscribed',
+};
+
 const hasUkMobile = (phone: string | null): boolean => {
   let digits = (phone || '').replace(/[^\d]/g, '');
   if (digits.startsWith('0044')) digits = digits.slice(2);
@@ -89,6 +112,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
   const [scheduled, setScheduled] = useState<ScheduledBatch[]>([]);
   const agents = useAllAdminUsersMap(leads.map((l) => l.assigned_to));
   const [agentFilter, setAgentFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const agentLabel = (id: string | null): string | null => {
     if (!id) return null;
@@ -106,6 +130,16 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
       .sort((a, b) => a.label.localeCompare(b.label));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leads, agents]);
+
+  // Statuses present in the loaded leads (New Leads labels), most common first.
+  const statusOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const l of leads) {
+      const s = String(l.status || 'new');
+      counts.set(s, (counts.get(s) || 0) + 1);
+    }
+    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+  }, [leads]);
 
   const loadScheduled = async () => {
     const { data } = await supabase
@@ -250,10 +284,17 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
   }, []);
 
   const visibleLeads = useMemo(() => {
-    if (agentFilter === 'all') return leads;
-    if (agentFilter === 'unassigned') return leads.filter((l) => !l.assigned_to);
-    return leads.filter((l) => l.assigned_to === agentFilter);
-  }, [leads, agentFilter]);
+    let out = statusFilter === 'all'
+      ? leads
+      : leads.filter((l) => String(l.status || 'new') === statusFilter);
+    if (agentFilter !== 'all') {
+      out =
+        agentFilter === 'unassigned'
+          ? out.filter((l) => !l.assigned_to)
+          : out.filter((l) => l.assigned_to === agentFilter);
+    }
+    return out;
+  }, [leads, agentFilter, statusFilter]);
 
   const sendable = useMemo(
     () => visibleLeads.filter((l) => hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status))),
@@ -374,6 +415,19 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
               {p.label}
             </Button>
           ))}
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-9 w-44">
+              <SelectValue placeholder="All statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              {statusOptions.map(([s, count]) => (
+                <SelectItem key={s} value={s}>
+                  {STATUS_LABELS[s] || s} ({count})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={agentFilter} onValueChange={setAgentFilter}>
             <SelectTrigger className="h-9 w-44">
               <SelectValue placeholder="All agents" />
@@ -431,11 +485,9 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
           )}
           {!loading && visibleLeads.length === 0 && (
             <p className="p-4 text-sm text-muted-foreground">
-              {agentFilter === 'all'
+              {agentFilter === 'all' && statusFilter === 'all'
                 ? 'No leads match that choice.'
-                : agentFilter === 'unassigned'
-                  ? 'No unassigned leads in that choice.'
-                  : 'No leads for that agent in this list. Try a wider time range.'}
+                : 'No leads match those filters in this list. Try a wider time range or different filters.'}
             </p>
           )}
           {!loading &&
