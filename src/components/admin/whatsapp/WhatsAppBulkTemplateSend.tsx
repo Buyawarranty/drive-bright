@@ -489,6 +489,11 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
               Left out (no mobile or do not contact): {visibleLeads.length - sendable.length}
             </Badge>
           )}
+          <span className="text-xs text-muted-foreground">
+            {lastSynced
+              ? `Updating automatically — last checked ${lastSynced.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+              : 'Updating automatically'}
+          </span>
           <Button
             size="sm"
             variant="outline"
