@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
 import { SALES_PHONE, SALES_PHONE_TEL, CLAIMS_PHONE, CLAIMS_PHONE_TEL, SUPPORT_EMAIL, CLAIMS_EMAIL, WHATSAPP_URL } from '@/constants/contact';
+import pandaSupport from '@/assets/buyawarranty-customer-support-panda.asset.json';
 
 const ContactUs = () => {
   const { toast } = useToast();
@@ -335,10 +336,13 @@ const ContactUs = () => {
               {/* Panda Image */}
               <div className="flex flex-col items-center lg:items-start order-2 lg:order-1 space-y-4">
                 <img
-                  src="/car-warranty-uk-suv-warranty-uk.png"
-                  alt="Car warranty UK SUV warranty - Panda mascot with cars vans motorcycles and savings jar showing affordable protection"
-                  className="w-full max-w-md sm:max-w-lg lg:max-w-2xl h-auto"
-                  loading="lazy"
+                  src={pandaSupport.url}
+                  alt="BuyA Warranty UK customer support panda answering the phone — friendly car warranty help and advice team"
+                  width={384}
+                  height={480}
+                  className="w-52 sm:w-60 lg:w-72 h-auto"
+                  loading="eager"
+                  fetchPriority="high"
                 />
                 {/* Trustpilot Section */}
                 <TrustpilotMicroStarWidget className="max-w-xs" />
