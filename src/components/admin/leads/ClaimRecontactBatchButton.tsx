@@ -120,7 +120,7 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
         return;
       }
       if (claimed === 0) {
-        toast.info('No unassigned leads older than 60 days available right now');
+        toast.info('No leads older than 60 days with no activity in the last 60 days right now');
         return;
       }
       const remainingBit = remaining > 0
@@ -145,7 +145,7 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
         <Badge
           variant="secondary"
           className="bg-emerald-50 text-emerald-800 border border-emerald-200"
-          title="Unassigned leads with no call log or note in the last 60 days"
+          title="Leads over 60 days old with no call log or note in the last 60 days (assigned or not)"
         >
           {available.toLocaleString()} available
           {poolTotal !== null && poolTotal !== available && (
@@ -160,7 +160,7 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
         className="bg-purple-600 hover:bg-purple-700 text-white"
         title={canSelfAssign === false
           ? 'Self-assigning is switched off for you — ask a manager to enable it'
-          : 'Claim the next 200 oldest unassigned recontact leads (60+ days old)'}
+          : 'Claim the next 200 newest recontact leads (60+ days old, untouched for 60 days)'}
       >
         {loading ? (
           <Loader2 className="h-4 w-4 mr-1 animate-spin" />
