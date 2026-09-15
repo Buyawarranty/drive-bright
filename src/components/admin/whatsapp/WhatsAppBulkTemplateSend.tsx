@@ -485,11 +485,9 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
           )}
           {!loading && visibleLeads.length === 0 && (
             <p className="p-4 text-sm text-muted-foreground">
-              {agentFilter === 'all'
+              {agentFilter === 'all' && statusFilter === 'all'
                 ? 'No leads match that choice.'
-                : agentFilter === 'unassigned'
-                  ? 'No unassigned leads in that choice.'
-                  : 'No leads for that agent in this list. Try a wider time range.'}
+                : 'No leads match those filters in this list. Try a wider time range or different filters.'}
             </p>
           )}
           {!loading &&
