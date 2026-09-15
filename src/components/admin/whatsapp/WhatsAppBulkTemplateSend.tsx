@@ -398,6 +398,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
             leads.map((l, i) => {
               const canSend = hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status));
               const name = [l.first_name, l.last_name].filter(Boolean).join(' ') || 'No name';
+              const owner = agentLabel(l.assigned_to);
               return (
                 <label
                   key={l.id}
