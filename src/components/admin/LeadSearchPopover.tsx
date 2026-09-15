@@ -233,13 +233,18 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
         timer = setTimeout(() => resolve({ data: null, error: new Error('Search timed out') }), ms);
       });
       try {
-        return await withPriority(
-          async () => (await Promise.race([Promise.resolve(p), timeout])) as any,
-        );
+        // The timeout must race the queued work itself: if the request lane is
+        // busy the queued task may never start, and waiting inside it left the
+        // agent on a spinner that never stopped.
+        return (await Promise.race([
+          withPriority(async () => (await Promise.resolve(p)) as any),
+          timeout,
+        ])) as any;
       } finally {
         if (timer) clearTimeout(timer);
       }
     };
+
 
 
     const fetchLeads = async () => {
@@ -489,11 +494,17 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
     };
 
     const debounce = setTimeout(fetchLeads, 300);
+    // Last-resort guard: whatever happens upstream, the spinner always stops.
+    const watchdog = setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 18000);
     return () => {
       cancelled = true;
       clearTimeout(debounce);
+      clearTimeout(watchdog);
     };
   }, [open, searchTerm, rpcSearch]);
+
 
   const handleSelectLead = (lead: LeadData) => {
     onSelectLead({ ...lead, owner_name: ownerNameFor(lead.assigned_to) });
@@ -523,7 +534,16 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
             <Input
               placeholder="Search by name, email, phone, reg..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) =>
+                // Pasted numbers often carry invisible spaces or line breaks from
+                // WhatsApp, Excel or email — clean them so the search still matches.
+                setSearchTerm(
+                  e.target.value
+                    .replace(/[\u00a0\u2007\u202f\u200b-\u200d\uFEFF]/g, ' ')
+                    .replace(/[\r\n\t]+/g, ' ')
+                    .replace(/ {2,}/g, ' ')
+                )
+              }
               className="pl-9"
               autoFocus
             />
