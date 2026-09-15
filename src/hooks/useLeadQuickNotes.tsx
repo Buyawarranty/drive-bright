@@ -444,20 +444,6 @@ export const useLeadQuickNotes = (leadId: string) => {
     fetchNotes(false); // initial load
   }, [fetchNotes]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    void flushAllPendingQuickNotes().then((flushedLeadIds) => {
-      if (!cancelled && flushedLeadIds.includes(leadId)) {
-        void fetchNotes(true);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [leadId, fetchNotes]);
-
   const getAuthenticatedAdmin = async () => {
     const now = Date.now();
     
@@ -625,9 +611,8 @@ export const useLeadQuickNotes = (leadId: string) => {
       isSavingRef.current = true;
       setSaving(true);
       updateNotes(prev => [optimisticNote, ...prev]);
-      const adminUser = await getAuthenticatedAdmin();
-      
       if (isAbandonedCart) {
+        const adminUser = await getAuthenticatedAdmin();
         const existingNotes = notes.length > 0 ? notes[0].note_text : '';
         const timestamp = new Date().toLocaleString('en-GB', { 
           day: '2-digit', month: 'short', year: 'numeric', 
@@ -667,57 +652,26 @@ export const useLeadQuickNotes = (leadId: string) => {
         fetchNotes(true).catch(e => console.warn('[addNote] Background refetch error:', e));
         return { id: `cart_note_${actualId}`, note_text: updatedNotes };
       } else {
-        // If this text is the same note the agent is still writing (a repeat
-        // save or a mid-typing auto-save fragment), reuse that row — extending
-        // it when the new text carries on from the fragment.
-        const related = await findRecentRelatedNote(leadId, noteText.trim(), adminUser.id);
-
-        let data: any = null;
-        let saveError: any = null;
-
-        if (related?.shouldExtend) {
-          const res = await withTimeout<any>(
-            supabase
-              .from('lead_quick_notes')
-              .update({ note_text: noteText.trim() })
-              .eq('id', related.note.id)
-              .select()
-              .single(),
-            NOTE_SAVE_TIMEOUT_MS,
-            'Note save timed out'
-          );
-          data = res.data || { ...related.note, note_text: noteText.trim() };
-          saveError = res.error;
-        } else if (related) {
-          data = related.note;
-        } else {
-          const res = await withTimeout<any>(
-            supabase
-              .from('lead_quick_notes')
-              .insert({
-                lead_id: leadId,
-                note_text: noteText.trim(),
-                created_by: adminUser.id
-              })
-              .select()
-              .single(),
-            NOTE_SAVE_TIMEOUT_MS,
-            'Note save timed out'
-          );
-          data = res.data;
-          saveError = res.error;
-        }
+        // Save in one atomic database operation. The previous path performed
+        // auth, staff and duplicate reads before every insert; under heavy CRM
+        // traffic those reads queued up and left the editor spinning forever.
+        const { data, error: saveError } = await withTimeout<any>(
+          (supabase.rpc as any)('save_lead_quick_note', {
+            p_lead_id: leadId,
+            p_note_text: noteText.trim(),
+          }),
+          NOTE_SAVE_TIMEOUT_MS,
+          'Note save timed out'
+        );
 
         if (saveError) throw saveError;
         if (!data?.id) throw new Error('The note was not confirmed as saved');
 
         const newNote: QuickNote = {
           ...(data || {}),
-          author: {
-            first_name: adminUser.first_name,
-            last_name: adminUser.last_name,
-            email: adminUser.email
-          }
+          author: data.author_name
+            ? { first_name: data.author_name, last_name: null, email: '' }
+            : null,
         };
 
         updateNotes(prev => {
