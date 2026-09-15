@@ -145,7 +145,7 @@ const ClaimRecontactBatchButton: React.FC<ClaimRecontactBatchButtonProps> = ({ o
         <Badge
           variant="secondary"
           className="bg-emerald-50 text-emerald-800 border border-emerald-200"
-          title="Unassigned leads with no call log or note in the last 60 days"
+          title="Leads over 60 days old with no call log or note in the last 60 days (assigned or not)"
         >
           {available.toLocaleString()} available
           {poolTotal !== null && poolTotal !== available && (
