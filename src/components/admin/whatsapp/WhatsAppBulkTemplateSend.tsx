@@ -131,6 +131,16 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leads, agents]);
 
+  // Statuses present in the loaded leads (New Leads labels), most common first.
+  const statusOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const l of leads) {
+      const s = String(l.status || 'new');
+      counts.set(s, (counts.get(s) || 0) + 1);
+    }
+    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+  }, [leads]);
+
   const loadScheduled = async () => {
     const { data } = await supabase
       .from('whatsapp_auto_message_queue')
