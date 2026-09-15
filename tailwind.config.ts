@@ -50,6 +50,10 @@ export default {
 					DEFAULT: 'hsl(var(--success))',
 					foreground: 'hsl(var(--success-foreground))'
 				},
+				whatsapp: {
+					DEFAULT: 'hsl(var(--whatsapp))',
+					foreground: 'hsl(var(--whatsapp-foreground))'
+				},
 				pricing: {
 					price: 'hsl(var(--pricing-price))',
 					benefit: 'hsl(var(--pricing-benefit))',

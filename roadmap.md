@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] New Leads WhatsApp: solid dark-green button with white text
-- [ ] WATI replies: notify the owning agent for every incoming customer reply across the CRM
+- [x] New Leads WhatsApp: solid dark-green button with white text
+- [x] WATI replies: notify the owning agent for every incoming customer reply across the CRM
 - [x] New Leads notes: replace the multi-read save path with one confirmed atomic save, stop every mounted row replaying the whole recovery queue, and retry failed drafts safely
 - [x] Chatbot data: show every live-chat request still awaiting a human reply in one all-time pending list
 - [x] Customer Management: replace confusing split source/path tags with clear labels such as Google lead and Google direct sale
