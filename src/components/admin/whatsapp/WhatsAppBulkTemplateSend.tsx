@@ -47,6 +47,29 @@ type Preset = 'newest20' | 'newest50' | 'newest100' | 'since6pm' | 'today' | 'cu
 
 const BLOCKED = ['do_not_contact', 'unsubscribed', 'fake_lead'];
 
+/** Same status values and labels as the New Leads table. */
+const STATUS_LABELS: Record<string, string> = {
+  new: 'Not spoken to',
+  contacted: 'Spoken to',
+  follow_up: 'Follow-up',
+  quote_sent: 'Quote sent',
+  negotiating: 'Negotiating',
+  converted: 'Converted',
+  lost: 'Lost',
+  not_interested: 'Not interested',
+  fake_lead: 'Fake / 404',
+  urgent_callback: 'Urgent call-back',
+  no_answer: 'No answer',
+  left_voicemail: 'Left voicemail',
+  wrong_number: 'Wrong number',
+  callback_booked: 'Callback booked',
+  bought_elsewhere: 'Bought elsewhere',
+  vehicle_sold: 'Vehicle sold',
+  do_not_contact: 'Do not contact',
+  not_eligible: 'Not eligible',
+  unsubscribed: 'Unsubscribed',
+};
+
 const hasUkMobile = (phone: string | null): boolean => {
   let digits = (phone || '').replace(/[^\d]/g, '');
   if (digits.startsWith('0044')) digits = digits.slice(2);
