@@ -284,10 +284,17 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
   }, []);
 
   const visibleLeads = useMemo(() => {
-    if (agentFilter === 'all') return leads;
-    if (agentFilter === 'unassigned') return leads.filter((l) => !l.assigned_to);
-    return leads.filter((l) => l.assigned_to === agentFilter);
-  }, [leads, agentFilter]);
+    let out = statusFilter === 'all'
+      ? leads
+      : leads.filter((l) => String(l.status || 'new') === statusFilter);
+    if (agentFilter !== 'all') {
+      out =
+        agentFilter === 'unassigned'
+          ? out.filter((l) => !l.assigned_to)
+          : out.filter((l) => l.assigned_to === agentFilter);
+    }
+    return out;
+  }, [leads, agentFilter, statusFilter]);
 
   const sendable = useMemo(
     () => visibleLeads.filter((l) => hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status))),
