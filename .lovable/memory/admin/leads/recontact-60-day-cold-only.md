@@ -1,11 +1,15 @@
 ---
-name: Recontact pool = 60 days old AND 60 days uncontacted
-description: Recontact claiming/bulk-assign must exclude leads with any call log or note in the last 60 days, matching the available counter
+name: Recontact pool = 60 days old AND 60 days no activity (assignment ignored)
+description: Recontact claiming/bulk-assign includes previously assigned leads; only age >60d and no call/note in last 60d matter, newest-first
 type: feature
 ---
-A lead is only eligible for recontact when BOTH are true:
+A lead is eligible for recontact when BOTH are true:
 - created more than 60 days ago, and
 - no `lead_call_logs` entry and no `lead_quick_notes` entry in the last 60 days.
+
+Current assignment is IRRELEVANT — previously assigned but unworked leads ARE part of the pool
+and get reassigned to the claiming agent. The only assignment exclusion is leads already sitting
+with the claiming/target agent themselves. Never re-add an `assigned_to IS NULL` filter.
 
 Applies identically to `claim_recontact_leads_batch`, `assign_recontact_leads_to_agent` and
 `count_recontact_leads_available` (available count, pool_remaining, oldest age) so the number
