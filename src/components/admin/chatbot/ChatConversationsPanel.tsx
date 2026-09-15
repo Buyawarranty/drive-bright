@@ -65,6 +65,7 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
   const [pendingThreadIds, setPendingThreadIds] = useState<Set<string>>(new Set());
   const [pendingOnly, setPendingOnly] = useState(true);
   const [topics, setTopics] = useState<Map<string, ChatTopicTag>>(new Map());
+  const [customerStatus, setCustomerStatus] = useState<Map<string, 'existing' | 'new'>>(new Map());
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
