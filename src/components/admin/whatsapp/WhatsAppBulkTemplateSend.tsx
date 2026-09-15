@@ -6,6 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { CalendarClock, Loader2, Send, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -81,6 +88,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
   const [sendLater, setSendLater] = useState('');
   const [scheduled, setScheduled] = useState<ScheduledBatch[]>([]);
   const agents = useAllAdminUsersMap(leads.map((l) => l.assigned_to));
+  const [agentFilter, setAgentFilter] = useState<string>('all');
 
   const agentLabel = (id: string | null): string | null => {
     if (!id) return null;
@@ -89,6 +97,15 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
     const name = [a.first_name, a.last_name].filter(Boolean).join(' ').trim();
     return name || a.email || 'Agent';
   };
+
+  // Agents that own at least one loaded lead, alphabetical, with "(left)" for inactive ones.
+  const agentOptions = useMemo(() => {
+    const owners = new Set(leads.map((l) => l.assigned_to).filter(Boolean) as string[]);
+    return Array.from(owners)
+      .map((id) => ({ id, label: agentLabel(id), inactive: agents.get(id)?.is_active === false }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leads, agents]);
 
   const loadScheduled = async () => {
     const { data } = await supabase
