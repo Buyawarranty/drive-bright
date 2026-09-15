@@ -59,6 +59,12 @@ export function useChatbotPopupAccess() {
           setAllowed(perms[CHATBOT_POPUP_PERMISSION] === true);
           return;
         }
+        // Anyone given the Chatbot Data tab also gets the pop-up, so the two
+        // never disagree and nothing shows up empty for them.
+        if (perms['tab_chatbot-data'] === true) {
+          setAllowed(true);
+          return;
+        }
         setAllowed(
           (CHATBOT_POPUP_DEFAULT_ROLES as readonly string[]).includes(String(data.role)),
         );
