@@ -534,7 +534,16 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
             <Input
               placeholder="Search by name, email, phone, reg..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) =>
+                // Pasted numbers often carry invisible spaces or line breaks from
+                // WhatsApp, Excel or email — clean them so the search still matches.
+                setSearchTerm(
+                  e.target.value
+                    .replace(/[\u00a0\u2007\u202f\u200b-\u200d\uFEFF]/g, ' ')
+                    .replace(/[\r\n\t]+/g, ' ')
+                    .replace(/ {2,}/g, ' ')
+                )
+              }
               className="pl-9"
               autoFocus
             />
