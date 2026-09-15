@@ -142,6 +142,29 @@ function scoreOneAlternative<T extends MatchableFloor>(
   return { floor, matchedTokens, score, exact };
 }
 
+/**
+ * Score one rule. A rule written with a slash ("Bentley / Maserati") means
+ * "either of these", so each side is scored on its own and the best wins.
+ */
+function scoreFloor<T extends MatchableFloor>(
+  vehicleTokenList: string[],
+  floor: T
+): FloorMatch<T> | null {
+  const alternatives = String(floor.vehicle || '')
+    .split('/')
+    .map(part => part.trim())
+    .filter(Boolean);
+  const parts = alternatives.length > 1 ? alternatives : [String(floor.vehicle || '')];
+  let best: FloorMatch<T> | null = null;
+  for (const part of parts) {
+    const match = scoreOneAlternative(vehicleTokenList, floor, part);
+    if (match && (!best || match.score > best.score)) best = match;
+  }
+  return best;
+}
+
+
+
 /** All rules that match, most specific first. */
 export function matchModelFloors<T extends MatchableFloor>(
   vehicleText: string,
