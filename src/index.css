@@ -167,6 +167,10 @@ html, body {
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
 
+    /* WhatsApp actions and reply alerts */
+    --whatsapp: 158 94% 25%;
+    --whatsapp-foreground: 0 0% 100%;
+
     /* Pricing-specific colors */
     --pricing-price: 210 11% 15%;
     --pricing-benefit: 134 61% 41%;
@@ -209,6 +213,8 @@ html, body {
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
+    --whatsapp: 158 82% 28%;
+    --whatsapp-foreground: 0 0% 100%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;

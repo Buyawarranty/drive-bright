@@ -134,10 +134,9 @@ export const SendWhatsAppLeadButton: React.FC<Props> = ({
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
           <Button
-            variant="outline"
             size="sm"
             disabled={disabled}
-            className="h-7 px-2 text-xs font-medium text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+            className="h-7 border border-whatsapp bg-whatsapp px-2 text-xs font-semibold text-whatsapp-foreground shadow-sm hover:bg-whatsapp/90 hover:text-whatsapp-foreground"
             onClick={() => setOpen(true)}
           >
             <MessageCircle className="h-3 w-3 mr-1" />
