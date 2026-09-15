@@ -6,6 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { CalendarClock, Loader2, Send, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -81,6 +88,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
   const [sendLater, setSendLater] = useState('');
   const [scheduled, setScheduled] = useState<ScheduledBatch[]>([]);
   const agents = useAllAdminUsersMap(leads.map((l) => l.assigned_to));
+  const [agentFilter, setAgentFilter] = useState<string>('all');
 
   const agentLabel = (id: string | null): string | null => {
     if (!id) return null;
@@ -89,6 +97,15 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
     const name = [a.first_name, a.last_name].filter(Boolean).join(' ').trim();
     return name || a.email || 'Agent';
   };
+
+  // Agents that own at least one loaded lead, alphabetical, with "(left)" for inactive ones.
+  const agentOptions = useMemo(() => {
+    const owners = new Set(leads.map((l) => l.assigned_to).filter(Boolean) as string[]);
+    return Array.from(owners)
+      .map((id) => ({ id, label: agentLabel(id), inactive: agents.get(id)?.is_active === false }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leads, agents]);
 
   const loadScheduled = async () => {
     const { data } = await supabase
@@ -232,9 +249,15 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const visibleLeads = useMemo(() => {
+    if (agentFilter === 'all') return leads;
+    if (agentFilter === 'unassigned') return leads.filter((l) => !l.assigned_to);
+    return leads.filter((l) => l.assigned_to === agentFilter);
+  }, [leads, agentFilter]);
+
   const sendable = useMemo(
-    () => leads.filter((l) => hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status))),
-    [leads],
+    () => visibleLeads.filter((l) => hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status))),
+    [visibleLeads],
   );
   const chosenCount = sendable.filter((l) => selected.has(l.id)).length;
   const allChosen = sendable.length > 0 && chosenCount === sendable.length;
@@ -340,7 +363,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {presets.map((p) => (
             <Button
               key={p.key}
@@ -351,6 +374,21 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
               {p.label}
             </Button>
           ))}
+          <Select value={agentFilter} onValueChange={setAgentFilter}>
+            <SelectTrigger className="h-9 w-44">
+              <SelectValue placeholder="All agents" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All agents</SelectItem>
+              <SelectItem value="unassigned">Unassigned</SelectItem>
+              {agentOptions.map((a) => (
+                <SelectItem key={a.id} value={a.id}>
+                  {a.label}
+                  {a.inactive ? ' (left)' : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {preset === 'custom' && (
@@ -368,9 +406,9 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary">Can be messaged: {sendable.length}</Badge>
           <Badge variant="secondary">Chosen: {chosenCount}</Badge>
-          {leads.length - sendable.length > 0 && (
+          {visibleLeads.length - sendable.length > 0 && (
             <Badge variant="outline">
-              Left out (no mobile or do not contact): {leads.length - sendable.length}
+              Left out (no mobile or do not contact): {visibleLeads.length - sendable.length}
             </Badge>
           )}
           <Button
@@ -391,11 +429,17 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
               <Loader2 className="h-4 w-4 animate-spin" />
             </div>
           )}
-          {!loading && leads.length === 0 && (
-            <p className="p-4 text-sm text-muted-foreground">No leads match that choice.</p>
+          {!loading && visibleLeads.length === 0 && (
+            <p className="p-4 text-sm text-muted-foreground">
+              {agentFilter === 'all'
+                ? 'No leads match that choice.'
+                : agentFilter === 'unassigned'
+                  ? 'No unassigned leads in that choice.'
+                  : 'No leads for that agent in this list. Try a wider time range.'}
+            </p>
           )}
           {!loading &&
-            leads.map((l, i) => {
+            visibleLeads.map((l, i) => {
               const canSend = hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status));
               const name = [l.first_name, l.last_name].filter(Boolean).join(' ') || 'No name';
               const owner = agentLabel(l.assigned_to);
