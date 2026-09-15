@@ -414,6 +414,19 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
                   />
                   <span className="min-w-0 flex-1 truncate font-medium">{name}</span>
                   <span className="w-28 shrink-0 text-muted-foreground">{l.phone || 'no number'}</span>
+                  {owner ? (
+                    <Badge
+                      variant="outline"
+                      className="w-24 shrink-0 justify-center truncate border-blue-300 bg-blue-50 text-xs text-blue-700"
+                      title={`Lead owner: ${owner}`}
+                    >
+                      {owner}
+                    </Badge>
+                  ) : (
+                    <span className="w-24 shrink-0 text-center text-xs text-muted-foreground">
+                      Unassigned
+                    </span>
+                  )}
                   <span className="w-32 shrink-0 text-right text-xs text-muted-foreground">
                     {new Date(l.created_at).toLocaleString('en-GB', {
                       day: '2-digit',
