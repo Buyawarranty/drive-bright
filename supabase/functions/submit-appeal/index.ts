@@ -235,7 +235,7 @@ serve(async (req: Request): Promise<Response> => {
             <div style="font-size:20px;font-weight:600;color:#fff;">buy<span style="color:#E8541A;">a</span>warranty</div>
           </div>
           <div style="padding:28px;">
-            <h2 style="font-size:18px;color:#1A2B4A;margin:0 0 12px;">${isRequest ? "We've received your appeal request" : "We've received your appeal"}</h2>
+             <h2 style="font-size:18px;color:#1A2B4A;margin:0 0 12px;">${isRequest ? "Your appeal request is acknowledged" : "Your appeal is acknowledged"}</h2>
             <p style="font-size:14px;color:#444;line-height:1.65;">Hi ${esc(firstName)},</p>
             <p style="font-size:14px;color:#444;line-height:1.65;">${isRequest
               ? "Thank you for requesting an appeal. Our claims team will email you a secure link so you can complete your full appeal — you can also start it from your customer dashboard."
@@ -244,7 +244,7 @@ serve(async (req: Request): Promise<Response> => {
               <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">${isRequest ? "Your request reference" : "Your appeal reference"}</div>
               <div style="font-size:17px;font-weight:600;color:#1A2B4A;">${reference}</div>
             </div>
-            <p style="font-size:14px;color:#444;line-height:1.65;">This email confirms we have your ${isRequest ? "request" : "appeal"} — it's with our claims team now. We'll acknowledge it properly within <strong>2 working days</strong> and keep you updated by email at every stage.</p>
+             <p style="font-size:14px;color:#444;line-height:1.65;">This email is your acknowledgement that we have received your ${isRequest ? "request" : "appeal"}. It is with our claims team now, and they will contact you within <strong>2 working days</strong>. We will keep you updated by email at every stage.</p>
             <p style="font-size:13px;color:#666;line-height:1.65;">If an independent engineer's inspection is arranged, please allow up to <strong>3 weeks</strong> for the visit, depending on engineer availability in your area.</p>
           </div>
           <div style="background:#f7f8fa;padding:16px 24px;text-align:center;font-size:11px;color:#999;border-top:1px solid #eee;">
@@ -263,7 +263,7 @@ serve(async (req: Request): Promise<Response> => {
         }).catch((e) => console.error("email failed", e));
 
       await send(["claims@buyawarranty.co.uk"], subject, internalHtml);
-      if (customerEmail) await send([customerEmail], isRequest ? `Your appeal request ${reference}` : `Your appeal reference ${reference}`, customerHtml);
+       if (customerEmail) await send([customerEmail], isRequest ? `Appeal request acknowledged — ${reference}` : `Appeal acknowledged — ${reference}`, customerHtml);
     }
 
     return new Response(JSON.stringify({
