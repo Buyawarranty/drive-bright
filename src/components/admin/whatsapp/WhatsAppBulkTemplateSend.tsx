@@ -10,6 +10,7 @@ import { CalendarClock, Loader2, Send, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import WhatsAppTemplateSelect from './WhatsAppTemplateSelect';
+import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
 interface AutoSettings {
   id: string;
@@ -25,6 +26,7 @@ interface LeadRow {
   status: string | null;
   lead_source: string | null;
   created_at: string;
+  assigned_to: string | null;
 }
 
 interface ScheduledBatch {
