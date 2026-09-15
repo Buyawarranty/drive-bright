@@ -104,6 +104,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
+  const [lastSynced, setLastSynced] = useState<Date | null>(null);
   const [sending, setSending] = useState(false);
   const [autoSettings, setAutoSettings] = useState<AutoSettings | null>(null);
   const [autoCounts, setAutoCounts] = useState({ pending: 0, sent: 0, failed: 0 });
@@ -240,8 +241,8 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
     );
   };
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true);
     let query = supabase
       .from('sales_leads')
       .select('id, first_name, last_name, phone, status, lead_source, created_at, assigned_to')
@@ -256,24 +257,47 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
       preset === 'newest20' ? 20 : preset === 'newest50' ? 50 : preset === 'newest100' ? 100 : 500;
 
     const { data, error } = await query.limit(limit);
-    setLoading(false);
+    if (!silent) setLoading(false);
     if (error) {
-      toast.error('Those leads could not be loaded.');
+      if (!silent) toast.error('Those leads could not be loaded.');
       return;
     }
     const rows = (data || []) as LeadRow[];
-    setLeads(rows);
-    setSelected(
-      new Set(
-        rows
-          .filter((l) => hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status)))
-          .map((l) => l.id),
-      ),
-    );
+    const sendableIds = rows
+      .filter((l) => hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status)))
+      .map((l) => l.id);
+    if (silent) {
+      setLeads((prev) => {
+        const known = new Set(prev.map((l) => l.id));
+        const fresh = sendableIds.filter((id) => !known.has(id));
+        if (fresh.length) setSelected((s) => new Set([...s, ...fresh]));
+        return rows;
+      });
+    } else {
+      setLeads(rows);
+      setSelected(new Set(sendableIds));
+    }
+    setLastSynced(new Date());
   };
 
   useEffect(() => {
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preset, since]);
+
+  // Keep the list in step with WATI without the user reloading the page.
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (document.visibilityState === 'visible') void load(true);
+    }, 45000);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void load(true);
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preset, since]);
 
@@ -465,6 +489,11 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
               Left out (no mobile or do not contact): {visibleLeads.length - sendable.length}
             </Badge>
           )}
+          <span className="text-xs text-muted-foreground">
+            {lastSynced
+              ? `Updating automatically — last checked ${lastSynced.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+              : 'Updating automatically'}
+          </span>
           <Button
             size="sm"
             variant="outline"
