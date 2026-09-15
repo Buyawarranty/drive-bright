@@ -494,11 +494,17 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
     };
 
     const debounce = setTimeout(fetchLeads, 300);
+    // Last-resort guard: whatever happens upstream, the spinner always stops.
+    const watchdog = setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 18000);
     return () => {
       cancelled = true;
       clearTimeout(debounce);
+      clearTimeout(watchdog);
     };
   }, [open, searchTerm, rpcSearch]);
+
 
   const handleSelectLead = (lead: LeadData) => {
     onSelectLead({ ...lead, owner_name: ownerNameFor(lead.assigned_to) });
