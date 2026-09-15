@@ -10,6 +10,7 @@ import { CalendarClock, Loader2, Send, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import WhatsAppTemplateSelect from './WhatsAppTemplateSelect';
+import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 
 interface AutoSettings {
   id: string;
@@ -25,6 +26,7 @@ interface LeadRow {
   status: string | null;
   lead_source: string | null;
   created_at: string;
+  assigned_to: string | null;
 }
 
 interface ScheduledBatch {
@@ -78,6 +80,15 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
   const [autoSaving, setAutoSaving] = useState(false);
   const [sendLater, setSendLater] = useState('');
   const [scheduled, setScheduled] = useState<ScheduledBatch[]>([]);
+  const agents = useAllAdminUsersMap(leads.map((l) => l.assigned_to));
+
+  const agentLabel = (id: string | null): string | null => {
+    if (!id) return null;
+    const a = agents.get(id);
+    if (!a) return 'Agent';
+    const name = [a.first_name, a.last_name].filter(Boolean).join(' ').trim();
+    return name || a.email || 'Agent';
+  };
 
   const loadScheduled = async () => {
     const { data } = await supabase
@@ -182,7 +193,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
     setLoading(true);
     let query = supabase
       .from('sales_leads')
-      .select('id, first_name, last_name, phone, status, lead_source, created_at')
+      .select('id, first_name, last_name, phone, status, lead_source, created_at, assigned_to')
       .order('created_at', { ascending: false });
 
     if (preset === 'since6pm') query = query.gte('created_at', sixPmYesterday().toISOString());
@@ -387,6 +398,7 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
             leads.map((l, i) => {
               const canSend = hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status));
               const name = [l.first_name, l.last_name].filter(Boolean).join(' ') || 'No name';
+              const owner = agentLabel(l.assigned_to);
               return (
                 <label
                   key={l.id}
@@ -402,6 +414,19 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
                   />
                   <span className="min-w-0 flex-1 truncate font-medium">{name}</span>
                   <span className="w-28 shrink-0 text-muted-foreground">{l.phone || 'no number'}</span>
+                  {owner ? (
+                    <Badge
+                      variant="outline"
+                      className="w-24 shrink-0 justify-center truncate border-blue-300 bg-blue-50 text-xs text-blue-700"
+                      title={`Lead owner: ${owner}`}
+                    >
+                      {owner}
+                    </Badge>
+                  ) : (
+                    <span className="w-24 shrink-0 text-center text-xs text-muted-foreground">
+                      Unassigned
+                    </span>
+                  )}
                   <span className="w-32 shrink-0 text-right text-xs text-muted-foreground">
                     {new Date(l.created_at).toLocaleString('en-GB', {
                       day: '2-digit',
