@@ -11,3 +11,4 @@ type: feature
 - Pipeline: new_lead → contacted → quote_sent → hot_opportunity → follow_up → won → lost (`src/lib/whatsappPipeline.ts`). `won`/`lost` set `is_open = false`.
 - Never create a second lead for the same WhatsApp number: match on tail-9 via `find_sales_lead_by_phone_tail9`. New leads get the `WhatsApp` lead tag (#25D366).
 - Hot unassigned leads alert through `AlertRailSlot` with `ALERT_RAIL_ORDER.whatsappHotLead = 15`.
+- Inbound reply alerts appear on New Leads only for support@, the owning agent, or the agent whose outgoing message received the reply. Each unopened alert has a red border and a numbered red corner badge (1, 2, 3); opening the lead clears it.

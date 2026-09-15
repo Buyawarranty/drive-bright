@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useRealAdminId } from '@/hooks/useCurrentAdminId';
 
@@ -82,11 +83,17 @@ export const WhatsAppReplyAlerts = () => {
 
   return (
     <section aria-label="WhatsApp reply notifications" className="space-y-2">
-        {visible.map((reply) => (
+        {visible.map((reply, index) => (
           <div
             key={reply.message_id}
-            className="rounded-lg border border-whatsapp bg-whatsapp p-3 text-whatsapp-foreground shadow-sm"
+            className="relative rounded-lg border-2 border-destructive bg-whatsapp p-3 text-whatsapp-foreground shadow-sm"
           >
+            <Badge
+              aria-label={`Unread WhatsApp reply ${index + 1}`}
+              className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-background bg-destructive px-1.5 text-xs font-bold text-destructive-foreground shadow-sm"
+            >
+              {index + 1}
+            </Badge>
             <div className="flex items-start gap-2">
               <MessageCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <div className="min-w-0 flex-1">
@@ -109,7 +116,7 @@ export const WhatsAppReplyAlerts = () => {
                 size="icon"
                 aria-label="Dismiss WhatsApp reply"
                 onClick={() => dismiss(reply.message_id)}
-                className="h-7 w-7 shrink-0 text-whatsapp-foreground hover:bg-whatsapp-foreground/15 hover:text-whatsapp-foreground"
+                className="mr-2 h-7 w-7 shrink-0 text-whatsapp-foreground hover:bg-whatsapp-foreground/15 hover:text-whatsapp-foreground"
               >
                 <X className="h-4 w-4" />
               </Button>
