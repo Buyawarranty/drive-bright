@@ -14404,6 +14404,7 @@ export type Database = {
         Args: { p_admin_user_id: string }
         Returns: undefined
       }
+      delete_chat_thread: { Args: { _thread_id: string }; Returns: boolean }
       derive_lead_source: {
         Args: { p_cart_metadata: Json }
         Returns: Database["public"]["Enums"]["lead_source"]
