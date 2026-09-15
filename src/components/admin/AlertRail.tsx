@@ -16,7 +16,6 @@ export const ALERT_RAIL_ORDER = {
   newLeadPopup: 10,
   // Hot WhatsApp leads sit just under the new-lead cards.
   whatsappHotLead: 15,
-  whatsappReply: 16,
   // Sits BELOW the new-lead cards so a stuck checkout never covers a new lead.
   stuckCheckout: 20,
 } as const;

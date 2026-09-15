@@ -81,6 +81,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
 import { useDailyLeadStatsSnapshot } from '@/hooks/useDailyLeadStatsSnapshot';
 import { EyeOff, Eye, Wifi, Check, MessageCircle } from 'lucide-react';
+import WhatsAppReplyAlerts from '@/components/admin/whatsapp/WhatsAppReplyAlerts';
 
 import { getLeadFeedRangeBoundaries, getSince6pmYesterdayRange, getTodayLeadFeedSelectionDate, isDateInLeadFeedRange, shiftLeadFeedSelectionDate } from '@/lib/leadFeedDate';
 
@@ -1756,6 +1757,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   return (
     <div className="space-y-4">
+      <WhatsAppReplyAlerts />
       {/* MissedCallAlertBar now mounted globally in AdminDashboard so it shows on every tab */}
       {!sandboxMode && (userRole === 'sales' || userRole === 'sales_lead') && (
         <WidgetErrorBoundary label="Daily CRM survey">

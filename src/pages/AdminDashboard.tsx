@@ -27,7 +27,6 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { IncomingCallBanner } from '@/components/admin/calls/IncomingCallBanner';
 import LiveChatHoursBanner from '@/components/admin/LiveChatHoursBanner';
 import LiveChatQuestionAlert from '@/components/admin/chatbot/LiveChatQuestionAlert';
-import WhatsAppReplyAlerts from '@/components/admin/whatsapp/WhatsAppReplyAlerts';
 
 import { MissedCallAlertBar } from '@/components/admin/MissedCallAlertBar';
 import { NewLeadAlerts } from '@/components/admin/leads/NewLeadAlerts';
@@ -1359,7 +1358,6 @@ const AdminDashboardInner: React.FC<{
       <LiveChatHoursBanner />
       {/* Top-left chat pop-ups for the named people responsible for chat */}
       <LiveChatQuestionAlert />
-      <WhatsAppReplyAlerts />
 
 
 

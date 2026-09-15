@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 import { supabase } from '@/integrations/supabase/client';
 import { useRealAdminId } from '@/hooks/useCurrentAdminId';
 
@@ -82,12 +81,11 @@ export const WhatsAppReplyAlerts = () => {
   if (!adminId || visible.length === 0) return null;
 
   return (
-    <AlertRailSlot order={ALERT_RAIL_ORDER.whatsappReply}>
-      <div className="space-y-2">
+    <section aria-label="WhatsApp reply notifications" className="space-y-2">
         {visible.map((reply) => (
           <div
             key={reply.message_id}
-            className="rounded-lg border border-whatsapp bg-whatsapp p-3 text-whatsapp-foreground shadow-lg"
+            className="rounded-lg border border-whatsapp bg-whatsapp p-3 text-whatsapp-foreground shadow-sm"
           >
             <div className="flex items-start gap-2">
               <MessageCircle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -126,8 +124,7 @@ export const WhatsAppReplyAlerts = () => {
             </Button>
           </div>
         ))}
-      </div>
-    </AlertRailSlot>
+    </section>
   );
 };
 
