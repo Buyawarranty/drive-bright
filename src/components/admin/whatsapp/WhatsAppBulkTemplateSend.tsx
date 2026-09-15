@@ -249,9 +249,15 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const visibleLeads = useMemo(() => {
+    if (agentFilter === 'all') return leads;
+    if (agentFilter === 'unassigned') return leads.filter((l) => !l.assigned_to);
+    return leads.filter((l) => l.assigned_to === agentFilter);
+  }, [leads, agentFilter]);
+
   const sendable = useMemo(
-    () => leads.filter((l) => hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status))),
-    [leads],
+    () => visibleLeads.filter((l) => hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status))),
+    [visibleLeads],
   );
   const chosenCount = sendable.filter((l) => selected.has(l.id)).length;
   const allChosen = sendable.length > 0 && chosenCount === sendable.length;
