@@ -113,12 +113,14 @@ function tokensMatch(vehicleToken: string, ruleToken: string): boolean {
  * A rule matches when the vehicle text contains at least one of its tokens,
  * and rules that match more of their own tokens score higher.
  */
-function scoreFloor<T extends MatchableFloor>(
+function scoreOneAlternative<T extends MatchableFloor>(
   vehicleTokenList: string[],
-  floor: T
+  floor: T,
+  ruleText: string
 ): FloorMatch<T> | null {
-  const ruleTokens = vehicleTokens(floor.vehicle);
+  const ruleTokens = vehicleTokens(ruleText);
   if (ruleTokens.length === 0) return null;
+
 
   const matchedTokens = ruleTokens.filter(token =>
     vehicleTokenList.some(vt => tokensMatch(vt, token))
