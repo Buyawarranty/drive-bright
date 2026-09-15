@@ -406,9 +406,9 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary">Can be messaged: {sendable.length}</Badge>
           <Badge variant="secondary">Chosen: {chosenCount}</Badge>
-          {leads.length - sendable.length > 0 && (
+          {visibleLeads.length - sendable.length > 0 && (
             <Badge variant="outline">
-              Left out (no mobile or do not contact): {leads.length - sendable.length}
+              Left out (no mobile or do not contact): {visibleLeads.length - sendable.length}
             </Badge>
           )}
           <Button
