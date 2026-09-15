@@ -297,7 +297,9 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
 
     pendingDraftIdRef.current = pendingQueueItem.id;
     setQuickNoteValue(prev => prev || pendingQueueItem.noteText);
-    void commitNote(pendingQueueItem.noteText, { silent: true });
+    void commitNote(pendingQueueItem.noteText, { silent: true }).then((saved) => {
+      if (!saved) replayedQueuedNoteIds.delete(pendingQueueItem.id);
+    });
   }, [leadId, commitNote]);
 
 

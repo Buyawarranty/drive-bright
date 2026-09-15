@@ -548,39 +548,17 @@ export const useLeadQuickNotes = (leadId: string) => {
 
             if (updateError) throw updateError;
           } else {
-            const related = await findRecentRelatedNote(
-              queuedLeadId,
-              queuedNote.noteText.trim(),
-              adminUser.id,
+            const { data: savedNote, error: insertError } = await withTimeout<any>(
+              (supabase.rpc as any)('save_lead_quick_note', {
+                p_lead_id: queuedLeadId,
+                p_note_text: queuedNote.noteText.trim(),
+              }),
+              NOTE_SAVE_TIMEOUT_MS,
+              'Queued note save timed out'
             );
 
-            if (related?.shouldExtend) {
-              // The queued text continues a fragment already saved — extend it
-              // rather than leaving two half-written notes on the lead.
-              const { error: extendError } = await withTimeout<any>(
-                supabase
-                  .from('lead_quick_notes')
-                  .update({ note_text: queuedNote.noteText.trim() })
-                  .eq('id', related.note.id),
-                NOTE_SAVE_TIMEOUT_MS,
-                'Queued note save timed out'
-              );
-              if (extendError) throw extendError;
-            } else if (!related) {
-              const { error: insertError } = await withTimeout<any>(
-                supabase
-                  .from('lead_quick_notes')
-                  .insert({
-                    lead_id: queuedLeadId,
-                    note_text: queuedNote.noteText.trim(),
-                    created_by: adminUser.id
-                  }),
-                NOTE_SAVE_TIMEOUT_MS,
-                'Queued note save timed out'
-              );
-
-              if (insertError) throw insertError;
-            }
+            if (insertError) throw insertError;
+            if (!savedNote?.id) throw new Error('Queued note was not confirmed as saved');
 
           }
 
@@ -612,7 +590,7 @@ export const useLeadQuickNotes = (leadId: string) => {
       setSaving(true);
       updateNotes(prev => [optimisticNote, ...prev]);
       if (isAbandonedCart) {
-        const adminUser = await getAuthenticatedAdmin();
+      const adminUser = await getAuthenticatedAdmin();
         const existingNotes = notes.length > 0 ? notes[0].note_text : '';
         const timestamp = new Date().toLocaleString('en-GB', { 
           day: '2-digit', month: 'short', year: 'numeric', 

@@ -56,7 +56,8 @@ export const NotesQuickActionsPopover: React.FC<NotesQuickActionsPopoverProps> =
     if (!trimmedNote || savingNote) return;
     setSavingNote(true);
     try {
-      await addSystemNote(lead.id, `📝 ${trimmedNote}`, agentId);
+      const saved = await addSystemNote(lead.id, `📝 ${trimmedNote}`, agentId);
+      if (!saved) throw new Error('The note was not confirmed as saved');
       onLogActivity('note', trimmedNote);
       toast.success('Note saved');
       setQuickNote('');
