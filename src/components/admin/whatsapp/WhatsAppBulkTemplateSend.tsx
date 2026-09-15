@@ -429,11 +429,17 @@ const WhatsAppBulkTemplateSend: React.FC = () => {
               <Loader2 className="h-4 w-4 animate-spin" />
             </div>
           )}
-          {!loading && leads.length === 0 && (
-            <p className="p-4 text-sm text-muted-foreground">No leads match that choice.</p>
+          {!loading && visibleLeads.length === 0 && (
+            <p className="p-4 text-sm text-muted-foreground">
+              {agentFilter === 'all'
+                ? 'No leads match that choice.'
+                : agentFilter === 'unassigned'
+                  ? 'No unassigned leads in that choice.'
+                  : 'No leads for that agent in this list. Try a wider time range.'}
+            </p>
           )}
           {!loading &&
-            leads.map((l, i) => {
+            visibleLeads.map((l, i) => {
               const canSend = hasUkMobile(l.phone) && !BLOCKED.includes(String(l.status));
               const name = [l.first_name, l.last_name].filter(Boolean).join(' ') || 'No name';
               const owner = agentLabel(l.assigned_to);
