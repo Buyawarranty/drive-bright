@@ -14625,6 +14625,18 @@ export type Database = {
         }[]
       }
       get_user_permissions: { Args: { p_user_id: string }; Returns: Json }
+      get_whatsapp_reply_notifications: {
+        Args: { _since?: string }
+        Returns: {
+          conversation_id: string
+          customer_name: string
+          lead_id: string
+          message_id: string
+          message_preview: string
+          phone: string
+          replied_at: string
+        }[]
+      }
       get_whatsapp_template_stats: {
         Args: { _from?: string; _to?: string }
         Returns: {
