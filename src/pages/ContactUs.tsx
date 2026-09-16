@@ -216,28 +216,6 @@ const ContactUs = () => {
     }
   };
 
-  const features = [
-    {
-      icon: <HeartHandshake className="w-7 h-7 text-brand-orange" />,
-      title: 'Friendly UK team',
-      text: 'Real people based in the UK, ready to help with quotes, cover and claims.',
-    },
-    {
-      icon: <Timer className="w-7 h-7 text-brand-orange" />,
-      title: 'Quick response',
-      text: 'Fast answers by phone, email or WhatsApp — so you are never left waiting.',
-    },
-    {
-      icon: <ShieldCheck className="w-7 h-7 text-brand-orange" />,
-      title: 'Trusted by thousands',
-      text: 'Thousands of UK drivers protect their vehicles with us every year.',
-    },
-    {
-      icon: <Milestone className="w-7 h-7 text-brand-orange" />,
-      title: 'Here long-term',
-      text: 'From your first quote to any claim, we stick with you for the miles ahead.',
-    },
-  ];
 
   return (
     <>
