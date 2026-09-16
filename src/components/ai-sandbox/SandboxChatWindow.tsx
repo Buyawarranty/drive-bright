@@ -43,6 +43,7 @@ import { Button } from '@/components/ui/button';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
 import { nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
 import { CallMeBackPanel } from '@/components/ai-sandbox/CallMeBackPanel';
+import { useLiveAgentAvailable } from '@/hooks/useLiveAgentAvailable';
 import {
   prepareAttachment,
   CHAT_EMOJIS,
