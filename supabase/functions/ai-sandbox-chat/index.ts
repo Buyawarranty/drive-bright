@@ -1058,7 +1058,7 @@ Deno.serve(async (req) => {
 
     const result = streamText({
       model: gateway(MODEL),
-      system: SYSTEM_PROMPT + liveContext + quoteContext + libraryBlock,
+      system: SYSTEM_PROMPT + liveContext + agentContext + quoteContext + libraryBlock,
       messages: modelMessages,
       tools,
       stopWhen: stepCountIs(50),
