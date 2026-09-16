@@ -307,9 +307,9 @@ html, body {
   }
 
   /* ============================================================
-     WINDOWS ONLY FONT OVERRIDE
-     Inter replaces Helvetica Neue on Windows to fix thickness.
-     Mac/iOS keeps its current system / Helvetica Neue stack.
+     WINDOWS FONT HANDLING
+     Windows gets the same Segoe UI system stack as every other
+     platform so text renders at a normal, readable weight.
      ============================================================ */
   html.windows,
   html.windows body,
