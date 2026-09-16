@@ -538,16 +538,31 @@ const ContactUs = () => {
                     <form onSubmit={handleCallbackSubmit} className="space-y-4">
                       <div>
                         <Label htmlFor="callback-phone" className="text-[#11253E] font-semibold text-sm">Phone number</Label>
-                        <Input
-                          id="callback-phone"
-                          type="tel"
-                          inputMode="tel"
-                          autoComplete="tel"
-                          placeholder="07900 000000"
-                          value={callbackPhone}
-                          onChange={(e) => setCallbackPhone(e.target.value.replace(/[^\d\s+]/g, '').slice(0, 15))}
-                          className="mt-1.5 h-12 bg-white"
-                        />
+                        <div className="relative mt-1.5">
+                          <Input
+                            id="callback-phone"
+                            type="tel"
+                            inputMode="tel"
+                            autoComplete="tel"
+                            placeholder="07900 000000"
+                            value={callbackPhone}
+                            onChange={(e) => setCallbackPhone(e.target.value.replace(/[^\d\s+]/g, '').slice(0, 15))}
+                            aria-invalid={callbackPhone.length > 0 && !validUkPhone(callbackPhone)}
+                            className={`h-12 bg-white pr-10 ${
+                              callbackPhone.length === 0
+                                ? ''
+                                : validUkPhone(callbackPhone)
+                                  ? 'border-emerald-500 focus-visible:ring-emerald-500'
+                                  : 'border-red-400 focus-visible:ring-red-400'
+                            }`}
+                          />
+                          {validUkPhone(callbackPhone) && (
+                            <CheckCircle2 className="w-5 h-5 text-emerald-600 absolute right-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
+                          )}
+                        </div>
+                        {callbackPhone.length > 0 && !validUkPhone(callbackPhone) && (
+                          <p className="mt-1 text-xs text-red-600">Enter a valid UK number, for example 07123 456789.</p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor="callback-time" className="text-[#11253E] font-semibold text-sm">Preferred time</Label>
