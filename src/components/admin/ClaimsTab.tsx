@@ -123,6 +123,7 @@ export const ClaimsTab = ({
   const [showInvoicesDialog, setShowInvoicesDialog] = useState(false);
   const [showFilesDialog, setShowFilesDialog] = useState(false);
   const [showAppealDialog, setShowAppealDialog] = useState(false);
+  const [linkEmailPage, setLinkEmailPage] = useState<{ label: string; url: string } | null>(null);
   const [activeSubTab, setActiveSubTab] = useState<'claims' | 'reminders' | 'claims-data'>('claims');
 
   const { claims: managerClaims, loading: managerLoading, refetch: refetchManager } = useClaims();
