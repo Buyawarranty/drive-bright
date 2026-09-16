@@ -6,7 +6,7 @@ import SocialLinks from '@/components/SocialLinks';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 
 // Pages that have their own final CTA section
-const pagesWithOwnCTA = ['/warranty-types/vans-warranty', '/warranty-types/vans-warranty/', '/cancellation-policy', '/cancellation-policy/', '/make-a-claim', '/make-a-claim/', '/add-evidence', '/add-evidence/'];
+const pagesWithOwnCTA = ['/warranty-types/vans-warranty', '/warranty-types/vans-warranty/', '/cancellation-policy', '/cancellation-policy/', '/make-a-claim', '/make-a-claim/', '/add-evidence', '/add-evidence/', '/contact-us', '/contact-us/'];
 
 const WebsiteFooter = () => {
   const location = useLocation();
