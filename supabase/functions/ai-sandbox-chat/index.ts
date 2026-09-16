@@ -996,6 +996,25 @@ Deno.serve(async (req) => {
       now.is_open ? "OPEN" : `CLOSED (back ${now.next_open})`
     }. Opening hours are ${now.opening_hours}.${weekendRule} There is NO live chat handover: never say a specialist is joining, connecting, alerted or online. If the customer wants a person, end your reply with the marker [[CONTACT_CARD]] so the contact card appears for them to leave a phone number or email for a call, WhatsApp or email back, and only mention the sales line 0330 229 5040 if they ask for a number.\nIf a message in the conversation begins with "(Warranty specialist)" a member of staff has replied in this chat — stay out of the way and only reply if the customer asks you directly.`;
 
+    // Is a real specialist live right now? Agents switch themselves on duty in
+    // the Miles chat admin area; only a fresh heartbeat counts. Miles may only
+    // offer a call with an agent while this is true.
+    let agentLive = false;
+    try {
+      const { data: presence } = await admin
+        .from("ai_sandbox_specialist_presence")
+        .select("override_hours")
+        .eq("is_online", true)
+        .gte("last_seen_at", new Date(Date.now() - 3 * 60 * 1000).toISOString());
+      agentLive = (presence ?? []).some((r: any) => now.is_open || r.override_hours);
+    } catch (_e) {
+      agentLive = false;
+    }
+
+    const agentContext = agentLive
+      ? `\n\nA REAL WARRANTY SPECIALIST IS LIVE RIGHT NOW. When the customer sounds unsure, asks a question you cannot settle, or has just seen their price, offer them the choice of speaking to a person: say they can request a call with an agent and end that reply with the marker [[CONTACT_CARD]]. Offer it naturally, once, and never instead of answering their question.`
+      : `\n\nNO SPECIALIST IS LIVE RIGHT NOW: never offer a call with an agent, never say someone can ring them straight away. If they ask for a person, use the contact card so they can leave a number for a call back.`;
+
     const quoteContext = websiteQuote
       ? `\n\nTHE CUSTOMER'S OWN PRICE (authoritative — this is exactly what our website charges for the options they picked${websiteQuote.vehicle ? `, for their ${websiteQuote.vehicle}` : ""}): ${websiteQuote.term_months} months cover, £${websiteQuote.claim_limit} claim limit, £${websiteQuote.voluntary_excess} excess, £${websiteQuote.labour_rate}/hr labour. Total £${websiteQuote.total}, or £${websiteQuote.monthly} a month over 12 interest-free instalments${websiteQuote.pay_in_full_total ? `; £${websiteQuote.pay_in_full_total} if they pay in full today (saving £${websiteQuote.pay_in_full_saving})` : ""}. Quote these EXACT figures and these EXACT options. Do NOT call get_indicative_price for this combination and never substitute a different claim limit, excess, labour rate or term.`
       : "";
@@ -1039,7 +1058,7 @@ Deno.serve(async (req) => {
 
     const result = streamText({
       model: gateway(MODEL),
-      system: SYSTEM_PROMPT + liveContext + quoteContext + libraryBlock,
+      system: SYSTEM_PROMPT + liveContext + agentContext + quoteContext + libraryBlock,
       messages: modelMessages,
       tools,
       stopWhen: stepCountIs(50),

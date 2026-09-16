@@ -43,6 +43,7 @@ import { Button } from '@/components/ui/button';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
 import { nextOpeningLabel } from '@/lib/aiSandbox/openingHours';
 import { CallMeBackPanel } from '@/components/ai-sandbox/CallMeBackPanel';
+import { useLiveAgentAvailable } from '@/hooks/useLiveAgentAvailable';
 import {
   prepareAttachment,
   CHAT_EMOJIS,
@@ -367,6 +368,9 @@ function PriceOptionsPanel({
   mileage,
   vehicle,
   lastAssistantText,
+  agentLive,
+  agentNames,
+  onTalkToAgent,
 }: {
   disabled?: boolean;
   onSend: (text: string, extraBody?: Record<string, unknown>) => void;
@@ -376,6 +380,10 @@ function PriceOptionsPanel({
   /** DVLA details for the reg, so the panel prices exactly like the website. */
   vehicle?: Record<string, any> | null;
   lastAssistantText?: string | null;
+  /** True only while a specialist has switched themselves on as live. */
+  agentLive?: boolean;
+  agentNames?: string[];
+  onTalkToAgent?: () => void;
 }) {
   const [term, setTerm] = useState(24);
   const [limit, setLimit] = useState(2000);
@@ -657,6 +665,37 @@ function PriceOptionsPanel({
               )}
             </Button>
           </div>
+
+          {/* Prefer a person? Only ever shown while a specialist is really live. */}
+          {agentLive && (
+            <div className="rounded-xl border border-primary/40 bg-primary/5 p-4">
+              <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <span className="relative flex h-2.5 w-2.5 shrink-0">
+                  <span className="absolute inline-flex h-2.5 w-2.5 animate-ping rounded-full bg-emerald-500 opacity-70" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-600" />
+                </span>
+                {agentNames?.length
+                  ? `${agentNames.join(', ')} ${agentNames.length > 1 ? 'are' : 'is'} available now`
+                  : 'A warranty specialist is available now'}
+              </p>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Would you rather go through this with a person? Ask a specialist to call you back — no need to start again.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={disabled}
+                onClick={onTalkToAgent}
+                className="mt-3 h-auto min-h-10 w-full justify-between gap-2 border-2 border-primary bg-background px-4 py-2 font-bold text-primary hover:bg-primary/10 hover:text-primary"
+              >
+                <span className="flex items-center gap-2">
+                  <PhoneCall className="h-4 w-4 shrink-0" />
+                  Talk to an agent or request a call
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.5} />
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
@@ -739,6 +778,10 @@ export function SandboxChatWindow({
   const [handover, setHandover] = useState<Handover | null>(null);
   const [agentMode, setAgentMode] = useState(false);
   const [pricePanelOpen, setPricePanelOpen] = useState(true);
+  // Opened when the customer asks for a person from the quote card / live banner.
+  const [contactOpen, setContactOpen] = useState(false);
+  // Only offer a real person while a specialist has switched themselves live.
+  const { live: agentLive, names: agentNames } = useLiveAgentAvailable();
   const [quoteStartOpen, setQuoteStartOpen] = useState(false);
   const composerRef = useRef<HTMLDivElement | null>(null);
   // Keeps a stable "sent at" time per message so stamps don't jump on re-render.
@@ -1170,6 +1213,30 @@ export function SandboxChatWindow({
         </div>
       )}
 
+      {/* Only shown while an agent has switched themselves live in the admin area. */}
+      {!agentMode && agentLive && !specialistJoined && !leadCaptured && (
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-200 bg-emerald-50 px-4 py-2">
+          <p className="flex items-center gap-2 text-xs font-semibold text-emerald-900">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-emerald-500 opacity-70" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
+            </span>
+            {agentNames.length
+              ? `${agentNames.join(', ')} ${agentNames.length > 1 ? 'are' : 'is'} available now — prefer to speak to a person?`
+              : 'A warranty specialist is available now — prefer to speak to a person?'}
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 border-emerald-600 bg-white px-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
+            onClick={() => setContactOpen(true)}
+          >
+            <PhoneCall className="mr-1.5 h-3.5 w-3.5" />
+            Request a call
+          </Button>
+        </div>
+      )}
+
        {!agentMode && specialistJoined && (
          <div className="border-b border-border bg-background px-4 py-2.5">
            <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
@@ -1392,7 +1459,7 @@ export function SandboxChatWindow({
 
           })}
 
-          {contactCardWanted && (
+          {(contactCardWanted || contactOpen) && (
             <div className="w-full min-w-0 max-w-full px-0 pb-2 sm:px-2">
               <CallMeBackPanel
                 autoOpen
@@ -1415,6 +1482,9 @@ export function SandboxChatWindow({
                 mileage={detectedMileage}
                 vehicle={quoteVehicle}
                 lastAssistantText={lastAssistantText}
+                agentLive={agentLive}
+                agentNames={agentNames}
+                onTalkToAgent={() => setContactOpen(true)}
               />
             </div>
           )}
