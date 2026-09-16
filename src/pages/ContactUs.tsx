@@ -379,8 +379,8 @@ const ContactUs = () => {
                   </div>
                 ) : (
                   <>
-                    <h2 className="text-xl sm:text-2xl font-bold text-[#11253E] mb-1">Send us a message</h2>
-                    <p className="text-gray-600 text-sm mb-6">Usually answered within 1–2 business days.</p>
+                    <h2 className="text-xl sm:text-2xl font-bold text-[#11253E] mb-1">Drop us a message</h2>
+                    <p className="text-gray-600 text-sm mb-6">We'd love to hear from you — we'll get back to you within 1–2 business days.</p>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                       <div>
