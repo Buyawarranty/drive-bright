@@ -535,6 +535,30 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
             <table className="w-full text-sm">
               <thead className="bg-muted/60 text-xs uppercase tracking-wide text-muted-foreground">
                 <tr>
+                  {isManagement && (
+                    <th className="w-10 px-2 py-2 text-left">
+                      <Checkbox
+                        aria-label="Select all chats on this page"
+                        checked={
+                          visible.length > 0 && visible.every((r) => selected.has(r.thread.id))
+                            ? true
+                            : visible.some((r) => selected.has(r.thread.id))
+                              ? 'indeterminate'
+                              : false
+                        }
+                        onCheckedChange={(checked) => {
+                          setSelected((prev) => {
+                            const next = new Set(prev);
+                            visible.forEach((r) => {
+                              if (checked) next.add(r.thread.id);
+                              else next.delete(r.thread.id);
+                            });
+                            return next;
+                          });
+                        }}
+                      />
+                    </th>
+                  )}
                   <th className="w-8 px-2 py-2 text-left">#</th>
                   <th className="px-2 py-2 text-left">Priority</th>
                   <th className="px-2 py-2 text-left">Why it needs action</th>
