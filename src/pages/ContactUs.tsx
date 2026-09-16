@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MessageCircle, Mail, Clock, Upload, X, ArrowRight, Phone, MapPin, HeartHandshake, Timer, ShieldCheck, Milestone, CheckCircle2, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+
 
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -24,17 +24,8 @@ const ALLOWED_TYPES = [
 
 const ContactUs = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
+  
 
-  const navigateToQuoteForm = () => {
-    navigate('/');
-    setTimeout(() => {
-      const element = document.getElementById('quote-form');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -637,24 +628,6 @@ const ContactUs = () => {
           </div>
         </section>
 
-        {/* ── SECONDARY CTA ── */}
-        <section className="bg-[#11253E] py-12 sm:py-14 px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">
-              Looking for warranty cover instead?
-            </h2>
-            <p className="text-white/80 text-base mb-7">
-              Get a personalised quote in under 60 seconds.
-            </p>
-            <Button
-              onClick={navigateToQuoteForm}
-              className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-8 h-12 text-base rounded-xl shadow-lg shadow-brand-orange/25"
-            >
-              Get my quote
-              <ArrowRight className="w-5 h-5 ml-2" strokeWidth={3} />
-            </Button>
-          </div>
-        </section>
       </div>
     </>
   );
