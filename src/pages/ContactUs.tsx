@@ -620,25 +620,6 @@ const ContactUs = () => {
           </div>
         </section>
 
-        {/* ── WHY CUSTOMERS CHOOSE US ── */}
-        <section className="bg-[#F7F8FA] py-12 sm:py-16 px-4">
-          <div className="max-w-[1180px] mx-auto">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              {features.map((feature) => (
-                <div key={feature.title} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 text-center">
-                  <div className="flex justify-center mb-3">
-                    <div className="w-12 h-12 rounded-full bg-brand-orange/10 flex items-center justify-center">
-                      {feature.icon}
-                    </div>
-                  </div>
-                  <h3 className="text-sm sm:text-base font-bold text-[#11253E] mb-1">{feature.title}</h3>
-                  <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">{feature.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
       </div>
     </>
   );
