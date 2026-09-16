@@ -149,7 +149,7 @@ const handler = async (req: Request): Promise<Response> => {
 
           <p>Thank you for getting in touch with Buy a Warranty.</p>
 
-          <p>We've successfully received your enquiry and a member of our customer support team will review your message and get back to you as soon as possible, usually within <strong>1 business day</strong>.</p>
+          <p>We've successfully received your enquiry and a member of our customer support team will review your message and get back to you as soon as possible, usually within <strong>1–2 business days</strong>.</p>
 
           ${body.message ? `
             <p>For your reference, here is a copy of your message:</p>
