@@ -16,6 +16,7 @@ import {
   MessageSquare,
   Trash2,
 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertDialog,
   AlertDialogAction,
