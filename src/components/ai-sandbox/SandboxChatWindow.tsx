@@ -628,8 +628,34 @@ function PriceOptionsPanel({
           <div className="rounded-xl border border-dashed border-border bg-muted/40 p-4">
             <p className="text-sm font-semibold text-foreground">Or continue on our website</p>
             <p className="mt-1.5 text-xs text-muted-foreground">
-              Open your quote on buyawarranty.co.uk with <strong className="text-foreground">{reg || 'your car'}</strong> already filled in — choose your cover and pay securely there. This chat stays open if you need help.
+              {reg
+                ? <>We'll open your quote with <strong className="text-foreground">{reg}</strong> already filled in — choose your cover and pay securely there. This chat stays open if you need help.</>
+                : <>Open the full quote page to choose your cover and pay securely. This chat stays open if you need help.</>}
             </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3 h-auto min-h-10 w-full justify-between gap-2 border-2 border-[#0BA360] bg-background px-4 py-2 font-bold text-[#0BA360] hover:bg-[#0BA360]/10 hover:text-[#0BA360]"
+              onClick={(e) => {
+                if (checkoutHref) {
+                  e.preventDefault();
+                  continueToCheckout();
+                }
+              }}
+              asChild={!checkoutHref}
+            >
+              {checkoutHref ? (
+                <span className="flex w-full items-center justify-between gap-2">
+                  Open my quote on the website
+                  <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.5} />
+                </span>
+              ) : (
+                <a href="/">
+                  <span>Go to the quote page</span>
+                  <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.5} />
+                </a>
+              )}
+            </Button>
           </div>
         </div>
       )}
@@ -884,9 +910,30 @@ export function SandboxChatWindow({
       }
     }
     const joined = texts.join('\n');
-    const regMatches = joined.match(
-      /\b([A-Z]{2}[0-9]{2}\s?[A-Z]{3}|[A-Z][0-9]{1,3}\s?[A-Z]{3}|[A-Z]{3}\s?[0-9]{1,3}[A-Z]?)\b/gi,
-    );
+    // Only real UK plate shapes count. Everyday phrases like "cover FOR 2 years"
+    // used to be read as a plate ("FOR2"), which then showed up in the quote card.
+    const NOT_A_PLATE = new Set([
+      'FOR', 'AND', 'THE', 'ARE', 'ALL', 'ANY', 'GET', 'CAR', 'VAN', 'YES', 'WAS', 'PER',
+      'TOP', 'OUT', 'NOT', 'HAS', 'HAD', 'WHY', 'WHO', 'HOW', 'ITS', 'NEW', 'OLD', 'ONE',
+      'TWO', 'SIX', 'TEN', 'ADD', 'BUT', 'CAN', 'DID', 'DUE', 'FEE', 'FIX', 'PAY', 'BUY',
+      'YEAR', 'PLAN', 'COVER', 'ABOUT', 'OVER', 'JUST', 'WITH', 'MOT',
+    ]);
+    const UNIT_AFTER = /^\s*(?:year|yr|month|mile|mi|k\b|pound|hour|hr|%|£|\/)/i;
+    const candidates: string[] = [];
+    const plateRe =
+      /\b([A-Z]{2}[0-9]{2}\s?[A-Z]{3}|[A-Z][0-9]{1,3}\s?[A-Z]{3}|[A-Z]{3}\s?[0-9]{1,3}[A-Z]?)\b/gi;
+    for (const m of joined.matchAll(plateRe)) {
+      const raw = m[0];
+      const compact = raw.replace(/\s+/g, '').toUpperCase();
+      const letters = compact.replace(/[^A-Z]/g, '');
+      const after = joined.slice((m.index ?? 0) + raw.length);
+      // Skip "FOR 2 years", "PLAN 3", "£70/hr" style false positives.
+      if (UNIT_AFTER.test(after)) continue;
+      if (NOT_A_PLATE.has(compact) || NOT_A_PLATE.has(letters)) continue;
+      if (compact.length < 5) continue;
+      candidates.push(compact);
+    }
+    const regMatches = candidates.length ? candidates : null;
     const mileMatches = joined.match(/([0-9][0-9,\.]{2,9})\s*(?:miles|mile|mi\b|k\b)/gi);
     const rawMileage = mileMatches?.[mileMatches.length - 1]?.replace(/[^0-9]/g, '') ?? '';
     const mileageNum = Number(rawMileage);
