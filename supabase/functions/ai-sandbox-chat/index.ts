@@ -945,10 +945,36 @@ Deno.serve(async (req) => {
     }. Opening hours are ${now.opening_hours}.${weekendRule} There is NO live chat handover: never say a specialist is joining, connecting, alerted or online. If the customer wants a person, end your reply with the marker [[CONTACT_CARD]] so the contact card appears for them to leave a phone number or email for a call, WhatsApp or email back, and only mention the sales line 0330 229 5040 if they ask for a number.\nIf a message in the conversation begins with "(Warranty specialist)" a member of staff has replied in this chat — stay out of the way and only reply if the customer asks you directly.`;
 
 
-    const modelMessages = await convertToModelMessages(
+    const rawModelMessages = await convertToModelMessages(
       messages.filter((m: any) => m && typeof m === "object" && Array.isArray(m.parts)),
     );
-    if (!Array.isArray(modelMessages) || modelMessages.length === 0) {
+
+    // Replayed tool calls break the next turn: Gemini rejects a history that
+    // carries earlier tool calls/results ("Requests ending with a model turn are
+    // not supported"), which used to leave the chat silent after a price quote.
+    // Keep only the plain user/assistant wording from earlier turns — tools are
+    // still called freely inside the current turn.
+    const modelMessages: any[] = [];
+    for (const m of rawModelMessages as any[]) {
+      if (!m || m.role === "tool") continue;
+      const content = m.content;
+      if (Array.isArray(content)) {
+        const textOnly = content.filter(
+          (p: any) => p?.type === "text" && typeof p.text === "string" && p.text.trim(),
+        );
+        if (!textOnly.length) continue;
+        modelMessages.push({ ...m, content: textOnly });
+      } else if (typeof content === "string" && content.trim()) {
+        modelMessages.push(m);
+      }
+    }
+
+    // Gemini also refuses a request whose last turn is the assistant's.
+    while (modelMessages.length && modelMessages[modelMessages.length - 1].role !== "user") {
+      modelMessages.pop();
+    }
+
+    if (modelMessages.length === 0) {
       return new Response(JSON.stringify({ error: "No messages to send" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
