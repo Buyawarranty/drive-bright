@@ -209,6 +209,27 @@ Deno.serve(async (req) => {
       console.warn("[ai-sandbox-chat] non-array messages payload", typeof rawMessages);
     }
 
+    // The price panel prices the customer's exact selections with the SAME
+    // calculator as the website (step 3) and sends the figures with the message.
+    // Those figures are authoritative — Miles must not re-derive a price, which
+    // is how quotes used to fall back to the default £2,000 claim limit.
+    const wq = body?.websiteQuote && typeof body.websiteQuote === "object" ? body.websiteQuote : null;
+    const num = (v: unknown) => (Number.isFinite(Number(v)) ? Number(v) : null);
+    const websiteQuote = wq && num(wq.total)
+      ? {
+          term_months: num(wq.term_months) ?? 24,
+          claim_limit: num(wq.claim_limit) ?? 2000,
+          voluntary_excess: num(wq.voluntary_excess) ?? 100,
+          labour_rate: num(wq.labour_rate) ?? 70,
+          total: num(wq.total)!,
+          monthly: num(wq.monthly) ?? Math.round(num(wq.total)! / 12),
+          pay_in_full_total: num(wq.pay_in_full_total),
+          pay_in_full_saving: num(wq.pay_in_full_saving),
+          registration: typeof wq.registration === "string" ? wq.registration : null,
+          vehicle: typeof wq.vehicle === "string" ? wq.vehicle : null,
+        }
+      : null;
+
     // Website visitors are not signed in: the widget generates a random token,
     // keeps it in the browser and owns exactly one conversation with it.
     const rawGuestToken = typeof body?.guestToken === "string" ? body.guestToken.trim() : "";
@@ -674,6 +695,25 @@ Deno.serve(async (req) => {
             .describe("Vehicle type — motorbikes are priced at half"),
         }),
         execute: async ({ term_months, claim_limit, voluntary_excess, labour_rate, vehicle_type }) => {
+          // If the price panel already priced the customer's selections with the
+          // website calculator, return those figures unchanged.
+          if (websiteQuote) {
+            return toolResultText({
+              ok: true,
+              source: "website_calculator",
+              term_months: websiteQuote.term_months,
+              claim_limit: websiteQuote.claim_limit,
+              voluntary_excess: websiteQuote.voluntary_excess,
+              labour_rate: websiteQuote.labour_rate,
+              website_price_total: websiteQuote.total,
+              website_price_monthly_over_12: websiteQuote.monthly,
+              pay_in_full_total: websiteQuote.pay_in_full_total,
+              pay_in_full_saving: websiteQuote.pay_in_full_saving,
+              indicative: true,
+              note: "Exactly what our website charges for the options the customer picked. Quote these figures and options as they are.",
+            });
+          }
+
           const { data: version, error } = await admin
             .from("pricing_matrix_versions")
             .select("label, admin_matrix, claim_limit_factors, labour_rate_factors, step3_discount_pct")
@@ -944,6 +984,10 @@ Deno.serve(async (req) => {
       now.is_open ? "OPEN" : `CLOSED (back ${now.next_open})`
     }. Opening hours are ${now.opening_hours}.${weekendRule} There is NO live chat handover: never say a specialist is joining, connecting, alerted or online. If the customer wants a person, end your reply with the marker [[CONTACT_CARD]] so the contact card appears for them to leave a phone number or email for a call, WhatsApp or email back, and only mention the sales line 0330 229 5040 if they ask for a number.\nIf a message in the conversation begins with "(Warranty specialist)" a member of staff has replied in this chat — stay out of the way and only reply if the customer asks you directly.`;
 
+    const quoteContext = websiteQuote
+      ? `\n\nTHE CUSTOMER'S OWN PRICE (authoritative — this is exactly what our website charges for the options they picked${websiteQuote.vehicle ? `, for their ${websiteQuote.vehicle}` : ""}): ${websiteQuote.term_months} months cover, £${websiteQuote.claim_limit} claim limit, £${websiteQuote.voluntary_excess} excess, £${websiteQuote.labour_rate}/hr labour. Total £${websiteQuote.total}, or £${websiteQuote.monthly} a month over 12 interest-free instalments${websiteQuote.pay_in_full_total ? `; £${websiteQuote.pay_in_full_total} if they pay in full today (saving £${websiteQuote.pay_in_full_saving})` : ""}. Quote these EXACT figures and these EXACT options. Do NOT call get_indicative_price for this combination and never substitute a different claim limit, excess, labour rate or term.`
+      : "";
+
 
     const rawModelMessages = await convertToModelMessages(
       messages.filter((m: any) => m && typeof m === "object" && Array.isArray(m.parts)),
@@ -983,7 +1027,7 @@ Deno.serve(async (req) => {
 
     const result = streamText({
       model: gateway(MODEL),
-      system: SYSTEM_PROMPT + liveContext + libraryBlock,
+      system: SYSTEM_PROMPT + liveContext + quoteContext + libraryBlock,
       messages: modelMessages,
       tools,
       stopWhen: stepCountIs(50),
