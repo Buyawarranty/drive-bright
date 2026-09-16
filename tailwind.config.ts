@@ -23,8 +23,8 @@ export default {
 				xs: '400px',
 			},
 			fontFamily: {
-			sans: ['Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Helvetica Neue', 'Arial', 'sans-serif'],
-				helvetica: ['Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Helvetica Neue', 'Arial', 'sans-serif'],
+				sans: ['Helvetica Neue', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Tahoma', 'Roboto', 'sans-serif'],
+				helvetica: ['Helvetica Neue', 'Tahoma', 'sans-serif'],
 				'crm-heading': ['Sora', 'sans-serif'],
 				'crm-body': ['Manrope', 'sans-serif'],
 			},
