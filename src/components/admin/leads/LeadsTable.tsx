@@ -359,6 +359,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   {!isLeadGenView && <TableHead className="w-[120px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>}
                   <TableHead className="w-[110px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</TableHead>
                   <TableHead className="w-[150px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</TableHead>
+                  <TableHead className="w-[90px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">WhatsApp</TableHead>
                   <TableHead className="w-[170px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Email</TableHead>
                   {!isLeadGenView && <TableHead className="w-[85px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reg</TableHead>}
                   {!isLeadGenView && <TableHead className="w-[80px] py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Payment</TableHead>}
