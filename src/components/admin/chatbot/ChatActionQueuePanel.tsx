@@ -438,10 +438,55 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
       if (error) throw error;
       setRows((prev) => prev.filter((r) => r.thread.id !== deleteRow.thread.id));
       if (expanded === deleteRow.thread.id) setExpanded(null);
+      setSelected((prev) => {
+        const next = new Set(prev);
+        next.delete(deleteRow.thread.id);
+        return next;
+      });
       toast.success('Chat deleted');
       setDeleteRow(null);
     } catch (e: any) {
       toast.error(e?.message || 'Could not delete this chat');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const toggleSelected = (threadId: string, checked: boolean) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(threadId);
+      else next.delete(threadId);
+      return next;
+    });
+  };
+
+  const confirmBulkDelete = async () => {
+    if (selected.size === 0) return;
+    setDeleting(true);
+    try {
+      const ids = Array.from(selected);
+      const results = await Promise.all(
+        ids.map((id) => (supabase.rpc as any)('delete_chat_thread', { _thread_id: id })),
+      );
+      const failed = results.filter((r) => r.error).length;
+      const deleted = ids.length - failed;
+      if (deleted > 0) {
+        setRows((prev) => prev.filter((r) => !selected.has(r.thread.id) || results[ids.indexOf(r.thread.id)].error));
+        // simpler: drop the ones that succeeded
+        const failedIds = new Set(ids.filter((id, idx) => results[idx].error));
+        setRows((prev) => prev.filter((r) => failedIds.has(r.thread.id)));
+        if (expanded && !failedIds.has(expanded)) setExpanded(null);
+        setSelected(failedIds);
+      }
+      if (failed === 0) {
+        toast.success(`${deleted} chat${deleted === 1 ? '' : 's'} deleted`);
+        setBulkDeleteOpen(false);
+      } else {
+        toast.error(`${failed} chat${failed === 1 ? '' : 's'} could not be deleted — ${deleted} removed`);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not delete the selected chats');
     } finally {
       setDeleting(false);
     }
