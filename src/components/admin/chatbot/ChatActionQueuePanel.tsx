@@ -9,7 +9,6 @@ import {
   RefreshCw,
   Search,
   ChevronDown,
-  ChevronRight,
   UserPlus,
   ExternalLink,
   PhoneCall,
@@ -690,7 +689,7 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
 
                     {expanded === r.thread.id && (
                       <tr className="border-t bg-muted/20">
-                        <td colSpan={13} className="px-4 py-3">
+                        <td colSpan={isManagement ? 14 : 13} className="px-4 py-3">
                           <div className="mb-2 text-xs text-muted-foreground">
                             {r.thread.title || 'Website chat'} · started{' '}
                             {new Date(r.thread.created_at).toLocaleString('en-GB')}
@@ -733,7 +732,7 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
                 ))}
                 {!loading && visible.length === 0 && (
                   <tr>
-                    <td colSpan={13} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                    <td colSpan={isManagement ? 14 : 13} className="px-4 py-8 text-center text-sm text-muted-foreground">
                       Nothing needs actioning in this period.
                       {counts.none > 0 && !showNoAction && ` ${counts.none} chat(s) needed no action.`}
                     </td>
@@ -741,7 +740,7 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
                 )}
                 {loading && (
                   <tr>
-                    <td colSpan={13} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                    <td colSpan={isManagement ? 14 : 13} className="px-4 py-8 text-center text-sm text-muted-foreground">
                       Loading chats…
                     </td>
                   </tr>
