@@ -1494,6 +1494,19 @@ export function SandboxChatWindow({
             </div>
           )}
 
+          {!agentMode && hasPriceQuote && !pricePanelOpen && (
+            <div className="w-full min-w-0 max-w-full px-0 pb-2 sm:px-2">
+              <button
+                type="button"
+                onClick={() => setPricePanelOpen(true)}
+                className="rounded-full border-2 border-[#0BA360] bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
+              >
+                Show my quote options
+              </button>
+            </div>
+          )}
+
+
 
 
           {status === 'submitted' && (
