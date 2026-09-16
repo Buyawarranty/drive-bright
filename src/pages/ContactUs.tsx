@@ -545,11 +545,11 @@ const ContactUs = () => {
                             type="tel"
                             inputMode="tel"
                             autoComplete="tel"
-                            placeholder="07900 000000"
+                            placeholder="e.g. 07123 456789"
                             value={callbackPhone}
                             onChange={(e) => setCallbackPhone(e.target.value.replace(/[^\d\s+]/g, '').slice(0, 15))}
                             aria-invalid={callbackPhone.length > 0 && !validUkPhone(callbackPhone)}
-                            className={`h-12 bg-white pr-10 ${
+                            className={`h-12 bg-white rounded-xl pr-10 ${
                               callbackPhone.length === 0
                                 ? ''
                                 : validUkPhone(callbackPhone)
