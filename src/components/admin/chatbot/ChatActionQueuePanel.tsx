@@ -472,8 +472,7 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
       const failed = results.filter((r) => r.error).length;
       const deleted = ids.length - failed;
       if (deleted > 0) {
-        setRows((prev) => prev.filter((r) => !selected.has(r.thread.id) || results[ids.indexOf(r.thread.id)].error));
-        // simpler: drop the ones that succeeded
+        // drop the ones that succeeded, keep any failures in place
         const failedIds = new Set(ids.filter((id, idx) => results[idx].error));
         setRows((prev) => prev.filter((r) => failedIds.has(r.thread.id)));
         if (expanded && !failedIds.has(expanded)) setExpanded(null);
