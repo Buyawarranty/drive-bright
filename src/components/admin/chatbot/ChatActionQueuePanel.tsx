@@ -9,13 +9,13 @@ import {
   RefreshCw,
   Search,
   ChevronDown,
-  ChevronRight,
   UserPlus,
   ExternalLink,
   PhoneCall,
   MessageSquare,
   Trash2,
 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -157,6 +157,8 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [deleteRow, setDeleteRow] = useState<QueueRow | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const { isManagement } = useIsManagement();
 
   const load = useCallback(async () => {
@@ -435,10 +437,54 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
       if (error) throw error;
       setRows((prev) => prev.filter((r) => r.thread.id !== deleteRow.thread.id));
       if (expanded === deleteRow.thread.id) setExpanded(null);
+      setSelected((prev) => {
+        const next = new Set(prev);
+        next.delete(deleteRow.thread.id);
+        return next;
+      });
       toast.success('Chat deleted');
       setDeleteRow(null);
     } catch (e: any) {
       toast.error(e?.message || 'Could not delete this chat');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const toggleSelected = (threadId: string, checked: boolean) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(threadId);
+      else next.delete(threadId);
+      return next;
+    });
+  };
+
+  const confirmBulkDelete = async () => {
+    if (selected.size === 0) return;
+    setDeleting(true);
+    try {
+      const ids = Array.from(selected);
+      const results = await Promise.all(
+        ids.map((id) => (supabase.rpc as any)('delete_chat_thread', { _thread_id: id })),
+      );
+      const failed = results.filter((r) => r.error).length;
+      const deleted = ids.length - failed;
+      if (deleted > 0) {
+        // drop the ones that succeeded, keep any failures in place
+        const failedIds = new Set(ids.filter((id, idx) => results[idx].error));
+        setRows((prev) => prev.filter((r) => failedIds.has(r.thread.id)));
+        if (expanded && !failedIds.has(expanded)) setExpanded(null);
+        setSelected(failedIds);
+      }
+      if (failed === 0) {
+        toast.success(`${deleted} chat${deleted === 1 ? '' : 's'} deleted`);
+        setBulkDeleteOpen(false);
+      } else {
+        toast.error(`${failed} chat${failed === 1 ? '' : 's'} could not be deleted — ${deleted} removed`);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not delete the selected chats');
     } finally {
       setDeleting(false);
     }
@@ -470,6 +516,16 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
         <Button size="sm" variant="outline" onClick={load} disabled={loading}>
           <RefreshCw className={`mr-1 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
         </Button>
+        {isManagement && selected.size > 0 && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-destructive hover:bg-destructive/10"
+            onClick={() => setBulkDeleteOpen(true)}
+          >
+            <Trash2 className="mr-1 h-4 w-4" /> Delete selected ({selected.size})
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -478,6 +534,30 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
             <table className="w-full text-sm">
               <thead className="bg-muted/60 text-xs uppercase tracking-wide text-muted-foreground">
                 <tr>
+                  {isManagement && (
+                    <th className="w-10 px-2 py-2 text-left">
+                      <Checkbox
+                        aria-label="Select all chats on this page"
+                        checked={
+                          visible.length > 0 && visible.every((r) => selected.has(r.thread.id))
+                            ? true
+                            : visible.some((r) => selected.has(r.thread.id))
+                              ? 'indeterminate'
+                              : false
+                        }
+                        onCheckedChange={(checked) => {
+                          setSelected((prev) => {
+                            const next = new Set(prev);
+                            visible.forEach((r) => {
+                              if (checked) next.add(r.thread.id);
+                              else next.delete(r.thread.id);
+                            });
+                            return next;
+                          });
+                        }}
+                      />
+                    </th>
+                  )}
                   <th className="w-8 px-2 py-2 text-left">#</th>
                   <th className="px-2 py-2 text-left">Priority</th>
                   <th className="px-2 py-2 text-left">Why it needs action</th>
@@ -496,18 +576,30 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
               <tbody>
                 {visible.map((r, i) => (
                   <React.Fragment key={r.thread.id}>
-                    <tr className="border-t align-top hover:bg-muted/40">
+                    <tr className={`border-t align-top hover:bg-muted/40 ${selected.has(r.thread.id) ? 'bg-primary/5' : ''}`}>
+                      {isManagement && (
+                        <td className="px-2 py-2">
+                          <Checkbox
+                            aria-label={`Select chat ${i + 1}`}
+                            checked={selected.has(r.thread.id)}
+                            onCheckedChange={(checked) => toggleSelected(r.thread.id, checked === true)}
+                          />
+                        </td>
+                      )}
                       <td className="px-2 py-2">
                         <button
                           onClick={() => toggleRow(r.thread.id)}
                           className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
                           aria-label="Open the chat"
+                          title="Open the chat"
                         >
-                          {expanded === r.thread.id ? (
-                            <ChevronDown className="h-3.5 w-3.5" />
-                          ) : (
-                            <ChevronRight className="h-3.5 w-3.5" />
-                          )}
+                          <span
+                            className={`flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-white shadow-sm transition-transform duration-200 hover:bg-orange-600 ${
+                              expanded === r.thread.id ? 'rotate-180' : ''
+                            }`}
+                          >
+                            <ChevronDown className="h-4 w-4" strokeWidth={2.5} />
+                          </span>
                           {i + 1}
                         </button>
                       </td>
@@ -597,7 +689,7 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
 
                     {expanded === r.thread.id && (
                       <tr className="border-t bg-muted/20">
-                        <td colSpan={13} className="px-4 py-3">
+                        <td colSpan={isManagement ? 14 : 13} className="px-4 py-3">
                           <div className="mb-2 text-xs text-muted-foreground">
                             {r.thread.title || 'Website chat'} · started{' '}
                             {new Date(r.thread.created_at).toLocaleString('en-GB')}
@@ -640,7 +732,7 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
                 ))}
                 {!loading && visible.length === 0 && (
                   <tr>
-                    <td colSpan={13} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                    <td colSpan={isManagement ? 14 : 13} className="px-4 py-8 text-center text-sm text-muted-foreground">
                       Nothing needs actioning in this period.
                       {counts.none > 0 && !showNoAction && ` ${counts.none} chat(s) needed no action.`}
                     </td>
@@ -648,7 +740,7 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
                 )}
                 {loading && (
                   <tr>
-                    <td colSpan={13} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                    <td colSpan={isManagement ? 14 : 13} className="px-4 py-8 text-center text-sm text-muted-foreground">
                       Loading chats…
                     </td>
                   </tr>
@@ -679,6 +771,30 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
               disabled={deleting}
             >
               {deleting ? 'Deleting…' : 'Delete chat'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={(o) => !o && setBulkDeleteOpen(false)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selected.size} chat{selected.size === 1 ? '' : 's'}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The selected conversations will be removed for good, including their messages and recorded
+              details. Any leads already created from them are kept.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Keep them</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                void confirmBulkDelete();
+              }}
+              disabled={deleting}
+            >
+              {deleting ? 'Deleting…' : `Delete ${selected.size} chat${selected.size === 1 ? '' : 's'}`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
