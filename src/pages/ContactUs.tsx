@@ -243,7 +243,7 @@ const ContactUs = () => {
     <>
       <SEOHead
         title="Contact Buy A Warranty | UK Car Warranty Support & Claims Help"
-        description="Contact the Buy A Warranty UK team for support, claims help or a quote. Call, email or message us on WhatsApp — Monday to Saturday, 9am to 5pm."
+        description="Contact the Buy A Warranty UK team for support, claims help or a quote. Call, email or message us on WhatsApp — Monday to Saturday, 9am to 6pm."
         keywords="contact us, customer service, warranty support, claims help, contact"
       />
 
@@ -295,6 +295,7 @@ const ContactUs = () => {
                 >
                   <Mail className="w-4 h-4" /> Email us <ArrowRight className="w-4 h-4" />
                 </a>
+                <span className="mt-3 text-center text-gray-500 text-sm">Monday – Saturday · 9am to 6pm</span>
               </div>
 
               {/* Claims & repairs */}
@@ -318,6 +319,7 @@ const ContactUs = () => {
                 >
                   <Mail className="w-4 h-4" /> Email us <ArrowRight className="w-4 h-4" />
                 </a>
+                <span className="mt-3 text-center text-gray-500 text-sm">Monday – Friday · 9am to 5pm</span>
               </div>
 
               {/* WhatsApp */}
@@ -343,7 +345,10 @@ const ContactUs = () => {
 
             <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
               <p className="text-gray-600 text-sm font-medium inline-flex items-center gap-2">
-                <Clock className="w-4 h-4 text-brand-orange" /> Monday – Saturday · 9am to 5pm
+                <Clock className="w-4 h-4 text-brand-orange" /> Customer support: Monday – Saturday · 9am to 6pm
+              </p>
+              <p className="text-gray-600 text-sm font-medium inline-flex items-center gap-2">
+                <Clock className="w-4 h-4 text-brand-orange" /> Claims &amp; repairs: Monday – Friday · 9am to 5pm
               </p>
               <TrustpilotMicroStarWidget className="max-w-xs" />
             </div>
@@ -595,7 +600,8 @@ const ContactUs = () => {
                 <Clock className="w-4 h-4 text-brand-orange" />
                 <h2 className="text-base font-bold text-[#11253E]">Opening hours</h2>
               </div>
-              <p className="text-gray-600 text-sm">Monday – Saturday, 9am to 5pm</p>
+              <p className="text-gray-600 text-sm">Customer support: Monday – Saturday, 9am to 6pm</p>
+              <p className="text-gray-600 text-sm">Claims &amp; repairs: Monday – Friday, 9am to 5pm</p>
             </div>
             <div className="bg-[#F7F8FA] border border-gray-200 rounded-xl p-5">
               <div className="flex items-center gap-2 mb-2">
