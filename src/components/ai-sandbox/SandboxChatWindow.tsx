@@ -1435,7 +1435,7 @@ export function SandboxChatWindow({
 
           })}
 
-          {contactCardWanted && (
+          {(contactCardWanted || contactOpen) && (
             <div className="w-full min-w-0 max-w-full px-0 pb-2 sm:px-2">
               <CallMeBackPanel
                 autoOpen
