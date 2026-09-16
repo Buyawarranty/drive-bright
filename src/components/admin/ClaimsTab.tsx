@@ -445,6 +445,13 @@ export const ClaimsTab = ({
             >
               Make a complaint page
             </a>
+            <button
+              type="button"
+              className="underline underline-offset-2 text-primary hover:text-foreground"
+              onClick={() => setLinkEmailPage({ label: 'Make a complaint', url: 'https://buyawarranty.co.uk/complaints/' })}
+            >
+              email link
+            </button>
             <span aria-hidden="true">·</span>
             <a
               href="https://buyawarranty.co.uk/appeals/"
@@ -454,6 +461,13 @@ export const ClaimsTab = ({
             >
               Appeals page
             </a>
+            <button
+              type="button"
+              className="underline underline-offset-2 text-primary hover:text-foreground"
+              onClick={() => setLinkEmailPage({ label: 'Appeal a claim decision', url: 'https://buyawarranty.co.uk/appeals/' })}
+            >
+              email link
+            </button>
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
