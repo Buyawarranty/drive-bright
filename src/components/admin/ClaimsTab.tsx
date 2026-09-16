@@ -684,6 +684,13 @@ export const ClaimsTab = ({
         onOpenChange={setShowAddClaimDialog}
         onClaimAdded={refetchAll}
       />
+
+      <PageLinkEmailDialog
+        open={!!linkEmailPage}
+        onOpenChange={(open) => { if (!open) setLinkEmailPage(null); }}
+        pageLabel={linkEmailPage?.label ?? ''}
+        pageUrl={linkEmailPage?.url ?? ''}
+      />
     </div>
   );
 };
