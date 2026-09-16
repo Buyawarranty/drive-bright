@@ -517,12 +517,15 @@ const ContactUs = () => {
 
               {/* Callback panel — 35% */}
               <div className="lg:col-span-4 space-y-5">
-                <div className="bg-[#F7F8FA] border border-gray-200 rounded-2xl p-5 sm:p-6">
+                <div className="bg-[#FFF8F1] border border-[#F6D9BF] rounded-2xl p-5 sm:p-6 shadow-sm">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-full bg-brand-orange/10 flex items-center justify-center">
-                      <Phone className="w-5 h-5 text-brand-orange" />
+                    <div className="w-12 h-12 rounded-full bg-[#FDE3CC] flex items-center justify-center shrink-0">
+                      <Phone className="w-5 h-5 text-[#E8681A]" />
                     </div>
-                    <h2 className="text-lg font-bold text-[#11253E]">Prefer us to call you?</h2>
+                    <div>
+                      <h2 className="text-lg font-bold text-[#11253E]">Prefer us to call you?</h2>
+                      <p className="text-sm text-gray-600">Leave your number and we'll call you back at a time that suits you.</p>
+                    </div>
                   </div>
 
                   {callbackDone ? (
@@ -535,7 +538,7 @@ const ContactUs = () => {
                   ) : (
                     <form onSubmit={handleCallbackSubmit} className="space-y-4">
                       <div>
-                        <Label htmlFor="callback-phone" className="text-[#11253E] font-semibold text-sm">Phone number</Label>
+                        <Label htmlFor="callback-phone" className="text-[#11253E] font-semibold text-sm">Phone number <span className="text-red-500">*</span></Label>
                         <div className="relative mt-1.5">
                           <Input
                             id="callback-phone"
