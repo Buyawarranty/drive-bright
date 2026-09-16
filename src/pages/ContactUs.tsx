@@ -571,7 +571,7 @@ const ContactUs = () => {
                           id="callback-time"
                           value={callbackTime}
                           onChange={(e) => setCallbackTime(e.target.value)}
-                          className="mt-1.5 w-full h-12 rounded-md border border-input bg-white px-3 text-sm text-[#11253E]"
+                          className="mt-1.5 w-full h-12 rounded-xl border border-input bg-white px-3 text-sm text-[#11253E]"
                         >
                           <option value="Anytime">Anytime</option>
                           <option value="Morning (9am – 12pm)">Morning (9am – 12pm)</option>
@@ -586,9 +586,14 @@ const ContactUs = () => {
                       >
                         {callbackSending ? (
                           <span className="inline-flex items-center gap-2"><Loader2 className="w-5 h-5 animate-spin" /> Sending...</span>
-                        ) : 'Request a callback'}
+                        ) : (
+                          <span className="inline-flex items-center justify-center gap-2">Request a callback <ArrowRight className="w-5 h-5" strokeWidth={3} /></span>
+                        )}
                       </Button>
-                      <p className="text-xs text-gray-500">Usually within business hours.</p>
+                      <p className="flex items-start gap-2 text-xs text-gray-600">
+                        <Clock className="w-4 h-4 text-[#E8681A] shrink-0 mt-0.5" aria-hidden="true" />
+                        <span>We'll call you within business hours (Mon – Sat, 9am to 6pm).</span>
+                      </p>
                     </form>
                   )}
 
