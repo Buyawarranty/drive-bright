@@ -778,6 +778,10 @@ export function SandboxChatWindow({
   const [handover, setHandover] = useState<Handover | null>(null);
   const [agentMode, setAgentMode] = useState(false);
   const [pricePanelOpen, setPricePanelOpen] = useState(true);
+  // Opened when the customer asks for a person from the quote card / live banner.
+  const [contactOpen, setContactOpen] = useState(false);
+  // Only offer a real person while a specialist has switched themselves live.
+  const { live: agentLive, names: agentNames } = useLiveAgentAvailable();
   const [quoteStartOpen, setQuoteStartOpen] = useState(false);
   const composerRef = useRef<HTMLDivElement | null>(null);
   // Keeps a stable "sent at" time per message so stamps don't jump on re-render.
