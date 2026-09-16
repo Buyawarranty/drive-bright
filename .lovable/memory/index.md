@@ -32,6 +32,7 @@ Updated: just now
 - Alert pop-ups play ONE two-tone beep per session then stay permanently silent; guard every sound with consumeAlertSound(). See mem://admin/alerts-single-opening-beep
 - Miles chat must never replay earlier tool calls to Gemini — strip tool messages from history or the chat goes silent after a quote. See mem://chat/miles-strip-tool-history
 - Miles never works out prices himself: the chat panel prices selections with the website calculator and the chatbot must quote those exact figures. See mem://chat/miles-prices-from-website-calculator
+- Chat only offers a call with a real agent while a specialist is switched on live in the Miles chat admin area. See mem://chat/miles-live-agent-offer
 
 ## Memories
 - [Test Phone Visible, Never Blocked](mem://admin/leads/test-phone-visible-not-blocked) — 07960 111131 works across website/chat and shows TEST in New Leads without disabled actions
