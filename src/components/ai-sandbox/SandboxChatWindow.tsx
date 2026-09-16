@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStickToBottomContext } from 'use-stick-to-bottom';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
+import { calculateWebsiteQuotePrice } from '@/lib/pricing/websiteQuotePrice';
+import type { PaymentPeriod } from '@/lib/pricingMatrix';
 import {
   Headset,
   PhoneCall,
@@ -363,13 +365,16 @@ function PriceOptionsPanel({
   onClose,
   reg,
   mileage,
+  vehicle,
   lastAssistantText,
 }: {
   disabled?: boolean;
-  onSend: (text: string) => void;
+  onSend: (text: string, extraBody?: Record<string, unknown>) => void;
   onClose?: () => void;
   reg?: string | null;
   mileage?: string | null;
+  /** DVLA details for the reg, so the panel prices exactly like the website. */
+  vehicle?: Record<string, any> | null;
   lastAssistantText?: string | null;
 }) {
   const [term, setTerm] = useState(24);
@@ -406,7 +411,48 @@ function PriceOptionsPanel({
 
   const termLabel = (v: number) => (v % 12 === 0 ? `${v / 12} year${v / 12 > 1 ? 's' : ''}` : `${v} months`);
   const combo = `${termLabel(term)} cover, £${limit.toLocaleString()} claim limit, £${excess} excess, £${labour}/hr labour rate`;
-  const quoted = priceRequested ? extractPrice(lastAssistantText) : null;
+
+  // The price shown here is worked out with the SAME calculator as step 3, from
+  // the customer's own selections — never read back out of Miles' wording, which
+  // used to drift onto the default £2,000 claim limit.
+  const websitePrice = useMemo(
+    () =>
+      calculateWebsiteQuotePrice(
+        { ...(vehicle ?? {}), mileage: mileage ?? (vehicle as any)?.mileage ?? undefined, regNumber: reg ?? undefined },
+        {
+          paymentPeriod: `${term}months` as PaymentPeriod,
+          claimLimit: limit,
+          voluntaryExcess: excess,
+          labourRate: labour,
+        },
+      ),
+    [vehicle, mileage, reg, term, limit, excess, labour],
+  );
+
+  const fmt = (n: number) => `£${n.toLocaleString()}`;
+  const quoted = websitePrice.total > 0
+    ? { total: fmt(websitePrice.total), monthly: fmt(websitePrice.monthly) }
+    : priceRequested
+      ? extractPrice(lastAssistantText)
+      : null;
+
+  /** Sent alongside the message so Miles quotes these exact figures. */
+  const quoteBody = () => ({
+    websiteQuote: {
+      term_months: term,
+      claim_limit: limit,
+      voluntary_excess: excess,
+      labour_rate: labour,
+      total: websitePrice.total,
+      monthly: websitePrice.monthly,
+      pay_in_full_total: websitePrice.payInFull,
+      pay_in_full_saving: websitePrice.saving,
+      registration: reg ?? null,
+      vehicle: vehicle
+        ? [vehicle.make, vehicle.model].filter(Boolean).join(' ') || null
+        : null,
+    },
+  });
 
   const continueToCheckout = () => {
     if (!checkoutHref) return;
@@ -473,7 +519,7 @@ function PriceOptionsPanel({
                 className="gap-2 bg-[#001F3F] font-bold text-white shadow-sm hover:bg-[#002a55]"
                 onClick={() => {
                   setOptionsOpen(false);
-                  onSend(`Update my price for ${combo}.`);
+                  onSend(`Update my price for ${combo}.`, quoteBody());
                 }}
               >
                 Update my price
@@ -493,7 +539,7 @@ function PriceOptionsPanel({
             onClick={() => {
               setPriceRequested(true);
               setOptionsOpen(false);
-              onSend(`Show me the price for ${combo}.`);
+              onSend(`Show me the price for ${combo}.`, quoteBody());
             }}
           >
             Show my price
@@ -601,6 +647,7 @@ function PriceOptionsPanel({
                 onClick={() => {
                   onSend(
                     `Yes — I'll pay in full for ${combo}. Please confirm the discounted total with the 10% pay-in-full saving, then send me a secure card payment link.`,
+                    quoteBody(),
                   );
                   setPending(null);
                 }}
@@ -945,7 +992,7 @@ export function SandboxChatWindow({
     ta.focus();
   };
 
-  const send = (text: string) => {
+  const send = (text: string, extraBody?: Record<string, unknown>) => {
     const trimmed = (text ?? '').trim();
     const files = attachments;
     if ((!trimmed && files.length === 0) || busy) return;
@@ -955,19 +1002,22 @@ export function SandboxChatWindow({
     }
     lastSentRef.current = trimmed;
     if (files.length) {
-      sendMessage({
-        text: trimmed || 'Here you go.',
-        files: files.map((f) => ({
-          type: 'file' as const,
-          filename: f.name,
-          mediaType: f.mediaType,
-          url: f.url,
-        })),
-      });
+      sendMessage(
+        {
+          text: trimmed || 'Here you go.',
+          files: files.map((f) => ({
+            type: 'file' as const,
+            filename: f.name,
+            mediaType: f.mediaType,
+            url: f.url,
+          })),
+        },
+        extraBody ? { body: extraBody } : undefined,
+      );
       setAttachments([]);
       return;
     }
-    sendMessage({ text: trimmed });
+    sendMessage({ text: trimmed }, extraBody ? { body: extraBody } : undefined);
   };
 
   // There is no live-agent handover: customers either call us, or leave a
@@ -1274,6 +1324,7 @@ export function SandboxChatWindow({
                 onClose={() => setPricePanelOpen(false)}
                 reg={detectedReg}
                 mileage={detectedMileage}
+                vehicle={quoteVehicle}
                 lastAssistantText={lastAssistantText}
               />
             </div>
