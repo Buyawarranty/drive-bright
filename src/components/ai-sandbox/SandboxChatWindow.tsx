@@ -628,8 +628,34 @@ function PriceOptionsPanel({
           <div className="rounded-xl border border-dashed border-border bg-muted/40 p-4">
             <p className="text-sm font-semibold text-foreground">Or continue on our website</p>
             <p className="mt-1.5 text-xs text-muted-foreground">
-              Open your quote on buyawarranty.co.uk with <strong className="text-foreground">{reg || 'your car'}</strong> already filled in — choose your cover and pay securely there. This chat stays open if you need help.
+              {reg
+                ? <>We'll open your quote with <strong className="text-foreground">{reg}</strong> already filled in — choose your cover and pay securely there. This chat stays open if you need help.</>
+                : <>Open the full quote page to choose your cover and pay securely. This chat stays open if you need help.</>}
             </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3 h-auto min-h-10 w-full justify-between gap-2 border-2 border-[#0BA360] bg-background px-4 py-2 font-bold text-[#0BA360] hover:bg-[#0BA360]/10 hover:text-[#0BA360]"
+              onClick={(e) => {
+                if (checkoutHref) {
+                  e.preventDefault();
+                  continueToCheckout();
+                }
+              }}
+              asChild={!checkoutHref}
+            >
+              {checkoutHref ? (
+                <span className="flex w-full items-center justify-between gap-2">
+                  Open my quote on the website
+                  <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.5} />
+                </span>
+              ) : (
+                <a href="/">
+                  <span>Go to the quote page</span>
+                  <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.5} />
+                </a>
+              )}
+            </Button>
           </div>
         </div>
       )}
