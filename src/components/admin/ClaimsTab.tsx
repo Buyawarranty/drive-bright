@@ -40,6 +40,7 @@ import { AddClaimDialog } from './claims/AddClaimDialog';
 import { ClaimInvoicesDialog } from './claims/ClaimInvoicesDialog';
 import { ClaimFilesDialog } from './claims/ClaimFilesDialog';
 import { ClaimAppealDialog } from './claims/ClaimAppealDialog';
+import { PageLinkEmailDialog } from './claims/PageLinkEmailDialog';
 import { exportToCSV, exportToPDF, formatClaimForExport } from './claims/exportUtils';
 import { ClaimUpdateNotifications } from './claims/ClaimUpdateNotifications';
 import { ClaimRemindersBanner } from './claims/ClaimRemindersBanner';
@@ -123,6 +124,7 @@ export const ClaimsTab = ({
   const [showInvoicesDialog, setShowInvoicesDialog] = useState(false);
   const [showFilesDialog, setShowFilesDialog] = useState(false);
   const [showAppealDialog, setShowAppealDialog] = useState(false);
+  const [linkEmailPage, setLinkEmailPage] = useState<{ label: string; url: string } | null>(null);
   const [activeSubTab, setActiveSubTab] = useState<'claims' | 'reminders' | 'claims-data'>('claims');
 
   const { claims: managerClaims, loading: managerLoading, refetch: refetchManager } = useClaims();
@@ -445,6 +447,13 @@ export const ClaimsTab = ({
             >
               Make a complaint page
             </a>
+            <button
+              type="button"
+              className="underline underline-offset-2 text-primary hover:text-foreground"
+              onClick={() => setLinkEmailPage({ label: 'Make a complaint', url: 'https://buyawarranty.co.uk/complaints/' })}
+            >
+              email link
+            </button>
             <span aria-hidden="true">·</span>
             <a
               href="https://buyawarranty.co.uk/appeals/"
@@ -454,6 +463,13 @@ export const ClaimsTab = ({
             >
               Appeals page
             </a>
+            <button
+              type="button"
+              className="underline underline-offset-2 text-primary hover:text-foreground"
+              onClick={() => setLinkEmailPage({ label: 'Appeal a claim decision', url: 'https://buyawarranty.co.uk/appeals/' })}
+            >
+              email link
+            </button>
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -668,6 +684,13 @@ export const ClaimsTab = ({
         open={showAddClaimDialog}
         onOpenChange={setShowAddClaimDialog}
         onClaimAdded={refetchAll}
+      />
+
+      <PageLinkEmailDialog
+        open={!!linkEmailPage}
+        onOpenChange={(open) => { if (!open) setLinkEmailPage(null); }}
+        pageLabel={linkEmailPage?.label ?? ''}
+        pageUrl={linkEmailPage?.url ?? ''}
       />
     </div>
   );
