@@ -158,6 +158,8 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [deleteRow, setDeleteRow] = useState<QueueRow | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const { isManagement } = useIsManagement();
 
   const load = useCallback(async () => {
