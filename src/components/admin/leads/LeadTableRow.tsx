@@ -1092,6 +1092,21 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               <Badge variant="outline" className="text-[10px] px-1 py-0 bg-blue-100 text-blue-800 border-blue-300">📘 FB</Badge>
             ) : null;
           })()}
+          {(() => {
+            const pt = (lead.cart_metadata as { preferred_time?: string } | null)?.preferred_time;
+            if (!pt) return null;
+            const short = /morning/i.test(pt) ? 'AM' : /late afternoon/i.test(pt) ? 'Late PM' : /afternoon/i.test(pt) ? 'PM' : 'Anytime';
+            return (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className="text-[10px] px-1 py-0 bg-orange-100 text-orange-800 border-orange-300 flex-shrink-0">
+                    ☎ {short}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">Callback requested — preferred time: {pt}</TooltipContent>
+              </Tooltip>
+            );
+          })()}
         </div>
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
