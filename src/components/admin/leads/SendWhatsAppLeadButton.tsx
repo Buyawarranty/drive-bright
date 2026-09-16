@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { ChevronRight, Loader2, MessageCircle, Send } from 'lucide-react';
+import { Loader2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -136,12 +136,10 @@ export const SendWhatsAppLeadButton: React.FC<Props> = ({
           <Button
             size="sm"
             disabled={disabled}
-            className="h-7 border border-whatsapp bg-whatsapp px-2 text-xs font-semibold text-whatsapp-foreground shadow-sm hover:bg-whatsapp/90 hover:text-whatsapp-foreground"
+            className="h-6 border border-green-500 bg-white px-1.5 text-[11px] font-semibold text-green-600 shadow-sm hover:bg-green-50 hover:text-green-700"
             onClick={() => setOpen(true)}
           >
-            <MessageCircle className="h-3 w-3 mr-1" />
             WhatsApp
-            <ChevronRight className="h-3 w-3 ml-1" />
           </Button>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs">

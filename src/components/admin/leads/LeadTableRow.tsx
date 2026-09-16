@@ -1134,6 +1134,15 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         )}
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
+        <SendWhatsAppLeadButton
+          leadId={lead.id}
+          phone={lead.phone}
+          firstName={lead.first_name}
+          disabled={isDoNotContact}
+          onSent={(t) => onLogActivity('whatsapp_sent', `Sent WhatsApp message (${t})`)}
+        />
+      </TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-0.5">
           <EmailCopyText email={lead.email} disabled={isDoNotContact} />
           <Tooltip delayDuration={100}>
@@ -1284,14 +1293,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               }
             />
             <RemindMePopover leadId={lead.id} compact onReminderSaved={(msg) => onLogActivity('reminder', msg)} />
-
-            <SendWhatsAppLeadButton
-              leadId={lead.id}
-              phone={lead.phone}
-              firstName={lead.first_name}
-              disabled={isDoNotContact}
-              onSent={(t) => onLogActivity('whatsapp_sent', `Sent WhatsApp message (${t})`)}
-            />
 
             {onSendQuote && !lead.is_paid && (
               <Tooltip delayDuration={100}>
@@ -1597,14 +1598,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             />
             <RemindMePopover leadId={lead.id} compact onReminderSaved={(msg) => onLogActivity('reminder', msg)} />
 
-            <SendWhatsAppLeadButton
-              leadId={lead.id}
-              phone={lead.phone}
-              firstName={lead.first_name}
-              disabled={isDoNotContact}
-              onSent={(t) => onLogActivity('whatsapp_sent', `Sent WhatsApp message (${t})`)}
-            />
-
             {onSendQuote && !lead.is_paid && (
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
@@ -1904,6 +1897,15 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         ) : (
           <span className="text-muted-foreground text-xs">—</span>
         )}
+      </TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        <SendWhatsAppLeadButton
+          leadId={lead.id}
+          phone={lead.phone}
+          firstName={lead.first_name}
+          disabled={isDoNotContact}
+          onSent={(t) => onLogActivity('whatsapp_sent', `Sent WhatsApp message (${t})`)}
+        />
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-0.5">
