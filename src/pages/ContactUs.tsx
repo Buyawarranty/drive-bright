@@ -309,7 +309,7 @@ const ContactUs = () => {
                 <p className="text-gray-600 text-sm mb-4">Start a claim or check progress with our claims team.</p>
                 <a
                   href={CLAIMS_PHONE_TEL}
-                  className="block text-center bg-brand-orange hover:bg-brand-orange/90 text-white font-bold rounded-xl py-3 text-base transition-colors"
+                  className="block text-center bg-brand-blue hover:bg-brand-blue-dark text-white font-bold rounded-xl py-3 text-base transition-colors"
                 >
                   Call {CLAIMS_PHONE}
                 </a>
