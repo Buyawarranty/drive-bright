@@ -231,7 +231,7 @@ const ContactUs = () => {
           <div className="max-w-[1180px] mx-auto">
             <div className="flex items-center justify-center gap-4 mb-6 sm:mb-8">
               <img
-                src={pandaSupport.url}
+                src={pandaSupport}
                 alt="Buy A Warranty UK customer support panda answering the phone — friendly car warranty help team"
                 width={384}
                 height={480}
