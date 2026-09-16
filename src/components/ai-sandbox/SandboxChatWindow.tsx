@@ -1213,6 +1213,30 @@ export function SandboxChatWindow({
         </div>
       )}
 
+      {/* Only shown while an agent has switched themselves live in the admin area. */}
+      {!agentMode && agentLive && !specialistJoined && !leadCaptured && (
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-200 bg-emerald-50 px-4 py-2">
+          <p className="flex items-center gap-2 text-xs font-semibold text-emerald-900">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-emerald-500 opacity-70" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
+            </span>
+            {agentNames.length
+              ? `${agentNames.join(', ')} ${agentNames.length > 1 ? 'are' : 'is'} available now — prefer to speak to a person?`
+              : 'A warranty specialist is available now — prefer to speak to a person?'}
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 border-emerald-600 bg-white px-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
+            onClick={() => setContactOpen(true)}
+          >
+            <PhoneCall className="mr-1.5 h-3.5 w-3.5" />
+            Request a call
+          </Button>
+        </div>
+      )}
+
        {!agentMode && specialistJoined && (
          <div className="border-b border-border bg-background px-4 py-2.5">
            <p className="flex items-center gap-2 text-xs font-semibold text-foreground">
