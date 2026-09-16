@@ -664,6 +664,37 @@ function PriceOptionsPanel({
               )}
             </Button>
           </div>
+
+          {/* Prefer a person? Only ever shown while a specialist is really live. */}
+          {agentLive && (
+            <div className="rounded-xl border border-primary/40 bg-primary/5 p-4">
+              <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <span className="relative flex h-2.5 w-2.5 shrink-0">
+                  <span className="absolute inline-flex h-2.5 w-2.5 animate-ping rounded-full bg-emerald-500 opacity-70" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-600" />
+                </span>
+                {agentNames?.length
+                  ? `${agentNames.join(', ')} ${agentNames.length > 1 ? 'are' : 'is'} available now`
+                  : 'A warranty specialist is available now'}
+              </p>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Would you rather go through this with a person? Ask a specialist to call you back — no need to start again.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={disabled}
+                onClick={onTalkToAgent}
+                className="mt-3 h-auto min-h-10 w-full justify-between gap-2 border-2 border-primary bg-background px-4 py-2 font-bold text-primary hover:bg-primary/10 hover:text-primary"
+              >
+                <span className="flex items-center gap-2">
+                  <PhoneCall className="h-4 w-4 shrink-0" />
+                  Talk to an agent or request a call
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.5} />
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
