@@ -1,9 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { X, Minus, Expand, Shrink, MessageSquare } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { X, Minus, Expand, Shrink, MessageSquare, RotateCcw } from 'lucide-react';
 import SandboxChatWindow from '@/components/ai-sandbox/SandboxChatWindow';
 import milesAvatar from '@/assets/miles-avatar.png.asset.json';
-import { loadGuestChatOpen, saveGuestChatOpen, clearGuestChat } from '@/components/ai-sandbox/guestChatStore';
+import {
+  loadGuestChatOpen,
+  saveGuestChatOpen,
+  clearGuestChat,
+  loadGuestMessages,
+} from '@/components/ai-sandbox/guestChatStore';
 
 
 const TOKEN_KEY = 'baw_chat_guest_token';
@@ -76,6 +81,7 @@ export default function SiteChatWidget({
   // Never show the chat once the visitor is inside the quote journey (steps 2-4)
   // or on checkout/cart pages — it sits over the call-to-action buttons there.
   const location = useLocation();
+  const navigate = useNavigate();
   const stepParam = new URLSearchParams(location.search).get('step') || '';
   const stepNumber = parseInt(stepParam.replace(/[^0-9]/g, ''), 10);
   const onQuoteStep = Number.isFinite(stepNumber) && stepNumber > 1;
@@ -153,17 +159,63 @@ export default function SiteChatWidget({
     saveGuestChatOpen(false);
   };
 
-  // Close (X): the conversation is finished — wipe it and start fresh next time.
+  // Close (X): just closes the panel. The transcript is KEPT — visitors expect
+  // to reopen the chat and still see what was said, so closing must never wipe it.
   const endChat = () => {
     setOpen(false);
     saveGuestChatOpen(false);
+  };
+
+  // The only way to wipe a conversation: an explicit "Start a new chat".
+  const startNewChat = () => {
     clearGuestChat(tokenRef.current);
     tokenRef.current = newGuestToken();
     setSessionKey((k) => k + 1);
+    saveGuestChatOpen(true);
+    setOpen(true);
+    setEverOpened(true);
   };
 
 
-  if (hidden) return null;
+  // On the quote steps / checkout the panel is hidden, but a visitor who came
+  // from the chat needs a one-tap way back to the chat on the main page.
+  const hasTranscript = (() => {
+    try {
+      return loadGuestMessages(tokenRef.current ?? '').length > 0;
+    } catch {
+      return false;
+    }
+  })();
+
+  if (hidden) {
+    if (!hasTranscript) return null;
+    return (
+      <div className="fixed bottom-52 right-4 z-40 sm:bottom-6 sm:right-6">
+        <button
+          onClick={() => {
+            saveGuestChatOpen(true);
+            setEverOpened(true);
+            setOpen(true);
+            navigate('/');
+          }}
+          className="flex items-center gap-2 rounded-full border border-border bg-background/95 py-1.5 pl-4 pr-1.5 text-sm font-semibold text-foreground shadow-lg shadow-black/10 backdrop-blur transition-shadow hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          <MessageSquare className="h-4 w-4 shrink-0 text-primary" />
+          Back to Miles
+          <span className="block h-9 w-9 shrink-0 overflow-hidden rounded-full ring-1 ring-border">
+            <img
+              src={milesAvatar.url}
+              alt="Miles the panda"
+              width={36}
+              height={36}
+              className="h-full w-full scale-[1.35] object-cover object-center"
+              loading="lazy"
+            />
+          </span>
+        </button>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -242,6 +294,14 @@ export default function SiteChatWidget({
                 <span className="font-semibold text-emerald-600">Online</span>
               </p>
             </div>
+            <button
+              onClick={startNewChat}
+              aria-label="Start a new chat"
+              title="Start a new chat"
+              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <RotateCcw className="h-4 w-4" />
+            </button>
             <button
               onClick={closeChat}
               aria-label="Minimise chat"
