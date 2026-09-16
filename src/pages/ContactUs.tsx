@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { MessageCircle, Mail, Clock, Upload, X, ArrowRight, Phone, MapPin, ShieldCheck, CheckCircle2, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { MessageCircle, Mail, Clock, Upload, X, ArrowRight, Phone, MapPin, ShieldCheck, CheckCircle2, Loader2, Car } from 'lucide-react';
 
 
 import { SEOHead } from '@/components/SEOHead';
