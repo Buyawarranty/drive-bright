@@ -1458,6 +1458,9 @@ export function SandboxChatWindow({
                 mileage={detectedMileage}
                 vehicle={quoteVehicle}
                 lastAssistantText={lastAssistantText}
+                agentLive={agentLive}
+                agentNames={agentNames}
+                onTalkToAgent={() => setContactOpen(true)}
               />
             </div>
           )}
