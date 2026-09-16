@@ -577,18 +577,30 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
               <tbody>
                 {visible.map((r, i) => (
                   <React.Fragment key={r.thread.id}>
-                    <tr className="border-t align-top hover:bg-muted/40">
+                    <tr className={`border-t align-top hover:bg-muted/40 ${selected.has(r.thread.id) ? 'bg-primary/5' : ''}`}>
+                      {isManagement && (
+                        <td className="px-2 py-2">
+                          <Checkbox
+                            aria-label={`Select chat ${i + 1}`}
+                            checked={selected.has(r.thread.id)}
+                            onCheckedChange={(checked) => toggleSelected(r.thread.id, checked === true)}
+                          />
+                        </td>
+                      )}
                       <td className="px-2 py-2">
                         <button
                           onClick={() => toggleRow(r.thread.id)}
                           className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
                           aria-label="Open the chat"
+                          title="Open the chat"
                         >
-                          {expanded === r.thread.id ? (
-                            <ChevronDown className="h-3.5 w-3.5" />
-                          ) : (
-                            <ChevronRight className="h-3.5 w-3.5" />
-                          )}
+                          <span
+                            className={`flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-white shadow-sm transition-transform duration-200 hover:bg-orange-600 ${
+                              expanded === r.thread.id ? 'rotate-180' : ''
+                            }`}
+                          >
+                            <ChevronDown className="h-4 w-4" strokeWidth={2.5} />
+                          </span>
                           {i + 1}
                         </button>
                       </td>
