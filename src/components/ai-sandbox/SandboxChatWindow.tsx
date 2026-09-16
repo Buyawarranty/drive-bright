@@ -897,6 +897,42 @@ export function SandboxChatWindow({
   }, [messages]);
 
 
+  // Real DVLA details for the detected reg, so the price panel can use the same
+  // vehicle risk factor / brand discount as the website instead of a generic car.
+  const [quoteVehicle, setQuoteVehicle] = useState<Record<string, any> | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (!detectedReg) {
+      setQuoteVehicle(null);
+      return;
+    }
+    (async () => {
+      try {
+        const { data } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+          body: { registrationNumber: detectedReg },
+        });
+        if (cancelled || !data) return;
+        const v = (data as any).vehicleData ?? data;
+        setQuoteVehicle({
+          make: v?.make ?? null,
+          model: v?.model ?? null,
+          fuelType: v?.fuelType ?? null,
+          vehicleType: v?.vehicleType ?? null,
+          year: v?.yearOfManufacture ?? v?.year ?? null,
+          yearOfManufacture: v?.yearOfManufacture ?? v?.year ?? null,
+          registrationDate: v?.monthOfFirstRegistration ?? v?.registrationDate ?? null,
+          mileage: detectedMileage ?? v?.mileage ?? null,
+          regNumber: detectedReg,
+        });
+      } catch {
+        /* pricing still works from the term/limit grid without DVLA details */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [detectedReg, detectedMileage]);
+
   // Show the price builder only when Miles has actually priced a vehicle.
   // A plain vehicle lookup (e.g. "what's covered?") should not open the panel.
   const hasPriceQuote = useMemo(
