@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
 
 export type PresenceStatus = 'active' | 'idle' | 'offline';
 
@@ -168,24 +169,34 @@ export const useEnhancedPresence = (options: UseEnhancedPresenceOptions = {}) =>
     // Visibility change
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Heartbeat for connection health
+    // Heartbeat for connection health. shouldSkipPoll() (also skips
+    // duplicate/secondary CRM tabs, not just hidden ones — the visibility
+    // check alone missed that case) is the convention the rest of the
+    // dashboard's pollers already use; this hook and the sibling
+    // useUserPresence both write this same RPC every few seconds from every
+    // open tab otherwise, which is exactly what made the CRM feel unresponsive
+    // with 3+ tabs open.
     heartbeatRef.current = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        (async () => {
-          try {
-            await supabase.rpc('update_user_presence', {
-              p_status: presenceState.status === 'active' ? 'online' : 'away',
-              p_current_tab: 'leads'
-            });
-          } catch (e) {
-            console.error(e);
-          }
-        })();
-      }
+      if (shouldSkipPoll()) return;
+      (async () => {
+        try {
+          await supabase.rpc('update_user_presence', {
+            p_status: presenceState.status === 'active' ? 'online' : 'away',
+            p_current_tab: 'leads'
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      })();
     }, heartbeatIntervalMs);
 
-    // Status check interval
-    statusCheckRef.current = setInterval(updatePresenceStatus, 5000);
+    // Status check interval — handleVisibilityChange already reports
+    // 'offline' immediately on hiding, so skipping this while hidden/secondary
+    // doesn't lose that transition, it just stops re-sending it every 5s.
+    statusCheckRef.current = setInterval(() => {
+      if (shouldSkipPoll()) return;
+      updatePresenceStatus();
+    }, 5000);
 
     // Cleanup
     return () => {
