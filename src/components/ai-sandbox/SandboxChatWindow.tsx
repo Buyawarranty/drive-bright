@@ -1188,7 +1188,13 @@ export function SandboxChatWindow({
                         setQuoteStartOpen(true);
                         return;
                       }
-                      send(text === 'Speak to the team' ? 'I would like to speak to a warranty specialist' : text);
+                      send(
+                        text === 'Speak to the team'
+                          ? 'I would like to speak to a warranty specialist'
+                          : text.includes('covered')
+                            ? "Please list in full everything the Platinum Plan covers, what's included as standard, and the main exclusions."
+                            : text,
+                      );
                     }}
                     className={`group h-auto w-full justify-start gap-3 rounded-xl px-3.5 py-3 text-left shadow-none transition-all hover:border-primary/60 hover:bg-primary/5 ${index === 0 ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}
                   >
