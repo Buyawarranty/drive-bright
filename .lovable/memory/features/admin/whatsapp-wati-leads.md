@@ -12,3 +12,4 @@ type: feature
 - Never create a second lead for the same WhatsApp number: match on tail-9 via `find_sales_lead_by_phone_tail9`. New leads get the `WhatsApp` lead tag (#25D366).
 - Hot unassigned leads alert through `AlertRailSlot` with `ALERT_RAIL_ORDER.whatsappHotLead = 15`.
 - Inbound reply alerts appear on New Leads only for support@, the owning agent, or the agent whose outgoing message received the reply. Each unopened alert has a red border and a numbered red corner badge (1, 2, 3); opening the lead clears it.
+- New Leads WhatsApp button (`SendWhatsAppLeadButton`): small white pill with medium green border, text-only "WhatsApp" (no bubble icon, no arrow); sits in its own table column directly after Phone in both row layouts (`LeadTableRow.tsx` + headers in `LeadsTable.tsx`). Never move it back to the Actions cluster or restyle dark-green.
