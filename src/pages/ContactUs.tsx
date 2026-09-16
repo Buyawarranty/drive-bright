@@ -591,16 +591,6 @@ const ContactUs = () => {
                     </form>
                   )}
 
-                  <div className="border-t border-gray-200 mt-5 pt-5 space-y-4">
-                    <div>
-                      <p className="text-sm font-semibold text-[#11253E]">Sales &amp; support</p>
-                      <a href={SALES_PHONE_TEL} className="text-lg font-bold text-brand-orange hover:underline">{SALES_PHONE}</a>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[#11253E]">Claims &amp; repairs</p>
-                      <a href={CLAIMS_PHONE_TEL} className="text-lg font-bold text-brand-orange hover:underline">{CLAIMS_PHONE}</a>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
