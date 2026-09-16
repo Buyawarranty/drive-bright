@@ -254,70 +254,90 @@ const ContactUs = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
               {/* Customer support */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6 flex flex-col">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-11 h-11 rounded-full bg-brand-orange/10 flex items-center justify-center">
-                    <Phone className="w-5 h-5 text-brand-orange" />
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-11 h-11 rounded-full bg-brand-orange flex items-center justify-center shrink-0">
+                    <Phone className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-lg font-bold text-[#11253E]">Customer support</h2>
+                  <div>
+                    <h2 className="text-lg font-bold text-[#11253E]">Customer support</h2>
+                    <p className="text-gray-600 text-sm mt-1">Quotes, cover questions and anything about your policy.</p>
+                  </div>
                 </div>
-                <p className="text-gray-600 text-sm mb-4">Quotes, cover questions and anything about your policy.</p>
-                <a
-                  href={SALES_PHONE_TEL}
-                  className="block text-center bg-brand-orange hover:bg-brand-orange/90 text-white font-bold rounded-xl py-3 text-base transition-colors"
-                >
-                  Call {SALES_PHONE}
-                </a>
-                <a
-                  href={`mailto:${SUPPORT_EMAIL}`}
-                  className="mt-3 inline-flex items-center justify-center gap-2 text-[#11253E] font-semibold text-sm hover:text-brand-orange transition-colors"
-                >
-                  <Mail className="w-4 h-4" /> Email us <ArrowRight className="w-4 h-4" />
-                </a>
-                <span className="mt-3 text-center text-gray-500 text-sm">Monday – Saturday · 9am to 6pm</span>
+                <div className="space-y-2 mb-4">
+                  <a href={SALES_PHONE_TEL} className="flex items-center gap-3 text-[#11253E] font-bold hover:text-brand-orange transition-colors">
+                    <Phone className="w-4 h-4 text-brand-orange shrink-0" /> {SALES_PHONE}
+                  </a>
+                  <a href={`mailto:${SUPPORT_EMAIL}`} className="flex items-center gap-3 text-gray-700 text-sm hover:text-brand-orange transition-colors break-all">
+                    <Mail className="w-4 h-4 text-brand-orange shrink-0" /> {SUPPORT_EMAIL}
+                  </a>
+                </div>
+                <div className="mt-auto flex items-center gap-4">
+                  <a
+                    href={SALES_PHONE_TEL}
+                    className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange font-semibold rounded-xl py-2.5 text-sm transition-colors"
+                  >
+                    Call now <ArrowRight className="w-4 h-4" />
+                  </a>
+                  <a href={`mailto:${SUPPORT_EMAIL}`} className="text-[#11253E] font-semibold text-sm underline hover:text-brand-orange transition-colors">
+                    Email us
+                  </a>
+                </div>
+                <span className="mt-3 text-gray-500 text-sm">Monday – Saturday · 9am to 6pm</span>
               </div>
 
               {/* Claims & repairs */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6 flex flex-col">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-11 h-11 rounded-full bg-brand-orange/10 flex items-center justify-center">
-                    <ShieldCheck className="w-5 h-5 text-brand-orange" />
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-11 h-11 rounded-full bg-brand-orange flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-lg font-bold text-[#11253E]">Claims &amp; repairs</h2>
+                  <div>
+                    <h2 className="text-lg font-bold text-[#11253E]">Claims &amp; repairs</h2>
+                    <p className="text-gray-600 text-sm mt-1">Start a claim or check progress with our claims team.</p>
+                  </div>
                 </div>
-                <p className="text-gray-600 text-sm mb-4">Start a claim or check progress with our claims team.</p>
-                <a
-                  href={CLAIMS_PHONE_TEL}
-                  className="block text-center bg-brand-blue hover:bg-brand-blue-dark text-white font-bold rounded-xl py-3 text-base transition-colors"
-                >
-                  Call {CLAIMS_PHONE}
-                </a>
-                <a
-                  href={`mailto:${CLAIMS_EMAIL}`}
-                  className="mt-3 inline-flex items-center justify-center gap-2 text-[#11253E] font-semibold text-sm hover:text-brand-orange transition-colors"
-                >
-                  <Mail className="w-4 h-4" /> Email us <ArrowRight className="w-4 h-4" />
-                </a>
-                <span className="mt-3 text-center text-gray-500 text-sm">Monday – Friday · 9am to 5pm</span>
+                <div className="space-y-2 mb-4">
+                  <a href={CLAIMS_PHONE_TEL} className="flex items-center gap-3 text-[#11253E] font-bold hover:text-brand-orange transition-colors">
+                    <Phone className="w-4 h-4 text-brand-orange shrink-0" /> {CLAIMS_PHONE}
+                  </a>
+                  <a href={`mailto:${CLAIMS_EMAIL}`} className="flex items-center gap-3 text-gray-700 text-sm hover:text-brand-orange transition-colors break-all">
+                    <Mail className="w-4 h-4 text-brand-orange shrink-0" /> {CLAIMS_EMAIL}
+                  </a>
+                </div>
+                <div className="mt-auto flex items-center gap-4">
+                  <a
+                    href={CLAIMS_PHONE_TEL}
+                    className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-blue/10 hover:bg-brand-blue/20 text-brand-blue font-semibold rounded-xl py-2.5 text-sm transition-colors"
+                  >
+                    Call now <ArrowRight className="w-4 h-4" />
+                  </a>
+                  <a href={`mailto:${CLAIMS_EMAIL}`} className="text-[#11253E] font-semibold text-sm underline hover:text-brand-orange transition-colors">
+                    Email us
+                  </a>
+                </div>
+                <span className="mt-3 text-gray-500 text-sm">Monday – Friday · 9am to 5pm</span>
               </div>
 
               {/* WhatsApp */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6 flex flex-col order-first md:order-none">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-11 h-11 rounded-full bg-green-100 flex items-center justify-center">
-                    <MessageCircle className="w-5 h-5 text-green-600" />
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-11 h-11 rounded-full bg-green-600 flex items-center justify-center shrink-0">
+                    <MessageCircle className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-lg font-bold text-[#11253E]">WhatsApp</h2>
+                  <div>
+                    <h2 className="text-lg font-bold text-[#11253E]">WhatsApp</h2>
+                    <p className="text-gray-600 text-sm mt-1">Quick question? Message us and we'll be right with you.</p>
+                  </div>
                 </div>
-                <p className="text-gray-600 text-sm mb-4">Quick question? Message us and we'll be right with you.</p>
                 <a
                   href={WHATSAPP_URL}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  className="block text-center bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl py-3 text-base transition-colors"
+                  className="mt-auto inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl py-3 text-base transition-colors"
                 >
-                  Start chat
+                  Start chat <ArrowRight className="w-4 h-4" />
                 </a>
-                <span className="mt-3 text-center text-gray-500 text-sm">Replies during opening hours</span>
+                <span className="mt-3 text-gray-500 text-sm">Replies during opening hours</span>
               </div>
             </div>
 
