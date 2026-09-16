@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageCircle, Mail, Clock, Upload, X, ArrowRight, Phone, MapPin, HeartHandshake, Timer, ShieldCheck, Milestone, CheckCircle2, Loader2 } from 'lucide-react';
+import { MessageCircle, Mail, Clock, Upload, X, ArrowRight, Phone, MapPin, ShieldCheck, CheckCircle2, Loader2 } from 'lucide-react';
 
 
 import { SEOHead } from '@/components/SEOHead';
@@ -216,28 +216,6 @@ const ContactUs = () => {
     }
   };
 
-  const features = [
-    {
-      icon: <HeartHandshake className="w-7 h-7 text-brand-orange" />,
-      title: 'Friendly UK team',
-      text: 'Real people based in the UK, ready to help with quotes, cover and claims.',
-    },
-    {
-      icon: <Timer className="w-7 h-7 text-brand-orange" />,
-      title: 'Quick response',
-      text: 'Fast answers by phone, email or WhatsApp — so you are never left waiting.',
-    },
-    {
-      icon: <ShieldCheck className="w-7 h-7 text-brand-orange" />,
-      title: 'Trusted by thousands',
-      text: 'Thousands of UK drivers protect their vehicles with us every year.',
-    },
-    {
-      icon: <Milestone className="w-7 h-7 text-brand-orange" />,
-      title: 'Here long-term',
-      text: 'From your first quote to any claim, we stick with you for the miles ahead.',
-    },
-  ];
 
   return (
     <>
@@ -616,25 +594,6 @@ const ContactUs = () => {
               <address className="not-italic text-gray-600 text-sm leading-relaxed">
                 Buy A Warranty Limited, Warranty House, 62 Berkhamsted Avenue, Wembley, London, HA9 6DT, United Kingdom
               </address>
-            </div>
-          </div>
-        </section>
-
-        {/* ── WHY CUSTOMERS CHOOSE US ── */}
-        <section className="bg-[#F7F8FA] py-12 sm:py-16 px-4">
-          <div className="max-w-[1180px] mx-auto">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              {features.map((feature) => (
-                <div key={feature.title} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 text-center">
-                  <div className="flex justify-center mb-3">
-                    <div className="w-12 h-12 rounded-full bg-brand-orange/10 flex items-center justify-center">
-                      {feature.icon}
-                    </div>
-                  </div>
-                  <h3 className="text-sm sm:text-base font-bold text-[#11253E] mb-1">{feature.title}</h3>
-                  <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">{feature.text}</p>
-                </div>
-              ))}
             </div>
           </div>
         </section>
