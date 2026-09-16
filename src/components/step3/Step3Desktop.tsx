@@ -469,7 +469,11 @@ const Step3Desktop: React.FC<Step3DesktopProps> = ({
               <div className={cn('grid gap-3', availableDurations.length === 1 ? 'grid-cols-1' : availableDurations.length === 2 ? 'grid-cols-2' : 'grid-cols-3')}>
                 {DURATION_OPTIONS.filter(d => availableDurations.includes(d.id)).map((d) => {
                   const selected = paymentType === d.id;
-                  const m = computeDurationMonthly(d.id);
+                  // The selected term MUST show the same figure as the live price panel
+                  // and the sticky bar (single source of truth = monthlyPrice from
+                  // PricingTable, incl. any promo). Only unselected terms use the
+                  // local per-duration estimate. See .note/pricing-sync-constraint.md
+                  const m = selected ? displayedMonthlyPrice : computeDurationMonthly(d.id);
                   const months = d.id === '12months' ? 12 : d.id === '24months' ? 24 : 36;
                   const days = months === 12 ? 365 : months === 24 ? 730 : 1095;
                   const dailyVal = (m * 12 * (months / 12)) / days;
