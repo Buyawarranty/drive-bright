@@ -884,9 +884,30 @@ export function SandboxChatWindow({
       }
     }
     const joined = texts.join('\n');
-    const regMatches = joined.match(
-      /\b([A-Z]{2}[0-9]{2}\s?[A-Z]{3}|[A-Z][0-9]{1,3}\s?[A-Z]{3}|[A-Z]{3}\s?[0-9]{1,3}[A-Z]?)\b/gi,
-    );
+    // Only real UK plate shapes count. Everyday phrases like "cover FOR 2 years"
+    // used to be read as a plate ("FOR2"), which then showed up in the quote card.
+    const NOT_A_PLATE = new Set([
+      'FOR', 'AND', 'THE', 'ARE', 'ALL', 'ANY', 'GET', 'CAR', 'VAN', 'YES', 'WAS', 'PER',
+      'TOP', 'OUT', 'NOT', 'HAS', 'HAD', 'WHY', 'WHO', 'HOW', 'ITS', 'NEW', 'OLD', 'ONE',
+      'TWO', 'SIX', 'TEN', 'ADD', 'BUT', 'CAN', 'DID', 'DUE', 'FEE', 'FIX', 'PAY', 'BUY',
+      'YEAR', 'PLAN', 'COVER', 'ABOUT', 'OVER', 'JUST', 'WITH', 'MOT',
+    ]);
+    const UNIT_AFTER = /^\s*(?:year|yr|month|mile|mi|k\b|pound|hour|hr|%|£|\/)/i;
+    const candidates: string[] = [];
+    const plateRe =
+      /\b([A-Z]{2}[0-9]{2}\s?[A-Z]{3}|[A-Z][0-9]{1,3}\s?[A-Z]{3}|[A-Z]{3}\s?[0-9]{1,3}[A-Z]?)\b/gi;
+    for (const m of joined.matchAll(plateRe)) {
+      const raw = m[0];
+      const compact = raw.replace(/\s+/g, '').toUpperCase();
+      const letters = compact.replace(/[^A-Z]/g, '');
+      const after = joined.slice((m.index ?? 0) + raw.length);
+      // Skip "FOR 2 years", "PLAN 3", "£70/hr" style false positives.
+      if (UNIT_AFTER.test(after)) continue;
+      if (NOT_A_PLATE.has(compact) || NOT_A_PLATE.has(letters)) continue;
+      if (compact.length < 5) continue;
+      candidates.push(compact);
+    }
+    const regMatches = candidates.length ? candidates : null;
     const mileMatches = joined.match(/([0-9][0-9,\.]{2,9})\s*(?:miles|mile|mi\b|k\b)/gi);
     const rawMileage = mileMatches?.[mileMatches.length - 1]?.replace(/[^0-9]/g, '') ?? '';
     const mileageNum = Number(rawMileage);
