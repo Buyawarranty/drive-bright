@@ -627,6 +627,52 @@ const ContactUs = () => {
           </div>
         </section>
 
+        {/* ── QUOTE CTA BANNER ── */}
+        <section
+          aria-label="Get a warranty quote"
+          className="relative overflow-hidden bg-[#16283E] py-10 sm:py-12"
+        >
+          {/* decorative dashed road curves */}
+          <svg
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full opacity-[0.12] pointer-events-none"
+            viewBox="0 0 1200 160"
+            preserveAspectRatio="none"
+          >
+            <path d="M-20,130 C200,60 420,150 640,90 S1050,40 1230,100" fill="none" stroke="white" strokeWidth="2" strokeDasharray="10 12" />
+            <path d="M-20,60 C240,140 480,30 760,110 S1080,150 1230,50" fill="none" stroke="white" strokeWidth="2" strokeDasharray="10 12" />
+          </svg>
+
+          <div className="relative max-w-[1180px] mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center gap-6 md:gap-8">
+            <div className="flex items-center gap-4 sm:gap-5 flex-1 min-w-0">
+              <div className="hidden sm:flex w-14 h-14 rounded-full border-2 border-white/70 items-center justify-center shrink-0">
+                <Car className="w-7 h-7 text-white" strokeWidth={1.8} />
+              </div>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-white leading-snug">
+                  Looking for warranty cover instead?
+                </h2>
+                <p className="text-white/80 text-sm sm:text-base mt-1">
+                  Get a personalised quote in under 60 seconds.
+                </p>
+              </div>
+            </div>
+
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-7 h-12 rounded-xl text-base transition-colors shrink-0"
+            >
+              Get my quote <ArrowRight className="w-5 h-5" strokeWidth={3} />
+            </Link>
+
+            <p className="hidden lg:block shrink-0 text-white/90 italic text-lg -rotate-3 font-[cursive]">
+              Drive with
+              <br />
+              confidence.
+            </p>
+          </div>
+        </section>
+
       </div>
     </>
   );
