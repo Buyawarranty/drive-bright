@@ -966,6 +966,10 @@ Deno.serve(async (req) => {
 
     return result.toUIMessageStreamResponse({
       originalMessages: messages,
+      onError: (e: unknown) => {
+        console.error("[ai-sandbox-chat] response error", e);
+        return `DIAG: ${(e as any)?.message ?? String(e)}`.slice(0, 900);
+      },
       onFinish: async ({ responseMessage }) => {
         try {
           const text = (responseMessage?.parts ?? [])
