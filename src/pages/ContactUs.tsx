@@ -26,15 +26,6 @@ const ContactUs = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const navigateToQuoteForm = () => {
-    navigate('/');
-    setTimeout(() => {
-      const element = document.getElementById('quote-form');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-  };
 
   const [formData, setFormData] = useState({
     name: '',
