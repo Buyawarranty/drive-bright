@@ -994,7 +994,7 @@ Deno.serve(async (req) => {
       originalMessages: messages,
       onError: (e: unknown) => {
         console.error("[ai-sandbox-chat] response error", e);
-        return `DIAG: ${(e as any)?.message ?? String(e)}`.slice(0, 900);
+        return "Sorry, something went wrong there. Could you send that again?";
       },
       onFinish: async ({ responseMessage }) => {
         try {
