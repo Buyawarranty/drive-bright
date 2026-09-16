@@ -434,7 +434,27 @@ export const ClaimsTab = ({
       <div className="flex justify-between items-center flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">Claims Management</h1>
-          <p className="text-sm text-muted-foreground mt-1">{totalCount} total claims</p>
+          <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
+            <span>{totalCount} total claims</span>
+            <span aria-hidden="true">·</span>
+            <a
+              href="https://buyawarranty.co.uk/complaints/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-foreground"
+            >
+              Make a complaint page
+            </a>
+            <span aria-hidden="true">·</span>
+            <a
+              href="https://buyawarranty.co.uk/appeals/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-foreground"
+            >
+              Appeals page
+            </a>
+          </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {(userRole === 'admin' || userRole === 'super_admin') && onMarkAsRead && onMarkAllAsRead && (
