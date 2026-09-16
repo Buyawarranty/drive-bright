@@ -517,6 +517,16 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
         <Button size="sm" variant="outline" onClick={load} disabled={loading}>
           <RefreshCw className={`mr-1 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
         </Button>
+        {isManagement && selected.size > 0 && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-destructive hover:bg-destructive/10"
+            onClick={() => setBulkDeleteOpen(true)}
+          >
+            <Trash2 className="mr-1 h-4 w-4" /> Delete selected ({selected.size})
+          </Button>
+        )}
       </div>
 
       <Card>
