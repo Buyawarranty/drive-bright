@@ -1598,14 +1598,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             />
             <RemindMePopover leadId={lead.id} compact onReminderSaved={(msg) => onLogActivity('reminder', msg)} />
 
-            <SendWhatsAppLeadButton
-              leadId={lead.id}
-              phone={lead.phone}
-              firstName={lead.first_name}
-              disabled={isDoNotContact}
-              onSent={(t) => onLogActivity('whatsapp_sent', `Sent WhatsApp message (${t})`)}
-            />
-
             {onSendQuote && !lead.is_paid && (
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
