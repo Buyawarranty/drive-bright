@@ -367,6 +367,9 @@ function PriceOptionsPanel({
   mileage,
   vehicle,
   lastAssistantText,
+  agentLive,
+  agentNames,
+  onTalkToAgent,
 }: {
   disabled?: boolean;
   onSend: (text: string, extraBody?: Record<string, unknown>) => void;
@@ -376,6 +379,10 @@ function PriceOptionsPanel({
   /** DVLA details for the reg, so the panel prices exactly like the website. */
   vehicle?: Record<string, any> | null;
   lastAssistantText?: string | null;
+  /** True only while a specialist has switched themselves on as live. */
+  agentLive?: boolean;
+  agentNames?: string[];
+  onTalkToAgent?: () => void;
 }) {
   const [term, setTerm] = useState(24);
   const [limit, setLimit] = useState(2000);
