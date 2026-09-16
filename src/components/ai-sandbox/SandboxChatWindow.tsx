@@ -1025,20 +1025,25 @@ export function SandboxChatWindow({
 
   // Show the price builder only when Miles has actually priced a vehicle.
   // A plain vehicle lookup (e.g. "what's covered?") should not open the panel.
-  const hasPriceQuote = useMemo(
+  const priceQuoteCount = useMemo(
     () =>
-      messages.some((m) =>
-        m.parts.some(
-          (p) => typeof p.type === 'string' && p.type === 'tool-get_indicative_price',
-        ),
+      messages.reduce(
+        (n, m) =>
+          n +
+          m.parts.filter(
+            (p) => typeof p.type === 'string' && p.type === 'tool-get_indicative_price',
+          ).length,
+        0,
       ),
     [messages],
   );
+  const hasPriceQuote = priceQuoteCount > 0;
 
-  // Reopen the price builder automatically when a fresh price is quoted.
+  // Reopen the price builder automatically each time a fresh price is quoted,
+  // even if the customer closed it earlier.
   useEffect(() => {
-    if (hasPriceQuote) setPricePanelOpen(true);
-  }, [hasPriceQuote]);
+    if (priceQuoteCount > 0) setPricePanelOpen(true);
+  }, [priceQuoteCount]);
 
   // Latest assistant reply, so the price panel can echo the quoted figure.
   const lastAssistantText = useMemo(() => {
@@ -1488,6 +1493,19 @@ export function SandboxChatWindow({
               />
             </div>
           )}
+
+          {!agentMode && hasPriceQuote && !pricePanelOpen && (
+            <div className="w-full min-w-0 max-w-full px-0 pb-2 sm:px-2">
+              <button
+                type="button"
+                onClick={() => setPricePanelOpen(true)}
+                className="rounded-full border-2 border-[#0BA360] bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
+              >
+                Show my quote options
+              </button>
+            </div>
+          )}
+
 
 
 
