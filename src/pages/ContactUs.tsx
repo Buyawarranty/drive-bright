@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import TrustpilotMicroStarWidget from '@/components/TrustpilotMicroStarWidget';
 import { SALES_PHONE, SALES_PHONE_TEL, CLAIMS_PHONE, CLAIMS_PHONE_TEL, SUPPORT_EMAIL, CLAIMS_EMAIL, WHATSAPP_URL } from '@/constants/contact';
-import pandaSupport from '@/assets/buyawarranty-customer-support-panda.asset.json';
+import pandaSupport from '@/assets/customer-support-panda.webp';
 
 const ALLOWED_TYPES = [
   'application/pdf',
@@ -231,7 +231,7 @@ const ContactUs = () => {
           <div className="max-w-[1180px] mx-auto">
             <div className="flex items-center justify-center gap-4 mb-6 sm:mb-8">
               <img
-                src={pandaSupport.url}
+                src={pandaSupport}
                 alt="Buy A Warranty UK customer support panda answering the phone — friendly car warranty help team"
                 width={384}
                 height={480}
