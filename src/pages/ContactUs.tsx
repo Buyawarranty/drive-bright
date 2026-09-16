@@ -264,8 +264,8 @@ const ContactUs = () => {
                   </div>
                 </div>
                 <div className="space-y-2 mb-4">
-                  <a href={SALES_PHONE_TEL} className="flex items-center gap-3 text-[#11253E] font-bold hover:text-brand-orange transition-colors">
-                    <Phone className="w-4 h-4 text-brand-orange shrink-0" /> {SALES_PHONE}
+                  <a href="tel:03309122402" className="flex items-center gap-3 text-[#11253E] font-bold hover:text-brand-orange transition-colors">
+                    <Phone className="w-4 h-4 text-brand-orange shrink-0" /> 0330 912 2402
                   </a>
                   <a href={`mailto:${SUPPORT_EMAIL}`} className="flex items-center gap-3 text-gray-700 text-sm hover:text-brand-orange transition-colors break-all">
                     <Mail className="w-4 h-4 text-brand-orange shrink-0" /> {SUPPORT_EMAIL}
@@ -273,7 +273,7 @@ const ContactUs = () => {
                 </div>
                 <div className="mt-auto flex items-center gap-4">
                   <a
-                    href={SALES_PHONE_TEL}
+                    href="tel:03309122402"
                     className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange font-semibold rounded-xl py-2.5 text-sm transition-colors"
                   >
                     Call now <ArrowRight className="w-4 h-4" />
