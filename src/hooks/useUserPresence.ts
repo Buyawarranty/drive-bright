@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { withBackgroundPriority } from '@/lib/requestQueue';
+import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
 
 interface UseUserPresenceOptions {
   currentTab?: string;
@@ -69,8 +70,15 @@ export const useUserPresence = (options: UseUserPresenceOptions = {}) => {
     // Initial presence update
     updatePresence('online');
 
-    // Set up heartbeat
+    // Set up heartbeat. `update_user_presence` is an RPC (POST), and the
+    // request queue always routes writes through its high-priority lane
+    // regardless of withBackgroundPriority — so without this check, every
+    // open tab (including hidden/duplicate ones) fires a full-priority round
+    // trip every `heartbeatInterval`, forever, competing with whatever the
+    // agent is actually doing. shouldSkipPoll() is the convention already
+    // used across the rest of the dashboard's pollers for exactly this.
     heartbeatRef.current = setInterval(() => {
+      if (shouldSkipPoll()) return;
       if (isActiveRef.current) {
         updatePresence('online');
       }
