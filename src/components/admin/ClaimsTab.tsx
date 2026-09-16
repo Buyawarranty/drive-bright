@@ -40,6 +40,7 @@ import { AddClaimDialog } from './claims/AddClaimDialog';
 import { ClaimInvoicesDialog } from './claims/ClaimInvoicesDialog';
 import { ClaimFilesDialog } from './claims/ClaimFilesDialog';
 import { ClaimAppealDialog } from './claims/ClaimAppealDialog';
+import { PageLinkEmailDialog } from './claims/PageLinkEmailDialog';
 import { exportToCSV, exportToPDF, formatClaimForExport } from './claims/exportUtils';
 import { ClaimUpdateNotifications } from './claims/ClaimUpdateNotifications';
 import { ClaimRemindersBanner } from './claims/ClaimRemindersBanner';
