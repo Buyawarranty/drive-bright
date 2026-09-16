@@ -146,7 +146,9 @@ function stripPrefix(text: string) {
 // Streamdown links full https:// URLs automatically. Convert plain domains
 // such as buyawarranty.co.uk/make-a-claim/ into safe Markdown links too.
 function linkifyChatUrls(text: string) {
-  const bareUrl = /(^|[\s(])((?:www\.)?(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}(?:\/[^\s<]*)?)/gi;
+  // `*` is allowed as the preceding character so bolded links like
+  // **buyawarranty.co.uk/make-a-claim/** still become clickable.
+  const bareUrl = /(^|[\s(*])((?:www\.)?(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}(?:\/[^\s<*]*)?)/gi;
 
   return text.replace(bareUrl, (match, prefix: string, rawUrl: string, offset: number) => {
     const domainOffset = offset + prefix.length;
