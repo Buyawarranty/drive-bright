@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MessageCircle, Mail, Clock, Upload, X, ArrowRight, Phone, MapPin, HeartHandshake, Timer, ShieldCheck, Milestone, CheckCircle2, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+
 
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,7 @@ const ALLOWED_TYPES = [
 
 const ContactUs = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
+  
 
 
   const [formData, setFormData] = useState({
