@@ -580,7 +580,7 @@ const ContactUs = () => {
                       </div>
                       <Button
                         type="submit"
-                        disabled={callbackSending}
+                        disabled={callbackSending || !validUkPhone(callbackPhone)}
                         className="w-full bg-brand-orange hover:bg-brand-orange/90 text-white font-bold h-12 rounded-xl disabled:opacity-60"
                       >
                         {callbackSending ? (
