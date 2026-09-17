@@ -544,6 +544,52 @@ Deno.serve(async (req) => {
 
     logStep('Upload complete', summary);
 
+    // ─── STALL ALERT ──────────────────────────────────────────────────────────
+    // If every sale in this run failed, or sales have been sitting unsent for
+    // more than 6 hours, email the team once per day so a silent stop (e.g. a
+    // stale deployment) can never go unnoticed again.
+    try {
+      const nothingGotThrough = allPending.length > 0 && uploaded === 0;
+      const { count: staleCount } = await supabase
+        .from('customers')
+        .select('id', { count: 'exact', head: true })
+        .is('google_ads_conversion_uploaded_at', null)
+        .in('status', ['active', 'Active'])
+        .eq('is_deleted', false)
+        .gte('created_at', cutoffISO)
+        .lte('created_at', new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString());
+
+      const stalled = nothingGotThrough || (staleCount || 0) >= 3;
+      const hourUTC = new Date().getUTCHours();
+      const resendKey = Deno.env.get('RESEND_API_KEY');
+
+      if (stalled && hourUTC === 9 && resendKey) {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${resendKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'BuyaWarranty Team <support@buyawarranty.co.uk>',
+            to: ['support@buyawarranty.co.uk'],
+            subject: 'Google Ads sales upload looks stalled',
+            html: `<p>The hourly Google Ads sales upload is not getting sales through.</p>
+                   <ul>
+                     <li>Sales attempted this run: ${allPending.length}</li>
+                     <li>Sent successfully: ${uploaded}</li>
+                     <li>Failed: ${failed}</li>
+                     <li>Sales waiting over 6 hours: ${staleCount || 0}</li>
+                   </ul>
+                   <p>First errors:</p><pre>${(errors.slice(0, 5).join('\n') || 'none').replace(/</g, '&lt;')}</pre>`,
+          }),
+        });
+        logStep('Stall alert email sent');
+      }
+    } catch (e) {
+      logStep('Warning: stall alert failed', (e as Error).message);
+    }
+
     return new Response(JSON.stringify(summary), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
