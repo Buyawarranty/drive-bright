@@ -588,6 +588,15 @@ const ContactUs = () => {
                   )}
 
                 </div>
+
+                <img
+                  src={pandaSupport}
+                  alt="Buy A Warranty UK customer support panda at the desk answering the phone — friendly car warranty help team"
+                  width={384}
+                  height={480}
+                  className="w-44 lg:w-52 h-auto mx-auto"
+                  loading="lazy"
+                />
               </div>
             </div>
           </div>
