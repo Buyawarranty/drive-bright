@@ -566,8 +566,9 @@ const ContactUs = () => {
                           <>
                             Send message <ArrowRight className="w-5 h-5" strokeWidth={3} />
                           </>
-                        )}
-                      </Button>
+                          )}
+                        </Button>
+                      </div>
                     </form>
                   </>
                 )}
