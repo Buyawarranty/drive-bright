@@ -230,25 +230,14 @@ const ContactUs = () => {
         {/* ── CONTACT HERO: choose a route ── */}
         <section className="bg-[#F7F8FA] pt-10 pb-8 sm:pt-14 sm:pb-12 lg:pt-16 lg:pb-14 px-4">
           <div className="max-w-[1180px] mx-auto">
-            <div className="flex items-center justify-center gap-4 mb-6 sm:mb-8">
-              <img
-                src={pandaSupport}
-                alt="Buy A Warranty UK customer support panda answering the phone — friendly car warranty help team"
-                width={384}
-                height={480}
-                className="w-16 sm:w-20 lg:w-24 h-auto shrink-0"
-                loading="eager"
-                fetchPriority="high"
-              />
-              <div className="text-left">
-                <p className="text-brand-orange text-sm sm:text-base font-bold">Contact us</p>
-                <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] leading-tight font-extrabold text-[#11253E]">
-                  We're here to help
-                </h1>
-                <p className="text-gray-600 text-sm sm:text-base mt-1">
-                  Get support, talk to our claims team, or message us on WhatsApp.
-                </p>
-              </div>
+            <div className="text-center mb-6 sm:mb-8">
+              <p className="text-brand-orange text-sm sm:text-base font-bold">Contact us</p>
+              <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] leading-tight font-extrabold text-[#11253E]">
+                We're here to help
+              </h1>
+              <p className="text-gray-600 text-sm sm:text-base mt-1">
+                Get support, talk to our claims team, or message us on WhatsApp.
+              </p>
             </div>
 
             {/* Three equal route cards */}
@@ -599,6 +588,15 @@ const ContactUs = () => {
                   )}
 
                 </div>
+
+                <img
+                  src={pandaSupport}
+                  alt="Buy A Warranty UK customer support panda at the desk answering the phone — friendly car warranty help team"
+                  width={384}
+                  height={480}
+                  className="w-44 lg:w-52 h-auto mx-auto"
+                  loading="lazy"
+                />
               </div>
             </div>
           </div>
