@@ -315,9 +315,11 @@ const ContactUs = () => {
                   <span className="mt-3 text-gray-500 text-sm">Monday – Saturday · 9am to 6pm</span>
                 ) : (
                   <span className="mt-3 text-gray-500 text-sm inline-flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-gray-400" /> We're closed right now — back Mon 9am (Sat open too · 9am–6pm)
+                    <Clock className="w-3.5 h-3.5 text-gray-400" /> We're closed right now — call back during opening hours
                   </span>
                 )}
+
+              {/* Claims & repairs */}
               </div>
 
               {/* Claims & repairs */}
