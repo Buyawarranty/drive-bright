@@ -318,9 +318,8 @@ const ContactUs = () => {
                     <Clock className="w-3.5 h-3.5 text-gray-400" /> We're closed right now — call back during opening hours
                   </span>
                 )}
-
-              {/* Claims & repairs */}
               </div>
+
 
               {/* Claims & repairs */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6 flex flex-col">
@@ -366,7 +365,7 @@ const ContactUs = () => {
                   <span className="mt-3 text-gray-500 text-sm">Monday – Friday · 9am to 5pm</span>
                 ) : (
                   <span className="mt-3 text-gray-500 text-sm inline-flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-gray-400" /> We're closed right now — back Mon 9am (Mon–Fri · 9am–5pm)
+                    <Clock className="w-3.5 h-3.5 text-gray-400" /> We're closed right now — call back during opening hours
                   </span>
                 )}
               </div>
