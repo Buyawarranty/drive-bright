@@ -192,11 +192,48 @@ export const PolicyDocumentsTab: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Only the newest 500 customers are held locally, so anything older must be
+  // searched in the database. Runs after a short pause and merges with the local list.
+  useEffect(() => {
+    const term = searchQuery.trim();
+    if (term.length < 2) {
+      setRemoteCustomers([]);
+      return;
+    }
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      const like = term.replace(/[%,()]/g, '');
+      const plate = like.replace(/\s/g, '');
+      const digits = like.replace(/\D/g, '');
+      const filters = [
+        `name.ilike.%${like}%`,
+        `email.ilike.%${like}%`,
+        `registration_plate.ilike.%${like}%`,
+        `registration_plate.ilike.%${plate}%`,
+        `warranty_number.ilike.%${like}%`,
+      ];
+      if (digits.length >= 6) filters.push(`phone.ilike.%${digits}%`);
+      const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .or(filters.join(','))
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (!cancelled && !error && data) setRemoteCustomers(data as CustomerData[]);
+    }, 300);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [searchQuery]);
+
   // Filter customers based on search query
   const filteredCustomers = useMemo(() => {
     if (!searchQuery.trim()) return allCustomers;
     const q = searchQuery.toLowerCase().replace(/\s/g, '');
-    return allCustomers.filter((c) => {
+    const seen = new Set(allCustomers.map((c) => c.id));
+    const pool = [...allCustomers, ...remoteCustomers.filter((c) => !seen.has(c.id))];
+    return pool.filter((c) => {
       const reg = (c.registration_plate || '').toLowerCase().replace(/\s/g, '');
       return (
         c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
