@@ -303,13 +303,39 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         const { data: pcData, error: pcError } = await supabase.functions.invoke('postcoder-lookup', {
           body: { action: 'find', postcode: cleanPostcode },
         });
-        const rows = Array.isArray(pcData?.addresses) ? pcData.addresses : [];
+        // The lookup service returns slightly different field names depending on
+        // version — normalise every shape so the address always fills in.
+        const rawRows = Array.isArray(pcData?.addresses)
+          ? pcData.addresses
+          : Array.isArray(pcData?.suggestions)
+            ? pcData.suggestions
+            : [];
+        const rows = rawRows
+          .map((r: any) => (r?.resolved ? r.resolved : r))
+          .filter((r: any) => r && (r.line_1 || r.address || r.formatted_address))
+          .map((r: any) => ({
+            ...r,
+            town_or_city: r.town_or_city || r.town || r.posttown || '',
+            formatted_address: r.formatted_address || r.address || '',
+          }));
         if (!pcError && rows.length > 0) {
           const displayPostcode = rows[0].postcode || postcode;
+          const lookupTown = rows[0].town_or_city || '';
           setPostcodeInput(displayPostcode);
-          setAddressData(prev => ({ ...prev, postcode: displayPostcode }));
-          setAddressValidated(prev => ({ ...prev, postcode: true }));
-          setAddressErrors(prev => ({ ...prev, postcode: '' }));
+          // Fill town/county straight away so the customer only has to pick their house
+          setAddressData(prev => ({
+            ...prev,
+            postcode: displayPostcode,
+            town: prev.town?.trim() || lookupTown,
+            county: prev.county?.trim() || rows[0].county || '',
+          }));
+          setAddressValidated(prev => ({
+            ...prev,
+            postcode: true,
+            town: prev.town || !!lookupTown,
+          }));
+          setAddressErrors(prev => ({ ...prev, postcode: '', town: lookupTown ? '' : prev.town }));
+          if (lookupTown) setTownAutoFilled(true);
           setAddressSuggestions(rows);
           setShowAddressDropdown(true);
           setIsLookingUp(false);
