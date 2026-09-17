@@ -193,7 +193,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   const getSortValue = useCallback((lead: Lead, key: ColumnSortKey): number | string => {
     if (key === 'activity') {
       // Agent activity = human touches only (calls, notes, status changes bump last_contacted_at)
-      const agentAt = activityByLead[lead.id]?.lastAt;
+      const agentAt = sortActivityByLead[lead.id]?.lastAt;
       const contacted = lead.last_contacted_at ? new Date(lead.last_contacted_at).getTime() : 0;
       const derived = agentAt ? new Date(agentAt).getTime() : 0;
       return Math.max(contacted, derived);
