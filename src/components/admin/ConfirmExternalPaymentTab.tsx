@@ -2405,25 +2405,24 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                 </div>
               </div>
 
-              {/* Price comparison record — the Quotes & Orders price live at this
-                  exact date/time versus what the agent is confirming, with the
-                  percentage difference and whether it is inside their allowance.
-                  Shown to the agent and stored with the sale. */}
+              {/* Price comparison record — shown ONLY when the confirmation goes
+                  beyond the agent's discount allowance: the Quotes & Orders price
+                  live at this exact date/time versus what is being confirmed, the
+                  percentage difference and the breach warning. Compliant
+                  confirmations show nothing extra. Still stored with the sale. */}
               {(() => {
                 const confirming = Number.isFinite(enteredAmount) && enteredAmount > 0 ? enteredAmount : 0;
                 const diffAmount = Math.round((quotedTotal - confirming) * 100) / 100;
                 const diffPct = quotedTotal > 0 ? (diffAmount / quotedTotal) * 100 : 0;
                 const withinAllowance = diffPct <= DISCOUNT_CEILING_PCT + 0.01;
+                if (withinAllowance) return null;
                 return (
-                  <div className={cn(
-                    'rounded-xl border-2 p-5 space-y-3',
-                    withinAllowance ? 'border-slate-300 bg-slate-50' : 'border-destructive bg-destructive/5',
-                  )}>
+                  <div className="rounded-xl border-2 border-destructive bg-destructive/5 p-5 space-y-3">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs font-bold uppercase tracking-wide text-slate-700">
+                      <p className="text-xs font-bold uppercase tracking-wide text-destructive">
                         Price comparison record — stored with this sale
                       </p>
-                      <Badge variant="outline" className="bg-white border-slate-300 text-slate-700">
+                      <Badge variant="outline" className="bg-white border-destructive/40 text-destructive">
                         {format(new Date(), 'd MMM yyyy, HH:mm')}
                       </Badge>
                     </div>
@@ -2442,27 +2441,21 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                       </div>
                       <div>
                         <p className="text-[11px] font-semibold text-slate-500">Difference</p>
-                        <p className={cn('text-xl font-bold', diffAmount > 0 ? 'text-destructive' : 'text-slate-900')}>
+                        <p className="text-xl font-bold text-destructive">
                           {diffAmount > 0 ? '−' : diffAmount < 0 ? '+' : ''}£{Math.abs(diffAmount).toFixed(2)}
                         </p>
                       </div>
                       <div>
                         <p className="text-[11px] font-semibold text-slate-500">Difference %</p>
-                        <p className={cn('text-xl font-bold', withinAllowance ? 'text-slate-900' : 'text-destructive')}>
+                        <p className="text-xl font-bold text-destructive">
                           {diffPct > 0 ? '−' : diffPct < 0 ? '+' : ''}{Math.abs(diffPct).toFixed(1)}%
                         </p>
                       </div>
                     </div>
-                    {withinAllowance ? (
-                      <p className="text-xs font-semibold text-slate-600">
-                        Inside your {DISCOUNT_CEILING_PCT}% discount allowance.
-                      </p>
-                    ) : (
-                      <p className="text-xs font-semibold text-destructive">
-                        {Math.abs(diffPct).toFixed(1)}% off is beyond the {DISCOUNT_CEILING_PCT}% you are allowed to give.
-                        This is recorded against your name and reviewed by management.
-                      </p>
-                    )}
+                    <p className="text-xs font-semibold text-destructive">
+                      {Math.abs(diffPct).toFixed(1)}% off is beyond the {DISCOUNT_CEILING_PCT}% you are allowed to give.
+                      This is recorded against your name and reviewed by management.
+                    </p>
                   </div>
                 );
               })()}
