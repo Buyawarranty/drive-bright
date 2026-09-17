@@ -267,7 +267,7 @@ const ContactUs = () => {
                 <div className="mt-auto flex items-center gap-4">
                   <a
                     href="tel:03309122402"
-                    className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange font-semibold rounded-xl py-2.5 text-sm transition-colors"
+                    className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-light text-white font-bold rounded-xl py-3 text-base transition-colors"
                   >
                     Call now <ArrowRight className="w-4 h-4" />
                   </a>
@@ -300,7 +300,7 @@ const ContactUs = () => {
                 <div className="mt-auto flex items-center gap-4">
                   <a
                     href={CLAIMS_PHONE_TEL}
-                    className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-blue/10 hover:bg-brand-blue/20 text-brand-blue font-semibold rounded-xl py-2.5 text-sm transition-colors"
+                    className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blue-dark text-white font-bold rounded-xl py-3 text-base transition-colors"
                   >
                     Call now <ArrowRight className="w-4 h-4" />
                   </a>
