@@ -26,6 +26,7 @@
  */
 
 import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
+import { isHeavyTabBusy } from '@/lib/heavyTabBusy';
 
 const MAX_CONCURRENT = 8;
 const MAX_BACKGROUND_CONCURRENT = 2;
@@ -59,6 +60,11 @@ function isDeepSleeping(): boolean {
 
 function backgroundCap(): number {
   if (isDeepSleeping()) return 0;
+  // A heavy screen (Quotes & Orders, New Leads) is booting: hold background
+  // pollers/counters back entirely so the screen the agent is waiting for gets
+  // every socket. This flag existed but nothing read it, which is why sales
+  // agents still saw 20–90s loads while their pollers ran.
+  if (isHeavyTabBusy()) return 0;
   if (typeof document !== 'undefined' && document.hidden) return 1;
   if (isSecondaryCrmTab()) return 1;
   return MAX_BACKGROUND_CONCURRENT;

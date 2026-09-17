@@ -1,4 +1,5 @@
 import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
+import { markHeavyTabBusy } from '@/lib/heavyTabBusy';
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { isToday, isPast } from 'date-fns';
 import { useSearchParams } from 'react-router-dom';
@@ -138,6 +139,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   userRole,
   sandboxMode = false,
 }) => {
+
+  // While this screen boots, hold background pollers/counters back so the
+  // agent's lead list gets every available connection (see requestQueue).
+  useEffect(() => markHeavyTabBusy(30000), []);
 
   const { canExportTab, hasGranularPermission } = usePermissions();
   const { exportToCSV, exportToExcel } = useDataExport();
