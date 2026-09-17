@@ -1112,11 +1112,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return count;
   }, [customerData, mileageValueValid]);
 
-  // Auto-scroll to "Choose how you want to pay" once personal details (incl. surname) are complete
+  // Auto-scroll to "Choose how you want to pay" only once personal details AND a
+  // fully validated address (real postcode, address line 1 and town) are in place.
   const hasAutoScrolledToPayRef = React.useRef(false);
   useEffect(() => {
     if (hasAutoScrolledToPayRef.current) return;
-    if (personalDetailsComplete) {
+    if (personalDetailsComplete && addressComplete) {
       hasAutoScrolledToPayRef.current = true;
       setTimeout(() => {
         const paySection = document.getElementById('how-to-pay-section');
@@ -1125,7 +1126,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }
       }, 300);
     }
-  }, [personalDetailsComplete]);
+  }, [personalDetailsComplete, addressComplete]);
 
   // Track if component has been mounted (for bfcache handling)
   const hasMountedRef = React.useRef(false);
