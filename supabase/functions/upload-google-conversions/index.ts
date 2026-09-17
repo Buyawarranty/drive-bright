@@ -572,7 +572,7 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             from: 'BuyaWarranty Team <support@buyawarranty.co.uk>',
-            to: ['support@buyawarranty.co.uk'],
+            to: ['support@buyawarranty.co.uk', 'ads@buyawarranty.co.uk'],
             subject: 'Google Ads sales upload looks stalled',
             html: `<p>The hourly Google Ads sales upload is not getting sales through.</p>
                    <ul>
