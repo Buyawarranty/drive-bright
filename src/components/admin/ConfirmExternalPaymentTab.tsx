@@ -986,6 +986,9 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
             enteredTotal: collected,
             notes: [
               `Manual payment confirmed via ${paymentSource || 'outside route'} — ${discountPct.toFixed(1)}% off`,
+              // Exact price comparison shown to the agent at confirmation time, so
+              // a disputed discount can always be reconstructed later.
+              `COMPARISON @ ${format(new Date(), 'd MMM yyyy, HH:mm')} — Quotes & Orders £${quotedTotal.toFixed(2)} vs confirmed £${collected.toFixed(2)} (diff £${Math.max(0, Math.round((quotedTotal - collected) * 100) / 100).toFixed(2)}, ${quotedTotal > 0 ? (((quotedTotal - collected) / quotedTotal) * 100).toFixed(1) : '0.0'}%) — allowance ${DISCOUNT_CEILING_PCT}% ${quotedTotal > 0 && ((quotedTotal - collected) / quotedTotal) * 100 > DISCOUNT_CEILING_PCT + 0.01 ? 'EXCEEDED' : 'within'}`,
               underNetFloor && !priceMatchReady
                 ? `MANAGEMENT OVERRIDE — below the £${netFloorAmount.toFixed(2)} net floor for this cover`
                 : '',
@@ -2401,6 +2404,68 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                   <div><strong>Assigned To:</strong> {adminUsers.find(a => a.id === assigneeId) ? getAdminDisplayName(adminUsers.find(a => a.id === assigneeId)!) : 'Unassigned'}</div>
                 </div>
               </div>
+
+              {/* Price comparison record — the Quotes & Orders price live at this
+                  exact date/time versus what the agent is confirming, with the
+                  percentage difference and whether it is inside their allowance.
+                  Shown to the agent and stored with the sale. */}
+              {(() => {
+                const confirming = Number.isFinite(enteredAmount) && enteredAmount > 0 ? enteredAmount : 0;
+                const diffAmount = Math.round((quotedTotal - confirming) * 100) / 100;
+                const diffPct = quotedTotal > 0 ? (diffAmount / quotedTotal) * 100 : 0;
+                const withinAllowance = diffPct <= DISCOUNT_CEILING_PCT + 0.01;
+                return (
+                  <div className={cn(
+                    'rounded-xl border-2 p-5 space-y-3',
+                    withinAllowance ? 'border-slate-300 bg-slate-50' : 'border-destructive bg-destructive/5',
+                  )}>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-bold uppercase tracking-wide text-slate-700">
+                        Price comparison record — stored with this sale
+                      </p>
+                      <Badge variant="outline" className="bg-white border-slate-300 text-slate-700">
+                        {format(new Date(), 'd MMM yyyy, HH:mm')}
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <p className="text-[11px] font-semibold text-slate-500">Quotes &amp; Orders price now</p>
+                        <p className="text-xl font-bold text-slate-900">£{quotedTotal.toFixed(2)}</p>
+                        <p className="text-[10px] text-slate-500">
+                          {termOptions.find(t => t.id === paymentType)?.label} · £{claimLimit.toLocaleString()} claim limit · £{excessAmount} excess · £{labourRate}/hr
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-semibold text-slate-500">Confirming</p>
+                        <p className="text-xl font-bold text-slate-900">£{confirming.toFixed(2)}</p>
+                        <p className="text-[10px] text-slate-500">{paymentSource || 'source not set'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-semibold text-slate-500">Difference</p>
+                        <p className={cn('text-xl font-bold', diffAmount > 0 ? 'text-destructive' : 'text-slate-900')}>
+                          {diffAmount > 0 ? '−' : diffAmount < 0 ? '+' : ''}£{Math.abs(diffAmount).toFixed(2)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-semibold text-slate-500">Difference %</p>
+                        <p className={cn('text-xl font-bold', withinAllowance ? 'text-slate-900' : 'text-destructive')}>
+                          {diffPct > 0 ? '−' : diffPct < 0 ? '+' : ''}{Math.abs(diffPct).toFixed(1)}%
+                        </p>
+                      </div>
+                    </div>
+                    {withinAllowance ? (
+                      <p className="text-xs font-semibold text-slate-600">
+                        Inside your {DISCOUNT_CEILING_PCT}% discount allowance.
+                      </p>
+                    ) : (
+                      <p className="text-xs font-semibold text-destructive">
+                        {Math.abs(diffPct).toFixed(1)}% off is beyond the {DISCOUNT_CEILING_PCT}% you are allowed to give.
+                        This is recorded against your name and reviewed by management.
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
 
               {discountBlocked && (
                 <div className="p-4 rounded-lg border-2 border-destructive bg-destructive/10 text-sm font-semibold text-destructive">
