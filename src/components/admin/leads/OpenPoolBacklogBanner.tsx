@@ -225,8 +225,8 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
   useEffect(() => {
     loadCount();
     loadAgentCounts();
-    const t = setInterval(() => { if (shouldSkipPoll()) return; loadCount(); }, 30_000);
-    const t2 = setInterval(() => { if (shouldSkipPoll()) return; loadAgentCounts(); }, 60_000);
+    const t = setInterval(() => { if (shouldSkipPoll()) return; loadCount(); }, 60_000);
+    const t2 = setInterval(() => { if (shouldSkipPoll()) return; loadAgentCounts(); }, 120_000);
     return () => {
       clearInterval(t);
       clearInterval(t2);

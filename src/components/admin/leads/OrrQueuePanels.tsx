@@ -78,7 +78,7 @@ export const OrrQueuePanels: React.FC = () => {
 
   React.useEffect(() => {
     load();
-    const t = setInterval(() => { if (document.hidden || isSecondaryCrmTab()) return; load(); }, 60_000);
+    const t = setInterval(() => { if (document.hidden || isSecondaryCrmTab()) return; load(); }, 120_000);
     return () => clearInterval(t);
   }, [load]);
 

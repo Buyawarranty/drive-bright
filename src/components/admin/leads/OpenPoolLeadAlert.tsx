@@ -79,7 +79,7 @@ function OpenPoolLeadAlertInner() {
 
   useEffect(() => {
     loadCount();
-    const t = setInterval(() => { if (document.hidden || isSecondaryCrmTab()) return; loadCount(); }, 15000);
+    const t = setInterval(() => { if (document.hidden || isSecondaryCrmTab()) return; loadCount(); }, 30000);
     return () => clearInterval(t);
   }, [loadCount]);
 

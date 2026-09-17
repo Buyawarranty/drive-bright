@@ -447,7 +447,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   useEffect(() => {
     fetchReminderLeadIds();
-    const interval = setInterval(() => { if (shouldSkipPoll()) return; fetchReminderLeadIds(); }, 60000);
+    const interval = setInterval(() => { if (shouldSkipPoll()) return; fetchReminderLeadIds(); }, 120000);
     const handleReminderChanged = () => {
       // Small delay to ensure DB write is committed before refetch
       setTimeout(() => fetchReminderLeadIds(), 300);

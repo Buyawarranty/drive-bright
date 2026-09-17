@@ -165,23 +165,21 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
     return [reservation.lead, ...leads];
   }, [leads, reservation]);
 
-  // Extract emails from leads for quote lookup
-  const leadEmails = useMemo(() => leadsWithReservation.map(l => l.email), [leadsWithReservation]);
-  const { quotesByEmail } = useLeadQuotes(leadEmails);
-  const { activityByEmail } = useCustomerActivity(leadEmails);
-  const { repeatByLeadId } = useRepeatCustomers(
-    useMemo(
-      () => leadsWithReservation.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg, phone: l.phone, first_name: l.first_name, last_name: l.last_name, created_at: l.created_at })),
-      [leadsWithReservation]
-    )
-  );
-
+  // PERF: the per-row enrichment lookups (quotes, customer activity, repeat
+  // badges, response times, agent activity) used to run across EVERY loaded
+  // lead — up to 750 rows — even though only 200 are ever on screen. Those
+  // lookups are the heaviest reads on this page, so they now follow the
+  // visible page only (see below, after pagination). Row counts, tiles and
+  // filters still use the full list, so nothing disappears.
   const leadIds = useMemo(() => leadsWithReservation.map(l => l.id), [leadsWithReservation]);
-  const { activityByLead } = useAgentActivity(leadIds);
 
-  const { responseByLead } = useLeadResponseTime(
-    useMemo(() => leadsWithReservation.map(l => ({ id: l.id, created_at: l.created_at })), [leadsWithReservation])
+  // Sorting by "activity" is the one case that genuinely needs activity for the
+  // whole list, so we only load it wide when that sort is active.
+  const EMPTY_IDS = useMemo<string[]>(() => [], []);
+  const { activityByLead: sortActivityByLead } = useAgentActivity(
+    sortKey === 'activity' ? leadIds : EMPTY_IDS
   );
+
 
   const agentNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -195,7 +193,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   const getSortValue = useCallback((lead: Lead, key: ColumnSortKey): number | string => {
     if (key === 'activity') {
       // Agent activity = human touches only (calls, notes, status changes bump last_contacted_at)
-      const agentAt = activityByLead[lead.id]?.lastAt;
+      const agentAt = sortActivityByLead[lead.id]?.lastAt;
       const contacted = lead.last_contacted_at ? new Date(lead.last_contacted_at).getTime() : 0;
       const derived = agentAt ? new Date(agentAt).getTime() : 0;
       return Math.max(contacted, derived);
@@ -213,7 +211,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
     }
     // Always sort by original lead arrival time — not resubmission/allocation time
     return lead.created_at ? new Date(lead.created_at).getTime() : 0;
-  }, [agentNameById, activityByLead]);
+  }, [agentNameById, sortActivityByLead]);
 
   const sortedLeads = useMemo(() => {
     const base = sortKey
@@ -253,6 +251,26 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   // request too large and the badges silently came back empty.
   const pagedLeadIds = useMemo(() => pagedLeads.map(l => l.id), [pagedLeads]);
   const noteCounts = useLeadNoteCounts(pagedLeadIds);
+
+  // Row decoration lookups follow the visible page only (200 rows) instead of
+  // every loaded lead. Totals, filters and tiles are unaffected.
+  const pagedLeadEmails = useMemo(() => pagedLeads.map(l => l.email), [pagedLeads]);
+  const { quotesByEmail } = useLeadQuotes(pagedLeadEmails);
+  const { activityByEmail } = useCustomerActivity(pagedLeadEmails);
+  const { repeatByLeadId } = useRepeatCustomers(
+    useMemo(
+      () => pagedLeads.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg, phone: l.phone, first_name: l.first_name, last_name: l.last_name, created_at: l.created_at })),
+      [pagedLeads]
+    )
+  );
+  const { responseByLead } = useLeadResponseTime(
+    useMemo(() => pagedLeads.map(l => ({ id: l.id, created_at: l.created_at })), [pagedLeads])
+  );
+  const { activityByLead: pagedActivityByLead } = useAgentActivity(pagedLeadIds);
+  const activityByLead = useMemo(
+    () => ({ ...sortActivityByLead, ...pagedActivityByLead }),
+    [sortActivityByLead, pagedActivityByLead]
+  );
 
 
   const handleToggleSort = useCallback((key: ColumnSortKey) => {

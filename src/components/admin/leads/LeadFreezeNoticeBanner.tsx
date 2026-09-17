@@ -39,7 +39,7 @@ export const LeadFreezeNoticeBanner: React.FC<Props> = ({ adminUserId }) => {
       });
     };
     load();
-    const t = setInterval(() => { if (shouldSkipPoll()) return; load(); }, 120000);
+    const t = setInterval(() => { if (shouldSkipPoll()) return; load(); }, 240000);
     return () => {
       cancelled = true;
       clearInterval(t);
