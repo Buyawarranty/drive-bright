@@ -45,6 +45,32 @@ const ContactUs = () => {
   const [callbackSending, setCallbackSending] = useState(false);
   const [callbackDone, setCallbackDone] = useState(false);
 
+  // UK-time aware "open now" checks (handles GMT/BST automatically)
+  const [now, setNow] = useState(() => new Date());
+  React.useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(id);
+  }, []);
+
+  const isOpenNow = (days: string[], startHour: number, endHour: number) => {
+    const fmt = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/London',
+      weekday: 'short',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false,
+    });
+    const parts = Object.fromEntries(fmt.formatToParts(now).map(p => [p.type, p.value]));
+    if (!days.includes(parts.weekday)) return false;
+    let hour = parseInt(parts.hour, 10);
+    if (hour === 24) hour = 0;
+    const minutes = hour * 60 + parseInt(parts.minute, 10);
+    return minutes >= startHour * 60 && minutes < endHour * 60;
+  };
+
+  const supportOpen = isOpenNow(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], 9, 18);
+  const claimsOpen = isOpenNow(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], 9, 17);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
 
@@ -265,18 +291,35 @@ const ContactUs = () => {
                   </a>
                 </div>
                 <div className="mt-auto flex items-center gap-4">
-                  <a
-                    href="tel:03309122402"
-                    className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-light text-white font-bold rounded-xl py-3 text-base transition-colors"
-                  >
-                    Call now <ArrowRight className="w-4 h-4" />
-                  </a>
-                  <a href={`mailto:${SUPPORT_EMAIL}`} className="text-[#11253E] font-semibold text-sm underline hover:text-brand-orange transition-colors">
-                    Email us
-                  </a>
+                  {supportOpen ? (
+                    <>
+                      <a
+                        href="tel:03309122402"
+                        className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-light text-white font-bold rounded-xl py-3 text-base transition-colors"
+                      >
+                        Call now <ArrowRight className="w-4 h-4" />
+                      </a>
+                      <a href={`mailto:${SUPPORT_EMAIL}`} className="text-[#11253E] font-semibold text-sm underline hover:text-brand-orange transition-colors">
+                        Email us
+                      </a>
+                    </>
+                  ) : (
+                    <>
+                      <a href={`mailto:${SUPPORT_EMAIL}`} className="flex-1 inline-flex items-center justify-center gap-2 border-2 border-brand-orange text-brand-orange hover:bg-brand-orange/5 font-bold rounded-xl py-3 text-base transition-colors">
+                        Email us
+                      </a>
+                    </>
+                  )}
                 </div>
-                <span className="mt-3 text-gray-500 text-sm">Monday – Saturday · 9am to 6pm</span>
+                {supportOpen ? (
+                  <span className="mt-3 text-gray-500 text-sm">Monday – Saturday · 9am to 6pm</span>
+                ) : (
+                  <span className="mt-3 text-gray-500 text-sm inline-flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-gray-400" /> We're closed right now — call back during opening hours
+                  </span>
+                )}
               </div>
+
 
               {/* Claims & repairs */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6 flex flex-col">
@@ -298,17 +341,33 @@ const ContactUs = () => {
                   </a>
                 </div>
                 <div className="mt-auto flex items-center gap-4">
-                  <a
-                    href={CLAIMS_PHONE_TEL}
-                    className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blue-dark text-white font-bold rounded-xl py-3 text-base transition-colors"
-                  >
-                    Call now <ArrowRight className="w-4 h-4" />
-                  </a>
-                  <a href={`mailto:${CLAIMS_EMAIL}`} className="text-[#11253E] font-semibold text-sm underline hover:text-brand-orange transition-colors">
-                    Email us
-                  </a>
+                  {claimsOpen ? (
+                    <>
+                      <a
+                        href={CLAIMS_PHONE_TEL}
+                        className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blue-dark text-white font-bold rounded-xl py-3 text-base transition-colors"
+                      >
+                        Call now <ArrowRight className="w-4 h-4" />
+                      </a>
+                      <a href={`mailto:${CLAIMS_EMAIL}`} className="text-[#11253E] font-semibold text-sm underline hover:text-brand-orange transition-colors">
+                        Email us
+                      </a>
+                    </>
+                  ) : (
+                    <>
+                      <a href={`mailto:${CLAIMS_EMAIL}`} className="flex-1 inline-flex items-center justify-center gap-2 border-2 border-brand-blue text-brand-blue hover:bg-brand-blue/5 font-bold rounded-xl py-3 text-base transition-colors">
+                        Email us
+                      </a>
+                    </>
+                  )}
                 </div>
-                <span className="mt-3 text-gray-500 text-sm">Monday – Friday · 9am to 5pm</span>
+                {claimsOpen ? (
+                  <span className="mt-3 text-gray-500 text-sm">Monday – Friday · 9am to 5pm</span>
+                ) : (
+                  <span className="mt-3 text-gray-500 text-sm inline-flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-gray-400" /> We're closed right now — call back during opening hours
+                  </span>
+                )}
               </div>
 
               {/* WhatsApp */}
