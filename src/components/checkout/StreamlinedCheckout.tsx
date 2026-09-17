@@ -2842,8 +2842,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           type="button"
                           onClick={() => {
                             if (addr.__container) {
-                              setPostcodeInput(addr.drill);
-                              performAddressSearch(addr.drill, true);
+                              if (addr.retrieveId) {
+                                resolveSuggestionId(addr.retrieveId, addr.searchTerm || postcodeInput);
+                              } else {
+                                setPostcodeInput(addr.drill);
+                                performAddressSearch(addr.drill, true);
+                              }
+                            } else if (addr.__lookupId) {
+                              resolveSuggestionId(addr.__lookupId, addr.searchTerm || postcodeInput);
                             } else {
                               handleSelectLookupAddress(addr);
                             }
