@@ -340,17 +340,33 @@ const ContactUs = () => {
                   </a>
                 </div>
                 <div className="mt-auto flex items-center gap-4">
-                  <a
-                    href={CLAIMS_PHONE_TEL}
-                    className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blue-dark text-white font-bold rounded-xl py-3 text-base transition-colors"
-                  >
-                    Call now <ArrowRight className="w-4 h-4" />
-                  </a>
-                  <a href={`mailto:${CLAIMS_EMAIL}`} className="text-[#11253E] font-semibold text-sm underline hover:text-brand-orange transition-colors">
-                    Email us
-                  </a>
+                  {claimsOpen ? (
+                    <>
+                      <a
+                        href={CLAIMS_PHONE_TEL}
+                        className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blue-dark text-white font-bold rounded-xl py-3 text-base transition-colors"
+                      >
+                        Call now <ArrowRight className="w-4 h-4" />
+                      </a>
+                      <a href={`mailto:${CLAIMS_EMAIL}`} className="text-[#11253E] font-semibold text-sm underline hover:text-brand-orange transition-colors">
+                        Email us
+                      </a>
+                    </>
+                  ) : (
+                    <>
+                      <a href={`mailto:${CLAIMS_EMAIL}`} className="flex-1 inline-flex items-center justify-center gap-2 border-2 border-brand-blue text-brand-blue hover:bg-brand-blue/5 font-bold rounded-xl py-3 text-base transition-colors">
+                        Email us
+                      </a>
+                    </>
+                  )}
                 </div>
-                <span className="mt-3 text-gray-500 text-sm">Monday – Friday · 9am to 5pm</span>
+                {claimsOpen ? (
+                  <span className="mt-3 text-gray-500 text-sm">Monday – Friday · 9am to 5pm</span>
+                ) : (
+                  <span className="mt-3 text-gray-500 text-sm inline-flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-gray-400" /> We're closed right now — back Mon 9am (Mon–Fri · 9am–5pm)
+                  </span>
+                )}
               </div>
 
               {/* WhatsApp */}
