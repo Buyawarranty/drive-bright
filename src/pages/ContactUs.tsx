@@ -312,10 +312,10 @@ const ContactUs = () => {
                   )}
                 </div>
                 {supportOpen ? (
-                  <span className="mt-3 text-gray-500 text-sm">Monday – Saturday · 9am to 6pm</span>
+                  <span className="mt-3 min-h-[2.5rem] text-gray-500 text-sm">Monday – Saturday · 9am to 6pm</span>
                 ) : (
-                  <span className="mt-3 text-gray-500 text-sm inline-flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-gray-400" /> We're closed right now — call back during opening hours
+                  <span className="mt-3 min-h-[2.5rem] text-gray-500 text-sm inline-flex items-start gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" /> We're closed right now — call back during opening hours
                   </span>
                 )}
               </div>
@@ -362,10 +362,10 @@ const ContactUs = () => {
                   )}
                 </div>
                 {claimsOpen ? (
-                  <span className="mt-3 text-gray-500 text-sm">Monday – Friday · 9am to 5pm</span>
+                  <span className="mt-3 min-h-[2.5rem] text-gray-500 text-sm">Monday – Friday · 9am to 5pm</span>
                 ) : (
-                  <span className="mt-3 text-gray-500 text-sm inline-flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-gray-400" /> We're closed right now — call back during opening hours
+                  <span className="mt-3 min-h-[2.5rem] text-gray-500 text-sm inline-flex items-start gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" /> We're closed right now — call back during opening hours
                   </span>
                 )}
               </div>
@@ -394,7 +394,7 @@ const ContactUs = () => {
                     Email us
                   </a>
                 </div>
-                <span className="mt-3 text-gray-500 text-sm">Replies during opening hours</span>
+                <span className="mt-3 min-h-[2.5rem] text-gray-500 text-sm">Replies during opening hours</span>
               </div>
             </div>
 
