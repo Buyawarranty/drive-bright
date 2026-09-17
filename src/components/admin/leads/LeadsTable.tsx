@@ -165,23 +165,21 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
     return [reservation.lead, ...leads];
   }, [leads, reservation]);
 
-  // Extract emails from leads for quote lookup
-  const leadEmails = useMemo(() => leadsWithReservation.map(l => l.email), [leadsWithReservation]);
-  const { quotesByEmail } = useLeadQuotes(leadEmails);
-  const { activityByEmail } = useCustomerActivity(leadEmails);
-  const { repeatByLeadId } = useRepeatCustomers(
-    useMemo(
-      () => leadsWithReservation.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg, phone: l.phone, first_name: l.first_name, last_name: l.last_name, created_at: l.created_at })),
-      [leadsWithReservation]
-    )
-  );
-
+  // PERF: the per-row enrichment lookups (quotes, customer activity, repeat
+  // badges, response times, agent activity) used to run across EVERY loaded
+  // lead — up to 750 rows — even though only 200 are ever on screen. Those
+  // lookups are the heaviest reads on this page, so they now follow the
+  // visible page only (see below, after pagination). Row counts, tiles and
+  // filters still use the full list, so nothing disappears.
   const leadIds = useMemo(() => leadsWithReservation.map(l => l.id), [leadsWithReservation]);
-  const { activityByLead } = useAgentActivity(leadIds);
 
-  const { responseByLead } = useLeadResponseTime(
-    useMemo(() => leadsWithReservation.map(l => ({ id: l.id, created_at: l.created_at })), [leadsWithReservation])
+  // Sorting by "activity" is the one case that genuinely needs activity for the
+  // whole list, so we only load it wide when that sort is active.
+  const EMPTY_IDS = useMemo<string[]>(() => [], []);
+  const { activityByLead: sortActivityByLead } = useAgentActivity(
+    sortKey === 'activity' ? leadIds : EMPTY_IDS
   );
+
 
   const agentNameById = useMemo(() => {
     const map = new Map<string, string>();
