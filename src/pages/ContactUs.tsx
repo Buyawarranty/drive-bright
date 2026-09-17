@@ -315,7 +315,7 @@ const ContactUs = () => {
                   <span className="mt-3 min-h-[2.5rem] text-gray-500 text-sm">Monday – Saturday · 9am to 6pm</span>
                 ) : (
                   <span className="mt-3 min-h-[2.5rem] text-gray-500 text-sm inline-flex items-start gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" /> We're closed right now — call back during opening hours
+                    <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" /> We're closed right now - please call back during opening hours
                   </span>
                 )}
               </div>
@@ -365,7 +365,7 @@ const ContactUs = () => {
                   <span className="mt-3 min-h-[2.5rem] text-gray-500 text-sm">Monday – Friday · 9am to 5pm</span>
                 ) : (
                   <span className="mt-3 min-h-[2.5rem] text-gray-500 text-sm inline-flex items-start gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" /> We're closed right now — call back during opening hours
+                    <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" /> We're closed right now - please call back during opening hours
                   </span>
                 )}
               </div>
@@ -389,9 +389,6 @@ const ContactUs = () => {
                     className="flex-1 inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl py-3 text-base transition-colors"
                   >
                     Start chat <ArrowRight className="w-4 h-4" />
-                  </a>
-                  <a href={`mailto:${SUPPORT_EMAIL}`} className="text-[#11253E] font-semibold text-sm underline hover:text-green-700 transition-colors">
-                    Email us
                   </a>
                 </div>
                 <span className="mt-3 min-h-[2.5rem] text-gray-500 text-sm">Replies during opening hours</span>
