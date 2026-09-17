@@ -408,6 +408,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   }, []);
 
   // Free-text address search — works for street names, towns and partial addresses
+  const normaliseAddr = (r: any) => ({
+    ...r,
+    town_or_city: r.town_or_city || r.town || r.posttown || '',
+    formatted_address: r.formatted_address || r.address || '',
+  });
+
   const performAddressSearch = useCallback(async (term: string, drillDown = false) => {
     const query = term.trim();
     if (query.length < 3) return;
@@ -415,21 +421,37 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setIsLookingUp(true);
     setAddressLookupFailed(false);
     try {
-      const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
+      let { data, error } = await supabase.functions.invoke('postcoder-lookup', {
         body: { action: 'search', term: query, drillDown },
       });
-      // Postcoder-style results: broad searches return clickable containers
-      // (street / town groups); narrow searches return final addresses.
+      // Older versions of the lookup service only support "autocomplete"
+      if (error || !Array.isArray(data?.suggestions)) {
+        const retry = await supabase.functions.invoke('postcoder-lookup', {
+          body: { action: 'autocomplete', term: query, drillDown },
+        });
+        data = retry.data;
+        error = retry.error;
+      }
       const rows = Array.isArray(data?.suggestions)
         ? data.suggestions
-            .map((s: any) =>
-              s.container
-                ? { __container: true, label: s.address, count: s.count, drill: s.drill || s.address }
-                : s.resolved,
-            )
+            .map((s: any) => {
+              if (s.container) {
+                return { __container: true, label: s.address, count: s.count, drill: s.drill || s.address };
+              }
+              if (s.resolved) return normaliseAddr(s.resolved);
+              if (s.line_1 || s.formatted_address) return normaliseAddr(s);
+              // Autocomplete-style result: resolve it when the customer picks it
+              if (s.id) {
+                const isGroup = s.type === 'group' || Number(s.count) > 1;
+                return isGroup
+                  ? { __container: true, label: s.address, count: s.count, retrieveId: s.id, searchTerm: query }
+                  : { __lookupId: s.id, searchTerm: query, formatted_address: s.address };
+              }
+              return null;
+            })
             .filter(Boolean)
         : [];
-      if (!error && rows.length > 0) {
+      if (rows.length > 0) {
         setAddressSuggestions(rows);
         setShowAddressDropdown(true);
       } else {
@@ -445,25 +467,23 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     }
   }, []);
 
-
-
   // Populate every address field once the customer picks their final address
   const handleSelectLookupAddress = useCallback((addr: any) => {
     const line1 = addr.line_1 || '';
     const line2 = [addr.line_2, addr.line_3].filter(Boolean).join(', ');
-    const town = addr.town_or_city || '';
+    const town = addr.town_or_city || addr.town || addr.posttown || '';
     setAddressData(prev => ({
       ...prev,
       address_line_1: line1,
       address_line_2: line2,
-      town,
+      town: town || prev.town || '',
       county: addr.county || prev.county || '',
       postcode: addr.postcode || prev.postcode,
     }));
     setAddressValidated(prev => ({
       ...prev,
       address_line_1: !!line1,
-      town: !!town,
+      town: !!(town || prev.town),
       postcode: true,
     }));
     setAddressErrors(prev => ({ ...prev, address_line_1: '', town: '', postcode: '' }));
@@ -474,6 +494,27 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setManualAddressEntry(false);
     setShowAddressFields(true);
   }, []);
+
+  // Turn an autocomplete suggestion id into a full address (or a shorter list)
+  const resolveSuggestionId = useCallback(async (id: string, term: string) => {
+    setIsLookingUp(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
+        body: { action: 'get', id, term },
+      });
+      if (error || !data) return;
+      if (Array.isArray(data.addresses) && data.addresses.length > 1) {
+        setAddressSuggestions(data.addresses.map(normaliseAddr));
+        setShowAddressDropdown(true);
+        return;
+      }
+      handleSelectLookupAddress(normaliseAddr(data));
+    } catch (err) {
+      console.warn('Address retrieve failed', err);
+    } finally {
+      setIsLookingUp(false);
+    }
+  }, [handleSelectLookupAddress]);
   
   // Form states
   const [showValidation, setShowValidation] = useState(false);
