@@ -252,6 +252,26 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   const pagedLeadIds = useMemo(() => pagedLeads.map(l => l.id), [pagedLeads]);
   const noteCounts = useLeadNoteCounts(pagedLeadIds);
 
+  // Row decoration lookups follow the visible page only (200 rows) instead of
+  // every loaded lead. Totals, filters and tiles are unaffected.
+  const pagedLeadEmails = useMemo(() => pagedLeads.map(l => l.email), [pagedLeads]);
+  const { quotesByEmail } = useLeadQuotes(pagedLeadEmails);
+  const { activityByEmail } = useCustomerActivity(pagedLeadEmails);
+  const { repeatByLeadId } = useRepeatCustomers(
+    useMemo(
+      () => pagedLeads.map(l => ({ id: l.id, email: l.email, vehicle_reg: l.vehicle_reg, phone: l.phone, first_name: l.first_name, last_name: l.last_name, created_at: l.created_at })),
+      [pagedLeads]
+    )
+  );
+  const { responseByLead } = useLeadResponseTime(
+    useMemo(() => pagedLeads.map(l => ({ id: l.id, created_at: l.created_at })), [pagedLeads])
+  );
+  const { activityByLead: pagedActivityByLead } = useAgentActivity(pagedLeadIds);
+  const activityByLead = useMemo(
+    () => ({ ...sortActivityByLead, ...pagedActivityByLead }),
+    [sortActivityByLead, pagedActivityByLead]
+  );
+
 
   const handleToggleSort = useCallback((key: ColumnSortKey) => {
     setSortKey(prev => {
