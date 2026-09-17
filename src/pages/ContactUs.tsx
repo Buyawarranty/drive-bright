@@ -305,8 +305,8 @@ const ContactUs = () => {
                     </>
                   ) : (
                     <>
-                      <a href={`mailto:${SUPPORT_EMAIL}`} className="flex-1 inline-flex items-center justify-center gap-2 border-2 border-brand-orange text-brand-orange hover:bg-brand-orange/5 font-bold rounded-xl py-3 text-base transition-colors">
-                        Email us
+                      <a href={`mailto:${SUPPORT_EMAIL}`} className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-light text-white font-bold rounded-xl py-3 text-base transition-colors">
+                        Email us <ArrowRight className="w-4 h-4" />
                       </a>
                     </>
                   )}
@@ -355,8 +355,8 @@ const ContactUs = () => {
                     </>
                   ) : (
                     <>
-                      <a href={`mailto:${CLAIMS_EMAIL}`} className="flex-1 inline-flex items-center justify-center gap-2 border-2 border-brand-blue text-brand-blue hover:bg-brand-blue/5 font-bold rounded-xl py-3 text-base transition-colors">
-                        Email us
+                      <a href={`mailto:${CLAIMS_EMAIL}`} className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blue-dark text-white font-bold rounded-xl py-3 text-base transition-colors">
+                        Email us <ArrowRight className="w-4 h-4" />
                       </a>
                     </>
                   )}
