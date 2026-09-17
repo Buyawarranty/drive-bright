@@ -211,7 +211,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
     }
     // Always sort by original lead arrival time — not resubmission/allocation time
     return lead.created_at ? new Date(lead.created_at).getTime() : 0;
-  }, [agentNameById, activityByLead]);
+  }, [agentNameById, sortActivityByLead]);
 
   const sortedLeads = useMemo(() => {
     const base = sortKey
