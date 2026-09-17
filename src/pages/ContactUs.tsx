@@ -45,6 +45,32 @@ const ContactUs = () => {
   const [callbackSending, setCallbackSending] = useState(false);
   const [callbackDone, setCallbackDone] = useState(false);
 
+  // UK-time aware "open now" checks (handles GMT/BST automatically)
+  const [now, setNow] = useState(() => new Date());
+  React.useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(id);
+  }, []);
+
+  const isOpenNow = (days: string[], startHour: number, endHour: number) => {
+    const fmt = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/London',
+      weekday: 'short',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false,
+    });
+    const parts = Object.fromEntries(fmt.formatToParts(now).map(p => [p.type, p.value]));
+    if (!days.includes(parts.weekday)) return false;
+    let hour = parseInt(parts.hour, 10);
+    if (hour === 24) hour = 0;
+    const minutes = hour * 60 + parseInt(parts.minute, 10);
+    return minutes >= startHour * 60 && minutes < endHour * 60;
+  };
+
+  const supportOpen = isOpenNow(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], 9, 18);
+  const claimsOpen = isOpenNow(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], 9, 17);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
 
