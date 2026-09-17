@@ -986,6 +986,9 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
             enteredTotal: collected,
             notes: [
               `Manual payment confirmed via ${paymentSource || 'outside route'} — ${discountPct.toFixed(1)}% off`,
+              // Exact price comparison shown to the agent at confirmation time, so
+              // a disputed discount can always be reconstructed later.
+              `COMPARISON @ ${format(new Date(), 'd MMM yyyy, HH:mm')} — Quotes & Orders £${quotedTotal.toFixed(2)} vs confirmed £${collected.toFixed(2)} (diff £${Math.max(0, Math.round((quotedTotal - collected) * 100) / 100).toFixed(2)}, ${quotedTotal > 0 ? (((quotedTotal - collected) / quotedTotal) * 100).toFixed(1) : '0.0'}%) — allowance ${DISCOUNT_CEILING_PCT}% ${quotedTotal > 0 && ((quotedTotal - collected) / quotedTotal) * 100 > DISCOUNT_CEILING_PCT + 0.01 ? 'EXCEEDED' : 'within'}`,
               underNetFloor && !priceMatchReady
                 ? `MANAGEMENT OVERRIDE — below the £${netFloorAmount.toFixed(2)} net floor for this cover`
                 : '',
