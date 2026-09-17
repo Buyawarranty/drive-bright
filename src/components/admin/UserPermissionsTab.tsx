@@ -159,6 +159,9 @@ const GRANULAR_PERMISSIONS = {
     { key: 'lead-routing', label: 'Lead Routing & Distribution', description: 'Can configure how Google/Facebook/mixed leads are distributed to teams based on conversion performance thresholds' },
     { key: 'live-tracking', label: 'Live Tracking', description: 'Business hours 09:00–18:00 · Mon–Fri · flagged after 30m of no note or call' },
   ],
+  'discount-codes': [
+    { key: 'manager-view', label: 'Manager view', description: 'Can see and use the manager-only access codes (internal/QA and high-value codes)' },
+  ],
 };
 
 const CLAIMS_AGENT_PERMISSIONS: Record<string, boolean> = {
