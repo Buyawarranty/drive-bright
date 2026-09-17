@@ -381,14 +381,19 @@ const ContactUs = () => {
                     <p className="text-gray-600 text-sm mt-1">Quick question? Message us and we'll be right with you.</p>
                   </div>
                 </div>
-                <a
-                  href={WHATSAPP_URL}
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
-                  className="mt-auto inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl py-3 text-base transition-colors"
-                >
-                  Start chat <ArrowRight className="w-4 h-4" />
-                </a>
+                <div className="mt-auto flex items-center gap-4">
+                  <a
+                    href={WHATSAPP_URL}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="flex-1 inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl py-3 text-base transition-colors"
+                  >
+                    Start chat <ArrowRight className="w-4 h-4" />
+                  </a>
+                  <a href={`mailto:${SUPPORT_EMAIL}`} className="text-[#11253E] font-semibold text-sm underline hover:text-green-700 transition-colors">
+                    Email us
+                  </a>
+                </div>
                 <span className="mt-3 text-gray-500 text-sm">Replies during opening hours</span>
               </div>
             </div>
