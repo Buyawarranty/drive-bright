@@ -115,6 +115,7 @@ const bonusMonthOptions = [0, 1, 2, 3, 4, 5, 6];
 export const PolicyDocumentsTab: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [allCustomers, setAllCustomers] = useState<CustomerData[]>([]);
+  const [remoteCustomers, setRemoteCustomers] = useState<CustomerData[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerData | null>(null);
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyData | null>(null);
   const [customerPolicies, setCustomerPolicies] = useState<PolicyData[]>([]);
