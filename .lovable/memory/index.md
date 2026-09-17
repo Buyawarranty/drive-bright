@@ -146,6 +146,7 @@ Updated: just now
 - [Funnel Tracking Dashboard](mem://marketing/analytics-and-funnel-tracking-v2) — Tracking step abandonments and ROI
 - [Website Sales Segments](mem://marketing/analytics-website-sales-segmentation) — Segment handling FB vs Organic tracking
 - [Step 2 Interactions](mem://marketing/analytics-step2-interaction-tracking-v2) — Form level interaction triggers
+- [Google Ads Upload Redeploy](mem://integrations/google-ads-upload-redeploy-after-changes) — Always redeploy upload-google-conversions after edits; stale builds silently stop all sales reaching Google Ads
 - [Google Ads Tracking](mem://integrations/google-ads-conversion-tracking-v2) — Cron jobs and offline conversions
 - [Google Ads Enhanced Conversions](mem://integrations/google-ads-enhanced-conversions) — Sales with no gclid upload via hashed email/phone/name+postcode; orderId dedupe
 - [GA4 Standards](mem://integrations/google-analytics-ga4) — SPA page view push standards
