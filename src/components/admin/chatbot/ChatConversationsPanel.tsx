@@ -63,7 +63,9 @@ const detect = (messages: Message[]) => {
 export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, initialThreadId }: { rangeDays: string; fromIso?: string | null; toIso?: string | null; initialThreadId?: string | null }) {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [pendingThreadIds, setPendingThreadIds] = useState<Set<string>>(new Set());
-  const [pendingOnly, setPendingOnly] = useState(true);
+  // Default to every conversation so staff with chatbot-data access see all live
+  // chats, not only the ones still waiting for a human reply.
+  const [pendingOnly, setPendingOnly] = useState(false);
   const [topics, setTopics] = useState<Map<string, ChatTopicTag>>(new Map());
   const [customerStatus, setCustomerStatus] = useState<Map<string, 'existing' | 'new'>>(new Map());
   const [loading, setLoading] = useState(true);
