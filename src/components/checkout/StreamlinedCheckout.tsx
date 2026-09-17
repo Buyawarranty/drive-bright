@@ -303,13 +303,39 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         const { data: pcData, error: pcError } = await supabase.functions.invoke('postcoder-lookup', {
           body: { action: 'find', postcode: cleanPostcode },
         });
-        const rows = Array.isArray(pcData?.addresses) ? pcData.addresses : [];
+        // The lookup service returns slightly different field names depending on
+        // version — normalise every shape so the address always fills in.
+        const rawRows = Array.isArray(pcData?.addresses)
+          ? pcData.addresses
+          : Array.isArray(pcData?.suggestions)
+            ? pcData.suggestions
+            : [];
+        const rows = rawRows
+          .map((r: any) => (r?.resolved ? r.resolved : r))
+          .filter((r: any) => r && (r.line_1 || r.address || r.formatted_address))
+          .map((r: any) => ({
+            ...r,
+            town_or_city: r.town_or_city || r.town || r.posttown || '',
+            formatted_address: r.formatted_address || r.address || '',
+          }));
         if (!pcError && rows.length > 0) {
           const displayPostcode = rows[0].postcode || postcode;
+          const lookupTown = rows[0].town_or_city || '';
           setPostcodeInput(displayPostcode);
-          setAddressData(prev => ({ ...prev, postcode: displayPostcode }));
-          setAddressValidated(prev => ({ ...prev, postcode: true }));
-          setAddressErrors(prev => ({ ...prev, postcode: '' }));
+          // Fill town/county straight away so the customer only has to pick their house
+          setAddressData(prev => ({
+            ...prev,
+            postcode: displayPostcode,
+            town: prev.town?.trim() || lookupTown,
+            county: prev.county?.trim() || rows[0].county || '',
+          }));
+          setAddressValidated(prev => ({
+            ...prev,
+            postcode: true,
+            town: prev.town || !!lookupTown,
+          }));
+          setAddressErrors(prev => ({ ...prev, postcode: '', town: lookupTown ? '' : prev.town }));
+          if (lookupTown) setTownAutoFilled(true);
           setAddressSuggestions(rows);
           setShowAddressDropdown(true);
           setIsLookingUp(false);
@@ -382,6 +408,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   }, []);
 
   // Free-text address search — works for street names, towns and partial addresses
+  const normaliseAddr = (r: any) => ({
+    ...r,
+    town_or_city: r.town_or_city || r.town || r.posttown || '',
+    formatted_address: r.formatted_address || r.address || '',
+  });
+
   const performAddressSearch = useCallback(async (term: string, drillDown = false) => {
     const query = term.trim();
     if (query.length < 3) return;
@@ -389,21 +421,37 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setIsLookingUp(true);
     setAddressLookupFailed(false);
     try {
-      const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
+      let { data, error } = await supabase.functions.invoke('postcoder-lookup', {
         body: { action: 'search', term: query, drillDown },
       });
-      // Postcoder-style results: broad searches return clickable containers
-      // (street / town groups); narrow searches return final addresses.
+      // Older versions of the lookup service only support "autocomplete"
+      if (error || !Array.isArray(data?.suggestions)) {
+        const retry = await supabase.functions.invoke('postcoder-lookup', {
+          body: { action: 'autocomplete', term: query, drillDown },
+        });
+        data = retry.data;
+        error = retry.error;
+      }
       const rows = Array.isArray(data?.suggestions)
         ? data.suggestions
-            .map((s: any) =>
-              s.container
-                ? { __container: true, label: s.address, count: s.count, drill: s.drill || s.address }
-                : s.resolved,
-            )
+            .map((s: any) => {
+              if (s.container) {
+                return { __container: true, label: s.address, count: s.count, drill: s.drill || s.address };
+              }
+              if (s.resolved) return normaliseAddr(s.resolved);
+              if (s.line_1 || s.formatted_address) return normaliseAddr(s);
+              // Autocomplete-style result: resolve it when the customer picks it
+              if (s.id) {
+                const isGroup = s.type === 'group' || Number(s.count) > 1;
+                return isGroup
+                  ? { __container: true, label: s.address, count: s.count, retrieveId: s.id, searchTerm: query }
+                  : { __lookupId: s.id, searchTerm: query, formatted_address: s.address };
+              }
+              return null;
+            })
             .filter(Boolean)
         : [];
-      if (!error && rows.length > 0) {
+      if (rows.length > 0) {
         setAddressSuggestions(rows);
         setShowAddressDropdown(true);
       } else {
@@ -419,25 +467,23 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     }
   }, []);
 
-
-
   // Populate every address field once the customer picks their final address
   const handleSelectLookupAddress = useCallback((addr: any) => {
     const line1 = addr.line_1 || '';
     const line2 = [addr.line_2, addr.line_3].filter(Boolean).join(', ');
-    const town = addr.town_or_city || '';
+    const town = addr.town_or_city || addr.town || addr.posttown || '';
     setAddressData(prev => ({
       ...prev,
       address_line_1: line1,
       address_line_2: line2,
-      town,
+      town: town || prev.town || '',
       county: addr.county || prev.county || '',
       postcode: addr.postcode || prev.postcode,
     }));
     setAddressValidated(prev => ({
       ...prev,
       address_line_1: !!line1,
-      town: !!town,
+      town: !!(town || prev.town),
       postcode: true,
     }));
     setAddressErrors(prev => ({ ...prev, address_line_1: '', town: '', postcode: '' }));
@@ -448,6 +494,27 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setManualAddressEntry(false);
     setShowAddressFields(true);
   }, []);
+
+  // Turn an autocomplete suggestion id into a full address (or a shorter list)
+  const resolveSuggestionId = useCallback(async (id: string, term: string) => {
+    setIsLookingUp(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('postcoder-lookup', {
+        body: { action: 'get', id, term },
+      });
+      if (error || !data) return;
+      if (Array.isArray(data.addresses) && data.addresses.length > 1) {
+        setAddressSuggestions(data.addresses.map(normaliseAddr));
+        setShowAddressDropdown(true);
+        return;
+      }
+      handleSelectLookupAddress(normaliseAddr(data));
+    } catch (err) {
+      console.warn('Address retrieve failed', err);
+    } finally {
+      setIsLookingUp(false);
+    }
+  }, [handleSelectLookupAddress]);
   
   // Form states
   const [showValidation, setShowValidation] = useState(false);
@@ -1045,11 +1112,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return count;
   }, [customerData, mileageValueValid]);
 
-  // Auto-scroll to "Choose how you want to pay" once personal details (incl. surname) are complete
+  // Auto-scroll to "Choose how you want to pay" only once personal details AND a
+  // fully validated address (real postcode, address line 1 and town) are in place.
   const hasAutoScrolledToPayRef = React.useRef(false);
   useEffect(() => {
     if (hasAutoScrolledToPayRef.current) return;
-    if (personalDetailsComplete) {
+    if (personalDetailsComplete && addressComplete) {
       hasAutoScrolledToPayRef.current = true;
       setTimeout(() => {
         const paySection = document.getElementById('how-to-pay-section');
@@ -1058,7 +1126,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }
       }, 300);
     }
-  }, [personalDetailsComplete]);
+  }, [personalDetailsComplete, addressComplete]);
 
   // Track if component has been mounted (for bfcache handling)
   const hasMountedRef = React.useRef(false);
@@ -2775,8 +2843,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           type="button"
                           onClick={() => {
                             if (addr.__container) {
-                              setPostcodeInput(addr.drill);
-                              performAddressSearch(addr.drill, true);
+                              if (addr.retrieveId) {
+                                resolveSuggestionId(addr.retrieveId, addr.searchTerm || postcodeInput);
+                              } else {
+                                setPostcodeInput(addr.drill);
+                                performAddressSearch(addr.drill, true);
+                              }
+                            } else if (addr.__lookupId) {
+                              resolveSuggestionId(addr.__lookupId, addr.searchTerm || postcodeInput);
                             } else {
                               handleSelectLookupAddress(addr);
                             }
