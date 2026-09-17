@@ -231,12 +231,12 @@ const ContactUs = () => {
         <section className="bg-[#F7F8FA] pt-8 pb-8 sm:pt-10 sm:pb-12 lg:pt-10 lg:pb-14 px-4">
           <div className="max-w-[1180px] mx-auto">
             <div className="text-center mb-8 sm:mb-10">
-              <p className="text-brand-orange text-sm sm:text-base font-bold mb-2">Contact us</p>
+              <p className="text-brand-orange text-sm sm:text-base font-bold mb-2">Contact Us</p>
               <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] leading-tight font-extrabold text-[#11253E]">
-                We're here to help
+                We're Here to Help
               </h1>
-              <p className="text-gray-600 text-sm sm:text-base mt-3">
-                Get support, talk to our claims team, or message us on WhatsApp.
+              <p className="text-gray-600 text-sm sm:text-base mt-3 max-w-2xl mx-auto">
+                Whether you have a question, need to make a claim, or just want to chat about your warranty options — our friendly team is ready to help.
               </p>
               <div className="mt-5 flex justify-center">
                 <span className="block h-1 w-16 rounded-full bg-brand-orange/60" aria-hidden="true" />
