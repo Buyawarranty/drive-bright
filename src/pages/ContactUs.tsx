@@ -552,11 +552,12 @@ const ContactUs = () => {
                         />
                       </div>
 
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full sm:w-auto bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-8 h-12 text-base rounded-xl disabled:opacity-50 inline-flex items-center gap-2"
-                      >
+                      <div className="flex justify-end">
+                        <Button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-8 h-12 text-base rounded-xl disabled:opacity-50 inline-flex items-center gap-2"
+                        >
                         {isSubmitting ? (
                           <>
                             <Loader2 className="w-5 h-5 animate-spin" /> Sending...
