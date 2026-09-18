@@ -116,11 +116,19 @@ function getClickIdentifier(rawClickId: string | null | undefined): ClickIdentif
   return { field: 'gclid', value };
 }
 
-type UploadErrorCategory = 'conversionPrecedesClick' | 'braidCountingBlocked' | 'invalidClickId' | 'other';
+type UploadErrorCategory =
+  | 'conversionPrecedesClick'
+  | 'braidCountingBlocked'
+  | 'invalidClickId'
+  | 'notAttributable'
+  | 'other';
 
 function classifyUploadError(message: string): UploadErrorCategory {
   if (message.includes('CONVERSION_PRECEDES_EVENT') || message.includes('conversion_date_time that precedes the click')) {
     return 'conversionPrecedesClick';
+  }
+  if (message.includes('could not be attributed to a click')) {
+    return 'notAttributable';
   }
   if (message.includes('ONE_PER_CLICK_CONVERSION_ACTION_NOT_PERMITTED_WITH_BRAID') || message.includes("one-per-click counting can't be used with gbraid")) {
     return 'braidCountingBlocked';
@@ -415,6 +423,12 @@ Deno.serve(async (req) => {
     let uploadedEnhanced = 0;
     let failed = 0;
     let skippedNoMatchData = 0;
+    let skippedNoClickId = 0;
+    // Click-conversion uploads without a gclid/gbraid/wbraid can never be tied to an ad
+    // click, so Google rejects them as "could not be attributed to a click" and the
+    // campaign diagnostics fill with errors. Only send identifier-only sales if the
+    // account has a conversion action configured for enhanced conversions for leads.
+    const allowEnhancedOnly = (Deno.env.get('GOOGLE_ADS_ENHANCED_ONLY_UPLOADS') || '').toLowerCase() === 'true';
     let withIdentifiers = 0;
     const errors: string[] = [];
 
@@ -450,6 +464,21 @@ Deno.serve(async (req) => {
             })
             .eq('id', record.id);
           skippedNoMatchData++;
+          continue;
+        }
+
+        // Sale did not come from a Google ad click: do not push it into the click
+        // conversion action, or Google logs it as unattributable and the campaign's
+        // offline conversion data is flagged as faulty.
+        if (!clickIdentifier && !allowEnhancedOnly) {
+          await supabase
+            .from(record.source)
+            .update({
+              google_ads_conversion_uploaded_at: new Date().toISOString(),
+              google_ads_conversion_status: 'skipped: no Google ad click on this sale (not an ads conversion)',
+            })
+            .eq('id', record.id);
+          skippedNoClickId++;
           continue;
         }
 
@@ -506,13 +535,24 @@ Deno.serve(async (req) => {
               ? 'config_required: set Google Ads offline conversion action counting to MANY_PER_CLICK for gbraid/wbraid uploads'
               : errorCategory === 'conversionPrecedesClick'
                 ? 'not_uploadable: conversion timestamp is before the Google click time'
-                : `failed: ${errorMsg.substring(0, 200)}`;
-          
-          // Mark as failed
+                : errorCategory === 'notAttributable'
+                  ? 'not_uploadable: Google could not tie this sale to an ad click'
+                  : errorCategory === 'invalidClickId'
+                    ? 'not_uploadable: the stored Google click id is invalid'
+                    : `failed: ${errorMsg.substring(0, 200)}`;
+
+          // Terminal outcomes must never be retried: re-sending them every day is what
+          // fills the Google Ads campaign diagnostics with offline conversion errors.
+          const terminal =
+            errorCategory === 'conversionPrecedesClick' ||
+            errorCategory === 'notAttributable' ||
+            errorCategory === 'invalidClickId';
+
           await supabase
             .from(record.source)
             .update({
               google_ads_conversion_status: storedStatus,
+              ...(terminal ? { google_ads_conversion_uploaded_at: new Date().toISOString() } : {}),
             })
             .eq('id', record.id);
 
@@ -535,6 +575,7 @@ Deno.serve(async (req) => {
       uploadedEnhanced,
       failed,
       skippedNoMatchData,
+      skippedNoClickId,
       withIdentifiers,
       backfilledCustomers,
       backfilledBumper,
@@ -549,7 +590,9 @@ Deno.serve(async (req) => {
     // more than 6 hours, email the team once per day so a silent stop (e.g. a
     // stale deployment) can never go unnoticed again.
     try {
-      const nothingGotThrough = allPending.length > 0 && uploaded === 0;
+      // Sales deliberately skipped (no ad click) are handled, not stalled.
+      const nothingGotThrough =
+        allPending.length > 0 && uploaded === 0 && skippedNoClickId + skippedNoMatchData === 0;
       const { count: staleCount } = await supabase
         .from('customers')
         .select('id', { count: 'exact', head: true })
