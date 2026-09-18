@@ -428,7 +428,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               key={suggestion.id || index}
               type="button"
               className={cn(
-                "w-full px-4 py-4 text-left text-sm hover:bg-accent active:bg-accent transition-colors touch-manipulation cursor-pointer select-none",
+                "w-full px-4 py-3 text-left text-[15px] leading-snug whitespace-normal break-words hover:bg-accent active:bg-accent transition-colors touch-manipulation cursor-pointer select-none",
                 index === selectedIndex && "bg-accent",
                 index !== suggestions.length - 1 && "border-b border-border/50"
               )}
