@@ -560,6 +560,7 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
                   )}
                   <th className="w-8 px-2 py-2 text-left">#</th>
                   <th className="px-2 py-2 text-left">Priority</th>
+                  <th className="px-2 py-2 text-left">Time and Date</th>
                   <th className="px-2 py-2 text-left">Why it needs action</th>
                   <th className="px-2 py-2 text-left">Name</th>
                   <th className="px-2 py-2 text-left">Phone</th>
@@ -607,6 +608,12 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
                         <Badge variant="outline" className={`${BAND_STYLE[r.band]} text-[11px]`}>
                           {BAND_LABEL[r.band]}
                         </Badge>
+                      </td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs">
+                        {new Date(r.thread.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                        <div className="text-[10px] text-muted-foreground">
+                          {new Date(r.thread.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </div>
                       </td>
                       <td className="max-w-[230px] px-2 py-2 text-xs">{r.reason}</td>
                       <td className="px-2 py-2">{r.name || <span className="text-muted-foreground">—</span>}</td>
