@@ -56,7 +56,7 @@ export const PendingLeadsPill = ({ userRole, onClick, className }: Props) => {
     load();
     const stopInterval = setVisibleInterval(load, 60_000);
     const channel = supabase
-      .channel('pending-leads-pill')
+      .channel(`pending-leads-pill-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'sales_leads' },

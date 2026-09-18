@@ -63,7 +63,7 @@ export const useLeadNoteCounts = (leadIds: string[]) => {
 
     let timer: ReturnType<typeof setTimeout> | null = null;
     const channel = supabase
-      .channel('lead_note_counts')
+      .channel(`lead_note_counts-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'lead_quick_notes' }, () => {
         if (timer) clearTimeout(timer);
         timer = setTimeout(() => {

@@ -532,7 +532,7 @@ export const useLeadDistribution = () => {
     };
 
     const presenceChannel = supabase
-      .channel('presence-changes')
+      .channel(`presence-changes-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'user_presence' },
         () => debouncedPresenceRefetch()
@@ -541,7 +541,7 @@ export const useLeadDistribution = () => {
 
 
     const settingsChannel = supabase
-      .channel('distribution-settings-sync')
+      .channel(`distribution-settings-sync-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'lead_distribution_settings' },
         () => fetchSettings()
@@ -549,7 +549,7 @@ export const useLeadDistribution = () => {
       .subscribe();
 
     const capsChannel = supabase
-      .channel('agent-caps-sync')
+      .channel(`agent-caps-sync-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'agent_distribution_caps' },
         () => fetchAgentCaps()
@@ -557,7 +557,7 @@ export const useLeadDistribution = () => {
       .subscribe();
 
     const overflowChannel = supabase
-      .channel('overflow-recipients-sync')
+      .channel(`overflow-recipients-sync-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'overflow_recipients' },
         () => fetchOverflowRecipients()

@@ -234,7 +234,7 @@ export const PaymentFailedLeadsPanel: React.FC<Props> = ({ userRole }) => {
   useEffect(() => {
     fetchActive();
     const channel = supabase
-      .channel('payment-failed-leads-panel')
+      .channel(`payment-failed-leads-panel-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'checkout_struggle_alerts' },

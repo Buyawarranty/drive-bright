@@ -109,7 +109,7 @@ export const OpenRoundRobinPanel: React.FC<{ isManagement?: boolean }> = ({ isMa
     loadStats();
     const t = setInterval(() => { if (document.hidden || isSecondaryCrmTab()) return; loadStats(); }, 30_000);
     const channel = supabase
-      .channel('orr-panel')
+      .channel(`orr-panel-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'lead_assignment_audit' }, () => loadStats())
       .subscribe();
     return () => {

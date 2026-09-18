@@ -80,7 +80,7 @@ export const StuckCheckoutAlert: React.FC = () => {
   useEffect(() => {
     load();
     const channel = supabase
-      .channel('stuck-checkout-alert')
+      .channel(`stuck-checkout-alert-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'checkout_struggle_alerts' }, () => load())
       .subscribe();
     const stop = setVisibleInterval(load, 45_000);

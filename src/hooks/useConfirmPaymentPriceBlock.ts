@@ -28,7 +28,7 @@ export function useConfirmPaymentPriceBlock() {
   useEffect(() => {
     fetchConfig();
     const channel = supabase
-      .channel('confirm-payment-price-block-config')
+      .channel(`confirm-payment-price-block-config-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

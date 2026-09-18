@@ -88,7 +88,7 @@ export const MyTargetStrip: React.FC = () => {
 
   useEffect(() => {
     const channel = supabase
-      .channel('my-target-strip-targets')
+      .channel(`my-target-strip-targets-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_targets' }, () => load())
       .subscribe();
     const onFocus = () => load();

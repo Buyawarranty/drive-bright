@@ -1341,7 +1341,7 @@ export const useLeads = (options?: UseLeadsOptions) => {
 
     // Real-time subscriptions for multi-user sync
     const leadsChannel = supabase
-      .channel('leads-realtime-sync')
+      .channel(`leads-realtime-sync-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'sales_leads' },
         () => debouncedRealtimeRefetch()

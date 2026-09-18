@@ -89,7 +89,7 @@ export function useClaimReminders() {
 
   useEffect(() => {
     const channel = supabase
-      .channel('claim-reminders-live')
+      .channel(`claim-reminders-live-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'claim_reminders' }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(channel); };

@@ -189,7 +189,7 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
     const isAdminRole = userRole === 'admin' || userRole === 'super_admin';
 
     const contactChannel = supabase
-      .channel('admin-contacts')
+      .channel(`admin-contacts-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -207,7 +207,7 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
       .subscribe();
 
     const claimsChannel = supabase
-      .channel('admin-claims')
+      .channel(`admin-claims-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -227,7 +227,7 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
 
     // Listen for new evidence on existing claims (UPDATE on claims_submissions)
     const claimsEvidenceChannel = supabase
-      .channel('admin-claims-evidence')
+      .channel(`admin-claims-evidence-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
@@ -252,7 +252,7 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
       .subscribe();
 
     const customersChannel = supabase
-      .channel('admin-customers')
+      .channel(`admin-customers-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -269,7 +269,7 @@ export const useAdminNotifications = (userRole?: string | null, adminId?: string
 
     // Listen for lead resubmissions (UPDATE on sales_leads where resubmission_count changes)
     const resubChannel = supabase
-      .channel('admin-lead-resubmissions')
+      .channel(`admin-lead-resubmissions-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',

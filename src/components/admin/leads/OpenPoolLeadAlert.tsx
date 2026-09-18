@@ -87,7 +87,7 @@ function OpenPoolLeadAlertInner() {
   useEffect(() => {
     if (!isOpenPoolAgent) return;
     const ch = supabase
-      .channel(`open-pool-alert-${adminId}`)
+      .channel(`open-pool-alert-${adminId}-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'sales_leads', filter: 'queue=eq.live_open_pool' },
         () => loadCount()

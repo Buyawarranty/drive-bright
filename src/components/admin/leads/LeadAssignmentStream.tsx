@@ -307,7 +307,7 @@ const LeadAssignmentStream: React.FC<Props> = ({ agents, teamNameByAgent, canRea
   // Live: refresh on any sales_leads change, plus a slow safety poll.
   useEffect(() => {
     const channel = supabase
-      .channel('lead-assignment-stream')
+      .channel(`lead-assignment-stream-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_leads' }, () => load())
       .subscribe();
     const t = setInterval(() => { if (document.hidden) return; load(); }, 30000);

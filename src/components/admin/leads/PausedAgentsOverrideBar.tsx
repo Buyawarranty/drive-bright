@@ -72,7 +72,7 @@ export const PausedAgentsOverrideBar: React.FC<{ canEdit?: boolean }> = ({ canEd
   // Live updates when a freeze lands or a manager toggles someone elsewhere.
   React.useEffect(() => {
     const ch = supabase
-      .channel('paused-agents-override-bar')
+      .channel(`paused-agents-override-bar-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'agent_distribution_caps' },

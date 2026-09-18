@@ -62,7 +62,7 @@ export function useClaim5kBlocklist() {
   useEffect(() => {
     fetchRules();
     const channel = supabase
-      .channel('claim-limit-5k-blocklist-config')
+      .channel(`claim-limit-5k-blocklist-config-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

@@ -235,7 +235,7 @@ const CustomerDashboard = () => {
       // Set up real-time updates for warranties and customer data changes
       const effectiveEmail = user?.email || impersonatedCustomer?.customerEmail;
       const channel = supabase
-        .channel('customer-data-changes')
+        .channel(`customer-data-changes-${Math.random().toString(36).slice(2)}`)
         .on(
           'postgres_changes',
           {

@@ -142,7 +142,7 @@ export function useSharkTankCounts() {
 
     if (!channel) {
       channel = supabase
-        .channel('shark_tank_pool_counts')
+        .channel(`shark_tank_pool_counts-${Math.random().toString(36).slice(2)}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'shark_tank_pool' }, scheduleSharedRefresh)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_leads' }, scheduleSharedRefresh)
         .subscribe();

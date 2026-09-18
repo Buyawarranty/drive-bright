@@ -47,7 +47,7 @@ export const QuoteDetailIssuesAlert = () => {
 
     // Real-time subscription
     const channel = supabase
-      .channel('quote-detail-issues')
+      .channel(`quote-detail-issues-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',

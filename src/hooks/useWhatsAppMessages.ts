@@ -41,7 +41,7 @@ export function useWhatsAppMessages(conversationId: string | null) {
     void load();
     if (!conversationId) return;
     const channel = supabase
-      .channel(`whatsapp-messages-${conversationId}`)
+      .channel(`whatsapp-messages-${conversationId}-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'whatsapp_messages', filter: `conversation_id=eq.${conversationId}` },

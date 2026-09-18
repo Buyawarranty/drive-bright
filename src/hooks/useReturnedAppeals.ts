@@ -99,7 +99,7 @@ export const useReturnedAppeals = () => {
 
   useEffect(() => {
     const channel = supabase
-      .channel('returned-appeals')
+      .channel(`returned-appeals-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'claim_update_responses' }, () => fetchAppeals())
       .subscribe();
     return () => { supabase.removeChannel(channel); };

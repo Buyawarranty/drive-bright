@@ -74,7 +74,7 @@ export const SmsTrackingTab: React.FC = () => {
   // Live updates
   useEffect(() => {
     const channel = supabase
-      .channel('sms-send-log-live')
+      .channel(`sms-send-log-live-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'sms_send_log' }, () => {
         fetchRows();
       })

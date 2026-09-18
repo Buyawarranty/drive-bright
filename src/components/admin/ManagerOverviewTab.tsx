@@ -412,7 +412,7 @@ export const ManagerOverviewTab: React.FC<Props> = ({ onNavigateToTab, userRole 
 
   useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [scope, currentAdminId, myTeamMates.join(','), selected.from, selected.to]);
   useEffect(() => {
-    const ch = supabase.channel('overview-live')
+    const ch = supabase.channel(`overview-live-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_leads' }, () => load())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'lead_call_logs' }, () => load())
       .subscribe();

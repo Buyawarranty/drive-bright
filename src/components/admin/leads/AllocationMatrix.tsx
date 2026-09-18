@@ -268,7 +268,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       fetchSince6pmCounts();
     }, 30000);
     const channel = supabase
-      .channel('allocation-matrix-today-leads')
+      .channel(`allocation-matrix-today-leads-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'sales_leads' },
