@@ -1549,7 +1549,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                 </section>
 
                 {/* Address */}
-                <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <section id="customer-address-section" className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                   <div className="px-6 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                     <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Customer Address <span className="text-destructive">*</span></h2>
                   </div>
