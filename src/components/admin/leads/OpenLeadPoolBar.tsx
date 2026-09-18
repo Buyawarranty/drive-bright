@@ -504,7 +504,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
             <Clock className="h-4 w-4 text-amber-700 shrink-0" />
             <div>
               <div className="text-xs font-semibold text-amber-900">
-                {phase === 'calling' ? 'Call in progress' : 'Auto-release in'}
+                {phase === 'calling' ? 'Call in progress' : 'Reserved for you'}
               </div>
               <div className="text-lg font-bold tabular-nums leading-tight text-amber-900">
                 {phase === 'calling' ? formatMmSs(callingElapsed) : formatMmSs(remaining)}
@@ -521,6 +521,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
           <div className="text-xs font-bold text-sky-900 mb-1">Important</div>
           <ul className="text-xs text-sky-900 space-y-0.5 list-disc pl-4">
             <li>This is an Open Round Robin lead.</li>
+            <li>New leads are held for 2 minutes so the customer can finish browsing prices.</li>
             <li>It is not yours until you speak to the customer.</li>
             <li>If there is no answer, the lead returns to the pool for the next attempt (at the next eligible time).</li>
             <li>You will only ever see one lead at a time.</li>
