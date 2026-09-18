@@ -7977,6 +7977,7 @@ Please log in and change your password after first login.`;
             warrantyNumber: latestEditingCustomerPolicy?.warranty_number || editingCustomer.warranty_number || '',
             policyNumber: latestEditingCustomerPolicy?.policy_number || '',
             planType: editingCustomer.plan_type || '',
+            paymentType: latestEditingCustomerPolicy?.payment_type || editingCustomer.payment_type || undefined,
             policyStartDate: latestEditingCustomerPolicy?.policy_start_date || editingCustomer.signup_date || '',
             policyEndDate: latestEditingCustomerPolicy?.policy_end_date || '',
             claimLimit: latestEditingCustomerPolicy?.claim_limit || editingCustomer.claim_limit || undefined,
