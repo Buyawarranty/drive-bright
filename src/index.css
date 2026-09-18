@@ -110,11 +110,6 @@ html, body {
   overflow-x: hidden;
 }
 
-/* Ensure content doesn't exceed viewport width */
-.w-full {
-  max-width: 100%;
-}
-
 /* Better mobile container behavior */
 @media (max-width: 640px) {
   .container {
