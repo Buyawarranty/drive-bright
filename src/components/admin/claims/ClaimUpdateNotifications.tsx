@@ -43,7 +43,7 @@ export const ClaimUpdateNotifications = () => {
   // Real-time subscription
   useEffect(() => {
     const channel = supabase
-      .channel('claim-update-responses')
+      .channel(`claim-update-responses-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',

@@ -70,7 +70,7 @@ export function useWhatsAppConversations() {
   useEffect(() => {
     void load();
     const channel = supabase
-      .channel('whatsapp-conversations-live')
+      .channel(`whatsapp-conversations-live-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'whatsapp_conversations' }, (payload) => {
         setRows((prev) => {
           const next = payload.new as WhatsAppConversation | null;

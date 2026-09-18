@@ -73,7 +73,7 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool, headless = false
   useEffect(() => {
     if (!isManager) return;
     const ch = supabase
-      .channel('admin-config-auto-distribute')
+      .channel(`admin-config-auto-distribute-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'admin_config', filter: `config_key=eq.${AUTO_SWEEP_KEY}` },
@@ -145,7 +145,7 @@ export const GlobalAutoDistributeBar = ({ userRole, onGoToPool, headless = false
   useEffect(() => {
     if (!isManager) return;
     const ch = supabase
-      .channel('global-auto-distribute-pool')
+      .channel(`global-auto-distribute-pool-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'sales_leads', filter: 'queue=eq.live_open_pool' },

@@ -11,6 +11,7 @@ export const useLeadNoteCounts = (leadIds: string[]) => {
   // leads can share those and previously skipped the refetch, leaving the
   // notes column blank.
   const stableKey = useMemo(() => [...leadIds].sort().join(','), [leadIds]);
+  const hasLeads = leadIds.length > 0;
 
   const fetchCounts = useCallback(async () => {
     const ids = stableKey ? stableKey.split(',') : [];
@@ -51,7 +52,12 @@ export const useLeadNoteCounts = (leadIds: string[]) => {
     }
   }, [stableKey]);
 
-
+  // Latest fetcher read through a ref so the realtime channel is created once
+  // instead of being torn down and re-subscribed on every render.
+  const fetchCountsRef = useRef(fetchCounts);
+  useEffect(() => {
+    fetchCountsRef.current = fetchCounts;
+  }, [fetchCounts]);
 
   useEffect(() => {
     fetchCounts();
@@ -59,16 +65,16 @@ export const useLeadNoteCounts = (leadIds: string[]) => {
 
   // Realtime: refresh counts when notes change (debounced)
   useEffect(() => {
-    if (leadIds.length === 0) return;
+    if (!hasLeads) return;
 
     let timer: ReturnType<typeof setTimeout> | null = null;
     const channel = supabase
-      .channel('lead_note_counts')
+      .channel(`lead_note_counts-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'lead_quick_notes' }, () => {
         if (timer) clearTimeout(timer);
         timer = setTimeout(() => {
           lastFetchedKeyRef.current = ''; // force refetch
-          fetchCounts();
+          fetchCountsRef.current();
         }, 2000);
       })
       .subscribe();
@@ -77,7 +83,7 @@ export const useLeadNoteCounts = (leadIds: string[]) => {
       supabase.removeChannel(channel);
       if (timer) clearTimeout(timer);
     };
-  }, [fetchCounts]);
+  }, [hasLeads]);
 
   return counts;
 };

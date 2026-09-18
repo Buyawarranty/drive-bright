@@ -200,7 +200,7 @@ export const FakeLeadsAuditPanel: React.FC<FakeLeadsAuditPanelProps> = ({ userRo
   /** Keep the counters live: refresh on realtime fake marks, tab focus and a slow poll. */
   useEffect(() => {
     const channel = supabase
-      .channel('fake-leads-audit-live')
+      .channel(`fake-leads-audit-live-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sales_leads' }, (payload: any) => {
         const before = payload.old || {};
         const after = payload.new || {};

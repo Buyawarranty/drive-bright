@@ -240,7 +240,7 @@ export const OpenPoolBacklogBanner = ({ canEdit, admins, caps }: Props) => {
   // Realtime — refresh whenever a pool row moves.
   useEffect(() => {
     const ch = supabase
-      .channel('open-pool-backlog-banner')
+      .channel(`open-pool-backlog-banner-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'sales_leads', filter: 'queue=eq.live_open_pool' },

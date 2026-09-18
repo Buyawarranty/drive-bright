@@ -73,7 +73,7 @@ export function useLabourRateTiers(): LabourRateTiers {
     window.addEventListener('focus', onFocus);
 
     const channel = supabase
-      .channel('labour-rate-tiers')
+      .channel(`labour-rate-tiers-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'pricing_matrix_versions' },

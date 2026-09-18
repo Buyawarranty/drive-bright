@@ -122,7 +122,7 @@ export const TeamTargetBoard: React.FC<{
   // sit on a stale target figure.
   useEffect(() => {
     const channel = supabase
-      .channel('team-target-board-targets')
+      .channel(`team-target-board-targets-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_targets' }, () => load())
       .subscribe();
     const onFocus = () => load();

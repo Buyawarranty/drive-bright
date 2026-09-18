@@ -25,7 +25,7 @@ export function useClaimLimit5kAuthRequired() {
   useEffect(() => {
     fetchConfig();
     const channel = supabase
-      .channel('claim-limit-5k-auth-config')
+      .channel(`claim-limit-5k-auth-config-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

@@ -108,7 +108,7 @@ export const AgentBreakStrip = () => {
   // Live updates so managers see breaks appear without refreshing.
   useEffect(() => {
     const channel = (supabase as any)
-      .channel('agent-break-status-strip')
+      .channel(`agent-break-status-strip-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'agent_break_status' }, () => load())
       .subscribe();
     return () => {

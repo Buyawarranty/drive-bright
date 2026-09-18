@@ -115,7 +115,7 @@ export function useAgentOpenPoolMode(preferredAdminId?: string | null) {
     if (!adminId) return;
 
     const channel = supabase
-      .channel(`agent-open-pool-mode-${adminId}`)
+      .channel(`agent-open-pool-mode-${adminId}-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'agent_distribution_caps', filter: `admin_user_id=eq.${adminId}` },

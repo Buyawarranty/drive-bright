@@ -110,7 +110,7 @@ export const AbandonedCartsTab: React.FC = () => {
     
     // Set up real-time subscription for new abandoned carts
     const channel = supabase
-      .channel('abandoned_carts_changes')
+      .channel(`abandoned_carts_changes-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

@@ -42,7 +42,7 @@ export function useActiveCheckoutStruggles(windowMinutes = 60 * 24) {
   useEffect(() => {
     fetchData();
     const channel = supabase
-      .channel('active-checkout-struggles')
+      .channel(`active-checkout-struggles-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'checkout_struggle_alerts' },

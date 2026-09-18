@@ -57,7 +57,7 @@ export function useOrrLiveSettings(enabled = true) {
       queryClient.invalidateQueries({ queryKey: ORR_LIVE_SETTINGS_KEY });
     };
     const channel = supabase
-      .channel('orr-live-settings-sync')
+      .channel(`orr-live-settings-sync-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'lead_distribution_settings' }, invalidate)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'lead_teams' }, invalidate)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'lead_team_members' }, invalidate)

@@ -61,7 +61,7 @@ export const CompanyTargetBanner: React.FC<{ monthDate?: Date }> = ({ monthDate 
   // Keep in step with target changes made by another manager.
   useEffect(() => {
     const channel = supabase
-      .channel('company-target-banner')
+      .channel(`company-target-banner-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_targets' }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(channel); };

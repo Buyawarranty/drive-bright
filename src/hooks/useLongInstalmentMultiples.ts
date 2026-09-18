@@ -46,7 +46,7 @@ export function useLongInstalmentMultiples() {
   useEffect(() => {
     void fetchMultiples();
     const channel = supabase
-      .channel('long-instalment-plan-multiples')
+      .channel(`long-instalment-plan-multiples-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

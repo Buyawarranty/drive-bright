@@ -109,7 +109,7 @@ export function useCallRailPresence() {
   useEffect(() => {
     if (!adminId) return;
     const channel = supabase
-      .channel(`callrail_missed_${adminId}`)
+      .channel(`callrail_missed_${adminId}-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'callrail_calls', filter: `assigned_admin_user_id=eq.${adminId}` },

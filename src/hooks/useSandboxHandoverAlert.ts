@@ -85,7 +85,7 @@ export function useSandboxHandoverAlert({
     load();
     const stopInterval = setVisibleInterval(load, 15000);
     const channel = supabase
-      .channel('ai-sandbox-handovers-alert')
+      .channel(`ai-sandbox-handovers-alert-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'ai_sandbox_handovers' },

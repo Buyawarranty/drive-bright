@@ -106,7 +106,7 @@ export const MissedCallAlertBar: React.FC<Props> = ({ userRole, onOpenLead }) =>
     if (!allowed) return;
     fetchActive();
     const channel = supabase
-      .channel('missed-calls-alert-bar')
+      .channel(`missed-calls-alert-bar-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'missed_calls' }, () => fetchActive())
       .subscribe();
     const stop = setVisibleInterval(fetchActive, 60_000);
