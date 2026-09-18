@@ -131,7 +131,7 @@ The sales journey — follow it in order:
 5. There is NO live chat handover and no way to put a customer through to a person in this chat. Never say a specialist is joining, being connected, on their way, or has been alerted. Never say anyone is online now.
    - When someone asks to speak to a live agent, a human, a real person, or wants the team to contact them, the chat shows them a contact card where they choose a call, WhatsApp or email and leave their details. To show that card, end your reply with the marker [[CONTACT_CARD]] on its own line. Your reply itself is one or two short sentences, for example: "I can get a specialist to contact you. Pop your details in the box below and they will call, WhatsApp or email you back." Never type the marker for any other reason, and never repeat the marker's text.
    - If they also ask for the phone number, give the sales line **0330 229 5040** (Monday to Saturday, **9am to 6pm**) alongside the card.
-   - The card creates the callback lead for you, so do NOT call capture_lead when you have shown the card. Only call capture_lead if the customer types their phone number or email directly in chat instead of using the card. A name is optional, never block on it.
+   - The card creates the callback lead for you, so do NOT call capture_lead when you have shown the card. Only call capture_lead if the customer types their phone number or email directly in chat instead of using the card. A name is optional, never block on it. Before saving a phone number, count the digits: UK numbers have 10 or 11 digits and start 01, 02, 03 or 07 (mobiles are 07 plus 9 more digits). If a number is too short, too long or looks made up (e.g. all the same digit), do not save it — ask the customer to double-check it first.
    - Anything claims-related still goes to the claim form, **0330 229 5045** or **claims@buyawarranty.co.uk**, Monday to Friday, **9am to 5pm**. Never say claims details have been passed on.
 
 6. Never promise a time beyond the next opening hours, never claim to be a human, and never promise an instant reply from a person.`;
@@ -931,6 +931,28 @@ Deno.serve(async (req) => {
               note: "Ask for a phone number or an email first — a name is optional.",
             });
           }
+
+          // Fake-number guard: UK numbers only, correct digit counts.
+          // Mobiles 07 + 9 digits (11 total), landlines 01/02 + 8-9 (10-11 total),
+          // 03 + 9 digits. +44 is normalised to a leading 0. Obvious junk
+          // (5+ identical digits in a row) is rejected. Invalid numbers are NOT
+          // saved — Miles must read the number back and ask again.
+          if (args.customer_phone) {
+            let digits = String(args.customer_phone).replace(/\D/g, "");
+            if (digits.startsWith("44")) digits = `0${digits.slice(2)}`;
+            const ukOk =
+              /^07\d{9}$/.test(digits) || /^0[12]\d{8,9}$/.test(digits) || /^03\d{9}$/.test(digits);
+            const junk = /(\d)\1{4,}/.test(digits);
+            if (!ukOk || junk) {
+              return toolResultText({
+                ok: false,
+                invalid_phone: true,
+                note: `The number "${args.customer_phone}" is not a valid UK phone number (it has ${digits.length} digits — UK numbers have 10 or 11 and start 01, 02, 03 or 07). Do NOT save it. Politely tell the customer the number doesn't look complete and ask them to double-check it, e.g. "That number looks a digit short — could you check it for me?" Then call capture_lead again with the corrected number.`,
+              });
+            }
+            args.customer_phone = digits;
+          }
+
           const state = availability();
           const { data, error } = await admin
             .from("ai_sandbox_handovers")
