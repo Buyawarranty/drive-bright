@@ -309,6 +309,9 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
 
                   ['Warranty Ref', warrantyRef],
                   ['Policy No.', policy.policyNumber || 'N/A'],
+                  ['Claim Limit', displayClaimLimit != null ? `£${displayClaimLimit.toLocaleString()} per claim` : 'N/A'],
+                  ['Voluntary Excess', `£${displayExcess}`],
+                  ['Labour Rate', `£${displayLabourRate}/hour`],
                 ].map(([label, value], i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: `1px solid ${c.divider}` }}>
                     <span style={{ color: c.muted, fontWeight: '500' }}>{label}</span>
