@@ -128,7 +128,9 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
           *,
           customers!customer_id (
             name, first_name, last_name, phone, registration_plate, vehicle_make, vehicle_model, vehicle_year, mileage,
-            flat_number, building_name, building_number, street, town, county, postcode
+            flat_number, building_name, building_number, street, town, county, postcode,
+            labour_rate, breakdown_recovery, wear_tear, europe_cover, mot_fee, mot_repair,
+            tyre_cover, lost_key, vehicle_rental, transfer_cover, consequential
           )
         `)
         .in('customer_id', customerIds)
