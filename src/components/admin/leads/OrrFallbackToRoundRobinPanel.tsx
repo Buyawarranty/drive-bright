@@ -132,6 +132,24 @@ export const OrrFallbackToRoundRobinPanel: React.FC<{ isManagement: boolean }> =
         <h3 className="text-sm font-semibold text-foreground">Move waiting leads between the two systems</h3>
       </div>
 
+      {liveLabel && (
+        <div className="flex flex-wrap items-center gap-3 rounded-md border border-green-600/40 bg-green-600/10 px-3 py-2">
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-green-700 dark:text-green-400">
+            <CheckCircle2 className="h-4 w-4" />
+            {liveLabel}
+          </span>
+          <span className="flex items-center gap-2 text-xs">
+            <span className={cn('flex items-center gap-1', orrLive ? 'font-semibold text-green-700 dark:text-green-400' : 'text-muted-foreground')}>
+              {orrLive && <CheckCircle2 className="h-3.5 w-3.5" />} Open Round Robin
+            </span>
+            <span className="text-muted-foreground">/</span>
+            <span className={cn('flex items-center gap-1', !orrLive ? 'font-semibold text-green-700 dark:text-green-400' : 'text-muted-foreground')}>
+              {!orrLive && <CheckCircle2 className="h-3.5 w-3.5" />} Round Robin
+            </span>
+          </span>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-2">
         <ArrowLeftRight className="h-4 w-4 text-muted-foreground" />
         {dirButton('orr_to_rr', 'Open Round Robin → Round Robin')}
