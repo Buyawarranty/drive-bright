@@ -235,7 +235,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
             ? 'New lead in the Open Pool'
             : `${arrived} new leads in the Open Pool`,
           {
-            description: 'Click "Take next lead" to claim one.',
+            description: 'Take the next lead for a temporary call reservation.',
             id: 'open-pool-new-arrival',
           }
         );
@@ -452,7 +452,14 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
     <div className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 transition-colors ${barTone} ${className}`}>
       <div className="flex items-center gap-2 min-w-0 flex-wrap">
         <CircleDot className={`h-3.5 w-3.5 shrink-0 ${!enabled ? 'text-slate-500' : dryRun ? 'text-amber-700' : phase === 'calling' ? 'text-sky-700' : 'text-emerald-700'}`} />
-        <span className={`text-sm font-semibold ${!enabled ? 'text-slate-700' : phase === 'calling' ? 'text-sky-900' : 'text-emerald-900'}`}>Open Round Robin</span>
+        <div className="mr-2">
+          <div className={`text-sm font-semibold ${!enabled ? 'text-slate-700' : phase === 'calling' ? 'text-sky-900' : 'text-emerald-900'}`}>
+            {hasReservation ? 'Current Open Round Robin Lead' : 'Open Round Robin'}
+          </div>
+          {hasReservation && (
+            <div className="text-xs text-muted-foreground">Open Round Robin · Reserved for this attempt</div>
+          )}
+        </div>
 
         {agentOpenPool && (
           <span className="text-[10px] uppercase tracking-wide font-semibold text-white bg-emerald-600 border border-emerald-700 rounded px-1.5 py-0.5">
@@ -495,7 +502,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
             </span>
           ) : (
             <span className="text-xs text-slate-600">
-              One lead is assigned at a time · <span className="font-medium">0 available</span>
+              One temporary reservation at a time · <span className="font-medium">0 available</span>
             </span>
           )
         )}
@@ -509,7 +516,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         {hasReservation && phase === 'reserved' && (
           <span className={`inline-flex items-center gap-1 text-xs ${tier === 'warn' ? 'text-amber-800 font-semibold' : 'text-emerald-900 font-medium'}`}>
             <Clock className="h-3 w-3" />
-            Reserved for {firstName} — click Call when ready · {formatMmSs(remaining)} hold before it returns to the pool
+            {firstName} · Reserved for this attempt · {formatMmSs(remaining)} before it returns to the pool
           </span>
         )}
 
@@ -549,7 +556,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
               className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-sm font-medium border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-60 transition-colors"
             >
               {releasing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
-              Cancel lead
+                Release
             </button>
           </>
         ) : managerAssignMode ? (
