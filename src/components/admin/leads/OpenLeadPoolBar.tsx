@@ -523,7 +523,8 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
             <li>This is an Open Round Robin lead.</li>
             <li>New leads are held for 2 minutes so the customer can finish browsing prices.</li>
             <li>It is not yours until you speak to the customer.</li>
-            <li>If there is no answer, the lead returns to the pool for the next attempt (at the next eligible time).</li>
+            <li>No answer on your first call: the lead comes back to you 15 minutes later for a second try.</li>
+            <li>If that second try also misses, the lead is held until 1pm, then picked up again.</li>
             <li>You will only ever see one lead at a time.</li>
           </ul>
         </div>
