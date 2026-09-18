@@ -1423,6 +1423,16 @@ const AdminDashboardInner: React.FC<{
             {/* Red "stuck on checkout" pop-up — left rail, below the new-lead cards, every tab */}
             <StuckCheckoutAlert />
 
+            {/* Blue "chat customer wants a person" pop-up — managers and sales agents only */}
+            {['admin', 'super_admin', 'sales_manager', 'sales', 'sales_lead'].includes(displayRole || '') && (
+              <ChatAgentRequestAlert
+                onOpenLead={(leadId) => {
+                  handleTabChange('new-leads');
+                  setSearchParams({ tab: 'new-leads', leadId }, { replace: true });
+                }}
+              />
+            )}
+
             {/* Daily CRM feedback survey pop-up for sales agents (silent, once a day) */}
             <DailyCrmSurveyPrompt
               adminUserId={currentAdminIdForSurvey}
