@@ -164,6 +164,7 @@ Updated: just now
 - [WhatsApp (WATI) Leads](mem://features/admin/whatsapp-wati-leads) — WhatsApp Leads tab, hot scoring, Take Lead claiming, WATI webhook/send functions
 - [Dealer Portal](mem://features/dealer-portal) — Dealer sub-app with auth, quotes, warranties at /dealer-portal/
 - [AI Sandbox Tone & Handover](mem://features/ai-sandbox-tone-and-handover) — Ruby semi-casual voice, never claims to be human, specialist on-duty presence, ringing manager alert
+- [Miles Friendly Emoji Tone](mem://chat/miles-friendly-emoji-tone) — Warm conversational UK tone with one or two relevant emojis in every reply; sensitive topics stay calm
 
 - [Admin Sidebar Tab Order](mem://admin/sidebar-tab-order) — Persist any user-directed reordering of admin side nav tabs; never reorder unprompted
 - [Reassign Preserves History](mem://admin/leads/reassign-preserves-history) — Bulk/offboarding reassign only changes assigned_to; notes, calls, statuses, reminders stay intact; never touch agents outside selected source
