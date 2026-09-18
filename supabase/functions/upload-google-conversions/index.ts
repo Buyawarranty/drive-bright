@@ -535,13 +535,24 @@ Deno.serve(async (req) => {
               ? 'config_required: set Google Ads offline conversion action counting to MANY_PER_CLICK for gbraid/wbraid uploads'
               : errorCategory === 'conversionPrecedesClick'
                 ? 'not_uploadable: conversion timestamp is before the Google click time'
-                : `failed: ${errorMsg.substring(0, 200)}`;
-          
-          // Mark as failed
+                : errorCategory === 'notAttributable'
+                  ? 'not_uploadable: Google could not tie this sale to an ad click'
+                  : errorCategory === 'invalidClickId'
+                    ? 'not_uploadable: the stored Google click id is invalid'
+                    : `failed: ${errorMsg.substring(0, 200)}`;
+
+          // Terminal outcomes must never be retried: re-sending them every day is what
+          // fills the Google Ads campaign diagnostics with offline conversion errors.
+          const terminal =
+            errorCategory === 'conversionPrecedesClick' ||
+            errorCategory === 'notAttributable' ||
+            errorCategory === 'invalidClickId';
+
           await supabase
             .from(record.source)
             .update({
               google_ads_conversion_status: storedStatus,
+              ...(terminal ? { google_ads_conversion_uploaded_at: new Date().toISOString() } : {}),
             })
             .eq('id', record.id);
 
