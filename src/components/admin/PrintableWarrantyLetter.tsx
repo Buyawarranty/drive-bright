@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Printer, Tag } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatStoredPolicyCoverDuration } from '@/lib/policyCoverDuration';
+import { getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
+import { getWarrantyDurationDisplay } from '@/lib/warrantyUtils';
 
 interface PolicyDetails {
   customerName: string;
