@@ -462,7 +462,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             >
               {suggestion.container ? (
                 <span className="flex items-center justify-between gap-2">
-                  <span className="text-foreground font-medium truncate">
+                  <span className="text-foreground font-medium whitespace-normal break-words">
                     {suggestion.address}
                     {typeof suggestion.count === 'number' && suggestion.count > 1 && (
                       <span className="ml-2 text-muted-foreground font-normal">
