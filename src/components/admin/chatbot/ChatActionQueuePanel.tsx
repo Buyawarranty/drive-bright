@@ -609,6 +609,12 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
                           {BAND_LABEL[r.band]}
                         </Badge>
                       </td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs">
+                        {new Date(r.thread.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                        <div className="text-[10px] text-muted-foreground">
+                          {new Date(r.thread.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </div>
+                      </td>
                       <td className="max-w-[230px] px-2 py-2 text-xs">{r.reason}</td>
                       <td className="px-2 py-2">{r.name || <span className="text-muted-foreground">—</span>}</td>
                       <td className="px-2 py-2 whitespace-nowrap">
