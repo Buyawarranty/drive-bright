@@ -54,9 +54,17 @@ Deno.serve(async (req) => {
   const auth = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
   try {
-    const res = await fetch(`${endpoint}/api/v1/getMessageTemplates?pageSize=200&pageNumber=1`, {
-      headers: { Authorization: auth },
-    });
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10_000);
+    let res: Response;
+    try {
+      res = await fetch(`${endpoint}/api/v1/getMessageTemplates?pageSize=200&pageNumber=1`, {
+        headers: { Authorization: auth },
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timer);
+    }
     const text = await res.text();
     if (!res.ok) return json({ error: 'wati_error', details: text.slice(0, 300) }, 502);
 
