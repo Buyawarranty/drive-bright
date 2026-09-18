@@ -341,3 +341,6 @@ verify_jwt = false
 
 [functions.wati-auto-message]
 verify_jwt = false
+
+[functions.daily-sales-summary]
+verify_jwt = false
