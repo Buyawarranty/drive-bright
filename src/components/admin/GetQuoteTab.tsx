@@ -1467,6 +1467,21 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     !priceMatchEvidenced;
 
   /**
+   * How much the agent has actually taken off the quoted total right now, and
+   * whether that genuinely needs Management sign-off. Agents inside their own
+   * allowance (and above the floor) must NOT be able to fire an authorisation
+   * request — it just clogs the managers' queue.
+   */
+  const currentDiscountPct =
+    basePrice.totalPrice > 0
+      ? Math.max(0, ((basePrice.totalPrice - displayedTotalPrice) / basePrice.totalPrice) * 100)
+      : 0;
+  const discountAuthNeeded =
+    isManagementRole ||
+    absoluteMinBlocked ||
+    currentDiscountPct > baseMaxDiscountPct + 0.01;
+
+  /**
    * Instant feedback: the moment an agent types or discounts their way under the
    * minimum sale price, tell them — they should not discover it only on confirm.
    * Fires once per breach (resets when the price comes back above the floor).
