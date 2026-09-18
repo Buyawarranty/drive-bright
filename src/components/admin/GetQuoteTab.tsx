@@ -6469,21 +6469,42 @@ Questions? Call 0330 229 5040`;
                       })}
 
 
-                      {/* Over 30% — needs management authorisation (Ali or Kam) */}
+                      {/* Over 30% — needs management authorisation (Ali or Kam).
+                          Locked while the current discount is already allowed, so
+                          only genuine breaches ever reach a manager. */}
                       <button
                         type="button"
-                        title="Authorise with Ali or Kam"
-                        onClick={() => setDiscountAuthOpen(true)}
+                        title={
+                          discountAuthNeeded
+                            ? 'Authorise with Ali or Kam'
+                            : `This discount is already within your ${baseMaxDiscountPct}% allowance — apply it yourself`
+                        }
+                        onClick={() => {
+                          if (!discountAuthNeeded) {
+                            toast({
+                              title: 'No approval needed',
+                              description: `${Math.round(currentDiscountPct)}% off is inside your ${baseMaxDiscountPct}% allowance and above the minimum price — just apply it and take the sale.`,
+                            });
+                            return;
+                          }
+                          setDiscountAuthOpen(true);
+                        }}
                         className={cn(
                           "py-3 px-3 rounded-lg border-2 border-dashed text-sm font-semibold transition-all group",
                           discountAuthBy
                             ? "border-emerald-500 bg-emerald-50 text-emerald-800"
-                            : "border-amber-400 bg-amber-50 text-amber-900 hover:bg-amber-100"
+                            : discountAuthNeeded
+                              ? "border-amber-400 bg-amber-50 text-amber-900 hover:bg-amber-100"
+                              : "border-gray-300 bg-gray-50 text-gray-500 cursor-not-allowed"
                         )}
                       >
                         Over 30%
                         <div className="text-[10px] font-normal opacity-80">
-                          {discountAuthBy ? `Authorised by ${discountAuthBy}` : 'Authorise with Ali or Kam'}
+                          {discountAuthBy
+                            ? `Authorised by ${discountAuthBy}`
+                            : discountAuthNeeded
+                              ? 'Authorise with Ali or Kam'
+                              : 'Not needed — within your allowance'}
                         </div>
                       </button>
                     </div>
