@@ -662,38 +662,6 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
       </div>
     </div>
 
-    {hasReservation && activeLead && (
-      <div className="mt-2 grid gap-3 rounded-md border border-emerald-200 bg-card px-4 py-3 lg:grid-cols-[minmax(220px,1.4fr)_repeat(3,minmax(110px,0.7fr))_auto] lg:items-center">
-        <div className="min-w-0">
-          <div className="font-semibold text-foreground truncate">{fullName}</div>
-          {activeLead.phone && <div className="text-sm text-muted-foreground">{activeLead.phone}</div>}
-          <div className="text-sm text-muted-foreground truncate">{activeLead.email}</div>
-        </div>
-        <div className="flex items-start gap-2 text-sm">
-          <Car className="mt-0.5 h-4 w-4 text-muted-foreground" />
-          <div><div className="text-xs text-muted-foreground">Registration</div><div className="font-medium">{activeLead.vehicle_reg || '—'}</div></div>
-        </div>
-        <div className="flex items-start gap-2 text-sm">
-          <CalendarDays className="mt-0.5 h-4 w-4 text-muted-foreground" />
-          <div><div className="text-xs text-muted-foreground">Lead date</div><div className="font-medium">{new Date(activeLead.created_at).toLocaleDateString('en-GB')}</div></div>
-        </div>
-        <div className="flex items-start gap-2 text-sm">
-          <Clock className="mt-0.5 h-4 w-4 text-muted-foreground" />
-          <div><div className="text-xs text-muted-foreground">Reservation</div><div className="font-medium tabular-nums">{phase === 'calling' ? `On call · ${formatMmSs(callingElapsed)}` : formatMmSs(remaining)}</div></div>
-        </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <Button size="sm" onClick={startCall} disabled={phase === 'calling'}>
-            <Phone className="h-4 w-4" /> Call
-          </Button>
-          <Button size="sm" variant="outline" asChild>
-            <a href={`mailto:${activeLead.email}`}><Mail className="h-4 w-4" /> Email</a>
-          </Button>
-          <Button size="sm" variant="outline" onClick={openLead}><FileText className="h-4 w-4" /> Quote</Button>
-          <Button size="sm" variant="outline" onClick={openLead}><StickyNote className="h-4 w-4" /> Add note</Button>
-        </div>
-      </div>
-    )}
-
     <AlertDialog open={idlePromptOpen} onOpenChange={setIdlePromptOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
