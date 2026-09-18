@@ -47,6 +47,19 @@
 # Enable CORS if needed
 <IfModule mod_headers.c>
   Header set Access-Control-Allow-Origin "*"
+
+  # index.html must never be cached. Vite fingerprints every JS/CSS chunk
+  # filename with a content hash, so a rebuild swaps out the old files —
+  # but if the browser (or a CDN in front of this host) is still holding a
+  # cached copy of index.html from before the last upload, it keeps asking
+  # for chunk filenames that no longer exist on the server. That is what
+  # a self-built-and-uploaded deploy hits and Lovable's own hosting doesn't:
+  # there is no automatic cache purge here on upload.
+  <FilesMatch "^index\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
 </IfModule>
 
 # Compression
