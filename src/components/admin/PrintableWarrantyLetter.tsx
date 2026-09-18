@@ -325,9 +325,9 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
                 <h4 style={{ color: c.benefitsHeading, fontSize: '12px', marginBottom: '6px', fontWeight: '700' }}>Key Benefits of Your Cover</h4>
                 <ul style={{ margin: '0', paddingLeft: '16px', color: c.benefitsText, fontSize: '10.5px' }}>
                   <li style={{ marginBottom: '3px' }}>Protection for major mechanical and electrical components</li>
-                  {policy.claimLimit && <li style={{ marginBottom: '3px' }}>Claims limit of £{policy.claimLimit.toLocaleString()} per claim</li>}
-                  {policy.labourRate && <li style={{ marginBottom: '3px' }}>Labour rate covered up to £{policy.labourRate}/hour</li>}
-                  {policy.voluntaryExcess !== undefined && policy.voluntaryExcess !== null && <li style={{ marginBottom: '3px' }}>Voluntary excess of £{policy.voluntaryExcess} per claim</li>}
+                  {displayClaimLimit != null && <li style={{ marginBottom: '3px' }}>Claims limit of £{displayClaimLimit.toLocaleString()} per claim</li>}
+                  <li style={{ marginBottom: '3px' }}>Labour rate covered up to £{displayLabourRate}/hour</li>
+                  <li style={{ marginBottom: '3px' }}>Voluntary excess of £{displayExcess} per claim</li>
                   <li style={{ marginBottom: '3px' }}>Access to trusted UK-wide VAT registered repair garages</li>
                   <li style={{ marginBottom: '3px' }}>Choose your own VAT registered garage option</li>
                   <li style={{ marginBottom: '3px' }}>Fast, simple claims process via our dedicated claims team</li>
