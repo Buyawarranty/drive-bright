@@ -157,6 +157,17 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
           town: p.customers.town,
           county: p.customers.county,
           postcode: p.customers.postcode,
+          labour_rate: (p.customers as any).labour_rate,
+          breakdown_recovery: (p.customers as any).breakdown_recovery,
+          wear_tear: (p.customers as any).wear_tear,
+          europe_cover: (p.customers as any).europe_cover,
+          mot_fee: (p.customers as any).mot_fee,
+          mot_repair: (p.customers as any).mot_repair,
+          tyre_cover: (p.customers as any).tyre_cover,
+          lost_key: (p.customers as any).lost_key,
+          vehicle_rental: (p.customers as any).vehicle_rental,
+          transfer_cover: (p.customers as any).transfer_cover,
+          consequential: (p.customers as any).consequential,
         } : undefined
       } as Order));
 
