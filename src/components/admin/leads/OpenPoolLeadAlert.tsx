@@ -227,7 +227,7 @@ function OpenPoolLeadAlertInner() {
               {poolCount === 1 ? 'never-contacted lead' : 'never-contacted leads'} waiting
             </h3>
             <p className="mt-1.5 text-sm text-slate-600">
-              Take the next one and start the first call within 120 seconds to keep it.
+              Take the next one and start the first call within 120 seconds. It stays unowned until you connect.
             </p>
           </div>
         </div>
@@ -251,8 +251,8 @@ function OpenPoolLeadAlertInner() {
           <div className="flex gap-2 border-l border-emerald-200/70 pl-3">
             <Lock className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
             <div>
-              <div className="font-bold text-slate-800">Yours to keep</div>
-              <div className="text-slate-600 leading-snug">Call in time and the lead stays with you.</div>
+              <div className="font-bold text-slate-800">Attempt only</div>
+              <div className="text-slate-600 leading-snug">No answer returns it to the shared retry pool.</div>
             </div>
           </div>
         </div>
@@ -265,7 +265,7 @@ function OpenPoolLeadAlertInner() {
           className="claim-next-btn mt-4 w-full inline-flex items-center justify-center gap-2 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-3 text-base font-bold disabled:opacity-60 transition-colors"
         >
           {taking ? (
-            <><Loader2 className="h-5 w-5 animate-spin" /> Claiming…</>
+            <><Loader2 className="h-5 w-5 animate-spin" /> Reserving…</>
           ) : (
             <><Zap className="h-5 w-5" strokeWidth={2.5} /> Take next lead</>
           )}

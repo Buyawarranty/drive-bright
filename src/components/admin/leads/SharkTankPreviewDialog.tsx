@@ -72,7 +72,7 @@ export function SharkTankPreviewDialog({ open, onOpenChange, retryMinutes, chase
   }, [reserved]);
 
   const timerTone = remaining <= 15 ? 'text-amber-700' : 'text-slate-500';
-  const timerLabel = remaining <= 15 ? `Releasing soon · ${remaining}s` : `Reserved to you · ${remaining}s`;
+  const timerLabel = remaining <= 15 ? `Releasing soon · ${remaining}s` : `Reserved for this attempt · ${remaining}s`;
 
   const takeNext = () => {
     setReserved(true);
@@ -124,7 +124,7 @@ export function SharkTankPreviewDialog({ open, onOpenChange, retryMinutes, chase
               disabled={reserved}
               className="bg-emerald-700 hover:bg-emerald-800 text-white"
             >
-              {reserved ? 'Working a lead' : 'Take Next Lead'}
+              {reserved ? 'Attempt reserved' : 'Take Next Lead'}
             </Button>
           </div>
 
