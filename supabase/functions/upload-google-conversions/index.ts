@@ -459,6 +459,21 @@ Deno.serve(async (req) => {
           continue;
         }
 
+        // Sale did not come from a Google ad click: do not push it into the click
+        // conversion action, or Google logs it as unattributable and the campaign's
+        // offline conversion data is flagged as faulty.
+        if (!clickIdentifier && !allowEnhancedOnly) {
+          await supabase
+            .from(record.source)
+            .update({
+              google_ads_conversion_uploaded_at: new Date().toISOString(),
+              google_ads_conversion_status: 'skipped: no Google ad click on this sale (not an ads conversion)',
+            })
+            .eq('id', record.id);
+          skippedNoClickId++;
+          continue;
+        }
+
         const orderId =
           (record as any).warranty_number || `${record.source}:${record.id}`;
 
