@@ -420,7 +420,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       {showDropdown && suggestions.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-background border border-border rounded-lg shadow-lg max-h-60 overflow-auto"
+          className="absolute z-50 w-full mt-1 bg-background border border-border rounded-lg shadow-xl max-h-[26rem] overflow-auto"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {suggestions.map((suggestion, index) => (
@@ -428,7 +428,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               key={suggestion.id || index}
               type="button"
               className={cn(
-                "w-full px-4 py-4 text-left text-sm hover:bg-accent active:bg-accent transition-colors touch-manipulation cursor-pointer select-none",
+                "w-full px-4 py-3 text-left text-[15px] leading-snug whitespace-normal break-words hover:bg-accent active:bg-accent transition-colors touch-manipulation cursor-pointer select-none",
                 index === selectedIndex && "bg-accent",
                 index !== suggestions.length - 1 && "border-b border-border/50"
               )}
@@ -462,7 +462,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             >
               {suggestion.container ? (
                 <span className="flex items-center justify-between gap-2">
-                  <span className="text-foreground font-medium truncate">
+                  <span className="text-foreground font-medium whitespace-normal break-words">
                     {suggestion.address}
                     {typeof suggestion.count === 'number' && suggestion.count > 1 && (
                       <span className="ml-2 text-muted-foreground font-normal">

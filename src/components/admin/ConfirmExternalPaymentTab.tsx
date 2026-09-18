@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
+import { splitAddressLine } from '@/lib/address/splitAddressLine';
 import { 
   calculateAdminQuoteWarrantyPrice, 
   DURATION_MONTHS,
@@ -712,10 +713,11 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     ].filter(Boolean);
     if (missingAddress.length > 0) {
       toast({
-        title: "Address required",
-        description: `Please complete: ${missingAddress.join(', ')}.`,
+        title: `Form incomplete — ${missingAddress.length} address ${missingAddress.length === 1 ? 'box' : 'boxes'} still empty`,
+        description: `Fill in: ${missingAddress.join(', ')}. Pick the address from the list again or type these in by hand.`,
         variant: "destructive",
       });
+      document.getElementById('customer-address-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
@@ -804,11 +806,12 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     ].filter(Boolean);
     if (missingAddress.length > 0) {
       toast({
-        title: "Address required",
-        description: `Please complete: ${missingAddress.join(', ')}.`,
+        title: `Form incomplete — ${missingAddress.length} address ${missingAddress.length === 1 ? 'box' : 'boxes'} still empty`,
+        description: `Fill in: ${missingAddress.join(', ')}. We've taken you back to the details step so you can complete them.`,
         variant: "destructive",
       });
       setExternalPaymentStep('details');
+      setTimeout(() => document.getElementById('customer-address-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 200);
       return;
     }
 
@@ -1546,7 +1549,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                 </section>
 
                 {/* Address */}
-                <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <section id="customer-address-section" className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                   <div className="px-6 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                     <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Customer Address <span className="text-destructive">*</span></h2>
                   </div>
@@ -1559,8 +1562,9 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                             placeholder="e.g. SW1A 1AA or High Street, Bath"
                             className={!customerPostcode.trim() ? 'border-2 border-destructive focus-visible:ring-destructive' : ''}
                             onAddressSelect={(address: AddressData) => {
-                              if (address.building_number) setCustomerBuildingNumber(address.building_number);
-                              if (address.line_1) setCustomerStreet(address.line_1);
+                              const parts = splitAddressLine(address.line_1, address.line_2, address.building_number, address.building_name);
+                              if (parts.buildingNumberOrName) setCustomerBuildingNumber(parts.buildingNumberOrName);
+                              if (parts.street) setCustomerStreet(parts.street);
                               if (address.town) setCustomerTown(address.town);
                               if (address.county) setCustomerCounty(address.county);
                               if (address.postcode) setCustomerPostcode(address.postcode.toUpperCase());
