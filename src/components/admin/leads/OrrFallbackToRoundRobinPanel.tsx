@@ -1,6 +1,6 @@
 import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
 import React from 'react';
-import { Users, RefreshCw, ArrowLeftRight } from 'lucide-react';
+import { Users, RefreshCw, ArrowLeftRight, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -30,7 +30,7 @@ type Direction = 'orr_to_rr' | 'rr_to_orr';
  * Only uncalled leads are ever moved.
  */
 export const OrrFallbackToRoundRobinPanel: React.FC<{ isManagement: boolean }> = ({ isManagement }) => {
-  const { enabledTeamIds, teamNamesById } = useOrrLiveSettings(isManagement);
+  const { enabledTeamIds, teamNamesById, orrLive } = useOrrLiveSettings(isManagement);
   const [direction, setDirection] = React.useState<Direction>('orr_to_rr');
   const [idleMinutes, setIdleMinutes] = React.useState(15);
   const [teamId, setTeamId] = React.useState<string>('any');
@@ -113,12 +113,42 @@ export const OrrFallbackToRoundRobinPanel: React.FC<{ isManagement: boolean }> =
     </button>
   );
 
+  /** Which system is actually running leads right now. */
+  const liveLabel =
+    orrLive === null
+      ? null
+      : orrLive
+        ? `Open Round Robin is live right now${
+            enabledTeamIds.length
+              ? ` (${enabledTeamIds.map(id => teamNamesById[id]).filter(Boolean).join(', ')})`
+              : ''
+          }`
+        : 'Round Robin is live right now';
+
   return (
     <div className="rounded-lg border border-border bg-card shadow-sm p-4 space-y-3">
       <div className="flex items-center gap-2">
         <Users className="h-4 w-4 text-primary" />
         <h3 className="text-sm font-semibold text-foreground">Move waiting leads between the two systems</h3>
       </div>
+
+      {liveLabel && (
+        <div className="flex flex-wrap items-center gap-3 rounded-md border border-green-600/40 bg-green-600/10 px-3 py-2">
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-green-700 dark:text-green-400">
+            <CheckCircle2 className="h-4 w-4" />
+            {liveLabel}
+          </span>
+          <span className="flex items-center gap-2 text-xs">
+            <span className={cn('flex items-center gap-1', orrLive ? 'font-semibold text-green-700 dark:text-green-400' : 'text-muted-foreground')}>
+              {orrLive && <CheckCircle2 className="h-3.5 w-3.5" />} Open Round Robin
+            </span>
+            <span className="text-muted-foreground">/</span>
+            <span className={cn('flex items-center gap-1', !orrLive ? 'font-semibold text-green-700 dark:text-green-400' : 'text-muted-foreground')}>
+              {!orrLive && <CheckCircle2 className="h-3.5 w-3.5" />} Round Robin
+            </span>
+          </span>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         <ArrowLeftRight className="h-4 w-4 text-muted-foreground" />
