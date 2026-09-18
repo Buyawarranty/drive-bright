@@ -101,10 +101,14 @@ async function loadSharedCounts() {
       // …plus any sales_leads flipped to live_open_pool that aren't yet in
       // shark_tank_pool. Counted head-only (no rows transferred), union via max
       // so overlapping rows are never double counted.
+      // Customer browsing window: brand new leads are not callable (and so not
+      // "waiting") until 2 minutes after submission, matching open_pool_get_next.
+      const browsingCutoff = new Date(Date.now() - 120000).toISOString();
       const { count } = await (supabase as any)
         .from('sales_leads')
         .select('id', { count: 'exact', head: true })
         .eq('queue', 'live_open_pool')
+        .lte('created_at', browsingCutoff)
         .is('assigned_to', null)
         .is('owner_agent', null)
         .not('status', 'in', '(lost,converted,fake_lead,not_eligible)')

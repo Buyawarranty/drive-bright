@@ -467,11 +467,13 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
             Open Round Robin
           </span>
           <div className="min-w-0">
-            <div className="text-base font-bold text-foreground leading-tight">Call this lead</div>
+            <div className="text-base font-bold text-foreground leading-tight">
+              {phase === 'calling' ? 'Call this lead' : `Reserved for you — ${formatMmSs(remaining)}`}
+            </div>
             <div className="text-sm text-muted-foreground">
               {phase === 'calling'
                 ? `On call with ${fullName} · ${formatMmSs(callingElapsed)} elapsed — log the outcome when you finish`
-                : `You have ${remaining} seconds to start the call`}
+                : 'Start the call before this timer expires'}
             </div>
           </div>
           <div className="flex items-center gap-2">
