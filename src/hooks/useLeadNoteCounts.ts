@@ -51,7 +51,12 @@ export const useLeadNoteCounts = (leadIds: string[]) => {
     }
   }, [stableKey]);
 
-
+  // Latest fetcher read through a ref so the realtime channel is created once
+  // instead of being torn down and re-subscribed on every render.
+  const fetchCountsRef = useRef(fetchCounts);
+  useEffect(() => {
+    fetchCountsRef.current = fetchCounts;
+  }, [fetchCounts]);
 
   useEffect(() => {
     fetchCounts();
@@ -59,7 +64,7 @@ export const useLeadNoteCounts = (leadIds: string[]) => {
 
   // Realtime: refresh counts when notes change (debounced)
   useEffect(() => {
-    if (leadIds.length === 0) return;
+    if (!hasLeads) return;
 
     let timer: ReturnType<typeof setTimeout> | null = null;
     const channel = supabase
@@ -68,7 +73,7 @@ export const useLeadNoteCounts = (leadIds: string[]) => {
         if (timer) clearTimeout(timer);
         timer = setTimeout(() => {
           lastFetchedKeyRef.current = ''; // force refetch
-          fetchCounts();
+          fetchCountsRef.current();
         }, 2000);
       })
       .subscribe();
@@ -77,7 +82,7 @@ export const useLeadNoteCounts = (leadIds: string[]) => {
       supabase.removeChannel(channel);
       if (timer) clearTimeout(timer);
     };
-  }, [fetchCounts]);
+  }, [hasLeads]);
 
   return counts;
 };
