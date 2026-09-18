@@ -556,6 +556,7 @@ Deno.serve(async (req) => {
       uploadedEnhanced,
       failed,
       skippedNoMatchData,
+      skippedNoClickId,
       withIdentifiers,
       backfilledCustomers,
       backfilledBumper,
