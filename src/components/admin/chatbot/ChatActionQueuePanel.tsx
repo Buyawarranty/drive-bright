@@ -560,6 +560,7 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
                   )}
                   <th className="w-8 px-2 py-2 text-left">#</th>
                   <th className="px-2 py-2 text-left">Priority</th>
+                  <th className="px-2 py-2 text-left">Time and Date</th>
                   <th className="px-2 py-2 text-left">Why it needs action</th>
                   <th className="px-2 py-2 text-left">Name</th>
                   <th className="px-2 py-2 text-left">Phone</th>
