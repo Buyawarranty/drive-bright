@@ -420,7 +420,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       {showDropdown && suggestions.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-background border border-border rounded-lg shadow-lg max-h-60 overflow-auto"
+          className="absolute z-50 w-full mt-1 bg-background border border-border rounded-lg shadow-xl max-h-[26rem] overflow-auto"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {suggestions.map((suggestion, index) => (
