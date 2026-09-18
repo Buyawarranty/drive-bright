@@ -33,6 +33,8 @@ interface PolicyDetails {
   warrantyNumber: string;
   policyNumber: string;
   planType: string;
+  /** Stored payment_type (e.g. 12months) — same source the dashboards use for Duration. */
+  paymentType?: string;
   policyStartDate: string;
   policyEndDate: string;
   claimLimit?: number;
