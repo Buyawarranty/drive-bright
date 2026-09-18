@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 import { DuplicateWarrantyDialog } from './DuplicateWarrantyDialog';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
+import { splitAddressLine } from '@/lib/address/splitAddressLine';
 import { 
   calculateAdminQuoteWarrantyPrice, 
   DURATION_MONTHS,
