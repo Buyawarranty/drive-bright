@@ -1,6 +1,6 @@
 import { shouldSkipPoll } from '@/lib/crmTabCoordinator';
 import React from 'react';
-import { Users, RefreshCw, ArrowLeftRight } from 'lucide-react';
+import { Users, RefreshCw, ArrowLeftRight, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -30,7 +30,7 @@ type Direction = 'orr_to_rr' | 'rr_to_orr';
  * Only uncalled leads are ever moved.
  */
 export const OrrFallbackToRoundRobinPanel: React.FC<{ isManagement: boolean }> = ({ isManagement }) => {
-  const { enabledTeamIds, teamNamesById } = useOrrLiveSettings(isManagement);
+  const { enabledTeamIds, teamNamesById, orrLive } = useOrrLiveSettings(isManagement);
   const [direction, setDirection] = React.useState<Direction>('orr_to_rr');
   const [idleMinutes, setIdleMinutes] = React.useState(15);
   const [teamId, setTeamId] = React.useState<string>('any');
@@ -112,6 +112,18 @@ export const OrrFallbackToRoundRobinPanel: React.FC<{ isManagement: boolean }> =
       {label}
     </button>
   );
+
+  /** Which system is actually running leads right now. */
+  const liveLabel =
+    orrLive === null
+      ? null
+      : orrLive
+        ? `Open Round Robin is live right now${
+            enabledTeamIds.length
+              ? ` (${enabledTeamIds.map(id => teamNamesById[id]).filter(Boolean).join(', ')})`
+              : ''
+          }`
+        : 'Round Robin is live right now';
 
   return (
     <div className="rounded-lg border border-border bg-card shadow-sm p-4 space-y-3">
