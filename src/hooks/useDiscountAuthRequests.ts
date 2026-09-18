@@ -85,21 +85,27 @@ export const useDiscountAuthRequests = (userRole?: string | null) => {
     setLoading(false);
   }, [user?.id, isManagement]);
 
+  // Keep the latest fetchRequests available without re-creating the channel.
+  const fetchRequestsRef = useRef(fetchRequests);
+  useEffect(() => {
+    fetchRequestsRef.current = fetchRequests;
+  }, [fetchRequests]);
+
   useEffect(() => {
     if (!user?.id) return;
-    fetchRequests();
+    fetchRequestsRef.current();
     const channel = supabase
-      .channel('discount-auth-requests')
+      .channel(`discount-auth-requests-${user.id}-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'discount_auth_requests' }, () => {
-        fetchRequests();
+        fetchRequestsRef.current();
       })
       .subscribe();
-    const stop = setVisibleInterval(fetchRequests, 30000);
+    const stop = setVisibleInterval(() => fetchRequestsRef.current(), 30000);
     return () => {
       supabase.removeChannel(channel);
       stop();
     };
-  }, [user?.id, fetchRequests]);
+  }, [user?.id]);
 
   const decide = useCallback(
     async (id: string, status: 'approved' | 'declined', note?: string, deciderName?: string) => {
