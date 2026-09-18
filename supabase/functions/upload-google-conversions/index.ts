@@ -571,7 +571,9 @@ Deno.serve(async (req) => {
     // more than 6 hours, email the team once per day so a silent stop (e.g. a
     // stale deployment) can never go unnoticed again.
     try {
-      const nothingGotThrough = allPending.length > 0 && uploaded === 0;
+      // Sales deliberately skipped (no ad click) are handled, not stalled.
+      const nothingGotThrough =
+        allPending.length > 0 && uploaded === 0 && skippedNoClickId + skippedNoMatchData === 0;
       const { count: staleCount } = await supabase
         .from('customers')
         .select('id', { count: 'exact', head: true })
