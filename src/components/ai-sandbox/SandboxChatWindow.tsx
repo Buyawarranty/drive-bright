@@ -88,9 +88,9 @@ const CHAT_TEXT = [
 ].join(' ');
 
 const OPENING_LINE = [
-  "Hi, I’m Miles. How can I help today?",
+  "Hey! 👋 I’m Miles. How can I help today?",
   '',
-  'You can choose an option below or ask me anything.',
+  'Choose an option below, or just ask me anything 😊',
 ].join('\n');
 
 
