@@ -62,6 +62,17 @@ interface Order {
     town?: string | null;
     county?: string | null;
     postcode?: string | null;
+    labour_rate?: number | null;
+    breakdown_recovery?: boolean | null;
+    wear_tear?: boolean | null;
+    europe_cover?: boolean | null;
+    mot_fee?: boolean | null;
+    mot_repair?: boolean | null;
+    tyre_cover?: boolean | null;
+    lost_key?: boolean | null;
+    vehicle_rental?: boolean | null;
+    transfer_cover?: boolean | null;
+    consequential?: boolean | null;
   };
 }
 
