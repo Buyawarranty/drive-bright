@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CircleDot, Loader2, Clock, X, Phone, PhoneCall, Users, Mail, FileText, StickyNote, CalendarDays, Car } from 'lucide-react';
+import { CircleDot, Loader2, Clock, X, Phone, PhoneCall, Users, StickyNote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -460,6 +460,72 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
 
   return (
     <>
+    {hasReservation && activeLead && (
+      <div className="mb-2 rounded-md border border-amber-200 bg-amber-50/70 px-4 py-3">
+        <div className="flex flex-wrap items-center gap-4 lg:gap-6">
+          <span className="text-[11px] font-bold uppercase tracking-wide text-orange-600 bg-orange-100 border border-orange-200 rounded px-2 py-0.5 shrink-0">
+            Open Round Robin
+          </span>
+          <div className="min-w-0">
+            <div className="text-base font-bold text-foreground leading-tight">Call this lead</div>
+            <div className="text-sm text-muted-foreground">
+              {phase === 'calling'
+                ? `On call with ${fullName} · ${formatMmSs(callingElapsed)} elapsed — log the outcome when you finish`
+                : `You have ${remaining} seconds to start the call`}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {phase === 'reserved' ? (
+              <Button
+                onClick={startCall}
+                className="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-5"
+              >
+                <Phone className="h-4 w-4" /> Start Call
+              </Button>
+            ) : (
+              <Button
+                onClick={openLead}
+                className="bg-sky-700 hover:bg-sky-800 text-white font-semibold px-5"
+              >
+                <PhoneCall className="h-4 w-4" /> Open lead
+              </Button>
+            )}
+            <Button variant="outline" onClick={openLead}>
+              <StickyNote className="h-4 w-4" /> Add Note
+            </Button>
+            <Button variant="outline" onClick={cancel} disabled={releasing}>
+              {releasing ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
+              Pass / Not now
+            </Button>
+          </div>
+          <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-100/60 px-3 py-2 ml-auto">
+            <Clock className="h-4 w-4 text-amber-700 shrink-0" />
+            <div>
+              <div className="text-xs font-semibold text-amber-900">
+                {phase === 'calling' ? 'Call in progress' : 'Auto-release in'}
+              </div>
+              <div className="text-lg font-bold tabular-nums leading-tight text-amber-900">
+                {phase === 'calling' ? formatMmSs(callingElapsed) : formatMmSs(remaining)}
+              </div>
+              {phase !== 'calling' && (
+                <div className="text-[11px] text-amber-800 leading-snug">
+                  If you don't start the call, the lead will return to the pool.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 rounded-md border border-sky-200 bg-sky-50 px-3 py-2">
+          <div className="text-xs font-bold text-sky-900 mb-1">Important</div>
+          <ul className="text-xs text-sky-900 space-y-0.5 list-disc pl-4">
+            <li>This is an Open Round Robin lead.</li>
+            <li>It is not yours until you speak to the customer.</li>
+            <li>If there is no answer, the lead returns to the pool for the next attempt (at the next eligible time).</li>
+            <li>You will only ever see one lead at a time.</li>
+          </ul>
+        </div>
+      </div>
+    )}
     <div className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 transition-colors ${barTone} ${className}`}>
       <div className="flex items-center gap-2 min-w-0 flex-wrap">
         <CircleDot className={`h-3.5 w-3.5 shrink-0 ${!enabled ? 'text-slate-500' : dryRun ? 'text-amber-700' : phase === 'calling' ? 'text-sky-700' : 'text-emerald-700'}`} />
@@ -595,38 +661,6 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         )}
       </div>
     </div>
-
-    {hasReservation && activeLead && (
-      <div className="mt-2 grid gap-3 rounded-md border border-emerald-200 bg-card px-4 py-3 lg:grid-cols-[minmax(220px,1.4fr)_repeat(3,minmax(110px,0.7fr))_auto] lg:items-center">
-        <div className="min-w-0">
-          <div className="font-semibold text-foreground truncate">{fullName}</div>
-          {activeLead.phone && <div className="text-sm text-muted-foreground">{activeLead.phone}</div>}
-          <div className="text-sm text-muted-foreground truncate">{activeLead.email}</div>
-        </div>
-        <div className="flex items-start gap-2 text-sm">
-          <Car className="mt-0.5 h-4 w-4 text-muted-foreground" />
-          <div><div className="text-xs text-muted-foreground">Registration</div><div className="font-medium">{activeLead.vehicle_reg || '—'}</div></div>
-        </div>
-        <div className="flex items-start gap-2 text-sm">
-          <CalendarDays className="mt-0.5 h-4 w-4 text-muted-foreground" />
-          <div><div className="text-xs text-muted-foreground">Lead date</div><div className="font-medium">{new Date(activeLead.created_at).toLocaleDateString('en-GB')}</div></div>
-        </div>
-        <div className="flex items-start gap-2 text-sm">
-          <Clock className="mt-0.5 h-4 w-4 text-muted-foreground" />
-          <div><div className="text-xs text-muted-foreground">Reservation</div><div className="font-medium tabular-nums">{phase === 'calling' ? `On call · ${formatMmSs(callingElapsed)}` : formatMmSs(remaining)}</div></div>
-        </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <Button size="sm" onClick={startCall} disabled={phase === 'calling'}>
-            <Phone className="h-4 w-4" /> Call
-          </Button>
-          <Button size="sm" variant="outline" asChild>
-            <a href={`mailto:${activeLead.email}`}><Mail className="h-4 w-4" /> Email</a>
-          </Button>
-          <Button size="sm" variant="outline" onClick={openLead}><FileText className="h-4 w-4" /> Quote</Button>
-          <Button size="sm" variant="outline" onClick={openLead}><StickyNote className="h-4 w-4" /> Add note</Button>
-        </div>
-      </div>
-    )}
 
     <AlertDialog open={idlePromptOpen} onOpenChange={setIdlePromptOpen}>
       <AlertDialogContent>
