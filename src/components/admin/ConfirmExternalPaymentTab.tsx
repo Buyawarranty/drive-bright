@@ -1559,8 +1559,9 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                             placeholder="e.g. SW1A 1AA or High Street, Bath"
                             className={!customerPostcode.trim() ? 'border-2 border-destructive focus-visible:ring-destructive' : ''}
                             onAddressSelect={(address: AddressData) => {
-                              if (address.building_number) setCustomerBuildingNumber(address.building_number);
-                              if (address.line_1) setCustomerStreet(address.line_1);
+                              const parts = splitAddressLine(address.line_1, address.line_2, address.building_number, address.building_name);
+                              if (parts.buildingNumberOrName) setCustomerBuildingNumber(parts.buildingNumberOrName);
+                              if (parts.street) setCustomerStreet(parts.street);
                               if (address.town) setCustomerTown(address.town);
                               if (address.county) setCustomerCounty(address.county);
                               if (address.postcode) setCustomerPostcode(address.postcode.toUpperCase());
