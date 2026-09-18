@@ -931,6 +931,28 @@ Deno.serve(async (req) => {
               note: "Ask for a phone number or an email first — a name is optional.",
             });
           }
+
+          // Fake-number guard: UK numbers only, correct digit counts.
+          // Mobiles 07 + 9 digits (11 total), landlines 01/02 + 8-9 (10-11 total),
+          // 03 + 9 digits. +44 is normalised to a leading 0. Obvious junk
+          // (5+ identical digits in a row) is rejected. Invalid numbers are NOT
+          // saved — Miles must read the number back and ask again.
+          if (args.customer_phone) {
+            let digits = String(args.customer_phone).replace(/\D/g, "");
+            if (digits.startsWith("44")) digits = `0${digits.slice(2)}`;
+            const ukOk =
+              /^07\d{9}$/.test(digits) || /^0[12]\d{8,9}$/.test(digits) || /^03\d{9}$/.test(digits);
+            const junk = /(\d)\1{4,}/.test(digits);
+            if (!ukOk || junk) {
+              return toolResultText({
+                ok: false,
+                invalid_phone: true,
+                note: `The number "${args.customer_phone}" is not a valid UK phone number (it has ${digits.length} digits — UK numbers have 10 or 11 and start 01, 02, 03 or 07). Do NOT save it. Politely tell the customer the number doesn't look complete and ask them to double-check it, e.g. "That number looks a digit short — could you check it for me?" Then call capture_lead again with the corrected number.`,
+              });
+            }
+            args.customer_phone = digits;
+          }
+
           const state = availability();
           const { data, error } = await admin
             .from("ai_sandbox_handovers")
