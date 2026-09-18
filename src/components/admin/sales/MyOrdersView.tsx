@@ -62,6 +62,17 @@ interface Order {
     town?: string | null;
     county?: string | null;
     postcode?: string | null;
+    labour_rate?: number | null;
+    breakdown_recovery?: boolean | null;
+    wear_tear?: boolean | null;
+    europe_cover?: boolean | null;
+    mot_fee?: boolean | null;
+    mot_repair?: boolean | null;
+    tyre_cover?: boolean | null;
+    lost_key?: boolean | null;
+    vehicle_rental?: boolean | null;
+    transfer_cover?: boolean | null;
+    consequential?: boolean | null;
   };
 }
 
@@ -117,7 +128,9 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
           *,
           customers!customer_id (
             name, first_name, last_name, phone, registration_plate, vehicle_make, vehicle_model, vehicle_year, mileage,
-            flat_number, building_name, building_number, street, town, county, postcode
+            flat_number, building_name, building_number, street, town, county, postcode,
+            labour_rate, breakdown_recovery, wear_tear, europe_cover, mot_fee, mot_repair,
+            tyre_cover, lost_key, vehicle_rental, transfer_cover, consequential
           )
         `)
         .in('customer_id', customerIds)
@@ -144,6 +157,17 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
           town: p.customers.town,
           county: p.customers.county,
           postcode: p.customers.postcode,
+          labour_rate: (p.customers as any).labour_rate,
+          breakdown_recovery: (p.customers as any).breakdown_recovery,
+          wear_tear: (p.customers as any).wear_tear,
+          europe_cover: (p.customers as any).europe_cover,
+          mot_fee: (p.customers as any).mot_fee,
+          mot_repair: (p.customers as any).mot_repair,
+          tyre_cover: (p.customers as any).tyre_cover,
+          lost_key: (p.customers as any).lost_key,
+          vehicle_rental: (p.customers as any).vehicle_rental,
+          transfer_cover: (p.customers as any).transfer_cover,
+          consequential: (p.customers as any).consequential,
         } : undefined
       } as Order));
 
@@ -388,10 +412,22 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
             warrantyNumber: printLetterDialog.order.warranty_number || '',
             policyNumber: printLetterDialog.order.policy_number,
             planType: printLetterDialog.order.plan_type,
+            paymentType: printLetterDialog.order.payment_type || undefined,
             policyStartDate: printLetterDialog.order.policy_start_date,
             policyEndDate: printLetterDialog.order.policy_end_date,
-            claimLimit: printLetterDialog.order.claim_limit || undefined,
-            voluntaryExcess: printLetterDialog.order.voluntary_excess || undefined,
+            claimLimit: printLetterDialog.order.claim_limit ?? undefined,
+            voluntaryExcess: printLetterDialog.order.voluntary_excess ?? undefined,
+            labourRate: printLetterDialog.order.customer?.labour_rate ?? undefined,
+            breakdownRecovery: printLetterDialog.order.customer?.breakdown_recovery || false,
+            wearTear: printLetterDialog.order.customer?.wear_tear || false,
+            europeCover: printLetterDialog.order.customer?.europe_cover || false,
+            motFee: printLetterDialog.order.customer?.mot_fee || false,
+            motRepair: printLetterDialog.order.customer?.mot_repair || false,
+            tyreCover: printLetterDialog.order.customer?.tyre_cover || false,
+            lostKey: printLetterDialog.order.customer?.lost_key || false,
+            vehicleRental: printLetterDialog.order.customer?.vehicle_rental || false,
+            transferCover: printLetterDialog.order.customer?.transfer_cover || false,
+            consequential: printLetterDialog.order.customer?.consequential || false,
             seasonalBonusMonths: printLetterDialog.order.seasonal_bonus_months ?? undefined,
             additionalNotes: printLetterDialog.order.additional_notes || undefined,
           }}
