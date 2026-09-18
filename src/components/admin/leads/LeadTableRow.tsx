@@ -727,11 +727,11 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                            {initial}
                          </div>
                          <span className={`truncate ${isInactiveAgent ? 'italic text-muted-foreground' : ''}`}>
-                           {isReserved ? `${(assignedUser?.first_name || displayName).split(' ')[0]} — You` : displayName}{isInactiveAgent ? ' (off)' : ''}
+                            {isReserved ? `${(assignedUser?.first_name || displayName).split(' ')[0]} — temporary` : displayName}{isInactiveAgent ? ' (off)' : ''}
                          </span>
                          {isReserved && (
                            <span className="ml-1 inline-flex items-center rounded-full bg-emerald-600 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white shadow-sm">
-                             Working
+                              Attempt only
                            </span>
                          )}
                          <TeamBadge userId={lead.assigned_to} className="flex-shrink-0" />
@@ -1349,10 +1349,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   ? "border-amber-300 bg-amber-50 text-amber-800"
                   : "border-emerald-300 bg-emerald-50 text-emerald-800"
               )}
-              title="Reserved to you from the Open Lead Pool"
+              title="Open Round Robin · Reserved for this attempt"
             >
               <Clock className="h-3 w-3" />
-              {warn ? `Releasing soon · ${label}` : `Reserved · ${label}`}
+              {warn ? `Releasing soon · ${label}` : `Reserved for attempt · ${label}`}
             </span>
           );
         })() : (
@@ -2011,10 +2011,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   ? "border-amber-300 bg-amber-50 text-amber-800"
                   : "border-emerald-300 bg-emerald-50 text-emerald-800"
               )}
-              title="Reserved to you from the Open Lead Pool"
+              title="Open Round Robin · Reserved for this attempt"
             >
               <Clock className="h-3 w-3" />
-              {warn ? `Releasing soon · ${label}` : `Reserved · ${label}`}
+              {warn ? `Releasing soon · ${label}` : `Reserved for attempt · ${label}`}
             </span>
           );
         })() : (

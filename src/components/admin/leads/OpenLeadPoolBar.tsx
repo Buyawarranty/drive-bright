@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CircleDot, Loader2, Clock, X, Phone, PhoneCall, Users } from 'lucide-react';
+import { CircleDot, Loader2, Clock, X, Phone, PhoneCall, Users, Mail, FileText, StickyNote, CalendarDays, Car } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
@@ -141,6 +142,8 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
           locked_by: null,
           locked_at: null,
           owner_agent: null,
+          assigned_to: null,
+          assigned_at: null,
           next_action_at: new Date(Date.now() + 2 * 60 * 1000).toISOString(),
           updated_at: new Date().toISOString(),
         })
@@ -201,6 +204,8 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
           locked_by: null,
           locked_at: null,
           owner_agent: null,
+          assigned_to: null,
+          assigned_at: null,
           next_action_at: new Date(Date.now() + 2 * 60 * 1000).toISOString(),
           updated_at: new Date().toISOString(),
         })
@@ -235,7 +240,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
             ? 'New lead in the Open Pool'
             : `${arrived} new leads in the Open Pool`,
           {
-            description: 'Click "Take next lead" to claim one.',
+            description: 'Take the next lead for a temporary call reservation.',
             id: 'open-pool-new-arrival',
           }
         );
@@ -376,6 +381,8 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
           locked_by: null,
           locked_at: null,
           owner_agent: null,
+          assigned_to: null,
+          assigned_at: null,
           next_action_at: new Date(Date.now() + 2 * 60 * 1000).toISOString(),
           updated_at: new Date().toISOString(),
         })
@@ -446,13 +453,24 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
     (reservation?.lead as any)?.first_name?.trim() ||
     (reservation?.lead as any)?.name?.trim()?.split(' ')?.[0] ||
     'this';
+  const activeLead = reservation?.lead;
+  const fullName = activeLead
+    ? ([activeLead.first_name, activeLead.last_name].filter(Boolean).join(' ') || activeLead.full_name || 'Customer')
+    : '';
 
   return (
     <>
     <div className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 transition-colors ${barTone} ${className}`}>
       <div className="flex items-center gap-2 min-w-0 flex-wrap">
         <CircleDot className={`h-3.5 w-3.5 shrink-0 ${!enabled ? 'text-slate-500' : dryRun ? 'text-amber-700' : phase === 'calling' ? 'text-sky-700' : 'text-emerald-700'}`} />
-        <span className={`text-sm font-semibold ${!enabled ? 'text-slate-700' : phase === 'calling' ? 'text-sky-900' : 'text-emerald-900'}`}>Open Round Robin</span>
+        <div className="mr-2">
+          <div className={`text-sm font-semibold ${!enabled ? 'text-slate-700' : phase === 'calling' ? 'text-sky-900' : 'text-emerald-900'}`}>
+            {hasReservation ? 'Current Open Round Robin Lead' : 'Open Round Robin'}
+          </div>
+          {hasReservation && (
+            <div className="text-xs text-muted-foreground">Open Round Robin · Reserved for this attempt</div>
+          )}
+        </div>
 
         {agentOpenPool && (
           <span className="text-[10px] uppercase tracking-wide font-semibold text-white bg-emerald-600 border border-emerald-700 rounded px-1.5 py-0.5">
@@ -495,7 +513,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
             </span>
           ) : (
             <span className="text-xs text-slate-600">
-              One lead is assigned at a time · <span className="font-medium">0 available</span>
+              One temporary reservation at a time · <span className="font-medium">0 available</span>
             </span>
           )
         )}
@@ -509,7 +527,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         {hasReservation && phase === 'reserved' && (
           <span className={`inline-flex items-center gap-1 text-xs ${tier === 'warn' ? 'text-amber-800 font-semibold' : 'text-emerald-900 font-medium'}`}>
             <Clock className="h-3 w-3" />
-            Reserved for {firstName} — click Call when ready · {formatMmSs(remaining)} hold before it returns to the pool
+            {firstName} · Reserved for this attempt · {formatMmSs(remaining)} before it returns to the pool
           </span>
         )}
 
@@ -549,7 +567,7 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
               className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-sm font-medium border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-60 transition-colors"
             >
               {releasing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
-              Cancel lead
+                Release
             </button>
           </>
         ) : managerAssignMode ? (
@@ -577,6 +595,38 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
         )}
       </div>
     </div>
+
+    {hasReservation && activeLead && (
+      <div className="mt-2 grid gap-3 rounded-md border border-emerald-200 bg-card px-4 py-3 lg:grid-cols-[minmax(220px,1.4fr)_repeat(3,minmax(110px,0.7fr))_auto] lg:items-center">
+        <div className="min-w-0">
+          <div className="font-semibold text-foreground truncate">{fullName}</div>
+          {activeLead.phone && <div className="text-sm text-muted-foreground">{activeLead.phone}</div>}
+          <div className="text-sm text-muted-foreground truncate">{activeLead.email}</div>
+        </div>
+        <div className="flex items-start gap-2 text-sm">
+          <Car className="mt-0.5 h-4 w-4 text-muted-foreground" />
+          <div><div className="text-xs text-muted-foreground">Registration</div><div className="font-medium">{activeLead.vehicle_reg || '—'}</div></div>
+        </div>
+        <div className="flex items-start gap-2 text-sm">
+          <CalendarDays className="mt-0.5 h-4 w-4 text-muted-foreground" />
+          <div><div className="text-xs text-muted-foreground">Lead date</div><div className="font-medium">{new Date(activeLead.created_at).toLocaleDateString('en-GB')}</div></div>
+        </div>
+        <div className="flex items-start gap-2 text-sm">
+          <Clock className="mt-0.5 h-4 w-4 text-muted-foreground" />
+          <div><div className="text-xs text-muted-foreground">Reservation</div><div className="font-medium tabular-nums">{phase === 'calling' ? `On call · ${formatMmSs(callingElapsed)}` : formatMmSs(remaining)}</div></div>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Button size="sm" onClick={startCall} disabled={phase === 'calling'}>
+            <Phone className="h-4 w-4" /> Call
+          </Button>
+          <Button size="sm" variant="outline" asChild>
+            <a href={`mailto:${activeLead.email}`}><Mail className="h-4 w-4" /> Email</a>
+          </Button>
+          <Button size="sm" variant="outline" onClick={openLead}><FileText className="h-4 w-4" /> Quote</Button>
+          <Button size="sm" variant="outline" onClick={openLead}><StickyNote className="h-4 w-4" /> Add note</Button>
+        </div>
+      </div>
+    )}
 
     <AlertDialog open={idlePromptOpen} onOpenChange={setIdlePromptOpen}>
       <AlertDialogContent>

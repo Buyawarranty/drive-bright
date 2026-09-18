@@ -409,6 +409,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   type PoolOutcome =
     | 'no_answer'
     | 'voicemail_left'
+    | 'line_busy'
     | 'callback_requested'
     | 'not_interested'
     | 'wrong_number'
@@ -425,8 +426,8 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     hint?: string;
   };
 
-  // All non-releasing outcomes here KEEP the lead assigned to the current agent
-  // (green confirmation banner shown after selection).
+  // Connected outcomes establish ownership; unanswered outcomes release the
+  // temporary call reservation back to the shared retry pool.
   // Labels here mirror the lead status dropdown (New, Spoken to, Follow-up,
   // Quote sent, Negotiating, Converted, Not interested, Fake / 404,
   // Urgent call-back) so agents see the same language everywhere.
@@ -440,15 +441,12 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     { label: 'Not interested', text: '🚫 Not interested', tone: 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100', outcome: 'not_interested', releases: true, needsReason: true, hint: 'Closes the lead and releases it — asks for reason' },
   ];
 
-  // NOTE: "releases: true" here means the reservation slot is freed so you can
-  // take another lead — the LEAD itself stays locked to you for the protected
-  // retry window (default 15 min, configurable in Lead Teams → Open Lead Pool).
-  // No other agent can grab it during that window. If you don't retry in time,
-  // it converts to a chase lock and then recycles back into the pool.
+  // Unanswered attempts never create ownership. The lead-level retry journey
+  // continues, but the next eligible attempt can go to any available agent.
   const NO_ANSWER_SUB_OUTCOMES: SubOutcome[] = [
-    { label: 'No answer', text: '⏱ No answer — retry later', tone: 'border-amber-300 text-amber-800 hover:bg-amber-50', outcome: 'no_answer', releases: true, hint: 'This lead is saved for your next attempt.' },
-    { label: 'Voicemail', text: '📞 Left voicemail', tone: 'border-violet-300 text-violet-800 hover:bg-violet-50', outcome: 'voicemail_left', releases: true, hint: 'This lead is saved for your next attempt.' },
-    { label: 'Line busy', text: '📞 Line busy', tone: 'border-sky-300 text-sky-800 hover:bg-sky-50', outcome: 'no_answer', releases: true, hint: 'This lead is saved for your next attempt.' },
+    { label: 'No answer', text: '⏱ No answer — returned to retry pool', tone: 'border-amber-300 text-amber-800 hover:bg-amber-50', outcome: 'no_answer', releases: true, hint: 'Not owned · Returns to retry pool.' },
+    { label: 'Voicemail', text: '📞 Left voicemail — returned to retry pool', tone: 'border-violet-300 text-violet-800 hover:bg-violet-50', outcome: 'voicemail_left', releases: true, hint: 'Not owned · Returns to retry pool.' },
+    { label: 'Line busy', text: '📞 Line busy — returned to retry pool', tone: 'border-sky-300 text-sky-800 hover:bg-sky-50', outcome: 'line_busy', releases: true, hint: 'Not owned · Returns to retry pool.' },
     { label: 'Number issue', text: '❌ Number issue', tone: 'border-rose-300 text-rose-800 hover:bg-rose-50', outcome: 'wrong_number', releases: true, needsReason: true, hint: 'Tell us what happened so the customer details can be checked.' },
   ];
 
@@ -490,6 +488,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
       spoke_to_customer: 'spoken_to_selected',
       no_answer: 'no_answer_selected',
       voicemail_left: 'voicemail_selected',
+      line_busy: 'busy_selected',
       busy: 'busy_selected',
       callback_requested: 'callback_requested',
       wrong_number: 'wrong_number_selected',
@@ -524,8 +523,8 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     clearOpenPoolReservation();
     setKeptStatus({ label: 'Spoken to' });
     setOutcomeStep('choose');
-    toast.success('✅ This lead is now yours — Spoken to', {
-      description: 'Status set to Spoken to. Open the row again anytime to add a refinement.',
+    toast.success('Connected · Assigned to you', {
+      description: 'Customer contact confirmed. This lead is now yours for follow-up.',
     });
     // Collapse the row so it displays like every other owned lead — no more
     // orange-bordered outcome box hanging around after the agent has spoken.
@@ -584,8 +583,8 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     if (action.releases) {
       clearOpenPoolReservation();
       setKeptStatus(null);
-      toast.success('Lead released — moving to next one', {
-        description: `${action.label} · Retry saved for ${retryMinutes} min`,
+      toast.success('Not owned · Returns to retry pool', {
+        description: `${action.label} · Next attempt eligible in ${retryMinutes} min`,
       });
       setOutcomeStep('choose');
       // Auto-collapse the row and immediately hand the agent the next lead so
@@ -686,7 +685,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
               <div>
                 {keptStatus.label === 'Spoken to' ? (
                   <>
-                    <div className="font-semibold mb-0.5">Customer reached — this lead is now yours to continue.</div>
+                    <div className="font-semibold mb-0.5">Connected · Assigned to you</div>
                     <div className="text-emerald-800/90">Add a quick summary and choose the next step.</div>
                   </>
                 ) : (
