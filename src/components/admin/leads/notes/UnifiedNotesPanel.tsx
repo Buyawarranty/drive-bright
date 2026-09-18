@@ -873,7 +873,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                               <strong>Number issue</strong> is the only option that releases the lead immediately so you can take a new one. It’s flagged for data-quality review instead of counting as a failed attempt.
                             </p>
                             <p>
-                              Each “No answer”, “Voicemail”, or “Line busy” counts as one attempt. After 7 attempts, the lead is marked as lost and won’t be offered again.
+                              Each “No answer”, “Voicemail”, or “Line busy” counts as one attempt. The lead is chased twice a day (mid-morning and mid-afternoon) for seven days — 14 attempts — then marked as lost and not offered again.
                             </p>
                           </div>
                         </TooltipContent>
