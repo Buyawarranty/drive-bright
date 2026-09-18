@@ -15,6 +15,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Loader2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { getCachedWatiTemplates, warmWatiTemplateCache } from '@/lib/whatsapp/templateCache';
 
 interface WatiTemplate {
   name: string;
@@ -71,20 +72,18 @@ export const SendWhatsAppLeadButton: React.FC<Props> = ({
     if (!open || templates.length || failed) return;
     setLoading(true);
     void (async () => {
-      const { data, error } = await supabase.functions.invoke('wati-templates', { body: {} });
-      setLoading(false);
-      if (error || !data?.ok || !Array.isArray(data.templates) || data.templates.length === 0) {
+      try {
+        const list = await getCachedWatiTemplates();
+        setTemplates(list);
+        const first = list[0];
+        if (first) {
+          setTemplateName(first.name);
+          setMessage(fillTemplate(first.body, firstName));
+        }
+      } catch {
         setFailed(true);
-        return;
-      }
-      const all = data.templates as WatiTemplate[];
-      const approved = all.filter((t) => t.status === 'APPROVED' || t.status === 'UNKNOWN');
-      const list = approved.length ? approved : all;
-      setTemplates(list);
-      const first = list[0];
-      if (first) {
-        setTemplateName(first.name);
-        setMessage(fillTemplate(first.body, firstName));
+      } finally {
+        setLoading(false);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -137,6 +136,8 @@ export const SendWhatsAppLeadButton: React.FC<Props> = ({
             size="sm"
             disabled={disabled}
             className="h-6 border border-green-500 bg-white px-1.5 text-[11px] font-semibold text-green-600 shadow-sm hover:bg-green-50 hover:text-green-700"
+            onMouseEnter={warmWatiTemplateCache}
+            onFocus={warmWatiTemplateCache}
             onClick={() => setOpen(true)}
           >
             WhatsApp

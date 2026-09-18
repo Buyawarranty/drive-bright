@@ -11,6 +11,9 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 
+const CACHE_TTL_MS = 5 * 60 * 1000;
+let templateCache: { savedAt: number; templates: unknown[] } | null = null;
+
 /** Lists the approved WhatsApp templates from WATI so managers can pick one. */
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -40,6 +43,10 @@ Deno.serve(async (req) => {
     .eq('user_id', userId)
     .maybeSingle();
   if (!adminUser?.id || adminUser.is_active === false) return json({ error: 'forbidden' }, 403);
+
+  if (templateCache && Date.now() - templateCache.savedAt < CACHE_TTL_MS) {
+    return json({ ok: true, templates: templateCache.templates, cached: true });
+  }
 
   const endpoint = (Deno.env.get('WATI_API_ENDPOINT') || '').replace(/\/+$/, '');
   const token = Deno.env.get('WATI_ACCESS_TOKEN');
@@ -71,6 +78,7 @@ Deno.serve(async (req) => {
       .filter((t) => t.name)
       .sort((a, b) => a.name.localeCompare(b.name));
 
+    templateCache = { savedAt: Date.now(), templates };
     return json({ ok: true, templates });
   } catch (error: any) {
     return json({ error: 'wati_unreachable', details: String(error?.message || error) }, 502);

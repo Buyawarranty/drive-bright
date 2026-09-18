@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
+import { getCachedWatiTemplates } from '@/lib/whatsapp/templateCache';
 
 export interface WatiTemplate {
   name: string;
@@ -31,16 +31,13 @@ const WhatsAppTemplateSelect: React.FC<Props> = ({
 
   useEffect(() => {
     void (async () => {
-      const { data, error } = await supabase.functions.invoke('wati-templates', { body: {} });
-      setLoading(false);
-      if (error || !data?.ok || !Array.isArray(data.templates) || data.templates.length === 0) {
+      try {
+        setTemplates(await getCachedWatiTemplates());
+      } catch {
         setFailed(true);
-        return;
+      } finally {
+        setLoading(false);
       }
-      const approved = (data.templates as WatiTemplate[]).filter(
-        (t) => t.status === 'APPROVED' || t.status === 'UNKNOWN',
-      );
-      setTemplates(approved.length ? approved : (data.templates as WatiTemplate[]));
     })();
   }, []);
 
