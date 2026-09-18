@@ -1,6 +1,7 @@
 import { getVehicleAge } from '@/lib/vehicleAge';
 import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, instalmentScheduleTotal, oneYearRatio, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
+import { splitAddressLine } from '@/lib/address/splitAddressLine';
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 
 import { Button } from '@/components/ui/button';
