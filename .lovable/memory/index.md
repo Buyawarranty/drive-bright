@@ -48,6 +48,7 @@ Updated: just now
 - [Northern Ireland Vehicles](mem://features/northern-ireland-vehicles) — No NI API: buy online only when make+model recognised, otherwise callback; customer-typed mileage
 - [Reg-only Quote Journey](mem://features/reg-only-mileage-from-mot) — Step 1 is reg-only; mileage from latest MOT, confirmed at Step 4, price honoured
 - [Owner-sticky Repeat Customers](mem://admin/leads/owner-sticky-repeat-customers) — New lead matching an open lead by phone tail-9/email goes to that lead's owner, never round-robin/weekend pool
+- [ORR Reservation and Chase Rules](mem://admin/leads/orr-reservation-and-chase-rules) — Dial/no-answer never creates ownership; each attempt may go to a different eligible agent until confirmed contact
 - [Team Red/Blue State](mem://admin/leads/team-red-blue-state) — Unassigned sales agents/leads stay pending; no automatic Red fallback; manager/admin allocates
 - [Team Allocation & Workstreams](mem://admin/leads/team-allocation-workstreams) — Lead Teams page Allocation tab assigns team + New/Recontact/Renewals workstreams per agent
 - [Team Filter Scope](mem://admin/leads/team-filter-scope) — Sales/sales_lead locked to own team chip; admin/super_admin/sales_manager see All + every team; impersonation uses effective admin id
