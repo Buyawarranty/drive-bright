@@ -11148,6 +11148,7 @@ export type Database = {
           orr_retry_deadline: string | null
           orr_retry_missed_at: string | null
           orr_retry_missed_by: string | null
+          orr_retry_preferred_agent: string | null
           owner_agent: string | null
           payment_amount: number | null
           payment_date: string | null
@@ -11271,6 +11272,7 @@ export type Database = {
           orr_retry_deadline?: string | null
           orr_retry_missed_at?: string | null
           orr_retry_missed_by?: string | null
+          orr_retry_preferred_agent?: string | null
           owner_agent?: string | null
           payment_amount?: number | null
           payment_date?: string | null
@@ -11394,6 +11396,7 @@ export type Database = {
           orr_retry_deadline?: string | null
           orr_retry_missed_at?: string | null
           orr_retry_missed_by?: string | null
+          orr_retry_preferred_agent?: string | null
           owner_agent?: string | null
           payment_amount?: number | null
           payment_date?: string | null
