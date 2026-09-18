@@ -142,6 +142,8 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
           locked_by: null,
           locked_at: null,
           owner_agent: null,
+          assigned_to: null,
+          assigned_at: null,
           next_action_at: new Date(Date.now() + 2 * 60 * 1000).toISOString(),
           updated_at: new Date().toISOString(),
         })
@@ -202,6 +204,8 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
           locked_by: null,
           locked_at: null,
           owner_agent: null,
+          assigned_to: null,
+          assigned_at: null,
           next_action_at: new Date(Date.now() + 2 * 60 * 1000).toISOString(),
           updated_at: new Date().toISOString(),
         })
@@ -377,6 +381,8 @@ export function OpenLeadPoolBar({ className = '', showWhenOff = false }: OpenLea
           locked_by: null,
           locked_at: null,
           owner_agent: null,
+          assigned_to: null,
+          assigned_at: null,
           next_action_at: new Date(Date.now() + 2 * 60 * 1000).toISOString(),
           updated_at: new Date().toISOString(),
         })
