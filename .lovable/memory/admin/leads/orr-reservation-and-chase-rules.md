@@ -12,6 +12,12 @@ type: feature
 - Counts as ONE genuine attempt. Lead leaves the salesperson's active queue (never stays assigned), enters a waiting state, then re-enters Open Round Robin at its next eligible time; normal rotation picks whoever is next — no preference for the previous salesperson.
 - Confirmation wording: "✓ No answer logged / Day X of 7 · Call X of 2 complete / Back in Round Robin from …". Lead stays searchable in history, never deleted.
 
+**Ownership boundary**
+- Dialling never creates ownership. Before contact the state is **"Open Round Robin · Reserved for this attempt"**.
+- No answer, voicemail, or busy clears the reservation and both agent ownership fields. The state is **"Not owned · Returns to retry pool"**.
+- Only confirmed customer contact creates ownership. The state is **"Connected · Assigned to [agent]"**, after which normal quotes, callbacks and follow-up stay with that salesperson.
+- The 7-contact-day journey belongs to the lead, not to any salesperson. Different eligible agents may make different attempts until one connects.
+
 **Cadence**
 - Chase = 7 CONTACT days (not calendar days). Weekdays 09:00–18:00; weekends ad-hoc staffed window ~10:00–13:00.
 - Up to 2 genuine attempts a full weekday, normally 1 per weekend day. Minimum 3 hours between attempts, computed from the ACTUAL previous attempt time (09:15 → 12:15), never a fixed clock time. If +3h lands at/after close, move to the next staffed window.
