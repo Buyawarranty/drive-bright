@@ -415,6 +415,12 @@ Deno.serve(async (req) => {
     let uploadedEnhanced = 0;
     let failed = 0;
     let skippedNoMatchData = 0;
+    let skippedNoClickId = 0;
+    // Click-conversion uploads without a gclid/gbraid/wbraid can never be tied to an ad
+    // click, so Google rejects them as "could not be attributed to a click" and the
+    // campaign diagnostics fill with errors. Only send identifier-only sales if the
+    // account has a conversion action configured for enhanced conversions for leads.
+    const allowEnhancedOnly = (Deno.env.get('GOOGLE_ADS_ENHANCED_ONLY_UPLOADS') || '').toLowerCase() === 'true';
     let withIdentifiers = 0;
     const errors: string[] = [];
 
