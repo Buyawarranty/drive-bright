@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CircleDot, Loader2, Clock, X, Phone, PhoneCall, Users, Mail, FileText, StickyNote, CalendarDays, Car } from 'lucide-react';
+import { CircleDot, Loader2, Clock, X, Phone, PhoneCall, Users, StickyNote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
