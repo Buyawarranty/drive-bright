@@ -713,10 +713,11 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     ].filter(Boolean);
     if (missingAddress.length > 0) {
       toast({
-        title: "Address required",
-        description: `Please complete: ${missingAddress.join(', ')}.`,
+        title: `Form incomplete — ${missingAddress.length} address ${missingAddress.length === 1 ? 'box' : 'boxes'} still empty`,
+        description: `Fill in: ${missingAddress.join(', ')}. Pick the address from the list again or type these in by hand.`,
         variant: "destructive",
       });
+      document.getElementById('customer-address-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
