@@ -11,6 +11,7 @@ export const useLeadNoteCounts = (leadIds: string[]) => {
   // leads can share those and previously skipped the refetch, leaving the
   // notes column blank.
   const stableKey = useMemo(() => [...leadIds].sort().join(','), [leadIds]);
+  const hasLeads = leadIds.length > 0;
 
   const fetchCounts = useCallback(async () => {
     const ids = stableKey ? stableKey.split(',') : [];
