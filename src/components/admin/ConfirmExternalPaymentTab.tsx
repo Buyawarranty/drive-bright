@@ -806,11 +806,12 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     ].filter(Boolean);
     if (missingAddress.length > 0) {
       toast({
-        title: "Address required",
-        description: `Please complete: ${missingAddress.join(', ')}.`,
+        title: `Form incomplete — ${missingAddress.length} address ${missingAddress.length === 1 ? 'box' : 'boxes'} still empty`,
+        description: `Fill in: ${missingAddress.join(', ')}. We've taken you back to the details step so you can complete them.`,
         variant: "destructive",
       });
       setExternalPaymentStep('details');
+      setTimeout(() => document.getElementById('customer-address-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 200);
       return;
     }
 
