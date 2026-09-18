@@ -18,6 +18,8 @@ export const ALERT_RAIL_ORDER = {
   whatsappHotLead: 15,
   // Sits BELOW the new-lead cards so a stuck checkout never covers a new lead.
   stuckCheckout: 20,
+  // Chat hand-over requests sit just under the stuck-checkout alert.
+  chatAgentRequest: 25,
 } as const;
 
 
