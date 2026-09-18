@@ -201,9 +201,20 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
     return addons;
   };
 
+  // Duration must read exactly as the admin customer record and the customer
+  // dashboard show it: the stored payment_type is the source of truth, with the
+  // stored policy dates only as a fallback when no payment type exists.
   const getDuration = () => {
+    if (policy.paymentType) return getWarrantyDurationDisplay(policy.paymentType);
     return formatStoredPolicyCoverDuration(policy.policyStartDate, policy.policyEndDate);
   };
+
+  // Same display rules as the dashboards: wire claim-limit values map to the real
+  // cover figure, excess defaults to £0 and labour rate to £70/hour.
+  const displayClaimLimit =
+    policy.claimLimit != null ? getDisplayClaimLimitValue(policy.claimLimit) : null;
+  const displayExcess = policy.voluntaryExcess ?? 0;
+  const displayLabourRate = policy.labourRate || 70;
 
 
   const address = formatAddress();
