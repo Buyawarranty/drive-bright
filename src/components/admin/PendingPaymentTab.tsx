@@ -545,8 +545,13 @@ export const PendingPaymentTab: React.FC = () => {
                         </>
                       )}
                       {r.deferred_payment_link && (
-                        <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(r.deferred_payment_link!); toast.success('Payment link copied'); }}>
-                          <Mail className="w-3.5 h-3.5 mr-1" />Copy link
+                        <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(r.deferred_payment_link!); toast.success('Card payment link copied'); }}>
+                          <Mail className="w-3.5 h-3.5 mr-1" />Copy card link
+                        </Button>
+                      )}
+                      {r.deferred_bumper_link && (
+                        <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(r.deferred_bumper_link!); toast.success('Bumper link copied'); }}>
+                          <Mail className="w-3.5 h-3.5 mr-1" />Copy Bumper link
                         </Button>
                       )}
                     </div>
