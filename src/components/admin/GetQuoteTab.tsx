@@ -8900,8 +8900,54 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                       )}
                     </div>
 
+                    {/* Pay later — payment date */}
+                    {deferredMode && (
+                      <div className="rounded-lg border-2 border-amber-400 bg-amber-50/70 p-4 space-y-3">
+                        <div className="flex items-start gap-2">
+                          <Clock className="w-4 h-4 text-amber-700 mt-0.5 flex-shrink-0" />
+                          <div className="text-sm text-amber-900">
+                            <p className="font-semibold">Payment later — the warranty stays switched off until it's paid</p>
+                            <p className="text-amber-800 mt-0.5">
+                              No documents, no welcome email and no cover until the money is received. The order goes
+                              into Customer Management &gt; Pending payment for you to chase.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <Label htmlFor="deferred-payment-date" className="text-xs font-semibold text-amber-900">
+                              Payment date *
+                            </Label>
+                            <Input
+                              id="deferred-payment-date"
+                              type="date"
+                              value={deferredPaymentDueDate}
+                              min={format(new Date(), 'yyyy-MM-dd')}
+                              max={format(startOfDay(warrantyStartDate), 'yyyy-MM-dd')}
+                              onChange={(e) => setDeferredPaymentDueDate(e.target.value)}
+                              className="bg-white border-amber-300"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-semibold text-amber-900">Warranty starts</Label>
+                            <div className="h-10 flex items-center px-3 rounded-md border border-amber-300 bg-white text-sm font-bold text-amber-900">
+                              {format(warrantyStartDate, 'd MMM yyyy')}
+                            </div>
+                          </div>
+                        </div>
+                        {deferredPaymentDueDate && isBefore(startOfDay(warrantyStartDate), startOfDay(new Date(deferredPaymentDueDate))) && (
+                          <p className="text-xs font-semibold text-red-600">
+                            Payment must be due on or before the warranty start date.
+                          </p>
+                        )}
+                        <p className="text-[11px] text-amber-800">
+                          The customer is emailed straight away confirming their cover starts{' '}
+                          {format(warrantyStartDate, 'd MMMM yyyy')}
+                          {deferredPaymentDueDate ? ` and payment is due ${format(new Date(deferredPaymentDueDate), 'd MMMM yyyy')}` : ''}, with a payment link.
+                        </p>
+                      </div>
+                    )}
 
-                    
                     {/* Warranty Start Date Picker */}
                     <div className="space-y-3">
                       <Label className="flex items-center gap-2 text-xs font-medium text-gray-600">
