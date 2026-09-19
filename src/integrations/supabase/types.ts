@@ -4638,6 +4638,8 @@ export type Database = {
           created_at: string
           customer_dob: string | null
           dealer_id: string | null
+          deferred_agent_reminders_sent: Json
+          deferred_bumper_link: string | null
           deferred_chase_count: number
           deferred_created_at: string | null
           deferred_created_by: string | null
@@ -4779,6 +4781,8 @@ export type Database = {
           created_at?: string
           customer_dob?: string | null
           dealer_id?: string | null
+          deferred_agent_reminders_sent?: Json
+          deferred_bumper_link?: string | null
           deferred_chase_count?: number
           deferred_created_at?: string | null
           deferred_created_by?: string | null
@@ -4920,6 +4924,8 @@ export type Database = {
           created_at?: string
           customer_dob?: string | null
           dealer_id?: string | null
+          deferred_agent_reminders_sent?: Json
+          deferred_bumper_link?: string | null
           deferred_chase_count?: number
           deferred_created_at?: string | null
           deferred_created_by?: string | null

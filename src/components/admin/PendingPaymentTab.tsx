@@ -50,6 +50,7 @@ interface Row {
   deferred_last_chased_at: string | null;
   deferred_chase_count: number | null;
   deferred_payment_link: string | null;
+  deferred_bumper_link: string | null;
   deferred_paid_at: string | null;
   assigned_to: string | null;
   sale_credit_admin_user_id: string | null;
@@ -87,7 +88,7 @@ export const PendingPaymentTab: React.FC = () => {
       let q = supabase
         .from('customers')
         .select(
-          'id, name, email, phone, registration_plate, warranty_reference_number, plan_type, payment_type, final_amount, status, deferred_status, deferred_start_date, deferred_payment_due_date, deferred_created_by, deferred_created_at, deferred_last_chased_at, deferred_chase_count, deferred_payment_link, deferred_paid_at, assigned_to, sale_credit_admin_user_id',
+          'id, name, email, phone, registration_plate, warranty_reference_number, plan_type, payment_type, final_amount, status, deferred_status, deferred_start_date, deferred_payment_due_date, deferred_created_by, deferred_created_at, deferred_last_chased_at, deferred_chase_count, deferred_payment_link, deferred_bumper_link, deferred_paid_at, assigned_to, sale_credit_admin_user_id',
         )
         .not('deferred_status', 'is', null)
         .order('deferred_payment_due_date', { ascending: true })
@@ -175,40 +176,82 @@ export const PendingPaymentTab: React.FC = () => {
     });
   };
 
-  /** Create a payment link and email it to the customer, logging the chase. */
+  /**
+   * Create both payment routes — pay in full by card, or spread the cost with
+   * Bumper — email them to the customer and log the chase. Reminders reuse the
+   * saved links, so the customer always has both options.
+   */
   const sendPaymentLink = async (row: Row) => {
     if (!row.email) { toast.error('This order has no email address'); return; }
     setLinkBusyId(row.id);
     try {
       const amount = Math.round(Number(row.final_amount) || 0);
-      const { data, error } = await invokeWithFreshSession('worldpay-create-payment-page', {
-        flow: 'link',
-        amount_pence: amount * 100,
-        description: `Warranty payment — ${row.registration_plate || row.warranty_reference_number || 'order'}`.slice(0, 200),
-        customer_id: row.id,
-        customer_email: row.email,
-        customer_phone: row.phone || null,
-      });
-      if (error) throw error;
-      const url = (data as any)?.payment_url;
-      if (!url) throw new Error('No payment link returned');
+      const description = `Warranty payment — ${row.registration_plate || row.warranty_reference_number || 'order'}`.slice(0, 200);
+      const [firstName, ...restName] = (row.name || '').trim().split(/\s+/);
+
+      // Card link (Worldpay pay-by-link)
+      let cardUrl: string | null = row.deferred_payment_link || null;
+      try {
+        const { data, error } = await invokeWithFreshSession('worldpay-create-payment-page', {
+          flow: 'link',
+          amount_pence: amount * 100,
+          description,
+          customer_id: row.id,
+          customer_email: row.email,
+          customer_phone: row.phone || null,
+        });
+        if (error) throw error;
+        cardUrl = (data as any)?.payment_url || cardUrl;
+      } catch (e) {
+        console.warn('Card payment link failed', e);
+      }
+
+      // Bumper spread-the-cost link
+      let bumperUrl: string | null = row.deferred_bumper_link || null;
+      try {
+        const { data, error } = await invokeWithFreshSession('bumper-create-link', {
+          amount_pounds: amount,
+          description: description.slice(0, 255),
+          customer_email: row.email,
+          customer_phone: row.phone || undefined,
+          customer_first_name: firstName || undefined,
+          customer_last_name: restName.join(' ') || undefined,
+          vehicle_reg: row.registration_plate || undefined,
+          product_type: 'paylater',
+          send_sms: false,
+          send_email: false,
+        });
+        if (error) throw error;
+        bumperUrl = (data as any)?.application_url || bumperUrl;
+      } catch (e) {
+        console.warn('Bumper link failed', e);
+      }
+
+      if (!cardUrl && !bumperUrl) throw new Error('No payment link could be created');
 
       const { error: emailError } = await supabase.functions.invoke('send-deferred-order-email', {
-        body: { customerId: row.id, kind: 'payment_link', paymentUrl: url },
+        body: { customerId: row.id, kind: 'payment_link', paymentUrl: cardUrl, bumperUrl },
       });
       if (emailError) throw emailError;
 
       await supabase
         .from('customers')
         .update({
-          deferred_payment_link: url,
+          deferred_payment_link: cardUrl,
+          deferred_bumper_link: bumperUrl,
           deferred_last_chased_at: new Date().toISOString(),
           deferred_chase_count: (row.deferred_chase_count || 0) + 1,
         })
         .eq('id', row.id);
-      await addNote(row.id, `💳 Payment link sent to ${row.email} for ${gbp(amount)}.`);
 
-      toast.success('Payment link emailed to the customer');
+      const routes = [cardUrl ? 'card' : null, bumperUrl ? 'Bumper' : null].filter(Boolean).join(' and ');
+      await addNote(row.id, `💳 Payment link sent to ${row.email} for ${gbp(amount)} (${routes}).`);
+
+      toast.success(
+        cardUrl && bumperUrl
+          ? 'Card and Bumper links emailed to the customer'
+          : `${cardUrl ? 'Card' : 'Bumper'} link emailed to the customer`,
+      );
       load();
     } catch (e: any) {
       console.error('Send payment link error', e);
@@ -483,7 +526,7 @@ export const PendingPaymentTab: React.FC = () => {
                         <>
                           <Button size="sm" variant="outline" onClick={() => sendPaymentLink(r)} disabled={linkBusyId === r.id}>
                             {linkBusyId === r.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
-                            <span className="ml-1">Payment link</span>
+                            <span className="ml-1">Send card &amp; Bumper links</span>
                           </Button>
                           <Button size="sm" variant="outline" onClick={() => openDialog(r, 'chase')}>
                             <MessageSquare className="w-3.5 h-3.5 mr-1" />Log chase
@@ -502,8 +545,13 @@ export const PendingPaymentTab: React.FC = () => {
                         </>
                       )}
                       {r.deferred_payment_link && (
-                        <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(r.deferred_payment_link!); toast.success('Payment link copied'); }}>
-                          <Mail className="w-3.5 h-3.5 mr-1" />Copy link
+                        <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(r.deferred_payment_link!); toast.success('Card payment link copied'); }}>
+                          <Mail className="w-3.5 h-3.5 mr-1" />Copy card link
+                        </Button>
+                      )}
+                      {r.deferred_bumper_link && (
+                        <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(r.deferred_bumper_link!); toast.success('Bumper link copied'); }}>
+                          <Mail className="w-3.5 h-3.5 mr-1" />Copy Bumper link
                         </Button>
                       )}
                     </div>
