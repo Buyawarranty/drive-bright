@@ -56,7 +56,7 @@ serve(async (req) => {
     const { data: c, error } = await admin
       .from("customers")
       .select(
-        "id, name, email, registration_plate, vehicle_make, vehicle_model, plan_type, payment_type, final_amount, warranty_reference_number, deferred_start_date, deferred_payment_due_date, deferred_payment_link, deferred_status",
+        "id, name, email, registration_plate, vehicle_make, vehicle_model, plan_type, payment_type, final_amount, warranty_reference_number, deferred_start_date, deferred_payment_due_date, deferred_payment_link, deferred_bumper_link, deferred_status",
       )
       .eq("id", customerId)
       .maybeSingle();
