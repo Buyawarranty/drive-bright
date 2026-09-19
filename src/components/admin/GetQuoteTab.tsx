@@ -4057,7 +4057,9 @@ Questions? Call 0330 229 5040`;
         .from('admin_notes')
         .insert({
           customer_id: customerId,
-          note: `External Payment Confirmed:\n• Source: ${paymentSource}\n• Amount: £${confirmedAmount}\n• Warranty Start Date: ${format(startDate, 'd MMM yyyy')}${isFutureStartDate ? ' (future start)' : ''}\n• Confirmed by: ${adminEmail || 'Admin'}${paymentNotes ? `\n• Notes: ${paymentNotes}` : ''}`,
+          note: deferredMode
+            ? `⏳ Pay later order created — warranty NOT active yet:\n• Amount agreed: £${confirmedAmount}\n• Warranty starts: ${format(startDate, 'd MMM yyyy')}\n• Payment due: ${format(new Date(deferredPaymentDueDate), 'd MMM yyyy')}\n• Set up by: ${adminEmail || 'Admin'}${paymentNotes ? `\n• Notes: ${paymentNotes}` : ''}\nThe warranty activates only when payment is received.`
+            : `External Payment Confirmed:\n• Source: ${paymentSource}\n• Amount: £${confirmedAmount}\n• Warranty Start Date: ${format(startDate, 'd MMM yyyy')}${isFutureStartDate ? ' (future start)' : ''}\n• Confirmed by: ${adminEmail || 'Admin'}${paymentNotes ? `\n• Notes: ${paymentNotes}` : ''}`,
           created_by: adminUserId
         });
 
