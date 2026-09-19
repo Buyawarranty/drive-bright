@@ -9192,7 +9192,10 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         )}
 
                         {/* Final Confirmation */}
-                        <div className="p-3 border rounded-md bg-green-50 border-green-200">
+                        <div className={cn(
+                          "p-3 border rounded-md",
+                          deferredMode ? "bg-amber-50 border-amber-300" : "bg-green-50 border-green-200"
+                        )}>
                           <div className="flex items-start space-x-3">
                             <Checkbox 
                               id="confirm-payment-final"
@@ -9200,8 +9203,21 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               onCheckedChange={(checked) => setPaymentConfirmed(checked === true)}
                               className="mt-1"
                             />
-                            <Label htmlFor="confirm-payment-final" className="text-sm text-green-800 cursor-pointer leading-relaxed">
-                              <strong>I confirm</strong> all the above information is correct and payment has been received. This will activate the warranty immediately.
+                            <Label htmlFor="confirm-payment-final" className={cn(
+                              "text-sm cursor-pointer leading-relaxed",
+                              deferredMode ? "text-amber-900" : "text-green-800"
+                            )}>
+                              {deferredMode ? (
+                                <>
+                                  <strong>I confirm</strong> the customer has agreed these dates. The warranty will
+                                  <strong> not</strong> be activated until payment is received, and it will sit in
+                                  Pending payment for chasing.
+                                </>
+                              ) : (
+                                <>
+                                  <strong>I confirm</strong> all the above information is correct and payment has been received. This will activate the warranty immediately.
+                                </>
+                              )}
                             </Label>
                           </div>
                         </div>
