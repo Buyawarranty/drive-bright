@@ -2111,8 +2111,21 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     }
   };
 
+  // Defaults for a "pay later" order: cover starts in 7 days, payment due the
+  // day before cover starts — we never cover an unpaid vehicle.
+  const applyDeferredDateDefaults = (deferred: boolean) => {
+    if (!deferred) {
+      setWarrantyStartDate(new Date());
+      setDeferredPaymentDueDate('');
+      return;
+    }
+    const start = addDays(startOfDay(new Date()), 7);
+    setWarrantyStartDate(start);
+    setDeferredPaymentDueDate(format(addDays(start, -1), 'yyyy-MM-dd'));
+  };
+
   // Quick Confirm Order - skips Step 2 and goes directly to Confirm External Payment
-  const handleQuickConfirmOrder = async () => {
+  const handleQuickConfirmOrder = async (deferred = false) => {
     if (previewMode) {
       toast({ title: 'Preview mode', description: 'This is a beta preview — nothing is sent, saved or charged.' });
       return;
