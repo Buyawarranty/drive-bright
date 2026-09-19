@@ -46,7 +46,7 @@ serve(async (req) => {
     if (!parsed.success) {
       return json({ error: parsed.error.flatten().fieldErrors }, 400);
     }
-    const { customerId, kind, paymentUrl, overdueDays } = parsed.data;
+    const { customerId, kind, paymentUrl, bumperUrl, overdueDays } = parsed.data;
 
     const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
