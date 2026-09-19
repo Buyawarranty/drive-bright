@@ -48,6 +48,7 @@ import { initAdminTelemetry, logAdminUiEvent, logAdminSlowLoad } from '@/lib/adm
 import { installAdminStallGuard } from '@/lib/adminStallGuard';
 const AdminUiEventLogPanel = lazy(() => import('@/components/admin/AdminUiEventLogPanel'));
 const PaymentsPendingTab = lazy(() => import('@/components/admin/PaymentsPendingTab'));
+const PendingPaymentTab = lazy(() => import('@/components/admin/PendingPaymentTab'));
 const SalesStaffPerformancePanel = lazy(() => import('@/components/admin/SalesStaffPerformancePanel'));
 const StaffSystemReportsTab = lazy(() => import('@/components/admin/StaffSystemReportsTab'));
 import { SystemCheckInButton } from '@/components/admin/feedback/SystemCheckInForm';
