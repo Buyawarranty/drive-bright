@@ -9321,15 +9321,17 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                 {externalPaymentStep === 'details' ? (
                   <>
                     {/* Validation helper - show what's missing */}
-                    {(!paymentSource || !paymentAmount) && (
+                    {(!paymentSource || !paymentAmount || (deferredMode && !deferredPaymentDueDate)) && (
                       <div className="w-full text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-2 flex items-center gap-2">
                         <span>⚠️</span>
                         <span>
-                          {!paymentSource && !paymentAmount 
-                            ? 'Please select a payment source and enter the amount received'
-                            : !paymentSource 
-                              ? 'Please select a payment source'
-                              : 'Please enter the amount received'}
+                          {deferredMode && !deferredPaymentDueDate
+                            ? 'Please enter the date the customer will pay'
+                            : !paymentSource && !paymentAmount 
+                              ? 'Please select a payment source and enter the amount received'
+                              : !paymentSource 
+                                ? 'Please select a payment source'
+                                : 'Please enter the amount received'}
                         </span>
                       </div>
                     )}
@@ -9342,7 +9344,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                       </Button>
                       <Button
                         onClick={() => setExternalPaymentStep('preview')}
-                        disabled={!paymentSource || !paymentAmount || !saleCreditAgentId}
+                        disabled={!paymentSource || !paymentAmount || !saleCreditAgentId || (deferredMode && !deferredPaymentDueDate)}
                         className="bg-blue-600 hover:bg-blue-700"
                       >
                         <Eye className="w-4 h-4 mr-2" />
@@ -9362,17 +9364,17 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                     <Button
                       onClick={handleConfirmExternalPayment}
                       disabled={isConfirmingPaid || !paymentConfirmed}
-                      className="bg-green-600 hover:bg-green-700"
+                      className={deferredMode ? "bg-amber-600 hover:bg-amber-700" : "bg-green-600 hover:bg-green-700"}
                     >
                       {isConfirmingPaid ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Creating Policy...
+                          {deferredMode ? 'Saving order…' : 'Creating Policy...'}
                         </>
                       ) : (
                         <>
                           <CheckCircle2 className="w-4 h-4 mr-2" />
-                          Confirm & Activate Policy
+                          {deferredMode ? 'Save order — awaiting payment' : 'Confirm & Activate Policy'}
                         </>
                       )}
                     </Button>
