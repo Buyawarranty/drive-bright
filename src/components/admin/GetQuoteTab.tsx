@@ -713,6 +713,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [warrantyStartDate, setWarrantyStartDate] = useState<Date>(new Date());
   const [isStartDateCalendarOpen, setIsStartDateCalendarOpen] = useState(false);
   const [isQuickConfirming, setIsQuickConfirming] = useState(false);
+
+  // "Start warranty and payment later" — the customer completes the whole order
+  // now, but nothing is activated until the money actually lands. The order sits
+  // in Customer Management > Pending payment for the agent to chase.
+  const [deferredMode, setDeferredMode] = useState(false);
+  const [deferredPaymentDueDate, setDeferredPaymentDueDate] = useState('');
+  const [isDeferredStarting, setIsDeferredStarting] = useState(false);
   
   // Customer address fields for external payment
   const [customerPostcode, setCustomerPostcode] = useState('');
