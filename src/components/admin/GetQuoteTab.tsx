@@ -4148,32 +4148,44 @@ Questions? Call 0330 229 5040`;
         }
       }
 
-      // Send sale notification email (fire and forget)
-      try {
-        await supabase.functions.invoke('send-sale-notification', {
-          body: {
-            customerName: finalName,
-            customerEmail: finalEmail,
-            customerPhone: customerPhone || null,
-            regPlate: regNumber || null,
-            planName: 'Platinum',
-            saleValue: confirmedAmount,
-            paymentMethod: paymentSource || 'External',
-            warrantyReference: finalWarrantyReference,
-            vehicleMake: vehicleData?.make || null,
-            vehicleModel: vehicleData?.model || null,
-            agentId: quoteSentByUserId || null,
-            saleSource: 'QUOTE',
-          }
-        });
-      } catch (e) {
-        console.warn('Sale notification email failed (non-critical):', e);
+      // Pay later order — send the customer their dates + a payment link instead
+      // of a welcome pack, and skip the sale notification (it isn't a sale yet).
+      if (deferredMode) {
+        try {
+          await supabase.functions.invoke('send-deferred-order-email', {
+            body: { customerId, kind: 'confirmation' },
+          });
+        } catch (e) {
+          console.warn('Pay later confirmation email failed (non-critical):', e);
+        }
+      } else {
+        // Send sale notification email (fire and forget)
+        try {
+          await supabase.functions.invoke('send-sale-notification', {
+            body: {
+              customerName: finalName,
+              customerEmail: finalEmail,
+              customerPhone: customerPhone || null,
+              regPlate: regNumber || null,
+              planName: 'Platinum',
+              saleValue: confirmedAmount,
+              paymentMethod: paymentSource || 'External',
+              warrantyReference: finalWarrantyReference,
+              vehicleMake: vehicleData?.make || null,
+              vehicleModel: vehicleData?.model || null,
+              agentId: quoteSentByUserId || null,
+              saleSource: 'QUOTE',
+            }
+          });
+        } catch (e) {
+          console.warn('Sale notification email failed (non-critical):', e);
+        }
       }
 
       // Set completion status and show complete step
       setCompletionStatus({
         policyCreated: true,
-        emailSent: sendWelcomeEmail ? emailSentSuccess : null,
+        emailSent: sendWelcomeEmail && !deferredMode ? emailSentSuccess : null,
         w2000Sent: null,
         warrantyReference: finalWarrantyReference,
         isFutureStart: isFutureStartDate
@@ -4183,12 +4195,17 @@ Questions? Call 0330 229 5040`;
 
       // Success toast
       toast({
-        title: isFutureStartDate ? "✅ Policy Scheduled!" : "✅ Policy Activated!",
-        description: isFutureStartDate 
-          ? `Warranty ${finalWarrantyReference} created. Cover starts ${format(startDate, 'd MMM yyyy')}.`
-          : `Warranty ${finalWarrantyReference} created successfully.`,
-        duration: 6000,
+        title: deferredMode
+          ? "⏳ Order saved — awaiting payment"
+          : (isFutureStartDate ? "✅ Policy Scheduled!" : "✅ Policy Activated!"),
+        description: deferredMode
+          ? `${finalWarrantyReference} is in Pending payment. Cover starts ${format(startDate, 'd MMM yyyy')}, payment due ${format(new Date(deferredPaymentDueDate), 'd MMM yyyy')}. It activates when payment is received.`
+          : (isFutureStartDate
+            ? `Warranty ${finalWarrantyReference} created. Cover starts ${format(startDate, 'd MMM yyyy')}.`
+            : `Warranty ${finalWarrantyReference} created successfully.`),
+        duration: 8000,
       });
+
 
     } catch (error: any) {
       console.error('Error confirming external payment:', error);
