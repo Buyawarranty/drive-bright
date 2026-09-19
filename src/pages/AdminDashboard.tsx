@@ -996,6 +996,17 @@ const AdminDashboard = () => {
             <PaymentsPendingTab />
           </Suspense>
         );
+      // Pending payment: "pay later" orders that stay switched off until the money
+      // lands. Management see everything; a sales agent only sees their own deals.
+      case 'pending-payment':
+        if (!isTabAllowedForRole('pending-payment', effectiveUserRole, effectiveUserPermissions)) {
+          return <AccessDenied label="Pending payment" />;
+        }
+        return (
+          <Suspense fallback={<TabFallback />}>
+            <PendingPaymentTab />
+          </Suspense>
+        );
       case 'page-analytics':
         return <PageAnalyticsTab />;
       case 'social-analytics':
