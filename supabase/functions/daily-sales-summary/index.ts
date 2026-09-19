@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
     })();
 
     const SELECT =
-      'id, name, first_name, last_name, registration_plate, plan_type, final_amount, payment_type, status, signup_date, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, assigned_to';
+      'id, name, first_name, last_name, registration_plate, plan_type, final_amount, payment_type, status, signup_date, deferred_status, sale_credit_admin_user_id, payment_confirmed_by, quote_sent_by, assigned_to';
 
     const fetchDay = async (from: string, to: string) => {
       const { data, error } = await supabase
@@ -83,7 +83,11 @@ Deno.serve(async (req) => {
         .order('signup_date', { ascending: true });
       if (error) throw error;
       return (data || []).filter(
-        (c: any) => !EXCLUDED_STATUSES.includes(String(c.status || '').toLowerCase()),
+        (c: any) =>
+          !EXCLUDED_STATUSES.includes(String(c.status || '').toLowerCase()) &&
+          // Pay later orders only count once the money has actually landed.
+          c.deferred_status !== 'pending_payment' &&
+          c.deferred_status !== 'cancelled',
       );
     };
 
