@@ -3554,6 +3554,29 @@ Questions? Call 0330 229 5040`;
       return;
     }
 
+    // Pay later orders must have both agreed dates, and the money can never be
+    // due after cover starts.
+    if (deferredMode) {
+      if (!deferredPaymentDueDate) {
+        toast({ title: 'Payment date needed', description: 'Enter the date the customer will pay.', variant: 'destructive' });
+        return;
+      }
+      const due = startOfDay(new Date(deferredPaymentDueDate));
+      if (isBefore(startOfDay(warrantyStartDate), due)) {
+        toast({
+          title: 'Dates do not work',
+          description: 'Payment must be due on or before the warranty start date.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      if (isBefore(startOfDay(warrantyStartDate), startOfDay(new Date()))) {
+        toast({ title: 'Start date in the past', description: 'Choose a start date from today onwards.', variant: 'destructive' });
+        return;
+      }
+    }
+
+
     // Check for duplicate warranty before proceeding
     const { checkDuplicateWarranty } = await import('@/lib/duplicateWarrantyCheck');
     const finalEmail = editableCustomerEmail || customerEmail;
