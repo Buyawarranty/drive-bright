@@ -3891,7 +3891,20 @@ Questions? Call 0330 229 5040`;
         customerData.price_match_our_price = Number(confirmedAmount) || null;
       }
 
-
+      // Pay later order — nothing is activated until the money lands. The order
+      // sits in Customer Management > Pending payment for the agent to chase.
+      if (deferredMode) {
+        customerData.status = 'Pending Payment';
+        customerData.payment_verified = false;
+        customerData.payment_verification_status = 'pending';
+        customerData.deferred_status = 'pending_payment';
+        customerData.deferred_start_date = format(startOfDay(warrantyStartDate), 'yyyy-MM-dd');
+        customerData.deferred_payment_due_date = deferredPaymentDueDate;
+        customerData.deferred_created_by = creditedAgentId || adminUserRecordId || null;
+        customerData.deferred_created_at = new Date().toISOString();
+        customerData.deferred_chase_count = 0;
+        customerData.purchase_source = DEFERRED_PAYMENT_SOURCE;
+      }
 
 
       // 3. Create or update customer
