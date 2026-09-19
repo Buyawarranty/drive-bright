@@ -111,13 +111,24 @@ serve(async (req) => {
         <p style="margin:10px 0 0;font-size:13px;color:#92400e;">Your warranty is designed to begin once the payment has been received.</p>
       </div>
 
+      ${(link || bumper) ? `
+      <p style="font-size:15px;line-height:1.6;margin:0 0 12px;"><strong>Two ways to pay — whichever suits you best:</strong></p>
       ${link ? `
-      <div style="text-align:center;margin:22px 0;">
-        <a href="${link}" style="display:inline-block;background:#059669;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:8px;font-size:16px;font-weight:bold;">Pay ${amount} securely</a>
-      </div>
-      <p style="font-size:12px;color:#6b7280;word-break:break-all;">If the button doesn't work, copy this link into your browser:<br>${link}</p>
+      <div style="text-align:center;margin:0 0 14px;">
+        <a href="${link}" style="display:inline-block;background:#059669;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:8px;font-size:16px;font-weight:bold;">Pay ${amount} now by card</a>
+      </div>` : ""}
+      ${bumper ? `
+      <div style="text-align:center;margin:0 0 14px;">
+        <a href="${bumper}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:8px;font-size:16px;font-weight:bold;">Spread the cost with Bumper</a>
+        <p style="margin:8px 0 0;font-size:12px;color:#6b7280;">Interest-free monthly instalments. Credit subject to status, 18+, UK only.</p>
+      </div>` : ""}
+      <p style="font-size:12px;color:#6b7280;word-break:break-all;margin-top:14px;">
+        If the buttons don't work, copy these links into your browser:
+        ${link ? `<br>Card: ${link}` : ""}
+        ${bumper ? `<br>Bumper: ${bumper}` : ""}
+      </p>
       ` : `
-      <p style="font-size:14px;line-height:1.6;">We'll send you a secure payment link shortly. If you'd like to pay now, just reply to this email or call us on 0330 229 5045.</p>
+      <p style="font-size:14px;line-height:1.6;">We'll send you a secure payment link shortly — you can pay in full by card or spread the cost with Bumper. If you'd like to pay now, just reply to this email or call us on 0330 229 5045.</p>
       `}
 
       <p style="font-size:14px;line-height:1.6;margin-top:20px;">Any questions at all, reply to this email or call <strong>0330 229 5045</strong> and we'll help.</p>
