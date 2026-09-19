@@ -2307,13 +2307,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
    * so we never cover an unpaid vehicle).
    */
   const handleStartDeferredOrder = async () => {
-    const start = addDays(startOfDay(new Date()), 7);
     setDeferredMode(true);
-    setWarrantyStartDate(start);
-    setDeferredPaymentDueDate(format(addDays(start, -1), 'yyyy-MM-dd'));
-    setPaymentSource('Pay later (agreed with customer)');
     setSendWelcomeEmail(false);
-    await handleQuickConfirmOrder();
+    await handleQuickConfirmOrder(true);
   };
 
 
