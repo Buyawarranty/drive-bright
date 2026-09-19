@@ -1,9 +1,13 @@
 // Daily chase cycle for "pay later" orders.
 //
-// Customer reminders: 3 days before the agreed payment date, on the day, then
-// 1, 3 and 7 days after. At 14 days overdue the order is flagged for a manager
-// decision and a digest goes to management. Each reminder is only ever sent once
-// (recorded in customers.deferred_reminders_sent).
+// Customer reminders (each carries the card link and the Bumper spread-the-cost
+// link): 7 days before the agreed payment date, 3 days before, the day before,
+// on the day, then 1, 3, 7 and 10 days after.
+// Sales agent reminders: the day before the payment is due, on the day, then 3,
+// 7 and 14 days overdue, so the agent who took the deal chases it.
+// At 14 days overdue the order is flagged for a manager decision and a digest
+// goes to management. Each reminder is only ever sent once (recorded in
+// customers.deferred_reminders_sent / deferred_agent_reminders_sent).
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { Resend } from "https://esm.sh/resend@2.0.0";
