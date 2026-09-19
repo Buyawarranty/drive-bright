@@ -34,13 +34,25 @@ const londonToday = () => {
 const dayDiff = (due: string, today: Date) =>
   Math.round((new Date(`${due}T00:00:00Z`).getTime() - today.getTime()) / 86400000);
 
-// offset relative to the due date → reminder key
+// days until the payment is due (negative = overdue) → reminder key
 const SCHEDULE: Record<number, string> = {
-  [-3]: "before_3",
+  7: "before_7",
+  3: "before_3",
+  1: "before_1",
   0: "due_today",
-  1: "overdue_1",
-  3: "overdue_3",
-  7: "overdue_7",
+  [-1]: "overdue_1",
+  [-3]: "overdue_3",
+  [-7]: "overdue_7",
+  [-10]: "overdue_10",
+};
+
+// days until due → agent chase reminder key
+const AGENT_SCHEDULE: Record<number, string> = {
+  1: "agent_before_1",
+  0: "agent_due_today",
+  [-3]: "agent_overdue_3",
+  [-7]: "agent_overdue_7",
+  [-14]: "agent_overdue_14",
 };
 
 serve(async (req) => {
