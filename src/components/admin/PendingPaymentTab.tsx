@@ -88,7 +88,7 @@ export const PendingPaymentTab: React.FC = () => {
       let q = supabase
         .from('customers')
         .select(
-          'id, name, email, phone, registration_plate, warranty_reference_number, plan_type, payment_type, final_amount, status, deferred_status, deferred_start_date, deferred_payment_due_date, deferred_created_by, deferred_created_at, deferred_last_chased_at, deferred_chase_count, deferred_payment_link, deferred_paid_at, assigned_to, sale_credit_admin_user_id',
+          'id, name, email, phone, registration_plate, warranty_reference_number, plan_type, payment_type, final_amount, status, deferred_status, deferred_start_date, deferred_payment_due_date, deferred_created_by, deferred_created_at, deferred_last_chased_at, deferred_chase_count, deferred_payment_link, deferred_bumper_link, deferred_paid_at, assigned_to, sale_credit_admin_user_id',
         )
         .not('deferred_status', 'is', null)
         .order('deferred_payment_due_date', { ascending: true })
