@@ -3990,7 +3990,7 @@ Questions? Call 0330 229 5040`;
         warranty_number: finalWarrantyReference,
         policy_start_date: startDate.toISOString(),
         policy_end_date: endDate.toISOString(),
-        status: isFutureStartDate ? 'scheduled' : 'active',
+        status: deferredMode ? 'pending_payment' : (isFutureStartDate ? 'scheduled' : 'active'),
         voluntary_excess: excessAmount,
         claim_limit: displayClaimLimit,
         payment_amount: confirmedAmount,
