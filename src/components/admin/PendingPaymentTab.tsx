@@ -526,7 +526,7 @@ export const PendingPaymentTab: React.FC = () => {
                         <>
                           <Button size="sm" variant="outline" onClick={() => sendPaymentLink(r)} disabled={linkBusyId === r.id}>
                             {linkBusyId === r.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
-                            <span className="ml-1">Payment link</span>
+                            <span className="ml-1">Send card &amp; Bumper links</span>
                           </Button>
                           <Button size="sm" variant="outline" onClick={() => openDialog(r, 'chase')}>
                             <MessageSquare className="w-3.5 h-3.5 mr-1" />Log chase
