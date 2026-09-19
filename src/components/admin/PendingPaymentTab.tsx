@@ -180,7 +180,6 @@ export const PendingPaymentTab: React.FC = () => {
     setLinkBusyId(row.id);
     try {
       const amount = Math.round(Number(row.final_amount) || 0);
-      const { invokeWithFreshSession } = await import('@/lib/invokeWithFreshSession');
       const { data, error } = await invokeWithFreshSession('worldpay-create-payment-page', {
         flow: 'link',
         amount_pence: amount * 100,
