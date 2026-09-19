@@ -2252,12 +2252,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       setMileagePrefilledFromMot(false);
       
       // Reset payment dialog state for fresh entry
-      setPaymentSource('');
+      setPaymentSource(deferred ? DEFERRED_PAYMENT_SOURCE : '');
       setPaymentAmount('');
       setPaymentDate(new Date().toISOString().split('T')[0]);
       setPaymentConfirmed(false);
       setPaymentNotes('');
-      setWarrantyStartDate(new Date());
+      applyDeferredDateDefaults(deferred);
       setExternalPaymentStep('details');
       setCompletionStatus(null);
       
