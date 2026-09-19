@@ -4148,12 +4148,62 @@ Questions? Call 0330 229 5040`;
         }
       }
 
-      // Pay later order — send the customer their dates + a payment link instead
-      // of a welcome pack, and skip the sale notification (it isn't a sale yet).
+      // Pay later order — send the customer their dates plus BOTH ways to pay
+      // (card now, or spread the cost with Bumper) instead of a welcome pack, and
+      // skip the sale notification (it isn't a sale yet).
       if (deferredMode) {
         try {
+          const dueAmount = Math.round(parseFloat(paymentAmount) || 0);
+          const linkDescription = `Warranty payment — ${regNumber || 'order'}`.slice(0, 200);
+          let cardUrl: string | null = null;
+          let bumperUrl: string | null = null;
+
+          try {
+            const { data: wp } = await supabase.functions.invoke('worldpay-create-payment-page', {
+              body: {
+                flow: 'link',
+                amount_pence: dueAmount * 100,
+                description: linkDescription,
+                customer_id: customerId,
+                customer_email: finalEmail,
+                customer_phone: customerPhone || null,
+              },
+            });
+            cardUrl = (wp as any)?.payment_url || null;
+          } catch (e) {
+            console.warn('Pay later card link failed (agent can resend later):', e);
+          }
+
+          try {
+            const nameParts = (finalName || '').trim().split(/\s+/);
+            const { data: bmp } = await supabase.functions.invoke('bumper-create-link', {
+              body: {
+                amount_pounds: dueAmount,
+                description: linkDescription.slice(0, 255),
+                customer_email: finalEmail,
+                customer_phone: customerPhone || undefined,
+                customer_first_name: nameParts[0] || undefined,
+                customer_last_name: nameParts.slice(1).join(' ') || undefined,
+                vehicle_reg: regNumber || undefined,
+                product_type: 'paylater',
+                send_sms: false,
+                send_email: false,
+              },
+            });
+            bumperUrl = (bmp as any)?.application_url || null;
+          } catch (e) {
+            console.warn('Pay later Bumper link failed (agent can resend later):', e);
+          }
+
+          if (cardUrl || bumperUrl) {
+            await supabase
+              .from('customers')
+              .update({ deferred_payment_link: cardUrl, deferred_bumper_link: bumperUrl })
+              .eq('id', customerId);
+          }
+
           await supabase.functions.invoke('send-deferred-order-email', {
-            body: { customerId, kind: 'confirmation' },
+            body: { customerId, kind: 'confirmation', paymentUrl: cardUrl, bumperUrl },
           });
         } catch (e) {
           console.warn('Pay later confirmation email failed (non-critical):', e);
