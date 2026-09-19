@@ -250,7 +250,13 @@ serve(async (req) => {
       });
     }
 
-    return json({ ok: true, checked: orders?.length || 0, reminders_sent: sent, flagged: flagged.length });
+    return json({
+      ok: true,
+      checked: orders?.length || 0,
+      reminders_sent: sent,
+      agent_reminders_sent: agentSent,
+      flagged: flagged.length,
+    });
   } catch (e) {
     console.error("[deferred-payment-chase]", e);
     return json({ error: (e as Error).message }, 500);
