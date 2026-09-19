@@ -50,6 +50,7 @@ interface Row {
   deferred_last_chased_at: string | null;
   deferred_chase_count: number | null;
   deferred_payment_link: string | null;
+  deferred_bumper_link: string | null;
   deferred_paid_at: string | null;
   assigned_to: string | null;
   sale_credit_admin_user_id: string | null;
