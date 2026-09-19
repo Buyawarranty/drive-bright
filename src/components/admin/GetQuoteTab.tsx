@@ -2187,12 +2187,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         setEditableRegNumber(regNumber.toUpperCase());
         setEditableMileage(effectiveMileage === '0' ? '' : effectiveMileage);
         setMileagePrefilledFromMot(false);
-        setPaymentSource('');
+        setPaymentSource(deferred ? DEFERRED_PAYMENT_SOURCE : '');
         setPaymentAmount('');
         setPaymentDate(new Date().toISOString().split('T')[0]);
         setPaymentConfirmed(false);
         setPaymentNotes('');
-        setWarrantyStartDate(new Date());
+        applyDeferredDateDefaults(deferred);
         setExternalPaymentStep('details');
         setCompletionStatus(null);
         setShowConfirmPaymentDialog(true);
