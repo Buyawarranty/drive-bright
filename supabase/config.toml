@@ -344,3 +344,9 @@ verify_jwt = false
 
 [functions.daily-sales-summary]
 verify_jwt = false
+
+[functions.send-deferred-order-email]
+verify_jwt = false
+
+[functions.deferred-payment-chase]
+verify_jwt = false
