@@ -66,6 +66,7 @@ serve(async (req) => {
     if (!c.email) return json({ error: "Order has no email address" }, 400);
 
     const link = paymentUrl || c.deferred_payment_link || null;
+    const bumper = bumperUrl || (c as any).deferred_bumper_link || null;
     const amount = gbp(Number(c.final_amount) || 0);
     const startDate = ukDate(c.deferred_start_date);
     const dueDate = ukDate(c.deferred_payment_due_date);
