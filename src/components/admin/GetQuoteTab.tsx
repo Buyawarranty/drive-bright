@@ -41,6 +41,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { getExclusionReason, EXCLUSION_MESSAGE } from '@/lib/vehicleExclusions';
 
+/** Payment source recorded on a "start warranty and payment later" order. */
+const DEFERRED_PAYMENT_SOURCE = 'Pay later (agreed with customer)';
+
+
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
 
 import { UnsubscribeLeadButton } from '@/components/admin/leads/UnsubscribeLeadButton';
