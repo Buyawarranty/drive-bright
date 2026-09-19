@@ -4690,9 +4690,9 @@ Questions? Call 0330 229 5040`;
                 )}
 
 
-                {/* Two Primary Actions */}
+                {/* Primary Actions */}
                 <div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <button
                       onClick={handleVehicleLookup}
                       disabled={isLookingUp || isQuickConfirming}
@@ -4713,22 +4713,41 @@ Questions? Call 0330 229 5040`;
                     </button>
 
                     <button
-                      onClick={handleQuickConfirmOrder}
+                      onClick={() => { setDeferredMode(false); handleQuickConfirmOrder(); }}
                       disabled={isLookingUp || isQuickConfirming || !regNumber.trim()}
                       className="group relative flex flex-col items-start gap-0.5 rounded-xl bg-white border-2 border-emerald-600 text-emerald-700 px-4 py-3 shadow-sm hover:shadow-md hover:bg-emerald-50 hover:border-emerald-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
                     >
                       <div className="flex items-center gap-2 w-full">
-                        {isQuickConfirming ? (
+                        {isQuickConfirming && !deferredMode ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           <CreditCard className="w-4 h-4" />
                         )}
                         <span className="font-semibold text-sm">
-                          {isQuickConfirming ? 'Processing…' : 'Confirm Payment'}
+                          {isQuickConfirming && !deferredMode ? 'Processing…' : 'Confirm Payment'}
                         </span>
                         <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-0.5 transition-transform" />
                       </div>
                       <span className="text-xs text-emerald-700/70 font-normal">Already paid elsewhere</span>
+                    </button>
+
+                    <button
+                      onClick={handleStartDeferredOrder}
+                      disabled={isLookingUp || isQuickConfirming || !regNumber.trim()}
+                      className="group relative flex flex-col items-start gap-0.5 rounded-xl bg-white border-2 border-amber-500 text-amber-700 px-4 py-3 shadow-sm hover:shadow-md hover:bg-amber-50 hover:border-amber-600 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        {isQuickConfirming && deferredMode ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <CalendarIcon className="w-4 h-4" />
+                        )}
+                        <span className="font-semibold text-sm">
+                          {isQuickConfirming && deferredMode ? 'Processing…' : 'Start warranty and payment later'}
+                        </span>
+                        <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-0.5 transition-transform" />
+                      </div>
+                      <span className="text-xs text-amber-700/70 font-normal">Agree dates now, activate when paid</span>
                     </button>
 
                   </div>
