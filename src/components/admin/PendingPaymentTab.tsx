@@ -176,40 +176,82 @@ export const PendingPaymentTab: React.FC = () => {
     });
   };
 
-  /** Create a payment link and email it to the customer, logging the chase. */
+  /**
+   * Create both payment routes — pay in full by card, or spread the cost with
+   * Bumper — email them to the customer and log the chase. Reminders reuse the
+   * saved links, so the customer always has both options.
+   */
   const sendPaymentLink = async (row: Row) => {
     if (!row.email) { toast.error('This order has no email address'); return; }
     setLinkBusyId(row.id);
     try {
       const amount = Math.round(Number(row.final_amount) || 0);
-      const { data, error } = await invokeWithFreshSession('worldpay-create-payment-page', {
-        flow: 'link',
-        amount_pence: amount * 100,
-        description: `Warranty payment — ${row.registration_plate || row.warranty_reference_number || 'order'}`.slice(0, 200),
-        customer_id: row.id,
-        customer_email: row.email,
-        customer_phone: row.phone || null,
-      });
-      if (error) throw error;
-      const url = (data as any)?.payment_url;
-      if (!url) throw new Error('No payment link returned');
+      const description = `Warranty payment — ${row.registration_plate || row.warranty_reference_number || 'order'}`.slice(0, 200);
+      const [firstName, ...restName] = (row.name || '').trim().split(/\s+/);
+
+      // Card link (Worldpay pay-by-link)
+      let cardUrl: string | null = row.deferred_payment_link || null;
+      try {
+        const { data, error } = await invokeWithFreshSession('worldpay-create-payment-page', {
+          flow: 'link',
+          amount_pence: amount * 100,
+          description,
+          customer_id: row.id,
+          customer_email: row.email,
+          customer_phone: row.phone || null,
+        });
+        if (error) throw error;
+        cardUrl = (data as any)?.payment_url || cardUrl;
+      } catch (e) {
+        console.warn('Card payment link failed', e);
+      }
+
+      // Bumper spread-the-cost link
+      let bumperUrl: string | null = row.deferred_bumper_link || null;
+      try {
+        const { data, error } = await invokeWithFreshSession('bumper-create-link', {
+          amount_pounds: amount,
+          description: description.slice(0, 255),
+          customer_email: row.email,
+          customer_phone: row.phone || undefined,
+          customer_first_name: firstName || undefined,
+          customer_last_name: restName.join(' ') || undefined,
+          vehicle_reg: row.registration_plate || undefined,
+          product_type: 'paylater',
+          send_sms: false,
+          send_email: false,
+        });
+        if (error) throw error;
+        bumperUrl = (data as any)?.application_url || bumperUrl;
+      } catch (e) {
+        console.warn('Bumper link failed', e);
+      }
+
+      if (!cardUrl && !bumperUrl) throw new Error('No payment link could be created');
 
       const { error: emailError } = await supabase.functions.invoke('send-deferred-order-email', {
-        body: { customerId: row.id, kind: 'payment_link', paymentUrl: url },
+        body: { customerId: row.id, kind: 'payment_link', paymentUrl: cardUrl, bumperUrl },
       });
       if (emailError) throw emailError;
 
       await supabase
         .from('customers')
         .update({
-          deferred_payment_link: url,
+          deferred_payment_link: cardUrl,
+          deferred_bumper_link: bumperUrl,
           deferred_last_chased_at: new Date().toISOString(),
           deferred_chase_count: (row.deferred_chase_count || 0) + 1,
         })
         .eq('id', row.id);
-      await addNote(row.id, `💳 Payment link sent to ${row.email} for ${gbp(amount)}.`);
 
-      toast.success('Payment link emailed to the customer');
+      const routes = [cardUrl ? 'card' : null, bumperUrl ? 'Bumper' : null].filter(Boolean).join(' and ');
+      await addNote(row.id, `💳 Payment link sent to ${row.email} for ${gbp(amount)} (${routes}).`);
+
+      toast.success(
+        cardUrl && bumperUrl
+          ? 'Card and Bumper links emailed to the customer'
+          : `${cardUrl ? 'Card' : 'Bumper'} link emailed to the customer`,
+      );
       load();
     } catch (e: any) {
       console.error('Send payment link error', e);
