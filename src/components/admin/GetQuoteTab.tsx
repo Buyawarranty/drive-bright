@@ -4113,7 +4113,7 @@ Questions? Call 0330 229 5040`;
       // once Resend accepts the send, so we ignore transport-level invoke
       // errors (they usually just mean the slow function outran the browser's
       // wait) and instead poll the row for the authoritative status.
-      if (sendWelcomeEmail) {
+      if (sendWelcomeEmail && !deferredMode) {
         try {
           supabase.functions.invoke('send-welcome-email-manual', {
             body: { policyId, customerId }
@@ -4248,6 +4248,8 @@ Questions? Call 0330 229 5040`;
     setQuoteLink(null);
     setQuoteGenerated(false);
     setSelectedLeadId(null);
+    setDeferredMode(false);
+    setDeferredPaymentDueDate('');
     // Clear any price overrides so figures don't stick from previous quote
     setCustomMonthlyPrice('');
     setCustomFullPrice('');
