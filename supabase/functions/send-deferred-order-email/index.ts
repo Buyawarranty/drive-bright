@@ -18,7 +18,9 @@ const BodySchema = z.object({
   customerId: z.string().uuid(),
   kind: z.enum(["confirmation", "payment_link", "reminder"]).default("confirmation"),
   paymentUrl: z.string().url().max(2000).optional().nullable(),
+  bumperUrl: z.string().url().max(2000).optional().nullable(),
   overdueDays: z.number().int().optional().nullable(),
+  daysBeforeStart: z.number().int().optional().nullable(),
 });
 
 const gbp = (n: number) => `£${Math.round(n).toLocaleString("en-GB")}`;
