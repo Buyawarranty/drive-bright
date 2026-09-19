@@ -68,6 +68,7 @@ Updated: just now
 - [Excluded Models](mem://constraints/excluded-models-audi) — Audi R8, RS, and e-tron GT hard exclusions
 - [Policy Expiry Logic](mem://logic/policy-expiry-bonus-extensions-v2) — End date calculations including seasonal bonus months
 - [Discounts & Offers Page](mem://features/discounts-and-offers-page) — Layout, Trustpilot widget combo, and clipboard logic
+- [Start warranty and payment later](mem://features/admin/start-warranty-payment-later) — Pay-later orders, Pending Payment tab, chase cadence, activation only on payment
 - [Operational Unwinds](mem://admin/operational-unwinds-tracking) — Using updated_at for Cancellations and Refund reporting
 - [Analytics Refund Tracking](mem://logic/analytics-refund-tracking) — Unified logic for identifying unwinds
 - [Checkout UX Standards](mem://design/checkout-ux-standards-v10) — Form styling, omitted sections, and layout rules
