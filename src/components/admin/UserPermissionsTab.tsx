@@ -90,6 +90,7 @@ const ADMIN_TABS = [
   { id: 'page-analytics', label: 'Page Analytics', description: 'Track page visits, traffic sources & Google Ads' },
   { id: 'admin-logs', label: 'Error Logs', description: 'Dashboard activity & issue log: clicks, load times, crashes and errors' },
   { id: 'payments-pending', label: 'Payments Pending', description: 'Confirmed sales with no verified payment — accounts verification queue' },
+  { id: 'pending-payment', label: 'Pending Payment', description: 'Pay later orders — warranty stays off until the payment is received' },
   { id: 'google-ads', label: 'Marketing Analytics', description: 'Google Ads, Facebook Ads, conversions & ROAS' },
   { id: 'ab-testing', label: 'A/B Testing', description: 'Compare A vs B variants: visits, submissions, conversions' },
   { id: 'vehicle-stats', label: 'Vehicle Stats', description: 'Analyse which vehicles sell the most warranties' },

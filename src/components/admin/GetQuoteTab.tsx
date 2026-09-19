@@ -16,7 +16,7 @@ import { lookupVehicleByReg } from '@/lib/vehicleLookup';
 import { quoteAuditStamp } from '@/lib/pricing/historicalPricing';
 import { globalMinTotalFor, loadRiskBandConfig } from '@/lib/pricing/vehicleRiskBands';
 import { isVehicleBlockedByRules, MANUAL_REFERRAL_MESSAGE } from '@/lib/pricing/vehicleRules';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, RotateCcw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling, ChevronRight, Check, Lock as LockIcon, Ban, CalendarDays, Sparkles, LifeBuoy, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, RotateCcw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy, X, Gauge, Shield, PoundSterling, ChevronRight, Check, Lock as LockIcon, Ban, CalendarDays, Sparkles, LifeBuoy, AlertTriangle, Clock } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 const DuplicateWarrantyDialog = lazy(() => import('./DuplicateWarrantyDialog').then(m => ({ default: m.DuplicateWarrantyDialog })));
 const QuotesSentPanel = lazy(() => import('./QuotesSentPanel').then(m => ({ default: m.QuotesSentPanel })));
@@ -40,6 +40,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { getExclusionReason, EXCLUSION_MESSAGE } from '@/lib/vehicleExclusions';
+
+/** Payment source recorded on a "start warranty and payment later" order. */
+const DEFERRED_PAYMENT_SOURCE = 'Pay later (agreed with customer)';
+
 
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
 
@@ -713,6 +717,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   const [warrantyStartDate, setWarrantyStartDate] = useState<Date>(new Date());
   const [isStartDateCalendarOpen, setIsStartDateCalendarOpen] = useState(false);
   const [isQuickConfirming, setIsQuickConfirming] = useState(false);
+
+  // "Start warranty and payment later" — the customer completes the whole order
+  // now, but nothing is activated until the money actually lands. The order sits
+  // in Customer Management > Pending payment for the agent to chase.
+  const [deferredMode, setDeferredMode] = useState(false);
+  const [deferredPaymentDueDate, setDeferredPaymentDueDate] = useState('');
+  const [isDeferredStarting, setIsDeferredStarting] = useState(false);
   
   // Customer address fields for external payment
   const [customerPostcode, setCustomerPostcode] = useState('');
@@ -2104,8 +2115,21 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     }
   };
 
+  // Defaults for a "pay later" order: cover starts in 7 days, payment due the
+  // day before cover starts — we never cover an unpaid vehicle.
+  const applyDeferredDateDefaults = (deferred: boolean) => {
+    if (!deferred) {
+      setWarrantyStartDate(new Date());
+      setDeferredPaymentDueDate('');
+      return;
+    }
+    const start = addDays(startOfDay(new Date()), 7);
+    setWarrantyStartDate(start);
+    setDeferredPaymentDueDate(format(addDays(start, -1), 'yyyy-MM-dd'));
+  };
+
   // Quick Confirm Order - skips Step 2 and goes directly to Confirm External Payment
-  const handleQuickConfirmOrder = async () => {
+  const handleQuickConfirmOrder = async (deferred = false) => {
     if (previewMode) {
       toast({ title: 'Preview mode', description: 'This is a beta preview — nothing is sent, saved or charged.' });
       return;
@@ -2180,12 +2204,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
         setEditableRegNumber(regNumber.toUpperCase());
         setEditableMileage(effectiveMileage === '0' ? '' : effectiveMileage);
         setMileagePrefilledFromMot(false);
-        setPaymentSource('');
+        setPaymentSource(deferred ? DEFERRED_PAYMENT_SOURCE : '');
         setPaymentAmount('');
         setPaymentDate(new Date().toISOString().split('T')[0]);
         setPaymentConfirmed(false);
         setPaymentNotes('');
-        setWarrantyStartDate(new Date());
+        applyDeferredDateDefaults(deferred);
         setExternalPaymentStep('details');
         setCompletionStatus(null);
         setShowConfirmPaymentDialog(true);
@@ -2245,12 +2269,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       setMileagePrefilledFromMot(false);
       
       // Reset payment dialog state for fresh entry
-      setPaymentSource('');
+      setPaymentSource(deferred ? DEFERRED_PAYMENT_SOURCE : '');
       setPaymentAmount('');
       setPaymentDate(new Date().toISOString().split('T')[0]);
       setPaymentConfirmed(false);
       setPaymentNotes('');
-      setWarrantyStartDate(new Date());
+      applyDeferredDateDefaults(deferred);
       setExternalPaymentStep('details');
       setCompletionStatus(null);
       
@@ -2275,6 +2299,20 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
       setIsQuickConfirming(false);
     }
   };
+
+  /**
+   * "Start warranty and payment later" — same order journey as Confirm Payment,
+   * but the warranty is only activated once the money lands. Defaults: cover
+   * starts in 7 days, payment due the day before cover starts (never after,
+   * so we never cover an unpaid vehicle).
+   */
+  const handleStartDeferredOrder = async () => {
+    setDeferredMode(true);
+    setSendWelcomeEmail(false);
+    await handleQuickConfirmOrder(true);
+  };
+
+
 
   const loadSentQuotesHistory = async () => {
     setIsLoadingHistory(true);
@@ -3516,6 +3554,29 @@ Questions? Call 0330 229 5040`;
       return;
     }
 
+    // Pay later orders must have both agreed dates, and the money can never be
+    // due after cover starts.
+    if (deferredMode) {
+      if (!deferredPaymentDueDate) {
+        toast({ title: 'Payment date needed', description: 'Enter the date the customer will pay.', variant: 'destructive' });
+        return;
+      }
+      const due = startOfDay(new Date(deferredPaymentDueDate));
+      if (isBefore(startOfDay(warrantyStartDate), due)) {
+        toast({
+          title: 'Dates do not work',
+          description: 'Payment must be due on or before the warranty start date.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      if (isBefore(startOfDay(warrantyStartDate), startOfDay(new Date()))) {
+        toast({ title: 'Start date in the past', description: 'Choose a start date from today onwards.', variant: 'destructive' });
+        return;
+      }
+    }
+
+
     // Check for duplicate warranty before proceeding
     const { checkDuplicateWarranty } = await import('@/lib/duplicateWarrantyCheck');
     const finalEmail = editableCustomerEmail || customerEmail;
@@ -3830,7 +3891,20 @@ Questions? Call 0330 229 5040`;
         customerData.price_match_our_price = Number(confirmedAmount) || null;
       }
 
-
+      // Pay later order — nothing is activated until the money lands. The order
+      // sits in Customer Management > Pending payment for the agent to chase.
+      if (deferredMode) {
+        customerData.status = 'Pending Payment';
+        customerData.payment_verified = false;
+        customerData.payment_verification_status = 'pending';
+        customerData.deferred_status = 'pending_payment';
+        customerData.deferred_start_date = format(startOfDay(warrantyStartDate), 'yyyy-MM-dd');
+        customerData.deferred_payment_due_date = deferredPaymentDueDate;
+        customerData.deferred_created_by = creditedAgentId || adminUserRecordId || null;
+        customerData.deferred_created_at = new Date().toISOString();
+        customerData.deferred_chase_count = 0;
+        customerData.purchase_source = DEFERRED_PAYMENT_SOURCE;
+      }
 
 
       // 3. Create or update customer
@@ -3916,7 +3990,7 @@ Questions? Call 0330 229 5040`;
         warranty_number: finalWarrantyReference,
         policy_start_date: startDate.toISOString(),
         policy_end_date: endDate.toISOString(),
-        status: isFutureStartDate ? 'scheduled' : 'active',
+        status: deferredMode ? 'pending_payment' : (isFutureStartDate ? 'scheduled' : 'active'),
         voluntary_excess: excessAmount,
         claim_limit: displayClaimLimit,
         payment_amount: confirmedAmount,
@@ -3983,7 +4057,9 @@ Questions? Call 0330 229 5040`;
         .from('admin_notes')
         .insert({
           customer_id: customerId,
-          note: `External Payment Confirmed:\n• Source: ${paymentSource}\n• Amount: £${confirmedAmount}\n• Warranty Start Date: ${format(startDate, 'd MMM yyyy')}${isFutureStartDate ? ' (future start)' : ''}\n• Confirmed by: ${adminEmail || 'Admin'}${paymentNotes ? `\n• Notes: ${paymentNotes}` : ''}`,
+          note: deferredMode
+            ? `⏳ Pay later order created — warranty NOT active yet:\n• Amount agreed: £${confirmedAmount}\n• Warranty starts: ${format(startDate, 'd MMM yyyy')}\n• Payment due: ${format(new Date(deferredPaymentDueDate), 'd MMM yyyy')}\n• Set up by: ${adminEmail || 'Admin'}${paymentNotes ? `\n• Notes: ${paymentNotes}` : ''}\nThe warranty activates only when payment is received.`
+            : `External Payment Confirmed:\n• Source: ${paymentSource}\n• Amount: £${confirmedAmount}\n• Warranty Start Date: ${format(startDate, 'd MMM yyyy')}${isFutureStartDate ? ' (future start)' : ''}\n• Confirmed by: ${adminEmail || 'Admin'}${paymentNotes ? `\n• Notes: ${paymentNotes}` : ''}`,
           created_by: adminUserId
         });
 
@@ -4037,7 +4113,7 @@ Questions? Call 0330 229 5040`;
       // once Resend accepts the send, so we ignore transport-level invoke
       // errors (they usually just mean the slow function outran the browser's
       // wait) and instead poll the row for the authoritative status.
-      if (sendWelcomeEmail) {
+      if (sendWelcomeEmail && !deferredMode) {
         try {
           supabase.functions.invoke('send-welcome-email-manual', {
             body: { policyId, customerId }
@@ -4072,32 +4148,44 @@ Questions? Call 0330 229 5040`;
         }
       }
 
-      // Send sale notification email (fire and forget)
-      try {
-        await supabase.functions.invoke('send-sale-notification', {
-          body: {
-            customerName: finalName,
-            customerEmail: finalEmail,
-            customerPhone: customerPhone || null,
-            regPlate: regNumber || null,
-            planName: 'Platinum',
-            saleValue: confirmedAmount,
-            paymentMethod: paymentSource || 'External',
-            warrantyReference: finalWarrantyReference,
-            vehicleMake: vehicleData?.make || null,
-            vehicleModel: vehicleData?.model || null,
-            agentId: quoteSentByUserId || null,
-            saleSource: 'QUOTE',
-          }
-        });
-      } catch (e) {
-        console.warn('Sale notification email failed (non-critical):', e);
+      // Pay later order — send the customer their dates + a payment link instead
+      // of a welcome pack, and skip the sale notification (it isn't a sale yet).
+      if (deferredMode) {
+        try {
+          await supabase.functions.invoke('send-deferred-order-email', {
+            body: { customerId, kind: 'confirmation' },
+          });
+        } catch (e) {
+          console.warn('Pay later confirmation email failed (non-critical):', e);
+        }
+      } else {
+        // Send sale notification email (fire and forget)
+        try {
+          await supabase.functions.invoke('send-sale-notification', {
+            body: {
+              customerName: finalName,
+              customerEmail: finalEmail,
+              customerPhone: customerPhone || null,
+              regPlate: regNumber || null,
+              planName: 'Platinum',
+              saleValue: confirmedAmount,
+              paymentMethod: paymentSource || 'External',
+              warrantyReference: finalWarrantyReference,
+              vehicleMake: vehicleData?.make || null,
+              vehicleModel: vehicleData?.model || null,
+              agentId: quoteSentByUserId || null,
+              saleSource: 'QUOTE',
+            }
+          });
+        } catch (e) {
+          console.warn('Sale notification email failed (non-critical):', e);
+        }
       }
 
       // Set completion status and show complete step
       setCompletionStatus({
         policyCreated: true,
-        emailSent: sendWelcomeEmail ? emailSentSuccess : null,
+        emailSent: sendWelcomeEmail && !deferredMode ? emailSentSuccess : null,
         w2000Sent: null,
         warrantyReference: finalWarrantyReference,
         isFutureStart: isFutureStartDate
@@ -4107,12 +4195,17 @@ Questions? Call 0330 229 5040`;
 
       // Success toast
       toast({
-        title: isFutureStartDate ? "✅ Policy Scheduled!" : "✅ Policy Activated!",
-        description: isFutureStartDate 
-          ? `Warranty ${finalWarrantyReference} created. Cover starts ${format(startDate, 'd MMM yyyy')}.`
-          : `Warranty ${finalWarrantyReference} created successfully.`,
-        duration: 6000,
+        title: deferredMode
+          ? "⏳ Order saved — awaiting payment"
+          : (isFutureStartDate ? "✅ Policy Scheduled!" : "✅ Policy Activated!"),
+        description: deferredMode
+          ? `${finalWarrantyReference} is in Pending payment. Cover starts ${format(startDate, 'd MMM yyyy')}, payment due ${format(new Date(deferredPaymentDueDate), 'd MMM yyyy')}. It activates when payment is received.`
+          : (isFutureStartDate
+            ? `Warranty ${finalWarrantyReference} created. Cover starts ${format(startDate, 'd MMM yyyy')}.`
+            : `Warranty ${finalWarrantyReference} created successfully.`),
+        duration: 8000,
       });
+
 
     } catch (error: any) {
       console.error('Error confirming external payment:', error);
@@ -4155,6 +4248,8 @@ Questions? Call 0330 229 5040`;
     setQuoteLink(null);
     setQuoteGenerated(false);
     setSelectedLeadId(null);
+    setDeferredMode(false);
+    setDeferredPaymentDueDate('');
     // Clear any price overrides so figures don't stick from previous quote
     setCustomMonthlyPrice('');
     setCustomFullPrice('');
@@ -4683,9 +4778,9 @@ Questions? Call 0330 229 5040`;
                 )}
 
 
-                {/* Two Primary Actions */}
+                {/* Primary Actions */}
                 <div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <button
                       onClick={handleVehicleLookup}
                       disabled={isLookingUp || isQuickConfirming}
@@ -4706,22 +4801,41 @@ Questions? Call 0330 229 5040`;
                     </button>
 
                     <button
-                      onClick={handleQuickConfirmOrder}
+                      onClick={() => { setDeferredMode(false); handleQuickConfirmOrder(); }}
                       disabled={isLookingUp || isQuickConfirming || !regNumber.trim()}
                       className="group relative flex flex-col items-start gap-0.5 rounded-xl bg-white border-2 border-emerald-600 text-emerald-700 px-4 py-3 shadow-sm hover:shadow-md hover:bg-emerald-50 hover:border-emerald-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
                     >
                       <div className="flex items-center gap-2 w-full">
-                        {isQuickConfirming ? (
+                        {isQuickConfirming && !deferredMode ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           <CreditCard className="w-4 h-4" />
                         )}
                         <span className="font-semibold text-sm">
-                          {isQuickConfirming ? 'Processing…' : 'Confirm Payment'}
+                          {isQuickConfirming && !deferredMode ? 'Processing…' : 'Confirm Payment'}
                         </span>
                         <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-0.5 transition-transform" />
                       </div>
                       <span className="text-xs text-emerald-700/70 font-normal">Already paid elsewhere</span>
+                    </button>
+
+                    <button
+                      onClick={handleStartDeferredOrder}
+                      disabled={isLookingUp || isQuickConfirming || !regNumber.trim()}
+                      className="group relative flex flex-col items-start gap-0.5 rounded-xl bg-white border-2 border-amber-500 text-amber-700 px-4 py-3 shadow-sm hover:shadow-md hover:bg-amber-50 hover:border-amber-600 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-left"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        {isQuickConfirming && deferredMode ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <CalendarIcon className="w-4 h-4" />
+                        )}
+                        <span className="font-semibold text-sm">
+                          {isQuickConfirming && deferredMode ? 'Processing…' : 'Start warranty and payment later'}
+                        </span>
+                        <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-0.5 transition-transform" />
+                      </div>
+                      <span className="text-xs text-amber-700/70 font-normal">Agree dates now, activate when paid</span>
                     </button>
 
                   </div>
@@ -8110,20 +8224,27 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                     <CheckCircle2 className="w-5 h-5 text-green-700" />
                   </span>
                   {externalPaymentStep === 'details' 
-                    ? 'Confirm External Payment' 
+                    ? (deferredMode ? 'Start warranty and payment later' : 'Confirm External Payment')
                     : externalPaymentStep === 'preview' 
                       ? 'Review Before Submission'
                       : 'Order Complete'}
                 </DialogTitle>
                 <DialogDescription className="flex flex-wrap items-center gap-3 text-muted-foreground">
                   <span>{externalPaymentStep === 'details' 
-                    ? 'Step 2: Verify details and enter payment information' 
+                    ? (deferredMode
+                        ? 'Step 2: Agree the warranty start date and the payment date'
+                        : 'Step 2: Verify details and enter payment information')
                     : externalPaymentStep === 'preview'
                       ? 'Step 3: Review all data before creating the policy'
                       : 'Step 4: Confirmation status'}</span>
-                  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground">
+                  <span className={cn(
+                    "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium",
+                    deferredMode
+                      ? "border-amber-300 bg-amber-50 text-amber-800"
+                      : "border-border bg-card text-foreground"
+                  )}>
                     <CreditCard className="h-3.5 w-3.5" />
-                    External order workflow
+                    {deferredMode ? 'Pay later — activates when paid' : 'External order workflow'}
                   </span>
                 </DialogDescription>
               </DialogHeader>
@@ -8779,8 +8900,54 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                       )}
                     </div>
 
+                    {/* Pay later — payment date */}
+                    {deferredMode && (
+                      <div className="rounded-lg border-2 border-amber-400 bg-amber-50/70 p-4 space-y-3">
+                        <div className="flex items-start gap-2">
+                          <Clock className="w-4 h-4 text-amber-700 mt-0.5 flex-shrink-0" />
+                          <div className="text-sm text-amber-900">
+                            <p className="font-semibold">Payment later — the warranty stays switched off until it's paid</p>
+                            <p className="text-amber-800 mt-0.5">
+                              No documents, no welcome email and no cover until the money is received. The order goes
+                              into Customer Management &gt; Pending payment for you to chase.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <Label htmlFor="deferred-payment-date" className="text-xs font-semibold text-amber-900">
+                              Payment date *
+                            </Label>
+                            <Input
+                              id="deferred-payment-date"
+                              type="date"
+                              value={deferredPaymentDueDate}
+                              min={format(new Date(), 'yyyy-MM-dd')}
+                              max={format(startOfDay(warrantyStartDate), 'yyyy-MM-dd')}
+                              onChange={(e) => setDeferredPaymentDueDate(e.target.value)}
+                              className="bg-white border-amber-300"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-semibold text-amber-900">Warranty starts</Label>
+                            <div className="h-10 flex items-center px-3 rounded-md border border-amber-300 bg-white text-sm font-bold text-amber-900">
+                              {format(warrantyStartDate, 'd MMM yyyy')}
+                            </div>
+                          </div>
+                        </div>
+                        {deferredPaymentDueDate && isBefore(startOfDay(warrantyStartDate), startOfDay(new Date(deferredPaymentDueDate))) && (
+                          <p className="text-xs font-semibold text-red-600">
+                            Payment must be due on or before the warranty start date.
+                          </p>
+                        )}
+                        <p className="text-[11px] text-amber-800">
+                          The customer is emailed straight away confirming their cover starts{' '}
+                          {format(warrantyStartDate, 'd MMMM yyyy')}
+                          {deferredPaymentDueDate ? ` and payment is due ${format(new Date(deferredPaymentDueDate), 'd MMMM yyyy')}` : ''}, with a payment link.
+                        </p>
+                      </div>
+                    )}
 
-                    
                     {/* Warranty Start Date Picker */}
                     <div className="space-y-3">
                       <Label className="flex items-center gap-2 text-xs font-medium text-gray-600">
@@ -9025,7 +9192,10 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         )}
 
                         {/* Final Confirmation */}
-                        <div className="p-3 border rounded-md bg-green-50 border-green-200">
+                        <div className={cn(
+                          "p-3 border rounded-md",
+                          deferredMode ? "bg-amber-50 border-amber-300" : "bg-green-50 border-green-200"
+                        )}>
                           <div className="flex items-start space-x-3">
                             <Checkbox 
                               id="confirm-payment-final"
@@ -9033,8 +9203,21 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                               onCheckedChange={(checked) => setPaymentConfirmed(checked === true)}
                               className="mt-1"
                             />
-                            <Label htmlFor="confirm-payment-final" className="text-sm text-green-800 cursor-pointer leading-relaxed">
-                              <strong>I confirm</strong> all the above information is correct and payment has been received. This will activate the warranty immediately.
+                            <Label htmlFor="confirm-payment-final" className={cn(
+                              "text-sm cursor-pointer leading-relaxed",
+                              deferredMode ? "text-amber-900" : "text-green-800"
+                            )}>
+                              {deferredMode ? (
+                                <>
+                                  <strong>I confirm</strong> the customer has agreed these dates. The warranty will
+                                  <strong> not</strong> be activated until payment is received, and it will sit in
+                                  Pending payment for chasing.
+                                </>
+                              ) : (
+                                <>
+                                  <strong>I confirm</strong> all the above information is correct and payment has been received. This will activate the warranty immediately.
+                                </>
+                              )}
                             </Label>
                           </div>
                         </div>
@@ -9138,15 +9321,17 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                 {externalPaymentStep === 'details' ? (
                   <>
                     {/* Validation helper - show what's missing */}
-                    {(!paymentSource || !paymentAmount) && (
+                    {(!paymentSource || !paymentAmount || (deferredMode && !deferredPaymentDueDate)) && (
                       <div className="w-full text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-2 flex items-center gap-2">
                         <span>⚠️</span>
                         <span>
-                          {!paymentSource && !paymentAmount 
-                            ? 'Please select a payment source and enter the amount received'
-                            : !paymentSource 
-                              ? 'Please select a payment source'
-                              : 'Please enter the amount received'}
+                          {deferredMode && !deferredPaymentDueDate
+                            ? 'Please enter the date the customer will pay'
+                            : !paymentSource && !paymentAmount 
+                              ? 'Please select a payment source and enter the amount received'
+                              : !paymentSource 
+                                ? 'Please select a payment source'
+                                : 'Please enter the amount received'}
                         </span>
                       </div>
                     )}
@@ -9159,7 +9344,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                       </Button>
                       <Button
                         onClick={() => setExternalPaymentStep('preview')}
-                        disabled={!paymentSource || !paymentAmount || !saleCreditAgentId}
+                        disabled={!paymentSource || !paymentAmount || !saleCreditAgentId || (deferredMode && !deferredPaymentDueDate)}
                         className="bg-blue-600 hover:bg-blue-700"
                       >
                         <Eye className="w-4 h-4 mr-2" />
@@ -9179,17 +9364,17 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                     <Button
                       onClick={handleConfirmExternalPayment}
                       disabled={isConfirmingPaid || !paymentConfirmed}
-                      className="bg-green-600 hover:bg-green-700"
+                      className={deferredMode ? "bg-amber-600 hover:bg-amber-700" : "bg-green-600 hover:bg-green-700"}
                     >
                       {isConfirmingPaid ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Creating Policy...
+                          {deferredMode ? 'Saving order…' : 'Creating Policy...'}
                         </>
                       ) : (
                         <>
                           <CheckCircle2 className="w-4 h-4 mr-2" />
-                          Confirm & Activate Policy
+                          {deferredMode ? 'Save order — awaiting payment' : 'Confirm & Activate Policy'}
                         </>
                       )}
                     </Button>
