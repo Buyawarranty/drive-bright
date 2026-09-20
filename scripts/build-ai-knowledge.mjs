@@ -33,6 +33,9 @@ function latestPolicyUrls() {
     '-H', 'Content-Type: application/json', '-d', '{}',
   ], { encoding: 'utf8' });
   const value = JSON.parse(raw);
+  if (Array.isArray(value) && value[0]?.terms_url && value[0]?.platinum_url) {
+    return { termsUrl: value[0].terms_url, planUrl: value[0].platinum_url };
+  }
   const composite = typeof value === 'string' ? value : value?.current_policy_pdf_urls;
   const urls = String(composite || '').replace(/^\(|\)$/g, '').split(',');
   if (urls.length !== 2 || !urls.every((url) => /^https:\/\//.test(url))) {
