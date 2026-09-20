@@ -45,8 +45,12 @@ function latestPolicyUrls() {
 }
 
 const latest = process.env.PLAN_PDF && process.env.TERMS_PDF ? null : latestPolicyUrls();
-const planVersion = latest ? versionFromUrl(latest.planUrl, 'latest') : 'local override';
-const termsVersion = latest ? versionFromUrl(latest.termsUrl, 'latest') : 'local override';
+const planVersion = latest
+  ? versionFromUrl(latest.planUrl, 'latest')
+  : versionFromUrl(process.env.PLAN_PDF, 'local override');
+const termsVersion = latest
+  ? versionFromUrl(latest.termsUrl, 'latest')
+  : versionFromUrl(process.env.TERMS_PDF, 'local override');
 const PDFS = [
   [`Platinum Warranty Plan ${planVersion}`, process.env.PLAN_PDF, latest?.planUrl],
   [`Terms and Conditions ${termsVersion}`, process.env.TERMS_PDF, latest?.termsUrl],
