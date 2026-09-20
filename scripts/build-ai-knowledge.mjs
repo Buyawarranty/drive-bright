@@ -1,8 +1,8 @@
 // Builds the approved-material knowledge base for the sandbox AI chatbot.
 //
 // SOURCE OF TRUTH (nothing else):
-//   1. Platinum Warranty Plan v3.7 (src/assets/Platinum-Warranty-Plan-v3.7.pdf.asset.json)
-//   2. Terms and Conditions v3.7 (src/assets/Terms-and-Conditions-v3.7.pdf.asset.json)
+//   1. The latest Platinum Warranty Plan returned by Supabase
+//   2. The latest Terms and Conditions returned by Supabase
 //   3. The step 3 pricing page options (term, claim limit, excess, labour rate)
 //
 // Website marketing pages (FAQ, WarrantyPlan, Protected, blog, etc.) are
@@ -14,12 +14,39 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
-// The PDFs are too large for the repo, so they live as Lovable assets. Pass a
-// local override path as env PLAN_PDF / TERMS_PDF when rebuilding from a fresh
-// upload; otherwise the asset URL is downloaded.
+// PLAN_PDF / TERMS_PDF remain available for controlled local rebuilds. Without
+// overrides, resolve the current documents from Supabase so a rebuild cannot
+// silently return Miles to an older bundled version.
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://mzlpuxzwyrcyrgrongeb.supabase.co';
+const SUPABASE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
+
+function versionFromUrl(url, fallback) {
+  const match = url.match(/v(\d+)[-_](\d+)/i);
+  return match ? `v${match[1]}.${match[2]}` : fallback;
+}
+
+function latestPolicyUrls() {
+  if (!SUPABASE_KEY) throw new Error('VITE_SUPABASE_PUBLISHABLE_KEY is required to resolve current policy documents');
+  const raw = execFileSync('curl', [
+    '-sSfL', '-X', 'POST', `${SUPABASE_URL}/rest/v1/rpc/current_policy_pdf_urls`,
+    '-H', `apikey: ${SUPABASE_KEY}`, '-H', `Authorization: Bearer ${SUPABASE_KEY}`,
+    '-H', 'Content-Type: application/json', '-d', '{}',
+  ], { encoding: 'utf8' });
+  const value = JSON.parse(raw);
+  const composite = typeof value === 'string' ? value : value?.current_policy_pdf_urls;
+  const urls = String(composite || '').replace(/^\(|\)$/g, '').split(',');
+  if (urls.length !== 2 || !urls.every((url) => /^https:\/\//.test(url))) {
+    throw new Error('Supabase did not return both current policy document URLs');
+  }
+  return { termsUrl: urls[0], planUrl: urls[1] };
+}
+
+const latest = process.env.PLAN_PDF && process.env.TERMS_PDF ? null : latestPolicyUrls();
+const planVersion = latest ? versionFromUrl(latest.planUrl, 'latest') : 'local override';
+const termsVersion = latest ? versionFromUrl(latest.termsUrl, 'latest') : 'local override';
 const PDFS = [
-  ['Platinum Warranty Plan v3.7', process.env.PLAN_PDF, 'src/assets/Platinum-Warranty-Plan-v3.7.pdf.asset.json'],
-  ['Terms and Conditions v3.7', process.env.TERMS_PDF, 'src/assets/Terms-and-Conditions-v3.7.pdf.asset.json'],
+  [`Platinum Warranty Plan ${planVersion}`, process.env.PLAN_PDF, latest?.planUrl],
+  [`Terms and Conditions ${termsVersion}`, process.env.TERMS_PDF, latest?.termsUrl],
 ];
 
 // Step 3 of the customer pricing journey — the actual options a customer picks.
@@ -87,12 +114,11 @@ function addChunks(source, lines, limit = 1400) {
   flush();
 }
 
-for (const [title, override, pointerPath] of PDFS) {
+for (const [title, override, currentUrl] of PDFS) {
   let path = override;
   if (!path) {
-    const pointer = JSON.parse(readFileSync(pointerPath, 'utf8'));
-    path = `/tmp/kb-${pointer.original_filename}`;
-    execFileSync('curl', ['-sSfL', '-o', path, `https://cdn.lovable.dev${pointer.url}`]);
+    path = `/tmp/kb-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`;
+    execFileSync('curl', ['-sSfL', '-o', path, currentUrl]);
   }
   addChunks(title, pdfLines(path));
 }
@@ -109,12 +135,13 @@ for (const path of STEP3_FILES) {
 }
 addChunks('Pricing page step 3 (cover options)', [...new Set(stepLines)]);
 
-// Approved clarifications to v3.7 — confirmed by management, must survive a rebuild.
+// Approved clarifications confirmed by management, retained unless contradicted
+// by a newer document.
 chunks.push({
-  source: 'Platinum Warranty Plan v3.7',
-  section: 'Platinum Warranty Plan v3.7 (replaced turbo and replaced hybrid battery clarification)',
+  source: `Platinum Warranty Plan ${planVersion}`,
+  section: `Platinum Warranty Plan ${planVersion} (replaced turbo and replaced hybrid battery clarification)`,
   text: [
-    'Replaced turbo unit and replaced hybrid/EV drive battery — approved clarification to the Platinum Warranty Plan v3.7.',
+    'Replaced turbo unit and replaced hybrid/EV drive battery — management-approved clarification.',
     'If the turbo unit has been replaced with a new or replacement unit, it remains covered even on an older or higher-mileage vehicle, provided a valid receipt and proof of purchase for the replacement part is supplied.',
     'If the hybrid or EV drive battery has been replaced, it remains covered on the same basis, provided a valid receipt and proof of purchase is supplied.',
     "The turbo age/mileage limit (7 years or 80,000 miles) and the drive battery limit (10 years or 80,000 miles) are measured from the replacement part, not from the vehicle's original registration date or lifetime mileage. In other words, the duration of cover for that component starts again from the date the replacement part was fitted, as evidenced by the receipt and proof of purchase.",
