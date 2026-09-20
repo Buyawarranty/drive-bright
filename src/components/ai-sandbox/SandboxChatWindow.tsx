@@ -143,23 +143,33 @@ function stripPrefix(text: string) {
   return text.startsWith(AGENT_PREFIX) ? text.slice(AGENT_PREFIX.length).trim() : text;
 }
 
-// Streamdown links full https:// URLs automatically. Convert plain domains
-// such as buyawarranty.co.uk/make-a-claim/ into safe Markdown links too.
+// Keep existing Markdown links intact, then make every plain web address and
+// email address clickable. This avoids creating broken nested Markdown links.
 function linkifyChatUrls(text: string) {
-  // `*` is allowed as the preceding character so bolded links like
-  // **buyawarranty.co.uk/make-a-claim/** still become clickable.
-  const bareUrl = /(^|[\s(*])((?:www\.)?(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}(?:\/[^\s<*]*)?)/gi;
-
-  return text.replace(bareUrl, (match, prefix: string, rawUrl: string, offset: number) => {
-    const domainOffset = offset + prefix.length;
-    if (text.slice(Math.max(0, domainOffset - 2), domainOffset) === '](') return match;
-
-    const trailing = rawUrl.match(/[),.!?;:]+$/)?.[0] ?? '';
-    const url = trailing ? rawUrl.slice(0, -trailing.length) : rawUrl;
-    if (!url) return match;
-
-    return `${prefix}[${url}](https://${url})${trailing}`;
+  const preserved: string[] = [];
+  const protectedText = text.replace(/\[[^\]]+\]\((?:https?:\/\/|mailto:)[^)]+\)/gi, (link) => {
+    const marker = `\u0000CHAT_LINK_${preserved.length}\u0000`;
+    preserved.push(link);
+    return marker;
   });
+
+  const withEmails = protectedText.replace(
+    /(^|[\s(])([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})(?=$|[\s),.!?;:])/gi,
+    (_match, prefix: string, email: string) => `${prefix}[${email}](mailto:${email})`,
+  );
+
+  const withUrls = withEmails.replace(
+    /(^|[\s(*])((?:(?:https?:\/\/)|www\.)?(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}(?:\/[^\s<*]*)?)/gi,
+    (_match, prefix: string, rawUrl: string) => {
+      const trailing = rawUrl.match(/[),.!?;:]+$/)?.[0] ?? '';
+      const url = trailing ? rawUrl.slice(0, -trailing.length) : rawUrl;
+      if (!url) return _match;
+      const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+      return `${prefix}[${url}](${href})${trailing}`;
+    },
+  );
+
+  return withUrls.replace(/\u0000CHAT_LINK_(\d+)\u0000/g, (_marker, index: string) => preserved[Number(index)] ?? '');
 }
 
 
