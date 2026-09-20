@@ -21,7 +21,7 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://mzlpuxzwyrcyrgron
 const SUPABASE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
 
 function versionFromUrl(url, fallback) {
-  const match = url.match(/v(\d+)[-_](\d+)/i);
+  const match = url.match(/v(\d+)[._-]+(\d+)/i);
   return match ? `v${match[1]}.${match[2]}` : fallback;
 }
 
