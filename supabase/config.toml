@@ -23,6 +23,9 @@ verify_jwt = false
 [functions.schedule-abandoned-cart-emails] 
 verify_jwt = false
 
+[functions.schedule-lead-nurture-emails]
+verify_jwt = false
+
 [functions.capture-facebook-lead]
 verify_jwt = false
 

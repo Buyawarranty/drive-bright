@@ -79,7 +79,15 @@ interface SendEmailRequest {
     | 'reminder_7d'
     | 'reminder_14d'
     | 'reminder_18d'
-    | 'reminder_21d';
+    | 'reminder_21d'
+    // Long-term nurture steps (day 14, day 30, then monthly for six months)
+    | 'nurture_14d'
+    | 'nurture_30d'
+    | 'nurture_60d'
+    | 'nurture_90d'
+    | 'nurture_120d'
+    | 'nurture_150d'
+    | 'nurture_180d';
   planName?: string;
   paymentType?: string;
   stepAbandoned?: number;
