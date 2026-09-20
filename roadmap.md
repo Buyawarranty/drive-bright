@@ -79,3 +79,4 @@
 ## Chatbot answer library (Sep 11)
 - [x] Managers write/approve answers in Chatbot data tab; Miles reuses them for same/similar questions
 - [x] Start warranty and payment later: third CTA on Quotes & Orders, Pending Payment tab, customer confirmation/payment-link emails, daily chase job, excluded from revenue until paid
+- [x] Miles policy knowledge: resolve the newest Supabase Platinum Plan and Terms by default; remove stale hard-coded cancellation wording
