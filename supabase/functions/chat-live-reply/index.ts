@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
   try {
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
     const body = await req.json().catch(() => ({}));
-    const action = body?.action === "send" ? "send" : "poll";
+    const action = body?.action === "send" || body?.action === "email" ? body.action : "poll";
 
     if (action === "poll") {
       const raw = typeof body?.guestToken === "string" ? body.guestToken.trim() : "";
@@ -85,6 +85,12 @@ Deno.serve(async (req) => {
     if (!text) return json({ ok: false, error: "empty_message" }, 400);
     if (text.length > 2000) return json({ ok: false, error: "too_long" }, 400);
 
+    const customerEmail = typeof body?.customerEmail === "string" ? body.customerEmail.trim().toLowerCase() : "";
+    const customerName = typeof body?.customerName === "string" ? body.customerName.trim().slice(0, 120) : "";
+    if (action === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+      return json({ ok: false, error: "valid_email_required" }, 400);
+    }
+
     // Only real staff accounts may speak to a customer as a specialist.
     const { data: staffRows, error: staffError } = await admin
       .from("admin_users")
@@ -98,6 +104,37 @@ Deno.serve(async (req) => {
     }
     const staff = staffRows?.[0];
     if (!staff || staff.is_active === false) return json({ ok: false, error: "not_staff" }, 403);
+
+    if (action === "email") {
+      const resendKey = Deno.env.get("RESEND_API_KEY");
+      if (!resendKey) return json({ ok: false, error: "email_not_configured" }, 500);
+      const escapeHtml = (value: string) => value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+      const messageHtml = escapeHtml(text)
+        .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" style="color:#175cd3">$1</a>')
+        .replace(/\n/g, "<br>");
+      const firstName = customerName.split(/\s+/)[0] || "there";
+      const staffName = [staff.first_name, staff.last_name].filter(Boolean).join(" ") || "Warranty specialist";
+      const emailResponse = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${resendKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: "Buy A Warranty Customer Care <support@buyawarranty.co.uk>",
+          to: [customerEmail],
+          reply_to: "support@buyawarranty.co.uk",
+          subject: "A reply from Buy A Warranty",
+          html: `<!doctype html><html><body style="margin:0;background:#f4f6f8;font-family:Arial,sans-serif;color:#1f2937"><div style="max-width:620px;margin:0 auto;padding:28px 16px"><div style="background:#ffffff;border-top:4px solid #175cd3;padding:28px"><p style="margin:0 0 18px">Hi ${escapeHtml(firstName)},</p><div style="font-size:16px;line-height:1.65">${messageHtml}</div><p style="margin:24px 0 0">Kind regards,<br><strong>${escapeHtml(staffName)}</strong><br>Buy A Warranty</p></div><p style="font-size:12px;color:#667085;text-align:center">This response relates to your recent website chat. Reply to this email if you still need help.</p></div></body></html>`,
+        }),
+      });
+      if (!emailResponse.ok) {
+        console.error("[chat-live-reply] email failed", emailResponse.status, await emailResponse.text());
+        return json({ ok: false, error: "email_send_failed" }, 502);
+      }
+    }
 
     const content = `${AGENT_PREFIX} ${text}`;
     const { data: inserted, error: insertError } = await admin
@@ -122,7 +159,7 @@ Deno.serve(async (req) => {
       .update({ updated_at: new Date().toISOString() })
       .eq("id", threadId);
 
-    return json({ ok: true, id: inserted?.id ?? null, created_at: inserted?.created_at ?? null });
+    return json({ ok: true, delivery: action === "email" ? "email" : "live", id: inserted?.id ?? null, created_at: inserted?.created_at ?? null });
   } catch (e) {
     console.error("[chat-live-reply] threw", e);
     return json({ ok: false, error: "unexpected" }, 500);
