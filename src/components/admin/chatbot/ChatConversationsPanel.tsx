@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageSquare, UserPlus, RefreshCw, Search, CheckCircle2, Send, X } from 'lucide-react';
+import { MessageSquare, UserPlus, RefreshCw, Search, CheckCircle2, Send, Mail, X } from 'lucide-react';
 import { classifyChatTopic, type ChatTopicTag } from '@/lib/chatTopicTags';
 
 type Thread = {
@@ -287,11 +287,20 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
   const openThread = async (thread: Thread) => {
     setSelectedId(thread.id);
     setLoadingMessages(true);
-    const { data, error } = await supabase
-      .from('ai_sandbox_messages')
-      .select('id, role, content, parts, created_at')
-      .eq('thread_id', thread.id)
-      .order('created_at', { ascending: true });
+    const [{ data, error }, { data: handover }] = await Promise.all([
+      supabase
+        .from('ai_sandbox_messages')
+        .select('id, role, content, parts, created_at')
+        .eq('thread_id', thread.id)
+        .order('created_at', { ascending: true }),
+      supabase
+        .from('ai_sandbox_handovers')
+        .select('customer_name, customer_email, customer_phone, registration')
+        .eq('thread_id', thread.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
     setLoadingMessages(false);
     if (error) {
       toast.error(`Could not load this conversation: ${error.message}`);
@@ -303,7 +312,12 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
     setNewCustomerReplies(0);
     setMessages(rows);
     const found = detect(rows);
-    setForm({ name: '', ...found });
+    setForm({
+      name: handover?.customer_name || '',
+      email: handover?.customer_email || found.email,
+      phone: handover?.customer_phone || found.phone,
+      registration: handover?.registration || found.registration,
+    });
   };
 
   const closeThread = () => {
@@ -393,6 +407,37 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
       toast.success('Sent — the customer sees it in their chat box');
     } catch (e: any) {
       toast.error(e?.message || 'Could not send that reply');
+    } finally {
+      setReplying(false);
+    }
+  };
+
+  const sendEmailReply = async () => {
+    const text = reply.trim();
+    const email = form.email.trim();
+    if (!selected || !text) return;
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      toast.error('Add the customer’s email address above before sending');
+      return;
+    }
+    setReplying(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('chat-live-reply', {
+        body: {
+          action: 'email',
+          threadId: selected.id,
+          text,
+          customerEmail: email,
+          customerName: form.name.trim() || null,
+        },
+      });
+      if (error) throw error;
+      if ((data as any)?.ok === false) throw new Error((data as any).error || 'Could not send email');
+      setReply('');
+      await refreshMessages(selected.id);
+      toast.success(`Email sent to ${email} and saved in the conversation`);
+    } catch (e: any) {
+      toast.error(e?.message || 'Could not email that response');
     } finally {
       setReplying(false);
     }
@@ -657,10 +702,10 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
                 </div>
               </ScrollArea>
 
-              <div className="rounded-md border p-3">
+              <div className="sticky bottom-0 z-10 rounded-md border bg-background p-3 shadow-lg">
                 <div className="mb-2 flex flex-wrap items-center gap-2">
                   <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Reply live to this customer
+                    Reply to this customer
                   </span>
                   {customerLikelyLive ? (
                     <Badge className="border-emerald-200 bg-emerald-100 text-emerald-800">
@@ -701,10 +746,20 @@ export default function ChatConversationsPanel({ rangeDays, fromIso, toIso, init
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <Button onClick={sendReply} disabled={replying || !reply.trim()}>
                     <Send className="mr-1 h-4 w-4" />
-                    {replying ? 'Sending…' : 'Send to customer'}
+                    {replying ? 'Sending…' : 'Send live reply'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={sendEmailReply}
+                    disabled={replying || !reply.trim() || !form.email.trim()}
+                  >
+                    <Mail className="mr-1 h-4 w-4" />
+                    Send by email
                   </Button>
                   <span className="text-xs text-muted-foreground">
-                    It shows as a warranty specialist, not as Miles.
+                    {form.email.trim()
+                      ? `Email available: ${form.email.trim()}`
+                      : 'No email saved — ask for one in the live chat, or send a live reply they can see if they return.'}
                   </span>
                 </div>
               </div>
