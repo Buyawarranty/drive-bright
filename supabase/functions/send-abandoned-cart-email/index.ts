@@ -79,7 +79,15 @@ interface SendEmailRequest {
     | 'reminder_7d'
     | 'reminder_14d'
     | 'reminder_18d'
-    | 'reminder_21d';
+    | 'reminder_21d'
+    // Long-term nurture steps (day 14, day 30, then monthly for six months)
+    | 'nurture_14d'
+    | 'nurture_30d'
+    | 'nurture_60d'
+    | 'nurture_90d'
+    | 'nurture_120d'
+    | 'nurture_150d'
+    | 'nurture_180d';
   planName?: string;
   paymentType?: string;
   stepAbandoned?: number;
@@ -188,6 +196,62 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
       showPromo = true;
       promoCode = 'SAVE25GO';
       promoText = 'Last chance: Save £25 with code';
+      break;
+    // ---- Long-term nurture: value-led, low pressure, one email at a time ----
+    case 'nurture_14d':
+      subject = `${vehicleReg} – your warranty quote is still here`;
+      heading = `Still deciding on cover?`;
+      intro = `Two weeks ago you looked at warranty cover for your ${vehicleLine}.`;
+      body = "Your quote is still saved exactly as you left it, and your £25 discount still applies. Cover includes unlimited claims up to your chosen limit, UK-based support and approved garages nationwide — designed to take care of the bills that catch people out.";
+      ctaText = 'See my saved quote';
+      showPromo = true;
+      promoCode = 'SAVE25GO';
+      promoText = 'Save £25 with code';
+      break;
+    case 'nurture_30d':
+      subject = `${vehicleReg} – what a warranty covers (and what it saves)`;
+      heading = `What your cover would include`;
+      intro = `A month on, your saved quote for ${vehicleLine} is still available.`;
+      body = "Engine, gearbox, clutch, electrics, air conditioning and more are all included, with labour paid at your chosen hourly rate. A single gearbox repair now typically costs more than a full year of cover, so it is worth a look while your price is held.";
+      ctaText = 'View my cover options';
+      showPromo = true;
+      promoCode = 'SAVE25GO';
+      promoText = 'Save £25 with code';
+      break;
+    case 'nurture_60d':
+      subject = `${vehicleReg} – cover from around 60p a day`;
+      heading = `Cover from around 60p a day`;
+      intro = `Just checking in about warranty cover for your ${vehicleLine}.`;
+      body = "You can spread the cost monthly, choose your claim limit and hourly labour rate, and start cover the same day. Your details are saved, so a quote takes seconds to bring back up.";
+      ctaText = 'Get my updated price';
+      break;
+    case 'nurture_90d':
+      subject = `${vehicleReg} – is your car still unprotected?`;
+      heading = `Three months on`;
+      intro = `Your ${vehicleLine} may be a little older and higher mileage now.`;
+      body = "That is usually when unexpected repair bills start to appear. Cover is still available for your vehicle, with a 14-day cooling-off period and support from our UK team whenever you need it.";
+      ctaText = 'Check my price';
+      break;
+    case 'nurture_120d':
+      subject = `${vehicleReg} – a fresh warranty price for you`;
+      heading = `A fresh price, whenever you want it`;
+      intro = `We still have your details for ${vehicleLine} on file.`;
+      body = "If you would like an up-to-date price, it takes about a minute. Choose the claim limit and labour rate that suit you, pay monthly or in full, and cover can begin straight away.";
+      ctaText = 'See today\u2019s price';
+      break;
+    case 'nurture_150d':
+      subject = `${vehicleReg} – peace of mind for your car`;
+      heading = `Peace of mind, whenever you\u2019re ready`;
+      intro = `Thanks for considering Buy A Warranty for your ${vehicleLine}.`;
+      body = "Thousands of UK drivers use us to keep repair bills predictable, with unlimited claims up to their chosen limit and rated service on Trustpilot. Your saved details mean a new quote is only a tap away.";
+      ctaText = 'Get a quote';
+      break;
+    case 'nurture_180d':
+      subject = `${vehicleReg} – last email from us about your quote`;
+      heading = `One last note`;
+      intro = `This is the last reminder we will send about your saved quote for ${vehicleLine}.`;
+      body = "If cover is not right for you at the moment, that is absolutely fine and you will not hear from us about this quote again. If you would still like a price, we are here whenever you need us.";
+      ctaText = 'Get my final quote';
       break;
     // Legacy fallbacks (kept for completeness)
     case 'checkout_abandoned':
