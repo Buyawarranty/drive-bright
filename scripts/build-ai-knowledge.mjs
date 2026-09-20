@@ -21,7 +21,7 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://mzlpuxzwyrcyrgron
 const SUPABASE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
 
 function versionFromUrl(url, fallback) {
-  const match = url.match(/v(\d+)[-_](\d+)/i);
+  const match = url.match(/v(\d+)[._-]+(\d+)/i);
   return match ? `v${match[1]}.${match[2]}` : fallback;
 }
 
@@ -45,8 +45,12 @@ function latestPolicyUrls() {
 }
 
 const latest = process.env.PLAN_PDF && process.env.TERMS_PDF ? null : latestPolicyUrls();
-const planVersion = latest ? versionFromUrl(latest.planUrl, 'latest') : 'local override';
-const termsVersion = latest ? versionFromUrl(latest.termsUrl, 'latest') : 'local override';
+const planVersion = latest
+  ? versionFromUrl(latest.planUrl, 'latest')
+  : versionFromUrl(process.env.PLAN_PDF, 'local override');
+const termsVersion = latest
+  ? versionFromUrl(latest.termsUrl, 'latest')
+  : versionFromUrl(process.env.TERMS_PDF, 'local override');
 const PDFS = [
   [`Platinum Warranty Plan ${planVersion}`, process.env.PLAN_PDF, latest?.planUrl],
   [`Terms and Conditions ${termsVersion}`, process.env.TERMS_PDF, latest?.termsUrl],
