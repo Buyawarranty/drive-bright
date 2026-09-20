@@ -80,4 +80,4 @@
 - [x] Managers write/approve answers in Chatbot data tab; Miles reuses them for same/similar questions
 - [x] Start warranty and payment later: third CTA on Quotes & Orders, Pending Payment tab, customer confirmation/payment-link emails, daily chase job, excluded from revenue until paid
 - [x] Miles policy knowledge: resolve the newest Supabase Platinum Plan and Terms by default; remove stale hard-coded cancellation wording
-- [ ] Website chat replies: keep the reply composer visible at the bottom and let staff email the same response when the visitor has left
+- [x] Website chat replies: keep the reply composer visible at the bottom and let staff email the same response when the visitor has left
