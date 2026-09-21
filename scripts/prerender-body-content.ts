@@ -550,6 +550,70 @@ export const PAGE_BODIES: Record<string, PageBody> = {
       },
     ],
   },
+  '/thewarrantyhub/tesla-car-price-extended-warranty-uk-2026-ownership-guide/': {
+    h1: 'Tesla Car Price & Extended Warranty UK: 2026 Ownership Guide',
+    intro:
+      'New Model 3 vehicles start at approximately £37,990, used 2021 versions are frequently available between £16,000 and £20,000, and electric vehicles now pay £200 annual Vehicle Excise Duty plus the £425 supplement when applicable.',
+    sections: [
+      {
+        h2: 'What is the current Tesla car price in the UK?',
+        paras: [
+          'The current Tesla car price in the UK varies dramatically between new factory orders and the second-hand market. A brand new rear-wheel-drive Model 3 starts from approximately £37,990, while a 2021 Model 3 with average mileage can often be found for roughly £16,000 to £20,000.',
+          'Tesla has officially discontinued production of the Model S and Model X as of Q2 2026, so those premium vehicles are now available as existing inventory or used purchases.',
+        ],
+      },
+      {
+        h2: 'Why the Tesla UK market matters for drivers today',
+        paras: [
+          'Electric vehicles are no longer exempt from road tax. Most EV owners now pay the standard £200 annual Vehicle Excise Duty, and cars with an original list price over £50,000 can attract an additional £425 expensive car supplement for five years.',
+        ],
+      },
+      {
+        h2: 'Tesla extended warranty UK options',
+        paras: [
+          'The official Helvetia extended warranty offers a two-year or 25,000-mile extension for £1,402, and a four-year or 50,000-mile option around £2,720. Independent EV specialists such as Buy-a-Warranty can cover older vehicles up to 15 years old and 150,000 miles, with access to VAT-registered UK repairers.',
+        ],
+        points: [
+          {
+            h3: 'Official Helvetia policy',
+            text: 'Limited to newer, lower-mileage vehicles, typically uses manufacturer service centres and may require upfront diagnostic fees.',
+          },
+          {
+            h3: 'Buy-a-Warranty EV cover',
+            text: 'Available for vehicles up to 15 years old and 150,000 miles, with tailored monthly plans and repair choice through VAT-registered UK specialists.',
+          },
+        ],
+      },
+      {
+        h2: 'How to choose smartly and lower running costs',
+        paras: [
+          'Heavy electric vehicles frequently suffer premature suspension wear, with front upper control arm replacements alone costing upwards of £270. Complex computer components such as the Media Control Unit can cost over £2,300 to upgrade or replace, so cover should clearly include infotainment and EV-specific drivetrain parts.',
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: 'How much does a used Tesla car price drop after three years?',
+        a: 'Used electric vehicles experience their steepest depreciation during the first three years, often losing up to 40% to 50% of their original value.',
+      },
+      {
+        q: 'Do I have to pay road tax on a Tesla in the UK?',
+        a: 'Yes. Electric vehicles are no longer exempt from Vehicle Excise Duty in the UK; EV owners pay the standard £200 annual rate, plus the £425 supplement if the original list price was over £50,000.',
+      },
+      {
+        q: 'Is the official Tesla extended warranty UK worth the upfront cost?',
+        a: 'The official policy offers dealer convenience, but many UK drivers compare it with independent cover because the four-year option is around £2,720.',
+      },
+      {
+        q: 'What happens if the suspension fails out of warranty?',
+        a: 'The owner pays the full repair bill, including parts and high hourly labour rates. A worn upper control arm repair commonly costs around £270.',
+      },
+      {
+        q: 'Are the Tesla Model S and Model X discontinued?',
+        a: 'Yes. Production of the Model S and Model X was officially discontinued in Q2 2026, leaving inventory and second-hand purchases as the available options.',
+      },
+    ],
+  },
   '/thewarrantyhub/petrol-diesel-vehicle-warranty-cover-complete-uk-drivers-guide/': {
     h1: "Petrol & Diesel Vehicle Warranty Cover: Complete UK Driver's Guide",
     intro:

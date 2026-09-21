@@ -286,6 +286,14 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     ogImage: `${SITE}/blog/tesla-warranty-uk-2026.jpg`,
   },
   {
+    path: "/thewarrantyhub/tesla-car-price-extended-warranty-uk-2026-ownership-guide/",
+    title: "Tesla Car Price & Extended Warranty UK 2026 | Ownership Guide",
+    description:
+      "Tesla UK prices, EV road tax, Helvetia extended cover and independent warranty options for older Tesla models in 2026.",
+    ogType: "article",
+    ogImage: "https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/blog-images/tesla-car-price-extended-warranty-uk-2026.jpg",
+  },
+  {
     path: "/thewarrantyhub/petrol-diesel-vehicle-warranty-cover-complete-uk-drivers-guide/",
     title: "Petrol & Diesel Car Warranty Cover UK | Complete Guide",
     description:
