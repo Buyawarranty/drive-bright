@@ -1233,10 +1233,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     // restored from a previous visit) — that state shouldn't yank the customer
     // down the page before they've seen their details.
     if (addressCompleteAtMountRef.current === null) {
-      addressCompleteAtMountRef.current = addressComplete;
-      if (addressComplete) return;
+      addressCompleteAtMountRef.current = addressReadyForAutoScroll;
+      if (addressReadyForAutoScroll) return;
     }
-    if (hasAutoScrolledToPaymentRef.current || !addressComplete) return;
+    if (hasAutoScrolledToPaymentRef.current || !addressReadyForAutoScroll) return;
 
     let attempts = 0;
     const tryScroll = () => {
