@@ -1337,7 +1337,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       </section>
 
       {/* ───────── Sales Agents ───────── */}
-      <section className="rounded-lg border border-border bg-card shadow-sm">
+      <section id="lead-types" className="rounded-lg border border-border bg-card shadow-sm scroll-mt-24">
         <div className="px-5 py-4 border-b border-border flex items-start justify-between flex-wrap gap-3">
           <div>
             <h2 className="text-base font-semibold text-foreground">Who gets the leads?</h2>
