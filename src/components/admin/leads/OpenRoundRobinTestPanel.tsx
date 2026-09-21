@@ -2116,8 +2116,18 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       </td>
                       <td className="px-2 py-2">
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
-                          <a href={`tel:${lead.phone}`} title="Call" className="h-7 w-7 rounded-md border border-input flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
+                          <a
+                            href={`tel:${lead.phone}`}
+                            title={orrLead && lead.assignedTo !== null && !attempted ? 'Start call' : 'Call'}
+                            className={cn(
+                              'inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-semibold',
+                              orrLead && lead.assignedTo !== null && !attempted
+                                ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                : 'border border-input text-foreground hover:bg-muted',
+                            )}
+                          >
                             <Phone className="h-3.5 w-3.5" />
+                            {orrLead && lead.assignedTo !== null && !attempted ? 'Start Call' : 'Call'}
                           </a>
                           <PracticeNotes
                             notes={lead.notes ?? []}
