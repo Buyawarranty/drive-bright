@@ -388,7 +388,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
           <TableBody>
             {pagedLeads.map((lead, i) => {
               const accessStatus = paidLeadAccessCheck?.(lead.id) || { hasPending: false, hasApproved: false };
-              const rowNumber = pageStart + i + 1;
+              const rowNumber = i + 1;
               const isReadOnly = !!readOnlyLeadIds?.has(lead.id);
               const noop = () => {};
               return (
