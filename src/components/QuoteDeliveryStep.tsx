@@ -474,26 +474,26 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     return (
       <section className="bg-white min-h-[100dvh] pb-4 mobile-quote-page">
         <div className="max-w-xl mx-auto mobile-quote-card pt-3 sm:pt-8">
-          {/* Headline */}
-          <div className="flex items-start gap-2.5 mb-2 sm:mb-4">
-            <span className="inline-flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-brand-orange text-white shadow-md flex-shrink-0">
-              <Zap className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />
-            </span>
-            <h1 className="mq-heading sm:!text-4xl font-extrabold text-gray-900 leading-tight">
-              Only 3 quick details to see your quote
-            </h1>
-          </div>
-
-          {/* Back + sub headline */}
-          <div className="flex items-center justify-center gap-4 mb-3 sm:mb-5">
+          <div className="flex items-start gap-2.5 mb-2 sm:mb-1">
             <button
               type="button"
               onClick={onBack}
-              className="flex items-center gap-1 text-primary text-sm font-semibold hover:underline"
+              aria-label="Go back to the previous step"
+              className="flex-shrink-0 inline-flex items-center gap-1.5 mt-1 text-sm font-semibold py-1.5 px-3 rounded-lg transition-all bg-gray-100 hover:bg-gray-200 text-gray-700"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
             </button>
+            <div className="flex items-start gap-2.5 flex-1">
+              <span className="inline-flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-brand-orange text-white shadow-md flex-shrink-0">
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />
+              </span>
+              <h1 className="mq-heading sm:!text-4xl font-extrabold text-gray-900 leading-tight">
+                Only 3 quick details to see your quote
+              </h1>
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-4 mb-3 sm:mb-5">
             <p className="text-gray-700 flex items-center gap-2 text-sm sm:text-base">
               <Zap className="w-4 h-4 text-brand-orange" fill="currentColor" />
               Your price is seconds away
@@ -687,22 +687,25 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       <div className="max-w-xl mx-auto mobile-quote-card py-3 sm:py-4">
         {/* Main Heading */}
 
-        <div className="text-center mb-4 sm:mb-3">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            <span className="inline-flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full mr-2">
-              <Rocket className="w-4 h-4" />
-            </span>
-            Only 3 quick details for your best price
-          </h1>
-          <div className="flex items-center justify-center gap-3 mt-1">
-            <button 
-              type="button" 
+        <div className="mb-4 sm:mb-3">
+          <div className="flex items-start gap-2">
+            <button
+              type="button"
               onClick={onBack}
-              className="flex items-center gap-1 text-sm font-medium py-1 px-2.5 rounded-lg transition-all bg-gray-100 hover:bg-gray-200 text-gray-700"
+              aria-label="Go back to the previous step"
+              className="flex-shrink-0 inline-flex items-center gap-1.5 mt-1 text-sm font-semibold py-1.5 px-3 rounded-lg transition-all bg-gray-100 hover:bg-gray-200 text-gray-700"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Back
             </button>
+            <h1 className="flex-1 text-2xl sm:text-3xl font-bold text-gray-900 text-center">
+              <span className="inline-flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full mr-2">
+                <Rocket className="w-4 h-4" />
+              </span>
+              Only 3 quick details for your best price
+            </h1>
+          </div>
+          <div className="flex items-center justify-center gap-3 mt-1">
             <p className="text-gray-700 flex items-center gap-2">
               <Zap className="w-4 h-4 text-brand-orange" />
               Your price is seconds away
