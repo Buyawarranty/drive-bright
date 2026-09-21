@@ -70,7 +70,17 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
   return (
     <section className="bg-[#e8f4fb] py-10 min-h-screen">
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-8">
-        <div className="flex items-start mb-6">
+        <div className="flex items-start gap-3 mb-6">
+          {/* Back button — compact pill at the start of the heading line */}
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label="Go back to the previous step"
+            className="flex-shrink-0 inline-flex items-center gap-1.5 mt-1.5 text-[15px] font-semibold py-2 px-3.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
           <div>
             <h2 className="text-4xl font-bold text-gray-800 text-left">Now, let's find out about you 🤔</h2>
             <p className="text-lg text-gray-600 mt-2 text-left">We need these details to provide you with your personalized quote and warranty information.</p>
@@ -213,31 +223,12 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
             </div>
           </div>
 
-          {/* Button Group */}
-          <div className="flex gap-4">
-            <button 
-              type="button" 
-              onClick={onBack}
-              className="flex-1 flex items-center justify-center gap-2 text-[15px] font-bold py-[12px] px-[20px] rounded-[6px] border-2 transition-all duration-200"
-              style={{
-                backgroundColor: 'white',
-                borderColor: '#224380',
-                color: '#224380'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f0f8ff';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'white';
-              }}
-            >
-              <ArrowLeft className="w-5 h-5" />
-              Back
-            </button>
-            <button 
-              type="submit" 
+          {/* Submit Button */}
+          <div>
+            <button
+              type="submit"
               disabled={!isFormValid}
-              className="flex-1 text-white text-[15px] font-bold py-[12px] px-[20px] rounded-[6px] border-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full text-white text-[15px] font-bold py-[12px] px-[20px] rounded-[6px] border-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: isFormValid ? '#eb4b00' : '#e5e7eb',
                 borderColor: isFormValid ? '#eb4b00' : '#d1d5db'
