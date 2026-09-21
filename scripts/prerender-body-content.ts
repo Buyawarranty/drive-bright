@@ -487,6 +487,69 @@ export const PAGE_BODIES: Record<string, PageBody> = {
   '/warranty-types/vans-warranty/': buildBody(FACTS.vans, 'Van warranty UK'),
   '/warranty-types/vauxhall-warranty/': buildBody(FACTS.vauxhall, 'Vauxhall extended warranty UK'),
   '/warranty-types/volkswagen-warranty/': buildBody(FACTS.volkswagen, 'Volkswagen extended warranty UK'),
+  '/thewarrantyhub/tesla-warranty-uk-2026-battery-cover-repair-costs-extended-options/': {
+    h1: 'Tesla Warranty UK 2026: Battery Cover, Repair Costs & Extended Options Explained',
+    intro:
+      "Driving a Tesla in the UK saves money on fuel and routine servicing, but many owners are caught off guard when the factory cover ends. This guide explains what the manufacturer warranty includes, what common repairs cost at UK rates, and how to stay protected once the guarantee expires.",
+    sections: [
+      {
+        h2: 'What is the Tesla UK warranty?',
+        paras: [
+          "The basic vehicle limited warranty runs for 4 years or 60,000 miles, whichever comes first. A separate battery and drive unit warranty lasts 8 years, with mileage limits from 100,000 miles on standard rear-wheel-drive models up to 150,000 miles on flagship models. Wear and tear items such as tyres, wiper blades and cabin filters are not included.",
+        ],
+        points: [
+          {
+            h3: 'Battery capacity guarantee',
+            text: 'The battery warranty guarantees at least 70% capacity retention across its 8-year term, so a pack that falls below that threshold through normal use is repaired or replaced.',
+          },
+          {
+            h3: 'Why the battery cover matters',
+            text: 'A replacement pack can cost £8,000 to £15,000 in the UK, which makes the 8-year battery and drive unit term the most valuable part of the manufacturer guarantee.',
+          },
+        ],
+      },
+      {
+        h2: 'Typical Tesla out-of-warranty repair costs in the UK',
+        paras: [
+          'Once the 4-year basic cover ends, repair bills fall to the owner. Suspension control arms and bushes wear early because of the floor-mounted battery weight, typically £800 to £2,500 to overhaul. Replacing a faulty touchscreen or Media Control Unit runs £1,500 to £2,300, and official diagnostic fees start around £115 before any work begins.',
+        ],
+      },
+      {
+        h2: 'Tesla extended warranty versus independent cover',
+        paras: [
+          "Official extended cover in the UK has largely moved to a monthly subscription or a powertrain-only add-on with deductibles and manufacturer-only repairs. Independent EV specialists cover vehicles up to 15 years old and 150,000 miles, include sudden high-voltage battery failure, and let you use any VAT-registered UK garage.",
+        ],
+      },
+      {
+        h2: 'How to choose when your warranty expires',
+        paras: [
+          'Match the cover to the age, mileage and budget of the car. Look for a policy that explicitly includes the infotainment screen, motorised charging flap and safety sensors, and confirm that sudden high-voltage battery failure is written into the terms rather than excluded.',
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: 'Does the standard warranty cover the 12v battery?',
+        a: 'The basic 4-year or 60,000-mile limited warranty covers the low-voltage 12v battery against manufacturing defects. After that period you pay for a replacement yourself or rely on an extended warranty plan.',
+      },
+      {
+        q: 'How much does it cost to fix Tesla suspension issues in the UK?',
+        a: 'Suspension repairs typically range from £800 to £2,500 depending on the wear and local labour rates. Control arms and lateral links often need replacing after 40,000 miles because of the weight of the floor-mounted battery.',
+      },
+      {
+        q: 'What happens when the 8-year battery warranty ends?',
+        a: 'You become responsible for all high-voltage battery and drive unit repairs. A full battery replacement can cost upwards of £8,000, which is why independent EV cover suits older models.',
+      },
+      {
+        q: 'Is the official extended warranty still available as a lump sum?',
+        a: 'Largely no. UK extended cover has shifted to a monthly subscription model, so many drivers prefer independent warranties with fixed terms and a free choice of repairer.',
+      },
+      {
+        q: 'Do third-party warranties cover natural battery degradation?',
+        a: 'No. Independent warranties cover sudden, unforeseen mechanical or electrical failure of the battery pack and its management systems, not gradual chemical capacity loss.',
+      },
+    ],
+  },
 };
 
 export function getPageBody(path: string): PageBody | undefined {
