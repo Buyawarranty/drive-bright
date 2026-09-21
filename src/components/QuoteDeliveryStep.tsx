@@ -484,9 +484,14 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               <ArrowLeft className="w-4 h-4" />
               Back
             </button>
-            <h1 className="mq-heading sm:!text-4xl font-extrabold text-gray-900 leading-tight">
-              Only 3 quick details to see your quote
-            </h1>
+            <div className="flex items-start gap-2.5 mb-2 sm:mb-1 pl-24 sm:pl-28">
+              <span className="inline-flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-brand-orange text-white shadow-md flex-shrink-0">
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />
+              </span>
+              <h1 className="mq-heading sm:!text-4xl font-extrabold text-gray-900 leading-tight">
+                Only 3 quick details to see your quote
+              </h1>
+            </div>
             <div className="flex items-center justify-center gap-4 mt-1">
               <p className="text-gray-700 flex items-center gap-2 text-sm sm:text-base">
                 <Zap className="w-4 h-4 text-brand-orange" fill="currentColor" />
