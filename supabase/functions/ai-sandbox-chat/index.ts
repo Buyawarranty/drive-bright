@@ -643,6 +643,43 @@ Deno.serve(async (req) => {
 
     const tools = {
 
+      get_repair_cost_estimate: tool({
+        description:
+          "Get typical UK garage repair costs (parts and labour, inc. VAT) for a part or symptom the customer mentions, e.g. gearbox, turbo, clutch, DPF, hybrid battery, air conditioning. Use this for ANY 'how much would that cost to fix / repair / replace' question and answer it yourself. It is an indicative market range only, never a quote and never a statement that a claim will be paid.",
+        inputSchema: z.object({
+          part_or_symptom: z
+            .string()
+            .describe("The part or symptom the customer mentioned, e.g. 'gearbox', 'turbo whistle', 'air con not cold'"),
+        }),
+        execute: async ({ part_or_symptom }) => {
+          const matches = findRepairCosts(part_or_symptom);
+          await logEvent({
+            event_type: "question",
+            topic: `repair_cost: ${part_or_symptom}`,
+            customer_wording: part_or_symptom,
+          });
+          if (matches.length === 0) {
+            return toolResultText({
+              found: false,
+              instruction:
+                "No specific range for this part. Say most major mechanical or electrical repairs run from a few hundred pounds into the thousands, and offer to show what the plan covers or their price. Do not hand over just for this.",
+            });
+          }
+          return toolResultText({
+            found: true,
+            source: "typical UK independent garage ranges (parts and labour, inc. VAT)",
+            estimates: matches.map((m) => ({
+              component: m.component,
+              typical_range: `${money(m.low)} to ${money(m.high)}`,
+              note: m.note ?? null,
+            })),
+            instruction:
+              "Give the range in one short sentence with the figures in bold, say it is a typical garage cost rather than a quote, then link it to cover: this is the kind of bill the plan is designed for, and offer their price or what is covered. Never say a claim will be paid.",
+          });
+        },
+      }),
+
+
       search_site_knowledge: tool({
         description:
           "Search Buyawarranty's APPROVED material (FAQ, terms and conditions, warranty plan, claims, cancellation, transfer pages) for the wording to answer a customer question. This is the ONLY permitted source for anything about cover, exclusions, claim limits, excess, labour rates, eligibility, cancellation or contractual terms. Always call it before answering such a question, and obey the 'confident' flag and 'instruction' it returns: if confident is false, do not answer — offer a warranty specialist instead.",
