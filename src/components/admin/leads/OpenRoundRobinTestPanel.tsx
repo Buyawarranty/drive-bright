@@ -2165,6 +2165,16 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                           <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
                         </div>
                       </td>
+                      {/* WhatsApp — same column as New Leads. Practice leads are
+                          not real numbers, so the button is for show only. */}
+                      <td className="px-2 py-2">
+                        <span
+                          title="Practice lead — no WhatsApp message is sent"
+                          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-2.5 text-xs font-semibold text-emerald-800 opacity-70"
+                        >
+                          <MessageSquare className="h-3.5 w-3.5" /> WhatsApp
+                        </span>
+                      </td>
                       <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
                         <CopyEmail email={lead.email} />
                       </td>
