@@ -1112,21 +1112,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return count;
   }, [customerData, mileageValueValid]);
 
-  // Auto-scroll to "Choose how you want to pay" only once personal details AND a
-  // fully validated address (real postcode, address line 1 and town) are in place.
-  const hasAutoScrolledToPayRef = React.useRef(false);
-  useEffect(() => {
-    if (hasAutoScrolledToPayRef.current) return;
-    if (personalDetailsComplete && addressComplete) {
-      hasAutoScrolledToPayRef.current = true;
-      setTimeout(() => {
-        const paySection = document.getElementById('how-to-pay-section');
-        if (paySection) {
-          paySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 300);
-    }
-  }, [personalDetailsComplete, addressComplete]);
+  // Auto-scroll to "Choose how you want to pay" is handled by the dedicated
+  // effect below — it triggers on the address alone (Postcoder pick or manual
+  // completion) so the payment section is never gated behind the personal
+  // details fields.
 
   // Track if component has been mounted (for bfcache handling)
   const hasMountedRef = React.useRef(false);
