@@ -285,6 +285,15 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     ogType: "article",
     ogImage: `${SITE}/blog/tesla-warranty-uk-2026.jpg`,
   },
+  {
+    path: "/thewarrantyhub/petrol-diesel-vehicle-warranty-cover-complete-uk-drivers-guide/",
+    title: "Petrol & Diesel Car Warranty Cover UK | Complete Guide",
+    description:
+      "What's covered on a UK petrol or diesel extended warranty: engine, turbo, gearbox, wheel bearings, electrics and diagnostics, plus typical repair costs without cover.",
+    ogType: "article",
+    ogImage: `${SITE}/blog/petrol-diesel-vehicle-warranty-cover-uk.jpg`,
+  },
+
 
   // ---------------- Main product pages ----------------
   {

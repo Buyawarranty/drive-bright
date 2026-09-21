@@ -550,6 +550,73 @@ export const PAGE_BODIES: Record<string, PageBody> = {
       },
     ],
   },
+  '/thewarrantyhub/petrol-diesel-vehicle-warranty-cover-complete-uk-drivers-guide/': {
+    h1: "Petrol & Diesel Vehicle Warranty Cover: Complete UK Driver's Guide",
+    intro:
+      "Petrol and diesel cars contain hundreds of stressed mechanical parts, turbocharging assemblies and sensor arrays that wear with mileage, vibration and heat. This guide sets out exactly which components an extended warranty protects, what UK garage repairs cost without cover, and how Block Exemption rules keep your choice of garage open.",
+    sections: [
+      {
+        h2: 'What components are covered in petrol and diesel plans?',
+        paras: [
+          'Comprehensive cover spans the engine core, the transmission and driveline, and the electrical and running gear that modern cars depend on. A dedicated used car warranty bridges the gap once the three-year factory guarantee expires.',
+        ],
+        points: [
+          {
+            h3: 'Engine and mechanical core',
+            text: 'Pistons, rings, gudgeon pins, crankshafts, main bearings, camshafts, valves and guides, timing gears, tensioners, oil pumps and cylinder head gaskets, plus turbochargers, variable-geometry turbos, superchargers, wastegate actuators and intercoolers, high-pressure injection pumps, injectors, MAF sensors, throttle bodies and fuel pressure regulators.',
+          },
+          {
+            h3: 'Gearbox, transmission and driveline',
+            text: 'Manual gearboxes, torque-converter automatics, DCT/DSG units, synchromesh assemblies, selector shafts and mechatronic modules, along with drive shafts, universal and CV joints, crown wheels, pinions, differentials and dual-mass flywheels.',
+          },
+          {
+            h3: 'Ancillaries, electrics and running gear',
+            text: 'Alternators, starter motors, ignition coils, central locking solenoids, window and wiper motors and ECUs, plus ABS pumps and modules, brake master cylinders, wheel bearing hub units, coil springs and power steering pumps.',
+          },
+        ],
+      },
+      {
+        h2: 'Petrol versus diesel component failure and UK repair costs',
+        paras: [
+          'Without cover, fuel delivery faults run £650 to £1,800, turbocharger work £800 to £2,200 and driveline or bearing repairs £250 to £1,400. Diagnostic time is charged at roughly £90 to £180 per hour. Petrol cars tend to suffer injector fouling and sensor misfires; diesels see high-pressure pump wear, DPF sensor blockage, carbon build-up and sticking VNT vanes.',
+        ],
+      },
+      {
+        h2: 'Why modern ICE vehicles need diagnostic and wear protection',
+        paras: [
+          'Road salt, potholes and stop-start traffic wear suspension and bearing assemblies, so a sealed hub unit replacement costs hundreds of pounds in parts and labour. When a sensor detects an abnormal air-fuel ratio or ignition timing it triggers the engine management light, and tracing the cause needs OBD-II scanning and technician time. Comprehensive cover pays both the diagnostic fee and the replacement part.',
+        ],
+      },
+      {
+        h2: 'How UK Block Exemption rules protect your choice of garage',
+        paras: [
+          'Under the UK Motor Vehicle Block Exemption Regulations you may use any VAT-registered workshop for servicing and warranty repairs rather than a franchised dealer. Keep claims straightforward by following the manufacturer service intervals, using genuine or OE-equivalent parts and fluids, and retaining itemised invoices for every visit.',
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: 'What should I do immediately when my engine management light comes on?',
+        a: 'Book a VAT-registered garage for a diagnostic fault code scan. If the fault traces to a covered mechanical or electrical part such as a sensor, injector or valve, both the diagnostic fee and the replacement cost are eligible under your policy.',
+      },
+      {
+        q: 'Does a petrol or diesel vehicle warranty cover a noisy wheel bearing?',
+        a: 'Yes. Front and rear wheel bearing assemblies and complete hub units are covered against sudden mechanical failure and premature wear.',
+      },
+      {
+        q: 'Can I use my choice of local independent garage for warranty repairs in the UK?',
+        a: 'Yes. Block Exemption rules allow any VAT-registered garage in England, Scotland, Wales or Northern Ireland, provided the garage obtains claim authorisation before starting work.',
+      },
+      {
+        q: 'Are turbochargers fully covered under petrol and diesel plans?',
+        a: 'Yes. Petrol and diesel turbocharger units, internal wastegates, variable geometry actuators and intercoolers are protected against mechanical breakdown.',
+      },
+      {
+        q: 'What items are excluded from standard petrol and diesel vehicle protection?',
+        a: 'Routine consumables and wear items: brake discs and pads, tyres, clutch friction plates, exhaust pipes and servicing fluids.',
+      },
+    ],
+  },
 };
 
 export function getPageBody(path: string): PageBody | undefined {
