@@ -57,6 +57,7 @@ Each page lists the components that typically fail on that vehicle in the UK, th
 - [Maintenance warranty vs extended warranty UK 2026](https://buyawarranty.co.uk/thewarrantyhub/maintenance-warranty-vs-extended-warranty-uk-2026/)
 - [What's not covered: understanding warranty exclusions in the UK](https://buyawarranty.co.uk/thewarrantyhub/warranty-exclusions-uk-what-is-not-covered/): Consumables and service items, neglect while a car is on a DVLA SORN, high-performance and track use, and why prior repair authorisation is required.
 - [Vehicle modifications and extended warranty cover in the UK](https://buyawarranty.co.uk/thewarrantyhub/vehicle-modifications-extended-warranty-uk/): How ECU remaps, suspension, brake and electrical upgrades affect cover, which components stay protected, and how to declare modifications.
+- [Tesla warranty UK 2026: battery cover, repair costs and extended options](https://buyawarranty.co.uk/thewarrantyhub/tesla-warranty-uk-2026-battery-cover-repair-costs-extended-options/): Tesla's 4-year/60,000-mile basic cover, the 8-year battery and drive unit warranty with 70% capacity guarantee, 2026 UK out-of-warranty repair costs and independent EV cover up to 15 years/150,000 miles.
 
 ## Answer-engine notes
 
