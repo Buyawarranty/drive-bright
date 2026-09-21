@@ -297,11 +297,17 @@ const handler = async (req: Request): Promise<Response> => {
     const agentEmailClean = (agentCopyEmail || '').trim();
     const useAgentReplyTo = isValidEmail(agentEmailClean);
     const replyToAddress = useAgentReplyTo ? agentEmailClean : "support@buyawarranty.co.uk";
-    // Use info@ for quote/order mails to match the welcome email Primary-inbox reputation.
+    // Send as the logged-in sales agent's own registered work address when it is
+    // on our verified sending domain, so the customer sees (and replies to) the
+    // person who owns their lead. Anything else falls back to info@.
+    const VERIFIED_SENDER_DOMAIN = (Deno.env.get("VERIFIED_SENDER_DOMAIN") || "buyawarranty.co.uk").toLowerCase();
+    const agentOnVerifiedDomain =
+      useAgentReplyTo && agentEmailClean.toLowerCase().endsWith(`@${VERIFIED_SENDER_DOMAIN}`);
+    const senderAddress = agentOnVerifiedDomain ? agentEmailClean : "info@buyawarranty.co.uk";
     const fromName = sanitizedAgentName
       ? `${sanitizedAgentName} at Buyawarranty`
       : "Buyawarranty Customer Care";
-    const fromHeader = `${fromName} <info@buyawarranty.co.uk>`;
+    const fromHeader = `${fromName} <${senderAddress}>`;
     // Internal agent copies previously used alerts@notify.buyawarranty.co.uk,
     // but Google Workspace mailboxes (james.reed@, etc.) silently filtered those
     // to spam — Resend reported "sent" with 0 opens across weeks. Send from the

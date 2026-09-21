@@ -449,7 +449,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
     );
   })();
   const { required: claimLimit5kAuthRequired } = useClaimLimit5kAuthRequired();
-  const claimLimit5kAllowed = !claimLimit5kAuthRequired || isManagementRole || !!claimLimit5kApproval;
+  // Sep 2026: every agent can select and sell any claim limit, including
+  // £5,000 — no manager authorisation needed. The request/approval plumbing is
+  // kept for history but never gates the selection.
+  const claimLimit5kAllowed = true;
 
   // Vehicle identification. Staff can always type the make, model, year and
   // mileage by hand on Step 1, so a partial DVLA/DVSA response is only ever a
