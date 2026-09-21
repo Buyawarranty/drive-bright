@@ -1952,37 +1952,49 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       )}
                     >
                       <td className="px-2 py-2 text-muted-foreground">{rowIndex + 1}</td>
-                      <td className="px-2 py-2">
-                        <input type="checkbox" className="h-4 w-4 rounded border-input" readOnly />
-                      </td>
+                      {/* Lead type — same column for both rotations. Open Round
+                          Robin rows show the live badge; plain round robin rows
+                          show the standard badge in the same place. */}
                       <td className="px-2 py-2">
                         <div className="flex flex-col items-start gap-1">
                           <span
                             className={cn(
                               'inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide whitespace-nowrap',
                               orrLead
-                                ? 'border-primary bg-primary/10 text-primary'
+                                ? 'border-orange-300 bg-orange-100 text-orange-800'
                                 : 'border-border bg-muted text-muted-foreground',
                             )}
                           >
                             {orrLead ? 'Open Round Robin' : 'Round robin'}
                           </span>
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground whitespace-nowrap">
+                            {orrLead ? (
+                              <>
+                                <Zap className="h-3 w-3 text-emerald-600" /> Live
+                              </>
+                            ) : (
+                              <>
+                                <Moon className="h-3 w-3 text-blue-500" /> Standard
+                              </>
+                            )}
+                          </span>
+                        </div>
+                      </td>
+                      {/* Agent */}
+                      <td className="px-2 py-2">
+                        <div className="flex flex-col items-start gap-1">
                           {lead.assignedTo === null ? (
-                            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-900 whitespace-nowrap">
-                              <Clock className="h-3 w-3" /> Waiting in the open pool
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-900 whitespace-nowrap">
+                              <Clock className="h-3 w-3" /> Open pool
                             </span>
                           ) : (
                             <>
-                              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-900 whitespace-nowrap">
-                                <span className="h-4 w-4 rounded-full bg-emerald-600 text-white text-[9px] flex items-center justify-center">
-                                  {agent.name.charAt(0)}
-                                </span>
+                              <span className="text-sm font-semibold text-foreground whitespace-nowrap">
                                 {agent.name}
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                               </span>
-                              {!expired && (
-                                <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap', theme.reserved)}>
-                                  Reserved
+                              {orrLead && !expired && (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 whitespace-nowrap">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Reserved
                                 </span>
                               )}
                             </>
