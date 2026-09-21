@@ -1090,6 +1090,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       ukPostcodeRegex.test(addressData.postcode.replace(/\s/g, ''))
     );
   }, [addressData, postcodeInput]);
+
+  // Stricter gate for the auto-scroll: the text in the search box must BE the
+  // full valid postcode saved on the address. Without this, typing any partial
+  // fragment (e.g. "Hi" of "High Street") while a previous address is still
+  // stored makes addressComplete flip true and yanks the page down to payment.
+  const addressReadyForAutoScroll = useMemo(() => {
+    if (!addressComplete) return false;
+    const typed = postcodeInput.replace(/\s/g, '').toUpperCase();
+    const saved = (addressData.postcode || '').replace(/\s/g, '').toUpperCase();
+    return typed.length > 0 && typed === saved;
+  }, [addressComplete, postcodeInput, addressData.postcode]);
   
   // Count missing address fields
   const addressFieldsMissing = useMemo(() => {
