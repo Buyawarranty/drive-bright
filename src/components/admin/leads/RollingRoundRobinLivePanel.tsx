@@ -337,6 +337,13 @@ export function RollingRoundRobinLivePanel({ canEdit, readOnly = false }: { canE
                         <span className="text-muted-foreground">—</span>
                       )}
                     </td>
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      <SendWhatsAppLeadButton
+                        leadId={l.id}
+                        phone={l.phone}
+                        firstName={l.first_name}
+                      />
+                    </td>
                     <td className="px-2 py-2">
                       {l.vehicle_reg ? (
                         <span className="inline-flex items-center rounded bg-yellow-300 px-2 py-1 text-xs font-bold text-yellow-950 font-mono">
