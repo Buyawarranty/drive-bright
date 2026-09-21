@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { isSecondaryCrmTab } from '@/lib/crmTabCoordinator';
+import { SendWhatsAppLeadButton } from './SendWhatsAppLeadButton';
 
 
 /**
@@ -288,6 +289,7 @@ export function RollingRoundRobinLivePanel({ canEdit, readOnly = false }: { canE
                 <th className="px-2 py-2 text-left w-8"></th>
                 <th className="px-2 py-2 text-left">Name</th>
                 <th className="px-2 py-2 text-left">Phone</th>
+                <th className="px-2 py-2 text-left">WhatsApp</th>
                 <th className="px-2 py-2 text-left">Reg</th>
                 <th className="px-2 py-2 text-left">First call due</th>
                 <th className="px-2 py-2 text-left">Status</th>
