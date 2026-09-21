@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 
 const STORAGE_KEY = 'leads_page_size';
-const DEFAULT_PAGE_SIZE = 250;
-const ALLOWED_SIZES = [25, 50, 100, 200, 250];
+const DEFAULT_PAGE_SIZE = 200;
+const ALLOWED_SIZES = [25, 50, 100, 200];
 
 /**
  * Get persisted page size from localStorage
