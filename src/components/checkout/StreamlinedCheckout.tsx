@@ -1252,7 +1252,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       setTimeout(tryScroll, 200);
     };
     setTimeout(tryScroll, 350);
-  }, [addressComplete]);
+  }, [addressReadyForAutoScroll]);
 
   // Auto-validate pre-filled fields from Step 2
   useEffect(() => {
