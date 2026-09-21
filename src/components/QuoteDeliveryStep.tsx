@@ -474,30 +474,25 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     return (
       <section className="bg-white min-h-[100dvh] pb-4 mobile-quote-page">
         <div className="max-w-xl mx-auto mobile-quote-card pt-3 sm:pt-8">
-          {/* Headline */}
-          <div className="flex items-start gap-2.5 mb-2 sm:mb-4">
-            <span className="inline-flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-brand-orange text-white shadow-md flex-shrink-0">
-              <Zap className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />
-            </span>
-            <h1 className="mq-heading sm:!text-4xl font-extrabold text-gray-900 leading-tight">
-              Only 3 quick details to see your quote
-            </h1>
-          </div>
-
-          {/* Back + sub headline */}
-          <div className="flex items-center justify-center gap-4 mb-3 sm:mb-5">
+          <div className="relative">
             <button
               type="button"
               onClick={onBack}
-              className="flex items-center gap-1 text-primary text-sm font-semibold hover:underline"
+              aria-label="Go back to the previous step"
+              className="absolute left-0 top-0.5 flex-shrink-0 inline-flex items-center gap-1.5 mt-1 text-sm font-semibold py-1.5 px-3 rounded-lg transition-all bg-gray-100 hover:bg-gray-200 text-gray-700"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
             </button>
-            <p className="text-gray-700 flex items-center gap-2 text-sm sm:text-base">
-              <Zap className="w-4 h-4 text-brand-orange" fill="currentColor" />
-              Your price is seconds away
-            </p>
+            <h1 className="mq-heading sm:!text-4xl font-extrabold text-gray-900 leading-tight">
+              Only 3 quick details to see your quote
+            </h1>
+            <div className="flex items-center justify-center gap-4 mt-1">
+              <p className="text-gray-700 flex items-center gap-2 text-sm sm:text-base">
+                <Zap className="w-4 h-4 text-brand-orange" fill="currentColor" />
+                Your price is seconds away
+              </p>
+            </div>
           </div>
 
           {/* Vehicle summary card */}
