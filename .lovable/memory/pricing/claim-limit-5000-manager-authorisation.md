@@ -1,18 +1,15 @@
 ---
-name: £5,000 claim limit needs manager authorisation
-description: Blanket rule — agents cannot sell the £5,000 AutoCare Premium claim limit on Quotes & Orders without manager approval per registration
-type: feature
+name: £5,000 claim limit needs no authorisation (removed Sep 2026)
+description: Agents can select and sell any claim limit including £5,000 on Quotes & Orders — the manager authorisation requirement was removed
+type: constraint
 ---
 
-Blanket rule (Aug 2026): £5,000 per-claim cover on the Quotes & Orders page requires management authorisation on **every** vehicle, not just premium brands.
+Sep 2026: the £5,000 AutoCare Premium claim limit requires **no** manager authorisation. `claimLimit5kAllowed` in `GetQuoteTab.tsx` is hard `true`, so every agent can quote, send and take payment on any claim limit, and £5,000 is never forced back to £3,000.
 
-- Agents (non-management) see £5,000 locked. Tapping it opens a request dialog (reason + reg required) which inserts into `discount_auth_requests` with `request_type = 'claim_limit_5000'`.
-- Management approve/decline from the existing top authorisation banner (`DiscountAuthBanner`).
-- Approval is tied to the registration on the quote and lasts 24h (hook window).
-- Without approval, `claimLimit === 5000` is forced back to £3,000 (`claimLimit 2000 + boostAddon`), so it can never be quoted, sent or paid.
-- `myApproved` (discount ceiling lift) must only match `request_type = 'discount'` — a claim-limit approval must never lift the discount cap.
-- The £5,000 tier stays hidden entirely for Tesla / Jaguar / Land Rover / Porsche on the customer journey.
+Do not re-introduce the gate unless the user explicitly asks.
 
-**Why:** £3,000 → £5,000 only costs the customer +£8-£10/mo (~£96-£120 total) for £2,000 more exposure per claim with unlimited claims, so it was the easiest close and the mix jumped from ~15% to 43% of sales.
-
-**Toggle:** Management can switch the whole authorisation requirement on/off from the Price updates page (`admin_config.claim_limit_5000_auth_required`, defaults to required/true). When off, agents select £5,000 freely with no request or £3,000 fallback.
+Kept for history only (never gates selection):
+- `discount_auth_requests.request_type = 'claim_limit_5000'` rows and the management banner handling.
+- `admin_config.claim_limit_5000_auth_required` and the Price updates toggle.
+- `myApproved` (discount ceiling lift) still only matches `request_type = 'discount'`.
+- The £5,000 tier stays hidden for the customer-journey blocklist makes (Tesla / Jaguar / Land Rover / Porsche) — that is a separate rule.
