@@ -151,7 +151,8 @@ export default function ChatActionQueuePanel({ rangeDays, fromIso, toIso }: { ra
   const [rows, setRows] = useState<QueueRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [showNoAction, setShowNoAction] = useState(false);
+  // Show every customer chat by default — browsing-only chats are engagement too.
+  const [showNoAction, setShowNoAction] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<MessageRow[]>([]);
   const [sendingId, setSendingId] = useState<string | null>(null);
