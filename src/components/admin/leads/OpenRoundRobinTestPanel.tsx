@@ -11,6 +11,8 @@ import {
   FlaskConical,
   Mail,
   MessageSquare,
+  Moon,
+  Zap,
   Phone,
   Lock,
   Pause,
