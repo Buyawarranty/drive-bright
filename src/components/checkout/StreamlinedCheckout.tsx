@@ -1210,34 +1210,38 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     trackStripeCheckoutPageLoad();
   }, []);
 
-  // Auto-scroll to "How to Pay" section when all address fields are complete
+  // Auto-scroll to "How to Pay" when the address is complete — picked from the
+  // Postcoder lookup or every required field filled by hand. The page above the
+  // payment section is still reflowing right after selection (address fields
+  // expanding, town banner rendering), so a single scrollIntoView can land
+  // short. Retry briefly until the section actually reaches the top of the
+  // viewport.
+  const addressCompleteAtMountRef = React.useRef<boolean | null>(null);
   useEffect(() => {
-    // Only if address is complete
-    if (!addressComplete) return;
-    
-    // Only trigger once per session
-    if (hasAutoScrolledToPaymentRef.current) return;
-    
-    // Ensure all required address fields are filled
-    const isAddressFullyComplete = 
-      addressData.postcode?.trim() &&
-      addressData.address_line_1?.trim() &&
-      addressData.town?.trim();
-    
-    if (isAddressFullyComplete) {
-      hasAutoScrolledToPaymentRef.current = true;
-      
-      // Small delay to ensure DOM is updated
-      setTimeout(() => {
-        if (howToPayRef.current) {
-          howToPayRef.current.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-          });
-        }
-      }, 300);
+    // Remember whether the address was already complete on first paint (e.g.
+    // restored from a previous visit) — that state shouldn't yank the customer
+    // down the page before they've seen their details.
+    if (addressCompleteAtMountRef.current === null) {
+      addressCompleteAtMountRef.current = addressComplete;
+      if (addressComplete) return;
     }
-  }, [addressComplete, addressData.postcode, addressData.address_line_1, addressData.town]);
+    if (hasAutoScrolledToPaymentRef.current || !addressComplete) return;
+
+    let attempts = 0;
+    const tryScroll = () => {
+      if (hasAutoScrolledToPaymentRef.current) return;
+      const paySection = document.getElementById('how-to-pay-section');
+      if (!paySection) return;
+      paySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      attempts++;
+      if (paySection.getBoundingClientRect().top <= 160 || attempts >= 10) {
+        hasAutoScrolledToPaymentRef.current = true;
+        return;
+      }
+      setTimeout(tryScroll, 200);
+    };
+    setTimeout(tryScroll, 350);
+  }, [addressComplete]);
 
   // Auto-validate pre-filled fields from Step 2
   useEffect(() => {
