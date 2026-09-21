@@ -715,6 +715,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     return list;
   }, [leads, search, myOnly, currentUserId, currentAuthUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange, agentFilter, statusPillSet, tags, leadTagMap]);
 
+  // Single pagination for the recontact table (LeadsTable no longer paginates internally).
+  const tablePagination = usePagination(filteredLeads, { initialPageSize: 50 });
+
   const claimSourceLeads = useMemo(() => {
     let list = leads;
     if (customerEmails.size > 0 || customerRegs.size > 0) {
@@ -1785,8 +1788,9 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               </CardContent>
             </Card>
           ) : (
+            <>
             <LeadsTable
-              leads={filteredLeads}
+              leads={tablePagination.paginatedData}
               tags={tags}
               salesUsers={agents as unknown as AdminUser[]}
               assignableSalesUsers={agents as unknown as AdminUser[]}
@@ -1825,6 +1829,17 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               recontactMode
               currentAdminId={currentUserId}
             />
+            <LeadsTableFooter
+              currentPage={tablePagination.currentPage}
+              totalPages={tablePagination.totalPages}
+              totalItems={tablePagination.totalItems}
+              startIndex={tablePagination.startIndex}
+              endIndex={tablePagination.endIndex}
+              onPageChange={tablePagination.goToPage}
+              canGoNext={tablePagination.canGoNext}
+              canGoPrev={tablePagination.canGoPrev}
+            />
+            </>
           )}
         </div>
 
