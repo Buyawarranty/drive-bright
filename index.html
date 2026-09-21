@@ -242,5 +242,47 @@
     <!-- End Google Tag Manager (noscript) -->
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Recovery watchdog: when a customer presses Back from an external payment
+      // page (Bumper / Stripe), the browser can restore a cached document whose
+      // hashed JS assets no longer exist. React then never mounts and the visitor
+      // is left staring at the bare crawler markup. Detect that and reload once
+      // with a cache-busting param so they land back on their checkout step.
+      (function () {
+        var KEY = 'baw_spa_recovery';
+        function mounted() {
+          var root = document.getElementById('root');
+          return !!(root && root.children.length && !document.getElementById('prerender-content'));
+        }
+        function recover() {
+          var tries = 0;
+          try { tries = parseInt(sessionStorage.getItem(KEY) || '0', 10) || 0; } catch (e) {}
+          if (tries >= 2) return;
+          try { sessionStorage.setItem(KEY, String(tries + 1)); } catch (e) {}
+          try {
+            var url = new URL(window.location.href);
+            url.searchParams.set('_r', Date.now().toString(36));
+            window.location.replace(url.toString());
+          } catch (e) {
+            window.location.reload();
+          }
+        }
+        try {
+          window.addEventListener('load', function () {
+            setTimeout(function () {
+              if (mounted()) {
+                try { sessionStorage.removeItem(KEY); } catch (e) {}
+                return;
+              }
+              recover();
+            }, 4000);
+          });
+          window.addEventListener('pageshow', function (event) {
+            if (!event.persisted) return;
+            setTimeout(function () { if (!mounted()) recover(); }, 500);
+          });
+        } catch (e) {}
+      })();
+    </script>
   </body>
 </html>
