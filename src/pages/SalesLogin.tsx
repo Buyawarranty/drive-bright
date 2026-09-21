@@ -8,6 +8,7 @@ import { LogIn, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { SalesLoginGate } from '@/components/auth/SalesLoginGate';
+import { withTimeout } from '@/lib/withTimeout';
 
 const SalesLogin = () => {
   const [email, setEmail] = useState('');
@@ -25,25 +26,34 @@ const SalesLogin = () => {
   // Check if already logged in
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session?.user) {
-        // Check if user has sales or admin role
-        const { data: roles } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id);
-        
-        const userRoles = roles?.map(r => r.role) || [];
-        
-        const staffRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'sales', 'sales_lead', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager', 'performance_manager', 'sales_manager'];
-        if (userRoles.some(r => staffRoles.includes(r))) {
-          navigate('/admin-dashboard/', { replace: true });
-          return;
+      try {
+        const { data: { session } } = await withTimeout(supabase.auth.getSession(), 10000, 'Session check');
+
+        if (session?.user) {
+          // Check if user has sales or admin role
+          const { data: roles } = await withTimeout(
+            supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', session.user.id),
+            10000,
+            'Role check'
+          );
+
+          const userRoles = roles?.map(r => r.role) || [];
+
+          const staffRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'sales', 'sales_lead', 'blog_writer', 'dev_tester', 'accounts_manager', 'accounts_payroll', 'lead_gen', 'accounts', 'claims_agent', 'claims_manager', 'performance_manager', 'sales_manager'];
+          if (userRoles.some(r => staffRoles.includes(r))) {
+            navigate('/admin-dashboard/', { replace: true });
+            return;
+          }
         }
+      } catch (error) {
+        // Never strand the page on the spinner — fall through to the login form.
+        console.error('Session check failed:', error);
+      } finally {
+        setCheckingSession(false);
       }
-      
-      setCheckingSession(false);
     };
     
     checkSession();
@@ -69,10 +79,22 @@ const SalesLogin = () => {
       }
 
       // Check if user has sales, admin, or member role
-      const { data: roles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', authData.user.id);
+      let rolesResult: { data: { role: string }[] | null; error: any };
+      try {
+        rolesResult = await withTimeout(
+          supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', authData.user.id),
+          10000,
+          'Role check'
+        );
+      } catch (roleErr) {
+        console.error('Role check timed out or failed:', roleErr);
+        await supabase.auth.signOut();
+        throw new Error('Signed in, but verifying your access timed out — please try again.');
+      }
+      const { data: roles, error: rolesError } = rolesResult;
 
       if (rolesError) {
         console.error('Error fetching roles:', rolesError);
@@ -90,11 +112,23 @@ const SalesLogin = () => {
       }
 
       // Block deactivated accounts and expired temporary logins.
-      const { data: adminRow } = await supabase
-        .from('admin_users')
-        .select('is_active, access_expires_at')
-        .eq('user_id', authData.user.id)
-        .maybeSingle();
+      // Non-blocking: if this secondary check errors or times out, a user who
+      // already holds a valid staff role is still allowed through.
+      let adminRow: any = null;
+      try {
+        const { data } = await withTimeout(
+          supabase
+            .from('admin_users')
+            .select('is_active, access_expires_at')
+            .eq('user_id', authData.user.id)
+            .maybeSingle(),
+          10000,
+          'Account status check'
+        );
+        adminRow = data;
+      } catch (statusErr) {
+        console.error('Account status check failed (continuing):', statusErr);
+      }
 
       const expired = !!(adminRow as any)?.access_expires_at
         && new Date((adminRow as any).access_expires_at).getTime() < Date.now();

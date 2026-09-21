@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { withTimeout } from '@/lib/withTimeout';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -38,10 +39,14 @@ export const useAuth = () => {
             // Use setTimeout to defer the Supabase call and prevent deadlock
             setTimeout(async () => {
               try {
-                const { data: roleData } = await supabase
-                  .from('user_roles')
-                  .select('role')
-                  .eq('user_id', session.user.id);
+                const { data: roleData } = await withTimeout(
+                  supabase
+                    .from('user_roles')
+                    .select('role')
+                    .eq('user_id', session.user.id),
+                  8000,
+                  'Role fetch'
+                );
                 
                 if (mounted) {
                   // Get the highest priority role
@@ -77,6 +82,15 @@ export const useAuth = () => {
       }
     );
 
+    // Safety net: loading must never stay true indefinitely. If the initial
+    // session resolution hasn't completed within ~8 seconds, release the UI.
+    const loadingSafetyTimer = setTimeout(() => {
+      if (mounted) {
+        console.warn('useAuth: forcing loading=false after 8s safety timeout');
+        setLoading(false);
+      }
+    }, 8000);
+
     // Get initial session AFTER setting up listener
     const getInitialSession = async () => {
       try {
@@ -108,6 +122,7 @@ export const useAuth = () => {
 
     return () => {
       mounted = false;
+      clearTimeout(loadingSafetyTimer);
       subscription.unsubscribe();
     };
   }, []);
