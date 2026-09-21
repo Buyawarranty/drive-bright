@@ -12,6 +12,8 @@ import {
   Mail, Calendar, Award, Archive, Trophy
 } from 'lucide-react';
 import { LeadsTable } from './LeadsTable';
+import { LeadsTableFooter } from './LeadsTableFooter';
+import { usePagination } from '@/hooks/usePagination';
 import { MyRemindersPanel } from './MyRemindersPanel';
 import { format, isToday, isPast } from 'date-fns';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -150,6 +152,9 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
       </div>
     );
   }
+
+  // Single pagination for the "All My Leads" table (LeadsTable no longer paginates internally).
+  const myLeadsPagination = usePagination(myLeads, { initialPageSize: 50 });
 
   return (
     <div className="space-y-6">
@@ -350,8 +355,9 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
         </CardHeader>
         <CardContent>
           {myLeads.length > 0 ? (
+            <>
             <LeadsTable
-              leads={myLeads}
+              leads={myLeadsPagination.paginatedData}
               tags={tags}
               salesUsers={salesUsers}
               selectedLeads={selectedLeads}
