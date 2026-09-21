@@ -8,6 +8,7 @@ import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createLovableAiGatewayProvider } from "../_shared/ai-gateway.ts";
 import { retrieveGrounded } from "./knowledge.ts";
 import { matchLibrary, libraryPromptBlock } from "./answer-library.ts";
+import { findRepairCosts, money } from "./repair-costs.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -81,6 +82,12 @@ GROUNDING — THE MOST IMPORTANT RULE:
 - You are running in a SANDBOX. Any payment link you create is a TEST link and cannot take a real payment. Say this whenever you send one.
 - Never ask for card details, passwords or full bank details in chat.
 - Be open about being an AI. Say "I'm the AI assistant" if asked, and always say clearly when you are bringing a human specialist in. If the live context below says a specialist is ONLINE RIGHT NOW, mention it naturally when it helps ("one of our specialists is online right now if you'd rather talk it through with a person") and hand over the moment they say yes.
+
+ANSWER IT YOURSELF — DO NOT WAIT FOR A HUMAN:
+- Cover questions, quote and price questions, and repair cost questions are YOUR job and must be answered in this reply, using search_site_knowledge for cover and terms, get_indicative_price for prices and get_repair_cost_estimate for repair costs. Never end one of those replies by saying a specialist will come back to them, that you'll get someone to confirm it, or that you'll check and let them know later.
+- REPAIR COSTS: when a customer asks what a repair, part or failure typically costs (gearbox, turbo, clutch, DPF, air conditioning, hybrid or EV battery, electrics, suspension, steering, brakes, diagnostics, or a symptom like "my turbo is whistling"), call get_repair_cost_estimate and give the range straight away. Say it is a typical UK garage cost, not a quote, and never say or imply their claim would be paid. Then offer their price or what the plan covers.
+- Only bring a person in when the customer asks for one, when it is a live claim, complaint, payment problem or cover dispute about their own policy, when it needs an account change you cannot make, or when search_site_knowledge genuinely comes back ungrounded on a contractual point. Everything else you answer now.
+- Never tell a customer to wait for a reply in the chat. There is no live chat reply for them to wait for — if a person is needed, use the contact card so they leave a call, WhatsApp or email preference.
 
 APPROVED ANSWERS — ANSWER THESE YOURSELF, NEVER HAND OVER:
 These are management-approved facts. They do NOT need search_site_knowledge and must never end in a handover or an "I don't want to guess" reply. Answer confidently, in your own short wording, keeping the meaning exactly as written.
@@ -642,6 +649,43 @@ Deno.serve(async (req) => {
     };
 
     const tools = {
+
+      get_repair_cost_estimate: tool({
+        description:
+          "Get typical UK garage repair costs (parts and labour, inc. VAT) for a part or symptom the customer mentions, e.g. gearbox, turbo, clutch, DPF, hybrid battery, air conditioning. Use this for ANY 'how much would that cost to fix / repair / replace' question and answer it yourself. It is an indicative market range only, never a quote and never a statement that a claim will be paid.",
+        inputSchema: z.object({
+          part_or_symptom: z
+            .string()
+            .describe("The part or symptom the customer mentioned, e.g. 'gearbox', 'turbo whistle', 'air con not cold'"),
+        }),
+        execute: async ({ part_or_symptom }) => {
+          const matches = findRepairCosts(part_or_symptom);
+          await logEvent({
+            event_type: "question",
+            topic: `repair_cost: ${part_or_symptom}`,
+            customer_wording: part_or_symptom,
+          });
+          if (matches.length === 0) {
+            return toolResultText({
+              found: false,
+              instruction:
+                "No specific range for this part. Say most major mechanical or electrical repairs run from a few hundred pounds into the thousands, and offer to show what the plan covers or their price. Do not hand over just for this.",
+            });
+          }
+          return toolResultText({
+            found: true,
+            source: "typical UK independent garage ranges (parts and labour, inc. VAT)",
+            estimates: matches.map((m) => ({
+              component: m.component,
+              typical_range: `${money(m.low)} to ${money(m.high)}`,
+              note: m.note ?? null,
+            })),
+            instruction:
+              "Give the range in one short sentence with the figures in bold, say it is a typical garage cost rather than a quote, then link it to cover: this is the kind of bill the plan is designed for, and offer their price or what is covered. Never say a claim will be paid.",
+          });
+        },
+      }),
+
 
       search_site_knowledge: tool({
         description:
