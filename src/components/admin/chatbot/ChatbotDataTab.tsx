@@ -63,7 +63,7 @@ const STOP_WORDS = new Set([
 export default function ChatbotDataTab() {
   const [events, setEvents] = useState<ChatEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<PeriodKey>('today');
+  const [period, setPeriod] = useState<PeriodKey>('30days');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
 
   const activeRange = period === 'custom' ? customRange : periodToRange(period);
@@ -323,7 +323,7 @@ export default function ChatbotDataTab() {
         className="max-w-md"
       />
 
-      <Tabs defaultValue={deepLinkThread ? 'conversations' : 'queue'}>
+      <Tabs defaultValue="conversations">
         <TabsList>
           <TabsTrigger value="queue">Action queue</TabsTrigger>
           <TabsTrigger value="conversations">Conversations &amp; leads</TabsTrigger>
