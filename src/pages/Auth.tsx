@@ -16,6 +16,7 @@ import AdminLoginDebug from '@/components/admin/AdminLoginDebug';
 import CustomerLoginDebugTool from '@/components/admin/CustomerLoginDebugTool';
 import { AuthPasswordGate } from '@/components/auth/AuthPasswordGate';
 import { logLoginAttempt } from '@/lib/loginActivityLogger';
+import { withTimeout } from '@/lib/withTimeout';
 
 const Auth = () => {
   // ALL HOOKS MUST BE CALLED UNCONDITIONALLY AT THE TOP
@@ -135,17 +136,31 @@ const Auth = () => {
         
         if (event === 'SIGNED_IN' && session) {
           console.log('Auth page: User signed in, checking role and navigating');
-          
-          // Check user role and navigate - fetch ALL roles for the user
-          const { data: roleData, error } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id);
 
           toast({
             title: "Success",
             description: "You have been signed in successfully!",
           });
+
+          // Check user role and navigate - fetch ALL roles for the user.
+          // Timeout + try/catch so a stalled read can never strand the user.
+          let roleData: { role: string }[] | null = null;
+          let error: any = null;
+          try {
+            const result = await withTimeout(
+              supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', session.user.id),
+              10000,
+              'Role check'
+            );
+            roleData = result.data;
+            error = result.error;
+          } catch (roleErr) {
+            console.error('Auth page: role check timed out or failed:', roleErr);
+            error = roleErr;
+          }
 
           // Roles allowed to use the /auth gateway (which exposes debug tools).
           // Everyone else must use /sales-login.
@@ -157,12 +172,38 @@ const Auth = () => {
           const hasDebugAccess = !error && userRoles.some(r => debugAllowedRoles.includes(r));
           const isStaff = !error && userRoles.some(r => staffRoles.includes(r));
 
+          if (error) {
+            // Role lookup failed/timed out — never strand a confirmed signed-in
+            // user. Fall back to the staff dashboard for staff-email logins,
+            // otherwise the customer dashboard.
+            toast({
+              title: 'Signed in',
+              description: 'Verifying your access timed out — redirecting you now.',
+              variant: 'destructive',
+            });
+            const emailIsStaff = !!session.user.email?.endsWith('@buyawarranty.co.uk');
+            navigate(emailIsStaff ? '/admin-dashboard/' : '/customer-dashboard/', { replace: true });
+            return;
+          }
+
           if (hasDebugAccess || isStaff) {
-            const { data: adminRow } = await supabase
-              .from('admin_users')
-              .select('is_active, access_expires_at')
-              .eq('user_id', session.user.id)
-              .maybeSingle();
+            // Non-blocking secondary check: if admin_users read errors or times
+            // out, log it and continue — a valid staff role is enough.
+            let adminRow: any = null;
+            try {
+              const { data } = await withTimeout(
+                supabase
+                  .from('admin_users')
+                  .select('is_active, access_expires_at')
+                  .eq('user_id', session.user.id)
+                  .maybeSingle(),
+                10000,
+                'Account status check'
+              );
+              adminRow = data;
+            } catch (statusErr) {
+              console.error('Auth page: account status check failed (continuing):', statusErr);
+            }
 
             const expired = !!(adminRow as any)?.access_expires_at
               && new Date((adminRow as any).access_expires_at).getTime() < Date.now();
