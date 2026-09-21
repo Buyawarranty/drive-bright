@@ -14270,6 +14270,10 @@ export type Database = {
         Args: { p_delta: number; p_lead_id: string }
         Returns: number
       }
+      agent_accepts_lead_source: {
+        Args: { _agent: string; _source: string }
+        Returns: boolean
+      }
       agent_on_leave: {
         Args: { p_admin_user_id: string; p_on_date?: string }
         Returns: boolean
@@ -14735,6 +14739,7 @@ export type Database = {
       lead_has_been_worked: { Args: { p_lead_id: string }; Returns: boolean }
       lead_has_human_activity: { Args: { p_lead_id: string }; Returns: boolean }
       lead_routing_scope: { Args: { _user_id: string }; Returns: string }
+      lead_source_aliases: { Args: { _source: string }; Returns: string[] }
       list_recent_bulk_reassignments: {
         Args: { p_hours?: number; p_min_batch?: number }
         Returns: {
@@ -15048,7 +15053,7 @@ export type Database = {
         Returns: boolean
       }
       orr_next_business_open: { Args: { _ts: string }; Returns: string }
-      orr_next_retry_lead: { Args: never; Returns: string }
+      orr_next_retry_lead: { Args: { _agent?: string }; Returns: string }
       orr_offer_lead_to_next: { Args: { _lead: string }; Returns: string }
       orr_pass_offer: { Args: { _lead: string }; Returns: string }
       orr_pick_available_blue_agents: {
