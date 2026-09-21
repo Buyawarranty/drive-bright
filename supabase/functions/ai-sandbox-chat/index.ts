@@ -8,6 +8,7 @@ import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createLovableAiGatewayProvider } from "../_shared/ai-gateway.ts";
 import { retrieveGrounded } from "./knowledge.ts";
 import { matchLibrary, libraryPromptBlock } from "./answer-library.ts";
+import { findRepairCosts, money } from "./repair-costs.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
