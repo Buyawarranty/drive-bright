@@ -63,7 +63,7 @@ const STOP_WORDS = new Set([
 export default function ChatbotDataTab() {
   const [events, setEvents] = useState<ChatEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<PeriodKey>('today');
+  const [period, setPeriod] = useState<PeriodKey>('30days');
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
 
   const activeRange = period === 'custom' ? customRange : periodToRange(period);
