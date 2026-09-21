@@ -341,10 +341,10 @@ const PaymentFallback = () => {
             
             <Button 
               variant="outline"
-              onClick={() => window.location.href = '/?step=4'}
+              onClick={() => window.location.href = '/'}
               className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
             >
-              Back to my details
+              Back to Home
             </Button>
           </div>
 

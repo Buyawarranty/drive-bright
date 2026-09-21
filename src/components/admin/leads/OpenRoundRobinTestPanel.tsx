@@ -11,8 +11,6 @@ import {
   FlaskConical,
   Mail,
   MessageSquare,
-  Moon,
-  Zap,
   Phone,
   Lock,
   Pause,
@@ -1913,15 +1911,14 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
               <thead className="bg-muted/50 text-[11px] uppercase tracking-wide text-muted-foreground">
                 <tr>
                   <th className="px-2 py-2 text-center w-11">#</th>
-                  <th className="px-2 py-2 text-left w-[130px]">Lead type</th>
-                  <th className="px-2 py-2 text-left w-[110px]">Agent</th>
-                  <th className="px-2 py-2 text-left w-[130px]">Time to Lead</th>
+                  <th className="px-2 py-2 text-left w-9"></th>
+                  <th className="px-2 py-2 text-left">Agent</th>
+                  <th className="px-2 py-2 text-left">Time to Lead</th>
                   <th className="px-2 py-2 text-left">Status</th>
                   <th className="px-2 py-2 text-center">Calls</th>
                   <th className="px-2 py-2 text-left">Actions</th>
                   <th className="px-2 py-2 text-left">Name</th>
                   <th className="px-2 py-2 text-left">Phone</th>
-                  <th className="px-2 py-2 text-left">WhatsApp</th>
                   <th className="px-2 py-2 text-left">Email</th>
                   <th className="px-2 py-2 text-left">Reg</th>
                   <th className="px-2 py-2 text-left">Payment</th>
@@ -1954,49 +1951,37 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       )}
                     >
                       <td className="px-2 py-2 text-muted-foreground">{rowIndex + 1}</td>
-                      {/* Lead type — same column for both rotations. Open Round
-                          Robin rows show the live badge; plain round robin rows
-                          show the standard badge in the same place. */}
+                      <td className="px-2 py-2">
+                        <input type="checkbox" className="h-4 w-4 rounded border-input" readOnly />
+                      </td>
                       <td className="px-2 py-2">
                         <div className="flex flex-col items-start gap-1">
                           <span
                             className={cn(
                               'inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide whitespace-nowrap',
                               orrLead
-                                ? 'border-orange-300 bg-orange-100 text-orange-800'
+                                ? 'border-primary bg-primary/10 text-primary'
                                 : 'border-border bg-muted text-muted-foreground',
                             )}
                           >
                             {orrLead ? 'Open Round Robin' : 'Round robin'}
                           </span>
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground whitespace-nowrap">
-                            {orrLead ? (
-                              <>
-                                <Zap className="h-3 w-3 text-emerald-600" /> Live
-                              </>
-                            ) : (
-                              <>
-                                <Moon className="h-3 w-3 text-blue-500" /> Standard
-                              </>
-                            )}
-                          </span>
-                        </div>
-                      </td>
-                      {/* Agent */}
-                      <td className="px-2 py-2">
-                        <div className="flex flex-col items-start gap-1">
                           {lead.assignedTo === null ? (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-900 whitespace-nowrap">
-                              <Clock className="h-3 w-3" /> Open pool
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-900 whitespace-nowrap">
+                              <Clock className="h-3 w-3" /> Waiting in the open pool
                             </span>
                           ) : (
                             <>
-                              <span className="text-sm font-semibold text-foreground whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-900 whitespace-nowrap">
+                                <span className="h-4 w-4 rounded-full bg-emerald-600 text-white text-[9px] flex items-center justify-center">
+                                  {agent.name.charAt(0)}
+                                </span>
                                 {agent.name}
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                               </span>
-                              {orrLead && !expired && (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 whitespace-nowrap">
-                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Reserved
+                              {!expired && (
+                                <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap', theme.reserved)}>
+                                  Reserved
                                 </span>
                               )}
                             </>
@@ -2004,71 +1989,88 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                         </div>
                       </td>
 
-                      {/* Time to Lead — one compact cell with the same shape on
-                          both rotations. The countdown only applies to Open
-                          Round Robin; round robin rows show the plain wait. */}
-                      <td className="px-2 py-2 align-middle">
-                        {(() => {
-                          let value: string;
-                          let caption: string;
-                          let tone = 'text-foreground';
-
-                          if (!orrLead) {
-                            value = formatClock(ageSec);
-                            caption = 'with this agent';
-                          } else if (lead.contactedAt) {
-                            value = formatClock(Math.max(0, Math.round((lead.contactedAt - lead.createdAt) / 1000)));
-                            caption = 'contacted — now yours';
-                            tone = 'text-emerald-700';
-                          } else if (lead.chaseComplete) {
-                            value = 'Chase done';
-                            caption = `${CONTACT_DAYS} contact days completed`;
-                            tone = 'text-muted-foreground';
-                          } else if (lead.waiting) {
-                            value = lead.eligibleAt ? formatEligible(lead.eligibleAt) : 'Next window';
-                            caption = 'back in the rotation';
-                            tone = 'text-amber-800';
-                          } else if (lead.assignedTo === null) {
-                            value = 'In queue';
-                            caption = 'next agent who frees up';
-                            tone = 'text-amber-800';
-                          } else if (attempted) {
-                            value = 'Dial logged';
-                            caption = 'set an outcome';
-                            tone = 'text-foreground';
-                          } else {
-                            value = formatHold(remaining);
-                            caption = 'to start call';
-                            tone = 'text-foreground';
-                          }
-
-                          return (
-                            <div className="flex flex-col leading-tight whitespace-nowrap">
-                              <span className={cn('text-sm font-semibold tabular-nums', tone)}>{value}</span>
-                              <span className="text-[11px] text-muted-foreground">{caption}</span>
-                              <span className="text-[10px] text-muted-foreground">
-                                Day {Math.max(1, lead.followUpDay)} of {CONTACT_DAYS} · call{' '}
-                                {Math.min(callsAllowedOn(Date.now()), lead.dayDials + 1)} of {callsAllowedOn(Date.now())}
-                              </span>
-                              {orrLead && !lead.contactedAt && !lead.waiting && lead.assignedTo !== null && (
-                                <span className={cn('mt-1 h-1 w-full rounded-full overflow-hidden', theme.bar)}>
-                                  <span
-                                    className={cn('block h-full rounded-full transition-all', theme.barFill)}
-                                    style={{
-                                      width: `${Math.max(
-                                        0,
-                                        Math.min(
-                                          100,
-                                          (remaining / Math.max(1, Math.round((lead.deadlineAt - lead.createdAt) / 1000))) * 100,
-                                        ),
-                                      )}%`,
-                                    }}
-                                  />
-                                </span>
-                              )}
+                      <td className="px-2 py-2">
+                        {!orrLead ? (
+                          <div className="min-w-[160px] rounded-md border border-border bg-muted/40 px-2.5 py-2">
+                            <div className="text-xs font-medium text-muted-foreground">No time limit</div>
+                            <div className="text-sm font-semibold text-foreground">Stays with this agent</div>
+                          </div>
+                        ) : lead.contactedAt ? (
+                          <div className="min-w-[180px] rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                              <span className="text-sm font-semibold text-emerald-800">This lead is now yours</span>
                             </div>
-                          );
-                        })()}
+                            <div className="mt-1 text-xs text-emerald-900/80">
+                              Contacted within{' '}
+                              <span className="font-semibold">
+                                {formatClock(Math.max(0, Math.round((lead.contactedAt - lead.createdAt) / 1000)))}
+                              </span>
+                            </div>
+                            <div className="text-xs text-emerald-900/70">The lead has been assigned to you.</div>
+                          </div>
+                        ) : (
+                        <div className={cn('min-w-[170px] max-w-[220px] rounded-md border px-2.5 py-1.5', theme.holdBox)}>
+                          {lead.chaseComplete ? (
+                            <>
+                              <div className="text-xs font-semibold text-foreground">Chase complete</div>
+                              <div className="text-[11px] text-muted-foreground">{CONTACT_DAYS} contact days completed</div>
+                            </>
+                          ) : lead.waiting ? (
+                            <>
+                              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-900 whitespace-nowrap">
+                                <Clock className="h-3 w-3 text-amber-700" /> Waiting for the next calling window
+                              </div>
+                              <div className="text-sm font-semibold text-amber-900">
+                                Back in Round Robin from {lead.eligibleAt ? formatEligible(lead.eligibleAt) : 'the next staffed window'}
+                              </div>
+                            </>
+                          ) : lead.assignedTo === null ? (
+                            <>
+                              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-900 whitespace-nowrap">
+                                <Clock className="h-3 w-3 text-amber-700" /> In the queue
+                              </div>
+                              <div className="text-sm font-semibold text-amber-900">
+                                Goes to the next agent who frees up
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className={cn('inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap', theme.holdLabel)}>
+                                <Lock className={cn('h-3 w-3', theme.holdIcon)} /> Held for you
+                              </div>
+                              <div className={cn('text-sm font-semibold tabular-nums', theme.holdValue)}>
+                                {attempted ? 'Dial logged — set an outcome' : `${formatHold(remaining)} left to call`}
+                              </div>
+                            </>
+                          )}
+
+                          <div className="text-[11px] text-muted-foreground leading-tight">
+                            Lead arrived {formatClock(ageSec)} ago · Day {Math.max(1, lead.followUpDay)} of {CONTACT_DAYS} · Call{' '}
+                            {Math.min(callsAllowedOn(Date.now()), lead.dayDials + 1)} of {callsAllowedOn(Date.now())} today
+                          </div>
+                          {lead.previousOutcome && (
+                            <div className="text-[11px] font-medium text-foreground/80">Previous: {lead.previousOutcome}</div>
+                          )}
+
+
+
+                          <div className={cn('mt-1.5 h-1.5 w-full rounded-full overflow-hidden', theme.bar)}>
+                            <div
+                              className={cn('h-full rounded-full transition-all', theme.barFill)}
+                              style={{
+                                width: `${Math.max(
+                                  0,
+                                  Math.min(
+                                    100,
+                                    (remaining / Math.max(1, Math.round((lead.deadlineAt - lead.createdAt) / 1000))) * 100,
+                                  ),
+                                )}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                        )}
                       </td>
                       <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
                         <Select
@@ -2116,18 +2118,8 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       </td>
                       <td className="px-2 py-2">
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
-                          <a
-                            href={`tel:${lead.phone}`}
-                            title={orrLead && lead.assignedTo !== null && !attempted ? 'Start call' : 'Call'}
-                            className={cn(
-                              'inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-semibold',
-                              orrLead && lead.assignedTo !== null && !attempted
-                                ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                                : 'border border-input text-foreground hover:bg-muted',
-                            )}
-                          >
+                          <a href={`tel:${lead.phone}`} title="Call" className="h-7 w-7 rounded-md border border-input flex items-center justify-center text-emerald-600 hover:bg-emerald-50">
                             <Phone className="h-3.5 w-3.5" />
-                            {orrLead && lead.assignedTo !== null && !attempted ? 'Start Call' : 'Call'}
                           </a>
                           <PracticeNotes
                             notes={lead.notes ?? []}
@@ -2164,16 +2156,6 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                           </button>
                           <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
                         </div>
-                      </td>
-                      {/* WhatsApp — same column as New Leads. Practice leads are
-                          not real numbers, so the button is for show only. */}
-                      <td className="px-2 py-2">
-                        <span
-                          title="Practice lead — no WhatsApp message is sent"
-                          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-2.5 text-xs font-semibold text-emerald-800 opacity-70"
-                        >
-                          <MessageSquare className="h-3.5 w-3.5" /> WhatsApp
-                        </span>
                       </td>
                       <td className="px-2 py-2 text-xs text-muted-foreground whitespace-nowrap">
                         <CopyEmail email={lead.email} />

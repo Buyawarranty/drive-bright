@@ -12,8 +12,6 @@ import {
   Mail, Calendar, Award, Archive, Trophy
 } from 'lucide-react';
 import { LeadsTable } from './LeadsTable';
-import { LeadsTableFooter } from './LeadsTableFooter';
-import { usePagination } from '@/hooks/usePagination';
 import { MyRemindersPanel } from './MyRemindersPanel';
 import { format, isToday, isPast } from 'date-fns';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -152,9 +150,6 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
       </div>
     );
   }
-
-  // Single pagination for the "All My Leads" table (LeadsTable no longer paginates internally).
-  const myLeadsPagination = usePagination(myLeads, { initialPageSize: 50 });
 
   return (
     <div className="space-y-6">
@@ -355,9 +350,8 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
         </CardHeader>
         <CardContent>
           {myLeads.length > 0 ? (
-            <>
             <LeadsTable
-              leads={myLeadsPagination.paginatedData}
+              leads={myLeads}
               tags={tags}
               salesUsers={salesUsers}
               selectedLeads={selectedLeads}
@@ -375,17 +369,6 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
               onLogActivity={handlers.logActivity}
               onUpdateCallCount={handlers.updateCallCount}
             />
-            <LeadsTableFooter
-              currentPage={myLeadsPagination.currentPage}
-              totalPages={myLeadsPagination.totalPages}
-              totalItems={myLeadsPagination.totalItems}
-              startIndex={myLeadsPagination.startIndex}
-              endIndex={myLeadsPagination.endIndex}
-              onPageChange={myLeadsPagination.goToPage}
-              canGoNext={myLeadsPagination.canGoNext}
-              canGoPrev={myLeadsPagination.canGoPrev}
-            />
-            </>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />

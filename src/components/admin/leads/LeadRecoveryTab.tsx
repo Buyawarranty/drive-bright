@@ -18,8 +18,6 @@ import { format } from 'date-fns';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { RecontactAccessPanel } from './RecontactAccessPanel';
 import { LeadsTable } from './LeadsTable';
-import { LeadsTableFooter } from './LeadsTableFooter';
-import { usePagination } from '@/hooks/usePagination';
 import { CallbackBanner } from './CallbackBanner';
 import { NonSalesAssigneeBanner } from './NonSalesAssigneeBanner';
 import { UnifiedDateFilter, periodToRange, type PeriodKey } from '@/components/admin/UnifiedDateFilter';
@@ -714,9 +712,6 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
     });
     return list;
   }, [leads, search, myOnly, currentUserId, currentAuthUserId, agents, statusFilter, customerEmails, customerRegs, sortOrder, datePeriod, dateCustomRange, agentFilter, statusPillSet, tags, leadTagMap]);
-
-  // Single pagination for the recontact table (LeadsTable no longer paginates internally).
-  const tablePagination = usePagination(filteredLeads, { initialPageSize: 50 });
 
   const claimSourceLeads = useMemo(() => {
     let list = leads;
@@ -1788,9 +1783,8 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               </CardContent>
             </Card>
           ) : (
-            <>
             <LeadsTable
-              leads={tablePagination.paginatedData}
+              leads={filteredLeads}
               tags={tags}
               salesUsers={agents as unknown as AdminUser[]}
               assignableSalesUsers={agents as unknown as AdminUser[]}
@@ -1829,17 +1823,6 @@ export const LeadRecoveryTab: React.FC<{ userRole?: string | null; onNavigateToT
               recontactMode
               currentAdminId={currentUserId}
             />
-            <LeadsTableFooter
-              currentPage={tablePagination.currentPage}
-              totalPages={tablePagination.totalPages}
-              totalItems={tablePagination.totalItems}
-              startIndex={tablePagination.startIndex}
-              endIndex={tablePagination.endIndex}
-              onPageChange={tablePagination.goToPage}
-              canGoNext={tablePagination.canGoNext}
-              canGoPrev={tablePagination.canGoPrev}
-            />
-            </>
           )}
         </div>
 

@@ -1337,7 +1337,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       </section>
 
       {/* ───────── Sales Agents ───────── */}
-      <section id="lead-types" className="rounded-lg border border-border bg-card shadow-sm scroll-mt-24">
+      <section className="rounded-lg border border-border bg-card shadow-sm">
         <div className="px-5 py-4 border-b border-border flex items-start justify-between flex-wrap gap-3">
           <div>
             <h2 className="text-base font-semibold text-foreground">Who gets the leads?</h2>
@@ -1616,11 +1616,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           <div>New leads today</div>
           <div title="Leads assigned to this agent since 6:00 pm yesterday (London time). Helps managers see who has been fed leads recently so they can distribute the overnight batch fairly.">Since 6pm <span className="normal-case text-[10px] opacity-70">yesterday</span></div>
           <div>Lead Types</div>
-          {showSources && (
-            <div title="Pick the sources this agent receives (e.g. Meta only). Applies to both Round Robin and Open Round Robin, including retry leads. 'All' means every source.">
-              Sources they handle
-            </div>
-          )}
+          {showSources && <div>Sources they handle</div>}
           <div className="text-right">Actions</div>
         </div>
         )}
