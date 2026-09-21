@@ -1616,7 +1616,11 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
           <div>New leads today</div>
           <div title="Leads assigned to this agent since 6:00 pm yesterday (London time). Helps managers see who has been fed leads recently so they can distribute the overnight batch fairly.">Since 6pm <span className="normal-case text-[10px] opacity-70">yesterday</span></div>
           <div>Lead Types</div>
-          {showSources && <div>Sources they handle</div>}
+          {showSources && (
+            <div title="Pick the sources this agent receives (e.g. Meta only). Applies to both Round Robin and Open Round Robin, including retry leads. 'All' means every source.">
+              Sources they handle
+            </div>
+          )}
           <div className="text-right">Actions</div>
         </div>
         )}
