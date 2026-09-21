@@ -375,6 +375,17 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
               onLogActivity={handlers.logActivity}
               onUpdateCallCount={handlers.updateCallCount}
             />
+            <LeadsTableFooter
+              currentPage={myLeadsPagination.currentPage}
+              totalPages={myLeadsPagination.totalPages}
+              totalItems={myLeadsPagination.totalItems}
+              startIndex={myLeadsPagination.startIndex}
+              endIndex={myLeadsPagination.endIndex}
+              onPageChange={myLeadsPagination.goToPage}
+              canGoNext={myLeadsPagination.canGoNext}
+              canGoPrev={myLeadsPagination.canGoPrev}
+            />
+            </>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
