@@ -277,6 +277,14 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
       "Maintenance plan or extended warranty? What each covers in the UK, typical costs and which one suits your car.",
     ogType: "article",
   },
+  {
+    path: "/thewarrantyhub/tesla-warranty-uk-2026-battery-cover-repair-costs-extended-options/",
+    title: "Tesla Warranty UK 2026 | Battery Cover & Repair Costs",
+    description:
+      "Tesla's UK warranty runs 4 years or 60,000 miles with 8 years of battery and drive unit cover. See 2026 repair costs, battery limits and extended options.",
+    ogType: "article",
+    ogImage: `${SITE}/blog/tesla-warranty-uk-2026.jpg`,
+  },
 
   // ---------------- Main product pages ----------------
   {
