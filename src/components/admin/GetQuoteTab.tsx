@@ -1,5 +1,9 @@
 import { getVehicleAge } from '@/lib/vehicleAge';
 import { getInstalmentOptions, isInstalmentAllowed, isInstalmentComingSoon, instalmentAmount, instalmentPlanTotal, instalmentScheduleTotal, oneYearRatio, BUMPER_LONG_PLAN_NOTE, type InstalmentCount } from '@/lib/instalmentOptions';
+import {
+  isPayLaterEligible, payLaterYears, payLaterYearlyAmount, payLaterTermTotal,
+  payLaterExtraVsTerm, buildPayLaterSchedule, BAW_PAYLATER_LABEL, BAW_PAYLATER_NOTE,
+} from '@/lib/bawPayLater';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import { splitAddressLine } from '@/lib/address/splitAddressLine';
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
@@ -264,6 +268,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // Instalment plan is a SEPARATE choice from cover duration (admin surfaces only).
   // 2-year = 12 or 24 instalments, 3-year = 12 or 36, 1-year = 12.
   const [instalmentCount, setInstalmentCount] = useState<InstalmentCount>(12);
+  // BAW PayLater — 2/3 year cover collected one year at a time (see lib/bawPayLater).
+  const [payLaterMode, setPayLaterMode] = useState(false);
+  useEffect(() => {
+    if (!isPayLaterEligible(paymentType) && payLaterMode) setPayLaterMode(false);
+  }, [paymentType, payLaterMode]);
   useEffect(() => {
     // Keep the instalment plan valid whenever the cover term changes.
     // 36 instalments is visible but disabled (Coming Soon), so never let it be selected.
@@ -3933,6 +3942,32 @@ Questions? Call 0330 229 5040`;
         customerData.purchase_source = DEFERRED_PAYMENT_SOURCE;
       }
 
+      // BAW PayLater — the customer takes 2/3 year cover but pays a year at a time.
+      // Only the first year is collected now, so the SALE VALUE recorded (and with it
+      // the agent's scoreboard credit) is that first yearly payment — the one-year
+      // equivalent — never the full term price. The remaining years live in
+      // baw_paylater_schedules for accounts to collect.
+      const payLaterActive = payLaterMode && isPayLaterEligible(paymentType);
+      const payLaterYearCount = payLaterActive ? payLaterYears(paymentType) : 0;
+      const payLaterYearly = payLaterActive
+        ? payLaterYearlyAmount(Number(confirmedAmount) || 0, payLaterYearCount)
+        : 0;
+      if (payLaterActive) {
+        const yearlyQuoted = payLaterYearlyAmount(quotedTotalAtSale, payLaterYearCount);
+        customerData.baw_paylater = true;
+        customerData.baw_paylater_years = payLaterYearCount;
+        customerData.baw_paylater_yearly_amount = payLaterYearly;
+        customerData.final_amount = payLaterYearly;
+        customerData.original_amount = yearlyQuoted;
+        customerData.sale_quoted_total = yearlyQuoted;
+        customerData.discount_amount = Math.max(0, yearlyQuoted - payLaterYearly);
+        customerData.sale_discount_amount = Math.max(0, yearlyQuoted - payLaterYearly);
+        customerData.sale_discount_pct = yearlyQuoted > 0
+          ? Math.round((Math.max(0, yearlyQuoted - payLaterYearly) / yearlyQuoted) * 1000) / 10
+          : 0;
+      }
+
+
 
       // 3. Create or update customer
       if (existingCustomer) {
@@ -3999,6 +4034,34 @@ Questions? Call 0330 229 5040`;
       
       // Check if this is a future start date for W2000 scheduling
       const isFutureStartDate = !isToday(warrantyStartDate) && warrantyStartDate > new Date();
+
+      // 4b. BAW PayLater — write the yearly collection plan. Year 1 is marked paid
+      // (it is the money taken at the point of sale); later anniversaries stay
+      // pending so accounts can chase them from Payments pending.
+      if (payLaterActive && customerId) {
+        try {
+          const rows = buildPayLaterSchedule(Number(confirmedAmount) || 0, payLaterYearCount, startDate)
+            .map((row) => ({
+              customer_id: customerId,
+              warranty_reference_number: finalWarrantyReference,
+              year_number: row.yearNumber,
+              amount: row.amount,
+              due_date: row.dueDate.toISOString().slice(0, 10),
+              status: row.yearNumber === 1 && !deferredMode ? 'paid' : 'pending',
+              paid_at: row.yearNumber === 1 && !deferredMode ? new Date().toISOString() : null,
+              paid_amount: row.yearNumber === 1 && !deferredMode ? row.amount : null,
+              payment_method: row.yearNumber === 1 ? (paymentSource || 'external') : null,
+              notes: row.yearNumber === 1 ? 'First year collected at the point of sale' : null,
+              created_by: adminUserRecordId,
+            }));
+          await supabase
+            .from('baw_paylater_schedules')
+            .upsert(rows as any, { onConflict: 'customer_id,year_number' });
+        } catch (plErr) {
+          console.error('BAW PayLater schedule creation failed:', plErr);
+        }
+      }
+
 
       // 5. Create or update policy record with payment confirmation metadata
       // Convert paymentType ID to human-readable label for consistency
@@ -5409,6 +5472,50 @@ Questions? Call 0330 229 5040`;
                       )}
                     </div>
                   )}
+                  {/* BAW PayLater — 2/3 year cover collected one year at a time */}
+                  {isPayLaterEligible(paymentType) && (() => {
+                    const years = payLaterYears(paymentType);
+                    const yearly = payLaterYearlyAmount(displayedTotalPrice, years);
+                    const planTotal = payLaterTermTotal(displayedTotalPrice, years);
+                    const extra = payLaterExtraVsTerm(displayedTotalPrice, years);
+                    return (
+                      <div className={cn(
+                        "space-y-2 rounded-lg border-2 p-3 transition-all",
+                        payLaterMode ? "border-emerald-500 bg-emerald-50" : "border-emerald-200 bg-emerald-50/40"
+                      )}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <Label className="text-sm font-semibold">{BAW_PAYLATER_LABEL} — pay yearly</Label>
+                            <p className="text-[11px] text-muted-foreground">
+                              {years} year cover, collected one year at a time on the policy anniversary.
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={payLaterMode ? 'default' : 'outline'}
+                            onClick={() => setPayLaterMode(!payLaterMode)}
+                          >
+                            {payLaterMode ? 'Selected' : 'Use PayLater'}
+                          </Button>
+                        </div>
+                        <div className="rounded-md border border-emerald-200 bg-white p-2.5">
+                          <div className="text-lg font-bold text-emerald-700">£{yearly}<span className="text-sm font-semibold">/year</span></div>
+                          <div className="text-[11px] font-medium text-black">
+                            {years} yearly payments · £{planTotal} across the term
+                          </div>
+                          {extra > 0 && (
+                            <div className="text-[11px] font-semibold text-amber-700">
+                              +£{extra} vs paying the {years}-year price up front
+                            </div>
+                          )}
+                        </div>
+                        {payLaterMode && (
+                          <p className="text-[11px] font-semibold text-emerald-800">{BAW_PAYLATER_NOTE}</p>
+                        )}
+                      </div>
+                    );
+                  })()}
                   {termSavings['24months'] && (
                     <p className="text-xs text-muted-foreground">
                       Savings compare the full term price against buying 1-year cover repeatedly, with the same claim

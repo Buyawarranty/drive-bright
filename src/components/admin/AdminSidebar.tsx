@@ -328,6 +328,12 @@ export const defaultTabs: Tab[] = [
     description: 'Pay later orders — warranty stays off until the payment is received'
   },
   {
+    id: 'baw-paylater',
+    label: 'BAW PayLater',
+    icon: PoundSterling,
+    description: 'Yearly collections on 2 and 3 year cover sold on BAW PayLater'
+  },
+  {
     id: 'admin-logs',
     label: 'Error Logs',
     icon: ScrollText,
