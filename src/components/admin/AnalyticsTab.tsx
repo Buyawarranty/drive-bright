@@ -1453,6 +1453,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </CardContent>
         </Card>
 
+        <AnalyticsSectionHeading id="pending-payment" title="Pending payment" description="Money sold but not yet collected: orders awaiting first payment and BAW PayLater yearly payments still to come." accent="border-amber-500/60" />
+
+        <PendingPaymentAnalyticsPanel />
+
         <AnalyticsSectionHeading id="revenue-daily" title="Daily revenue trend" description="Day-by-day revenue, AOV and sales count within a 30-day window." accent="border-teal-500/60" />
 
         <DailyRevenueTrendPanel customers={customers} sourceFilter={sourceFilter} />
