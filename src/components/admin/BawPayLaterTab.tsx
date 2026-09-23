@@ -56,7 +56,7 @@ const PAYMENT_METHODS = [
 ];
 
 const BawPayLaterTab: React.FC = () => {
-  const { adminUserId } = useCurrentAdminId();
+  const adminUserId = useCurrentAdminId();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<'all' | SStatus | 'overdue'>('pending');
