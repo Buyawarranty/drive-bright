@@ -1746,7 +1746,10 @@ const CustomerDashboard = () => {
                               </div>
                           </div>
 
-                          {/* Document Actions - View T&Cs and Warranty Plan */}
+                          {/* Yearly BAW PayLater payments — only shows if the customer has a plan */}
+                          <MyPayLaterPayments customerId={selectedPolicy?.customer_id || customerData?.id || null} />
+
+                           {/* Document Actions - View T&Cs and Warranty Plan */}
                           <div className="pt-4 border-t space-y-4">
                             <PolicyDocumentsNotice />
                             <div className="flex flex-wrap gap-3">
