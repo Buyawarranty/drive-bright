@@ -218,6 +218,9 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   // Cancellations/refunds are fetched separately: they must include archived (is_deleted)
   // records so the numbers reconcile with Customer Management.
   const [cancellations, setCancellations] = useState<any[]>([]);
+  // BAW PayLater yearly payments actually collected, keyed by the month they were collected.
+  // Monthly revenue counts money in the bank, so later-year collections land in their own month.
+  const [payLaterCollectedByMonth, setPayLaterCollectedByMonth] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const hasLoadedOnceRef = useRef(false);
@@ -859,19 +862,29 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       return true;
     });
 
-    // EXCLUDING cancelled/refunded from revenue
+    // EXCLUDING cancelled/refunded from revenue.
+    // Monthly revenue shows money COLLECTED so far: orders still awaiting payment
+    // (deferred / pay-by-link) are counted as sales but contribute no revenue until paid.
     sourceFilteredCustomers.forEach(customer => {
       if (isRevenueLost(customer.status)) return;
-      
+
       if (customer.final_amount && customer.signup_date) {
         const signupDate = new Date(customer.signup_date);
         const monthKey = `${signupDate.getFullYear()}-${String(signupDate.getMonth() + 1).padStart(2, '0')}`;
         const monthData = months.find(m => m.monthKey === monthKey);
         if (monthData) {
-          monthData.revenue += Number(customer.final_amount) || 0;
+          const awaitingPayment = (customer.status || '').toLowerCase() === 'pending payment';
+          if (!awaitingPayment) {
+            monthData.revenue += Number(customer.final_amount) || 0;
+          }
           monthData.salesCount += 1;
         }
       }
+    });
+
+    // Add BAW PayLater yearly payments collected in each month (year 2 / year 3 onwards).
+    months.forEach(m => {
+      m.revenue += payLaterCollectedByMonth[m.monthKey] || 0;
     });
 
     // Mark selected month
