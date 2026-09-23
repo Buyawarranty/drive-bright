@@ -338,6 +338,30 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       } else {
         setAdminUsers(usersData || []);
       }
+
+      // BAW PayLater yearly payments already collected — added to revenue in the month collected.
+      // Non-blocking: a failure here must not blank analytics.
+      const { data: payLaterPaid, error: payLaterError } = await supabase
+        .from('baw_paylater_schedules')
+        .select('paid_amount, amount, paid_at, year_number, status')
+        .eq('status', 'paid')
+        .gt('year_number', 1)
+        .limit(2000);
+
+      if (payLaterError) {
+        console.error('Error fetching BAW PayLater collections for analytics:', payLaterError);
+        setPayLaterCollectedByMonth({});
+      } else {
+        const byMonth: Record<string, number> = {};
+        (payLaterPaid || []).forEach((row: any) => {
+          if (!row.paid_at) return;
+          const paid = new Date(row.paid_at);
+          if (Number.isNaN(paid.getTime())) return;
+          const key = `${paid.getFullYear()}-${String(paid.getMonth() + 1).padStart(2, '0')}`;
+          byMonth[key] = (byMonth[key] || 0) + (Number(row.paid_amount ?? row.amount) || 0);
+        });
+        setPayLaterCollectedByMonth(byMonth);
+      }
     } catch (error) {
       console.error('Error fetching analytics data:', error);
       toast.error('Failed to load analytics data');
@@ -901,7 +925,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     });
 
     return months;
-  }, [customers, selectedMonth, sourceFilter]);
+  }, [customers, selectedMonth, sourceFilter, payLaterCollectedByMonth]);
 
   // Duration mix per month (1yr / 2yr / 3yr) — percentages and avg revenue per year of cover
   const durationByMonth = useMemo(() => {
