@@ -23,6 +23,7 @@ import { CustomerDemographicsPanel } from './analytics/CustomerDemographicsPanel
 import { PriceConversionAovPanel } from './analytics/PriceConversionAovPanel';
 import { LeadsToSalesRatioPanel } from './analytics/LeadsToSalesRatioPanel';
 import { DailyLeadVolumePanel } from './analytics/DailyLeadVolumePanel';
+import { PendingPaymentAnalyticsPanel } from './analytics/PendingPaymentAnalyticsPanel';
 import { TimeToConvertPanel } from './analytics/TimeToConvertPanel';
 import { WeekendLeadsStatsPanel } from './analytics/WeekendLeadsStatsPanel';
 import { OrganicSourceBreakdownPanel } from './marketing/OrganicSourceBreakdownPanel';
@@ -99,6 +100,7 @@ const isTestOrder = (name: string, email: string): boolean => {
  */
 const ANALYTICS_QUICK_LINKS = [
   { id: 'revenue-monthly', label: 'Revenue & AOV', className: 'bg-emerald-300/50 text-emerald-900 border-emerald-200/50 hover:bg-emerald-400/50' },
+  { id: 'pending-payment', label: 'Pending payment', className: 'bg-amber-300/50 text-amber-900 border-amber-200/50 hover:bg-amber-400/50' },
   { id: 'revenue-daily', label: 'Daily revenue', className: 'bg-teal-300/50 text-teal-900 border-teal-200/50 hover:bg-teal-400/50' },
   { id: 'revenue-daily-agent', label: 'Daily revenue by agent', className: 'bg-violet-300/50 text-violet-900 border-violet-200/50 hover:bg-violet-400/50' },
   { id: 'time-of-sale', label: 'Time of sale (24h)', className: 'bg-cyan-300/50 text-cyan-900 border-cyan-200/50 hover:bg-cyan-400/50' },
@@ -216,6 +218,9 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   // Cancellations/refunds are fetched separately: they must include archived (is_deleted)
   // records so the numbers reconcile with Customer Management.
   const [cancellations, setCancellations] = useState<any[]>([]);
+  // BAW PayLater yearly payments actually collected, keyed by the month they were collected.
+  // Monthly revenue counts money in the bank, so later-year collections land in their own month.
+  const [payLaterCollectedByMonth, setPayLaterCollectedByMonth] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const hasLoadedOnceRef = useRef(false);
@@ -332,6 +337,30 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         setAdminUsers([]);
       } else {
         setAdminUsers(usersData || []);
+      }
+
+      // BAW PayLater yearly payments already collected — added to revenue in the month collected.
+      // Non-blocking: a failure here must not blank analytics.
+      const { data: payLaterPaid, error: payLaterError } = await supabase
+        .from('baw_paylater_schedules')
+        .select('paid_amount, amount, paid_at, year_number, status')
+        .eq('status', 'paid')
+        .gt('year_number', 1)
+        .limit(2000);
+
+      if (payLaterError) {
+        console.error('Error fetching BAW PayLater collections for analytics:', payLaterError);
+        setPayLaterCollectedByMonth({});
+      } else {
+        const byMonth: Record<string, number> = {};
+        (payLaterPaid || []).forEach((row: any) => {
+          if (!row.paid_at) return;
+          const paid = new Date(row.paid_at);
+          if (Number.isNaN(paid.getTime())) return;
+          const key = `${paid.getFullYear()}-${String(paid.getMonth() + 1).padStart(2, '0')}`;
+          byMonth[key] = (byMonth[key] || 0) + (Number(row.paid_amount ?? row.amount) || 0);
+        });
+        setPayLaterCollectedByMonth(byMonth);
       }
     } catch (error) {
       console.error('Error fetching analytics data:', error);
@@ -857,19 +886,29 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       return true;
     });
 
-    // EXCLUDING cancelled/refunded from revenue
+    // EXCLUDING cancelled/refunded from revenue.
+    // Monthly revenue shows money COLLECTED so far: orders still awaiting payment
+    // (deferred / pay-by-link) are counted as sales but contribute no revenue until paid.
     sourceFilteredCustomers.forEach(customer => {
       if (isRevenueLost(customer.status)) return;
-      
+
       if (customer.final_amount && customer.signup_date) {
         const signupDate = new Date(customer.signup_date);
         const monthKey = `${signupDate.getFullYear()}-${String(signupDate.getMonth() + 1).padStart(2, '0')}`;
         const monthData = months.find(m => m.monthKey === monthKey);
         if (monthData) {
-          monthData.revenue += Number(customer.final_amount) || 0;
+          const awaitingPayment = (customer.status || '').toLowerCase() === 'pending payment';
+          if (!awaitingPayment) {
+            monthData.revenue += Number(customer.final_amount) || 0;
+          }
           monthData.salesCount += 1;
         }
       }
+    });
+
+    // Add BAW PayLater yearly payments collected in each month (year 2 / year 3 onwards).
+    months.forEach(m => {
+      m.revenue += payLaterCollectedByMonth[m.monthKey] || 0;
     });
 
     // Mark selected month
@@ -886,7 +925,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     });
 
     return months;
-  }, [customers, selectedMonth, sourceFilter]);
+  }, [customers, selectedMonth, sourceFilter, payLaterCollectedByMonth]);
 
   // Duration mix per month (1yr / 2yr / 3yr) — percentages and avg revenue per year of cover
   const durationByMonth = useMemo(() => {
@@ -1321,14 +1360,14 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </Card>
         )}
 
-        <AnalyticsSectionHeading id="revenue-monthly" title="Revenue & AOV by month" description="Monthly revenue, order volume and average order value across the last 12 months." accent="border-emerald-500/60" />
+        <AnalyticsSectionHeading id="revenue-monthly" title="Revenue & AOV by month" description="Monthly revenue collected so far, order volume and average order value across the last 12 months. Orders awaiting payment are counted as sales but add no revenue until collected." accent="border-emerald-500/60" />
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Total Revenue & AOV by Month (Last 12 Months)</CardTitle>
               <CardDescription className="mt-1">
-                Click on any bar to filter all data by that month
+                Amount collected so far — click on any bar to filter all data by that month
               </CardDescription>
             </div>
             {selectedMonth && (
@@ -1413,6 +1452,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        <AnalyticsSectionHeading id="pending-payment" title="Pending payment" description="Money sold but not yet collected: orders awaiting first payment and BAW PayLater yearly payments still to come." accent="border-amber-500/60" />
+
+        <PendingPaymentAnalyticsPanel />
 
         <AnalyticsSectionHeading id="revenue-daily" title="Daily revenue trend" description="Day-by-day revenue, AOV and sales count within a 30-day window." accent="border-teal-500/60" />
 
