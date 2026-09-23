@@ -6,6 +6,7 @@ import { initPerformanceMonitoring } from '@/utils/performanceMonitor'
 import { initThirdPartyScripts } from '@/utils/thirdPartyScripts'
 import { initChunkErrorHandler } from '@/utils/chunkErrorHandler'
 import { primeLiveExclusions } from '@/lib/pricing/liveVehicleExclusions'
+import { RootErrorBoundary } from '@/components/RootErrorBoundary'
 
 // Recover from stale JS chunks after a new deploy (blank-page fix for returning users)
 initChunkErrorHandler();
@@ -27,7 +28,9 @@ if (typeof window !== 'undefined') {
 }
 
 createRoot(document.getElementById("root")!).render(
-  <HelmetProvider>
-    <App />
-  </HelmetProvider>
+  <RootErrorBoundary>
+    <HelmetProvider>
+      <App />
+    </HelmetProvider>
+  </RootErrorBoundary>
 )

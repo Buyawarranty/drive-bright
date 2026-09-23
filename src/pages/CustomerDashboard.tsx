@@ -1233,9 +1233,10 @@ const CustomerDashboard = () => {
                         <p className="text-sm text-red-700 mt-1">
                           Your password may have been updated. Click below to reset it — we'll email you a link to set a new one.
                         </p>
-                        <Button 
+                        <Button
+                          type="button"
                           className="mt-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg h-10 px-6"
-                          onClick={() => navigate('/forgot-password')}
+                          onClick={() => navigate('/forgot-password/')}
                         >
                           Reset My Password
                         </Button>

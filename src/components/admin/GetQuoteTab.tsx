@@ -3524,21 +3524,42 @@ Questions? Call 0330 229 5040`;
     };
   };
 
+  // Address is compulsory for every external order. Shared so the "Preview
+  // Before Submit" button (step 1) and the final validity check (step 2) can
+  // never disagree — previously only the final check looked at address, so an
+  // agent could reach the preview screen (which doesn't show address fields
+  // at all) with everything visible filled in, tick "confirm payment", and
+  // still get rejected with no indication of what was actually missing.
+  const hasCompleteAddress = () =>
+    customerBuildingNumber.trim() !== '' &&
+    customerStreet.trim() !== '' &&
+    customerTown.trim() !== '' &&
+    customerPostcode.trim() !== '';
+
   // Validate payment confirmation form
   const isPaymentFormValid = () => {
-    const hasAddress =
-      customerBuildingNumber.trim() !== '' &&
-      customerStreet.trim() !== '' &&
-      customerTown.trim() !== '' &&
-      customerPostcode.trim() !== '';
     return (
       paymentSource.trim() !== '' &&
       paymentAmount.trim() !== '' &&
       warrantyStartDate !== undefined &&
       paymentConfirmed === true &&
-      hasAddress &&
+      hasCompleteAddress() &&
       !(isUnderAbsoluteMin(paymentAmount) && !priceMatchEvidenced)
     );
+  };
+
+  /** Explains exactly what's missing instead of a generic "incomplete form" dead end. */
+  const getPaymentFormIssues = (): string[] => {
+    const issues: string[] = [];
+    if (!paymentSource.trim()) issues.push('a payment source');
+    if (!paymentAmount.trim()) issues.push('the amount received');
+    if (warrantyStartDate === undefined) issues.push('the warranty start date');
+    if (!hasCompleteAddress()) issues.push("the customer's address (building number, street, town and postcode)");
+    if (!paymentConfirmed) issues.push('the "I confirm" checkbox');
+    if (isUnderAbsoluteMin(paymentAmount) && !priceMatchEvidenced) {
+      issues.push('price match evidence (the amount is below the minimum allowed price)');
+    }
+    return issues;
   };
 
 
@@ -3549,9 +3570,12 @@ Questions? Call 0330 229 5040`;
       return;
     }
     if (!isPaymentFormValid()) {
+      const issues = getPaymentFormIssues();
       toast({
         title: "Incomplete Form",
-        description: "Please fill in all required fields and confirm payment",
+        description: issues.length
+          ? `Missing: ${issues.join(', ')}.`
+          : "Please fill in all required fields and confirm payment",
         variant: "destructive",
       });
       return;
@@ -9196,6 +9220,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                             <div><span className="font-medium">Name:</span> {preview.customer.name}</div>
                             <div><span className="font-medium">Email:</span> {preview.customer.email}</div>
                             <div><span className="font-medium">Phone:</span> {preview.customer.phone}</div>
+                            <div className="col-span-2"><span className="font-medium">Address:</span> {preview.customer.address}</div>
                             <div><span className="font-medium">Registration:</span> {preview.vehicle.registration}</div>
                             <div><span className="font-medium">Vehicle:</span> {preview.vehicle.make} {preview.vehicle.model} ({preview.vehicle.year})</div>
                             <div><span className="font-medium">Mileage:</span> {preview.vehicle.mileage} miles</div>
@@ -9373,18 +9398,20 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
               <DialogFooter className="border-t border-border bg-background px-6 py-4 flex flex-col gap-2">
                 {externalPaymentStep === 'details' ? (
                   <>
-                    {/* Validation helper - show what's missing */}
-                    {(!paymentSource || !paymentAmount || (deferredMode && !deferredPaymentDueDate)) && (
+                    {/* Validation helper - show what's missing. Checked here (not just at
+                        the final Confirm step) so the agent is told about a missing address
+                        or deferred-payment date before reaching the preview screen, which
+                        never displays address fields. */}
+                    {(!paymentSource || !paymentAmount || !hasCompleteAddress() || (deferredMode && !deferredPaymentDueDate)) && (
                       <div className="w-full text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-2 flex items-center gap-2">
                         <span>⚠️</span>
                         <span>
-                          {deferredMode && !deferredPaymentDueDate
-                            ? 'Please enter the date the customer will pay'
-                            : !paymentSource && !paymentAmount 
-                              ? 'Please select a payment source and enter the amount received'
-                              : !paymentSource 
-                                ? 'Please select a payment source'
-                                : 'Please enter the amount received'}
+                          Before you can preview, please provide: {[
+                            !paymentSource && 'a payment source',
+                            !paymentAmount && 'the amount received',
+                            !hasCompleteAddress() && "the customer's address",
+                            deferredMode && !deferredPaymentDueDate && 'the date the customer will pay',
+                          ].filter(Boolean).join(', ')}.
                         </span>
                       </div>
                     )}
@@ -9397,7 +9424,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                       </Button>
                       <Button
                         onClick={() => setExternalPaymentStep('preview')}
-                        disabled={!paymentSource || !paymentAmount || !saleCreditAgentId || (deferredMode && !deferredPaymentDueDate)}
+                        disabled={!paymentSource || !paymentAmount || !saleCreditAgentId || !hasCompleteAddress() || (deferredMode && !deferredPaymentDueDate)}
                         className="bg-blue-600 hover:bg-blue-700"
                       >
                         <Eye className="w-4 h-4 mr-2" />

@@ -1,8 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { logCustomerEmail } from "../_shared/log-email.ts";
-import { getLatestPolicyDocs } from '../_shared/latestPolicyDocs.ts';
-
+import { resolveBrand, brandFrom } from "../_shared/brand.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,8 +36,11 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { email, planType, paymentType, policyNumber, registrationPlate, customerName, labourRate } = await req.json();
+    const requestBody = await req.json();
+    const { email, planType, paymentType, policyNumber, registrationPlate, customerName, labourRate } = requestBody;
     logStep("Request data", { email, planType, paymentType, policyNumber, registrationPlate, customerName, labourRate });
+
+    const brand = resolveBrand(req, { brand: requestBody?.brand });
 
     if (!email || !planType || !paymentType || !policyNumber) {
       logStep("Missing required parameters", { email: !!email, planType: !!planType, paymentType: !!paymentType, policyNumber: !!policyNumber });
@@ -72,16 +73,16 @@ serve(async (req) => {
       const sentAt = new Date(existingWelcomeEmail.email_sent_at);
       const now = new Date();
       const hoursSinceSent = (now.getTime() - sentAt.getTime()) / (1000 * 60 * 60);
-      
+
       // Temporarily allowing resends after 1 hour instead of 24 hours for testing
       if (hoursSinceSent < 1) {
-        logStep("Welcome email already sent recently", { 
+        logStep("Welcome email already sent recently", {
           sentAt: existingWelcomeEmail.email_sent_at,
-          hoursSinceSent 
+          hoursSinceSent
         });
-        
-        return new Response(JSON.stringify({ 
-          success: true, 
+
+        return new Response(JSON.stringify({
+          success: true,
           message: 'Welcome email already sent recently',
           skipped: true
         }), {
@@ -119,13 +120,13 @@ serve(async (req) => {
 
       page += 1;
     }
-    
+
     let userId = null;
-    
+
     if (userExists) {
       logStep("User already exists", { userId: userExists.id });
       userId = userExists.id;
-      
+
       // Only update password if user hasn't reset it themselves
       if (userHasResetPassword) {
         logStep("Skipping password update - user has already set their own password", { userId: userExists.id });
@@ -142,7 +143,7 @@ serve(async (req) => {
           logStep("Failed to update user password", updateError);
           throw new Error(`Failed to update user password: ${updateError.message}`);
         }
-        
+
         logStep("Updated existing user password and metadata", { userId: userExists.id, tempPasswordLength: tempPassword.length });
       }
     } else {
@@ -197,7 +198,7 @@ serve(async (req) => {
 
     // Create or update policy record
     const policyEndDate = calculatePolicyEndDate(paymentType);
-    
+
     const { data: policyData, error: policyError } = await supabaseClient
       .from('customer_policies')
       .upsert({
@@ -221,42 +222,44 @@ serve(async (req) => {
       logStep("Policy creation failed", policyError);
       throw new Error(`Failed to create policy: ${policyError.message}`);
     }
-    
+
     if (!policyData) {
       throw new Error("Policy creation returned no data");
     }
-    
+
     logStep("Created policy record", { policyId: policyData.id });
 
     // Get environment variables for email
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    const resendFrom = 'Buyawarranty Customer Care <noreply@buyawarranty.co.uk>';
-    
+    const resendFrom = brandFrom(brand, 'Customer Care', 'noreply');
+
     if (!resendApiKey) {
       throw new Error('RESEND_API_KEY not configured');
     }
 
     // Fetch documents from Supabase Storage
     logStep("Fetching documents from Supabase Storage");
-    
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://mzlpuxzwyrcyrgrongeb.supabase.co';
-    
-    // Always resolve the newest uploaded documents (admin dashboard driven)
-    const latestDocs = await getLatestPolicyDocs();
+
+    // Construct direct public URLs for documents in Storage
+    // Always use Platinum warranty plan v2.3 for all purchases
+    const termsStoragePath = 'terms/terms-and-conditions-v3.1-2026-02.pdf';
+    const platinumPlanPath = 'platinum/platinum-warranty-plan-v3.1-2026-02.pdf';
 
     const termsDoc = {
-      file_url: latestDocs.termsUrl,
-      document_name: latestDocs.termsName
+      file_url: `${supabaseUrl}/storage/v1/object/public/policy-documents/${termsStoragePath}`,
+      document_name: 'Terms-and-Conditions-v3.1.pdf'
     };
 
     const planDoc = {
-      file_url: latestDocs.platinumUrl,
-      document_name: latestDocs.platinumName
+      file_url: `${supabaseUrl}/storage/v1/object/public/policy-documents/${platinumPlanPath}`,
+      document_name: 'Platinum-Warranty-Plan-v3.1.pdf'
     };
-    
-    logStep("Document URLs constructed", { 
-      termsUrl: termsDoc.file_url, 
-      planUrl: planDoc.file_url 
+
+    logStep("Document URLs constructed", {
+      termsUrl: termsDoc.file_url,
+      planUrl: planDoc.file_url
     });
 
     // Registration plate styling - UK-style yellow background with black text
@@ -297,7 +300,7 @@ serve(async (req) => {
 
     // Load the required PDF attachments from Supabase Storage
     const attachments = [];
-    
+
     try {
       // Load Terms and Conditions PDF from Storage
       logStep("Fetching Terms PDF", { url: termsDoc.file_url });
@@ -305,14 +308,14 @@ serve(async (req) => {
       if (termsResponse.ok) {
         const termsBuffer = await termsResponse.arrayBuffer();
         const termsBytes = new Uint8Array(termsBuffer);
-        
+
         // Convert to base64 properly using a binary string approach
         let binary = '';
         for (let i = 0; i < termsBytes.length; i++) {
           binary += String.fromCharCode(termsBytes[i]);
         }
         const termsBase64 = btoa(binary);
-        
+
         attachments.push({
           filename: termsDoc.document_name,
           content: termsBase64,
@@ -323,21 +326,21 @@ serve(async (req) => {
       } else {
         logStep("Terms PDF fetch failed", { status: termsResponse.status });
       }
-      
+
       // Load Platinum Warranty Plan PDF from Storage (used for all plan types)
       logStep("Fetching Platinum Warranty Plan PDF", { url: planDoc.file_url });
       const planResponse = await fetch(planDoc.file_url);
       if (planResponse.ok) {
         const planBuffer = await planResponse.arrayBuffer();
         const planBytes = new Uint8Array(planBuffer);
-        
+
         // Convert to base64 properly using a binary string approach
         let binary = '';
         for (let i = 0; i < planBytes.length; i++) {
           binary += String.fromCharCode(planBytes[i]);
         }
         const planBase64 = btoa(binary);
-        
+
         attachments.push({
           filename: planDoc.document_name,
           content: planBase64,
@@ -352,226 +355,154 @@ serve(async (req) => {
       logStep("ERROR: Could not load PDF attachments from Storage", error);
     }
 
-    // Send welcome email directly using Resend
-    // Note: Subject line optimized for Primary inbox - no emojis, conversational tone
+    // Send welcome email directly using Resend.
+    //
+    // Gmail's Promotions-tab classifier weighs body content heavily, not just
+    // the subject line: emoji used as visual bullets/badges, and bright
+    // gradient "banner" blocks are both well-documented signals that push a
+    // message out of Primary. This template previously had both (emoji
+    // section headers, a green gradient "Special Bonus" banner) despite the
+    // subject line already being written to avoid Promotions. Kept everything
+    // else (policy details table, attachments, support info) as plain,
+    // conversational transactional copy — no List-Unsubscribe header is added
+    // here, which is correct for a transactional (non-marketing) send.
     const emailPayload = {
       from: resendFrom,
       to: [email],
-      bcc: ['buyawarranty.co.uk+8fc526946e@invite.trustpilot.com'],
-      reply_to: 'support@buyawarranty.co.uk',
-      subject: `Valued Customer, your warranty details`,
+      // Trustpilot review invitations are Buy A Warranty only — never Panda Protect.
+      ...(brand.key === 'buyawarranty'
+        ? { bcc: ['buyawarranty.co.uk+8fc526946e@invite.trustpilot.com'] }
+        : {}),
+      reply_to: brand.supportEmail,
+      subject: `${finalCustomerName}, your warranty is now active`,
       headers: {
         'X-Entity-Ref-ID': `welcome-${policyNumber}-${Date.now()}`,
       },
       ...(attachments.length > 0 && { attachments }),
       html: `
-        <style>
-          @media only screen and (max-width: 600px) {
-            .baw-wrap { padding: 16px 10px !important; }
-            .baw-card { padding: 22px 18px !important; }
-            .baw-card-sm { padding: 18px !important; }
-            .baw-h1 { font-size: 20px !important; }
-            .baw-h2 { font-size: 17px !important; }
-            .baw-cta { padding: 13px 24px !important; font-size: 15px !important; display: block !important; }
-            .baw-contact-cell { display: block !important; width: 100% !important; box-sizing: border-box; margin-bottom: 10px; }
-            .baw-row-label, .baw-row-value { font-size: 13px !important; }
-            .baw-portal-cell { padding: 12px 14px !important; font-size: 13px !important; }
-          }
-        </style>
-        <div class="baw-wrap" style="background-color: #f5f6f8; padding: 30px 15px; font-family: Arial, Helvetica, sans-serif; color: #1f2937;">
-          <div style="max-width: 600px; margin: 0 auto;">
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; color: #333333;">
 
-            <!-- Header / Logo -->
-            <div style="text-align: center; padding: 10px 0 25px;">
-              <img src="https://buyawarranty.co.uk/images/buyawarranty-logo.png" alt="buyawarranty.co.uk" style="max-width: 240px; height: auto; display: inline-block;" />
+          <!-- Logo -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <img src="${brand.logoUrl}" alt="${brand.name}" style="max-width: 300px; height: auto;" />
+          </div>
+
+          <!-- Greeting -->
+          <div style="margin-bottom: 25px;">
+            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">Hi <strong>${finalCustomerName}</strong>,</p>
+            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0;">Thanks for choosing ${brand.name} to protect your vehicle — we're pleased to let you know that your warranty is now active!</p>
+          </div>
+
+          ${seasonalBonusMonths > 0 ? `
+          <!-- Seasonal Bonus -->
+          <div style="background-color: #f8f9fa; border: 1px solid #e9ecef; padding: 16px 20px; border-radius: 8px; margin-bottom: 25px;">
+            <p style="color: #333333; font-size: 16px; margin: 0 0 6px 0;">
+              <strong>You've received an extra ${seasonalBonusMonths} months</strong> of warranty coverage at no additional cost.
+            </p>
+            <p style="color: #555555; font-size: 14px; margin: 0;">
+              Your warranty now covers you until <strong>${formatDate(endDate)}</strong>.
+            </p>
+          </div>
+          ` : ''}
+
+          <!-- Policy Details -->
+          <div style="margin-bottom: 25px;">
+            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;"><strong>Here are your policy details:</strong></p>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+              <tr>
+                <td style="padding: 8px 0; color: #555555; font-size: 15px;"><strong>Policy Number:</strong></td>
+                <td style="padding: 8px 0; color: #333333; font-size: 15px;">${policyNumber}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #555555; font-size: 15px;"><strong>Plan Type:</strong></td>
+                <td style="padding: 8px 0; color: #333333; font-size: 15px;">${planType}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #555555; font-size: 15px;"><strong>Registration Plate:</strong></td>
+                <td style="padding: 8px 0; color: #333333; font-size: 15px;"><span style="${regPlateStyle}">${regPlate}</span></td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #555555; font-size: 15px;"><strong>Coverage Period:</strong></td>
+                <td style="padding: 8px 0; color: #333333; font-size: 15px;">${totalCoverageMonths} months${seasonalBonusMonths > 0 ? ` (+${seasonalBonusMonths} bonus months)` : ''}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #555555; font-size: 15px;"><strong>Start Date:</strong></td>
+                <td style="padding: 8px 0; color: #333333; font-size: 15px;">${formatDate(startDate)}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #555555; font-size: 15px;"><strong>End Date:</strong></td>
+                <td style="padding: 8px 0; color: #333333; font-size: 15px;">${formatDate(endDate)}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #555555; font-size: 15px;"><strong>Payment Method:</strong></td>
+                <td style="padding: 8px 0; color: #333333; font-size: 15px;">Stripe</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Portal Login -->
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+            <h3 style="color: #333333; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">Your portal login details</h3>
+            <p style="color: #333333; font-size: 15px; line-height: 1.6; margin: 0 0 15px 0;">You can view your updated policy anytime via your customer portal:</p>
+            <p style="margin: 8px 0; color: #333333; font-size: 15px;"><strong>Login:</strong> <a href="${brand.siteUrl}/auth" style="color: #1a73e8; text-decoration: none;">Customer Dashboard</a></p>
+            <p style="margin: 8px 0; color: #333333; font-size: 15px;"><strong>Email:</strong> ${email}</p>
+            ${userHasResetPassword
+              ? `<p style="margin: 8px 0; color: #555555; font-size: 13px; font-style: italic;">You have already set your dashboard password. Use your existing password to log in, or reset it from the login page if needed.</p>`
+              : `<p style="margin: 8px 0; color: #333333; font-size: 15px;"><strong>Temporary Password:</strong> <code style="background-color: #ffffff; padding: 4px 8px; border-radius: 4px; font-family: 'Courier New', monospace; color: #333333; border: 1px solid #dee2e6;">${tempPassword}</code></p>
+                 <p style="margin: 8px 0; color: #555555; font-size: 13px; font-style: italic;">Use your previous password if you have one or you may reset it.</p>`
+            }
+          </div>
+
+          <!-- Documents -->
+          <div style="margin-bottom: 25px;">
+            <h3 style="color: #333333; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">Your documents</h3>
+            <p style="color: #333333; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;">Attached to this email, you'll find:</p>
+            <ul style="color: #333333; font-size: 15px; line-height: 1.8; margin: 0 0 10px 0; padding-left: 20px;">
+              <li>Platinum Warranty Plan Certificate</li>
+              <li>Terms & Conditions</li>
+            </ul>
+            <p style="color: #333333; font-size: 15px; line-height: 1.6; margin: 0;">Please keep these safe — you'll need them if you ever need to make a claim.</p>
+          </div>
+
+          <!-- Support -->
+          <div style="margin-bottom: 25px;">
+            <h3 style="color: #333333; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">Need a hand?</h3>
+            <p style="color: #333333; font-size: 15px; line-height: 1.6; margin: 0 0 15px 0;">If you've got any questions or need help, feel free to reach out:</p>
+
+            <div style="margin-bottom: 15px;">
+              <p style="color: #333333; font-size: 15px; margin: 0 0 5px 0;"><strong>Customer Sales and Support</strong></p>
+              <p style="color: #333333; font-size: 15px; margin: 0;">Email: <a href="mailto:${brand.supportEmail}" style="color: #1a73e8; text-decoration: none;">${brand.supportEmail}</a></p>
+              <p style="color: #333333; font-size: 15px; margin: 0;">Phone: <a href="tel:${brand.quotePhone.replace(/\s/g, '')}" style="color: #1a73e8; text-decoration: none;">${brand.quotePhone}</a></p>
             </div>
 
-            <!-- Hero Card -->
-            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 35px 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <div style="text-align: center; margin: -10px 0 18px 0;">
-                <img src="https://buyawarranty.co.uk/images/welcome-panda-claim.jpg" alt="Buy a Warranty - your protection is active" width="520" style="width: 100%; max-width: 520px; height: auto; display: block; margin: 0 auto; border: 0; outline: none; text-decoration: none;" />
-              </div>
-              <h1 class="baw-h1" style="color: #1d3a8a; font-size: 24px; font-weight: 700; margin: 0 0 8px 0; line-height: 1.3;">Valued Customer, your warranty details</h1>
-              <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 16px 0 0 0;">Hi <strong>${finalCustomerName}</strong>,</p>
-              <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 12px 0 0 0;">Congratulations and thank you for choosing Buy a Warranty. Your protection plan is now active and your policy documents are attached to this email for your records.</p>
-
-              <div style="margin-top: 24px; padding: 16px 20px; background-color: #f9fafb; border-left: 4px solid #eb6b1f; border-radius: 4px;">
-                <p style="margin: 0; color: #6b7280; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Policy Number</p>
-                <p style="margin: 4px 0 0 0; color: #1d3a8a; font-size: 20px; font-weight: 700;">${policyNumber}</p>
-              </div>
+            <div style="margin-bottom: 15px;">
+              <p style="color: #333333; font-size: 15px; margin: 0 0 5px 0;"><strong>Claims and Repairs</strong></p>
+              <p style="color: #333333; font-size: 15px; margin: 0;">Email: <a href="mailto:${brand.claimsEmail}" style="color: #1a73e8; text-decoration: none;">${brand.claimsEmail}</a></p>
+              <p style="color: #333333; font-size: 15px; margin: 0;">Phone: <a href="tel:${brand.claimsPhone.replace(/\s/g, '')}" style="color: #1a73e8; text-decoration: none;">${brand.claimsPhone}</a></p>
+              <p style="color: #555555; font-size: 14px; margin: 5px 0 0 0;">Hours: Monday to Friday, 9am – 5:30pm</p>
             </div>
+          </div>
 
-            ${seasonalBonusMonths > 0 ? `
-            <!-- Seasonal Bonus -->
-            <div class="baw-card-sm" style="background-color: #ffffff; border-radius: 8px; padding: 20px 30px; margin-bottom: 16px; border: 1px solid #e5e7eb; border-top: 3px solid #eb6b1f;">
-              <p class="baw-h2" style="margin: 0; color: #1d3a8a; font-size: 16px; font-weight: 700;">Bonus coverage included</p>
-              <p style="margin: 6px 0 0 0; color: #4b5563; font-size: 15px; line-height: 1.5;">You've received an extra <strong>${seasonalBonusMonths} months</strong> of coverage at no additional cost. Your protection now runs until <strong>${formatDate(endDate)}</strong>.</p>
-            </div>
-            ` : ''}
+          <!-- Closing -->
+          <div style="margin-bottom: 25px;">
+            <p style="color: #333333; font-size: 15px; line-height: 1.6; margin: 0;">Thanks again for choosing ${brand.name} — we're here to keep you covered and give you peace of mind on the road.</p>
+          </div>
 
-            <!-- Policy Summary -->
-            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <h2 class="baw-h2" style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 20px 0;">Your policy summary</h2>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 12px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f3f4f6; width: 45%;">Vehicle Registration</td>
-                  <td style="padding: 12px 0; color: #1f2937; font-size: 14px; border-bottom: 1px solid #f3f4f6; font-weight: 600; text-align: right;"><span style="${regPlateStyle}">${regPlate}</span></td>
-                </tr>
-                <tr>
-                  <td style="padding: 12px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f3f4f6;">Plan Type</td>
-                  <td style="padding: 12px 0; color: #1f2937; font-size: 14px; border-bottom: 1px solid #f3f4f6; font-weight: 600; text-align: right;">${planType}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 12px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f3f4f6;">Coverage Period</td>
-                  <td style="padding: 12px 0; color: #1f2937; font-size: 14px; border-bottom: 1px solid #f3f4f6; font-weight: 600; text-align: right;">${totalCoverageMonths} months</td>
-                </tr>
-                <tr>
-                  <td style="padding: 12px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f3f4f6;">Start Date</td>
-                  <td style="padding: 12px 0; color: #1f2937; font-size: 14px; border-bottom: 1px solid #f3f4f6; font-weight: 600; text-align: right;">${formatDate(startDate)}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 12px 0; color: #6b7280; font-size: 14px; border-bottom: 1px solid #f3f4f6;">Policy End Date</td>
-                  <td style="padding: 12px 0; color: #1f2937; font-size: 14px; border-bottom: 1px solid #f3f4f6; font-weight: 600; text-align: right;">${formatDate(endDate)}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 12px 0; color: #6b7280; font-size: 14px;">Payment Method</td>
-                  <td style="padding: 12px 0; color: #1f2937; font-size: 14px; font-weight: 600; text-align: right;">Stripe</td>
-                </tr>
-              </table>
-            </div>
-
-            <!-- What's included with Platinum -->
-            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <h2 class="baw-h2" style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 20px 0;">What's included with Platinum</h2>
-              <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 16px 0;">Your Platinum warranty covers thousands of mechanical and electrical parts, including:</p>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Engine, gearbox, clutch and drivetrain</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Electrics, ECUs, sensors and diagnostics</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Turbo, fuel and cooling systems</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Air conditioning, steering and suspension</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Any VAT-registered garage in the UK — or we can help you find one</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Approved parts and labour paid directly to your garage</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>UK Team Claims support</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Transferable if you sell your car</td>
-                </tr>
-              </table>
-            </div>
-
-            <!-- Customer Portal -->
-            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <h2 class="baw-h2" style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 12px 0;">Access your customer portal</h2>
-              <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 8px 0;">Log in to your customer portal to:</p>
-              <ul style="color: #4b5563; font-size: 15px; line-height: 1.8; margin: 0 0 20px 0; padding-left: 20px;">
-                <li>View your policy documents</li>
-                <li>Check your coverage details</li>
-                <li>Manage your account information</li>
-                <li>Access support when needed</li>
-              </ul>
-
-              <div style="text-align: center; margin: 24px 0;">
-                <a href="https://buyawarranty.co.uk/auth" class="baw-cta" style="display: inline-block; background-color: #eb6b1f; color: #ffffff; text-decoration: none; padding: 14px 36px; border-radius: 6px; font-size: 16px; font-weight: 700;">Log in to your portal</a>
-              </div>
-
-              <table style="width: 100%; border-collapse: collapse; margin-top: 16px; background-color: #f9fafb; border-radius: 6px;">
-                <tr>
-                  <td style="padding: 14px 18px; color: #6b7280; font-size: 14px; width: 45%;">Portal Email</td>
-                  <td style="padding: 14px 18px; color: #1f2937; font-size: 14px; font-weight: 600; text-align: right;">${email}</td>
-                </tr>
-                ${userHasResetPassword ? `
-                <tr>
-                  <td colspan="2" style="padding: 0 18px 14px; color: #6b7280; font-size: 13px; font-style: italic; border-top: 1px solid #f3f4f6;">You have already set your dashboard password. Use your existing password to log in, or reset it from the login page if needed.</td>
-                </tr>
-                ` : `
-                <tr>
-                  <td style="padding: 14px 18px; color: #6b7280; font-size: 14px; border-top: 1px solid #f3f4f6;">Temporary Password</td>
-                  <td style="padding: 14px 18px; color: #1f2937; font-size: 14px; font-weight: 600; text-align: right; border-top: 1px solid #f3f4f6;"><code style="background-color: #ffffff; padding: 4px 10px; border-radius: 4px; font-family: 'Courier New', monospace; color: #1f2937; border: 1px solid #d1d5db;">${tempPassword}</code></td>
-                </tr>
-                <tr>
-                  <td colspan="2" style="padding: 0 18px 14px; color: #6b7280; font-size: 13px; font-style: italic;">For security, we recommend changing your password after your first login.</td>
-                </tr>
-                `}
-              </table>
-            </div>
-
-            <!-- Documents Include -->
-            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <h2 class="baw-h2" style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 16px 0;">Your documents include</h2>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Warranty terms and conditions</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Coverage information and limitations</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Claims contact details</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #4b5563; font-size: 15px; line-height: 1.6;"><span style="color: #eb6b1f; font-weight: 700; margin-right: 8px;">✓</span>Important policy information</td>
-                </tr>
-              </table>
-            </div>
-
-            <!-- Need help -->
-            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <h2 class="baw-h2" style="color: #1d3a8a; font-size: 18px; font-weight: 700; margin: 0 0 8px 0;">Need help?</h2>
-              <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">If you have any questions, our team is here to help.</p>
-
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td class="baw-contact-cell" style="width: 50%; padding: 16px; background-color: #f9fafb; border-radius: 6px; vertical-align: top;">
-                    <p style="margin: 0 0 8px 0; color: #1d3a8a; font-size: 14px; font-weight: 700;">Customer Support</p>
-                    <p style="margin: 0 0 4px 0; color: #1f2937; font-size: 14px;"><a href="tel:03302295040" style="color: #1f2937; text-decoration: none;">0330 229 5040</a></p>
-                    <p style="margin: 0; color: #1f2937; font-size: 14px;"><a href="mailto:support@buyawarranty.co.uk" style="color: #1f2937; text-decoration: none;">support@buyawarranty.co.uk</a></p>
-                  </td>
-                  <td style="width: 8px;"></td>
-                  <td class="baw-contact-cell" style="width: 50%; padding: 16px; background-color: #f9fafb; border-radius: 6px; vertical-align: top;">
-                    <p style="margin: 0 0 8px 0; color: #1d3a8a; font-size: 14px; font-weight: 700;">Claims Team</p>
-                    <p style="margin: 0 0 4px 0; color: #1f2937; font-size: 14px;"><a href="tel:03302295045" style="color: #1f2937; text-decoration: none;">0330 229 5045</a></p>
-                    <p style="margin: 0; color: #1f2937; font-size: 14px;"><a href="mailto:claims@buyawarranty.co.uk" style="color: #1f2937; text-decoration: none;">claims@buyawarranty.co.uk</a></p>
-                  </td>
-                </tr>
-              </table>
-            </div>
-
-            <!-- Closing -->
-            <div class="baw-card" style="background-color: #ffffff; border-radius: 8px; padding: 30px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
-              <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">Thank you again for choosing Buy a Warranty. We are delighted to have you covered.</p>
-              <p style="color: #1f2937; font-size: 15px; line-height: 1.6; margin: 0;">Kind regards,<br><strong>The Buy a Warranty Team</strong></p>
-            </div>
-
-            <!-- Footer -->
-            <div style="text-align: center; padding: 20px 10px;">
-              <p style="margin: 0; color: #6b7280; font-size: 13px;"><a href="https://buyawarranty.co.uk" style="color: #1d3a8a; text-decoration: none; font-weight: 600;">buyawarranty.co.uk</a></p>
-              <p style="margin: 8px 0 0 0; color: #9ca3af; font-size: 12px;">Vehicle protection you can trust</p>
-            </div>
-
+          <!-- Footer -->
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+            <p style="color: #333333; font-size: 15px; margin: 0 0 5px 0;"><strong>Best regards,</strong></p>
+            <p style="color: #333333; font-size: 15px; margin: 0;">The ${brand.name} Team</p>
           </div>
         </div>
       `
     };
 
     logStep("Sending email with attachments", { attachmentCount: attachments.length });
-    
+
     if (attachments.length === 0) {
       logStep("WARNING: No PDF attachments loaded - email will be sent without documents");
     }
-    
+
     try {
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -586,33 +517,10 @@ serve(async (req) => {
 
       if (!response.ok) {
         logStep("Email sending failed", { status: response.status, error: emailResult });
-        await logCustomerEmail({
-          recipient_email: email,
-          recipient_name: customerName,
-          subject: emailPayload.subject,
-          template_name: 'welcome_email',
-          source_function: 'send-welcome-email',
-          status: 'failed',
-          error_message: emailResult?.message || `HTTP ${response.status}`,
-          policy_number: policyNumber,
-          registration_plate: registrationPlate,
-          metadata: { plan_type: planType, payment_type: paymentType },
-        });
         throw new Error(`Email sending failed: ${emailResult.message || 'Unknown error'}`);
       }
 
       logStep("Welcome email sent successfully", emailResult);
-      await logCustomerEmail({
-        recipient_email: email,
-        recipient_name: customerName,
-        subject: emailPayload.subject,
-        template_name: 'welcome_email',
-        source_function: 'send-welcome-email',
-        status: 'sent',
-        policy_number: policyNumber,
-        registration_plate: registrationPlate,
-        metadata: { plan_type: planType, payment_type: paymentType, resend_message_id: emailResult?.id },
-      });
     } catch (emailError) {
       logStep("Error sending welcome email", emailError);
       const errorMessage = emailError instanceof Error ? emailError.message : String(emailError);
@@ -627,33 +535,6 @@ serve(async (req) => {
         .eq('template_type', 'feedback')
         .eq('is_active', true)
         .single();
-
-      // Schedule "How to make a claim" follow-up email 90 minutes after welcome
-      if (feedbackTemplate && !templateError) {
-        try {
-          const claimInfoSendAt = new Date(Date.now() + 90 * 60 * 1000);
-          const { error: claimScheduleError } = await supabaseClient
-            .from('scheduled_emails')
-            .insert({
-              template_id: feedbackTemplate.id, // FK stub; routing uses metadata.emailType
-              customer_id: userId,
-              recipient_email: email,
-              scheduled_for: claimInfoSendAt.toISOString(),
-              metadata: {
-                emailType: 'claim_info',
-                customerFirstName: finalCustomerName,
-                policyNumber,
-              }
-            });
-          if (claimScheduleError) {
-            logStep('Failed to schedule claim info email', { error: claimScheduleError });
-          } else {
-            logStep('Claim info email scheduled', { scheduledFor: claimInfoSendAt.toISOString() });
-          }
-        } catch (e) {
-          logStep('Error scheduling claim info email', e);
-        }
-      }
 
       if (feedbackTemplate && !templateError) {
         // Calculate first Tuesday at 10am after purchase
@@ -672,8 +553,8 @@ serve(async (req) => {
             metadata: {
               customerFirstName: finalCustomerName,
               expiryDate: calculatePolicyEndDate(paymentType),
-              portalUrl: 'https://buyawarranty.co.uk/customer-dashboard',
-              referralLink: `https://buyawarranty.co.uk/refer/${userId || 'guest'}`,
+              portalUrl: `${brand.siteUrl}/customer-dashboard`,
+              referralLink: `${brand.siteUrl}/refer/${userId || 'guest'}`,
               emailType: 'first_invitation'
             }
           });
@@ -708,8 +589,8 @@ serve(async (req) => {
               metadata: {
                 customerFirstName: finalCustomerName,
                 expiryDate: calculatePolicyEndDate(paymentType),
-                portalUrl: 'https://buyawarranty.co.uk/customer-dashboard',
-                referralLink: `https://buyawarranty.co.uk/refer/${userId || 'guest'}`,
+                portalUrl: `${brand.siteUrl}/customer-dashboard`,
+                referralLink: `${brand.siteUrl}/refer/${userId || 'guest'}`,
                 emailType: 'reminder'
               }
             });
@@ -726,8 +607,8 @@ serve(async (req) => {
       // Don't fail the whole process if scheduling fails
     }
 
-    return new Response(JSON.stringify({ 
-      success: true, 
+    return new Response(JSON.stringify({
+      success: true,
       message: "Welcome email process completed",
       policyId: policyData?.id,
       userId: userId
@@ -738,7 +619,7 @@ serve(async (req) => {
   } catch (error) {
     let errorMessage = 'Unknown error';
     let errorDetails = null;
-    
+
     if (error instanceof Error) {
       errorMessage = error.message;
       errorDetails = {
@@ -750,11 +631,11 @@ serve(async (req) => {
       errorMessage = String(error);
       errorDetails = error;
     }
-    
+
     logStep("ERROR in send-welcome-email", errorDetails);
     console.error("Full error object:", JSON.stringify(errorDetails, null, 2));
-    
-    return new Response(JSON.stringify({ 
+
+    return new Response(JSON.stringify({
       success: false,
       error: errorMessage,
       details: errorDetails
@@ -774,7 +655,7 @@ serve(async (req) => {
  */
 function getWarrantyDurationInMonths(paymentType: string): number {
   const normalizedPaymentType = paymentType?.toLowerCase().replace(/[_-]/g, '').trim();
-  
+
   switch (normalizedPaymentType) {
     case 'monthly':
     case '1month':
@@ -835,14 +716,14 @@ function getNextTuesday(fromDate: Date): Date {
   const result = new Date(fromDate);
   const dayOfWeek = result.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   const daysUntilTuesday = (2 - dayOfWeek + 7) % 7; // 2 = Tuesday
-  
+
   // If today is Tuesday, get next Tuesday
   if (daysUntilTuesday === 0) {
     result.setDate(result.getDate() + 7);
   } else {
     result.setDate(result.getDate() + daysUntilTuesday);
   }
-  
+
   return result;
 }
 
