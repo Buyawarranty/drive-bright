@@ -587,8 +587,17 @@ Deno.serve(async (req) => {
 
     // ─── STALL ALERT ──────────────────────────────────────────────────────────
     // If every sale in this run failed, or sales have been sitting unsent for
-    // more than 6 hours, email the team once per day so a silent stop (e.g. a
-    // stale deployment) can never go unnoticed again.
+    // more than 6 hours, email the team so a silent stop (e.g. a stale
+    // deployment or a Supabase/Google Ads outage) can never go unnoticed.
+    //
+    // This used to only fire at hour 9 UTC. On 2026-09-23 every run from
+    // 21:00 to 06:00 failed 100% of its uploads (a transient outage that
+    // returned HTML instead of JSON to the Supabase client), and because it
+    // recovered on its own before the 09:00 check, nobody was ever emailed —
+    // the team only found out by noticing failed conversions in the Google
+    // Ads dashboard hours later. Alerting on every stalled run instead closes
+    // that gap: worst case is one email per hourly run while an incident is
+    // actually ongoing, which stops on its own the moment a run succeeds.
     try {
       // Sales deliberately skipped (no ad click) are handled, not stalled.
       const nothingGotThrough =
@@ -603,10 +612,9 @@ Deno.serve(async (req) => {
         .lte('created_at', new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString());
 
       const stalled = nothingGotThrough || (staleCount || 0) >= 3;
-      const hourUTC = new Date().getUTCHours();
       const resendKey = Deno.env.get('RESEND_API_KEY');
 
-      if (stalled && hourUTC === 9 && resendKey) {
+      if (stalled && resendKey) {
         await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
