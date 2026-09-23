@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { differenceInCalendarDays, format, startOfDay } from 'date-fns';
-import { AlertTriangle, CalendarClock, CheckCircle2, Loader2, MessageSquare, RefreshCw, Search } from 'lucide-react';
+import { AlertTriangle, CalendarClock, CheckCircle2, Info, Loader2, MessageSquare, RefreshCw, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -168,7 +169,24 @@ const BawPayLaterTab: React.FC = () => {
   return (
     <div className="space-y-4 p-4">
       <div>
-        <h2 className="text-xl font-semibold">{BAW_PAYLATER_LABEL} collections</h2>
+        <h2 className="text-xl font-semibold flex items-center gap-2">
+          {BAW_PAYLATER_LABEL} collections
+          <TooltipProvider delayDuration={150}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="text-muted-foreground hover:text-foreground" aria-label="How BAW PayLater works">
+                  <Info className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-xs text-xs leading-relaxed">
+                <p className="font-semibold mb-1">How BAW PayLater works</p>
+                <p>The customer takes 2 or 3 year cover but pays one year at a time — year 1 at the point of sale, each remaining year on the policy anniversary. Each yearly payment is the per-year price +10%.</p>
+                <p className="mt-1.5 font-semibold">Commission &amp; sales target</p>
+                <p>The agent's commission is per year, and the sale counts towards their target only as each payment is collected — not the full term amount up front, because it hasn't been collected yet. Mark each anniversary payment collected here as the money comes in.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </h2>
         <p className="text-sm text-muted-foreground">
           Yearly payments still to be taken on 2 and 3 year cover sold on BAW PayLater. The first year is
           collected at the point of sale — every anniversary after that is chased here.

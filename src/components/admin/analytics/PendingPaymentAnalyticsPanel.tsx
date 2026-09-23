@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Info } from 'lucide-react';
 
 /**
  * Pending payment analytics — money sold but not yet in the bank.
@@ -157,7 +159,24 @@ export function PendingPaymentAnalyticsPanel() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>BAW PayLater yearly payments</CardDescription>
+            <CardDescription className="flex items-center gap-1.5">
+              BAW PayLater yearly payments
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button" className="text-muted-foreground hover:text-foreground" aria-label="How BAW PayLater works">
+                      <Info className="h-3.5 w-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs text-xs leading-relaxed">
+                    <p className="font-semibold mb-1">How BAW PayLater works</p>
+                    <p>The customer takes 2 or 3 year cover but pays one year at a time — year 1 at the point of sale, each remaining year on the policy anniversary. Each yearly payment is the per-year price +10%.</p>
+                    <p className="mt-1.5 font-semibold">Commission &amp; sales target</p>
+                    <p>Agent commission is per year, and the sale counts towards the agent's target only as each payment is collected — not the full term amount up front, because it hasn't been collected yet. These figures are money still to come in, so they're excluded from monthly revenue until collected.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </CardDescription>
             <CardTitle className="text-2xl">{money(totals.schedulesTotal)}</CardTitle>
           </CardHeader>
           <CardContent className="text-xs text-muted-foreground">{schedules.length} instalment{schedules.length === 1 ? '' : 's'}</CardContent>

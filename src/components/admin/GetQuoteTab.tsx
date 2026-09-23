@@ -4,6 +4,7 @@ import {
   isPayLaterEligible, payLaterYears, payLaterYearlyAmount, payLaterTermTotal,
   payLaterExtraVsTerm, buildPayLaterSchedule, BAW_PAYLATER_LABEL, BAW_PAYLATER_NOTE,
 } from '@/lib/bawPayLater';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import { splitAddressLine } from '@/lib/address/splitAddressLine';
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
@@ -5485,7 +5486,24 @@ Questions? Call 0330 229 5040`;
                       )}>
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <Label className="text-sm font-semibold">{BAW_PAYLATER_LABEL} — pay yearly</Label>
+                            <div className="flex items-center gap-1.5">
+                              <Label className="text-sm font-semibold">{BAW_PAYLATER_LABEL} — pay yearly</Label>
+                              <TooltipProvider delayDuration={150}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button type="button" className="text-emerald-700 hover:text-emerald-900" aria-label="How BAW PayLater works">
+                                      <Info className="h-3.5 w-3.5" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
+                                    <p className="font-semibold mb-1">How BAW PayLater works</p>
+                                    <p>The customer takes 2 or 3 year cover but pays one year at a time. Year 1 is collected today; each remaining year is collected on the policy anniversary. Each yearly payment is the per-year price +10%.</p>
+                                    <p className="mt-1.5 font-semibold">Commission &amp; sales target</p>
+                                    <p>Commission is per year, and the sale only counts towards your target as each payment is collected — not the full term amount up front, because it hasn't been collected yet. Today's sale records the first-year (one-year equivalent) amount; later years count when accounts mark them collected.</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
                             <p className="text-[11px] text-muted-foreground">
                               {years} year cover, collected one year at a time on the policy anniversary.
                             </p>
