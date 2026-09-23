@@ -264,6 +264,11 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead, onNa
   // Instalment plan is a SEPARATE choice from cover duration (admin surfaces only).
   // 2-year = 12 or 24 instalments, 3-year = 12 or 36, 1-year = 12.
   const [instalmentCount, setInstalmentCount] = useState<InstalmentCount>(12);
+  // BAW PayLater — 2/3 year cover collected one year at a time (see lib/bawPayLater).
+  const [payLaterMode, setPayLaterMode] = useState(false);
+  useEffect(() => {
+    if (!isPayLaterEligible(paymentType) && payLaterMode) setPayLaterMode(false);
+  }, [paymentType, payLaterMode]);
   useEffect(() => {
     // Keep the instalment plan valid whenever the cover term changes.
     // 36 instalments is visible but disabled (Coming Soon), so never let it be selected.
