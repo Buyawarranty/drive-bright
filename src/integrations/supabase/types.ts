@@ -1872,6 +1872,77 @@ export type Database = {
           },
         ]
       }
+      baw_paylater_schedules: {
+        Row: {
+          amount: number
+          chase_count: number
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          due_date: string
+          id: string
+          last_chased_at: string | null
+          notes: string | null
+          paid_amount: number | null
+          paid_at: string | null
+          payment_method: string | null
+          payment_reference: string | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+          warranty_reference_number: string | null
+          year_number: number
+        }
+        Insert: {
+          amount: number
+          chase_count?: number
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          due_date: string
+          id?: string
+          last_chased_at?: string | null
+          notes?: string | null
+          paid_amount?: number | null
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          warranty_reference_number?: string | null
+          year_number: number
+        }
+        Update: {
+          amount?: number
+          chase_count?: number
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          due_date?: string
+          id?: string
+          last_chased_at?: string | null
+          notes?: string | null
+          paid_amount?: number | null
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          warranty_reference_number?: string | null
+          year_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "baw_paylater_schedules_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocked_ips: {
         Row: {
           blocked_at: string
@@ -4634,6 +4705,9 @@ export type Database = {
           acquisition_source: string | null
           assigned_to: string | null
           balance_due_amount: number | null
+          baw_paylater: boolean
+          baw_paylater_yearly_amount: number | null
+          baw_paylater_years: number | null
           brand: string
           breakdown_recovery: boolean | null
           brevo_contact_id: string | null
@@ -4778,6 +4852,9 @@ export type Database = {
           acquisition_source?: string | null
           assigned_to?: string | null
           balance_due_amount?: number | null
+          baw_paylater?: boolean
+          baw_paylater_yearly_amount?: number | null
+          baw_paylater_years?: number | null
           brand?: string
           breakdown_recovery?: boolean | null
           brevo_contact_id?: string | null
@@ -4922,6 +4999,9 @@ export type Database = {
           acquisition_source?: string | null
           assigned_to?: string | null
           balance_due_amount?: number | null
+          baw_paylater?: boolean
+          baw_paylater_yearly_amount?: number | null
+          baw_paylater_years?: number | null
           brand?: string
           breakdown_recovery?: boolean | null
           brevo_contact_id?: string | null
