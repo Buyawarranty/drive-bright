@@ -214,6 +214,7 @@ export type Database = {
         Row: {
           address: Json | null
           boost_addon: boolean | null
+          brand: string
           call_count: number | null
           cart_metadata: Json | null
           claim_limit: number | null
@@ -247,6 +248,7 @@ export type Database = {
         Insert: {
           address?: Json | null
           boost_addon?: boolean | null
+          brand?: string
           call_count?: number | null
           cart_metadata?: Json | null
           claim_limit?: number | null
@@ -280,6 +282,7 @@ export type Database = {
         Update: {
           address?: Json | null
           boost_addon?: boolean | null
+          brand?: string
           call_count?: number | null
           cart_metadata?: Json | null
           claim_limit?: number | null
@@ -2183,6 +2186,7 @@ export type Database = {
       bumper_transactions: {
         Row: {
           add_another_warranty: boolean | null
+          brand: string
           claim_limit: number | null
           client_id: string | null
           conversion_fired_at: string | null
@@ -2206,6 +2210,7 @@ export type Database = {
         }
         Insert: {
           add_another_warranty?: boolean | null
+          brand?: string
           claim_limit?: number | null
           client_id?: string | null
           conversion_fired_at?: string | null
@@ -2229,6 +2234,7 @@ export type Database = {
         }
         Update: {
           add_another_warranty?: boolean | null
+          brand?: string
           claim_limit?: number | null
           client_id?: string | null
           conversion_fired_at?: string | null
@@ -3448,6 +3454,7 @@ export type Database = {
         Row: {
           approved_at: string | null
           assigned_to: string | null
+          brand: string
           claim_reason: string | null
           claimed_amount: number | null
           created_at: string
@@ -3489,6 +3496,7 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           assigned_to?: string | null
+          brand?: string
           claim_reason?: string | null
           claimed_amount?: number | null
           created_at?: string
@@ -3530,6 +3538,7 @@ export type Database = {
         Update: {
           approved_at?: string | null
           assigned_to?: string | null
+          brand?: string
           claim_reason?: string | null
           claimed_amount?: number | null
           created_at?: string
@@ -3955,6 +3964,7 @@ export type Database = {
       contact_submissions: {
         Row: {
           assigned_to: string | null
+          brand: string
           created_at: string
           email: string
           file_name: string | null
@@ -3969,6 +3979,7 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          brand?: string
           created_at?: string
           email: string
           file_name?: string | null
@@ -3983,6 +3994,7 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          brand?: string
           created_at?: string
           email?: string
           file_name?: string | null
@@ -4622,6 +4634,7 @@ export type Database = {
           acquisition_source: string | null
           assigned_to: string | null
           balance_due_amount: number | null
+          brand: string
           breakdown_recovery: boolean | null
           brevo_contact_id: string | null
           building_name: string | null
@@ -4765,6 +4778,7 @@ export type Database = {
           acquisition_source?: string | null
           assigned_to?: string | null
           balance_due_amount?: number | null
+          brand?: string
           breakdown_recovery?: boolean | null
           brevo_contact_id?: string | null
           building_name?: string | null
@@ -4908,6 +4922,7 @@ export type Database = {
           acquisition_source?: string | null
           assigned_to?: string | null
           balance_due_amount?: number | null
+          brand?: string
           breakdown_recovery?: boolean | null
           brevo_contact_id?: string | null
           building_name?: string | null
@@ -8843,6 +8858,7 @@ export type Database = {
           additional_notes: string | null
           bonus_months: number
           boost_addon: boolean | null
+          brand: string
           breakdown_included: boolean | null
           claim_limit: number
           created_at: string
@@ -8889,6 +8905,7 @@ export type Database = {
           additional_notes?: string | null
           bonus_months?: number
           boost_addon?: boolean | null
+          brand?: string
           breakdown_included?: boolean | null
           claim_limit?: number
           created_at?: string
@@ -8935,6 +8952,7 @@ export type Database = {
           additional_notes?: string | null
           bonus_months?: number
           boost_addon?: boolean | null
+          brand?: string
           breakdown_included?: boolean | null
           claim_limit?: number
           created_at?: string
@@ -9843,6 +9861,7 @@ export type Database = {
           admin_user_id: string | null
           amount_pence: number
           application_url: string | null
+          brand: string
           created_at: string
           currency: string
           customer_email: string | null
@@ -9865,6 +9884,7 @@ export type Database = {
           admin_user_id?: string | null
           amount_pence: number
           application_url?: string | null
+          brand?: string
           created_at?: string
           currency?: string
           customer_email?: string | null
@@ -9887,6 +9907,7 @@ export type Database = {
           admin_user_id?: string | null
           amount_pence?: number
           application_url?: string | null
+          brand?: string
           created_at?: string
           currency?: string
           customer_email?: string | null
