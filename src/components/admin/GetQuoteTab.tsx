@@ -4035,6 +4035,34 @@ Questions? Call 0330 229 5040`;
       // Check if this is a future start date for W2000 scheduling
       const isFutureStartDate = !isToday(warrantyStartDate) && warrantyStartDate > new Date();
 
+      // 4b. BAW PayLater — write the yearly collection plan. Year 1 is marked paid
+      // (it is the money taken at the point of sale); later anniversaries stay
+      // pending so accounts can chase them from Payments pending.
+      if (payLaterActive && customerId) {
+        try {
+          const rows = buildPayLaterSchedule(Number(confirmedAmount) || 0, payLaterYearCount, startDate)
+            .map((row) => ({
+              customer_id: customerId,
+              warranty_reference_number: finalWarrantyReference,
+              year_number: row.yearNumber,
+              amount: row.amount,
+              due_date: row.dueDate.toISOString().slice(0, 10),
+              status: row.yearNumber === 1 && !deferredMode ? 'paid' : 'pending',
+              paid_at: row.yearNumber === 1 && !deferredMode ? new Date().toISOString() : null,
+              paid_amount: row.yearNumber === 1 && !deferredMode ? row.amount : null,
+              payment_method: row.yearNumber === 1 ? (paymentSource || 'external') : null,
+              notes: row.yearNumber === 1 ? 'First year collected at the point of sale' : null,
+              created_by: adminUserRecordId,
+            }));
+          await supabase
+            .from('baw_paylater_schedules')
+            .upsert(rows as any, { onConflict: 'customer_id,year_number' });
+        } catch (plErr) {
+          console.error('BAW PayLater schedule creation failed:', plErr);
+        }
+      }
+
+
       // 5. Create or update policy record with payment confirmation metadata
       // Convert paymentType ID to human-readable label for consistency
       const paymentTypeLabel = paymentType === '12months' ? 'yearly' 
