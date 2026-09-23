@@ -3942,6 +3942,32 @@ Questions? Call 0330 229 5040`;
         customerData.purchase_source = DEFERRED_PAYMENT_SOURCE;
       }
 
+      // BAW PayLater — the customer takes 2/3 year cover but pays a year at a time.
+      // Only the first year is collected now, so the SALE VALUE recorded (and with it
+      // the agent's scoreboard credit) is that first yearly payment — the one-year
+      // equivalent — never the full term price. The remaining years live in
+      // baw_paylater_schedules for accounts to collect.
+      const payLaterActive = payLaterMode && isPayLaterEligible(paymentType);
+      const payLaterYearCount = payLaterActive ? payLaterYears(paymentType) : 0;
+      const payLaterYearly = payLaterActive
+        ? payLaterYearlyAmount(Number(confirmedAmount) || 0, payLaterYearCount)
+        : 0;
+      if (payLaterActive) {
+        const yearlyQuoted = payLaterYearlyAmount(quotedTotalAtSale, payLaterYearCount);
+        customerData.baw_paylater = true;
+        customerData.baw_paylater_years = payLaterYearCount;
+        customerData.baw_paylater_yearly_amount = payLaterYearly;
+        customerData.final_amount = payLaterYearly;
+        customerData.original_amount = yearlyQuoted;
+        customerData.sale_quoted_total = yearlyQuoted;
+        customerData.discount_amount = Math.max(0, yearlyQuoted - payLaterYearly);
+        customerData.sale_discount_amount = Math.max(0, yearlyQuoted - payLaterYearly);
+        customerData.sale_discount_pct = yearlyQuoted > 0
+          ? Math.round((Math.max(0, yearlyQuoted - payLaterYearly) / yearlyQuoted) * 1000) / 10
+          : 0;
+      }
+
+
 
       // 3. Create or update customer
       if (existingCustomer) {
