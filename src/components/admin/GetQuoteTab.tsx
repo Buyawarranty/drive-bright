@@ -4,6 +4,7 @@ import {
   isPayLaterEligible, payLaterYears, payLaterYearlyAmount, payLaterTermTotal,
   payLaterExtraVsTerm, buildPayLaterSchedule, BAW_PAYLATER_LABEL, BAW_PAYLATER_NOTE,
 } from '@/lib/bawPayLater';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import { splitAddressLine } from '@/lib/address/splitAddressLine';
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
