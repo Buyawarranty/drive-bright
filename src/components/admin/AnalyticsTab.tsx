@@ -1360,14 +1360,14 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           </Card>
         )}
 
-        <AnalyticsSectionHeading id="revenue-monthly" title="Revenue & AOV by month" description="Monthly revenue, order volume and average order value across the last 12 months." accent="border-emerald-500/60" />
+        <AnalyticsSectionHeading id="revenue-monthly" title="Revenue & AOV by month" description="Monthly revenue collected so far, order volume and average order value across the last 12 months. Orders awaiting payment are counted as sales but add no revenue until collected." accent="border-emerald-500/60" />
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Total Revenue & AOV by Month (Last 12 Months)</CardTitle>
               <CardDescription className="mt-1">
-                Click on any bar to filter all data by that month
+                Amount collected so far — click on any bar to filter all data by that month
               </CardDescription>
             </div>
             {selectedMonth && (
