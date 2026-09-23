@@ -5418,6 +5418,50 @@ Questions? Call 0330 229 5040`;
                       )}
                     </div>
                   )}
+                  {/* BAW PayLater — 2/3 year cover collected one year at a time */}
+                  {isPayLaterEligible(paymentType) && (() => {
+                    const years = payLaterYears(paymentType);
+                    const yearly = payLaterYearlyAmount(displayedTotalPrice, years);
+                    const planTotal = payLaterTermTotal(displayedTotalPrice, years);
+                    const extra = payLaterExtraVsTerm(displayedTotalPrice, years);
+                    return (
+                      <div className={cn(
+                        "space-y-2 rounded-lg border-2 p-3 transition-all",
+                        payLaterMode ? "border-emerald-500 bg-emerald-50" : "border-emerald-200 bg-emerald-50/40"
+                      )}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <Label className="text-sm font-semibold">{BAW_PAYLATER_LABEL} — pay yearly</Label>
+                            <p className="text-[11px] text-muted-foreground">
+                              {years} year cover, collected one year at a time on the policy anniversary.
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={payLaterMode ? 'default' : 'outline'}
+                            onClick={() => setPayLaterMode(!payLaterMode)}
+                          >
+                            {payLaterMode ? 'Selected' : 'Use PayLater'}
+                          </Button>
+                        </div>
+                        <div className="rounded-md border border-emerald-200 bg-white p-2.5">
+                          <div className="text-lg font-bold text-emerald-700">£{yearly}<span className="text-sm font-semibold">/year</span></div>
+                          <div className="text-[11px] font-medium text-black">
+                            {years} yearly payments · £{planTotal} across the term
+                          </div>
+                          {extra > 0 && (
+                            <div className="text-[11px] font-semibold text-amber-700">
+                              +£{extra} vs paying the {years}-year price up front
+                            </div>
+                          )}
+                        </div>
+                        {payLaterMode && (
+                          <p className="text-[11px] font-semibold text-emerald-800">{BAW_PAYLATER_NOTE}</p>
+                        )}
+                      </div>
+                    );
+                  })()}
                   {termSavings['24months'] && (
                     <p className="text-xs text-muted-foreground">
                       Savings compare the full term price against buying 1-year cover repeatedly, with the same claim
