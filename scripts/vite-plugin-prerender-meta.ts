@@ -288,18 +288,27 @@ export function prerenderMetaPlugin(): Plugin {
         written += 1;
       }
 
-      // The homepage keeps its own head tags, but its #root is empty too, so give
-      // crawlers the same static heading + intro block.
-      const homeRoute: RouteMeta = {
-        path: "/",
-        title: "Car, Van, EV & Motorbike Warranty Cover UK",
-        description:
-          "Compare and buy extended warranty cover for your car, van, motorbike, hybrid or electric vehicle. Instant online quote from your registration and mileage, flexible claim limits and UK-based claims support.",
-      };
-      const homeHtml = setStaticBody(template, homeRoute);
-      if (homeHtml !== template) {
-        await fs.writeFile(indexPath, homeHtml, "utf8");
-      }
+      // NOTE: dist/index.html is intentionally left untouched here.
+      //
+      // It used to be patched with the same static heading + intro block the
+      // per-route pages get, on the theory that "React replaces it on
+      // hydration so real visitors never see it." That's only true when the
+      // JS bundle actually mounts successfully. index.html is also the SPA
+      // fallback shell for every route that ISN'T one of PRERENDER_ROUTES —
+      // checkout, the customer dashboard, admin, all of it — so if React's
+      // initial render ever throws before it can replace #root's children
+      // (a real-world case: a customer returning to a mid-checkout step from
+      // an external payment provider with unexpected/missing state), the
+      // stale SEO fallback markup was left on screen instead. It looked
+      // exactly like a different, broken site: bare unstyled headings and a
+      // links list, with no error and no way to tell what happened.
+      //
+      // Crawlers hitting "/" already get correct <title>/description/OG tags
+      // from index.html's own <head> (set at build time / via SEOHead), so
+      // the only thing lost by not injecting body text here is a minor,
+      // homepage-only text-scraping nicety — not worth the app-wide crash
+      // risk. RootErrorBoundary (src/main.tsx) is the actual safety net for
+      // a genuine render failure now.
 
       console.log(
         `[prerender-meta] Generated ${written} route HTML files with route-specific meta tags.`,
