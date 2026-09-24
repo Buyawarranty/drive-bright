@@ -83,6 +83,7 @@ serve(async (req) => {
       skipAddressDetails,
       address,
       liveQuoteId,
+      gclid: submittedGclid,
     } = body;
 
     logStep("Request data", { 
@@ -120,9 +121,61 @@ serve(async (req) => {
     const incomingReg = (vehicleReg || '').toUpperCase().replace(/\s/g, '');
     const { data: existingCustomer } = await supabase
       .from('customers')
-      .select('id, email, registration_plate')
+      .select('id, email, registration_plate, gclid')
       .ilike('email', customerEmail)
       .maybeSingle();
+
+    // CRM confirmations happen after the original website visit, often through
+    // Bumper, Payment Assist or a card terminal. Recover the original Google
+    // click id before saving the sale so the hourly offline upload can attribute it.
+    let recoveredGclid = String(submittedGclid || existingCustomer?.gclid || '').trim() || null;
+    if (!recoveredGclid) {
+      const regCompact = (vehicleReg || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+
+      if (customerEmail) {
+        const { data: lead } = await supabase
+          .from('sales_leads')
+          .select('gclid')
+          .ilike('email', customerEmail)
+          .not('gclid', 'is', null)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        recoveredGclid = String(lead?.gclid || '').trim() || null;
+      }
+
+      if (!recoveredGclid && regCompact) {
+        const { data: leads } = await supabase
+          .from('sales_leads')
+          .select('gclid, vehicle_reg')
+          .not('gclid', 'is', null)
+          .order('created_at', { ascending: false })
+          .limit(100);
+        const lead = (leads || []).find((row: any) =>
+          String(row.vehicle_reg || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase() === regCompact
+        );
+        recoveredGclid = String(lead?.gclid || '').trim() || null;
+      }
+
+      if (!recoveredGclid && (customerEmail || regCompact)) {
+        let cartQuery = supabase
+          .from('abandoned_carts')
+          .select('cart_metadata, email, vehicle_reg')
+          .order('created_at', { ascending: false })
+          .limit(30);
+        if (customerEmail) cartQuery = cartQuery.ilike('email', customerEmail);
+        const { data: carts } = await cartQuery;
+        const matchingCart = (carts || []).find((row: any) => {
+          const rowReg = String(row.vehicle_reg || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+          return !regCompact || !rowReg || rowReg === regCompact;
+        });
+        recoveredGclid = String(
+          matchingCart?.cart_metadata?.gclid_any || matchingCart?.cart_metadata?.gclid || ''
+        ).trim() || null;
+      }
+    }
+
+    logStep('Google Ads attribution resolved', { hasGclid: !!recoveredGclid });
 
     let customerId: string;
     let customerCreated = false;
@@ -206,6 +259,12 @@ serve(async (req) => {
           assigned_to: assigneeId,
           payment_confirmed_by: assigneeId,
           warranty_reference_number: warrantyReference,
+          ...(recoveredGclid && {
+            gclid: recoveredGclid,
+            acquisition_source: 'google_ads',
+            google_ads_conversion_uploaded_at: null,
+            google_ads_conversion_status: null,
+          }),
           // Auto-restore soft-deleted customers when a new active policy is created
           is_deleted: false,
           deleted_at: null,
@@ -254,7 +313,9 @@ serve(async (req) => {
           payment_confirmed_by: assigneeId,
           warranty_reference_number: warrantyReference,
           signup_date: startDate.toISOString(),
-          purchase_source: 'admin_external',
+          purchase_source: recoveredGclid ? 'google_ads' : 'admin_external',
+          acquisition_source: recoveredGclid ? 'google_ads' : 'website',
+          gclid: recoveredGclid,
           ...(address && !skipAddressDetails && {
             building_number: address.buildingNumber,
             street: address.street,
