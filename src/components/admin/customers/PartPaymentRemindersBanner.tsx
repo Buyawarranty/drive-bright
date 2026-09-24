@@ -79,7 +79,7 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
           customerEmail: nameById.get(p.customer_id)?.email ?? null,
           paid: paidById.get(p.customer_id) ?? 0,
         }))
-        .filter(r => Math.max(r.total_due - r.paid, 0) > 0);
+        .filter(r => r.paid > 0 && Math.max(r.total_due - r.paid, 0) > 0);
     },
     refetchInterval: 2 * 60 * 1000,
   });
@@ -141,12 +141,12 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
           </div>
           <div>
             <div className={`text-sm font-semibold ${alarm ? 'text-red-900' : 'text-amber-900'}`}>
-              {reminders.length} payment{reminders.length === 1 ? '' : 's'} pending
+              {reminders.length} part-payment balance{reminders.length === 1 ? '' : 's'} pending
               {uncollected > 0 ? ` · ${uncollected} not collected within 24 hours` : ''}
               {overdue > 0 ? ` · ${overdue} past the balance date` : ''}
             </div>
             <div className={`text-xs ${alarm ? 'text-red-800' : 'text-amber-800'}`}>
-              These orders stay listed until a manager marks the payment received.
+              Every sale with a part payment received stays here until its remaining balance is confirmed.
             </div>
           </div>
         </div>
