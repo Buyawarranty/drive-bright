@@ -254,7 +254,7 @@ Deno.serve(async (req) => {
     try {
       const { data: noGclidCustomers } = await supabase
         .from('customers')
-        .select('id, email, registration_plate')
+        .select('id, email, registration_plate, google_ads_conversion_status')
         .is('gclid', null)
         .eq('is_deleted', false)
         .in('status', ['active', 'Active'])
@@ -266,30 +266,36 @@ Deno.serve(async (req) => {
         let cartGclid: string | null = null;
 
         if (c.email) {
-          const { data: cart } = await supabase
+          const { data: carts } = await supabase
             .from('abandoned_carts')
             .select('cart_metadata')
             .ilike('email', c.email)
-            .not('cart_metadata->>gclid', 'is', null)
             .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          cartGclid = (cart?.cart_metadata as any)?.gclid || null;
+            .limit(20);
+          const cart = (carts || []).find((row: any) =>
+            row?.cart_metadata?.gclid_any || row?.cart_metadata?.gclid
+          );
+          cartGclid = (cart?.cart_metadata as any)?.gclid_any || (cart?.cart_metadata as any)?.gclid || null;
         }
         if (!cartGclid && c.registration_plate) {
-          const { data: cart } = await supabase
+          const { data: carts } = await supabase
             .from('abandoned_carts')
             .select('cart_metadata')
             .eq('vehicle_reg', c.registration_plate)
-            .not('cart_metadata->>gclid', 'is', null)
             .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          cartGclid = (cart?.cart_metadata as any)?.gclid || null;
+            .limit(20);
+          const cart = (carts || []).find((row: any) =>
+            row?.cart_metadata?.gclid_any || row?.cart_metadata?.gclid
+          );
+          cartGclid = (cart?.cart_metadata as any)?.gclid_any || (cart?.cart_metadata as any)?.gclid || null;
         }
 
         if (cartGclid) {
-          await supabase.from('customers').update({ gclid: cartGclid }).eq('id', c.id);
+          await supabase.from('customers').update({
+            gclid: cartGclid,
+            google_ads_conversion_uploaded_at: null,
+            google_ads_conversion_status: 'recovered Google click id; queued for upload',
+          }).eq('id', c.id);
           backfilledCustomers++;
         }
       }
@@ -307,29 +313,35 @@ Deno.serve(async (req) => {
         const bReg: string | null = b.vehicle_data?.registration_plate || b.vehicle_data?.regNumber || null;
         let cartGclid: string | null = null;
         if (bEmail) {
-          const { data: cart } = await supabase
+          const { data: carts } = await supabase
             .from('abandoned_carts')
             .select('cart_metadata')
             .ilike('email', bEmail)
-            .not('cart_metadata->>gclid', 'is', null)
             .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          cartGclid = (cart?.cart_metadata as any)?.gclid || null;
+            .limit(20);
+          const cart = (carts || []).find((row: any) =>
+            row?.cart_metadata?.gclid_any || row?.cart_metadata?.gclid
+          );
+          cartGclid = (cart?.cart_metadata as any)?.gclid_any || (cart?.cart_metadata as any)?.gclid || null;
         }
         if (!cartGclid && bReg) {
-          const { data: cart } = await supabase
+          const { data: carts } = await supabase
             .from('abandoned_carts')
             .select('cart_metadata')
             .eq('vehicle_reg', bReg)
-            .not('cart_metadata->>gclid', 'is', null)
             .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          cartGclid = (cart?.cart_metadata as any)?.gclid || null;
+            .limit(20);
+          const cart = (carts || []).find((row: any) =>
+            row?.cart_metadata?.gclid_any || row?.cart_metadata?.gclid
+          );
+          cartGclid = (cart?.cart_metadata as any)?.gclid_any || (cart?.cart_metadata as any)?.gclid || null;
         }
         if (cartGclid) {
-          await supabase.from('bumper_transactions').update({ gclid: cartGclid }).eq('id', b.id);
+          await supabase.from('bumper_transactions').update({
+            gclid: cartGclid,
+            google_ads_conversion_uploaded_at: null,
+            google_ads_conversion_status: 'recovered Google click id; queued for upload',
+          }).eq('id', b.id);
           backfilledBumper++;
         }
       }
