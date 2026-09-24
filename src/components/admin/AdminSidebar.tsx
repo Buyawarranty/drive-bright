@@ -322,12 +322,6 @@ export const defaultTabs: Tab[] = [
     description: 'Confirmed sales with no verified payment — accounts verification queue'
   },
   {
-    id: 'pending-payment',
-    label: 'Pending Payment',
-    icon: PoundSterling,
-    description: 'Pay later orders — warranty stays off until the payment is received'
-  },
-  {
     id: 'baw-paylater',
     label: 'BAW PayLater',
     icon: PoundSterling,
