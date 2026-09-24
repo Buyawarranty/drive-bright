@@ -22,7 +22,7 @@ interface ReminderRow {
 
 interface Props {
   /** Optional: focus a customer record when a reminder is clicked. */
-  onOpenCustomer?: (customerId: string) => void;
+  onOpenCustomer?: (customerId: string, email?: string | null) => void;
   /** Managers only: allows marking the outstanding balance as received. */
   canMarkReceived?: boolean;
   /** Jump the list to the "Balance outstanding" filter. */
@@ -198,7 +198,7 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
                 <button
                   type="button"
                   className="font-semibold underline-offset-2 hover:underline text-left"
-                  onClick={() => onOpenCustomer?.(r.customer_id)}
+                  onClick={() => onOpenCustomer?.(r.customer_id, r.customerEmail)}
                 >
                   {r.customerName}
                 </button>
