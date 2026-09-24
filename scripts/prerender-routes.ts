@@ -301,6 +301,14 @@ export const PRERENDER_ROUTES: RouteMeta[] = [
     ogType: "article",
     ogImage: `${SITE}/blog/petrol-diesel-vehicle-warranty-cover-uk.jpg`,
   },
+  {
+    path: "/thewarrantyhub/land-rover-extended-warranty-cost-uk-2026-prices-repair-costs/",
+    title: "Land Rover Warranty Cost UK 2026 | Repair Prices",
+    description:
+      "Compare Land Rover extended warranty costs in the UK for 2026, including prices from £19 a month, repair bills and what to check before buying.",
+    ogType: "article",
+    ogImage: "https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/blog-images/land-rover-warranty-cost-uk-2026.jpg",
+  },
 
 
   // ---------------- Main product pages ----------------
