@@ -681,6 +681,36 @@ export const PAGE_BODIES: Record<string, PageBody> = {
       },
     ],
   },
+  '/thewarrantyhub/land-rover-extended-warranty-cost-uk-2026-prices-repair-costs/': {
+    h1: 'Land Rover Extended Warranty Cost UK: 2026 Prices & Repair Costs',
+    intro:
+      "There is no single Land Rover extended warranty price in the UK. Cost depends on the model, age, mileage, engine, condition, cover level and policy duration, with cover currently advertised from £19 per month.",
+    sections: [
+      {
+        h2: 'How much does a Land Rover extended warranty cost in the UK?',
+        paras: [
+          'A vehicle-specific quote is the reliable way to establish cost. Range Rover, Discovery, Defender and other models can attract different prices because their components, repair exposure and eligibility differ.',
+        ],
+      },
+      {
+        h2: 'How much can Land Rover repairs cost?',
+        paras: [
+          'Historical high-value claims include engine repairs around £8,532 to £9,000 and gearbox repairs around £8,616 to £8,877. These are examples of major claims, not average repair prices.',
+        ],
+      },
+      {
+        h2: 'What should you check before buying?',
+        paras: [
+          'Compare covered components, claim limits, exclusions, excess, labour-rate contribution, wear-and-tear terms, garage requirements, service-history conditions and the claims authorisation process—not monthly price alone.',
+        ],
+      },
+    ],
+    faqs: [
+      { q: 'How much does a Land Rover extended warranty cost in the UK?', a: 'There is no single price. The model, age, mileage and cover level all affect the vehicle-specific quote.' },
+      { q: 'Can I buy cover after the manufacturer warranty expires?', a: 'This depends on the provider and whether the vehicle meets its age, mileage and condition criteria.' },
+      { q: 'Does cover include air suspension?', a: 'Some policies may cover eligible air-suspension components; check the component list, exclusions and claim limits.' },
+    ],
+  },
 };
 
 export function getPageBody(path: string): PageBody | undefined {

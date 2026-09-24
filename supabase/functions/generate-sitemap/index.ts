@@ -57,6 +57,7 @@ Deno.serve(async (req) => {
       { url: '/thewarrantyhub/tesla-warranty-uk-2026-battery-cover-repair-costs-extended-options/', priority: '0.8' },
       { url: '/thewarrantyhub/tesla-car-price-extended-warranty-uk-2026-ownership-guide/', priority: '0.8' },
       { url: '/thewarrantyhub/petrol-diesel-vehicle-warranty-cover-complete-uk-drivers-guide/', priority: '0.8' },
+      { url: '/thewarrantyhub/land-rover-extended-warranty-cost-uk-2026-prices-repair-costs/', priority: '0.8' },
       { url: '/used-car-warranty-uk/', priority: '0.9' },
       { url: '/cancel-warranty/', priority: '0.9' },
       { url: '/warranty-plan/', priority: '0.9' },
