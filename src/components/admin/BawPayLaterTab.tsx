@@ -14,6 +14,8 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { BAW_PAYLATER_LABEL } from '@/lib/bawPayLater';
+import { useIsManagement } from '@/hooks/useIsManagement';
+import { PartPaymentRemindersBanner } from './customers/PartPaymentRemindersBanner';
 
 /**
  * BAW PayLater collections — the accounts team's list of yearly payments still to be
@@ -58,6 +60,7 @@ const PAYMENT_METHODS = [
 
 const BawPayLaterTab: React.FC = () => {
   const adminUserId = useCurrentAdminId();
+  const { isManagement } = useIsManagement();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<'all' | SStatus | 'overdue'>('pending');
@@ -168,6 +171,7 @@ const BawPayLaterTab: React.FC = () => {
 
   return (
     <div className="space-y-4 p-4">
+      {isManagement && <PartPaymentRemindersBanner canMarkReceived />}
       <div>
         <h2 className="text-xl font-semibold flex items-center gap-2">
           {BAW_PAYLATER_LABEL} collections
