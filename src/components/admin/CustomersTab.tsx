@@ -4507,14 +4507,32 @@ Buyawarranty.co.uk`,
 
   return (
     <div className="space-y-6">
-      {/* Part payments pending (top-of-page banner) */}
-      <PartPaymentRemindersBanner
-        canMarkReceived={canConfirmPayments}
-        onShowPendingList={() => setFilterByPartPayment('outstanding')}
-        onOpenCustomer={(id) => {
-          setSearchTerm(id);
-        }}
-      />
+      {/* Part payments pending (top-of-page banner) — management only */}
+      {canConfirmPayments && (
+        <PartPaymentRemindersBanner
+          canMarkReceived={canConfirmPayments}
+          onShowPendingList={() => {
+            // Clear anything that could hide older pending orders (e.g. "today" date range)
+            setDateRange(undefined);
+            setTotalSalesDateFilter('all');
+            setFilterByPlan('all');
+            setFilterByStatus('all');
+            setFilterByAgent('all');
+            setFilterBySource('all_view');
+            setSearchTerm('');
+            setFilterByPartPayment('outstanding');
+            setTimeout(() => {
+              document.getElementById('customers-list-table')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 150);
+          }}
+          onOpenCustomer={(_id, email) => {
+            setDateRange(undefined);
+            setTotalSalesDateFilter('all');
+            setFilterByPartPayment('all');
+            setSearchTerm(email || _id);
+          }}
+        />
+      )}
 
 
       {/* Pending payment confirmation banner (managers only) */}
