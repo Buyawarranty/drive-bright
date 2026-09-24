@@ -171,7 +171,7 @@ const BawPayLaterTab: React.FC = () => {
 
   return (
     <div className="space-y-4 p-4">
-      {isManagement && <PartPaymentRemindersBanner canMarkReceived />}
+      <PartPaymentRemindersBanner canMarkReceived={isManagement} />
       <div>
         <h2 className="text-xl font-semibold flex items-center gap-2">
           {BAW_PAYLATER_LABEL} collections
@@ -192,8 +192,8 @@ const BawPayLaterTab: React.FC = () => {
           </TooltipProvider>
         </h2>
         <p className="text-sm text-muted-foreground">
-          Yearly payments still to be taken on 2 and 3 year cover sold on BAW PayLater. The first year is
-          collected at the point of sale — every anniversary after that is chased here.
+          Yearly payments still to be taken on 2 and 3 year cover sold on BAW PayLater, plus every sale where
+          a part payment has been received and a balance remains. All outstanding money is chased here.
         </p>
       </div>
 
