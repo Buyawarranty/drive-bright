@@ -89,7 +89,7 @@ export const PaymentsPendingTab: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const since = new Date(Date.now() - Number(days) * 86400000).toISOString();
+      const since = days === 'all' ? null : new Date(Date.now() - Number(days) * 86400000).toISOString();
 
       let q = supabase
         .from('customers')
