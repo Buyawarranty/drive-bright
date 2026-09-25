@@ -55,6 +55,7 @@ import TrustAndInfoAccordion from '@/components/step3/TrustAndInfoAccordion';
 
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-sandbox-chat`;
+const LIVE_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-live-agent-request`;
 
 const AGENT_PREFIX = '(Warranty specialist)';
 const CONTACT_CARD_MARKER = '[[CONTACT_CARD]]';
@@ -131,7 +132,10 @@ function senderOf(message: UIMessage): Sender {
 const INTERNAL_LINE = /(system prompt|confident:\s*(true|false)|approved material|i must not|let'?s call\s+\w+|check_availability|get_indicative_price|lookup_vehicle|tool call|function call)/i;
 
 function sanitizeForCustomer(text: string) {
-  let out = text.replace(/^\s*(thought|thinking|reasoning)\b[:\-–—]?\s*/i, '');
+  let out = text
+    .replace(/^\s*(thought|thinking|reasoning)\b[:\-–—]?\s*/i, '')
+    .replace(/A specialist is being connected right now,? so someone will be with you in just a moment\.?/gi, '')
+    .trim();
   const kept = out
     .split(/\n{2,}/)
     .filter((block) => !INTERNAL_LINE.test(block));
@@ -220,19 +224,7 @@ function SenderLabel({ sender }: { sender: Sender }) {
     );
   }
 
-  return (
-    <div className="mb-1.5 flex items-center gap-1.5 border-b border-border pb-1.5 text-sm font-bold text-foreground">
-      <img
-        src={milesAvatar.url}
-        alt="Miles the panda"
-        width={20}
-        height={20}
-        className="h-5 w-5 rounded-full"
-        loading="lazy"
-      />
-      Miles · AI assistant
-    </div>
-  );
+  return null;
 }
 
 
@@ -702,7 +694,7 @@ function PriceOptionsPanel({
               >
                 <span className="flex items-center gap-2">
                   <PhoneCall className="h-4 w-4 shrink-0" />
-                  Talk to an agent or request a call
+                  Chat with a specialist now
                 </span>
                 <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.5} />
               </Button>
@@ -792,6 +784,8 @@ export function SandboxChatWindow({
   const [pricePanelOpen, setPricePanelOpen] = useState(true);
   // Opened when the customer asks for a person from the quote card / live banner.
   const [contactOpen, setContactOpen] = useState(false);
+  const [requestingLiveAgent, setRequestingLiveAgent] = useState(false);
+  const [liveRequestError, setLiveRequestError] = useState<string | null>(null);
   // Only offer a real person while a specialist has switched themselves live.
   const { live: agentLive, names: agentNames } = useLiveAgentAvailable();
   const [quoteStartOpen, setQuoteStartOpen] = useState(false);
@@ -1163,6 +1157,43 @@ export function SandboxChatWindow({
     sendMessage({ text: trimmed }, extraBody ? { body: extraBody } : undefined);
   };
 
+  const requestLiveAgent = async () => {
+    if (!isGuest || !guestToken || !agentLive || requestingLiveAgent) return;
+    setRequestingLiveAgent(true);
+    setLiveRequestError(null);
+    try {
+      const response = await fetch(LIVE_AGENT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guestToken,
+          registration: detectedReg,
+          source: source ?? 'website-chat',
+        }),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.ok) {
+        setLiveRequestError(data?.message ?? 'No specialist is available right now. Please use one of the options below.');
+        return;
+      }
+      setHandover({
+        id: data.handover_id,
+        kind: 'live_handover',
+        status: 'waiting',
+        reason: 'live_agent_requested',
+        customer_name: null,
+        cover_summary: null,
+        quoted_price: null,
+        created_at: new Date().toISOString(),
+      });
+      setContactOpen(false);
+    } catch {
+      setLiveRequestError('No specialist is available right now. Please use one of the options below.');
+    } finally {
+      setRequestingLiveAgent(false);
+    }
+  };
+
   // There is no live-agent handover: customers either call us, or leave a
   // number and the team calls or WhatsApps them back (CallMeBackPanel).
 
@@ -1231,7 +1262,7 @@ export function SandboxChatWindow({
       )}
 
       {/* Only shown while an agent has switched themselves live in the admin area. */}
-      {!agentMode && agentLive && !specialistJoined && !leadCaptured && (
+      {!agentMode && agentLive && !specialistJoined && !leadCaptured && !waiting && (
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-200 bg-emerald-50 px-4 py-2">
           <p className="flex items-center gap-2 text-xs font-semibold text-emerald-900">
             <span className="relative flex h-2 w-2 shrink-0">
@@ -1246,10 +1277,11 @@ export function SandboxChatWindow({
             size="sm"
             variant="outline"
             className="h-7 border-emerald-600 bg-white px-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
-            onClick={() => setContactOpen(true)}
+            onClick={() => void requestLiveAgent()}
+            disabled={requestingLiveAgent}
           >
-            <PhoneCall className="mr-1.5 h-3.5 w-3.5" />
-            Request a call
+            <Headset className="mr-1.5 h-3.5 w-3.5" />
+            {requestingLiveAgent ? 'Requesting…' : 'Chat with specialist'}
           </Button>
         </div>
       )}
@@ -1266,7 +1298,9 @@ export function SandboxChatWindow({
       {(waiting || leadCaptured) && (
         <div className="flex flex-wrap items-center gap-2 border-b border-amber-300 bg-amber-50 px-4 py-2 text-xs text-amber-900">
           <PhoneCall className="h-3.5 w-3.5" />
-          {waiting ? (
+          {waiting && isGuest ? (
+            <span className="font-medium">Your live chat request has been sent. A specialist can reply here while you are online.</span>
+          ) : waiting ? (
             <>
               <span className="font-medium">A warranty specialist has been alerted</span>
               <span>
@@ -1485,6 +1519,8 @@ export function SandboxChatWindow({
                 source={source}
                 compact={compact}
                 registration={detectedReg}
+                agentLive={agentLive}
+                onRequestLiveChat={() => void requestLiveAgent()}
               />
             </div>
           )}
@@ -1501,9 +1537,13 @@ export function SandboxChatWindow({
                 lastAssistantText={lastAssistantText}
                 agentLive={agentLive}
                 agentNames={agentNames}
-                onTalkToAgent={() => setContactOpen(true)}
+                onTalkToAgent={agentLive ? () => void requestLiveAgent() : () => setContactOpen(true)}
               />
             </div>
+          )}
+
+          {liveRequestError && (
+            <p className="px-3 pb-2 text-sm font-medium text-destructive">{liveRequestError}</p>
           )}
 
           {!agentMode && hasPriceQuote && !pricePanelOpen && (

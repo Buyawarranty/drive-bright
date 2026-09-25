@@ -12,7 +12,7 @@ import {
   Pencil,
 } from 'lucide-react';
 import { isTeamOpenNow, nextOpeningLabel, openingHoursLabel } from '@/lib/aiSandbox/openingHours';
-import { useSalesLineAvailable } from '@/hooks/useSalesLineAvailable';
+import { SALES_PHONE, SALES_PHONE_TEL, WHATSAPP_URL } from '@/constants/contact';
 
 const CALLBACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sandbox-callback-request`;
 
@@ -79,6 +79,8 @@ export function CallMeBackPanel({
   compact: _compact = false,
   asChip = false,
   autoOpen = false,
+  agentLive = false,
+  onRequestLiveChat,
 }: {
   guestToken?: string;
   threadId?: string;
@@ -91,6 +93,9 @@ export function CallMeBackPanel({
   asChip?: boolean;
   /** Render expanded straight away (inline in the chat stream). */
   autoOpen?: boolean;
+  /** True only while a staff member has switched themselves on duty. */
+  agentLive?: boolean;
+  onRequestLiveChat?: () => void;
 }) {
   const [step, setStep] = useState<Step>(autoOpen ? 'method' : 'closed');
   const [collapsed, setCollapsed] = useState(!autoOpen);
@@ -103,8 +108,6 @@ export function CallMeBackPanel({
   const [submitting, setSubmitting] = useState(false);
 
   const open = isTeamOpenNow();
-  // Weekends: the phone line only shows while an agent is genuinely live.
-  const showPhoneLine = useSalesLineAvailable();
   const isEmail = preference === 'email';
   const isWhatsApp = preference === 'whatsapp';
   const isValid = useMemo(() => (isEmail ? validEmail(email) : validUkPhone(phone)), [isEmail, email, phone]);
@@ -157,15 +160,32 @@ export function CallMeBackPanel({
   const methodList = (
     <div className="space-y-2">
       <p className="text-sm font-bold text-foreground">How would you like to get in touch?</p>
-      {open && showPhoneLine && (
-        <a
-          href="tel:03302295040"
-          className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+      {agentLive && onRequestLiveChat && (
+        <button
+          type="button"
+          onClick={onRequestLiveChat}
+          className="flex h-12 w-full items-center gap-3 rounded-xl border border-primary bg-primary px-4 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
         >
-          <Phone className="h-4 w-4 shrink-0 text-[#B4501F]" />
-          Call 0330 229 5040
-        </a>
+          <MessageCircle className="h-4 w-4 shrink-0" />
+          Chat with a specialist now
+        </button>
       )}
+      <a
+        href={SALES_PHONE_TEL}
+        className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+      >
+        <Phone className="h-4 w-4 shrink-0 text-[#B4501F]" />
+        Call us · {SALES_PHONE}
+      </a>
+      <a
+        href={WHATSAPP_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+      >
+        <MessageCircle className="h-4 w-4 shrink-0 text-emerald-600" />
+        WhatsApp us
+      </a>
       <button
         type="button"
         onClick={() => pickMethod('call')}
@@ -174,28 +194,14 @@ export function CallMeBackPanel({
         <PhoneCall className="h-4 w-4 shrink-0 text-[#B4501F]" />
         Request a callback
       </button>
-      <button
-        type="button"
-        onClick={() => pickMethod('whatsapp')}
-        className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
-      >
-        <MessageCircle className="h-4 w-4 shrink-0 text-emerald-600" />
-        Request a WhatsApp
-      </button>
-      <button
-        type="button"
-        onClick={() => pickMethod('email')}
-        className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
-      >
-        <Mail className="h-4 w-4 shrink-0 text-foreground" />
-        Request an email
-      </button>
       <p className="flex items-start gap-1.5 pt-1 text-xs leading-relaxed text-muted-foreground">
         <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
         <span>
           {open
-            ? `Our team is available now (${openingHoursLabel}).`
-            : `Our team is available ${openingHoursLabel}. We'll be in touch ${nextOpeningLabel()}.`}
+            ? agentLive
+              ? `A specialist is on duty now, or you can call, WhatsApp or request a callback (${openingHoursLabel}).`
+              : `Call or WhatsApp us now, or request a callback (${openingHoursLabel}).`
+            : `Our team is available ${openingHoursLabel}. You can WhatsApp us now or request a callback ${nextOpeningLabel()}.`}
         </span>
       </p>
     </div>
