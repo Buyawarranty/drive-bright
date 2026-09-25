@@ -28,6 +28,8 @@ const gbp = (n: number | null | undefined) => `£${Math.round(Number(n) || 0).to
 
 const DEAD_STATUSES = ['cancelled', 'canceled', 'refunded'];
 
+const plateOf = (s: string) => s.replace(/\s+/g, '');
+
 const SOURCES = [
   { value: 'stripe', label: 'Stripe' },
   { value: 'bumper', label: 'Bumper' },
