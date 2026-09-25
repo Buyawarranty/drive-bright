@@ -79,6 +79,8 @@ export function CallMeBackPanel({
   compact: _compact = false,
   asChip = false,
   autoOpen = false,
+  agentLive = false,
+  onRequestLiveChat,
 }: {
   guestToken?: string;
   threadId?: string;
@@ -91,6 +93,9 @@ export function CallMeBackPanel({
   asChip?: boolean;
   /** Render expanded straight away (inline in the chat stream). */
   autoOpen?: boolean;
+  /** True only while a staff member has switched themselves on duty. */
+  agentLive?: boolean;
+  onRequestLiveChat?: () => void;
 }) {
   const [step, setStep] = useState<Step>(autoOpen ? 'method' : 'closed');
   const [collapsed, setCollapsed] = useState(!autoOpen);
@@ -155,6 +160,16 @@ export function CallMeBackPanel({
   const methodList = (
     <div className="space-y-2">
       <p className="text-sm font-bold text-foreground">How would you like to get in touch?</p>
+      {agentLive && onRequestLiveChat && (
+        <button
+          type="button"
+          onClick={onRequestLiveChat}
+          className="flex h-12 w-full items-center gap-3 rounded-xl border border-primary bg-primary px-4 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          <MessageCircle className="h-4 w-4 shrink-0" />
+          Chat with a specialist now
+        </button>
+      )}
       <a
         href={SALES_PHONE_TEL}
         className="flex h-12 w-full items-center gap-3 rounded-xl border border-input bg-background px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
@@ -183,7 +198,9 @@ export function CallMeBackPanel({
         <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
         <span>
           {open
-            ? `Call or WhatsApp us now, or request a callback (${openingHoursLabel}).`
+            ? agentLive
+              ? `A specialist is on duty now, or you can call, WhatsApp or request a callback (${openingHoursLabel}).`
+              : `Call or WhatsApp us now, or request a callback (${openingHoursLabel}).`
             : `Our team is available ${openingHoursLabel}. You can WhatsApp us now or request a callback ${nextOpeningLabel()}.`}
         </span>
       </p>

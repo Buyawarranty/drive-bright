@@ -66,6 +66,20 @@ Deno.serve(async (req) => {
     }
 
     const open = isOpenNow();
+    const cutoff = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+    const { data: presence, error: presenceError } = await admin
+      .from("ai_sandbox_specialist_presence")
+      .select("override_hours")
+      .eq("is_online", true)
+      .gte("last_seen_at", cutoff);
+    if (presenceError) throw presenceError;
+    const specialistLive = (presence ?? []).some((row) => open || row.override_hours);
+    if (!specialistLive) {
+      return json(
+        { ok: false, error: "no_live_specialist", message: "No specialist is available right now. Please call, WhatsApp us or request a callback." },
+        409,
+      );
+    }
 
     // Don't stack duplicate rings for the same conversation.
     const { data: existing } = await admin
@@ -78,7 +92,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (existing?.id) {
-      return json({ ok: true, handover_id: existing.id, already_waiting: true, is_open: open });
+      return json({ ok: true, handover_id: existing.id, already_waiting: true, is_open: open, specialist_live: true });
     }
 
     const { data: inserted, error } = await admin
@@ -102,7 +116,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    return json({ ok: true, handover_id: inserted.id, is_open: open });
+    return json({ ok: true, handover_id: inserted.id, is_open: open, specialist_live: true });
   } catch (e) {
     console.error("[sandbox-live-agent-request] threw", e);
     return json(
