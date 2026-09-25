@@ -50,12 +50,14 @@ Deno.serve(async (req) => {
 
     let target = ukDate(0);
     let previewOnly = false;
+    let wrapup = false;
     let overrideTo: string[] | null = null;
     if (req.method === 'POST') {
       try {
         const body = await req.json();
         if (typeof body?.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(body.date)) target = body.date;
         previewOnly = body?.preview === true;
+        wrapup = body?.mode === 'wrapup';
         if (Array.isArray(body?.to) && body.to.length) overrideTo = body.to.map(String);
       } catch { /* no body */ }
     }
@@ -91,10 +93,21 @@ Deno.serve(async (req) => {
       );
     };
 
-    const [todayRows, yesterdayRows] = await Promise.all([
-      fetchDay(target, dayAfterTarget),
-      fetchDay(dayBefore, target),
-    ]);
+    // Convert a UK wall-clock time to a UTC ISO string (handles BST/GMT).
+    const londonToUtc = (date: string, hh: number, mm: number) => {
+      const guess = new Date(`${date}T${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:00Z`);
+      const ukHour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: '2-digit', hourCycle: 'h23' }).format(guess));
+      const offset = (ukHour - hh + 24) % 24;
+      return new Date(guess.getTime() - offset * 3600_000).toISOString();
+    };
+
+    // 08:30 wrap-up: everything since yesterday's 18:10 summary up to now.
+    const [todayRows, yesterdayRows] = wrapup
+      ? [await fetchDay(londonToUtc(dayBefore, 18, 10), new Date().toISOString()), [] as any[]]
+      : await Promise.all([
+          fetchDay(target, dayAfterTarget),
+          fetchDay(dayBefore, target),
+        ]);
 
     // Sale credit always belongs to a sales agent; back-office confirmations fall through.
     const { data: admins } = await supabase.from('admin_users').select('id, first_name, last_name, email, role');
@@ -164,8 +177,8 @@ Deno.serve(async (req) => {
 
     const html = `
       <div style="font-family:Arial,Helvetica,sans-serif;color:#0f172a;max-width:760px;margin:0 auto;padding:20px">
-        <h2 style="margin:0 0 4px;font-size:22px">Today's sales summary</h2>
-        <p style="margin:0 0 18px;color:#475569">${prettyDate(target)}</p>
+        <h2 style="margin:0 0 4px;font-size:22px">${wrapup ? 'Evening & overnight wrap-up' : "Today's sales summary"}</h2>
+        <p style="margin:0 0 18px;color:#475569">${wrapup ? `Sales since 6:10pm on ${prettyDate(dayBefore)} up to 8:30am today` : prettyDate(target)}</p>
 
         <table style="border-collapse:collapse;width:100%;font-size:14px;margin-bottom:22px">
           <tr>
@@ -177,15 +190,15 @@ Deno.serve(async (req) => {
               <div style="color:#475569;font-size:12px;text-transform:uppercase">Value today</div>
               <div style="font-size:22px;font-weight:bold">${money(todayTotal)}</div>
             </td>
-            <td style="padding:12px;background:#f1f5f9;border:1px solid #e2e8f0;width:34%">
+            ${wrapup ? '' : `<td style="padding:12px;background:#f1f5f9;border:1px solid #e2e8f0;width:34%">
               <div style="color:#475569;font-size:12px;text-transform:uppercase">vs ${prettyDate(dayBefore).split(',')[0]}</div>
               <div style="font-size:22px;font-weight:bold;color:${upColour}">${arrow} ${money(Math.abs(diff))}${pct === null ? '' : ` (${Math.abs(pct)}%)`}</div>
               <div style="color:#475569;font-size:12px">${yesterdayRows.length} sales · ${money(yesterdayTotal)}</div>
-            </td>
+            </td>`}
           </tr>
         </table>
 
-        <h3 style="margin:0 0 8px;font-size:16px">Every sale today</h3>
+        <h3 style="margin:0 0 8px;font-size:16px">${wrapup ? 'Every sale in this window' : 'Every sale today'}</h3>
         <table style="border-collapse:collapse;width:100%;font-size:14px">
           <thead>
             <tr style="background:#0f172a;color:#ffffff;text-align:left">
@@ -203,10 +216,10 @@ Deno.serve(async (req) => {
               <td colspan="5" style="padding:10px;font-weight:bold">Total — ${todayRows.length} sale${todayRows.length === 1 ? '' : 's'}</td>
               <td style="padding:10px;text-align:right;font-weight:bold;font-size:16px">${money(todayTotal)}</td>
             </tr>
-            <tr>
+            ${wrapup ? '' : `<tr>
               <td colspan="5" style="padding:8px 10px;color:#475569">Previous day (${prettyDate(dayBefore)})</td>
               <td style="padding:8px 10px;text-align:right;color:#475569">${money(yesterdayTotal)}</td>
-            </tr>
+            </tr>`}
           </tfoot>
         </table>
 
@@ -227,7 +240,9 @@ Deno.serve(async (req) => {
         </p>
       </div>`;
 
-    const subject = `Today's sales summary — ${prettyDate(target)} · ${todayRows.length} sales · ${money(todayTotal)}`;
+    const subject = wrapup
+      ? `Evening & overnight wrap-up — ${todayRows.length} sales · ${money(todayTotal)} since 6:10pm`
+      : `Today's sales summary — ${prettyDate(target)} · ${todayRows.length} sales · ${money(todayTotal)}`;
 
     if (previewOnly) return json({ ok: true, preview: true, date: target, count: todayRows.length, total: todayTotal, html });
 
