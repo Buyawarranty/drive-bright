@@ -131,7 +131,10 @@ function senderOf(message: UIMessage): Sender {
 const INTERNAL_LINE = /(system prompt|confident:\s*(true|false)|approved material|i must not|let'?s call\s+\w+|check_availability|get_indicative_price|lookup_vehicle|tool call|function call)/i;
 
 function sanitizeForCustomer(text: string) {
-  let out = text.replace(/^\s*(thought|thinking|reasoning)\b[:\-–—]?\s*/i, '');
+  let out = text
+    .replace(/^\s*(thought|thinking|reasoning)\b[:\-–—]?\s*/i, '')
+    .replace(/A specialist is being connected right now,? so someone will be with you in just a moment\.?/gi, '')
+    .trim();
   const kept = out
     .split(/\n{2,}/)
     .filter((block) => !INTERNAL_LINE.test(block));
@@ -220,19 +223,7 @@ function SenderLabel({ sender }: { sender: Sender }) {
     );
   }
 
-  return (
-    <div className="mb-1.5 flex items-center gap-1.5 border-b border-border pb-1.5 text-sm font-bold text-foreground">
-      <img
-        src={milesAvatar.url}
-        alt="Miles the panda"
-        width={20}
-        height={20}
-        className="h-5 w-5 rounded-full"
-        loading="lazy"
-      />
-      Miles · AI assistant
-    </div>
-  );
+  return null;
 }
 
 
