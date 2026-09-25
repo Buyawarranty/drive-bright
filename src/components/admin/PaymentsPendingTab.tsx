@@ -97,9 +97,10 @@ export const PaymentsPendingTab: React.FC = () => {
           'id, name, email, phone, registration_plate, warranty_reference_number, signup_date, payment_due_date, final_amount, payment_type, purchase_source, status, stripe_session_id, bumper_order_id, payment_confirmed_by, assigned_to, payment_verification_status, payment_verification_source, payment_verification_ref, payment_verification_note, payment_verified_at, payment_verified_by',
         )
         .eq('is_deleted', false)
-        .gte('signup_date', since)
         .order('signup_date', { ascending: false })
-        .limit(1000);
+        .limit(2000);
+
+      if (since) q = q.gte('signup_date', since);
 
       if (statusFilter === 'open') q = q.in('payment_verification_status', ['pending', 'queried', 'missing']);
       else if (statusFilter !== 'all') q = q.eq('payment_verification_status', statusFilter);
