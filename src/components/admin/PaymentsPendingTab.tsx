@@ -80,6 +80,7 @@ export const PaymentsPendingTab: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<VStatus | 'all' | 'open'>('open');
   const [search, setSearch] = useState('');
   const [days, setDays] = useState('120');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   const [dialogRow, setDialogRow] = useState<Row | null>(null);
   const [dialogAction, setDialogAction] = useState<VStatus>('verified');
