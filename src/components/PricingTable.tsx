@@ -32,7 +32,7 @@ import { cn } from '@/lib/utils';
 import AddOnProtectionPackages from '@/components/AddOnProtectionPackages';
 import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment, isMotorbikeAdjustment } from '@/lib/vehicleValidation';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
-import { getDefaultVoluntaryExcess } from '@/lib/pricing/getDefaultVoluntaryExcess';
+import { getDefaultVoluntaryExcess, DEFAULT_PAYMENT_PERIOD } from '@/lib/pricing/getDefaultVoluntaryExcess';
 import { 
   getBasePrice as getCentralizedBasePrice,
   DURATION_MONTHS,
@@ -146,8 +146,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const navigate = useNavigate();
 
   const [plans, setPlans] = useState<Plan[]>([]);
-  // Initialize payment type from previous selection, defaulting to 24 months
-  const initialPaymentType = previousPaymentType || '24months';
+  // Initialize payment type from previous selection, defaulting to 1 year
+  const initialPaymentType = previousPaymentType || DEFAULT_PAYMENT_PERIOD;
   console.log('🎯 PricingTable mount - previousPaymentType:', previousPaymentType, 'initialPaymentType:', initialPaymentType);
   const [paymentType, setPaymentType] = useState<'12months' | '24months' | '36months' | null>(initialPaymentType);
   // If previousVoluntaryExcess is explicitly set (including 0), use it; otherwise pick
@@ -182,7 +182,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // Track if payment type was changed by user action vs restoration/auto-change
   const isUserPaymentTypeChange = React.useRef(false);
   // Store the initial payment type to detect changes
-  const initialPaymentTypeRef = React.useRef(previousPaymentType || '12months');
+  const initialPaymentTypeRef = React.useRef(previousPaymentType || DEFAULT_PAYMENT_PERIOD);
   
   // Vehicle validation
   const vehicleValidation = useMemo(() => {
