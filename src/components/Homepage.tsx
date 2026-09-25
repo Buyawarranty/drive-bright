@@ -3,27 +3,20 @@ import { Button } from '@/components/ui/button';
 import { Check, ArrowRight, Star, Shield, Clock, Zap, Car, Truck, Battery, Bike, Menu, X, Phone, FileCheck, MessageCircle, Wrench, PoundSterling } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { Link } from 'react-router-dom';
 import WebsiteFooter from './WebsiteFooter';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { VoucherBanner } from './VoucherBanner';
-import { EmailCapturePopup } from './EmailCapturePopup';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import LazySection from './homepage/LazySection';
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
-import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
-import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import heroPandaVehiclesMobile from '@/assets/hero-panda-vehicles-mobile.webp.asset.json';
 import heroPandaVehiclesDesktop from '@/assets/hero-panda-vehicles-desktop.webp.asset.json';
 
 import HowPricingWorksModal from './modals/HowPricingWorksModal';
 
-import TrustpilotSliderWidget from './TrustpilotSliderWidget';
 import TrustpilotMicroStarWidget from './TrustpilotMicroStarWidget';
-import TrustpilotHeader from './TrustpilotHeader';
 import TrustpilotMicroComboWidget from './TrustpilotMicroComboWidget';
-import RequestCallbackModal from './modals/RequestCallbackModal';
 
 // Lazy load heavy components to reduce initial bundle size.
 // lazyWithRetry re-attempts the dynamic import so a single failed/stale chunk
@@ -35,12 +28,19 @@ const WarrantyBenefitsSection = lazyWithRetry(() => import('./homepage/WarrantyB
 const CoverClaritySection = lazyWithRetry(() => import('./homepage/CoverClaritySection'));
 const VehicleCoverageSection = lazyWithRetry(() => import('./homepage/VehicleCoverageSection'));
 const LandingPageDirectory = lazyWithRetry(() => import('./homepage/LandingPageDirectory'));
+// Both popups stay mounted (controlled by an `isOpen` prop) rather than
+// conditionally rendered, and both pull in canvas-confetti — lazy-loading
+// them keeps that weight out of the homepage's main bundle until one is
+// actually about to open instead of shipping it to every mobile visitor.
+const EmailCapturePopup = lazyWithRetry(() =>
+  import('./EmailCapturePopup').then((m) => ({ default: m.EmailCapturePopup }))
+);
+const RequestCallbackModal = lazyWithRetry(() => import('./modals/RequestCallbackModal'));
 
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
-import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
-import { MileageField, ManualVehicleEntryCard, RegLookupError, RegInputErrorOutline, REG_NOT_FOUND_MESSAGE, REG_NOT_FOUND_DETAIL, buildMileageBlockMessage, buildTypedMileageBlockMessage, buildAgeBlockMessage, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
+import { trackButtonClick, trackQuoteRequest } from '@/utils/analytics';
+import { MileageField, RegLookupError, RegInputErrorOutline, REG_NOT_FOUND_MESSAGE, REG_NOT_FOUND_DETAIL, buildMileageBlockMessage, buildTypedMileageBlockMessage, buildAgeBlockMessage, digitsOnly, MAX_COVERED_MILEAGE } from '@/components/quote/ManualQuoteEntry';
 import { getVehicleBlockMessage } from '@/lib/vehicleBlockGuard';
 import { getVehicleIdentificationGap, type VehicleIdGap } from '@/lib/vehicleIdentification';
 import VehicleNotRecognisedCard from '@/components/quote/VehicleNotRecognisedCard';
@@ -1298,22 +1298,26 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
 
       {/* Email Capture Popup */}
-      <EmailCapturePopup 
-        isOpen={showEmailPopup}
-        onClose={() => setShowEmailPopup(false)}
-      />
-      
+      <Suspense fallback={null}>
+        <EmailCapturePopup
+          isOpen={showEmailPopup}
+          onClose={() => setShowEmailPopup(false)}
+        />
+      </Suspense>
+
       {/* How Pricing Works Modal */}
       <HowPricingWorksModal
         isOpen={showPricingModal}
         onClose={() => setShowPricingModal(false)}
       />
-      
+
       {/* Request Callback Modal */}
-      <RequestCallbackModal
-        isOpen={showCallbackModal}
-        onClose={() => setShowCallbackModal(false)}
-      />
+      <Suspense fallback={null}>
+        <RequestCallbackModal
+          isOpen={showCallbackModal}
+          onClose={() => setShowCallbackModal(false)}
+        />
+      </Suspense>
     </div>
   );
 };

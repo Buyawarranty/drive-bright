@@ -4,7 +4,6 @@ import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Homepage from '@/components/Homepage';
-import { DiscountPopup } from '@/components/DiscountPopup';
 import { SEOHead } from '@/components/SEOHead';
 import { OrganizationSchema } from '@/components/schema/OrganizationSchema';
 import { FAQSchema, defaultWarrantyFAQs } from '@/components/schema/FAQSchema';
@@ -62,6 +61,11 @@ const lazyWithRetry = <T extends React.ComponentType<any>>(
 
 const RegistrationForm = lazyWithRetry(() => import('@/components/RegistrationForm'));
 const PricingTable = lazyWithRetry(() => import('@/components/PricingTable'));
+// Always mounted (controlled by an `isOpen` prop) and pulls in canvas-confetti,
+// so keep it out of the site-wide critical bundle every route pays for.
+const DiscountPopup = lazyWithRetry(() =>
+  import('@/components/DiscountPopup').then((m) => ({ default: m.DiscountPopup }))
+);
 // Step3Mobile removed - using PricingTable for now
 const CompactProgressBar = lazyWithRetry(() => import('@/components/CompactProgressBar'));
 const CarJourneyProgress = lazyWithRetry(() => import('@/components/CarJourneyProgress'));
@@ -1710,13 +1714,15 @@ const Index = () => {
       
 
       {/* Discount Popup */}
-      <DiscountPopup 
-        isOpen={showDiscountPopup} 
-        onClose={() => {
-          setShowDiscountPopup(false);
-          sessionStorage.setItem('hasSeenDiscountPopup', 'true');
-        }}
-      />
+      <Suspense fallback={null}>
+        <DiscountPopup
+          isOpen={showDiscountPopup}
+          onClose={() => {
+            setShowDiscountPopup(false);
+            sessionStorage.setItem('hasSeenDiscountPopup', 'true');
+          }}
+        />
+      </Suspense>
 
       {/* Back Navigation Confirmation Dialog */}
       <BackNavigationConfirmDialog
