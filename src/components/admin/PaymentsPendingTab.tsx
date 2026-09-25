@@ -94,7 +94,7 @@ export const PaymentsPendingTab: React.FC = () => {
       let q = supabase
         .from('customers')
         .select(
-          'id, name, email, phone, registration_plate, warranty_reference_number, signup_date, final_amount, payment_type, purchase_source, status, stripe_session_id, bumper_order_id, payment_confirmed_by, assigned_to, payment_verification_status, payment_verification_source, payment_verification_ref, payment_verification_note, payment_verified_at, payment_verified_by',
+          'id, name, email, phone, registration_plate, warranty_reference_number, signup_date, payment_due_date, final_amount, payment_type, purchase_source, status, stripe_session_id, bumper_order_id, payment_confirmed_by, assigned_to, payment_verification_status, payment_verification_source, payment_verification_ref, payment_verification_note, payment_verified_at, payment_verified_by',
         )
         .eq('is_deleted', false)
         .gte('signup_date', since)
