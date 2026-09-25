@@ -359,8 +359,19 @@ export const PaymentsPendingTab: React.FC = () => {
             <SelectItem value="60">Last 60 days</SelectItem>
             <SelectItem value="120">Last 120 days</SelectItem>
             <SelectItem value="365">Last 12 months</SelectItem>
+            <SelectItem value="all">All time</SelectItem>
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))}
+          title="Sort by when payment is due"
+        >
+          <CalendarClock className="h-4 w-4 mr-1" />
+          Payment due
+          {sortDir === 'asc' ? <ArrowUpAZ className="h-4 w-4 ml-1" /> : <ArrowDownAZ className="h-4 w-4 ml-1" />}
+        </Button>
         <Button variant="outline" size="sm" onClick={load} disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
           <span className="ml-1">Refresh</span>
