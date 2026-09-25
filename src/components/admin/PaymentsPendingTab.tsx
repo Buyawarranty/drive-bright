@@ -46,6 +46,7 @@ interface Row {
   registration_plate: string | null;
   warranty_reference_number: string | null;
   signup_date: string | null;
+  payment_due_date: string | null;
   final_amount: number | null;
   payment_type: string | null;
   purchase_source: string | null;
