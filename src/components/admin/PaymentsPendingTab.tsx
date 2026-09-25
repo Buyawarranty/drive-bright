@@ -180,13 +180,46 @@ export const PaymentsPendingTab: React.FC = () => {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return rows;
-    const plate = q.replace(/\s+/g, '');
-    return rows.filter((r) =>
-      [r.name, r.email, r.phone, r.warranty_reference_number].some((v) => String(v || '').toLowerCase().includes(q)) ||
-      String(r.registration_plate || '').toLowerCase().replace(/\s+/g, '').includes(plate),
-    );
-  }, [rows, search]);
+    const base = !q
+      ? rows
+      : rows.filter((r) =>
+          [r.name, r.email, r.phone, r.warranty_reference_number].some((v) => String(v || '').toLowerCase().includes(q)) ||
+          String(r.registration_plate || '').toLowerCase().replace(/\s+/g, '').includes(plateOf(q)),
+        );
+
+    const dueTime = (r: Row) => {
+      const d = r.payment_due_date || r.signup_date;
+      const t = d ? new Date(d).getTime() : NaN;
+      return Number.isFinite(t) ? t : null;
+    };
+
+    return [...base].sort((a, b) => {
+      const ta = dueTime(a);
+      const tb = dueTime(b);
+      if (ta === null && tb === null) return 0;
+      if (ta === null) return 1;
+      if (tb === null) return -1;
+      return sortDir === 'asc' ? ta - tb : tb - ta;
+    });
+  }, [rows, search, sortDir]);
+
+  const sections = useMemo(
+    () => [
+      {
+        key: 'long',
+        title: '24 & 36 month payments',
+        blurb: 'Longer cover — yearly or extended instalment collections.',
+        rows: filtered.filter((r) => getWarrantyDurationInMonths(r.payment_type || '') >= 24),
+      },
+      {
+        key: 'short',
+        title: '12 month payments',
+        blurb: 'One year cover.',
+        rows: filtered.filter((r) => getWarrantyDurationInMonths(r.payment_type || '') < 24),
+      },
+    ],
+    [filtered],
+  );
 
   const counts = useMemo(() => {
     const c = { pending: 0, missing: 0, queried: 0, verified: 0, value: 0 };
