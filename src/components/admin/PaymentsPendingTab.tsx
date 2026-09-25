@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import { AlertTriangle, BadgePoundSterling, CheckCircle2, HelpCircle, Loader2, RefreshCw, Search } from 'lucide-react';
+import { AlertTriangle, ArrowDownAZ, ArrowUpAZ, BadgePoundSterling, CalendarClock, CheckCircle2, HelpCircle, Loader2, RefreshCw, Search } from 'lucide-react';
+import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
