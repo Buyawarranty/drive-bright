@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import { AlertTriangle, BadgePoundSterling, CheckCircle2, HelpCircle, Loader2, RefreshCw, Search } from 'lucide-react';
+import { AlertTriangle, ArrowDownAZ, ArrowUpAZ, BadgePoundSterling, CalendarClock, CheckCircle2, HelpCircle, Loader2, RefreshCw, Search } from 'lucide-react';
+import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,8 @@ const gbp = (n: number | null | undefined) => `£${Math.round(Number(n) || 0).to
 
 const DEAD_STATUSES = ['cancelled', 'canceled', 'refunded'];
 
+const plateOf = (s: string) => s.replace(/\s+/g, '');
+
 const SOURCES = [
   { value: 'stripe', label: 'Stripe' },
   { value: 'bumper', label: 'Bumper' },
@@ -45,6 +48,7 @@ interface Row {
   registration_plate: string | null;
   warranty_reference_number: string | null;
   signup_date: string | null;
+  payment_due_date: string | null;
   final_amount: number | null;
   payment_type: string | null;
   purchase_source: string | null;
@@ -76,6 +80,7 @@ export const PaymentsPendingTab: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<VStatus | 'all' | 'open'>('open');
   const [search, setSearch] = useState('');
   const [days, setDays] = useState('120');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   const [dialogRow, setDialogRow] = useState<Row | null>(null);
   const [dialogAction, setDialogAction] = useState<VStatus>('verified');
@@ -87,17 +92,18 @@ export const PaymentsPendingTab: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const since = new Date(Date.now() - Number(days) * 86400000).toISOString();
+      const since = days === 'all' ? null : new Date(Date.now() - Number(days) * 86400000).toISOString();
 
       let q = supabase
         .from('customers')
         .select(
-          'id, name, email, phone, registration_plate, warranty_reference_number, signup_date, final_amount, payment_type, purchase_source, status, stripe_session_id, bumper_order_id, payment_confirmed_by, assigned_to, payment_verification_status, payment_verification_source, payment_verification_ref, payment_verification_note, payment_verified_at, payment_verified_by',
+          'id, name, email, phone, registration_plate, warranty_reference_number, signup_date, payment_due_date, final_amount, payment_type, purchase_source, status, stripe_session_id, bumper_order_id, payment_confirmed_by, assigned_to, payment_verification_status, payment_verification_source, payment_verification_ref, payment_verification_note, payment_verified_at, payment_verified_by',
         )
         .eq('is_deleted', false)
-        .gte('signup_date', since)
         .order('signup_date', { ascending: false })
-        .limit(1000);
+        .limit(2000);
+
+      if (since) q = q.gte('signup_date', since);
 
       if (statusFilter === 'open') q = q.in('payment_verification_status', ['pending', 'queried', 'missing']);
       else if (statusFilter !== 'all') q = q.eq('payment_verification_status', statusFilter);
@@ -177,13 +183,46 @@ export const PaymentsPendingTab: React.FC = () => {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return rows;
-    const plate = q.replace(/\s+/g, '');
-    return rows.filter((r) =>
-      [r.name, r.email, r.phone, r.warranty_reference_number].some((v) => String(v || '').toLowerCase().includes(q)) ||
-      String(r.registration_plate || '').toLowerCase().replace(/\s+/g, '').includes(plate),
-    );
-  }, [rows, search]);
+    const base = !q
+      ? rows
+      : rows.filter((r) =>
+          [r.name, r.email, r.phone, r.warranty_reference_number].some((v) => String(v || '').toLowerCase().includes(q)) ||
+          String(r.registration_plate || '').toLowerCase().replace(/\s+/g, '').includes(plateOf(q)),
+        );
+
+    const dueTime = (r: Row) => {
+      const d = r.payment_due_date || r.signup_date;
+      const t = d ? new Date(d).getTime() : NaN;
+      return Number.isFinite(t) ? t : null;
+    };
+
+    return [...base].sort((a, b) => {
+      const ta = dueTime(a);
+      const tb = dueTime(b);
+      if (ta === null && tb === null) return 0;
+      if (ta === null) return 1;
+      if (tb === null) return -1;
+      return sortDir === 'asc' ? ta - tb : tb - ta;
+    });
+  }, [rows, search, sortDir]);
+
+  const sections = useMemo(
+    () => [
+      {
+        key: 'long',
+        title: '24 & 36 month payments',
+        blurb: 'Longer cover — yearly or extended instalment collections.',
+        rows: filtered.filter((r) => getWarrantyDurationInMonths(r.payment_type || '') >= 24),
+      },
+      {
+        key: 'short',
+        title: '12 month payments',
+        blurb: 'One year cover.',
+        rows: filtered.filter((r) => getWarrantyDurationInMonths(r.payment_type || '') < 24),
+      },
+    ],
+    [filtered],
+  );
 
   const counts = useMemo(() => {
     const c = { pending: 0, missing: 0, queried: 0, verified: 0, value: 0 };
@@ -320,19 +359,52 @@ export const PaymentsPendingTab: React.FC = () => {
             <SelectItem value="60">Last 60 days</SelectItem>
             <SelectItem value="120">Last 120 days</SelectItem>
             <SelectItem value="365">Last 12 months</SelectItem>
+            <SelectItem value="all">All time</SelectItem>
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))}
+          title="Sort by when payment is due"
+        >
+          <CalendarClock className="h-4 w-4 mr-1" />
+          Payment due
+          {sortDir === 'asc' ? <ArrowUpAZ className="h-4 w-4 ml-1" /> : <ArrowDownAZ className="h-4 w-4 ml-1" />}
+        </Button>
         <Button variant="outline" size="sm" onClick={load} disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
           <span className="ml-1">Refresh</span>
         </Button>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+      {sections.map((section) => (
+      <div key={section.key} className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/30 px-4 py-3">
+          <div>
+            <h3 className="text-sm font-semibold">{section.title}</h3>
+            <p className="text-[11px] text-muted-foreground">{section.blurb}</p>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {section.rows.length} sale{section.rows.length === 1 ? '' : 's'} ·{' '}
+            {gbp(section.rows.reduce((a, r) => a + (Number(r.final_amount) || 0), 0))}
+          </div>
+        </div>
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/40 text-left text-[11px] uppercase tracking-wide text-muted-foreground">
               <th className="px-3 py-2 font-medium">Sale</th>
+              <th className="px-3 py-2 font-medium">
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 uppercase hover:text-foreground"
+                  onClick={() => setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))}
+                >
+                  Payment due
+                  {sortDir === 'asc' ? <ArrowUpAZ className="h-3.5 w-3.5" /> : <ArrowDownAZ className="h-3.5 w-3.5" />}
+                </button>
+              </th>
               <th className="px-3 py-2 font-medium">Amount</th>
               <th className="px-3 py-2 font-medium">Confirmed by</th>
               <th className="px-3 py-2 font-medium">Payment evidence on system</th>
@@ -341,14 +413,14 @@ export const PaymentsPendingTab: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {!loading && filtered.length === 0 && (
+            {!loading && section.rows.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-3 py-8 text-center text-muted-foreground">
-                  Nothing outstanding — every sale in this window has verified payment.
+                <td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">
+                  Nothing outstanding in this section.
                 </td>
               </tr>
             )}
-            {filtered.map((r) => {
+            {section.rows.map((r) => {
               const ev = evidence[r.id];
               const hasAny = !!(r.stripe_session_id || r.bumper_order_id || ev?.stripePayments || ev?.bumper || ev?.paymentAssist);
               return (
@@ -362,6 +434,13 @@ export const PaymentsPendingTab: React.FC = () => {
                       {r.registration_plate || '—'} · {r.warranty_reference_number || 'no policy no.'} ·{' '}
                       {r.signup_date ? format(new Date(r.signup_date), 'd MMM yyyy, HH:mm') : '—'}
                     </div>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-xs">
+                    {r.payment_due_date ? (
+                      <span className="font-medium">{format(new Date(r.payment_due_date), 'd MMM yyyy')}</span>
+                    ) : (
+                      <span className="text-muted-foreground">No date set</span>
+                    )}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap">
                     <div className="font-semibold">{gbp(r.final_amount)}</div>
@@ -416,7 +495,10 @@ export const PaymentsPendingTab: React.FC = () => {
             })}
           </tbody>
         </table>
+        </div>
       </div>
+      ))}
+
 
       <Dialog open={!!dialogRow} onOpenChange={(o) => !o && setDialogRow(null)}>
         <DialogContent>
