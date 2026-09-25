@@ -129,6 +129,10 @@ const ADMIN_TABS = [
 // Auto-merge any sidebar tab that isn't in ADMIN_TABS yet, so newly added
 // sections in the sidebar automatically appear in the Bulk Access Management
 // list without needing a manual update here.
+// Also auto-drop any section that has been removed from the sidebar, so the
+// permissions list always mirrors the live menu. Only non-menu feature
+// permissions listed below are kept even though they have no sidebar entry.
+const PERMISSION_ONLY_KEYS = new Set(['chatbot-popup', 'security', 'goldmine-leads']);
 (() => {
   const existing = new Set(ADMIN_TABS.map(t => t.id));
   SIDEBAR_TABS.forEach(t => {
@@ -136,6 +140,11 @@ const ADMIN_TABS = [
       ADMIN_TABS.push({ id: t.id, label: t.label, description: t.description || '' });
     }
   });
+  const sidebarIds = new Set(SIDEBAR_TABS.map(t => t.id));
+  for (let i = ADMIN_TABS.length - 1; i >= 0; i--) {
+    const id = ADMIN_TABS[i].id;
+    if (!sidebarIds.has(id) && !PERMISSION_ONLY_KEYS.has(id)) ADMIN_TABS.splice(i, 1);
+  }
 })();
 
 
