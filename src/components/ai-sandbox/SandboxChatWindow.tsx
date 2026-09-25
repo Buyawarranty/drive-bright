@@ -694,7 +694,7 @@ function PriceOptionsPanel({
               >
                 <span className="flex items-center gap-2">
                   <PhoneCall className="h-4 w-4 shrink-0" />
-                  Talk to an agent or request a call
+                  Chat with a specialist now
                 </span>
                 <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.5} />
               </Button>
@@ -1519,6 +1519,8 @@ export function SandboxChatWindow({
                 source={source}
                 compact={compact}
                 registration={detectedReg}
+                agentLive={agentLive}
+                onRequestLiveChat={() => void requestLiveAgent()}
               />
             </div>
           )}
