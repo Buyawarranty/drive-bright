@@ -24,7 +24,8 @@ interface Props {
   canAccessTab?: (tabId: string) => boolean;
 }
 
-const MAX_PINNED = 10;
+const MAX_PINNED = 20;
+
 
 /**
  * Personalised quick-shortcut bar rendered at the top of the admin dashboard.
