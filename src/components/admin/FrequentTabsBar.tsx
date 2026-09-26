@@ -82,7 +82,7 @@ export const FrequentTabsBar: React.FC<Props> = ({
           Your shortcuts
         </div>
         <div className="flex items-start gap-1.5 flex-1 min-w-0">
-        <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0 max-h-[4.25rem] overflow-y-auto scrollbar-none content-start">
+        <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0 max-h-[3.875rem] overflow-y-auto scrollbar-none content-start">
 
           {items.length === 0 && (
             <span className="text-xs text-muted-foreground">
