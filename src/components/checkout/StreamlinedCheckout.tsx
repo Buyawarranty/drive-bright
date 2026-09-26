@@ -1123,12 +1123,30 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return count;
   }, [customerData, mileageValueValid]);
 
+  // Mark the address as confirmed-complete when every field is filled WITHOUT
+  // going through the lookup picker: manual entry, or details restored
+  // already complete from an earlier step. A partial Postcoder fill (postcode
+  // + town while the suggestion dropdown is still open) never counts.
+  useEffect(() => {
+    if (addressConfirmedComplete) return;
+    if (!addressComplete) return;
+    if (showAddressDropdown || isLookingUp) return;
+    if (manualAddressEntry) {
+      setAddressConfirmedComplete(true);
+      return;
+    }
+    // Restored/pre-filled complete address (no lookup in flight, no dropdown).
+    if (addressSuggestions.length === 0) {
+      setAddressConfirmedComplete(true);
+    }
+  }, [addressComplete, addressConfirmedComplete, manualAddressEntry, showAddressDropdown, isLookingUp, addressSuggestions.length]);
+
   // Auto-scroll to "Choose how you want to pay" only once personal details AND a
-  // fully validated address (real postcode, address line 1 and town) are in place.
+  // fully confirmed address (picked in full or every field completed) are in place.
   const hasAutoScrolledToPayRef = React.useRef(false);
   useEffect(() => {
     if (hasAutoScrolledToPayRef.current) return;
-    if (personalDetailsComplete && addressComplete) {
+    if (personalDetailsComplete && addressComplete && addressConfirmedComplete && !showAddressDropdown && !isLookingUp) {
       hasAutoScrolledToPayRef.current = true;
       setTimeout(() => {
         const paySection = document.getElementById('how-to-pay-section');
@@ -1137,7 +1155,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }
       }, 300);
     }
-  }, [personalDetailsComplete, addressComplete]);
+  }, [personalDetailsComplete, addressComplete, addressConfirmedComplete, showAddressDropdown, isLookingUp]);
 
   // Track if component has been mounted (for bfcache handling)
   const hasMountedRef = React.useRef(false);
