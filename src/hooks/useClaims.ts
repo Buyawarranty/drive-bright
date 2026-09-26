@@ -131,7 +131,6 @@ export const useClaims = (): UseClaimsResult => {
   const [customerStartByReg, setCustomerStartByReg] = useState<Record<string, string>>({});
   const [customerInfoByReg, setCustomerInfoByReg] = useState<Record<string, CustomerVehicleInfo>>({});
   const [cancelledRegs, setCancelledRegs] = useState<Set<string>>(new Set());
-  const [bumperRegs, setBumperRegs] = useState<Set<string>>(new Set());
   const [complaintsByReg, setComplaintsByReg] = useState<Record<string, Claim['complaint']>>({});
   const [complaintsByEmail, setComplaintsByEmail] = useState<Record<string, Claim['complaint']>>({});
   const [loading, setLoading] = useState(true);
@@ -188,7 +187,6 @@ export const useClaims = (): UseClaimsResult => {
       const startByReg: Record<string, string> = {};
       const cancelled = new Set<string>();
       const liveActiveRegs = new Set<string>();
-      const bumper = new Set<string>();
       const infoByReg: Record<string, CustomerVehicleInfo> = {};
       (customerRows || []).forEach((c: any) => {
         const reg = normReg(c.registration_plate);
@@ -200,13 +198,6 @@ export const useClaims = (): UseClaimsResult => {
         const start = c.id ? startByCustomerId[c.id] : null;
         if (start && !startByReg[reg]) {
           startByReg[reg] = start;
-        }
-        // Paid through Bumper PayBetter (instalments) — flagged even on cancelled
-        // or refunded records, because Bumper still pays out on claimed warranties.
-        const src = (c.purchase_source || '').toString().toLowerCase();
-        const payType = (c.payment_type || '').toString().toLowerCase();
-        if (c.bumper_order_id || src.includes('bumper') || payType.includes('bumper') || src.includes('paybetter') || payType.includes('paybetter')) {
-          bumper.add(reg);
         }
         const st = (c.status || '').toLowerCase();
         // Archived (soft-deleted) duplicate records must never mark a reg as
@@ -253,7 +244,6 @@ export const useClaims = (): UseClaimsResult => {
       // If any live record for the reg is still active, the vehicle is covered.
       liveActiveRegs.forEach((reg) => cancelled.delete(reg));
       setCancelledRegs(cancelled);
-      setBumperRegs(bumper);
 
       setComplaintsByReg(cRegMap);
       setComplaintsByEmail(cEmailMap);
@@ -361,7 +351,6 @@ export const useClaims = (): UseClaimsResult => {
         voluntaryExcess: customerInfoByReg[normReg(reg)]?.voluntaryExcess ?? null,
         labourRate: customerInfoByReg[normReg(reg)]?.labourRate ?? null,
         hasCancellation: cancelledRegs.has(normReg(reg)),
-        paidWithBumper: bumperRegs.has(normReg(reg)),
         hasMatchingPolicy: !!customerInfoByReg[normReg(reg)],
         reviewSentiment: (r.review_sentiment === 'positive' || r.review_sentiment === 'negative') ? r.review_sentiment : null,
         claimedAmount: r.claimed_amount != null ? Number(r.claimed_amount) : (r.payment_amount != null ? Number(r.payment_amount) : null),
@@ -376,7 +365,7 @@ export const useClaims = (): UseClaimsResult => {
           null,
       };
     });
-  }, [rows, staffById, customerMileageByReg, customerStartByReg, customerInfoByReg, cancelledRegs, bumperRegs, complaintsByReg, complaintsByEmail]);
+  }, [rows, staffById, customerMileageByReg, customerStartByReg, customerInfoByReg, cancelledRegs, complaintsByReg, complaintsByEmail]);
 
   return { claims, loading, error, refetch: fetchAll };
 };
