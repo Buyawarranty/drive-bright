@@ -974,11 +974,13 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
 
     setSavingGoal(true);
     try {
+      const { data: authData } = await supabase.auth.getUser();
       const { error } = await supabase
         .from('monthly_revenue_targets')
         .upsert({
           target_month: `${goalMonthKey}-01`,
           target_amount: amount,
+          updated_by: authData.user?.id || null,
         }, { onConflict: 'target_month' });
       if (error) throw error;
       setMonthlyRevenueTargets(previous => ({ ...previous, [goalMonthKey]: amount }));
@@ -1481,6 +1483,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
               <ComposedChart
                 data={monthlyRevenue}
                 onClick={handleBarClick}
+                barGap="-100%"
                 style={{ cursor: 'pointer' }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
@@ -1488,18 +1491,25 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                 <YAxis yAxisId="left" tickFormatter={(value) => `£${value.toLocaleString()}`} />
                 <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `£${value}`} />
                 <Tooltip
-                  formatter={(value: number, name: string) => {
-                    if (name === 'salesCount') {
-                      return [value.toLocaleString('en-GB'), 'Warranties Sold'];
-                    }
-                    if (name === 'percentageAchieved') {
-                      return [`${value}%`, 'Goal Achieved'];
-                    }
-                    const label = name === 'revenue' ? 'Revenue' : name === 'aov' ? 'Avg Order Value' : name === 'target' ? 'Monthly Goal' : name;
-                    return [`£${value.toLocaleString('en-GB', { minimumFractionDigits: 0 })}`, label];
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null;
+                    const point = payload[0]?.payload;
+                    if (!point) return null;
+                    return (
+                      <div className="rounded-md border bg-background p-3 text-sm shadow-md">
+                        <p className="mb-2 font-bold">{label}</p>
+                        <p>Avg Order Value: £{point.aov.toLocaleString('en-GB')}</p>
+                        <p>Revenue: £{Math.round(point.revenue).toLocaleString('en-GB')}</p>
+                        <p>Warranties Sold: {point.salesCount.toLocaleString('en-GB')}</p>
+                        {point.target > 0 && (
+                          <>
+                            <p>Monthly Goal: £{Math.round(point.target).toLocaleString('en-GB')}</p>
+                            <p className="font-semibold text-primary">Goal Achieved: {point.percentageAchieved}%</p>
+                          </>
+                        )}
+                      </div>
+                    );
                   }}
-                  labelStyle={{ fontWeight: 'bold' }}
-                  contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
                 />
                 <Legend formatter={(value) => value === 'revenue' ? 'Revenue' : value === 'target' ? 'Monthly Goal' : value === 'percentageAchieved' ? 'Goal Achieved' : value === 'aov' ? 'Avg Order Value' : value === 'salesCount' ? 'Warranties Sold' : value} />
                 <Bar
@@ -1507,6 +1517,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                   dataKey="revenue"
                   radius={[4, 4, 0, 0]}
                   fill="#10b981"
+                  barSize={44}
                 >
                   {monthlyRevenue.map((entry, index) => (
                     <Cell
