@@ -201,13 +201,6 @@ export const useClaims = (): UseClaimsResult => {
         if (start && !startByReg[reg]) {
           startByReg[reg] = start;
         }
-        // Paid through Bumper PayBetter (instalments) — flagged even on cancelled
-        // or refunded records, because Bumper still pays out on claimed warranties.
-        const src = (c.purchase_source || '').toString().toLowerCase();
-        const payType = (c.payment_type || '').toString().toLowerCase();
-        if (c.bumper_order_id || src.includes('bumper') || payType.includes('bumper') || src.includes('paybetter') || payType.includes('paybetter')) {
-          bumper.add(reg);
-        }
         const st = (c.status || '').toLowerCase();
         // Archived (soft-deleted) duplicate records must never mark a reg as
         // cancelled — the live record for the same vehicle is what counts.

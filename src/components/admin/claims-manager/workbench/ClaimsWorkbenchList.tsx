@@ -720,14 +720,6 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                       No matching policy
                     </span>
                   )}
-                  {isManagement && c.paidWithBumper && (
-                    <span
-                      title="Paid through Bumper PayBetter. Bumper honours claimed warranties, so we keep the money even if the customer stops paying or cancels — no refund is due. Management only — set the customer's payment source to PayBetter to add this tag."
-                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-600 text-white border border-emerald-700 text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap cursor-help"
-                    >
-                      Bumper PayBetter
-                    </span>
-                  )}
                   {c.duplicateSubmission && (
                     <span
                       title={`This vehicle has claims from ${c.duplicateSubmitterCount} different submitters (e.g. customer AND garage). Review both claims and merge into one — contact each party to confirm which is the primary claim, then close the duplicate with a note linking to the surviving claim.`}
