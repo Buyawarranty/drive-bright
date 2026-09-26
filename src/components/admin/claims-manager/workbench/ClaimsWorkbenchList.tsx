@@ -277,6 +277,7 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
   onUpdated,
 }) => {
   const { toast } = useToast();
+  const { isManagement } = useIsManagement();
   const { isFlagged: isMisrepFlagged, refetch: refetchMisrep } = useMisrepresentedIdentities();
   const { appealState, refetchAppeals } = useClaimAppealStates(claims.map((c) => c.id));
   const [appealClaim, setAppealClaim] = useState<Claim | null>(null);
@@ -719,9 +720,9 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
                       No matching policy
                     </span>
                   )}
-                  {c.paidWithBumper && (
+                  {isManagement && c.paidWithBumper && (
                     <span
-                      title="Paid through Bumper PayBetter. Bumper honours claimed warranties, so we keep the money even if the customer stops paying or cancels — no refund is due."
+                      title="Paid through Bumper PayBetter. Bumper honours claimed warranties, so we keep the money even if the customer stops paying or cancels — no refund is due. Management only — set the customer's payment source to PayBetter to add this tag."
                       className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-600 text-white border border-emerald-700 text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap cursor-help"
                     >
                       Bumper PayBetter
