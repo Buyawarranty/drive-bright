@@ -113,6 +113,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [overflowRecipients, setOverflowRecipients] = useState<{ id: string; admin_user_id: string; sort_order: number }[]>([]);
   /** Show the "Sources they handle" column by default; purple H/S button toggles it. */
   const [showSources, setShowSources] = useState(true);
+  /** Flashes the Meta source buttons after the "Meta leads" quick link is used. */
+  const [metaHighlight, setMetaHighlight] = useState(false);
 
   const getTodayAssignmentCounts = useCallback(async (): Promise<Record<string, number>> => {
     const todayStart = new Date();
@@ -232,6 +234,23 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   }, []);
 
   useEffect(() => { loadAll(); fetchTodayLeadCounts(); fetchSince6pmCounts(); }, [loadAll, fetchTodayLeadCounts, fetchSince6pmCounts]);
+
+  // Quick link "Meta leads" (top of Lead Allocation) — open the agent settings
+  // so the "Sources they handle" column is visible, scroll to this section and
+  // briefly pulse the Meta buttons so managers can spot who handles Meta.
+  useEffect(() => {
+    const handler = () => {
+      setShowAgentSettings(true);
+      setShowSources(true);
+      setMetaHighlight(true);
+      window.setTimeout(() => {
+        document.getElementById('meta-leads')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 60);
+      window.setTimeout(() => setMetaHighlight(false), 4000);
+    };
+    window.addEventListener('lovable:allocation-meta-leads', handler);
+    return () => window.removeEventListener('lovable:allocation-meta-leads', handler);
+  }, []);
 
   /**
    * Remove a leaver from lead allocation. Archives the account (keeps every
@@ -1337,7 +1356,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       </section>
 
       {/* ───────── Sales Agents ───────── */}
-      <section className="rounded-lg border border-border bg-card shadow-sm">
+      <section id="meta-leads" className="rounded-lg border border-border bg-card shadow-sm scroll-mt-20">
         <div className="px-5 py-4 border-b border-border flex items-start justify-between flex-wrap gap-3">
           <div>
             <h2 className="text-base font-semibold text-foreground">Who gets the leads?</h2>
@@ -2074,7 +2093,11 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                                   on
                                     ? 'text-white border-current'
                                     : 'border-border bg-background text-muted-foreground hover:border-foreground/30'
-                                } ${canEdit ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+                                } ${canEdit ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'} ${
+                                  metaHighlight && s.key === 'social_ad'
+                                    ? 'ring-2 ring-offset-2 ring-[#1877F2] animate-pulse'
+                                    : ''
+                                }`}
                                 style={on ? { backgroundColor: s.color, borderColor: s.color } : undefined}
                               >
                                 {on && <Check className="h-3 w-3" />}
