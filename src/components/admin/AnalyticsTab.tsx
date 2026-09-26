@@ -533,8 +533,15 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
       const to = endOfMonth(from);
       return { from, to };
     }
+    if (dateRange) return dateRange;
+    // Full historic (all-time) revenue is super-admin only — everyone else
+    // falls back to the current month instead of an unfiltered all-time view.
+    if (userRole !== 'super_admin') {
+      const now = new Date();
+      return { from: startOfMonth(now), to: endOfMonth(now) };
+    }
     return dateRange;
-  }, [selectedMonth, dateRange]);
+  }, [selectedMonth, dateRange, userRole]);
 
   // Unified date selector (same control as Customer Management) — analytics
   // always filters on signup date, so the scope is fixed to 'signup'.
@@ -2162,7 +2169,7 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           <CardContent>
             <div className="text-2xl font-bold">£{overallAOV}</div>
             <p className="text-xs text-muted-foreground">
-              Per warranty sale {dateRange ? '(filtered)' : '(all time)'}
+              Per warranty sale {effectiveDateRange?.from ? '(filtered)' : '(all time)'}
             </p>
           </CardContent>
         </Card>
