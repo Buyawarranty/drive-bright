@@ -38,7 +38,18 @@ const SIGNAL_LABELS: Record<string, string> = {
   bumper_cancelled: 'cancelled Bumper checkout',
 };
 
-const minsAgo = (iso: string) => Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+const timeAgo = (iso: string) => {
+  const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (mins < 60) return `${mins}min ago`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m ? `${h}hr ${m}min ago` : `${h}hr ago`;
+};
+
+const formatUkPhone = (p: string) => {
+  const d = p.replace(/\D/g, '').replace(/^44/, '0');
+  return d.length === 11 ? `${d.slice(0, 5)} ${d.slice(5)}` : p;
+};
 
 const readDismissed = (): string[] => {
   try {
@@ -90,10 +101,30 @@ export const StuckCheckoutAlert: React.FC = () => {
     };
   }, [load]);
 
-  const live = useMemo(
-    () => rows.filter((r) => !isTestStruggle(r) && !dismissedIds.includes(r.id)),
-    [rows, dismissedIds],
-  );
+  // One pop-up per customer per visit. Repeat signals from the same customer
+  // (email / phone tail-9 / reg) are folded into the first one, unless the
+  // customer comes back at least 1 hour after their previous signal — then
+  // it counts as a new visit and pops up again.
+  const live = useMemo(() => {
+    const asc = rows.filter((r) => !isTestStruggle(r)).slice().sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
+    const lastSeen = new Map<string, number>();
+    const heads: StuckRow[] = [];
+    for (const r of asc) {
+      const keys = [
+        (r.customer_email || '').trim().toLowerCase() ? `e:${(r.customer_email || '').trim().toLowerCase()}` : null,
+        tail9(r.customer_phone).length === 9 ? `p:${tail9(r.customer_phone)}` : null,
+        r.vehicle_reg ? `r:${r.vehicle_reg.replace(/\s/g, '').toUpperCase()}` : null,
+      ].filter((k): k is string => !!k);
+      const t = new Date(r.created_at).getTime();
+      const prev = keys.map((k) => lastSeen.get(k)).filter((v): v is number => v != null);
+      const isNewVisit = prev.length === 0 || t - Math.max(...prev) >= 60 * 60 * 1000;
+      keys.forEach((k) => lastSeen.set(k, t));
+      if (keys.length === 0 || isNewVisit) heads.push(r);
+    }
+    return heads.filter((r) => !dismissedIds.includes(r.id)).reverse();
+  }, [rows, dismissedIds]);
 
   // Resolve which agent owns each stuck customer's lead (by email / phone tail-9).
   useEffect(() => {
