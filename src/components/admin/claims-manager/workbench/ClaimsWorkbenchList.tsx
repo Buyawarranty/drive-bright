@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { ClaimStatusEmailPreviewDialog, type PendingClaimStatusChange } from '@/components/admin/claims/ClaimStatusEmailPreviewDialog';
 import { useClaimQuickNotes } from '@/hooks/useClaimQuickNotes';
 import { MileageChip } from './MileageChip';
+import { useIsManagement } from '@/hooks/useIsManagement';
 import { computeSla, slaToneCls } from './sla';
 import { formatDaysOnRisk } from './formatters';
 import { MisrepFlagButton, useMisrepresentedIdentities } from './MisrepFlagButton';
