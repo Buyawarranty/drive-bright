@@ -56,6 +56,8 @@ import { ClaimsIntelligencePanel } from './claims/ClaimsIntelligencePanel';
 import { WidgetErrorBoundary } from '@/components/admin/WidgetErrorBoundary';
 import { useReturnedAppeals } from '@/hooks/useReturnedAppeals';
 import { AppealsInboxPanel } from '@/components/admin/claims/AppealsInboxPanel';
+import { CourtCasesSection, CourtDeadlinesBanner } from '@/components/admin/claims/CourtCasesSection';
+import { Landmark } from 'lucide-react';
 
 interface ClaimSubmission {
   id: string;
@@ -386,10 +388,19 @@ export const ClaimsTab = ({
     );
   }
 
+  const scrollToCourtCases = () => {
+    const go = () => document.getElementById('court-cases-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!document.getElementById('court-cases-section')) {
+      setActiveSubTab('claims');
+      setTimeout(go, 300);
+    } else go();
+  };
+
   return (
     <div className="p-6 space-y-5">
       {/* Due reminders — sticky banner across every claims sub-tab */}
       <ClaimRemindersBanner onManage={() => setActiveSubTab('reminders')} />
+      <CourtDeadlinesBanner onOpen={scrollToCourtCases} />
 
       {/* Appeal received back — small, closable notification line */}
       {appealsTotalCount > 0 && !appealsNoticeHidden && (
@@ -490,6 +501,9 @@ export const ClaimsTab = ({
           </Button>
           <Button onClick={() => setShowFilesDialog(true)} variant="outline" size="sm">
             <Paperclip className="h-4 w-4 mr-1" /> Upload file
+          </Button>
+          <Button onClick={scrollToCourtCases} variant="outline" size="sm">
+            <Landmark className="h-4 w-4 mr-1" /> Court cases
           </Button>
           <Button onClick={() => setShowAppealDialog(true)} variant="outline" size="sm" className="relative">
             <Gavel className="h-4 w-4 mr-1" /> Appeals
@@ -660,6 +674,11 @@ export const ClaimsTab = ({
                 onCloseAppeal={closeAppealAction}
                 onOpenAppealDialog={() => setShowAppealDialog(true)}
               />
+            </WidgetErrorBoundary>
+          </div>
+          <div id="court-cases-section" className="scroll-mt-4">
+            <WidgetErrorBoundary label="Court cases">
+              <CourtCasesSection />
             </WidgetErrorBoundary>
           </div>
           <div className="pt-4 border-t border-slate-200 space-y-3">
