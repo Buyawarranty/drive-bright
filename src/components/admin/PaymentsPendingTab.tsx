@@ -258,30 +258,40 @@ export const PaymentsPendingTab: React.FC = () => {
       return;
     }
     if (dialogAction !== 'verified' && !formNote.trim()) {
-      toast.error('Add a short note so sales know what is outstanding');
+      toast.error(dialogAction === 'cancelled' ? 'Add the reason the customer cancelled' : 'Add a short note so sales know what is outstanding');
       return;
     }
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('customers')
-        .update({
-          payment_verification_status: dialogAction,
-          payment_verified: dialogAction === 'verified',
-          payment_verified_at: new Date().toISOString(),
-          payment_verified_by: currentAdminId || null,
-          payment_verification_source: dialogAction === 'verified' ? formSource : null,
-          payment_verification_ref: formRef.trim() || null,
-          payment_verification_note: formNote.trim() || null,
-        } as any)
-        .eq('id', dialogRow.id);
-      if (error) throw error;
+      if (dialogAction === 'verified') {
+        await confirmCustomerPaymentReceived(dialogRow.id, {
+          source: formSource, ref: formRef.trim(), note: formNote.trim() || null, adminId: currentAdminId || null,
+        });
+      } else if (dialogAction === 'cancelled') {
+        await markCustomerCancelled(dialogRow.id, formNote.trim(), currentAdminId || null);
+      } else {
+        const { error } = await supabase
+          .from('customers')
+          .update({
+            payment_verification_status: dialogAction,
+            payment_verified: false,
+            payment_verified_at: new Date().toISOString(),
+            payment_verified_by: currentAdminId || null,
+            payment_verification_source: null,
+            payment_verification_ref: formRef.trim() || null,
+            payment_verification_note: formNote.trim() || null,
+          } as any)
+          .eq('id', dialogRow.id);
+        if (error) throw error;
+      }
       toast.success(
         dialogAction === 'verified'
-          ? 'Payment marked as verified'
+          ? 'Payment confirmed — scoreboard and customer dashboards updated'
           : dialogAction === 'missing'
             ? 'Flagged as payment missing'
-            : 'Query raised on this payment',
+            : dialogAction === 'cancelled'
+              ? 'Marked as customer cancelled'
+              : 'Query raised on this payment',
       );
       setDialogRow(null);
       await load();
@@ -292,16 +302,31 @@ export const PaymentsPendingTab: React.FC = () => {
     }
   };
 
-  const statusBadge = (s: VStatus) =>
-    s === 'verified' ? (
-      <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Verified</Badge>
-    ) : s === 'missing' ? (
-      <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Payment missing</Badge>
-    ) : s === 'queried' ? (
-      <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Queried</Badge>
-    ) : (
-      <Badge variant="outline">Pending</Badge>
-    );
+  const statusBadge = (s: VStatus, due?: string | null) => {
+    if (s === 'verified') return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Payment received</Badge>;
+    if (s === 'missing') return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Payment missing</Badge>;
+    if (s === 'queried') return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Queried</Badge>;
+    if (due && differenceInCalendarDays(new Date(due), new Date()) < 0)
+      return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Payment overdue</Badge>;
+    return <Badge variant="outline">Payment due</Badge>;
+  };
+
+  const dueSoon = useMemo(() => {
+    const inMonth = (d: string | null) => {
+      if (!d) return false;
+      const n = differenceInCalendarDays(new Date(d), new Date());
+      return n >= 0 && n <= 31;
+    };
+    const main = rows.filter((r) => r.payment_verification_status !== 'verified' && inMonth(r.payment_due_date));
+    const part = partRows.filter((r) => inMonth(r.dueDate));
+    return {
+      count: main.length + part.length,
+      value: main.reduce((a, r) => a + (Number(r.final_amount) || 0), 0) + part.reduce((a, r) => a + r.outstanding, 0),
+      overdue:
+        rows.filter((r) => r.payment_verification_status !== 'verified' && r.payment_due_date && differenceInCalendarDays(new Date(r.payment_due_date), new Date()) < 0).length +
+        partRows.filter((r) => r.dueDate && differenceInCalendarDays(new Date(r.dueDate), new Date()) < 0).length,
+    };
+  }, [rows, partRows]);
 
   return (
     <div className="space-y-4">
@@ -315,6 +340,17 @@ export const PaymentsPendingTab: React.FC = () => {
           Payment Assist or the bank. Accounts can verify each one, or flag it as missing or queried so sales can chase it.
         </p>
       </div>
+
+      <div className="rounded-xl border-2 border-red-300 bg-red-50 px-4 py-3 text-red-900">
+        <div className="flex items-center gap-2 font-semibold">
+          <CalendarClock className="h-5 w-5" />
+          {dueSoon.count} payment{dueSoon.count === 1 ? '' : 's'} due within the next month · {gbp(dueSoon.value)}
+          {dueSoon.overdue > 0 && <span className="ml-1">· {dueSoon.overdue} already overdue</span>}
+        </div>
+        <div className="text-xs mt-0.5">Includes part-payment balances and sales with a payment due date set.</div>
+      </div>
+
+      <PartPaymentSection onLoaded={setPartRows} onChanged={load} />
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {[
@@ -466,7 +502,7 @@ export const PaymentsPendingTab: React.FC = () => {
                     )}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap">
-                    {statusBadge(r.payment_verification_status)}
+                    {statusBadge(r.payment_verification_status, r.payment_due_date)}
                     {r.payment_verification_status !== 'pending' && (
                       <div className="mt-0.5 text-[11px] text-muted-foreground max-w-[14rem]">
                         {r.payment_verification_source ? `${r.payment_verification_source} · ` : ''}
@@ -478,17 +514,15 @@ export const PaymentsPendingTab: React.FC = () => {
                     )}
                   </td>
                   <td className="px-3 py-2 text-right whitespace-nowrap">
-                    <div className="inline-flex gap-1">
-                      <Button size="sm" onClick={() => openDialog(r, 'verified')}>
-                        <CheckCircle2 className="h-4 w-4 mr-1" /> Verify
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => openDialog(r, 'queried')}>
-                        <HelpCircle className="h-4 w-4 mr-1" /> Query
-                      </Button>
-                      <Button size="sm" variant="destructive" onClick={() => openDialog(r, 'missing')}>
-                        Missing
-                      </Button>
-                    </div>
+                    <Select value="" onValueChange={(v) => openDialog(r, v as VStatus)}>
+                      <SelectTrigger className="h-8 w-44 ml-auto"><SelectValue placeholder="Update status" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="verified">Payment received</SelectItem>
+                        <SelectItem value="queried">Query / payment due</SelectItem>
+                        <SelectItem value="missing">Payment missing</SelectItem>
+                        <SelectItem value="cancelled">Customer cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </td>
                 </tr>
               );
@@ -505,10 +539,12 @@ export const PaymentsPendingTab: React.FC = () => {
           <DialogHeader>
             <DialogTitle>
               {dialogAction === 'verified'
-                ? 'Verify payment'
+                ? 'Confirm payment received'
                 : dialogAction === 'missing'
                   ? 'Flag payment as missing'
-                  : 'Raise a query on this payment'}
+                  : dialogAction === 'cancelled'
+                    ? 'Customer cancelled'
+                    : 'Raise a query on this payment'}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
@@ -549,11 +585,17 @@ export const PaymentsPendingTab: React.FC = () => {
               />
             </div>
           </div>
+          {dialogAction === 'verified' && (
+            <div className="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900">
+              Are you sure? Confirming marks the sale as paid, adds it to the agent's scoreboard and updates the
+              customer record and the customer's login dashboard.
+            </div>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogRow(null)} disabled={saving}>Cancel</Button>
-            <Button onClick={save} disabled={saving}>
+            <Button onClick={save} disabled={saving} variant={dialogAction === 'cancelled' ? 'destructive' : 'default'}>
               {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
-              Save
+              {dialogAction === 'verified' ? 'Yes, confirm payment received' : dialogAction === 'cancelled' ? 'Yes, mark cancelled' : 'Save'}
             </Button>
           </DialogFooter>
         </DialogContent>
