@@ -429,6 +429,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
     setIsLookingUp(true);
     setAddressLookupFailed(false);
+    // A fresh street/town search means no address has been picked yet —
+    // re-arm the auto-scroll gate so a partial search can never scroll.
+    setAddressConfirmedComplete(false);
+    hasAutoScrolledToPayRef.current = false;
+    hasAutoScrolledToPaymentRef.current = false;
     try {
       let { data, error } = await supabase.functions.invoke('postcoder-lookup', {
         body: { action: 'search', term: query, drillDown },
