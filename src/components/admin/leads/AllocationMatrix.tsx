@@ -235,6 +235,23 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
 
   useEffect(() => { loadAll(); fetchTodayLeadCounts(); fetchSince6pmCounts(); }, [loadAll, fetchTodayLeadCounts, fetchSince6pmCounts]);
 
+  // Quick link "Meta leads" (top of Lead Allocation) — open the agent settings
+  // so the "Sources they handle" column is visible, scroll to this section and
+  // briefly pulse the Meta buttons so managers can spot who handles Meta.
+  useEffect(() => {
+    const handler = () => {
+      setShowAgentSettings(true);
+      setShowSources(true);
+      setMetaHighlight(true);
+      window.setTimeout(() => {
+        document.getElementById('meta-leads')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 60);
+      window.setTimeout(() => setMetaHighlight(false), 4000);
+    };
+    window.addEventListener('lovable:allocation-meta-leads', handler);
+    return () => window.removeEventListener('lovable:allocation-meta-leads', handler);
+  }, []);
+
   /**
    * Remove a leaver from lead allocation. Archives the account (keeps every
    * sales record, commission and attribution intact) and clears their
