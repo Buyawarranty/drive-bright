@@ -57,6 +57,7 @@ import { ArrowLeft, UserRoundCog } from 'lucide-react';
 const QUICK_LINKS = [
   { id: 'new-leads', label: 'New leads', className: 'bg-sky-300/50 text-sky-900 border-sky-200/50 hover:bg-sky-400/50' },
   { id: 'who-gets-leads', label: 'Who gets the leads?', className: 'bg-blue-300/50 text-blue-900 border-blue-200/50 hover:bg-blue-400/50' },
+  { id: 'meta-leads', label: 'Meta leads', className: 'bg-[#1877F2]/15 text-[#1256b8] border-[#1877F2]/30 hover:bg-[#1877F2]/25' },
   { id: 'rebalance-reassign', label: 'Rebalance Leads', className: 'bg-orange-300/50 text-orange-900 border-orange-200/50 hover:bg-orange-400/50' },
   { id: 'handover-requests', label: 'Handover requests', className: 'bg-purple-300/50 text-purple-900 border-purple-200/50 hover:bg-purple-400/50' },
   { id: 'offboard-agent', label: 'Offboard an agent', className: 'bg-amber-300/50 text-amber-900 border-amber-200/50 hover:bg-amber-400/50' },
@@ -75,6 +76,15 @@ const QUICK_LINKS = [
 
 function QuickLinksBar() {
   const handleClick = (id: string) => {
+    // "Meta leads" — the target sits inside the allocation matrix (per-agent
+    // "Sources they handle" column), which may be hidden behind the agent
+    // settings view. The matrix opens those settings itself and scrolls to
+    // the sources column, flashing the Meta buttons.
+    if (id === 'meta-leads') {
+      window.dispatchEvent(new CustomEvent('lovable:allocation-meta-leads'));
+      window.history.replaceState(null, '', '#meta-leads');
+      return;
+    }
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });

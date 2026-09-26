@@ -113,6 +113,8 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
   const [overflowRecipients, setOverflowRecipients] = useState<{ id: string; admin_user_id: string; sort_order: number }[]>([]);
   /** Show the "Sources they handle" column by default; purple H/S button toggles it. */
   const [showSources, setShowSources] = useState(true);
+  /** Flashes the Meta source buttons after the "Meta leads" quick link is used. */
+  const [metaHighlight, setMetaHighlight] = useState(false);
 
   const getTodayAssignmentCounts = useCallback(async (): Promise<Record<string, number>> => {
     const todayStart = new Date();
@@ -1337,7 +1339,7 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
       </section>
 
       {/* ───────── Sales Agents ───────── */}
-      <section className="rounded-lg border border-border bg-card shadow-sm">
+      <section id="meta-leads" className="rounded-lg border border-border bg-card shadow-sm scroll-mt-20">
         <div className="px-5 py-4 border-b border-border flex items-start justify-between flex-wrap gap-3">
           <div>
             <h2 className="text-base font-semibold text-foreground">Who gets the leads?</h2>
