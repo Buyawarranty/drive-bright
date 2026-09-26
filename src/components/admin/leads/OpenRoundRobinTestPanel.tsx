@@ -35,6 +35,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { cn } from '@/lib/utils';
 import type { LeadStatus } from '@/hooks/useLeads';
 import { OrrLogicExplainer, DEFAULT_ORR_CADENCE, type OrrCadenceConfig } from './OrrLogicExplainer';
+import { SendWhatsAppLeadButton } from './SendWhatsAppLeadButton';
 import {
   OrrSandboxLeadsChrome,
   type SandboxChromeLead,
