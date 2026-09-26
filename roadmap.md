@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Claims: Bumper PayBetter tag hidden from non-management (management only); tag also lights up when the customer's payment source is PayBetter
+- [x] Claims: mileage +/- chip hover now explains itself in plain English (miles driven since purchase; red = claim mileage lower than purchase — check before paying)
+
 - [x] Analytics: admin/super-admin monthly revenue goals shown as target outlines and achieved percentages on the 12-month chart
 - [x] New Leads WhatsApp: solid dark-green button with white text
 - [x] WATI replies: notify the owning agent for every incoming customer reply across the CRM

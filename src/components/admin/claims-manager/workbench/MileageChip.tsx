@@ -59,11 +59,14 @@ export const MileageChip: React.FC<Props> = ({ purchase, current }) => {
       : 'bg-slate-100 text-slate-700 border-slate-200';
   const sign = delta >= 0 ? '+' : '−';
   const Icon = mismatch ? AlertTriangle : Gauge;
+  const plainMeaning = mismatch
+    ? `MILEAGE WARNING — the mileage on the claim is ${Math.abs(delta).toLocaleString()} miles LOWER than when the policy started. That should never happen: check the registration is right, the mileage was typed correctly, or the vehicle may have been clocked. Check before paying this claim.`
+    : `Miles driven since the policy started (+${Math.abs(delta).toLocaleString()} miles). Bought at ${purchase.toLocaleString()}, claimed at ${current.toLocaleString()}.`;
   return (
     <span
-      title={`Policy: ${purchase.toLocaleString()} → claim: ${current.toLocaleString()} (${sign}${Math.abs(delta).toLocaleString()} mi)`}
+      title={`Policy: ${purchase.toLocaleString()} → claim: ${current.toLocaleString()} (${sign}${Math.abs(delta).toLocaleString()} mi)\n\n${plainMeaning}`}
       className={cn(
-        'inline-flex items-center gap-1 px-1 py-0.5 rounded text-[9px] font-semibold border whitespace-nowrap',
+        'inline-flex items-center gap-1 px-1 py-0.5 rounded text-[9px] font-semibold border whitespace-nowrap cursor-help',
         cls,
       )}
     >
