@@ -9322,6 +9322,33 @@ export type Database = {
         }
         Relationships: []
       }
+      monthly_revenue_targets: {
+        Row: {
+          created_at: string
+          id: string
+          target_amount: number
+          target_month: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          target_amount: number
+          target_month: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          target_amount?: number
+          target_month?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       mot_history: {
         Row: {
           co2_emissions: number | null

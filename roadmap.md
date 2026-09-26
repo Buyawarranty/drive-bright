@@ -1,5 +1,6 @@
 # Roadmap
 
+- [x] Analytics: admin/super-admin monthly revenue goals shown as target outlines and achieved percentages on the 12-month chart
 - [x] New Leads WhatsApp: solid dark-green button with white text
 - [x] WATI replies: notify the owning agent for every incoming customer reply across the CRM
 - [x] New Leads WhatsApp replies: show unopened reply banners with a red border and numbered corner badge

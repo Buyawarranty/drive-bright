@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { fetchAllRows } from '@/utils/supabaseBatchFetch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LabelList, Line, ComposedChart } from 'recharts';
-import { Users, CreditCard, PoundSterling, Globe, Phone, X, Calendar, TrendingUp, TrendingDown, Minus, Target, Facebook, Search, Music2 } from 'lucide-react';
+import { Users, CreditCard, PoundSterling, Globe, Phone, X, Calendar, TrendingUp, TrendingDown, Minus, Target, Facebook, Search, Music2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { ApiConnectivityTest } from './ApiConnectivityTest';
 import { SalesAgeMileageAnalytics } from './SalesAgeMileageAnalytics';
@@ -36,6 +36,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { DateRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Badge } from '@/components/ui/badge';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, subWeeks, subMonths, subYears, isSameWeek, isSameMonth, isSameYear } from 'date-fns';
@@ -214,6 +216,7 @@ function AnalyticsSectionHeading({
 
 export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   const isSalesLead = userRole === 'sales_lead';
+  const canManageMonthlyGoal = userRole === 'admin' || userRole === 'super_admin';
   const [customers, setCustomers] = useState<Customer[]>([]);
   // Cancellations/refunds are fetched separately: they must include archived (is_deleted)
   // records so the numbers reconcile with Customer Management.
@@ -221,6 +224,10 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
   // BAW PayLater yearly payments actually collected, keyed by the month they were collected.
   // Monthly revenue counts money in the bank, so later-year collections land in their own month.
   const [payLaterCollectedByMonth, setPayLaterCollectedByMonth] = useState<Record<string, number>>({});
+  const [monthlyRevenueTargets, setMonthlyRevenueTargets] = useState<Record<string, number>>({});
+  const [goalDialogOpen, setGoalDialogOpen] = useState(false);
+  const [goalAmount, setGoalAmount] = useState('');
+  const [savingGoal, setSavingGoal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const hasLoadedOnceRef = useRef(false);
@@ -361,6 +368,23 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
           byMonth[key] = (byMonth[key] || 0) + (Number(row.paid_amount ?? row.amount) || 0);
         });
         setPayLaterCollectedByMonth(byMonth);
+      }
+
+      const { data: targetData, error: targetError } = await supabase
+        .from('monthly_revenue_targets')
+        .select('target_month, target_amount')
+        .order('target_month', { ascending: false })
+        .limit(24);
+
+      if (targetError) {
+        console.error('Error fetching monthly revenue goals:', targetError);
+        setMonthlyRevenueTargets({});
+      } else {
+        const targetMap: Record<string, number> = {};
+        (targetData || []).forEach(target => {
+          targetMap[String(target.target_month).slice(0, 7)] = Number(target.target_amount) || 0;
+        });
+        setMonthlyRevenueTargets(targetMap);
       }
     } catch (error) {
       console.error('Error fetching analytics data:', error);
@@ -865,7 +889,9 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         revenue: 0,
         salesCount: 0,
         aov: 0,
-        isSelected: false
+        isSelected: false,
+        target: monthlyRevenueTargets[`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`] || 0,
+        percentageAchieved: 0
       };
     }).reverse();
 
@@ -922,10 +948,51 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
     // Calculate AOV for each month
     months.forEach(m => {
       m.aov = m.salesCount > 0 ? Math.round(m.revenue / m.salesCount) : 0;
+      m.percentageAchieved = m.target > 0 ? Math.round((m.revenue / m.target) * 100) : 0;
     });
 
     return months;
-  }, [customers, selectedMonth, sourceFilter, payLaterCollectedByMonth]);
+  }, [customers, selectedMonth, sourceFilter, payLaterCollectedByMonth, monthlyRevenueTargets]);
+
+  const goalMonthKey = selectedMonth || (() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  })();
+  const goalMonthData = monthlyRevenue.find(month => month.monthKey === goalMonthKey);
+
+  const openGoalDialog = () => {
+    setGoalAmount(goalMonthData?.target ? String(goalMonthData.target) : '');
+    setGoalDialogOpen(true);
+  };
+
+  const saveMonthlyGoal = async () => {
+    const amount = Number(goalAmount.replace(/,/g, ''));
+    if (!Number.isFinite(amount) || amount <= 0) {
+      toast.error('Enter a monthly goal greater than £0');
+      return;
+    }
+
+    setSavingGoal(true);
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from('monthly_revenue_targets')
+        .upsert({
+          target_month: `${goalMonthKey}-01`,
+          target_amount: amount,
+          updated_by: authData.user?.id || null,
+        }, { onConflict: 'target_month' });
+      if (error) throw error;
+      setMonthlyRevenueTargets(previous => ({ ...previous, [goalMonthKey]: amount }));
+      setGoalDialogOpen(false);
+      toast.success(`${goalMonthData?.month || goalMonthKey} revenue goal saved`);
+    } catch (error: any) {
+      console.error('Error saving monthly revenue goal:', error);
+      toast.error(error?.message || 'Could not save the monthly revenue goal');
+    } finally {
+      setSavingGoal(false);
+    }
+  };
 
   // Duration mix per month (1yr / 2yr / 3yr) — percentages and avg revenue per year of cover
   const durationByMonth = useMemo(() => {
@@ -1363,30 +1430,60 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
         <AnalyticsSectionHeading id="revenue-monthly" title="Revenue & AOV by month" description="Monthly revenue collected so far, order volume and average order value across the last 12 months. Orders awaiting payment are counted as sales but add no revenue until collected." accent="border-emerald-500/60" />
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <CardTitle>Total Revenue & AOV by Month (Last 12 Months)</CardTitle>
               <CardDescription className="mt-1">
                 Amount collected so far — click on any bar to filter all data by that month
               </CardDescription>
             </div>
-            {selectedMonth && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearSelectedMonth}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4 mr-1" />
-                Clear selection
-              </Button>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {canManageMonthlyGoal && (
+                <Button variant="outline" size="sm" onClick={openGoalDialog}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  {goalMonthData?.target ? 'Edit' : 'Set'} {goalMonthData?.month || 'monthly'} goal
+                </Button>
+              )}
+              {selectedMonth && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearSelectedMonth}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Clear selection
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
+            {goalMonthData?.target > 0 && (
+              <div className="mb-4 grid gap-3 border-l-4 border-primary bg-muted/40 p-4 sm:grid-cols-3">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">{goalMonthData.month} goal</p>
+                  <p className="text-xl font-bold">£{goalMonthData.target.toLocaleString('en-GB')}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">Collected</p>
+                  <p className="text-xl font-bold">£{Math.round(goalMonthData.revenue).toLocaleString('en-GB')}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">Goal achieved</p>
+                  <p className="text-xl font-bold text-primary">{goalMonthData.percentageAchieved}%</p>
+                  <p className="text-xs text-muted-foreground">
+                    {goalMonthData.revenue >= goalMonthData.target
+                      ? `£${Math.round(goalMonthData.revenue - goalMonthData.target).toLocaleString('en-GB')} above goal`
+                      : `£${Math.round(goalMonthData.target - goalMonthData.revenue).toLocaleString('en-GB')} remaining`}
+                  </p>
+                </div>
+              </div>
+            )}
             <ResponsiveContainer width="100%" height={350}>
               <ComposedChart
                 data={monthlyRevenue}
                 onClick={handleBarClick}
+                barGap="-100%"
                 style={{ cursor: 'pointer' }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
@@ -1394,22 +1491,33 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                 <YAxis yAxisId="left" tickFormatter={(value) => `£${value.toLocaleString()}`} />
                 <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `£${value}`} />
                 <Tooltip
-                  formatter={(value: number, name: string) => {
-                    if (name === 'salesCount') {
-                      return [value.toLocaleString('en-GB'), 'Warranties Sold'];
-                    }
-                    const label = name === 'revenue' ? 'Revenue' : name === 'aov' ? 'Avg Order Value' : name;
-                    return [`£${value.toLocaleString('en-GB', { minimumFractionDigits: 0 })}`, label];
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null;
+                    const point = payload[0]?.payload;
+                    if (!point) return null;
+                    return (
+                      <div className="rounded-md border bg-background p-3 text-sm shadow-md">
+                        <p className="mb-2 font-bold">{label}</p>
+                        <p>Avg Order Value: £{point.aov.toLocaleString('en-GB')}</p>
+                        <p>Revenue: £{Math.round(point.revenue).toLocaleString('en-GB')}</p>
+                        <p>Warranties Sold: {point.salesCount.toLocaleString('en-GB')}</p>
+                        {point.target > 0 && (
+                          <>
+                            <p>Monthly Goal: £{Math.round(point.target).toLocaleString('en-GB')}</p>
+                            <p className="font-semibold text-primary">Goal Achieved: {point.percentageAchieved}%</p>
+                          </>
+                        )}
+                      </div>
+                    );
                   }}
-                  labelStyle={{ fontWeight: 'bold' }}
-                  contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
                 />
-                <Legend formatter={(value) => value === 'revenue' ? 'Revenue' : value === 'aov' ? 'Avg Order Value' : value === 'salesCount' ? 'Warranties Sold' : value} />
+                <Legend formatter={(value) => value === 'revenue' ? 'Revenue' : value === 'target' ? 'Monthly Goal' : value === 'percentageAchieved' ? 'Goal Achieved' : value === 'aov' ? 'Avg Order Value' : value === 'salesCount' ? 'Warranties Sold' : value} />
                 <Bar
                   yAxisId="left"
                   dataKey="revenue"
                   radius={[4, 4, 0, 0]}
                   fill="#10b981"
+                  barSize={44}
                 >
                   {monthlyRevenue.map((entry, index) => (
                     <Cell
@@ -1428,6 +1536,22 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
                     position="top"
                     formatter={(value: number) => value > 0 ? `${value} ${value === 1 ? 'deal' : 'deals'}` : ''}
                     style={{ fill: '#065f46', fontSize: 11, fontWeight: 600 }}
+                  />
+                </Bar>
+                <Bar
+                  yAxisId="left"
+                  dataKey="target"
+                  fill="transparent"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={3}
+                  radius={[4, 4, 0, 0]}
+                  barSize={44}
+                >
+                  <LabelList
+                    dataKey="percentageAchieved"
+                    position="top"
+                    formatter={(value: number) => value > 0 ? `${value}%` : ''}
+                    className="fill-primary text-xs font-bold"
                   />
                 </Bar>
                 <Line
@@ -1452,6 +1576,36 @@ export const AnalyticsTab = ({ userRole }: { userRole?: string | null }) => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        <Dialog open={goalDialogOpen} onOpenChange={setGoalDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Set {goalMonthData?.month || goalMonthKey} revenue goal</DialogTitle>
+              <DialogDescription>
+                This goal appears as an outline on the month’s revenue bar. Progress uses revenue collected so far.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2">
+              <Label htmlFor="monthly-revenue-goal">Monthly goal (£)</Label>
+              <Input
+                id="monthly-revenue-goal"
+                type="number"
+                min="1"
+                step="100"
+                value={goalAmount}
+                onChange={event => setGoalAmount(event.target.value)}
+                placeholder="e.g. 75000"
+                autoFocus
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setGoalDialogOpen(false)} disabled={savingGoal}>Cancel</Button>
+              <Button onClick={saveMonthlyGoal} disabled={savingGoal}>
+                {savingGoal ? 'Saving…' : 'Confirm monthly goal'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <AnalyticsSectionHeading id="pending-payment" title="Pending payment" description="Money sold but not yet collected: orders awaiting first payment and BAW PayLater yearly payments still to come." accent="border-amber-500/60" />
 
