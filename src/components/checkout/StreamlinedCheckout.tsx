@@ -277,6 +277,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // True when the customer opened the fields via "Enter your address manually" —
   // clearing the search box must not collapse fields they're typing into.
   const [manualAddressEntry, setManualAddressEntry] = useState(false);
+  // Only true once the address is COMPLETE: a full address picked from the
+  // lookup, or every field filled manually / restored complete. A partial
+  // Postcoder fill (postcode + town only) must never trigger the auto-scroll.
+  const [addressConfirmedComplete, setAddressConfirmedComplete] = useState(false);
   // Postcode/street/town search input — starts empty even if an address was restored
   const [postcodeInput, setPostcodeInput] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
@@ -294,7 +298,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     
     setIsLookingUp(true);
     setAddressLookupFailed(false);
-    
+    // A fresh lookup means the address is back to partial until a full
+    // address is picked — re-arm the auto-scroll gate.
+    setAddressConfirmedComplete(false);
+    hasAutoScrolledToPayRef.current = false;
+    hasAutoScrolledToPaymentRef.current = false;
+
     try {
       console.log('🔍 Auto postcode lookup for:', cleanPostcode);
 
