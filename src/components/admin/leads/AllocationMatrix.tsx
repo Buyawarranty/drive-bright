@@ -2093,7 +2093,11 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                                   on
                                     ? 'text-white border-current'
                                     : 'border-border bg-background text-muted-foreground hover:border-foreground/30'
-                                } ${canEdit ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+                                } ${canEdit ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'} ${
+                                  metaHighlight && s.key === 'social_ad'
+                                    ? 'ring-2 ring-offset-2 ring-[#1877F2] animate-pulse'
+                                    : ''
+                                }`}
                                 style={on ? { backgroundColor: s.color, borderColor: s.color } : undefined}
                               >
                                 {on && <Check className="h-3 w-3" />}
