@@ -138,7 +138,7 @@ export const SendWhatsAppLeadButton: React.FC<Props> = ({
     setOpen(false);
   };
 
-  if (!isUkMobile(phone)) return null;
+  if (!practice && !isUkMobile(phone)) return null;
 
   return (
     <>
