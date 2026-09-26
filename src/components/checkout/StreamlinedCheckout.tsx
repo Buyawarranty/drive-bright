@@ -532,6 +532,27 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
   const [validatedFields, setValidatedFields] = useState<{[key: string]: boolean}>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // Returning from Bumper / Payment Assist / Stripe with the browser back button:
+  // the browser can restore a frozen, half-rendered snapshot (bfcache) that shows
+  // only fragments of text. Always clear the spinner and, if restored from the
+  // cache, reload step 4 cleanly from the saved journey data.
+  useEffect(() => {
+    const onPageShow = (event: PageTransitionEvent) => {
+      setIsLoading(false);
+      if (event.persisted) {
+        try {
+          const url = new URL(window.location.href);
+          if (!url.searchParams.get('step')) url.searchParams.set('step', '4');
+          window.location.replace(url.toString());
+        } catch {
+          window.location.reload();
+        }
+      }
+    };
+    window.addEventListener('pageshow', onPageShow as EventListener);
+    return () => window.removeEventListener('pageshow', onPageShow as EventListener);
+  }, []);
   const [townAutoFilled, setTownAutoFilled] = useState(false);
   const [paymentError, setPaymentError] = useState('');
   
