@@ -1913,6 +1913,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                 <tr>
                   <th className="px-2 py-2 text-center w-11">#</th>
                   <th className="px-2 py-2 text-left w-9"></th>
+                  <th className="px-2 py-2 text-left">Lead type</th>
                   <th className="px-2 py-2 text-left">Agent</th>
                   <th className="px-2 py-2 text-left">Time to Lead</th>
                   <th className="px-2 py-2 text-left">Status</th>
@@ -1948,7 +1949,7 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                       className={cn(
                         'border-t border-border align-middle',
                         expired ? 'bg-muted/40' : 'bg-background',
-                        orrLead && !expired && 'ring-2 ring-inset ring-primary/60 bg-primary/5',
+                        orrLead && !expired && 'bg-emerald-50/70',
                       )}
                     >
                       <td className="px-2 py-2 text-muted-foreground">{rowIndex + 1}</td>
@@ -1956,17 +1957,29 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                         <input type="checkbox" className="h-4 w-4 rounded border-input" readOnly />
                       </td>
                       <td className="px-2 py-2">
+                        {(() => {
+                          const h = new Date(lead.createdAt).getHours();
+                          const overnight = h < 9 || h >= 18;
+                          return (
+                            <div className="flex flex-col items-start gap-1">
+                              {orrLead && (
+                                <span className="inline-flex items-center rounded-md border border-primary/40 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary whitespace-nowrap">
+                                  Open Round Robin
+                                </span>
+                              )}
+                              <span className={cn(
+                                'inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold whitespace-nowrap',
+                                overnight ? 'bg-primary/10 text-primary' : 'bg-emerald-50 text-emerald-700',
+                              )}>
+                                {overnight ? <Clock className="h-3.5 w-3.5" /> : <span aria-hidden>⚡</span>}
+                                {overnight ? 'Overnight' : 'Live'}
+                              </span>
+                            </div>
+                          );
+                        })()}
+                      </td>
+                      <td className="px-2 py-2">
                         <div className="flex flex-col items-start gap-1">
-                          <span
-                            className={cn(
-                              'inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide whitespace-nowrap',
-                              orrLead
-                                ? 'border-primary bg-primary/10 text-primary'
-                                : 'border-border bg-muted text-muted-foreground',
-                            )}
-                          >
-                            {orrLead ? 'Open Round Robin' : 'Round robin'}
-                          </span>
                           {lead.assignedTo === null ? (
                             <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-900 whitespace-nowrap">
                               <Clock className="h-3 w-3" /> Waiting in the open pool
