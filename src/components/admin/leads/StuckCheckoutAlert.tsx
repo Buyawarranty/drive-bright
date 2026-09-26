@@ -6,6 +6,7 @@ import { isTestStruggle } from '@/lib/checkoutStruggleTest';
 import { getContactCadence } from '@/lib/checkoutContactCadence';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 
 const DISMISSED_IDS_KEY = 'stuck-checkout-alert-dismissed-ids';
 
@@ -38,7 +39,18 @@ const SIGNAL_LABELS: Record<string, string> = {
   bumper_cancelled: 'cancelled Bumper checkout',
 };
 
-const minsAgo = (iso: string) => Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+const timeAgo = (iso: string) => {
+  const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (mins < 60) return `${mins}min ago`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m ? `${h}hr ${m}min ago` : `${h}hr ago`;
+};
+
+const formatUkPhone = (p: string) => {
+  const d = p.replace(/\D/g, '').replace(/^44/, '0');
+  return d.length === 11 ? `${d.slice(0, 5)} ${d.slice(5)}` : p;
+};
 
 const readDismissed = (): string[] => {
   try {
@@ -62,6 +74,7 @@ export const StuckCheckoutAlert: React.FC = () => {
   const [dismissedIds, setDismissedIds] = useState<string[]>(() => readDismissed());
   const [expanded, setExpanded] = useState(true);
   const [owners, setOwners] = useState<OwnerMap>({});
+  const myAdminId = useCurrentAdminId();
 
   const load = useCallback(async () => {
     // Only show genuinely fresh cases — anything older than 3 hours is stale
@@ -90,10 +103,30 @@ export const StuckCheckoutAlert: React.FC = () => {
     };
   }, [load]);
 
-  const live = useMemo(
-    () => rows.filter((r) => !isTestStruggle(r) && !dismissedIds.includes(r.id)),
-    [rows, dismissedIds],
-  );
+  // One pop-up per customer per visit. Repeat signals from the same customer
+  // (email / phone tail-9 / reg) are folded into the first one, unless the
+  // customer comes back at least 1 hour after their previous signal — then
+  // it counts as a new visit and pops up again.
+  const live = useMemo(() => {
+    const asc = rows.filter((r) => !isTestStruggle(r)).slice().sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
+    const lastSeen = new Map<string, number>();
+    const heads: StuckRow[] = [];
+    for (const r of asc) {
+      const keys = [
+        (r.customer_email || '').trim().toLowerCase() ? `e:${(r.customer_email || '').trim().toLowerCase()}` : null,
+        tail9(r.customer_phone).length === 9 ? `p:${tail9(r.customer_phone)}` : null,
+        r.vehicle_reg ? `r:${r.vehicle_reg.replace(/\s/g, '').toUpperCase()}` : null,
+      ].filter((k): k is string => !!k);
+      const t = new Date(r.created_at).getTime();
+      const prev = keys.map((k) => lastSeen.get(k)).filter((v): v is number => v != null);
+      const isNewVisit = prev.length === 0 || t - Math.max(...prev) >= 60 * 60 * 1000;
+      keys.forEach((k) => lastSeen.set(k, t));
+      if (keys.length === 0 || isNewVisit) heads.push(r);
+    }
+    return heads.filter((r) => !dismissedIds.includes(r.id)).reverse();
+  }, [rows, dismissedIds]);
 
   // Resolve which agent owns each stuck customer's lead (by email / phone tail-9).
   useEffect(() => {
@@ -194,7 +227,7 @@ export const StuckCheckoutAlert: React.FC = () => {
                         {r.customer_name || r.customer_email || r.customer_phone || 'Customer'}
                       </p>
                       <p className="text-[11px] text-red-700 font-medium truncate">
-                        {SIGNAL_LABELS[r.signal_type] || r.signal_type} · {minsAgo(r.created_at)}m ago
+                        {SIGNAL_LABELS[r.signal_type] || r.signal_type} · {timeAgo(r.created_at)}
                       </p>
                       <p className="text-[11px] text-gray-600 truncate">
                         {[r.vehicle_reg ? r.vehicle_reg.toUpperCase() : null, r.plan_name, r.amount ? `£${r.amount}` : null]
@@ -208,7 +241,7 @@ export const StuckCheckoutAlert: React.FC = () => {
                         ownerName(owners[r.id]) ? (
                           <span className="inline-flex items-center gap-1 mt-1 ml-1 text-[10px] font-semibold border border-indigo-200 bg-indigo-50 text-indigo-700 rounded-full px-2 py-0.5" title="This customer already has a lead owned by this agent">
                             <UserCircle2 className="h-3 w-3" />
-                            Lead with {ownerName(owners[r.id])}
+                            {owners[r.id] === myAdminId ? 'Your lead — call them' : `Lead with ${ownerName(owners[r.id])}`}
                           </span>
                         ) : (
                           <span className="inline-block mt-1 ml-1 text-[10px] font-semibold border border-gray-200 bg-gray-50 text-gray-500 rounded-full px-2 py-0.5">
@@ -232,12 +265,12 @@ export const StuckCheckoutAlert: React.FC = () => {
                         href={`tel:${phone}`}
                         className="inline-flex items-center gap-1 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded hover:bg-red-700"
                       >
-                        <Phone className="h-3 w-3" /> Call now
+                        <Phone className="h-3 w-3" /> Call now: {formatUkPhone(phone)}
                       </a>
                     )}
                     {phone && !cadence.canCall && (
                       <span className="text-[11px] text-gray-500" title={cadence.action}>
-                        {cadence.stage === 'lead' ? 'No more calls' : 'Too early to call'}
+                        {formatUkPhone(phone)} · {cadence.stage === 'lead' ? 'No more calls' : 'Too early to call'}
                       </span>
                     )}
                     {mailto && !cadence.canCall && (
