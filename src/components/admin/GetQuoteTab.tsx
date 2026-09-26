@@ -5418,8 +5418,8 @@ Questions? Call 0330 229 5040`;
                       );
                     })}
                   </div>
-                  {/* Instalment plan — separate from cover duration */}
-                  {getInstalmentOptions(paymentType).length > 1 && (
+                  {/* 24/36 instalment plans retired — 2/3 year cover is paid yearly via BAW PayLater */}
+                  {false && getInstalmentOptions(paymentType).length > 1 && (
                     <div className="space-y-2 rounded-lg border border-blue-200 bg-blue-50/50 p-3">
                       <Label className="text-sm font-semibold">Instalment plan</Label>
                       <div className="grid grid-cols-2 gap-2">
@@ -5506,6 +5506,9 @@ Questions? Call 0330 229 5040`;
                             </div>
                             <p className="text-[11px] text-muted-foreground">
                               {years} year cover, collected one year at a time on the policy anniversary.
+                            </p>
+                            <p className="mt-1 text-[11px] font-semibold text-emerald-900">
+                              Tell the customer: you're buying a {years}-year warranty, and payment is taken once every year — year 1 today, then on each anniversary.
                             </p>
                           </div>
                           <Button
@@ -8983,7 +8986,6 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         <option value="stripe_dashboard">Stripe Dashboard</option>
                         <option value="bumper_portal">Bumper Portal</option>
                         <option value="payment_assist">Payment Assist</option>
-                        <option value="paybetter">PayBetter</option>
                         <option value="klarna">Klarna</option>
                         <option value="ivendi">iVendi</option>
                         <option value="zopa">Zopa</option>
