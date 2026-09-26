@@ -29,6 +29,8 @@ interface Props {
   phone: string | null;
   firstName?: string | null;
   disabled?: boolean;
+  /** Practice (sandbox) mode: same button and dialog, but nothing is ever sent. */
+  practice?: boolean;
   onSent?: (templateName: string) => void;
 }
 
@@ -58,6 +60,7 @@ export const SendWhatsAppLeadButton: React.FC<Props> = ({
   phone,
   firstName,
   disabled,
+  practice,
   onSent,
 }) => {
   const [open, setOpen] = useState(false);
