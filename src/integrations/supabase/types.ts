@@ -9322,6 +9322,33 @@ export type Database = {
         }
         Relationships: []
       }
+      monthly_revenue_targets: {
+        Row: {
+          created_at: string
+          id: string
+          target_amount: number
+          target_month: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          target_amount: number
+          target_month: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          target_amount?: number
+          target_month?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       mot_history: {
         Row: {
           co2_emissions: number | null
@@ -14445,6 +14472,10 @@ export type Database = {
       }
       can_manage_claim_reminders: { Args: never; Returns: boolean }
       can_manage_lead_routing: { Args: { _user_id: string }; Returns: boolean }
+      can_manage_monthly_revenue_targets: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       can_view_chatbot_data: { Args: { _user_id: string }; Returns: boolean }
       can_view_staff_hub_doc: {
         Args: { _allowed_roles: string[]; _allowed_team_ids: string[] }
