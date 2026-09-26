@@ -64,16 +64,28 @@ export const getCachedWatiTemplates = async (): Promise<CachedWatiTemplate[]> =>
   }
 
   pendingRequest = (async () => {
-    const timeout = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('WhatsApp templates timed out')), REQUEST_TIMEOUT_MS);
-    });
-
-    const { data, error } = await Promise.race([
-      supabase.functions.invoke('wati-templates', { body: {} }),
-      timeout,
-    ]);
-    if (error || !data?.ok || !Array.isArray(data.templates) || data.templates.length === 0) {
-      throw new Error('WhatsApp templates could not be loaded');
+    const attempt = async () => {
+      // Make sure the session token is fresh — an expired token gives a 401.
+      await supabase.auth.getSession();
+      const timeout = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('WhatsApp templates timed out')), REQUEST_TIMEOUT_MS);
+      });
+      const { data, error } = await Promise.race([
+        supabase.functions.invoke('wati-templates', { body: {} }),
+        timeout,
+      ]);
+      if (error || !data?.ok || !Array.isArray(data.templates) || data.templates.length === 0) {
+        console.error('wati-templates failed:', error?.message ?? data);
+        throw new Error('WhatsApp templates could not be loaded');
+      }
+      return data;
+    };
+    let data;
+    try {
+      data = await attempt();
+    } catch {
+      await supabase.auth.refreshSession().catch(() => undefined);
+      data = await attempt();
     }
 
     const all = data.templates as CachedWatiTemplate[];

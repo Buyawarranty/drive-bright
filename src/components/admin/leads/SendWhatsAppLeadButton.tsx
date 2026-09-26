@@ -175,12 +175,20 @@ export const SendWhatsAppLeadButton: React.FC<Props> = ({
             <div className="space-y-1">
               <Label htmlFor="wa-lead-template">Message template</Label>
               {failed ? (
-                <Input
-                  id="wa-lead-template"
-                  value={templateName}
-                  onChange={(e) => setTemplateName(e.target.value)}
-                  placeholder="james_hi"
-                />
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                    <span>Templates didn't load. Try again, or type the template name below.</span>
+                    <Button type="button" size="sm" variant="outline" onClick={() => setFailed(false)}>
+                      Try again
+                    </Button>
+                  </div>
+                  <Input
+                    id="wa-lead-template"
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                    placeholder="james_hi"
+                  />
+                </div>
               ) : (
                 <Select value={templateName} onValueChange={chooseTemplate} disabled={loading}>
                   <SelectTrigger id="wa-lead-template">
