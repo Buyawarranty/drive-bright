@@ -100,6 +100,15 @@ export const SendWhatsAppLeadButton: React.FC<Props> = ({
 
   const send = async () => {
     if (!message.trim()) return;
+    if (practice) {
+      setSending(true);
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      setSending(false);
+      toast.success('Practice mode — nothing was sent. On New Leads this would go out on WhatsApp.');
+      onSent?.(templateName || 'WhatsApp message');
+      setOpen(false);
+      return;
+    }
     setSending(true);
     const { data, error } = await supabase.functions.invoke('wati-send-lead-message', {
       body: { leadId, templateName, message: message.trim() },
