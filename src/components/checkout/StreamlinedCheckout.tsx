@@ -1250,34 +1250,35 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     trackStripeCheckoutPageLoad();
   }, []);
 
-  // Auto-scroll to "How to Pay" section when all address fields are complete
+  // Auto-scroll to "How to Pay" section when the address is fully confirmed
   useEffect(() => {
-    // Only if address is complete
-    if (!addressComplete) return;
-    
+    // Only if address is complete AND confirmed (full pick or all fields filled)
+    if (!addressComplete || !addressConfirmedComplete) return;
+    if (showAddressDropdown || isLookingUp) return;
+
     // Only trigger once per session
     if (hasAutoScrolledToPaymentRef.current) return;
-    
+
     // Ensure all required address fields are filled
-    const isAddressFullyComplete = 
+    const isAddressFullyComplete =
       addressData.postcode?.trim() &&
       addressData.address_line_1?.trim() &&
       addressData.town?.trim();
-    
+
     if (isAddressFullyComplete) {
       hasAutoScrolledToPaymentRef.current = true;
-      
+
       // Small delay to ensure DOM is updated
       setTimeout(() => {
         if (howToPayRef.current) {
-          howToPayRef.current.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
+          howToPayRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
           });
         }
       }, 300);
     }
-  }, [addressComplete, addressData.postcode, addressData.address_line_1, addressData.town]);
+  }, [addressComplete, addressConfirmedComplete, showAddressDropdown, isLookingUp, addressData.postcode, addressData.address_line_1, addressData.town]);
 
   // Auto-validate pre-filled fields from Step 2
   useEffect(() => {
