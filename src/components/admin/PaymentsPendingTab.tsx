@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { format } from 'date-fns';
+import { format, differenceInCalendarDays } from 'date-fns';
+import { PartPaymentSection, type PartRow } from '@/components/admin/payments/PartPaymentSection';
+import { confirmCustomerPaymentReceived, markCustomerCancelled } from '@/components/admin/payments/confirmPaymentReceived';
 import { AlertTriangle, ArrowDownAZ, ArrowUpAZ, BadgePoundSterling, CalendarClock, CheckCircle2, HelpCircle, Loader2, RefreshCw, Search } from 'lucide-react';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,7 +24,7 @@ import { toast } from 'sonner';
  * off, flag it as missing, or raise a query — with a reference and a note.
  */
 
-type VStatus = 'pending' | 'verified' | 'missing' | 'queried';
+type VStatus = 'pending' | 'verified' | 'missing' | 'queried' | 'cancelled';
 
 const gbp = (n: number | null | undefined) => `£${Math.round(Number(n) || 0).toLocaleString('en-GB')}`;
 
@@ -80,6 +82,7 @@ export const PaymentsPendingTab: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<VStatus | 'all' | 'open'>('open');
   const [search, setSearch] = useState('');
   const [days, setDays] = useState('120');
+  const [partRows, setPartRows] = useState<PartRow[]>([]);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   const [dialogRow, setDialogRow] = useState<Row | null>(null);
@@ -225,7 +228,7 @@ export const PaymentsPendingTab: React.FC = () => {
   );
 
   const counts = useMemo(() => {
-    const c = { pending: 0, missing: 0, queried: 0, verified: 0, value: 0 };
+    const c: Record<string, number> = { pending: 0, missing: 0, queried: 0, verified: 0, value: 0 };
     rows.forEach((r) => {
       c[r.payment_verification_status] = (c[r.payment_verification_status] || 0) + 1;
       if (r.payment_verification_status !== 'verified') c.value += Number(r.final_amount) || 0;
