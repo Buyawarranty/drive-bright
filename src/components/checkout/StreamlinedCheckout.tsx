@@ -2806,6 +2806,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       const looksLikePostcode = /^[A-Za-z0-9\s]{0,8}$/.test(raw) && /\d/.test(raw);
                       const value = looksLikePostcode ? raw.toUpperCase() : raw;
                       setPostcodeInput(value);
+                      // Any typing in the search box means the address is back to
+                      // unconfirmed — a partial postcode or street search must never
+                      // trigger the scroll to "Choose how you want to pay". Only a full
+                      // address pick (or fully completed manual fields) re-arms it.
+                      setAddressConfirmedComplete(false);
+                      hasAutoScrolledToPayRef.current = false;
+                      hasAutoScrolledToPaymentRef.current = false;
                       // Only mirror into the postcode field when it looks like a postcode —
                       // a street or town search must not be treated as an invalid postcode.
                       if (looksLikePostcode) {
