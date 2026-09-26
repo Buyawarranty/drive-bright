@@ -6,6 +6,7 @@ import { isTestStruggle } from '@/lib/checkoutStruggleTest';
 import { getContactCadence } from '@/lib/checkoutContactCadence';
 import { AlertRailSlot, ALERT_RAIL_ORDER } from '@/components/admin/AlertRail';
 import { useAllAdminUsersMap } from '@/hooks/useAllAdminUsersMap';
+import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 
 const DISMISSED_IDS_KEY = 'stuck-checkout-alert-dismissed-ids';
 
@@ -73,6 +74,7 @@ export const StuckCheckoutAlert: React.FC = () => {
   const [dismissedIds, setDismissedIds] = useState<string[]>(() => readDismissed());
   const [expanded, setExpanded] = useState(true);
   const [owners, setOwners] = useState<OwnerMap>({});
+  const myAdminId = useCurrentAdminId();
 
   const load = useCallback(async () => {
     // Only show genuinely fresh cases — anything older than 3 hours is stale
@@ -225,7 +227,7 @@ export const StuckCheckoutAlert: React.FC = () => {
                         {r.customer_name || r.customer_email || r.customer_phone || 'Customer'}
                       </p>
                       <p className="text-[11px] text-red-700 font-medium truncate">
-                        {SIGNAL_LABELS[r.signal_type] || r.signal_type} · {minsAgo(r.created_at)}m ago
+                        {SIGNAL_LABELS[r.signal_type] || r.signal_type} · {timeAgo(r.created_at)}
                       </p>
                       <p className="text-[11px] text-gray-600 truncate">
                         {[r.vehicle_reg ? r.vehicle_reg.toUpperCase() : null, r.plan_name, r.amount ? `£${r.amount}` : null]
@@ -239,7 +241,7 @@ export const StuckCheckoutAlert: React.FC = () => {
                         ownerName(owners[r.id]) ? (
                           <span className="inline-flex items-center gap-1 mt-1 ml-1 text-[10px] font-semibold border border-indigo-200 bg-indigo-50 text-indigo-700 rounded-full px-2 py-0.5" title="This customer already has a lead owned by this agent">
                             <UserCircle2 className="h-3 w-3" />
-                            Lead with {ownerName(owners[r.id])}
+                            {owners[r.id] === myAdminId ? 'Your lead — call them' : `Lead with ${ownerName(owners[r.id])}`}
                           </span>
                         ) : (
                           <span className="inline-block mt-1 ml-1 text-[10px] font-semibold border border-gray-200 bg-gray-50 text-gray-500 rounded-full px-2 py-0.5">
@@ -263,12 +265,12 @@ export const StuckCheckoutAlert: React.FC = () => {
                         href={`tel:${phone}`}
                         className="inline-flex items-center gap-1 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded hover:bg-red-700"
                       >
-                        <Phone className="h-3 w-3" /> Call now
+                        <Phone className="h-3 w-3" /> Call now: {formatUkPhone(phone)}
                       </a>
                     )}
                     {phone && !cadence.canCall && (
                       <span className="text-[11px] text-gray-500" title={cadence.action}>
-                        {cadence.stage === 'lead' ? 'No more calls' : 'Too early to call'}
+                        {formatUkPhone(phone)} · {cadence.stage === 'lead' ? 'No more calls' : 'Too early to call'}
                       </span>
                     )}
                     {mailto && !cadence.canCall && (
