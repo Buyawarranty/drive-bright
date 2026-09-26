@@ -391,7 +391,7 @@ export const ClaimsTab = ({
   const scrollToCourtCases = () => {
     const go = () => document.getElementById('court-cases-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     if (!document.getElementById('court-cases-section')) {
-      setActiveSubTab('workbench' as any);
+      setActiveSubTab('claims');
       setTimeout(go, 300);
     } else go();
   };
