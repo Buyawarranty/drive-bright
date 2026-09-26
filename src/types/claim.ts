@@ -66,7 +66,6 @@ export interface Claim {
   /** True when the warranty for this registration was paid through Bumper PayBetter
    *  (instalments). Bumper honours claimed warranties, so the money is kept even if
    *  the customer stops paying or cancels. */
-  paidWithBumper?: boolean;
   complaint?: {
     reference: string;
     category: string;

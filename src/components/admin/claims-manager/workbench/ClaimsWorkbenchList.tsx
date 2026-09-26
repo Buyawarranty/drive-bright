@@ -277,7 +277,6 @@ export const ClaimsWorkbenchList: React.FC<Props> = ({
   onUpdated,
 }) => {
   const { toast } = useToast();
-  const { isManagement } = useIsManagement();
   const { isFlagged: isMisrepFlagged, refetch: refetchMisrep } = useMisrepresentedIdentities();
   const { appealState, refetchAppeals } = useClaimAppealStates(claims.map((c) => c.id));
   const [appealClaim, setAppealClaim] = useState<Claim | null>(null);
