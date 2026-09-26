@@ -111,6 +111,8 @@ export const FrequentTabsBar: React.FC<Props> = ({
             );
           })}
         </div>
+        </div>
+
 
         <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
           <PopoverTrigger asChild>
