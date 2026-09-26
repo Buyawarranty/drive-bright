@@ -5080,7 +5080,6 @@ Buyawarranty.co.uk`,
                         <SelectItem value="bumper">Bumper</SelectItem>
                         <SelectItem value="stripe">Stripe</SelectItem>
                         <SelectItem value="payment_assist">Payment Assist</SelectItem>
-                        <SelectItem value="paybetter">PayBetter</SelectItem>
                         <SelectItem value="paypal">PayPal</SelectItem>
                         <SelectItem value="other">Other / Manual</SelectItem>
                       </SelectContent>
