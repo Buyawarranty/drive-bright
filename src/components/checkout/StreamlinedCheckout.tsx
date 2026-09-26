@@ -478,6 +478,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   // Populate every address field once the customer picks their final address
   const handleSelectLookupAddress = useCallback((addr: any) => {
+    // Full address chosen — the address is now genuinely complete.
+    setAddressConfirmedComplete(true);
     const line1 = addr.line_1 || '';
     const line2 = [addr.line_2, addr.line_3].filter(Boolean).join(', ');
     const town = addr.town_or_city || addr.town || addr.posttown || '';
