@@ -2899,6 +2899,57 @@ export type Database = {
           },
         ]
       }
+      claim_court_cases: {
+        Row: {
+          case_reference: string | null
+          case_type: string
+          claim_file_url: string | null
+          claim_id: string | null
+          created_at: string
+          created_by: string | null
+          customer_name: string | null
+          hearing_date: string | null
+          id: string
+          notes: string | null
+          paperwork_deadline: string | null
+          registration: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          case_reference?: string | null
+          case_type?: string
+          claim_file_url?: string | null
+          claim_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string | null
+          hearing_date?: string | null
+          id?: string
+          notes?: string | null
+          paperwork_deadline?: string | null
+          registration: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          case_reference?: string | null
+          case_type?: string
+          claim_file_url?: string | null
+          claim_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string | null
+          hearing_date?: string | null
+          id?: string
+          notes?: string | null
+          paperwork_deadline?: string | null
+          registration?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       claim_documents: {
         Row: {
           claim_id: string
