@@ -209,6 +209,7 @@ const OUTSIDE_SOURCE_LABELS: Record<string, string> = {
   klarna: 'Klarna',
   ivendi: 'iVendi',
   zopa: 'Zopa',
+  payl8r: 'Payl8r',
   bank_transfer: 'Bank transfer',
   phone_card: 'Card over the phone',
   dealer_portal: 'Dealer portal',

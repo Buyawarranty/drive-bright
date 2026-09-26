@@ -27,7 +27,7 @@ interface Props {
 const money = (n: number | null | undefined) =>
   typeof n === 'number' ? `£${n.toLocaleString('en-GB')}` : '—';
 
-const PAYMENT_METHODS = ['Card (Stripe)', 'Bumper', 'Klarna', 'iVendi', 'Zopa', 'Bank transfer'];
+const PAYMENT_METHODS = ['Card (Stripe)', 'Bumper', 'Klarna', 'iVendi', 'Zopa', 'Payl8r', 'Bank transfer'];
 
 export const RenewalCompletionPanel: React.FC<Props> = ({ row, quote, live }) => {
   const { isManagement } = useIsManagement();

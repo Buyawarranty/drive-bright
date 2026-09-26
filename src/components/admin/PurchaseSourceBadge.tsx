@@ -91,6 +91,14 @@ export const PurchaseSourceBadge: React.FC<PurchaseSourceBadgeProps> = ({
           className: 'bg-teal-100 text-teal-800 hover:bg-teal-100 border-teal-200',
           tooltip: 'Zopa finance payment'
         };
+      case 'payl8r':
+        return {
+          label: 'Payl8r',
+          icon: Banknote,
+          variant: 'default' as const,
+          className: 'bg-lime-100 text-lime-800 hover:bg-lime-100 border-lime-200',
+          tooltip: 'Payl8r finance payment'
+        };
       case 'google_ads':
         return {
           label: 'Google Ads',

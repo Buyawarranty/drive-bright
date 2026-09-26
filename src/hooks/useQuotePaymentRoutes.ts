@@ -24,6 +24,7 @@ export const PAYMENT_ROUTE_LABELS: Record<string, string> = {
   klarna: 'Klarna',
   ivendi: 'iVendi',
   zopa: 'Zopa',
+  payl8r: 'Payl8r',
   paypal: 'PayPal',
   bank_transfer: 'Bank transfer',
   phone_card: 'Card by phone',

@@ -6991,6 +6991,7 @@ Please log in and change your password after first login.`;
                       klarna: 'Klarna',
                       ivendi: 'iVendi',
                       zopa: 'Zopa',
+                      payl8r: 'Payl8r',
                       bank_transfer: 'Bank Transfer',
                       phone_card: 'Phone Card',
                       dealer_portal: 'Dealer Portal',

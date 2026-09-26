@@ -8949,6 +8949,7 @@ ${quoteLink ? `Or open this link:<br/><a href="${linkHref}" style="color:#0b1e4c
                         <option value="klarna">Klarna</option>
                         <option value="ivendi">iVendi</option>
                         <option value="zopa">Zopa</option>
+                        <option value="payl8r">Payl8r</option>
                         <option value="bank_transfer">Bank Transfer</option>
                         <option value="phone_card">Phone Card Payment</option>
                         <option value="dealer_portal">Dealer Portal</option>
