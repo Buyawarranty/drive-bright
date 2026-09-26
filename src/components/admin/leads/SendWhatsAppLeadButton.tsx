@@ -29,6 +29,8 @@ interface Props {
   phone: string | null;
   firstName?: string | null;
   disabled?: boolean;
+  /** Practice (sandbox) mode: same button and dialog, but nothing is ever sent. */
+  practice?: boolean;
   onSent?: (templateName: string) => void;
 }
 
@@ -58,6 +60,7 @@ export const SendWhatsAppLeadButton: React.FC<Props> = ({
   phone,
   firstName,
   disabled,
+  practice,
   onSent,
 }) => {
   const [open, setOpen] = useState(false);
@@ -97,6 +100,15 @@ export const SendWhatsAppLeadButton: React.FC<Props> = ({
 
   const send = async () => {
     if (!message.trim()) return;
+    if (practice) {
+      setSending(true);
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      setSending(false);
+      toast.success('Practice mode — nothing was sent. On New Leads this would go out on WhatsApp.');
+      onSent?.(templateName || 'WhatsApp message');
+      setOpen(false);
+      return;
+    }
     setSending(true);
     const { data, error } = await supabase.functions.invoke('wati-send-lead-message', {
       body: { leadId, templateName, message: message.trim() },
@@ -126,7 +138,7 @@ export const SendWhatsAppLeadButton: React.FC<Props> = ({
     setOpen(false);
   };
 
-  if (!isUkMobile(phone)) return null;
+  if (!practice && !isUkMobile(phone)) return null;
 
   return (
     <>
@@ -155,6 +167,11 @@ export const SendWhatsAppLeadButton: React.FC<Props> = ({
           </DialogHeader>
 
           <div className="space-y-3">
+            {practice && (
+              <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900">
+                Practice mode — you can pick a template and edit the wording, but no message will be sent.
+              </p>
+            )}
             <div className="space-y-1">
               <Label htmlFor="wa-lead-template">Message template</Label>
               {failed ? (

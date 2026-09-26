@@ -35,6 +35,7 @@ import { useCurrentAdminId } from '@/hooks/useCurrentAdminId';
 import { cn } from '@/lib/utils';
 import type { LeadStatus } from '@/hooks/useLeads';
 import { OrrLogicExplainer, DEFAULT_ORR_CADENCE, type OrrCadenceConfig } from './OrrLogicExplainer';
+import { SendWhatsAppLeadButton } from './SendWhatsAppLeadButton';
 import {
   OrrSandboxLeadsChrome,
   type SandboxChromeLead,
@@ -2124,6 +2125,13 @@ export const OpenRoundRobinTestPanel: React.FC<{ team?: OrrPracticeTeam }> = ({ 
                           <PracticeNotes
                             notes={lead.notes ?? []}
                             onAdd={(text) => addPracticeNote(lead.id, text)}
+                          />
+                          <SendWhatsAppLeadButton
+                            leadId={lead.id}
+                            phone={lead.phone}
+                            firstName={lead.firstName}
+                            practice
+                            onSent={(t) => addPracticeNote(lead.id, `Sent WhatsApp message (${t})`)}
                           />
                           <span title="Email" className="h-7 w-7 rounded-md border border-input flex items-center justify-center text-blue-600">
                             <Mail className="h-3.5 w-3.5" />
