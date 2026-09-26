@@ -95,6 +95,7 @@ import { WEBSITE_SALES_ACCOUNT_ID } from '@/constants/salesDefaults';
 import { useViewAs } from '@/contexts/ViewAsContext';
 import { CustomersMobileCards } from './customers/CustomersMobileCards';
 import { isNorthernIrelandPlate } from '@/lib/niPlate';
+import { confirmCustomerPaymentReceived } from './payments/confirmPaymentReceived';
 
 type CustomerPolicySummary = {
   id?: string;
@@ -3166,6 +3167,7 @@ export const CustomersTab = ({
         plan_type: editingCustomer.plan_type,
         payment_type: editingCustomer.payment_type,
         status: editingCustomer.status,
+        ...(editingCustomer.signup_date ? { signup_date: editingCustomer.signup_date } : {}),
         voluntary_excess: editingCustomer.voluntary_excess,
         claim_limit: editingCustomer.claim_limit,
         seasonal_bonus_months: (editingCustomer as any).seasonal_bonus_months ?? null,
@@ -6803,19 +6805,26 @@ Please log in and change your password after first login.`;
                                     return;
                                   }
 
-                                  if (!window.confirm(`Confirm payment received for ${customer.name}?`)) return;
-                                  const nowIso = new Date().toISOString();
-                                  const { error: cErr } = await supabase
-                                    .from('customers')
-                                    .update({ payment_verified: true, payment_confirmed_by: currentAdminUser?.id, updated_at: nowIso })
-                                    .eq('id', customer.id);
-                                  if (cErr) { toast.error(`Failed to confirm payment: ${cErr.message}`); return; }
-                                  await supabase
-                                    .from('customer_policies')
-                                    .update({ payment_verified: true, updated_at: nowIso })
-                                    .eq('customer_id', customer.id);
-                                  toast.success('Payment confirmed');
-                                  fetchCustomers();
+                                  if (!window.confirm(`Are you sure? Confirm payment received for ${customer.name}?`)) return;
+                                  try {
+                                    const { data: saved, error: cErr } = await supabase
+                                      .from('customers')
+                                      .update({ payment_confirmed_by: currentAdminUser?.id, updated_at: new Date().toISOString() })
+                                      .eq('id', customer.id)
+                                      .select('id');
+                                    if (cErr) throw cErr;
+                                    if (!saved || saved.length === 0) {
+                                      throw new Error("Nothing was saved — your staff account isn't allowed to edit this customer.");
+                                    }
+                                    await confirmCustomerPaymentReceived(customer.id, {
+                                      source: 'customer_management',
+                                      adminId: currentAdminUser?.id ?? null,
+                                    });
+                                    toast.success('Payment confirmed and saved');
+                                    fetchCustomers();
+                                  } catch (err: any) {
+                                    toast.error(`Failed to confirm payment: ${err?.message || 'unknown error'}`);
+                                  }
                                 }}
 
                                 className="h-5 px-2 text-[10px] gap-1 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-400 rounded font-semibold animate-pulse"
