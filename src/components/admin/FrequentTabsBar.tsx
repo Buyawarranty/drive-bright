@@ -24,7 +24,8 @@ interface Props {
   canAccessTab?: (tabId: string) => boolean;
 }
 
-const MAX_PINNED = 10;
+const MAX_PINNED = 20;
+
 
 /**
  * Personalised quick-shortcut bar rendered at the top of the admin dashboard.
@@ -80,7 +81,9 @@ export const FrequentTabsBar: React.FC<Props> = ({
           <Zap className="h-3.5 w-3.5 text-orange-500" />
           Your shortcuts
         </div>
-        <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto scrollbar-none">
+        <div className="flex items-start gap-1.5 flex-1 min-w-0">
+        <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0 max-h-[3.875rem] overflow-y-auto scrollbar-none content-start">
+
           {items.length === 0 && (
             <span className="text-xs text-muted-foreground">
               Pick the sections you use most with Customise
@@ -108,6 +111,8 @@ export const FrequentTabsBar: React.FC<Props> = ({
             );
           })}
         </div>
+        </div>
+
 
         <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
           <PopoverTrigger asChild>
