@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { format, differenceInCalendarDays } from 'date-fns';
-import { BellRing, CalendarClock, ChevronDown, ChevronUp, PoundSterling, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { BellRing, CalendarClock, ChevronDown, ChevronUp, PoundSterling, AlertTriangle, CheckCircle2, X } from 'lucide-react';
 
 interface ReminderRow {
   id: string;
@@ -39,6 +39,17 @@ const HOURS_24 = 24 * 60 * 60 * 1000;
 export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, canMarkReceived, onShowPendingList }) => {
   const queryClient = useQueryClient();
   const [expanded, setExpanded] = React.useState(true);
+  /** How many reminders the user closed the banner for. Reopens automatically when new ones appear. */
+  const [dismissedCount, setDismissedCount] = React.useState<number>(() => {
+    const stored = sessionStorage.getItem('pp-reminders-banner-dismissed-count');
+    const n = stored ? parseInt(stored, 10) : 0;
+    return Number.isFinite(n) ? n : 0;
+  });
+
+  const dismiss = () => {
+    setDismissedCount(reminders.length);
+    sessionStorage.setItem('pp-reminders-banner-dismissed-count', String(reminders.length));
+  };
 
   const { data: reminders = [] } = useQuery({
     queryKey: ['part-payment-reminders'],
@@ -113,7 +124,7 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
     }
   };
 
-  if (reminders.length === 0) return null;
+  if (reminders.length === 0 || reminders.length <= dismissedCount) return null;
 
   const isUncollected24h = (r: ReminderRow) =>
     !!r.created_at && Date.now() - new Date(r.created_at).getTime() > HOURS_24;
@@ -158,6 +169,16 @@ export const PartPaymentRemindersBanner: React.FC<Props> = ({ onOpenCustomer, ca
           )}
           <Button variant="ghost" size="sm" onClick={() => setExpanded(v => !v)}>
             {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label="Close banner"
+            title="Close this banner — it comes back if new balances appear"
+            className="h-9 w-9 p-0 hover:bg-black/10"
+            onClick={dismiss}
+          >
+            <X className="w-6 h-6" strokeWidth={2.5} />
           </Button>
         </div>
       </div>
