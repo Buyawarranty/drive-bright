@@ -2086,6 +2086,19 @@ export const AllocationMatrix = ({ canEdit, isTeamScoped = false, hideSources = 
                       );
                     })()}
                   </div>
+                  {(() => {
+                    const allowed = cap?.allowed_sources ?? null;
+                    if (!allowed || allowed.length === 0) return null;
+                    const names = LEAD_SOURCES
+                      .filter(s => [s.key, ...s.aliases].some(k => allowed.includes(k)))
+                      .map(s => s.label);
+                    if (names.length === 0) return null;
+                    return (
+                      <div className="text-[11px] text-muted-foreground">
+                        {names.join(' and ')} only — skipped in round robin and in the open pool for every other source.
+                      </div>
+                    );
+                  })()}
                   {!receiving && (
                     <div className="text-[11px] text-muted-foreground">Not receiving leads</div>
                   )}
